@@ -41,6 +41,14 @@ class FeatureFlagAnalysisTest {
         "DARK_MODE"
     )
 
+    // Expected enum constant values (from ExperimentId enum)
+    private val expectedEnumValues = mapOf(
+        "NEW_HOMEPAGE" to 1001,
+        "CHECKOUT_V2" to 1002,
+        "PREMIUM_FEATURES" to 1003,
+        "DARK_MODE" to 1004
+    )
+
     // Expected string constants passed to FF4j.check(String)
     private val expectedStringIds = setOf(
         "new-welcome-page",
@@ -100,6 +108,79 @@ class FeatureFlagAnalysisTest {
             assertTrue(foundIntegerIds.contains(expected),
                 "Should find integer ID: $expected")
         }
+    }
+
+    @Test
+    fun `should extract enum constant values from bytecode`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println(it) }  // Enable verbose logging
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        // Verify enum values are extracted
+        expectedEnumValues.forEach { (enumName, expectedValue) ->
+            val values = graph.enumValues("sample.ab.ExperimentId", enumName)
+            println("Enum $enumName: values = $values")
+            assertTrue(values != null && values.isNotEmpty(),
+                "Should extract values for enum $enumName")
+            assertEquals(expectedValue, values?.firstOrNull(),
+                "Enum $enumName should have value $expectedValue")
+        }
+    }
+
+    @Test
+    fun `should include enum values in query results`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Query for enum constants
+        val enumResults = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("sample.ab.ExperimentId")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        println("Enum results with values:")
+        enumResults.forEach { result ->
+            val constant = result.constant
+            if (constant is EnumConstant) {
+                println("  ${constant.enumName}: value=${constant.value}, constructorArgs=${constant.constructorArgs}")
+                // Verify that enum values are populated
+                val expectedValue = expectedEnumValues[constant.enumName]
+                if (expectedValue != null) {
+                    assertEquals(expectedValue, constant.value,
+                        "Enum ${constant.enumName} should have value $expectedValue")
+                }
+            }
+        }
+
+        // At least some enum results should have values
+        val enumsWithValues = enumResults
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+            .filter { it.value != null }
+
+        assertTrue(enumsWithValues.isNotEmpty(),
+            "At least some enum constants should have extracted values")
     }
 
     @Test

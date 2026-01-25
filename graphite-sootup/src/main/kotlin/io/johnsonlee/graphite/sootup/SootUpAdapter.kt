@@ -83,11 +83,16 @@ class SootUpAdapter(
      * Parses the <clinit> method to find constructor arguments.
      */
     private fun processEnumValues() {
-        view.classes
-            .filter { it.isEnum }
-            .forEach { enumClass ->
-                extractEnumValues(enumClass)
-            }
+        val enumClasses = view.classes.filter { it.isEnum }.toList()
+        log("Found ${enumClasses.size} enum classes to process")
+
+        enumClasses.forEach { enumClass ->
+            extractEnumValues(enumClass)
+        }
+    }
+
+    private fun log(message: String) {
+        config.verbose?.invoke(message)
     }
 
     /**
@@ -102,17 +107,33 @@ class SootUpAdapter(
      * - Third+ args: user-defined constructor parameters
      */
     private fun extractEnumValues(enumClass: SootClass) {
-        val clinit = enumClass.methods.find { it.name == "<clinit>" && it.isStatic }
-            ?: return
-
-        if (!clinit.hasBody()) return
-
         val className = enumClass.type.fullyQualifiedName
+        log("Processing enum class: $className")
+
+        val clinit = enumClass.methods.find { it.name == "<clinit>" && it.isStatic }
+        if (clinit == null) {
+            log("  No <clinit> found for $className")
+            return
+        }
+
+        if (!clinit.hasBody()) {
+            log("  <clinit> has no body for $className")
+            return
+        }
+
         val body = clinit.body
         val stmts = body.stmtGraph.stmts.toList()
+        log("  <clinit> has ${stmts.size} statements")
 
-        // Track local variable assignments: localName -> value
+        // Debug: print all statements
+        stmts.forEachIndexed { idx, stmt ->
+            log("    [$idx] ${stmt.javaClass.simpleName}: $stmt")
+        }
+
+        // Track local variable assignments: localName -> value (for constants)
         val localValues = mutableMapOf<String, Any?>()
+        // Track local variable aliases: localName -> original localName (for tracking new objects)
+        val localAliases = mutableMapOf<String, String>()
 
         stmts.forEach { stmt ->
             when (stmt) {
@@ -125,6 +146,14 @@ class SootUpAdapter(
                         localValues[left.name] = extractConstantValue(right)
                     }
 
+                    // Track local-to-local assignments (aliases)
+                    if (left is Local && right is Local) {
+                        // left = right, so left is an alias for right
+                        // Follow the chain to find the original
+                        val original = localAliases[right.name] ?: right.name
+                        localAliases[left.name] = original
+                    }
+
                     // Look for: EnumField = new EnumClass(...)
                     if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className) {
                         val fieldName = left.fieldSignature.name
@@ -132,9 +161,13 @@ class SootUpAdapter(
                         // The right side should be a local that was assigned from new + <init>
                         // We need to find the <init> call to get the constructor arguments
                         if (right is Local) {
-                            val initValues = findEnumInitValues(right.name, stmts, localValues)
+                            // Resolve alias to find the original local that was used with new/init
+                            val originalLocal = localAliases[right.name] ?: right.name
+                            log("  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)")
+                            val initValues = findEnumInitValues(originalLocal, stmts, localValues, className)
                             if (initValues.isNotEmpty()) {
                                 graphBuilder.addEnumValues(className, fieldName, initValues)
+                                log("  Extracted enum value: $className.$fieldName = $initValues")
                             }
                         }
                     }
@@ -149,27 +182,40 @@ class SootUpAdapter(
      *
      * @return list of user-defined constructor arguments (excluding name and ordinal)
      */
-    private fun findEnumInitValues(localName: String, stmts: List<Stmt>, localValues: Map<String, Any?>): List<Any?> {
+    private fun findEnumInitValues(localName: String, stmts: List<Stmt>, localValues: Map<String, Any?>, className: String): List<Any?> {
         for (stmt in stmts) {
             if (stmt !is JInvokeStmt) continue
 
             val invokeExpr = stmt.invokeExpr.orElse(null) ?: continue
-            if (invokeExpr !is AbstractInstanceInvokeExpr) continue
-            if (invokeExpr.methodSignature.name != "<init>") continue
+            log("    Checking invoke: ${invokeExpr.javaClass.simpleName} - ${invokeExpr.methodSignature}")
+
+            if (invokeExpr !is AbstractInstanceInvokeExpr) {
+                log("    Skipping: not AbstractInstanceInvokeExpr")
+                continue
+            }
+            if (invokeExpr.methodSignature.name != "<init>") {
+                log("    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'")
+                continue
+            }
 
             val base = invokeExpr.base
+            log("    Base: ${base.javaClass.simpleName} - $base (looking for $localName)")
             if (base !is Local || base.name != localName) continue
 
             // Found the <init> call
             // Args: [name, ordinal, ...user args...]
             val args = invokeExpr.args
+            log("    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}")
             if (args.size > 2) {
                 // Get all user-defined arguments (starting from index 2)
                 return args.drop(2).map { arg ->
                     extractValueFromArg(arg, localValues)
                 }
+            } else {
+                log("    Only ${args.size} args (need > 2 for user-defined values)")
             }
         }
+        log("    No <init> call found for local $localName")
         return emptyList()
     }
 

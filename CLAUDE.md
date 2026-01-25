@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## IMPORTANT: Review Requirements
+
+**All git commits and version publishing MUST be reviewed and approved by the user before execution.**
+
+- Do NOT run `git commit` without user approval
+- Do NOT run `./gradlew publish*` without user approval
+- Always show a summary of changes and wait for explicit user confirmation before committing or publishing
+
 ## Project Overview
 
 Graphite is a graph-based static analysis framework for JVM bytecode. It provides a clean abstraction layer over [SootUp](https://github.com/soot-oss/SootUp) for building custom program analyses.
