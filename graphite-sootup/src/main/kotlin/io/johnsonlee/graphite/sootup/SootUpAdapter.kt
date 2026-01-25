@@ -26,6 +26,8 @@ import sootup.core.jimple.common.stmt.Stmt
 import sootup.core.model.SootClass
 import sootup.core.model.SootMethod
 import sootup.core.signatures.MethodSignature
+import sootup.java.core.JavaSootClass
+import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
 import sootup.core.types.PrimitiveType
@@ -70,7 +72,10 @@ class SootUpAdapter(
         // 3. Process all methods and build intraprocedural graphs
         processMethods()
 
-        // 4. Build call graph if configured
+        // 4. Extract HTTP endpoints from annotations
+        processEndpoints()
+
+        // 5. Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
@@ -93,6 +98,149 @@ class SootUpAdapter(
 
     private fun log(message: String) {
         config.verbose?.invoke(message)
+    }
+
+    /**
+     * Extract HTTP endpoints from Spring MVC annotations.
+     * Supports @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
+     */
+    private fun processEndpoints() {
+        view.classes.toList().forEach { sootClass ->
+            if (sootClass !is JavaSootClass) return@forEach
+
+            val className = sootClass.type.fullyQualifiedName
+
+            // Get class-level @RequestMapping path prefix
+            val classAnnotations = sootClass.annotations
+            val classPath = extractRequestMappingPath(classAnnotations)
+
+            sootClass.methods.toList().forEach { method ->
+                if (method !is JavaSootMethod) return@forEach
+
+                val methodAnnotations = method.annotations
+                val httpMethod = findHttpMethod(methodAnnotations)
+
+                if (httpMethod != null) {
+                    val methodPath = extractMappingPath(methodAnnotations)
+                    val fullPath = combinePaths(classPath, methodPath)
+                    val produces = extractAnnotationArrayValue(methodAnnotations, "produces")
+                    val consumes = extractAnnotationArrayValue(methodAnnotations, "consumes")
+
+                    val methodDescriptor = toMethodDescriptor(method)
+
+                    val endpoint = EndpointInfo(
+                        method = methodDescriptor,
+                        httpMethod = httpMethod,
+                        path = fullPath,
+                        produces = produces,
+                        consumes = consumes
+                    )
+                    graphBuilder.addEndpoint(endpoint)
+                    log("Found endpoint: ${httpMethod.name} $fullPath -> ${className}.${methodDescriptor.name}")
+                }
+            }
+        }
+    }
+
+    private fun findHttpMethod(annotations: Iterable<*>): HttpMethod? {
+        for (annot in annotations) {
+            val className = getAnnotationClassName(annot)
+            val httpMethod = HttpMethod.fromAnnotation(className)
+            if (httpMethod != null) return httpMethod
+        }
+        return null
+    }
+
+    private fun getAnnotationClassName(annot: Any?): String {
+        if (annot == null) return ""
+        // AnnotationUsage has annotation.className property
+        return try {
+            val annotationProp = annot::class.java.getMethod("getAnnotation").invoke(annot)
+            annotationProp?.let {
+                it::class.java.getMethod("getClassName").invoke(it)?.toString() ?: ""
+            } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    private fun getAnnotationFullName(annot: Any?): String {
+        if (annot == null) return ""
+        return try {
+            val annotationProp = annot::class.java.getMethod("getAnnotation").invoke(annot)
+            annotationProp?.let {
+                it::class.java.getMethod("getFullyQualifiedName").invoke(it)?.toString() ?: ""
+            } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun getAnnotationValues(annot: Any?): Map<String, Any?> {
+        if (annot == null) return emptyMap()
+        return try {
+            annot::class.java.getMethod("getValues").invoke(annot) as? Map<String, Any?> ?: emptyMap()
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
+    private fun extractRequestMappingPath(annotations: Iterable<*>): String {
+        for (annot in annotations) {
+            val className = getAnnotationClassName(annot)
+            val fullName = getAnnotationFullName(annot)
+            if (className == "RequestMapping" || fullName == "org.springframework.web.bind.annotation.RequestMapping") {
+                return extractPathFromAnnotation(annot)
+            }
+        }
+        return ""
+    }
+
+    private fun extractMappingPath(annotations: Iterable<*>): String {
+        for (annot in annotations) {
+            val className = getAnnotationClassName(annot)
+            if (className.endsWith("Mapping")) {
+                return extractPathFromAnnotation(annot)
+            }
+        }
+        return ""
+    }
+
+    private fun extractPathFromAnnotation(annot: Any?): String {
+        val values = getAnnotationValues(annot)
+        val valueElement = values["value"] ?: values["path"]
+        return when (valueElement) {
+            is String -> valueElement
+            is List<*> -> valueElement.firstOrNull()?.toString()?.removeSurrounding("\"") ?: ""
+            else -> valueElement?.toString()?.removeSurrounding("[", "]")?.removeSurrounding("\"") ?: ""
+        }
+    }
+
+    private fun extractAnnotationArrayValue(annotations: Iterable<*>, key: String): List<String> {
+        val result = mutableListOf<String>()
+        for (annot in annotations) {
+            val values = getAnnotationValues(annot)
+            val value = values[key]
+            when (value) {
+                is String -> result.add(value)
+                is List<*> -> result.addAll(value.filterIsInstance<String>())
+                null -> {} // ignore
+                else -> result.add(value.toString().removeSurrounding("[", "]").removeSurrounding("\""))
+            }
+        }
+        return result
+    }
+
+    private fun combinePaths(classPath: String, methodPath: String): String {
+        val normalizedClass = classPath.trimEnd('/')
+        val normalizedMethod = methodPath.trimStart('/')
+        return when {
+            normalizedClass.isEmpty() && normalizedMethod.isEmpty() -> "/"
+            normalizedClass.isEmpty() -> "/$normalizedMethod"
+            normalizedMethod.isEmpty() -> normalizedClass
+            else -> "$normalizedClass/$normalizedMethod"
+        }
     }
 
     /**

@@ -10,6 +10,7 @@ A graph-based static analysis framework for JVM bytecode. Graphite provides a cl
 - **AB Test ID Detection**: Find all integer/enum/string constants passed to AB SDK methods
 - **Feature Flag Analysis**: Discover all feature flags used in your codebase
 - **API Return Type Analysis**: Find actual return types when methods declare `Object` or generics
+- **HTTP Endpoint Discovery**: Extract and analyze REST API endpoints from Spring MVC annotations
 - **Dead Code Detection**: Identify unreachable code paths
 - **Security Auditing**: Track sensitive data flow through your application
 
@@ -31,8 +32,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.2")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.2")
+    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.14")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.14")
 }
 ```
 
@@ -50,8 +51,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.johnsonlee.graphite:graphite-core:0.0.1-alpha.2'
-    implementation 'io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.2'
+    implementation 'io.johnsonlee.graphite:graphite-core:0.0.1-alpha.14'
+    implementation 'io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.14'
 }
 ```
 
@@ -131,6 +132,29 @@ returnTypes.forEach { result ->
 }
 ```
 
+### Find HTTP Endpoints
+
+```kotlin
+// Load a Spring Boot application
+val loader = JavaProjectLoader(LoaderConfig(
+    includePackages = listOf("com.example"),
+    includeLibraries = true
+))
+val graph = loader.load(Path.of("/path/to/app.jar"))
+
+// Find all endpoints
+val endpoints = graph.endpoints().toList()
+endpoints.forEach { endpoint ->
+    println("${endpoint.httpMethod} ${endpoint.path} -> ${endpoint.method.name}")
+}
+
+// Filter by pattern and HTTP method
+val userEndpoints = graph.endpoints(
+    pattern = "/api/users/*",
+    httpMethod = HttpMethod.GET
+).toList()
+```
+
 ### Low-Level Dataflow Analysis
 
 ```kotlin
@@ -187,7 +211,43 @@ java -jar graphite-cli.jar find-args app.jar \
   --include com.example
 ```
 
-### CLI Options
+### Find HTTP Endpoints
+
+```bash
+# Find all endpoints in a Spring Boot JAR
+java -jar graphite-cli.jar find-endpoints app.jar
+
+# Find endpoints matching a pattern
+java -jar graphite-cli.jar find-endpoints app.jar -e "/api/users/*"
+
+# Find all GET endpoints under /api
+java -jar graphite-cli.jar find-endpoints app.jar -e "/api/**" -m GET
+
+# Include return type analysis
+java -jar graphite-cli.jar find-endpoints app.jar --with-return-types
+
+# JSON output
+java -jar graphite-cli.jar find-endpoints app.jar -f json
+```
+
+### Endpoint Pattern Syntax
+
+The `-e, --endpoint` option supports wildcard patterns for matching endpoint paths:
+
+| Pattern | Description | Example Match |
+|---------|-------------|---------------|
+| `*` | Matches a single path segment | `/api/users/*` matches `/api/users/123` |
+| `**` | Matches multiple path segments | `/api/**` matches `/api/users/123/orders` |
+| `{param}` | Path parameters are treated as wildcards | `/api/users/{id}` matches `/api/users/*` |
+
+**Examples:**
+
+- `/api/users/*` - Matches `/api/users/{id}`, `/api/users/123`
+- `/api/**/orders` - Matches `/api/v1/orders`, `/api/users/123/orders`
+- `/api/**` - Matches all paths under `/api/`
+- `/users/{userId}/posts/{postId}` - Matches `/users/*/posts/*`
+
+### CLI Options (find-args)
 
 | Option | Description |
 |--------|-------------|
@@ -198,6 +258,20 @@ java -jar graphite-cli.jar find-args app.jar \
 | `-i, --arg-index` | Argument index (0-based, default: 0) |
 | `--include` | Package prefixes to include |
 | `--exclude` | Package prefixes to exclude |
+| `-f, --format` | Output format: `text` or `json` |
+| `-v, --verbose` | Enable verbose output |
+
+### CLI Options (find-endpoints)
+
+| Option | Description |
+|--------|-------------|
+| `-e, --endpoint` | Endpoint path pattern to match (supports `*`, `**` wildcards) |
+| `-m, --method` | HTTP method filter: `GET`, `POST`, `PUT`, `DELETE`, `PATCH` |
+| `--include` | Package prefixes to include |
+| `--exclude` | Package prefixes to exclude |
+| `--include-libs` | Include library JARs from `WEB-INF/lib` or `BOOT-INF/lib` |
+| `--lib-filter` | Only load JARs matching these patterns (comma-separated) |
+| `--with-return-types` | Include actual return type analysis for each endpoint |
 | `-f, --format` | Output format: `text` or `json` |
 | `-v, --verbose` | Enable verbose output |
 

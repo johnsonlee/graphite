@@ -67,6 +67,15 @@ interface Graph {
      * @return list of constructor arguments (excluding name and ordinal), or null if not available
      */
     fun enumValues(enumClass: String, enumName: String): List<Any?>?
+
+    /**
+     * Get all HTTP endpoints extracted from annotations.
+     *
+     * @param pattern optional endpoint path pattern (supports * and ** wildcards)
+     * @param httpMethod optional HTTP method filter
+     * @return sequence of matching endpoints
+     */
+    fun endpoints(pattern: String? = null, httpMethod: HttpMethod? = null): Sequence<EndpointInfo>
 }
 
 /**

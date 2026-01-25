@@ -13,7 +13,8 @@ class DefaultGraph private constructor(
     private val incomingEdges: Map<NodeId, List<Edge>>,
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
-    private val enumValues: Map<String, List<Any?>>  // key: "enumClass#enumName", value: list of constructor args
+    private val enumValues: Map<String, List<Any?>>,  // key: "enumClass#enumName", value: list of constructor args
+    private val endpointList: List<EndpointInfo>
 ) : Graph {
 
     override fun node(id: NodeId): Node? = nodesById[id]
@@ -53,6 +54,14 @@ class DefaultGraph private constructor(
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValues["$enumClass#$enumName"]
 
+    override fun endpoints(pattern: String?, httpMethod: HttpMethod?): Sequence<EndpointInfo> {
+        return endpointList.asSequence().filter { endpoint ->
+            val pathMatches = pattern == null || endpoint.matchesPattern(pattern)
+            val methodMatches = httpMethod == null || endpoint.httpMethod == httpMethod || endpoint.httpMethod == HttpMethod.ANY
+            pathMatches && methodMatches
+        }
+    }
+
     /**
      * Builder for constructing DefaultGraph instances
      */
@@ -63,6 +72,7 @@ class DefaultGraph private constructor(
         private val methods = ConcurrentHashMap<String, MethodDescriptor>()
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
+        private val endpoints = mutableListOf<EndpointInfo>()
 
         override fun addNode(node: Node): GraphBuilder {
             nodes[node.id] = node
@@ -104,13 +114,22 @@ class DefaultGraph private constructor(
             return this
         }
 
+        /**
+         * Add an HTTP endpoint.
+         */
+        fun addEndpoint(endpoint: EndpointInfo): Builder {
+            endpoints.add(endpoint)
+            return this
+        }
+
         override fun build(): Graph = DefaultGraph(
             nodesById = nodes.toMap(),
             outgoingEdges = outgoing.mapValues { it.value.toList() },
             incomingEdges = incoming.mapValues { it.value.toList() },
             methodIndex = methods.toMap(),
             typeHierarchy = typeHierarchyBuilder.build(),
-            enumValues = enumValues.toMap()
+            enumValues = enumValues.toMap(),
+            endpointList = endpoints.toList()
         )
     }
 }
