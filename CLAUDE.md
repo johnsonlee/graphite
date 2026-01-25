@@ -10,6 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Do NOT run `./gradlew publish*` without user approval
 - Always show a summary of changes and wait for explicit user confirmation before committing or publishing
 
+**Before publishing a new version:**
+1. ALWAYS check existing versions first: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
+2. Determine the next version number based on existing versions
+3. Show the user the current latest version and proposed new version for confirmation
+
 ## Project Overview
 
 Graphite is a graph-based static analysis framework for JVM bytecode. It provides a clean abstraction layer over [SootUp](https://github.com/soot-oss/SootUp) for building custom program analyses.
