@@ -62,7 +62,7 @@ class DataFlowAnalysis(
         }
 
         traverse(from, emptyList(), 0)
-        return DataFlowResult(sources, paths)
+        return DataFlowResult(sources, paths, graph)
     }
 
     /**
@@ -105,7 +105,7 @@ class DataFlowAnalysis(
         }
 
         traverse(from, emptyList(), 0)
-        return DataFlowResult(sinks, paths)
+        return DataFlowResult(sinks, paths, graph)
     }
 
     private fun traceParameterSources(param: ParameterNode, path: List<NodeId>, depth: Int) {
@@ -143,9 +143,10 @@ data class AnalysisConfig(
 /**
  * Result of dataflow analysis
  */
-data class DataFlowResult(
+class DataFlowResult(
     val sources: List<SourceInfo>,
-    val paths: List<DataFlowPath>
+    val paths: List<DataFlowPath>,
+    private val graph: Graph? = null  // Optional graph for enum value lookup
 ) {
     /**
      * Get all constant values that were found (direct constants only)
@@ -158,7 +159,7 @@ data class DataFlowResult(
      * Enum constants are accessed via static field reads (e.g., ExperimentId.CHECKOUT_V2),
      * which are represented as FieldNode in the graph. This method extracts both:
      * - Direct ConstantNode values
-     * - Enum constants from FieldNode sources (synthetic EnumConstant)
+     * - Enum constants from FieldNode sources (synthetic EnumConstant with resolved values)
      */
     fun allConstants(): List<ConstantNode> {
         val directConstants = constants()
@@ -166,11 +167,15 @@ data class DataFlowResult(
             .filter { isEnumConstantField(it.node) }
             .map { fieldInfo ->
                 val field = fieldInfo.node.descriptor
+                val enumClass = field.declaringClass.className
+                val enumName = field.name
+                // Look up the enum values from the graph
+                val constructorArgs = graph?.enumValues(enumClass, enumName) ?: emptyList()
                 EnumConstant(
-                    id = NodeId("synthetic:enum:${field.declaringClass.className}.${field.name}"),
+                    id = NodeId("synthetic:enum:$enumClass.$enumName"),
                     enumType = field.declaringClass,
-                    enumName = field.name,
-                    value = null // Ordinal not available from static field access
+                    enumName = enumName,
+                    constructorArgs = constructorArgs
                 )
             }
         return directConstants + enumFieldConstants

@@ -219,13 +219,15 @@ class MethodPatternBuilder {
     var parameterTypes: List<String>? = null
     var returnType: String? = null
     var annotations: List<String> = emptyList()
+    var useRegex: Boolean = false
 
     fun build() = MethodPattern(
         declaringClass = declaringClass,
         name = name,
         parameterTypes = parameterTypes,
         returnType = returnType,
-        annotations = annotations
+        annotations = annotations,
+        useRegex = useRegex
     )
 }
 

@@ -55,7 +55,12 @@ data class LoaderConfig(
     /**
      * Call graph algorithm
      */
-    val callGraphAlgorithm: CallGraphAlgorithm = CallGraphAlgorithm.CHA
+    val callGraphAlgorithm: CallGraphAlgorithm = CallGraphAlgorithm.CHA,
+
+    /**
+     * Verbose logging callback
+     */
+    val verbose: ((String) -> Unit)? = null
 )
 
 enum class CallGraphAlgorithm {

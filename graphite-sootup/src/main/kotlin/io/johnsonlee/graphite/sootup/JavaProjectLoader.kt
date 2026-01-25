@@ -152,6 +152,7 @@ class JavaProjectLoader(
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
 
+                var classFileCount = 0
                 zip.entries().asSequence()
                     .filter { it.name.startsWith("WEB-INF/classes/") && !it.isDirectory }
                     .forEach { entry ->
@@ -161,8 +162,10 @@ class JavaProjectLoader(
                         zip.getInputStream(entry).use { input ->
                             Files.copy(input, targetFile)
                         }
+                        if (entry.name.endsWith(".class")) classFileCount++
                     }
 
+                log("Extracted $classFileCount class files from WEB-INF/classes")
                 locations.add(PathBasedAnalysisInputLocation.create(classesDir, SourceType.Application))
 
                 // Optionally include libraries
@@ -170,20 +173,42 @@ class JavaProjectLoader(
                     val libDir = tempDir.resolve("lib")
                     Files.createDirectories(libDir)
 
-                    zip.entries().asSequence()
+                    val allJars = zip.entries().asSequence()
                         .filter { it.name.startsWith("WEB-INF/lib/") && it.name.endsWith(".jar") }
-                        .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
-                        .forEach { entry ->
-                            val jarName = entry.name.substringAfterLast("/")
-                            val targetFile = libDir.resolve(jarName)
-                            zip.getInputStream(entry).use { input ->
-                                Files.copy(input, targetFile)
-                            }
-                            // Only add JAR if it contains classes from included packages
-                            if (jarContainsIncludedPackages(targetFile)) {
-                                locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
-                            }
+                        .toList()
+
+                    log("Found ${allJars.size} JARs in WEB-INF/lib")
+
+                    var loadedJarCount = 0
+                    var skippedByFilter = 0
+                    var skippedByPackage = 0
+
+                    allJars.forEach { entry ->
+                        val jarName = entry.name.substringAfterLast("/")
+
+                        if (!matchesLibraryFilter(jarName)) {
+                            skippedByFilter++
+                            return@forEach
                         }
+
+                        val targetFile = libDir.resolve(jarName)
+                        zip.getInputStream(entry).use { input ->
+                            Files.copy(input, targetFile)
+                        }
+
+                        // Only add JAR if it contains classes from included packages
+                        if (jarContainsIncludedPackages(targetFile)) {
+                            locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            loadedJarCount++
+                            log("  + Loading JAR: $jarName")
+                        } else {
+                            skippedByPackage++
+                            // Clean up unneeded JAR
+                            Files.deleteIfExists(targetFile)
+                        }
+                    }
+
+                    log("Loaded $loadedJarCount JARs (skipped: $skippedByFilter by filter, $skippedByPackage by package)")
                 }
             }
         } catch (e: Exception) {
@@ -192,6 +217,10 @@ class JavaProjectLoader(
         }
 
         return locations
+    }
+
+    private fun log(message: String) {
+        config.verbose?.invoke(message)
     }
 
     /**

@@ -12,7 +12,8 @@ class DefaultGraph private constructor(
     private val outgoingEdges: Map<NodeId, List<Edge>>,
     private val incomingEdges: Map<NodeId, List<Edge>>,
     private val methodIndex: Map<String, MethodDescriptor>,
-    private val typeHierarchy: TypeHierarchy
+    private val typeHierarchy: TypeHierarchy,
+    private val enumValues: Map<String, List<Any?>>  // key: "enumClass#enumName", value: list of constructor args
 ) : Graph {
 
     override fun node(id: NodeId): Node? = nodesById[id]
@@ -49,6 +50,9 @@ class DefaultGraph private constructor(
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
         methodIndex.values.asSequence().filter { pattern.matches(it) }
 
+    override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
+        enumValues["$enumClass#$enumName"]
+
     /**
      * Builder for constructing DefaultGraph instances
      */
@@ -58,6 +62,7 @@ class DefaultGraph private constructor(
         private val incoming = ConcurrentHashMap<NodeId, MutableList<Edge>>()
         private val methods = ConcurrentHashMap<String, MethodDescriptor>()
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
+        private val enumValues = ConcurrentHashMap<String, List<Any?>>()
 
         override fun addNode(node: Node): GraphBuilder {
             nodes[node.id] = node
@@ -88,12 +93,24 @@ class DefaultGraph private constructor(
             return this
         }
 
+        /**
+         * Add an enum constant's underlying values.
+         * @param enumClass fully qualified enum class name
+         * @param enumName the name of the enum constant
+         * @param values list of constructor arguments (excluding name and ordinal)
+         */
+        fun addEnumValues(enumClass: String, enumName: String, values: List<Any?>): Builder {
+            enumValues["$enumClass#$enumName"] = values
+            return this
+        }
+
         override fun build(): Graph = DefaultGraph(
             nodesById = nodes.toMap(),
             outgoingEdges = outgoing.mapValues { it.value.toList() },
             incomingEdges = incoming.mapValues { it.value.toList() },
             methodIndex = methods.toMap(),
-            typeHierarchy = typeHierarchyBuilder.build()
+            typeHierarchy = typeHierarchyBuilder.build(),
+            enumValues = enumValues.toMap()
         )
     }
 }

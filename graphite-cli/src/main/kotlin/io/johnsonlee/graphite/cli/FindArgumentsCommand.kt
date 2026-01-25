@@ -37,6 +37,12 @@ class FindArgumentsCommand : Callable<Int> {
     lateinit var targetMethod: String
 
     @Option(
+        names = ["-r", "--regex"],
+        description = ["Treat class and method names as regex patterns (e.g., -c '.*Client' -m 'getOption.*' -r)"]
+    )
+    var useRegex: Boolean = false
+
+    @Option(
         names = ["-p", "--param-types"],
         description = ["Parameter types (comma-separated, e.g., java.lang.Integer,java.lang.String)"],
         split = ","
@@ -97,12 +103,12 @@ class FindArgumentsCommand : Callable<Int> {
         }
 
         if (verbose) {
-            println("Loading bytecode from: $input")
-            println("Target method: $targetClass.$targetMethod")
+            System.err.println("Loading bytecode from: $input")
+            System.err.println("Target method: $targetClass.$targetMethod")
             if (paramTypes.isNotEmpty()) {
-                println("Parameter types: $paramTypes")
+                System.err.println("Parameter types: $paramTypes")
             }
-            println("Argument index: $argIndex")
+            System.err.println("Argument index: $argIndex")
         }
 
         try {
@@ -110,7 +116,7 @@ class FindArgumentsCommand : Callable<Int> {
             val shouldIncludeLibs = includeLibs ?: (input.toString().endsWith(".war") || input.toString().endsWith(".jar"))
 
             if (verbose && shouldIncludeLibs) {
-                println("Including library JARs in analysis")
+                System.err.println("Including library JARs in analysis")
             }
 
             val loader = JavaProjectLoader(
@@ -119,19 +125,56 @@ class FindArgumentsCommand : Callable<Int> {
                     excludePackages = excludePackages,
                     includeLibraries = shouldIncludeLibs,
                     libraryFilters = libFilters,
-                    buildCallGraph = false
+                    buildCallGraph = false,
+                    verbose = if (verbose) { msg -> System.err.println(msg) } else null
                 )
             )
 
             // Pass original path directly - JavaProjectLoader handles WAR/JAR extraction
             val graph = loader.load(input)
+
+            if (verbose) {
+                val methodCount = graph.methods(io.johnsonlee.graphite.graph.MethodPattern()).count()
+                val callSiteCount = graph.nodes(CallSiteNode::class.java).count()
+                System.err.println("Loaded $methodCount methods, $callSiteCount call sites")
+            }
+
             val graphite = Graphite.from(graph)
+
+            // Show what we're searching for
+            if (verbose) {
+                System.err.println("Searching for: $targetClass.$targetMethod")
+                if (useRegex) {
+                    System.err.println("Class and method names treated as regex patterns")
+                }
+                if (paramTypes.isNotEmpty()) {
+                    System.err.println("With parameter types: $paramTypes")
+                }
+
+                // Find matching call sites for preview
+                val methodPattern = io.johnsonlee.graphite.graph.MethodPattern(
+                    declaringClass = targetClass,
+                    name = targetMethod,
+                    useRegex = useRegex
+                )
+                val matchingCallSites = graph.callSites(methodPattern).toList()
+                System.err.println("Found ${matchingCallSites.size} matching call sites")
+
+                if (matchingCallSites.isNotEmpty()) {
+                    System.err.println("Sample call sites:")
+                    matchingCallSites.take(5).forEach { cs ->
+                        System.err.println("  - ${cs.callee.declaringClass.className}.${cs.callee.name}(${cs.callee.parameterTypes.joinToString(",") { it.className }})")
+                        System.err.println("    called from: ${cs.caller.declaringClass.className}.${cs.caller.name}")
+                    }
+                }
+            }
 
             val results = graphite.query {
                 findArgumentConstants {
                     method {
                         declaringClass = targetClass
                         name = targetMethod
+                        useRegex = this@FindArgumentsCommand.useRegex
                         if (paramTypes.isNotEmpty()) {
                             parameterTypes = paramTypes
                         }
@@ -142,7 +185,22 @@ class FindArgumentsCommand : Callable<Int> {
 
             if (results.isEmpty()) {
                 if (verbose) {
-                    println("No call sites found for $targetClass.$targetMethod")
+                    System.err.println("\nNo call sites found for $targetClass.$targetMethod")
+
+                    // Try to help diagnose
+                    val similarMethods = graph.callSites(
+                        io.johnsonlee.graphite.graph.MethodPattern(name = targetMethod)
+                    ).map { it.callee.declaringClass.className }.distinct().toList()
+
+                    if (similarMethods.isNotEmpty()) {
+                        System.err.println("But found '$targetMethod' in these classes:")
+                        similarMethods.forEach { System.err.println("  - $it") }
+                        System.err.println("\nDid you mean one of these?")
+                    }
+                }
+                // Output empty result in the requested format
+                if (outputFormat.lowercase() == "json") {
+                    println(formatJson(emptyList()))
                 }
                 return 0
             }
@@ -196,10 +254,10 @@ class FindArgumentsCommand : Callable<Int> {
             "targetMethod" to targetMethod,
             "argumentIndex" to argIndex,
             "totalOccurrences" to results.size,
-            "uniqueValues" to results.groupBy { constantToString(it.constant) }.map { (value, occurrences) ->
-                mapOf(
-                    "value" to value,
-                    "type" to constantTypeName(occurrences.first().constant),
+            "uniqueValues" to results.groupBy { constantKey(it.constant) }.map { (_, occurrences) ->
+                val constant = occurrences.first().constant
+                val baseMap = mutableMapOf<String, Any?>(
+                    "type" to constantTypeName(constant),
                     "occurrences" to occurrences.map { result ->
                         mapOf(
                             "location" to result.location,
@@ -208,9 +266,30 @@ class FindArgumentsCommand : Callable<Int> {
                         )
                     }
                 )
+                // Add type-specific fields
+                when (constant) {
+                    is EnumConstant -> {
+                        baseMap["enumType"] = constant.enumType.className
+                        baseMap["enumName"] = constant.enumName
+                        baseMap["constructorArgs"] = constant.constructorArgs
+                        // For convenience, also include the primary value (first arg)
+                        baseMap["value"] = constant.value
+                    }
+                    else -> {
+                        baseMap["value"] = constant.value
+                    }
+                }
+                baseMap
             }
         )
         return gson.toJson(output)
+    }
+
+    private fun constantKey(constant: ConstantNode): String {
+        return when (constant) {
+            is EnumConstant -> "enum:${constant.enumType.className}.${constant.enumName}"
+            else -> "value:${constant.value}"
+        }
     }
 
     private fun constantToString(constant: ConstantNode): String {
@@ -220,7 +299,10 @@ class FindArgumentsCommand : Callable<Int> {
             is FloatConstant -> "${constant.value}f"
             is DoubleConstant -> constant.value.toString()
             is StringConstant -> "\"${constant.value}\""
-            is EnumConstant -> "${constant.enumType.simpleName}.${constant.enumName}"
+            is EnumConstant -> {
+                val base = "${constant.enumType.simpleName}.${constant.enumName}"
+                if (constant.value != null) "$base (value: ${constant.value})" else base
+            }
             is BooleanConstant -> constant.value.toString()
             is NullConstant -> "null"
         }

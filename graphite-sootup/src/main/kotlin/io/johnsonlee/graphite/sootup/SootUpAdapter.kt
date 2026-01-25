@@ -64,15 +64,124 @@ class SootUpAdapter(
         // 1. Process all classes and build type hierarchy
         processTypeHierarchy()
 
-        // 2. Process all methods and build intraprocedural graphs
+        // 2. Extract enum constant values
+        processEnumValues()
+
+        // 3. Process all methods and build intraprocedural graphs
         processMethods()
 
-        // 3. Build call graph if configured
+        // 4. Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
 
         return graphBuilder.build()
+    }
+
+    /**
+     * Extract enum constant values from enum classes.
+     * Parses the <clinit> method to find constructor arguments.
+     */
+    private fun processEnumValues() {
+        view.classes
+            .filter { it.isEnum }
+            .forEach { enumClass ->
+                extractEnumValues(enumClass)
+            }
+    }
+
+    /**
+     * Extract enum constant values from a single enum class.
+     *
+     * In bytecode, enum constants are initialized in <clinit> like:
+     *   CHECKOUT = new ExperimentId("CHECKOUT", 0, 1001, "checkout_exp");
+     *
+     * Where:
+     * - First arg: enum name (String)
+     * - Second arg: ordinal (int)
+     * - Third+ args: user-defined constructor parameters
+     */
+    private fun extractEnumValues(enumClass: SootClass) {
+        val clinit = enumClass.methods.find { it.name == "<clinit>" && it.isStatic }
+            ?: return
+
+        if (!clinit.hasBody()) return
+
+        val className = enumClass.type.fullyQualifiedName
+        val body = clinit.body
+        val stmts = body.stmtGraph.stmts.toList()
+
+        // Track local variable assignments: localName -> value
+        val localValues = mutableMapOf<String, Any?>()
+
+        stmts.forEach { stmt ->
+            when (stmt) {
+                is JAssignStmt -> {
+                    val left = stmt.leftOp
+                    val right = stmt.rightOp
+
+                    // Track constant assignments to locals
+                    if (left is Local && right is SootConstant) {
+                        localValues[left.name] = extractConstantValue(right)
+                    }
+
+                    // Look for: EnumField = new EnumClass(...)
+                    if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className) {
+                        val fieldName = left.fieldSignature.name
+
+                        // The right side should be a local that was assigned from new + <init>
+                        // We need to find the <init> call to get the constructor arguments
+                        if (right is Local) {
+                            val initValues = findEnumInitValues(right.name, stmts, localValues)
+                            if (initValues.isNotEmpty()) {
+                                graphBuilder.addEnumValues(className, fieldName, initValues)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Find the values passed to enum constructor for a given local variable.
+     * Looks for the pattern: local.<init>("NAME", ordinal, value1, value2, ...)
+     *
+     * @return list of user-defined constructor arguments (excluding name and ordinal)
+     */
+    private fun findEnumInitValues(localName: String, stmts: List<Stmt>, localValues: Map<String, Any?>): List<Any?> {
+        for (stmt in stmts) {
+            if (stmt !is JInvokeStmt) continue
+
+            val invokeExpr = stmt.invokeExpr.orElse(null) ?: continue
+            if (invokeExpr !is AbstractInstanceInvokeExpr) continue
+            if (invokeExpr.methodSignature.name != "<init>") continue
+
+            val base = invokeExpr.base
+            if (base !is Local || base.name != localName) continue
+
+            // Found the <init> call
+            // Args: [name, ordinal, ...user args...]
+            val args = invokeExpr.args
+            if (args.size > 2) {
+                // Get all user-defined arguments (starting from index 2)
+                return args.drop(2).map { arg ->
+                    extractValueFromArg(arg, localValues)
+                }
+            }
+        }
+        return emptyList()
+    }
+
+    /**
+     * Extract a value from a method argument (either a constant or a local variable).
+     */
+    private fun extractValueFromArg(arg: Value, localValues: Map<String, Any?>): Any? {
+        return when (arg) {
+            is SootConstant -> extractConstantValue(arg)
+            is Local -> localValues[arg.name]
+            else -> null
+        }
     }
 
     private fun processTypeHierarchy() {

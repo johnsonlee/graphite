@@ -57,6 +57,16 @@ interface Graph {
      * Find methods matching a pattern
      */
     fun methods(pattern: MethodPattern): Sequence<MethodDescriptor>
+
+    /**
+     * Get the underlying values for an enum constant.
+     * Enum constructors can have multiple user-defined arguments.
+     *
+     * @param enumClass fully qualified enum class name
+     * @param enumName the name of the enum constant
+     * @return list of constructor arguments (excluding name and ordinal), or null if not available
+     */
+    fun enumValues(enumClass: String, enumName: String): List<Any?>?
 }
 
 /**
@@ -64,17 +74,18 @@ interface Graph {
  * Supports wildcards and annotations.
  */
 data class MethodPattern(
-    val declaringClass: String? = null,        // e.g., "com.example.*" or null for any
-    val name: String? = null,                  // e.g., "getOption" or null for any
+    val declaringClass: String? = null,        // e.g., "com.example.*" or regex ".*Client" when useRegex=true
+    val name: String? = null,                  // e.g., "getOption" or regex "getOption.*" when useRegex=true
     val parameterTypes: List<String>? = null,  // e.g., ["java.lang.Integer"] or null for any
     val returnType: String? = null,
-    val annotations: List<String> = emptyList() // e.g., ["org.springframework.web.bind.annotation.GetMapping"]
+    val annotations: List<String> = emptyList(), // e.g., ["org.springframework.web.bind.annotation.GetMapping"]
+    val useRegex: Boolean = false              // when true, declaringClass and name are treated as regex patterns
 ) {
     fun matches(method: MethodDescriptor): Boolean {
         if (declaringClass != null && !matchesPattern(method.declaringClass.className, declaringClass)) {
             return false
         }
-        if (name != null && method.name != name) {
+        if (name != null && !matchesPattern(method.name, name)) {
             return false
         }
         if (parameterTypes != null) {
@@ -90,10 +101,13 @@ data class MethodPattern(
     }
 
     private fun matchesPattern(actual: String, pattern: String): Boolean {
-        if (pattern.endsWith("*")) {
-            return actual.startsWith(pattern.dropLast(1))
+        return if (useRegex) {
+            pattern.toRegex().matches(actual)
+        } else if (pattern.endsWith("*")) {
+            actual.startsWith(pattern.dropLast(1))
+        } else {
+            actual == pattern
         }
-        return actual == pattern
     }
 }
 

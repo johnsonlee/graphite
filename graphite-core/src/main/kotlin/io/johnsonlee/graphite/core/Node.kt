@@ -42,8 +42,14 @@ data class EnumConstant(
     override val id: NodeId,
     val enumType: TypeDescriptor,
     val enumName: String,
-    override val value: Any? // The actual enum ordinal or associated value
-) : ConstantNode
+    val constructorArgs: List<Any?> = emptyList()  // User-defined constructor arguments (excluding name and ordinal)
+) : ConstantNode {
+    /**
+     * The primary value (first constructor argument), for convenience.
+     * For enums like `CHECKOUT(1001)`, this returns 1001.
+     */
+    override val value: Any? get() = constructorArgs.firstOrNull()
+}
 
 data class LongConstant(
     override val id: NodeId,

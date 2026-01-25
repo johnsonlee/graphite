@@ -193,7 +193,8 @@ java -jar graphite-cli.jar find-args app.jar \
 |--------|-------------|
 | `-c, --class` | Target class name (required) |
 | `-m, --method` | Target method name (required) |
-| `-p, --param-types` | Parameter types (comma-separated) |
+| `-r, --regex` | Treat class and method names as regex patterns |
+| `-p, --param-types` | Method parameter signature (comma-separated for multi-param methods, e.g., `-p int,java.lang.String` matches `method(int, String)`) |
 | `-i, --arg-index` | Argument index (0-based, default: 0) |
 | `--include` | Package prefixes to include |
 | `--exclude` | Package prefixes to exclude |
