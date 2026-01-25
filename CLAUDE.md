@@ -99,7 +99,7 @@ Specify the version via command line property:
 
 ```bash
 # Publish alpha version
-./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=0.0.1-alpha.1
+./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=0.0.1-alpha.2
 
 # Publish release version
 ./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.0.0
@@ -131,8 +131,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.1")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.1")
+    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.2")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.2")
 }
 ```
 
@@ -149,5 +149,5 @@ Follow this progression when releasing versions:
 
 Example version progression:
 ```
-0.0.1-alpha.1 → 0.0.1-beta.1 → 0.0.1-rc.1 → 0.0.1
+0.0.1-alpha.2 → 0.0.1-beta.1 → 0.0.1-rc.1 → 0.0.1
 ```
