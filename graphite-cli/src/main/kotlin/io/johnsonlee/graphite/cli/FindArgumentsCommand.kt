@@ -83,6 +83,13 @@ class FindArgumentsCommand : Callable<Int> {
     )
     var includeLibs: Boolean? = null  // null means auto-detect
 
+    @Option(
+        names = ["--lib-filter"],
+        description = ["Only load JARs matching these patterns (comma-separated, e.g., 'modular-*,business-*')"],
+        split = ","
+    )
+    var libFilters: List<String> = emptyList()
+
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
@@ -111,6 +118,7 @@ class FindArgumentsCommand : Callable<Int> {
                     includePackages = includePackages.ifEmpty { listOf("") },
                     excludePackages = excludePackages,
                     includeLibraries = shouldIncludeLibs,
+                    libraryFilters = libFilters,
                     buildCallGraph = false
                 )
             )

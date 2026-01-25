@@ -42,6 +42,12 @@ data class LoaderConfig(
     val excludePackages: List<String> = emptyList(),
 
     /**
+     * JAR name patterns to include from lib directories (empty = all).
+     * Supports glob patterns like "modular-*", "business-*.jar"
+     */
+    val libraryFilters: List<String> = emptyList(),
+
+    /**
      * Whether to build call graph
      */
     val buildCallGraph: Boolean = true,

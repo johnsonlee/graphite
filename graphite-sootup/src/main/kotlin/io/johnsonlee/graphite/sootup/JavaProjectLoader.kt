@@ -9,6 +9,7 @@ import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocatio
 import sootup.java.core.views.JavaView
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
@@ -111,13 +112,17 @@ class JavaProjectLoader(
 
                     zip.entries().asSequence()
                         .filter { it.name.startsWith("BOOT-INF/lib/") && it.name.endsWith(".jar") }
+                        .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
                         .forEach { entry ->
                             val jarName = entry.name.substringAfterLast("/")
                             val targetFile = libDir.resolve(jarName)
                             zip.getInputStream(entry).use { input ->
                                 Files.copy(input, targetFile)
                             }
-                            locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            // Only add JAR if it contains classes from included packages
+                            if (jarContainsIncludedPackages(targetFile)) {
+                                locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            }
                         }
                 }
             }
@@ -167,13 +172,17 @@ class JavaProjectLoader(
 
                     zip.entries().asSequence()
                         .filter { it.name.startsWith("WEB-INF/lib/") && it.name.endsWith(".jar") }
+                        .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
                         .forEach { entry ->
                             val jarName = entry.name.substringAfterLast("/")
                             val targetFile = libDir.resolve(jarName)
                             zip.getInputStream(entry).use { input ->
                                 Files.copy(input, targetFile)
                             }
-                            locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            // Only add JAR if it contains classes from included packages
+                            if (jarContainsIncludedPackages(targetFile)) {
+                                locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            }
                         }
                 }
             }
@@ -183,5 +192,60 @@ class JavaProjectLoader(
         }
 
         return locations
+    }
+
+    /**
+     * Check if a library JAR matches the configured filters.
+     *
+     * If libraryFilters is specified, match against those patterns.
+     * Otherwise, if includePackages is specified, only include JARs that contain classes from those packages.
+     * If neither is specified, include all JARs.
+     */
+    private fun matchesLibraryFilter(jarName: String): Boolean {
+        // If explicit library filters are specified, use them
+        if (config.libraryFilters.isNotEmpty()) {
+            return config.libraryFilters.any { pattern ->
+                matchesGlobPattern(jarName, pattern)
+            }
+        }
+
+        // If no filters specified, include all
+        return true
+    }
+
+    /**
+     * Check if a JAR contains classes from the included packages.
+     * Used to skip JARs that don't contain relevant classes.
+     */
+    private fun jarContainsIncludedPackages(jarPath: Path): Boolean {
+        if (config.includePackages.isEmpty()) {
+            return true // No filter, include all
+        }
+
+        return try {
+            ZipFile(jarPath.toFile()).use { jar ->
+                jar.entries().asSequence()
+                    .filter { it.name.endsWith(".class") }
+                    .any { entry ->
+                        val className = entry.name
+                            .removeSuffix(".class")
+                            .replace('/', '.')
+                        config.includePackages.any { pkg ->
+                            className.startsWith(pkg)
+                        }
+                    }
+            }
+        } catch (e: Exception) {
+            true // On error, include to be safe
+        }
+    }
+
+    private fun matchesGlobPattern(name: String, pattern: String): Boolean {
+        val regex = pattern
+            .replace(".", "\\.")
+            .replace("*", ".*")
+            .let { "^$it$" }
+            .toRegex()
+        return regex.matches(name)
     }
 }
