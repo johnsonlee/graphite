@@ -6,10 +6,8 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import picocli.CommandLine.*
-import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.Callable
-import kotlin.io.path.createTempDirectory
 
 @Command(
     name = "find-args",
@@ -79,6 +77,12 @@ class FindArgumentsCommand : Callable<Int> {
     )
     var verbose: Boolean = false
 
+    @Option(
+        names = ["--include-libs"],
+        description = ["Include library JARs from WEB-INF/lib or BOOT-INF/lib (default: true for WAR/Spring Boot JAR)"]
+    )
+    var includeLibs: Boolean? = null  // null means auto-detect
+
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
@@ -95,16 +99,24 @@ class FindArgumentsCommand : Callable<Int> {
         }
 
         try {
-            val analysisPath = resolveAnalysisPath(input)
+            // Auto-detect whether to include libraries
+            val shouldIncludeLibs = includeLibs ?: (input.toString().endsWith(".war") || input.toString().endsWith(".jar"))
+
+            if (verbose && shouldIncludeLibs) {
+                println("Including library JARs in analysis")
+            }
+
             val loader = JavaProjectLoader(
                 LoaderConfig(
                     includePackages = includePackages.ifEmpty { listOf("") },
                     excludePackages = excludePackages,
+                    includeLibraries = shouldIncludeLibs,
                     buildCallGraph = false
                 )
             )
 
-            val graph = loader.load(analysisPath)
+            // Pass original path directly - JavaProjectLoader handles WAR/JAR extraction
+            val graph = loader.load(input)
             val graphite = Graphite.from(graph)
 
             val results = graphite.query {
@@ -142,96 +154,6 @@ class FindArgumentsCommand : Callable<Int> {
             }
             return 1
         }
-    }
-
-    private fun resolveAnalysisPath(path: Path): Path {
-        val file = path.toFile()
-
-        // Handle Spring Boot executable JAR
-        if (file.isFile && file.name.endsWith(".jar")) {
-            return extractSpringBootClassesIfNeeded(file) ?: path
-        }
-
-        // Handle WAR files
-        if (file.isFile && file.name.endsWith(".war")) {
-            return extractWarClassesIfNeeded(file) ?: path
-        }
-
-        return path
-    }
-
-    private fun extractSpringBootClassesIfNeeded(jarFile: File): Path? {
-        // Check if it's a Spring Boot JAR by looking for BOOT-INF/classes
-        val tempDir = createTempDirectory("graphite-spring-boot-").toFile()
-        try {
-            java.util.zip.ZipFile(jarFile).use { zip ->
-                val bootInfClasses = zip.entries().asSequence()
-                    .any { it.name.startsWith("BOOT-INF/classes/") }
-
-                if (bootInfClasses) {
-                    if (verbose) {
-                        println("Detected Spring Boot JAR, extracting BOOT-INF/classes...")
-                    }
-                    // Extract BOOT-INF/classes and BOOT-INF/lib
-                    zip.entries().asSequence().forEach { entry ->
-                        if (entry.name.startsWith("BOOT-INF/classes/") ||
-                            entry.name.startsWith("BOOT-INF/lib/")) {
-                            val targetFile = File(tempDir, entry.name)
-                            if (entry.isDirectory) {
-                                targetFile.mkdirs()
-                            } else {
-                                targetFile.parentFile.mkdirs()
-                                zip.getInputStream(entry).use { input ->
-                                    targetFile.outputStream().use { output ->
-                                        input.copyTo(output)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return tempDir.resolve("BOOT-INF/classes").toPath()
-                }
-            }
-        } catch (e: Exception) {
-            if (verbose) {
-                println("Warning: Could not extract Spring Boot JAR: ${e.message}")
-            }
-        }
-        return null
-    }
-
-    private fun extractWarClassesIfNeeded(warFile: File): Path? {
-        val tempDir = createTempDirectory("graphite-war-").toFile()
-        try {
-            java.util.zip.ZipFile(warFile).use { zip ->
-                if (verbose) {
-                    println("Extracting WAR file...")
-                }
-                // Extract WEB-INF/classes and WEB-INF/lib
-                zip.entries().asSequence().forEach { entry ->
-                    if (entry.name.startsWith("WEB-INF/classes/") ||
-                        entry.name.startsWith("WEB-INF/lib/")) {
-                        val targetFile = File(tempDir, entry.name)
-                        if (entry.isDirectory) {
-                            targetFile.mkdirs()
-                        } else {
-                            targetFile.parentFile.mkdirs()
-                            zip.getInputStream(entry).use { input ->
-                                targetFile.outputStream().use { output ->
-                                    input.copyTo(output)
-                                }
-                            }
-                        }
-                    }
-                }
-                return tempDir.resolve("WEB-INF/classes").toPath()
-            }
-        } catch (e: Exception) {
-            if (verbose) {
-                println("Warning: Could not extract WAR file: ${e.message}")
-            }
-        }
-        return null
     }
 
     private fun formatText(results: List<io.johnsonlee.graphite.query.ArgumentConstantResult>): String {
