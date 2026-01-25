@@ -1,3 +1,19 @@
 [versions]
+sootup = "2.0.0"
+ff4j = "1.8.1"
+spring = "6.1.0"
+picocli = "4.7.6"
+gson = "2.11.0"
 
 [libraries]
+ff4j-core = { module = "org.ff4j:ff4j-core", version.ref = "ff4j" }
+spring-web = { module = "org.springframework:spring-web", version.ref = "spring" }
+sootup-core = { module = "org.soot-oss:sootup.core", version.ref = "sootup" }
+sootup-java-core = { module = "org.soot-oss:sootup.java.core", version.ref = "sootup" }
+sootup-java-sourcecode-frontend = { module = "org.soot-oss:sootup.java.sourcecode.frontend", version.ref = "sootup" }
+sootup-java-bytecode-frontend = { module = "org.soot-oss:sootup.java.bytecode.frontend", version.ref = "sootup" }
+sootup-jimple-frontend = { module = "org.soot-oss:sootup.jimple.frontend", version.ref = "sootup" }
+sootup-apk-frontend = { module = "org.soot-oss:sootup.apk.frontend", version.ref = "sootup" }
+sootup-callgraph = { module = "org.soot-oss:sootup.callgraph", version.ref = "sootup" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
