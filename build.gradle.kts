@@ -25,46 +25,54 @@ subprojects {
         "testImplementation"(kotlin("test-junit"))
     }
 
-    configure<PublishingExtension> {
-        publications {
-            create<MavenPublication>("mavenJava") {
-                from(components["java"])
-
-                pom {
-                    name.set(project.name)
-                    description.set(project.description ?: "Graphite - Graph-based static analysis framework")
-                    url.set("https://github.com/johnsonlee/graphite")
-
-                    licenses {
-                        license {
-                            name.set("Apache License 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                        }
+    // Configure publishing after project evaluation (to handle shadow jar for CLI)
+    afterEvaluate {
+        configure<PublishingExtension> {
+            publications {
+                create<MavenPublication>("mavenJava") {
+                    // For CLI module, use shadow jar; for others, use java component
+                    if (project.name == "graphite-cli") {
+                        artifact(tasks.named("shadowJar"))
+                    } else {
+                        from(components["java"])
                     }
 
-                    developers {
-                        developer {
-                            id.set("johnsonlee")
-                            name.set("Johnson Lee")
-                        }
-                    }
-
-                    scm {
+                    pom {
+                        name.set(project.name)
+                        description.set(project.description ?: "Graphite - Graph-based static analysis framework")
                         url.set("https://github.com/johnsonlee/graphite")
-                        connection.set("scm:git:git://github.com/johnsonlee/graphite.git")
-                        developerConnection.set("scm:git:ssh://git@github.com/johnsonlee/graphite.git")
+
+                        licenses {
+                            license {
+                                name.set("Apache License 2.0")
+                                url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id.set("johnsonlee")
+                                name.set("Johnson Lee")
+                            }
+                        }
+
+                        scm {
+                            url.set("https://github.com/johnsonlee/graphite")
+                            connection.set("scm:git:git://github.com/johnsonlee/graphite.git")
+                            developerConnection.set("scm:git:ssh://git@github.com/johnsonlee/graphite.git")
+                        }
                     }
                 }
             }
-        }
 
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/johnsonlee/graphite")
-                credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/johnsonlee/graphite")
+                    credentials {
+                        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                    }
                 }
             }
         }
