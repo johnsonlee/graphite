@@ -287,6 +287,68 @@ class FeatureFlagAnalysisTest {
     }
 
     @Test
+    fun `should trace through method calls to find enum values`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+        val dataflow = graphite.dataflow()
+
+        // Find call sites to AbClient.getOption(Integer) from the new test methods
+        val callSites = graph.callSites(MethodPattern(
+            declaringClass = "sample.ab.AbClient",
+            name = "getOption",
+            parameterTypes = listOf("java.lang.Integer")
+        )).filter {
+            // Filter to only the methods that use .getId() pattern
+            it.caller.name in setOf("getCheckoutIdVariant", "getCheckoutFieldIdVariant")
+        }.toList()
+
+        println("Found ${callSites.size} call sites using .getId() pattern")
+
+        val foundEnumValues = mutableSetOf<Int>()
+
+        callSites.forEach { callSite ->
+            println("\nCall site in ${callSite.caller.name}:")
+
+            if (callSite.arguments.isNotEmpty()) {
+                val argNodeId = callSite.arguments[0]
+                // Use backward slice to trace through the getId() call to the enum
+                val sliceResult = dataflow.backwardSlice(argNodeId)
+
+                // Look for enum constants in allConstants() which includes field-based enums
+                sliceResult.allConstants().forEach { constant ->
+                    when (constant) {
+                        is EnumConstant -> {
+                            println("  -> Found enum via method call: ${constant.enumName} = ${constant.value}")
+                            constant.value?.let { foundEnumValues.add(it as Int) }
+                        }
+                        is IntConstant -> {
+                            println("  -> Found int constant: ${constant.value}")
+                            foundEnumValues.add(constant.value)
+                        }
+                        else -> println("  -> Found other constant: $constant")
+                    }
+                }
+            }
+        }
+
+        println("\n=== Method Call Tracing Results ===")
+        println("Found enum values: $foundEnumValues")
+
+        // The CHECKOUT_V2 enum has value 1002
+        // Both getCheckoutIdVariant() and getCheckoutFieldIdVariant() should resolve to this value
+        assertTrue(foundEnumValues.contains(1002),
+            "Should find CHECKOUT_V2 value (1002) through method call tracing")
+    }
+
+    @Test
     fun `should use query DSL to find all AB test constants`() {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")

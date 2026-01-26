@@ -123,6 +123,7 @@ data class CallSiteNode(
     val caller: MethodDescriptor,
     val callee: MethodDescriptor,
     val lineNumber: Int?,
+    val receiver: NodeId?,  // Receiver object for instance method calls (null for static calls)
     val arguments: List<NodeId> // References to argument value nodes
 ) : Node
 

@@ -572,15 +572,34 @@ class SootUpAdapter(
             return
         }
 
+        // Extract receiver for instance method calls
+        val receiverNode = if (invokeExpr is AbstractInstanceInvokeExpr) {
+            getOrCreateValueNode(invokeExpr.base, caller)
+        } else {
+            null
+        }
+
         // Create call site node
         val callSite = CallSiteNode(
             id = nextNodeId("call"),
             caller = caller,
             callee = callee,
             lineNumber = null, // SootUp may provide position info
+            receiver = receiverNode?.id,
             arguments = argNodeIds
         )
         graphBuilder.addNode(callSite)
+
+        // Add dataflow edge from receiver to call site (for backward tracing)
+        if (receiverNode != null) {
+            graphBuilder.addEdge(
+                DataFlowEdge(
+                    from = receiverNode.id,
+                    to = callSite.id,
+                    kind = DataFlowKind.ASSIGN
+                )
+            )
+        }
 
         // Add dataflow from arguments to parameters
         argNodeIds.forEachIndexed { index, argNodeId ->

@@ -116,4 +116,18 @@ public class FeatureFlagService {
         }
         return "v1";
     }
+
+    // ========== Pattern 6: Enum.getId() - method call on enum constant ==========
+
+    private static final ExperimentId CHECKOUT_EXPERIMENT = ExperimentId.CHECKOUT_V2;
+
+    public String getCheckoutIdVariant() {
+        // Enum constant + method call: ExperimentId.CHECKOUT_V2.getId()
+        return abClient.getOption(ExperimentId.CHECKOUT_V2.getId());
+    }
+
+    public String getCheckoutFieldIdVariant() {
+        // Field reference + method call: CHECKOUT_EXPERIMENT.getId()
+        return abClient.getOption(CHECKOUT_EXPERIMENT.getId());
+    }
 }

@@ -52,6 +52,13 @@ class DataFlowAnalysis(
                         traceFieldStores(node, currentPath, depth)
                     }
                 }
+                is CallSiteNode -> {
+                    // Trace backward through receiver for instance method calls
+                    // This enables tracing patterns like receiver.getId() back to the receiver
+                    if (node.receiver != null) {
+                        traverse(node.receiver, currentPath, depth + 1)
+                    }
+                }
                 else -> {}
             }
 
