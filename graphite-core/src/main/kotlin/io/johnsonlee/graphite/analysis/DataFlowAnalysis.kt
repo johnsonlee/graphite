@@ -179,7 +179,7 @@ class DataFlowResult(
                 // Look up the enum values from the graph
                 val constructorArgs = graph?.enumValues(enumClass, enumName) ?: emptyList()
                 EnumConstant(
-                    id = NodeId("synthetic:enum:$enumClass.$enumName"),
+                    id = NodeId.next(),
                     enumType = field.declaringClass,
                     enumName = enumName,
                     constructorArgs = constructorArgs

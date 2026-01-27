@@ -1,3 +1,7 @@
 description = "Graphite Core - A graph-based static analysis framework"
 
-// Core has no external dependencies - pure Kotlin
+dependencies {
+    // Fastutil for memory-efficient primitive collections
+    // This is the only external dependency - justified for performance
+    api(libs.fastutil)
+}

@@ -36,7 +36,6 @@ import sootup.core.views.View
 import sootup.callgraph.CallGraph
 import sootup.callgraph.ClassHierarchyAnalysisAlgorithm
 import sootup.callgraph.RapidTypeAnalysisAlgorithm
-import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Adapter that converts SootUp's IR to Graphite's graph model.
@@ -49,7 +48,7 @@ class SootUpAdapter(
     private val config: LoaderConfig,
     private val signatureReader: BytecodeSignatureReader? = null
 ) {
-    private val nodeIdCounter = AtomicLong(0)
+    // NodeId counter is now managed by NodeId.next() for memory efficiency
     private val graphBuilder = DefaultGraph.Builder()
 
     // Maps to track created nodes for cross-referencing
@@ -832,8 +831,8 @@ class SootUpAdapter(
         return true
     }
 
-    private fun nextNodeId(prefix: String): NodeId =
-        NodeId("$prefix-${nodeIdCounter.incrementAndGet()}")
+    @Suppress("UNUSED_PARAMETER")
+    private fun nextNodeId(prefix: String): NodeId = NodeId.next()
 
     private fun toTypeDescriptor(type: Type): TypeDescriptor {
         return when (type) {

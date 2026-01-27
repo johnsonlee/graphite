@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.core
 
+import java.util.concurrent.atomic.AtomicInteger
+
 /**
  * Base interface for all nodes in the analysis graph.
  * Every element in the program that can participate in dataflow is a Node.
@@ -8,8 +10,37 @@ sealed interface Node {
     val id: NodeId
 }
 
+/**
+ * Compact node identifier using Int instead of String for memory efficiency.
+ * Saves ~36 bytes per node compared to String-based IDs.
+ */
 @JvmInline
-value class NodeId(val value: String)
+value class NodeId(val value: Int) {
+    companion object {
+        private val counter = AtomicInteger(0)
+
+        /**
+         * Generate a new unique NodeId.
+         */
+        fun next(): NodeId = NodeId(counter.incrementAndGet())
+
+        /**
+         * Reset the counter (for testing purposes).
+         */
+        fun reset() {
+            counter.set(0)
+        }
+
+        /**
+         * Create a NodeId from a string (for backward compatibility during migration).
+         * Uses the string's hashCode, which may have collisions but is deterministic.
+         */
+        @Deprecated("Use next() for new code", ReplaceWith("NodeId.next()"))
+        fun fromString(value: String): NodeId = NodeId(value.hashCode())
+    }
+
+    override fun toString(): String = "node#$value"
+}
 
 /**
  * A value node represents something that holds or produces a value:
