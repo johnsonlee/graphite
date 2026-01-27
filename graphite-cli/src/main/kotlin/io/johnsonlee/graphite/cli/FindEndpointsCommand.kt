@@ -2,6 +2,9 @@ package io.johnsonlee.graphite.cli
 
 import com.google.gson.GsonBuilder
 import io.johnsonlee.graphite.core.HttpMethod
+import io.johnsonlee.graphite.core.TypeHierarchyResult
+import io.johnsonlee.graphite.core.TypeStructure
+import io.johnsonlee.graphite.core.FieldStructure
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import picocli.CommandLine.*
@@ -78,12 +81,6 @@ class FindEndpointsCommand : Callable<Int> {
     )
     var libFilters: List<String> = emptyList()
 
-    @Option(
-        names = ["--with-return-types"],
-        description = ["Include actual return type analysis for each endpoint"]
-    )
-    var withReturnTypes: Boolean = false
-
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
@@ -137,24 +134,19 @@ class FindEndpointsCommand : Callable<Int> {
                 return 0
             }
 
-            // Optionally analyze return types
-            val returnTypes = if (withReturnTypes) {
-                val graphite = io.johnsonlee.graphite.Graphite.from(graph)
-                endpoints.associate { endpoint ->
-                    val results = graphite.query {
-                        findActualReturnTypes {
-                            method {
-                                declaringClass = endpoint.method.declaringClass.className
-                                name = endpoint.method.name
-                            }
+            // Analyze return type hierarchy
+            val graphite = io.johnsonlee.graphite.Graphite.from(graph)
+            val returnTypes = endpoints.mapNotNull { endpoint ->
+                val results = graphite.query {
+                    findTypeHierarchy {
+                        method {
+                            declaringClass = endpoint.method.declaringClass.className
+                            name = endpoint.method.name
                         }
                     }
-                    val types = results.firstOrNull()?.actualTypes?.map { it.className } ?: emptyList()
-                    endpoint.path to types
                 }
-            } else {
-                emptyMap()
-            }
+                results.firstOrNull()?.let { endpoint.path to it }
+            }.toMap()
 
             val output = when (outputFormat.lowercase()) {
                 "json" -> formatJson(endpoints, returnTypes)
@@ -175,7 +167,7 @@ class FindEndpointsCommand : Callable<Int> {
 
     private fun formatText(
         endpoints: List<io.johnsonlee.graphite.core.EndpointInfo>,
-        returnTypes: Map<String, List<String>>
+        returnTypes: Map<String, TypeHierarchyResult>
     ): String {
         val sb = StringBuilder()
         sb.appendLine("Found ${endpoints.size} endpoint(s):")
@@ -194,10 +186,13 @@ class FindEndpointsCommand : Callable<Int> {
                 sb.appendLine("  $method $path")
                 sb.appendLine("          -> $handler")
 
-                if (returnTypes.containsKey(endpoint.path)) {
-                    val types = returnTypes[endpoint.path]!!
-                    if (types.isNotEmpty()) {
-                        sb.appendLine("          Returns: ${types.joinToString(", ") { it.substringAfterLast('.') }}")
+                val declaredReturn = endpoint.method.returnType.className.substringAfterLast('.')
+                sb.appendLine("          Declared: $declaredReturn")
+
+                returnTypes[endpoint.path]?.let { result ->
+                    result.returnStructures.forEach { structure ->
+                        sb.appendLine("          Actual:   ${structure.formatTypeName()}")
+                        formatTypeStructure(structure, sb, "                    ")
                     }
                 }
             }
@@ -208,15 +203,43 @@ class FindEndpointsCommand : Callable<Int> {
         return sb.toString()
     }
 
+    private fun formatTypeStructure(structure: TypeStructure, sb: StringBuilder, indent: String) {
+        structure.fields.entries.sortedBy { it.key }.forEach { (name, field) ->
+            sb.append(indent)
+            sb.append("├── $name: ")
+            formatFieldStructure(field, sb, "$indent│   ")
+        }
+    }
+
+    private fun formatFieldStructure(field: FieldStructure, sb: StringBuilder, indent: String) {
+        val declaredType = field.declaredType.simpleName
+        if (field.actualTypes.isEmpty()) {
+            sb.appendLine(declaredType)
+        } else if (field.actualTypes.size == 1) {
+            val actual = field.actualTypes.first()
+            if (actual.type == field.declaredType) {
+                sb.appendLine(actual.formatTypeName())
+            } else {
+                sb.appendLine("$declaredType → ${actual.formatTypeName()}")
+            }
+            formatTypeStructure(actual, sb, indent)
+        } else {
+            sb.append(declaredType)
+            sb.append(" → [")
+            sb.append(field.actualTypes.joinToString(" | ") { it.formatTypeName() })
+            sb.appendLine("]")
+        }
+    }
+
     private fun formatJson(
         endpoints: List<io.johnsonlee.graphite.core.EndpointInfo>,
-        returnTypes: Map<String, List<String>>
+        returnTypes: Map<String, TypeHierarchyResult>
     ): String {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val output = mapOf(
             "totalEndpoints" to endpoints.size,
             "endpoints" to endpoints.map { endpoint ->
-                val base = mutableMapOf(
+                val base = mutableMapOf<String, Any>(
                     "httpMethod" to endpoint.httpMethod.name,
                     "path" to endpoint.path,
                     "handler" to mapOf(
@@ -224,15 +247,42 @@ class FindEndpointsCommand : Callable<Int> {
                         "method" to endpoint.method.name,
                         "signature" to endpoint.method.signature
                     ),
+                    "declaredReturnType" to endpoint.method.returnType.className,
                     "produces" to endpoint.produces,
                     "consumes" to endpoint.consumes
                 )
-                if (returnTypes.containsKey(endpoint.path)) {
-                    base["actualReturnTypes"] = returnTypes[endpoint.path]!!
+                returnTypes[endpoint.path]?.let { result ->
+                    base["returnTypeHierarchy"] = result.returnStructures.map { typeStructureToMap(it) }
                 }
                 base
             }
         )
         return gson.toJson(output)
+    }
+
+    private fun typeStructureToMap(structure: TypeStructure): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
+            "type" to structure.className,
+            "simpleName" to structure.simpleName,
+            "formatted" to structure.formatTypeName()
+        )
+        if (structure.typeArguments.isNotEmpty()) {
+            map["typeArguments"] = structure.typeArguments.mapValues { typeStructureToMap(it.value) }
+        }
+        if (structure.fields.isNotEmpty()) {
+            map["fields"] = structure.fields.mapValues { fieldStructureToMap(it.value) }
+        }
+        return map
+    }
+
+    private fun fieldStructureToMap(field: FieldStructure): Map<String, Any> {
+        val map = mutableMapOf<String, Any>(
+            "declaredType" to field.declaredType.className,
+            "isGenericParameter" to field.isGenericParameter
+        )
+        if (field.actualTypes.isNotEmpty()) {
+            map["actualTypes"] = field.actualTypes.map { typeStructureToMap(it) }
+        }
+        return map
     }
 }
