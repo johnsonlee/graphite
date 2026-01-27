@@ -10,6 +10,7 @@ A graph-based static analysis framework for JVM bytecode. Graphite provides a cl
 - **AB Test ID Detection**: Find all integer/enum/string constants passed to AB SDK methods
 - **Feature Flag Analysis**: Discover all feature flags used in your codebase
 - **API Return Type Analysis**: Find actual return types when methods declare `Object` or generics
+- **Type Hierarchy Analysis**: Discover nested generic types like `ApiResponse<PageData<User>>` and Object field assignments
 - **HTTP Endpoint Discovery**: Extract and analyze REST API endpoints from Spring MVC annotations
 - **Dead Code Detection**: Identify unreachable code paths
 - **Security Auditing**: Track sensitive data flow through your application
@@ -32,8 +33,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.14")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.14")
+    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.17")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.17")
 }
 ```
 
@@ -51,8 +52,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.johnsonlee.graphite:graphite-core:0.0.1-alpha.14'
-    implementation 'io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.14'
+    implementation 'io.johnsonlee.graphite:graphite-core:0.0.1-alpha.17'
+    implementation 'io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.17'
 }
 ```
 
@@ -131,6 +132,40 @@ returnTypes.forEach { result ->
     println("${result.method.name}: declared=${result.declaredType}, actual=${result.actualTypes}")
 }
 ```
+
+### Analyze Type Hierarchy (Nested Generics)
+
+Discover the complete type structure of returned objects, including nested generic types and Object field assignments:
+
+```kotlin
+// Analyze nested type hierarchy like ApiResponse<PageData<User>>
+val results = Graphite.from(graph).query {
+    findTypeHierarchy {
+        method {
+            declaringClass = "com.example.UserService"
+            name = "getUserResponse"
+        }
+        // Optional: increase maxDepth for deeply nested types (default: 10)
+        // config { copy(maxDepth = 25) }
+    }
+}
+
+results.forEach { result ->
+    println(result.toTreeString())
+    // Output:
+    // ApiResponse<PageData<User>>
+    //   ├── data: PageData<User>
+    //   │   ├── items: List<User>
+    //   │   └── extra: Object → PageMetadata
+    //   └── metadata: Object → RequestMetadata
+}
+```
+
+The type hierarchy analysis discovers:
+- **Generic type arguments**: `List<User>`, `Map<String, Order>`
+- **Object field assignments**: Actual types assigned to `Object` fields via setters
+- **Cross-method tracking**: Fields assigned in one method, returned in another
+- **Nested structures**: Up to 10 levels deep (configurable)
 
 ### Find HTTP Endpoints
 
