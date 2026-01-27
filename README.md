@@ -249,7 +249,7 @@ java -jar graphite-cli.jar find-args app.jar \
 ### Find HTTP Endpoints
 
 ```bash
-# Find all endpoints in a Spring Boot JAR
+# Find all endpoints (includes type hierarchy analysis by default)
 java -jar graphite-cli.jar find-endpoints app.jar
 
 # Find endpoints matching a pattern
@@ -258,11 +258,26 @@ java -jar graphite-cli.jar find-endpoints app.jar -e "/api/users/*"
 # Find all GET endpoints under /api
 java -jar graphite-cli.jar find-endpoints app.jar -e "/api/**" -m GET
 
-# Include return type analysis
-java -jar graphite-cli.jar find-endpoints app.jar --with-return-types
-
-# JSON output
+# JSON output with full type hierarchy
 java -jar graphite-cli.jar find-endpoints app.jar -f json
+```
+
+**Sample Output:**
+
+```
+Found 2 endpoint(s):
+
+/api/users
+  GET     /api/users/{id}
+          -> UserController.getUser()
+          Declared: ResponseEntity
+          Actual:   ApiResponse<User>
+                    ├── data: Object → User
+                    │   ├── id: Long
+                    │   └── name: String
+                    └── message: String
+
+Summary: 2 endpoint(s)
 ```
 
 ### Endpoint Pattern Syntax
@@ -306,7 +321,6 @@ The `-e, --endpoint` option supports wildcard patterns for matching endpoint pat
 | `--exclude` | Package prefixes to exclude |
 | `--include-libs` | Include library JARs from `WEB-INF/lib` or `BOOT-INF/lib` |
 | `--lib-filter` | Only load JARs matching these patterns (comma-separated) |
-| `--with-return-types` | Include actual return type analysis for each endpoint |
 | `-f, --format` | Output format: `text` or `json` |
 | `-v, --verbose` | Enable verbose output |
 
