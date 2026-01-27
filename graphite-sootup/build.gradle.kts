@@ -7,8 +7,13 @@ dependencies {
     implementation(libs.sootup.java.core)
     implementation(libs.sootup.java.bytecode.frontend)
     implementation(libs.sootup.callgraph)
+    implementation(libs.asm)  // For parsing generic signatures from bytecode
 
     // Test dependencies - real libraries for integration testing
     testImplementation(libs.ff4j.core)
     testImplementation(libs.spring.web)
+
+    // Lombok for testing Lombok-generated code analysis
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 }

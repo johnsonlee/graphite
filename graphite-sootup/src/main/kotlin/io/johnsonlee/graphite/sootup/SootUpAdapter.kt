@@ -46,7 +46,8 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class SootUpAdapter(
     private val view: View,
-    private val config: LoaderConfig
+    private val config: LoaderConfig,
+    private val signatureReader: BytecodeSignatureReader? = null
 ) {
     private val nodeIdCounter = AtomicLong(0)
     private val graphBuilder = DefaultGraph.Builder()
@@ -785,12 +786,19 @@ class SootUpAdapter(
         val fieldSig = fieldRef.fieldSignature
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
+            val declaringClassName = fieldSig.declClassType.fullyQualifiedName
+            val fieldName = fieldSig.name
+            val baseType = toTypeDescriptor(fieldSig.type)
+
+            // Try to get generic type from bytecode signature
+            val fieldType = getFieldTypeWithGenerics(declaringClassName, fieldName, baseType)
+
             val node = FieldNode(
                 id = nextNodeId("field"),
                 descriptor = FieldDescriptor(
                     declaringClass = toTypeDescriptor(fieldSig.declClassType),
-                    name = fieldSig.name,
-                    type = toTypeDescriptor(fieldSig.type)
+                    name = fieldName,
+                    type = fieldType
                 ),
                 isStatic = false // Would need to check the actual field
             )
@@ -831,7 +839,7 @@ class SootUpAdapter(
         return when (type) {
             is ClassType -> TypeDescriptor(
                 className = type.fullyQualifiedName,
-                typeArguments = emptyList() // SootUp doesn't preserve generics in bytecode
+                typeArguments = emptyList() // Base type without generics
             )
             is ArrayType -> TypeDescriptor(
                 className = "${toTypeDescriptor(type.baseType).className}[]"
@@ -839,6 +847,28 @@ class SootUpAdapter(
             is PrimitiveType -> TypeDescriptor(className = type.toString())
             else -> TypeDescriptor(className = type.toString())
         }
+    }
+
+    /**
+     * Get field type with generic arguments from bytecode signature.
+     */
+    private fun getFieldTypeWithGenerics(
+        declaringClass: String,
+        fieldName: String,
+        fallbackType: TypeDescriptor
+    ): TypeDescriptor {
+        return signatureReader?.getFieldType(declaringClass, fieldName) ?: fallbackType
+    }
+
+    /**
+     * Get method return type with generic arguments from bytecode signature.
+     */
+    private fun getMethodReturnTypeWithGenerics(
+        declaringClass: String,
+        methodKey: String,
+        fallbackType: TypeDescriptor
+    ): TypeDescriptor {
+        return signatureReader?.getMethodReturnType(declaringClass, methodKey) ?: fallbackType
     }
 
     private fun toMethodDescriptor(method: SootMethod): MethodDescriptor {

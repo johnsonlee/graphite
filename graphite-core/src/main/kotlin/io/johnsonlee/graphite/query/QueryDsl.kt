@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.query
 
 import io.johnsonlee.graphite.analysis.AnalysisConfig
 import io.johnsonlee.graphite.analysis.DataFlowAnalysis
+import io.johnsonlee.graphite.analysis.TypeHierarchyAnalysis
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -84,7 +85,11 @@ class GraphiteQuery(private val graph: Graph) {
 
             returnNodes.forEach { returnNode ->
                 // Recursively trace backward from return to find actual types
-                findActualTypesFromNode(returnNode.id, actualTypes, mutableSetOf())
+                // Use interprocedural analysis context to track visited methods
+                val context = InterproceduralContext(
+                    maxDepth = query.analysisConfig.maxDepth
+                )
+                findActualTypesFromNode(returnNode.id, actualTypes, mutableSetOf(), context)
             }
 
             if (actualTypes.isNotEmpty()) {
@@ -102,15 +107,27 @@ class GraphiteQuery(private val graph: Graph) {
     }
 
     /**
+     * Context for interprocedural analysis to track visited methods and depth.
+     */
+    private class InterproceduralContext(
+        val maxDepth: Int = 10,
+        val visitedMethods: MutableSet<String> = mutableSetOf(),
+        var currentDepth: Int = 0
+    )
+
+    /**
      * Recursively trace backward through dataflow edges to find actual types.
      * Handles cases where values flow through intermediate locals with unknown types.
+     * Supports interprocedural analysis by tracing into called methods.
      */
     private fun findActualTypesFromNode(
         nodeId: NodeId,
         types: MutableSet<TypeDescriptor>,
-        visited: MutableSet<NodeId>
+        visited: MutableSet<NodeId>,
+        context: InterproceduralContext
     ) {
         if (nodeId in visited) return
+        if (context.currentDepth > context.maxDepth) return
         visited.add(nodeId)
 
         graph.incoming(nodeId, DataFlowEdge::class.java).forEach { edge ->
@@ -122,14 +139,36 @@ class GraphiteQuery(private val graph: Graph) {
                         types.add(sourceNode.type)
                     } else {
                         // Continue tracing back if type is unknown/Object
-                        findActualTypesFromNode(edge.from, types, visited)
+                        findActualTypesFromNode(edge.from, types, visited, context)
                     }
                 }
                 is FieldNode -> types.add(sourceNode.descriptor.type)
                 is CallSiteNode -> {
                     val returnType = sourceNode.callee.returnType
+                    val calleeSignature = sourceNode.callee.signature
+
+                    // If return type is concrete (not Object/void), use it
                     if (returnType.className != "java.lang.Object" && returnType.className != "void") {
                         types.add(returnType)
+                    } else {
+                        // Interprocedural: trace into the called method to find actual return types
+                        // Only if we haven't visited this method yet (prevent infinite recursion)
+                        if (calleeSignature !in context.visitedMethods) {
+                            context.visitedMethods.add(calleeSignature)
+                            context.currentDepth++
+
+                            // Find return nodes of the callee method
+                            val calleeReturnNodes = graph.nodes<ReturnNode>()
+                                .filter { it.method.signature == calleeSignature }
+                                .toList()
+
+                            // Trace each return node in the callee
+                            calleeReturnNodes.forEach { calleeReturn ->
+                                findActualTypesFromNode(calleeReturn.id, types, mutableSetOf(), context)
+                            }
+
+                            context.currentDepth--
+                        }
                     }
                 }
                 is ConstantNode -> {
@@ -147,6 +186,42 @@ class GraphiteQuery(private val graph: Graph) {
                 else -> {}
             }
         }
+    }
+
+    /**
+     * Find complete type hierarchy for method return types.
+     *
+     * This analyzes not just what type is returned, but the complete
+     * type structure including:
+     * - Generic type parameters
+     * - Actual types assigned to Object fields
+     * - Nested type structures
+     *
+     * Example:
+     * ```kotlin
+     * graphite.query {
+     *     findTypeHierarchy {
+     *         method {
+     *             declaringClass = "com.example.UserController"
+     *             name = "getUsers"
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * Output structure for ApiResponse<PageData<User>>:
+     * ```
+     * ApiResponse<PageData<User>>
+     * ├── data: PageData<User>
+     * │   ├── items: List<User>
+     * │   └── extra: Object → PageMetadata
+     * └── metadata: Object → RequestMetadata
+     * ```
+     */
+    fun findTypeHierarchy(block: TypeHierarchyQuery.() -> Unit): List<TypeHierarchyResult> {
+        val query = TypeHierarchyQuery().apply(block)
+        val analysis = TypeHierarchyAnalysis(graph, query.config)
+        return analysis.analyzeReturnTypes(query.methodPattern)
     }
 
     /**
@@ -205,6 +280,19 @@ class ReturnTypeQuery {
 
     fun method(block: MethodPatternBuilder.() -> Unit) {
         methodPattern = MethodPatternBuilder().apply(block).build()
+    }
+}
+
+class TypeHierarchyQuery {
+    var methodPattern: MethodPattern = MethodPattern()
+    var config: TypeHierarchyConfig = TypeHierarchyConfig()
+
+    fun method(block: MethodPatternBuilder.() -> Unit) {
+        methodPattern = MethodPatternBuilder().apply(block).build()
+    }
+
+    fun config(block: TypeHierarchyConfig.() -> TypeHierarchyConfig) {
+        config = TypeHierarchyConfig().block()
     }
 }
 

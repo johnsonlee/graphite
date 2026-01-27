@@ -144,6 +144,47 @@ class ReturnTypeAnalysisTest {
     }
 
     @Test
+    fun `should trace through method calls to find actual return types (interprocedural)`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.controller"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Query specifically for getUserViaMethodCall which returns createUser()'s result
+        val results = graphite.query {
+            findActualReturnTypes {
+                method {
+                    declaringClass = "sample.controller.UserController"
+                    name = "getUserViaMethodCall"
+                }
+            }
+        }
+
+        println("Interprocedural analysis results:")
+        results.forEach { result ->
+            println("  ${result.method.name}():")
+            println("    Declared: ${result.declaredType.className}")
+            println("    Actual: ${result.actualTypes.map { it.className }}")
+        }
+
+        assertTrue(results.isNotEmpty(), "Should find getUserViaMethodCall method")
+
+        val result = results.first()
+        assertEquals("java.lang.Object", result.declaredType.className,
+            "Declared return type should be Object")
+
+        val actualTypeNames = result.actualTypes.map { it.className }
+        assertTrue(actualTypeNames.contains("sample.controller.UserDTO"),
+            "Should find UserDTO through interprocedural analysis of createUser() call. Found: $actualTypeNames")
+    }
+
+    @Test
     fun `should find actual types in ResponseEntity body`() {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")

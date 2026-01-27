@@ -1,6 +1,8 @@
 package io.johnsonlee.graphite
 
 import io.johnsonlee.graphite.analysis.DataFlowAnalysis
+import io.johnsonlee.graphite.analysis.TypeHierarchyAnalysis
+import io.johnsonlee.graphite.core.TypeHierarchyConfig
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.query.GraphiteQuery
 
@@ -59,4 +61,10 @@ class Graphite private constructor(
      * Get the dataflow analysis engine
      */
     fun dataflow(): DataFlowAnalysis = DataFlowAnalysis(graph)
+
+    /**
+     * Get the type hierarchy analysis engine
+     */
+    fun typeHierarchy(config: TypeHierarchyConfig = TypeHierarchyConfig()): TypeHierarchyAnalysis =
+        TypeHierarchyAnalysis(graph, config)
 }

@@ -31,8 +31,60 @@ class JavaProjectLoader(
         val inputLocations = createInputLocations(path)
         val view = JavaView(inputLocations)
 
-        val adapter = SootUpAdapter(view, config)
+        // Load generic signatures from bytecode
+        val signatureReader = BytecodeSignatureReader()
+        loadSignatures(path, signatureReader)
+
+        val adapter = SootUpAdapter(view, config, signatureReader)
         return adapter.buildGraph()
+    }
+
+    /**
+     * Load generic signatures from bytecode.
+     */
+    private fun loadSignatures(path: Path, reader: BytecodeSignatureReader) {
+        try {
+            when {
+                path.isDirectory() -> reader.loadFromDirectory(path)
+                path.extension.lowercase() == "jar" -> {
+                    if (isSpringBootJar(path)) {
+                        loadSpringBootSignatures(path, reader)
+                    } else {
+                        reader.loadFromJar(path)
+                    }
+                }
+                path.extension.lowercase() == "war" -> {
+                    loadWarSignatures(path, reader)
+                }
+            }
+        } catch (e: Exception) {
+            // Log but don't fail - signatures are optional enhancement
+            log("Warning: Failed to load generic signatures: ${e.message}")
+        }
+    }
+
+    private fun loadSpringBootSignatures(jarPath: Path, reader: BytecodeSignatureReader) {
+        ZipFile(jarPath.toFile()).use { zip ->
+            zip.entries().asSequence()
+                .filter { it.name.startsWith("BOOT-INF/classes/") && it.name.endsWith(".class") }
+                .forEach { entry ->
+                    zip.getInputStream(entry).use { inputStream ->
+                        reader.loadFromStream(inputStream)
+                    }
+                }
+        }
+    }
+
+    private fun loadWarSignatures(warPath: Path, reader: BytecodeSignatureReader) {
+        ZipFile(warPath.toFile()).use { zip ->
+            zip.entries().asSequence()
+                .filter { it.name.startsWith("WEB-INF/classes/") && it.name.endsWith(".class") }
+                .forEach { entry ->
+                    zip.getInputStream(entry).use { inputStream ->
+                        reader.loadFromStream(inputStream)
+                    }
+                }
+        }
     }
 
     override fun canLoad(path: Path): Boolean {

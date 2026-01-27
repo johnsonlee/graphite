@@ -4,10 +4,14 @@ ff4j = "1.8.1"
 spring = "6.1.0"
 picocli = "4.7.6"
 gson = "2.11.0"
+lombok = "1.18.30"
+asm = "9.7"
 
 [libraries]
 ff4j-core = { module = "org.ff4j:ff4j-core", version.ref = "ff4j" }
 spring-web = { module = "org.springframework:spring-web", version.ref = "spring" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 sootup-core = { module = "org.soot-oss:sootup.core", version.ref = "sootup" }
 sootup-java-core = { module = "org.soot-oss:sootup.java.core", version.ref = "sootup" }
 sootup-java-sourcecode-frontend = { module = "org.soot-oss:sootup.java.sourcecode.frontend", version.ref = "sootup" }
