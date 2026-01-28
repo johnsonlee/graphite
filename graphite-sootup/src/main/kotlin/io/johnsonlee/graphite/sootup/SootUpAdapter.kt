@@ -111,7 +111,9 @@ class SootUpAdapter(
      * Supports @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
      */
     private fun processEndpoints() {
-        view.classes.toList().forEach { sootClass ->
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
             if (sootClass !is JavaSootClass) return@forEach
 
             val className = sootClass.type.fullyQualifiedName
@@ -153,7 +155,9 @@ class SootUpAdapter(
      * Supports @JsonProperty, @JsonIgnore, and @JsonProperty(access = JsonProperty.Access.*)
      */
     private fun processJacksonAnnotations() {
-        view.classes.toList().forEach { sootClass ->
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
             if (sootClass !is JavaSootClass) return@forEach
 
             val className = sootClass.type.fullyQualifiedName
