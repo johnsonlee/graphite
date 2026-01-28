@@ -819,9 +819,11 @@ class TypeHierarchyAnalysis(
                 val fieldType = fieldNode.descriptor.type
 
                 // Skip if field type should not be analyzed
+                // But allow collection types (List, Set, Map, etc.) as their element types may be relevant
                 if (!shouldAnalyzeType(fieldType.className) &&
                     fieldType.className != "java.lang.Object" &&
-                    !isPrimitiveOrWrapper(fieldType.className)) {
+                    !isPrimitiveOrWrapper(fieldType.className) &&
+                    !isCollectionType(fieldType.className)) {
                     return@forEach
                 }
 
@@ -864,6 +866,22 @@ class TypeHierarchyAnalysis(
             "java.lang.String", "java.math.BigDecimal", "java.math.BigInteger",
             "java.util.Date", "java.time.LocalDate", "java.time.LocalDateTime",
             "java.time.ZonedDateTime", "java.time.Instant"
+        )
+    }
+
+    /**
+     * Check if a type is a collection or container type.
+     * These types should be included in field discovery even when their package
+     * is not in includePackages, because they are containers whose element types
+     * may be relevant for analysis.
+     */
+    private fun isCollectionType(className: String): Boolean {
+        return className in setOf(
+            "java.util.List", "java.util.ArrayList", "java.util.LinkedList",
+            "java.util.Set", "java.util.HashSet", "java.util.LinkedHashSet", "java.util.TreeSet",
+            "java.util.Map", "java.util.HashMap", "java.util.LinkedHashMap", "java.util.TreeMap",
+            "java.util.Collection", "java.util.Queue", "java.util.Deque",
+            "java.util.Optional"
         )
     }
 
