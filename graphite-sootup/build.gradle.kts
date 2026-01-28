@@ -12,6 +12,7 @@ dependencies {
     // Test dependencies - real libraries for integration testing
     testImplementation(libs.ff4j.core)
     testImplementation(libs.spring.web)
+    testImplementation(libs.jackson.annotations)
 
     // Lombok for testing Lombok-generated code analysis
     testCompileOnly(libs.lombok)
