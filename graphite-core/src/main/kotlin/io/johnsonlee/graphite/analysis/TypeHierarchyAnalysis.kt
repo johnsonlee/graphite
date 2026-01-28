@@ -499,7 +499,11 @@ class TypeHierarchyAnalysis(
         // Pattern: getXxx() -> field xxx with return type
         addGetterBasedFields(type, fields, depth)
 
-        // If no setters found, try to find fields from class definition
+        // Strategy 6: Discover all declared fields from class definition
+        // This ensures we find fields even if they don't have setters, getters, or assignments
+        addDeclaredFields(type, fields, depth)
+
+        // If still no setters found, try to find fields from setter calls in other methods
         if (fields.isEmpty()) {
             // Look for any setter calls to this type's methods
             findAllSetterCallsForType(type, contextMethod).forEach { (fieldName, setterCall) ->
@@ -778,6 +782,89 @@ class TypeHierarchyAnalysis(
                     }
                 }
         }
+    }
+
+    /**
+     * Discover all declared fields from class definition.
+     *
+     * This strategy ensures that ALL fields declared in the class are discovered,
+     * even if they don't have setters, getters, or assignments in analyzed code.
+     * This is important for:
+     * - Public fields without getter/setter
+     * - Fields only used by frameworks (e.g., Jackson, Lombok)
+     * - Fields initialized via reflection or serialization
+     */
+    private fun addDeclaredFields(
+        type: TypeDescriptor,
+        fields: MutableMap<String, FieldStructure>,
+        depth: Int
+    ) {
+        // Collect all class names to check: current type + all supertypes
+        val classesToCheck = mutableSetOf(type.className)
+        collectAllSupertypes(type, classesToCheck)
+
+        // Find all FieldNodes declared in these classes
+        graph.nodes<FieldNode>()
+            .filter { it.descriptor.declaringClass.className in classesToCheck }
+            .forEach { fieldNode ->
+                val fieldName = fieldNode.descriptor.name
+                val declaringClass = fieldNode.descriptor.declaringClass.className
+
+                // Skip if this field is already discovered by other strategies
+                if (fieldName in fields) return@forEach
+
+                // Skip synthetic or special fields
+                if (fieldName.startsWith("\$") || fieldName.startsWith("this\$")) return@forEach
+
+                val fieldType = fieldNode.descriptor.type
+
+                // Skip if field type should not be analyzed
+                if (!shouldAnalyzeType(fieldType.className) &&
+                    fieldType.className != "java.lang.Object" &&
+                    !isPrimitiveOrWrapper(fieldType.className)) {
+                    return@forEach
+                }
+
+                // Get Jackson annotation info
+                val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
+                    ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
+                    ?: graph.jacksonGetterInfo(declaringClass, "is${fieldName.replaceFirstChar { it.uppercase() }}")
+
+                // Build actual types if we can analyze the field type
+                val actualTypes = if (shouldAnalyzeType(fieldType.className) && depth < config.maxDepth) {
+                    setOf(buildTypeStructure(fieldType, MethodDescriptor(
+                        declaringClass = type,
+                        name = "",
+                        parameterTypes = emptyList(),
+                        returnType = TypeDescriptor("void")
+                    ), depth + 1))
+                } else {
+                    emptySet()
+                }
+
+                fields[fieldName] = FieldStructure(
+                    name = fieldName,
+                    declaredType = fieldType,
+                    actualTypes = actualTypes,
+                    isGenericParameter = false,
+                    jsonName = jacksonInfo?.jsonName,
+                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                )
+            }
+    }
+
+    /**
+     * Check if a type is a primitive or wrapper type.
+     */
+    private fun isPrimitiveOrWrapper(className: String): Boolean {
+        return className in setOf(
+            "int", "long", "short", "byte", "float", "double", "boolean", "char",
+            "java.lang.Integer", "java.lang.Long", "java.lang.Short", "java.lang.Byte",
+            "java.lang.Float", "java.lang.Double", "java.lang.Boolean", "java.lang.Character",
+            "java.lang.String", "java.math.BigDecimal", "java.math.BigInteger",
+            "java.util.Date", "java.time.LocalDate", "java.time.LocalDateTime",
+            "java.time.ZonedDateTime", "java.time.Instant"
+        )
     }
 
     /**

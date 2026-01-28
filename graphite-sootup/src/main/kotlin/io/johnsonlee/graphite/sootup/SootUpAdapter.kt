@@ -72,13 +72,16 @@ class SootUpAdapter(
         // 3. Process all methods and build intraprocedural graphs
         processMethods()
 
-        // 4. Extract HTTP endpoints from annotations
+        // 4. Process all class fields (creates FieldNodes for all declared fields)
+        processClassFields()
+
+        // 5. Extract HTTP endpoints from annotations
         processEndpoints()
 
-        // 5. Extract Jackson annotation information
+        // 6. Extract Jackson annotation information
         processJacksonAnnotations()
 
-        // 6. Build call graph if configured
+        // 7. Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
@@ -108,7 +111,9 @@ class SootUpAdapter(
      * Supports @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
      */
     private fun processEndpoints() {
-        view.classes.toList().forEach { sootClass ->
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
             if (sootClass !is JavaSootClass) return@forEach
 
             val className = sootClass.type.fullyQualifiedName
@@ -150,7 +155,9 @@ class SootUpAdapter(
      * Supports @JsonProperty, @JsonIgnore, and @JsonProperty(access = JsonProperty.Access.*)
      */
     private fun processJacksonAnnotations() {
-        view.classes.toList().forEach { sootClass ->
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
             if (sootClass !is JavaSootClass) return@forEach
 
             val className = sootClass.type.fullyQualifiedName
@@ -199,9 +206,7 @@ class SootUpAdapter(
                     val values = getAnnotationValues(annot)
                     // Get the "value" property for the JSON name
                     val value = values["value"]
-                    if (value != null && value is String && value.isNotEmpty()) {
-                        jsonName = value
-                    }
+                    jsonName = extractStringValue(value)
                     // Check for access = JsonProperty.Access.WRITE_ONLY (means ignore in serialization)
                     val access = values["access"]?.toString()
                     if (access?.contains("WRITE_ONLY") == true) {
@@ -216,6 +221,25 @@ class SootUpAdapter(
             io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName, isIgnored)
         } else {
             null
+        }
+    }
+
+    /**
+     * Extract a string value from annotation value which may be String, List, or other type.
+     */
+    private fun extractStringValue(value: Any?): String? {
+        if (value == null) return null
+        return when (value) {
+            is String -> value.takeIf { it.isNotEmpty() }
+            is List<*> -> value.firstOrNull()?.let { extractStringValue(it) }
+            else -> {
+                // SootUp may wrap values in ConstantValue or similar
+                val strValue = value.toString()
+                    .removeSurrounding("\"")
+                    .removeSurrounding("[", "]")
+                    .removeSurrounding("\"")
+                strValue.takeIf { it.isNotEmpty() && it != "null" }
+            }
         }
     }
 
@@ -485,6 +509,55 @@ class SootUpAdapter(
             .forEach { sootClass ->
                 sootClass.methods.forEach { method ->
                     processMethod(method)
+                }
+            }
+    }
+
+    /**
+     * Process all class fields to ensure FieldNodes are created for all declared fields.
+     *
+     * This is important for return type analysis to discover ALL fields in a class,
+     * not just those that are referenced in methods. Fields may be:
+     * - Public fields accessed directly without getter/setter
+     * - Fields only used by frameworks (Jackson, Lombok, etc.)
+     * - Fields initialized via reflection or deserialization
+     */
+    private fun processClassFields() {
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
+                val className = sootClass.type.fullyQualifiedName
+                sootClass.fields.forEach { field ->
+                    val fieldName = field.name
+
+                    // Skip synthetic fields
+                    if (fieldName.startsWith("\$") || fieldName.startsWith("this\$")) {
+                        return@forEach
+                    }
+
+                    // Use field signature as key (same format as getOrCreateField)
+                    val fieldSig = field.signature.toString()
+                    if (fieldNodes.containsKey(fieldSig)) {
+                        return@forEach
+                    }
+
+                    val declaringClassType = toTypeDescriptor(sootClass.type)
+                    val baseType = toTypeDescriptor(field.type)
+
+                    // Try to get generic type from bytecode signature
+                    val fieldType = getFieldTypeWithGenerics(className, fieldName, baseType)
+
+                    val node = FieldNode(
+                        id = nextNodeId("field"),
+                        descriptor = FieldDescriptor(
+                            declaringClass = declaringClassType,
+                            name = fieldName,
+                            type = fieldType
+                        ),
+                        isStatic = field.isStatic
+                    )
+                    fieldNodes[fieldSig] = node
+                    graphBuilder.addNode(node)
                 }
             }
     }
