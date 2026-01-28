@@ -75,7 +75,10 @@ class SootUpAdapter(
         // 4. Extract HTTP endpoints from annotations
         processEndpoints()
 
-        // 5. Build call graph if configured
+        // 5. Extract Jackson annotation information
+        processJacksonAnnotations()
+
+        // 6. Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
@@ -139,6 +142,80 @@ class SootUpAdapter(
                     log("Found endpoint: ${httpMethod.name} $fullPath -> ${className}.${methodDescriptor.name}")
                 }
             }
+        }
+    }
+
+    /**
+     * Extract Jackson annotation information from fields and getter methods.
+     * Supports @JsonProperty, @JsonIgnore, and @JsonProperty(access = JsonProperty.Access.*)
+     */
+    private fun processJacksonAnnotations() {
+        view.classes.toList().forEach { sootClass ->
+            if (sootClass !is JavaSootClass) return@forEach
+
+            val className = sootClass.type.fullyQualifiedName
+
+            // Process field annotations
+            sootClass.fields.forEach { field ->
+                val fieldName = field.name
+                val jacksonInfo = extractJacksonInfo(field.annotations)
+                if (jacksonInfo != null) {
+                    graphBuilder.addJacksonFieldInfo(className, fieldName, jacksonInfo)
+                }
+            }
+
+            // Process getter method annotations
+            sootClass.methods.forEach { method ->
+                if (method !is JavaSootMethod) return@forEach
+
+                val methodName = method.name
+                // Only process getter methods (getXxx or isXxx)
+                if ((methodName.startsWith("get") && methodName.length > 3) ||
+                    (methodName.startsWith("is") && methodName.length > 2)) {
+                    val jacksonInfo = extractJacksonInfo(method.annotations)
+                    if (jacksonInfo != null) {
+                        graphBuilder.addJacksonGetterInfo(className, methodName, jacksonInfo)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract Jackson annotation information from a list of annotations.
+     */
+    private fun extractJacksonInfo(annotations: Iterable<*>): io.johnsonlee.graphite.graph.JacksonFieldInfo? {
+        var jsonName: String? = null
+        var isIgnored = false
+
+        for (annot in annotations) {
+            val fullName = getAnnotationFullName(annot)
+
+            when {
+                fullName == "com.fasterxml.jackson.annotation.JsonIgnore" -> {
+                    isIgnored = true
+                }
+                fullName == "com.fasterxml.jackson.annotation.JsonProperty" -> {
+                    val values = getAnnotationValues(annot)
+                    // Get the "value" property for the JSON name
+                    val value = values["value"]
+                    if (value != null && value is String && value.isNotEmpty()) {
+                        jsonName = value
+                    }
+                    // Check for access = JsonProperty.Access.WRITE_ONLY (means ignore in serialization)
+                    val access = values["access"]?.toString()
+                    if (access?.contains("WRITE_ONLY") == true) {
+                        isIgnored = true
+                    }
+                }
+            }
+        }
+
+        // Only return if there's something to report
+        return if (jsonName != null || isIgnored) {
+            io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName, isIgnored)
+        } else {
+            null
         }
     }
 

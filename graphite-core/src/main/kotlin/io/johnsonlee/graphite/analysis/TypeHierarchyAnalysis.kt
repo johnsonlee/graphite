@@ -440,11 +440,17 @@ class TypeHierarchyAnalysis(
             val actualTypes = analyzeSetterArgument(setterCall, contextMethod, depth + 1)
             val declaredType = inferDeclaredTypeFromSetter(setterCall)
 
+            // Get Jackson annotation info for the field
+            val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
+                ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
+
             fields[fieldName] = FieldStructure(
                 name = fieldName,
                 declaredType = declaredType,
                 actualTypes = actualTypes,
-                isGenericParameter = false
+                isGenericParameter = false,
+                jsonName = jacksonInfo?.jsonName,
+                isJsonIgnored = jacksonInfo?.isIgnored ?: false
             )
         }
 
@@ -458,10 +464,14 @@ class TypeHierarchyAnalysis(
                     actualTypes = existing.actualTypes + assignedTypes
                 )
             } else {
+                val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
+                    ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                 fields[fieldName] = FieldStructure(
                     name = fieldName,
                     declaredType = fieldNode.descriptor.type,
-                    actualTypes = assignedTypes
+                    actualTypes = assignedTypes,
+                    jsonName = jacksonInfo?.jsonName,
+                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
                 )
             }
         }
@@ -485,6 +495,10 @@ class TypeHierarchyAnalysis(
         // This finds field assignments from ANY method, not just the current context
         addGlobalFieldAssignments(type, fields, depth)
 
+        // Strategy 5: Find getter methods to discover fields and their return types
+        // Pattern: getXxx() -> field xxx with return type
+        addGetterBasedFields(type, fields, depth)
+
         // If no setters found, try to find fields from class definition
         if (fields.isEmpty()) {
             // Look for any setter calls to this type's methods
@@ -492,11 +506,15 @@ class TypeHierarchyAnalysis(
                 val actualTypes = analyzeSetterArgument(setterCall, contextMethod, depth + 1)
                 val declaredType = inferDeclaredTypeFromSetter(setterCall)
 
+                val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
+                    ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                 fields[fieldName] = FieldStructure(
                     name = fieldName,
                     declaredType = declaredType,
                     actualTypes = actualTypes,
-                    isGenericParameter = false
+                    isGenericParameter = false,
+                    jsonName = jacksonInfo?.jsonName,
+                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
                 )
             }
         }
@@ -509,19 +527,21 @@ class TypeHierarchyAnalysis(
      * This enables discovering field types even when the field is assigned
      * in a different method than where it's returned.
      *
-     * Also handles inheritance: includes fields from parent classes.
+     * Also handles inheritance: includes fields from parent classes using the type hierarchy graph.
      */
     private fun addGlobalFieldAssignments(
         type: TypeDescriptor,
         fields: MutableMap<String, FieldStructure>,
         depth: Int
     ) {
-        // Get all fields of this type AND potential parent classes
-        // We include any field that could be accessed by this type
+        // Collect all class names to check: current type + all supertypes (inherited)
+        val classesToCheck = mutableSetOf(type.className)
+        collectAllSupertypes(type, classesToCheck)
+
+        // Get all fields of this type AND parent classes from type hierarchy
         val typeFields = graph.nodes<FieldNode>()
             .filter { fieldNode ->
-                val declClass = fieldNode.descriptor.declaringClass.className
-                declClass == type.className || isPotentialParentClass(type.className, declClass)
+                fieldNode.descriptor.declaringClass.className in classesToCheck
             }
             .toList()
 
@@ -557,10 +577,15 @@ class TypeHierarchyAnalysis(
                         actualTypes = existing.actualTypes + actualTypes
                     )
                 } else if (actualTypes.isNotEmpty()) {
+                    // Get Jackson annotation info (try field first, then getter)
+                    val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
+                        ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                     fields[fieldName] = FieldStructure(
                         name = fieldName,
                         declaredType = fieldNode.descriptor.type,
-                        actualTypes = actualTypes
+                        actualTypes = actualTypes,
+                        jsonName = jacksonInfo?.jsonName,
+                        isJsonIgnored = jacksonInfo?.isIgnored ?: false
                     )
                 }
             }
@@ -568,15 +593,30 @@ class TypeHierarchyAnalysis(
     }
 
     /**
+     * Collect all supertypes (parents, grandparents, etc.) for a type using the type hierarchy graph.
+     */
+    private fun collectAllSupertypes(type: TypeDescriptor, result: MutableSet<String>) {
+        graph.supertypes(type).forEach { supertype ->
+            if (supertype.className !in result) {
+                result.add(supertype.className)
+                collectAllSupertypes(supertype, result)
+            }
+        }
+    }
+
+    /**
      * Check if parentClass could be a parent of childClass.
-     * Uses heuristics when type hierarchy edges aren't available:
-     * 1. Same package prefix suggests possible inheritance
-     * 2. Check if childClass has setter calls to parentClass methods
+     * First uses the type hierarchy graph, then falls back to heuristics.
      */
     private fun isPotentialParentClass(childClass: String, parentClass: String): Boolean {
         if (childClass == parentClass) return false
 
-        // Same package or nested class relationship
+        // First, check using the type hierarchy graph
+        val supertypes = mutableSetOf<String>()
+        collectAllSupertypes(TypeDescriptor(childClass), supertypes)
+        if (parentClass in supertypes) return true
+
+        // Fallback: Same package or nested class relationship (heuristic)
         val childPkg = childClass.substringBeforeLast('.', "")
         val parentPkg = parentClass.substringBeforeLast('.', "")
 
@@ -650,16 +690,21 @@ class TypeHierarchyAnalysis(
 
                     if (matchingField != null) {
                         val fieldName = matchingField.descriptor.name
+                        val declaringClass = matchingField.descriptor.declaringClass.className
                         val existing = fields[fieldName]
                         if (existing != null) {
                             fields[fieldName] = existing.copy(
                                 actualTypes = existing.actualTypes + argTypes
                             )
                         } else {
+                            val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
+                                ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                             fields[fieldName] = FieldStructure(
                                 name = fieldName,
                                 declaredType = matchingField.descriptor.type,
-                                actualTypes = argTypes
+                                actualTypes = argTypes,
+                                jsonName = jacksonInfo?.jsonName,
+                                isJsonIgnored = jacksonInfo?.isIgnored ?: false
                             )
                         }
                     }
@@ -668,6 +713,71 @@ class TypeHierarchyAnalysis(
         }
 
         return fields
+    }
+
+    /**
+     * Find getter methods for a type and add their return types as field information.
+     *
+     * This discovers fields by looking at getter patterns:
+     * - getXxx() -> field xxx
+     * - isXxx() -> field xxx (for boolean)
+     *
+     * Also handles inheritance by looking at supertypes.
+     */
+    private fun addGetterBasedFields(
+        type: TypeDescriptor,
+        fields: MutableMap<String, FieldStructure>,
+        depth: Int
+    ) {
+        // Collect all class names to check: current type + all supertypes
+        val classesToCheck = mutableSetOf(type.className)
+        collectAllSupertypes(type, classesToCheck)
+
+        // Find all getter methods from this type and its supertypes
+        classesToCheck.forEach { className ->
+            graph.methods(MethodPattern(declaringClass = className))
+                .filter { method ->
+                    // Match getter patterns: getXxx() or isXxx() with no parameters
+                    val name = method.name
+                    method.parameterTypes.isEmpty() &&
+                    method.returnType.className != "void" &&
+                    ((name.startsWith("get") && name.length > 3) ||
+                     (name.startsWith("is") && name.length > 2 &&
+                      method.returnType.className in listOf("boolean", "java.lang.Boolean")))
+                }
+                .forEach { getter ->
+                    // Extract field name from getter
+                    val fieldName = if (getter.name.startsWith("get")) {
+                        getter.name.removePrefix("get").replaceFirstChar { it.lowercase() }
+                    } else {
+                        getter.name.removePrefix("is").replaceFirstChar { it.lowercase() }
+                    }
+
+                    // Skip if we already have this field from setter/field analysis
+                    if (fieldName in fields) return@forEach
+
+                    val returnType = getter.returnType
+                    if (shouldAnalyzeType(returnType.className)) {
+                        val actualTypes = if (depth < config.maxDepth) {
+                            setOf(buildTypeStructure(returnType, getter, depth + 1))
+                        } else {
+                            setOf(TypeStructure.simple(returnType.className))
+                        }
+
+                        // Get Jackson annotation info from getter method
+                        val jacksonInfo = graph.jacksonGetterInfo(className, getter.name)
+                            ?: graph.jacksonFieldInfo(className, fieldName)
+                        fields[fieldName] = FieldStructure(
+                            name = fieldName,
+                            declaredType = returnType,
+                            actualTypes = actualTypes,
+                            isGenericParameter = false,
+                            jsonName = jacksonInfo?.jsonName,
+                            isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                        )
+                    }
+                }
+        }
     }
 
     /**

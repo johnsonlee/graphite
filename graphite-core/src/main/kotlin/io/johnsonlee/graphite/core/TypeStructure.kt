@@ -110,13 +110,21 @@ data class TypeStructure(
  * @property declaredType The declared type of the field
  * @property actualTypes Set of actual types assigned to this field (may differ from declared type)
  * @property isGenericParameter True if this field's declared type is a generic parameter (e.g., T)
+ * @property jsonName The JSON property name from @JsonProperty annotation (null if not specified)
+ * @property isJsonIgnored True if the field is marked with @JsonIgnore
  */
 data class FieldStructure(
     val name: String,
     val declaredType: TypeDescriptor,
     val actualTypes: Set<TypeStructure> = emptySet(),
-    val isGenericParameter: Boolean = false
+    val isGenericParameter: Boolean = false,
+    val jsonName: String? = null,
+    val isJsonIgnored: Boolean = false
 ) {
+    /**
+     * Get the effective JSON name (from @JsonProperty or field name)
+     */
+    val effectiveJsonName: String get() = jsonName ?: name
     /**
      * Check if the actual types differ from the declared type
      */

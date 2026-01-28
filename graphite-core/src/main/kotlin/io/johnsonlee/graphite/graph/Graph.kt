@@ -76,7 +76,40 @@ interface Graph {
      * @return sequence of matching endpoints
      */
     fun endpoints(pattern: String? = null, httpMethod: HttpMethod? = null): Sequence<EndpointInfo>
+
+    /**
+     * Get Jackson annotation information for a field.
+     *
+     * @param className fully qualified class name
+     * @param fieldName field name
+     * @return JacksonFieldInfo containing @JsonProperty name and @JsonIgnore status, or null if not available
+     */
+    fun jacksonFieldInfo(className: String, fieldName: String): JacksonFieldInfo?
+
+    /**
+     * Get Jackson annotation information for a getter method.
+     *
+     * @param className fully qualified class name
+     * @param methodName getter method name (e.g., "getName")
+     * @return JacksonFieldInfo containing @JsonProperty name and @JsonIgnore status, or null if not available
+     */
+    fun jacksonGetterInfo(className: String, methodName: String): JacksonFieldInfo?
 }
+
+/**
+ * Jackson annotation information for a field or getter.
+ */
+data class JacksonFieldInfo(
+    /**
+     * The JSON property name from @JsonProperty annotation, or null if not specified
+     */
+    val jsonName: String? = null,
+
+    /**
+     * True if the field/getter is marked with @JsonIgnore
+     */
+    val isIgnored: Boolean = false
+)
 
 /**
  * Pattern for matching methods.

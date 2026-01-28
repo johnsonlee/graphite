@@ -20,7 +20,9 @@ class DefaultGraph private constructor(
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValues: Map<String, List<Any?>>,
-    private val endpointList: List<EndpointInfo>
+    private val endpointList: List<EndpointInfo>,
+    private val jacksonFieldInfoMap: Map<String, JacksonFieldInfo>,
+    private val jacksonGetterInfoMap: Map<String, JacksonFieldInfo>
 ) : Graph {
 
     override fun node(id: NodeId): Node? = nodesById.get(id.value)
@@ -68,6 +70,12 @@ class DefaultGraph private constructor(
         }
     }
 
+    override fun jacksonFieldInfo(className: String, fieldName: String): JacksonFieldInfo? =
+        jacksonFieldInfoMap["$className#$fieldName"]
+
+    override fun jacksonGetterInfo(className: String, methodName: String): JacksonFieldInfo? =
+        jacksonGetterInfoMap["$className#$methodName"]
+
     /**
      * Builder for constructing DefaultGraph instances.
      * Uses concurrent collections during building, then compacts to fastutil collections.
@@ -80,6 +88,8 @@ class DefaultGraph private constructor(
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
         private val endpoints = ObjectArrayList<EndpointInfo>()
+        private val jacksonFieldInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
+        private val jacksonGetterInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
 
         override fun addNode(node: Node): GraphBuilder {
             nodes.put(node.id.value, node)
@@ -120,6 +130,16 @@ class DefaultGraph private constructor(
             return this
         }
 
+        fun addJacksonFieldInfo(className: String, fieldName: String, info: JacksonFieldInfo): Builder {
+            jacksonFieldInfo["$className#$fieldName"] = info
+            return this
+        }
+
+        fun addJacksonGetterInfo(className: String, methodName: String, info: JacksonFieldInfo): Builder {
+            jacksonGetterInfo["$className#$methodName"] = info
+            return this
+        }
+
         override fun build(): Graph {
             // Compact edge lists to immutable form
             val compactOutgoing = Int2ObjectOpenHashMap<List<Edge>>(outgoing.size)
@@ -144,7 +164,9 @@ class DefaultGraph private constructor(
                 methodIndex = methods.toMap(),
                 typeHierarchy = typeHierarchyBuilder.build(),
                 enumValues = enumValues.toMap(),
-                endpointList = endpoints.toList()
+                endpointList = endpoints.toList(),
+                jacksonFieldInfoMap = jacksonFieldInfo.toMap(),
+                jacksonGetterInfoMap = jacksonGetterInfo.toMap()
             )
         }
     }
