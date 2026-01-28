@@ -59,24 +59,32 @@ class DataFlowAnalysis(
                         traverse(node.receiver, currentPath, depth + 1)
                     }
 
-                    // Expand collection factory calls if enabled
-                    if (config.expandCollections && isCollectionFactory(node.callee)) {
-                        val collectionDepth = currentPath.count { nodeId ->
-                            val n = graph.node(nodeId)
-                            n is CallSiteNode && isCollectionFactory(n.callee)
-                        }
-                        if (collectionDepth < config.maxCollectionDepth) {
-                            // Trace each argument in the collection factory
-                            node.arguments.forEach { argId ->
-                                traverse(argId, currentPath, depth + 1)
+                    // Handle collection factory calls specially
+                    val isCollFactory = isCollectionFactory(node.callee)
+                    if (isCollFactory) {
+                        if (config.expandCollections) {
+                            val collectionDepth = currentPath.count { nodeId ->
+                                val n = graph.node(nodeId)
+                                n is CallSiteNode && isCollectionFactory(n.callee)
+                            }
+                            if (collectionDepth < config.maxCollectionDepth) {
+                                // For varargs methods like Arrays.asList(1, 2, 3), the arguments
+                                // in bytecode are the actual values (not an array), so we trace
+                                // incoming PARAMETER_PASS edges to find the constants
+                                graph.incoming(current, DataFlowEdge::class.java).forEach { edge ->
+                                    traverse(edge.from, currentPath, depth + 1)
+                                }
                             }
                         }
+                        // For collection factories, we've already handled tracing above
+                        // (either traced incoming edges, or nothing if expandCollections=false)
+                        return
                     }
                 }
                 else -> {}
             }
 
-            // Continue backward traversal
+            // Continue backward traversal (skip for collection factories - handled above)
             graph.incoming(current, DataFlowEdge::class.java).forEach { edge ->
                 traverse(edge.from, currentPath, depth + 1)
             }
