@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.core.HttpMethod
 import io.johnsonlee.graphite.core.TypeHierarchyResult
 import io.johnsonlee.graphite.core.TypeStructure
 import io.johnsonlee.graphite.core.FieldStructure
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import picocli.CommandLine.*
