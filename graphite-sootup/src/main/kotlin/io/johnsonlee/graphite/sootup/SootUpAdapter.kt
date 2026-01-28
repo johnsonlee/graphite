@@ -797,6 +797,13 @@ class SootUpAdapter(
             is Local -> getOrCreateLocal(value, method)
             is SootConstant -> getOrCreateConstant(value)
             is JFieldRef -> getOrCreateField(value)
+            is JArrayRef -> {
+                // For array references like $r1[0], return the base array's node
+                // This creates edges from array elements to the array itself,
+                // enabling backward tracing from arrays to their elements
+                val base = value.base
+                if (base is Local) getOrCreateLocal(base, method) else null
+            }
             is AbstractInvokeExpr -> null // Handled separately
             else -> null
         }
