@@ -761,11 +761,14 @@ class TypeHierarchyAnalysis(
                     if (fieldName in fields) return@forEach
 
                     val returnType = getter.returnType
-                    if (shouldAnalyzeType(returnType.className)) {
-                        val actualTypes = if (depth < config.maxDepth) {
+                    // Include fields with analyzable types, primitive/wrapper types, or collection types
+                    if (shouldAnalyzeType(returnType.className) ||
+                        isPrimitiveOrWrapper(returnType.className) ||
+                        isCollectionType(returnType.className)) {
+                        val actualTypes = if (shouldAnalyzeType(returnType.className) && depth < config.maxDepth) {
                             setOf(buildTypeStructure(returnType, getter, depth + 1))
                         } else {
-                            setOf(TypeStructure.simple(returnType.className))
+                            emptySet()
                         }
 
                         // Get Jackson annotation info from getter method
