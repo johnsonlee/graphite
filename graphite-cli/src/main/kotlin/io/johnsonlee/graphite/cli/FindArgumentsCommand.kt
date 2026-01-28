@@ -96,6 +96,19 @@ class FindArgumentsCommand : Callable<Int> {
     )
     var libFilters: List<String> = emptyList()
 
+    @Option(
+        names = ["--expand-collections"],
+        description = ["Expand collection factory calls (listOf, Arrays.asList, etc.) to trace element constants"]
+    )
+    var expandCollections: Boolean = false
+
+    @Option(
+        names = ["--max-collection-depth"],
+        description = ["Maximum depth for nested collection expansion (default: 3)"],
+        defaultValue = "3"
+    )
+    var maxCollectionDepth: Int = 3
+
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
@@ -180,6 +193,12 @@ class FindArgumentsCommand : Callable<Int> {
                         }
                     }
                     argumentIndex = argIndex
+                    config {
+                        copy(
+                            expandCollections = this@FindArgumentsCommand.expandCollections,
+                            maxCollectionDepth = this@FindArgumentsCommand.maxCollectionDepth
+                        )
+                    }
                 }
             }
 

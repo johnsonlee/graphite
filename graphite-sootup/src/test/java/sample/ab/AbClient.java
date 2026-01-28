@@ -33,4 +33,22 @@ public class AbClient {
         // Mock implementation
         return false;
     }
+
+    /**
+     * Get variants for multiple experiment IDs (List<Integer>).
+     * Used to test collection parameter constant tracking.
+     */
+    public java.util.Map<Integer, String> getOptions(java.util.List<Integer> experimentIds) {
+        // Mock implementation
+        return java.util.Collections.emptyMap();
+    }
+
+    /**
+     * Get variants for multiple experiment enums (List<ExperimentId>).
+     * Used to test collection parameter constant tracking with enums.
+     */
+    public java.util.Map<ExperimentId, String> getOptionsByEnum(java.util.List<ExperimentId> experimentIds) {
+        // Mock implementation
+        return java.util.Collections.emptyMap();
+    }
 }
