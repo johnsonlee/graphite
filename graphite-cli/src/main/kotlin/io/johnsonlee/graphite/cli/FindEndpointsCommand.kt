@@ -57,7 +57,7 @@ class FindEndpointsCommand : Callable<Int> {
 
     @Option(
         names = ["-f", "--format"],
-        description = ["Output format: text, json (default: text)"],
+        description = ["Output format: text, schema (JSON Schema) (default: text)"],
         defaultValue = "text"
     )
     var outputFormat: String = "text"
@@ -128,8 +128,8 @@ class FindEndpointsCommand : Callable<Int> {
                 if (verbose) {
                     System.err.println("\nNo endpoints found matching the criteria")
                 }
-                if (outputFormat.lowercase() == "json") {
-                    println(formatJson(emptyList(), emptyMap()))
+                if (outputFormat.lowercase() == "schema") {
+                    println(formatJsonSchema(emptyList(), emptyMap()))
                 }
                 return 0
             }
@@ -149,7 +149,7 @@ class FindEndpointsCommand : Callable<Int> {
             }.toMap()
 
             val output = when (outputFormat.lowercase()) {
-                "json" -> formatJson(endpoints, returnTypes)
+                "schema", "json" -> formatJsonSchema(endpoints, returnTypes)
                 else -> formatText(endpoints, returnTypes)
             }
 
@@ -256,90 +256,212 @@ class FindEndpointsCommand : Callable<Int> {
         }
     }
 
-    private fun formatJson(
+    /**
+     * Format output as OpenAPI 3.0 specification.
+     * Generates a complete OpenAPI document with:
+     * - paths containing all endpoints
+     * - components/schemas containing all type definitions
+     */
+    private fun formatJsonSchema(
         endpoints: List<io.johnsonlee.graphite.core.EndpointInfo>,
         returnTypes: Map<String, TypeHierarchyResult>
     ): String {
         val gson = GsonBuilder().setPrettyPrinting().create()
-        val output = mapOf(
-            "totalEndpoints" to endpoints.size,
-            "endpoints" to endpoints.map { endpoint ->
-                val base = mutableMapOf<String, Any>(
-                    "httpMethod" to endpoint.httpMethod.name,
-                    "path" to endpoint.path,
-                    "handler" to mapOf(
-                        "class" to endpoint.method.declaringClass.className,
-                        "method" to endpoint.method.name,
-                        "signature" to endpoint.method.signature
-                    ),
-                    "declaredReturnType" to endpoint.method.returnType.className,
-                    "produces" to endpoint.produces,
-                    "consumes" to endpoint.consumes
-                )
-                returnTypes[endpoint.path]?.let { result ->
-                    base["returnTypeHierarchy"] = result.returnStructures.map { typeStructureToMap(it) }
+
+        // Collect all type definitions
+        val schemas = mutableMapOf<String, Any>()
+        val processedTypes = mutableSetOf<String>()
+
+        // Build paths
+        val paths = mutableMapOf<String, MutableMap<String, Any>>()
+
+        endpoints.forEach { endpoint ->
+            val pathItem = paths.getOrPut(endpoint.path) { mutableMapOf() }
+            val method = endpoint.httpMethod.name.lowercase()
+
+            val operation = mutableMapOf<String, Any>(
+                "operationId" to "${endpoint.method.declaringClass.simpleName}_${endpoint.method.name}",
+                "tags" to listOf(endpoint.method.declaringClass.simpleName)
+            )
+
+            // Build responses
+            val responses = mutableMapOf<String, Any>()
+            val successResponse = mutableMapOf<String, Any>(
+                "description" to "Successful response"
+            )
+
+            returnTypes[endpoint.path]?.let { result ->
+                if (result.returnStructures.isNotEmpty()) {
+                    val contentType = endpoint.produces.firstOrNull() ?: "application/json"
+                    val responseSchemas = result.returnStructures.map { structure ->
+                        buildTypeSchema(structure, schemas, processedTypes, mutableSetOf(), 0)
+                    }
+                    val schema = if (responseSchemas.size == 1) {
+                        responseSchemas.first()
+                    } else {
+                        mapOf("oneOf" to responseSchemas)
+                    }
+                    successResponse["content"] = mapOf(
+                        contentType to mapOf("schema" to schema)
+                    )
                 }
-                base
             }
+
+            responses["200"] = successResponse
+            operation["responses"] = responses
+
+            pathItem[method] = operation
+        }
+
+        val output = mutableMapOf<String, Any>(
+            "openapi" to "3.0.3",
+            "info" to mapOf(
+                "title" to "API Documentation",
+                "description" to "Generated from bytecode analysis by Graphite",
+                "version" to "1.0.0"
+            ),
+            "paths" to paths
         )
+
+        if (schemas.isNotEmpty()) {
+            output["components"] = mapOf("schemas" to schemas)
+        }
+
         return gson.toJson(output)
     }
 
-    private fun typeStructureToMap(
+    /**
+     * Build OpenAPI schema for a TypeStructure.
+     */
+    private fun buildTypeSchema(
         structure: TypeStructure,
-        visited: MutableSet<String> = mutableSetOf(),
-        depth: Int = 0
+        schemas: MutableMap<String, Any>,
+        processedTypes: MutableSet<String>,
+        visited: MutableSet<String>,
+        depth: Int
     ): Map<String, Any> {
-        val map = mutableMapOf<String, Any>(
-            "type" to structure.className,
-            "simpleName" to structure.simpleName,
-            "formatted" to structure.formatTypeName()
-        )
+        val typeName = structure.simpleName
 
-        // Prevent infinite recursion from circular references
+        // Handle circular references
         if (depth > 10 || structure.className in visited) {
-            if (structure.className in visited) {
-                map["circularReference"] = true
-            }
-            return map
+            return mapOf("\$ref" to "#/components/schemas/$typeName")
         }
-        visited.add(structure.className)
 
-        if (structure.typeArguments.isNotEmpty()) {
-            map["typeArguments"] = structure.typeArguments.mapValues {
-                typeStructureToMap(it.value, visited.toMutableSet(), depth + 1)
-            }
-        }
-        if (structure.fields.isNotEmpty()) {
-            // Filter out @JsonIgnore fields and use @JsonProperty names as keys
-            val filteredFields = structure.fields.entries
+        // For complex types, use $ref and add to schemas
+        if (structure.fields.isNotEmpty() && typeName !in processedTypes) {
+            processedTypes.add(typeName)
+            visited.add(structure.className)
+
+            val properties = mutableMapOf<String, Any>()
+
+            structure.fields.entries
                 .filter { !it.value.isJsonIgnored }
-                .associate { it.value.effectiveJsonName to fieldStructureToMap(it.value, visited.toMutableSet(), depth + 1) }
-            if (filteredFields.isNotEmpty()) {
-                map["fields"] = filteredFields
+                .forEach { (_, field) ->
+                    val fieldName = field.effectiveJsonName
+                    properties[fieldName] = buildFieldSchema(field, schemas, processedTypes, visited.toMutableSet(), depth + 1)
+                }
+
+            val typeSchema = mutableMapOf<String, Any>(
+                "type" to "object",
+                "properties" to properties
+            )
+
+            // Add generic type info as description if available
+            if (structure.typeArguments.isNotEmpty()) {
+                typeSchema["description"] = structure.formatTypeName()
             }
+
+            schemas[typeName] = typeSchema
+            return mapOf("\$ref" to "#/components/schemas/$typeName")
         }
-        return map
+
+        // For types already processed, just return reference
+        if (typeName in processedTypes) {
+            return mapOf("\$ref" to "#/components/schemas/$typeName")
+        }
+
+        // Simple types without fields
+        return mapOf(
+            "type" to "object",
+            "description" to structure.formatTypeName()
+        )
     }
 
-    private fun fieldStructureToMap(
+    /**
+     * Build OpenAPI schema for a field.
+     */
+    private fun buildFieldSchema(
         field: FieldStructure,
-        visited: MutableSet<String> = mutableSetOf(),
-        depth: Int = 0
+        schemas: MutableMap<String, Any>,
+        processedTypes: MutableSet<String>,
+        visited: MutableSet<String>,
+        depth: Int
     ): Map<String, Any> {
-        val map = mutableMapOf<String, Any>(
-            "declaredType" to field.declaredType.className,
-            "isGenericParameter" to field.isGenericParameter
-        )
-        // Include Jackson annotation info in output
-        if (field.jsonName != null) {
-            map["jsonPropertyName"] = field.jsonName
-        }
-        if (field.actualTypes.isNotEmpty()) {
-            map["actualTypes"] = field.actualTypes.map {
-                typeStructureToMap(it, visited.toMutableSet(), depth + 1)
+        val declaredType = field.declaredType.className
+
+        // Map Java types to OpenAPI types
+        return when {
+            declaredType in listOf("int", "java.lang.Integer", "short", "java.lang.Short",
+                "byte", "java.lang.Byte") -> {
+                mapOf("type" to "integer", "format" to "int32")
+            }
+            declaredType in listOf("long", "java.lang.Long") -> {
+                mapOf("type" to "integer", "format" to "int64")
+            }
+            declaredType in listOf("float", "java.lang.Float") -> {
+                mapOf("type" to "number", "format" to "float")
+            }
+            declaredType in listOf("double", "java.lang.Double", "java.math.BigDecimal") -> {
+                mapOf("type" to "number", "format" to "double")
+            }
+            declaredType in listOf("boolean", "java.lang.Boolean") -> {
+                mapOf("type" to "boolean")
+            }
+            declaredType in listOf("java.lang.String", "char", "java.lang.Character") -> {
+                mapOf("type" to "string")
+            }
+            declaredType == "java.util.Date" || declaredType == "java.time.LocalDate" -> {
+                mapOf("type" to "string", "format" to "date")
+            }
+            declaredType == "java.time.LocalDateTime" || declaredType == "java.time.ZonedDateTime" ||
+                declaredType == "java.time.Instant" -> {
+                mapOf("type" to "string", "format" to "date-time")
+            }
+            declaredType.startsWith("java.util.List") || declaredType.startsWith("java.util.Collection") ||
+                declaredType.startsWith("java.util.Set") || declaredType.endsWith("[]") -> {
+                val itemSchema = if (field.actualTypes.isNotEmpty()) {
+                    val actualType = field.actualTypes.first()
+                    if (actualType.fields.isNotEmpty()) {
+                        buildTypeSchema(actualType, schemas, processedTypes, visited, depth)
+                    } else {
+                        mapOf("type" to "object")
+                    }
+                } else {
+                    mapOf("type" to "object")
+                }
+                mapOf("type" to "array", "items" to itemSchema)
+            }
+            declaredType.startsWith("java.util.Map") -> {
+                mapOf("type" to "object", "additionalProperties" to mapOf("type" to "object"))
+            }
+            declaredType == "java.lang.Object" -> {
+                // For Object fields, use the actual type if available
+                if (field.actualTypes.isNotEmpty()) {
+                    val actualType = field.actualTypes.first()
+                    buildTypeSchema(actualType, schemas, processedTypes, visited, depth)
+                } else {
+                    mapOf("type" to "object")
+                }
+            }
+            else -> {
+                // Complex object type
+                if (field.actualTypes.isNotEmpty()) {
+                    val actualType = field.actualTypes.first()
+                    buildTypeSchema(actualType, schemas, processedTypes, visited, depth)
+                } else {
+                    mapOf("type" to "object", "description" to field.declaredType.simpleName)
+                }
             }
         }
-        return map
     }
 }
