@@ -192,7 +192,7 @@ class FindEndpointsCommand : Callable<Int> {
                 returnTypes[endpoint.path]?.let { result ->
                     result.returnStructures.forEach { structure ->
                         sb.appendLine("          Actual:   ${structure.formatTypeName()}")
-                        formatTypeStructure(structure, sb, "                    ")
+                        formatTypeStructure(structure, sb, "                    ", mutableSetOf(), 0)
                     }
                 }
             }
@@ -203,15 +203,40 @@ class FindEndpointsCommand : Callable<Int> {
         return sb.toString()
     }
 
-    private fun formatTypeStructure(structure: TypeStructure, sb: StringBuilder, indent: String) {
-        structure.fields.entries.sortedBy { it.key }.forEach { (name, field) ->
-            sb.append(indent)
-            sb.append("├── $name: ")
-            formatFieldStructure(field, sb, "$indent│   ")
+    private fun formatTypeStructure(
+        structure: TypeStructure,
+        sb: StringBuilder,
+        indent: String,
+        visited: MutableSet<String>,
+        depth: Int
+    ) {
+        // Prevent infinite recursion
+        if (depth > 10 || structure.className in visited) {
+            if (structure.className in visited) {
+                sb.appendLine("${indent}(circular reference to ${structure.simpleName})")
+            }
+            return
         }
+        visited.add(structure.className)
+
+        structure.fields.entries
+            .filter { !it.value.isJsonIgnored }  // Filter out @JsonIgnore fields
+            .sortedBy { it.value.effectiveJsonName }  // Sort by effective JSON name
+            .forEach { (_, field) ->
+                val displayName = field.effectiveJsonName  // Use @JsonProperty name if available
+                sb.append(indent)
+                sb.append("├── $displayName: ")
+                formatFieldStructure(field, sb, "$indent│   ", visited.toMutableSet(), depth + 1)
+            }
     }
 
-    private fun formatFieldStructure(field: FieldStructure, sb: StringBuilder, indent: String) {
+    private fun formatFieldStructure(
+        field: FieldStructure,
+        sb: StringBuilder,
+        indent: String,
+        visited: MutableSet<String>,
+        depth: Int
+    ) {
         val declaredType = field.declaredType.simpleName
         if (field.actualTypes.isEmpty()) {
             sb.appendLine(declaredType)
@@ -222,7 +247,7 @@ class FindEndpointsCommand : Callable<Int> {
             } else {
                 sb.appendLine("$declaredType → ${actual.formatTypeName()}")
             }
-            formatTypeStructure(actual, sb, indent)
+            formatTypeStructure(actual, sb, indent, visited.toMutableSet(), depth + 1)
         } else {
             sb.append(declaredType)
             sb.append(" → [")
@@ -260,28 +285,60 @@ class FindEndpointsCommand : Callable<Int> {
         return gson.toJson(output)
     }
 
-    private fun typeStructureToMap(structure: TypeStructure): Map<String, Any> {
+    private fun typeStructureToMap(
+        structure: TypeStructure,
+        visited: MutableSet<String> = mutableSetOf(),
+        depth: Int = 0
+    ): Map<String, Any> {
         val map = mutableMapOf<String, Any>(
             "type" to structure.className,
             "simpleName" to structure.simpleName,
             "formatted" to structure.formatTypeName()
         )
+
+        // Prevent infinite recursion from circular references
+        if (depth > 10 || structure.className in visited) {
+            if (structure.className in visited) {
+                map["circularReference"] = true
+            }
+            return map
+        }
+        visited.add(structure.className)
+
         if (structure.typeArguments.isNotEmpty()) {
-            map["typeArguments"] = structure.typeArguments.mapValues { typeStructureToMap(it.value) }
+            map["typeArguments"] = structure.typeArguments.mapValues {
+                typeStructureToMap(it.value, visited.toMutableSet(), depth + 1)
+            }
         }
         if (structure.fields.isNotEmpty()) {
-            map["fields"] = structure.fields.mapValues { fieldStructureToMap(it.value) }
+            // Filter out @JsonIgnore fields and use @JsonProperty names as keys
+            val filteredFields = structure.fields.entries
+                .filter { !it.value.isJsonIgnored }
+                .associate { it.value.effectiveJsonName to fieldStructureToMap(it.value, visited.toMutableSet(), depth + 1) }
+            if (filteredFields.isNotEmpty()) {
+                map["fields"] = filteredFields
+            }
         }
         return map
     }
 
-    private fun fieldStructureToMap(field: FieldStructure): Map<String, Any> {
+    private fun fieldStructureToMap(
+        field: FieldStructure,
+        visited: MutableSet<String> = mutableSetOf(),
+        depth: Int = 0
+    ): Map<String, Any> {
         val map = mutableMapOf<String, Any>(
             "declaredType" to field.declaredType.className,
             "isGenericParameter" to field.isGenericParameter
         )
+        // Include Jackson annotation info in output
+        if (field.jsonName != null) {
+            map["jsonPropertyName"] = field.jsonName
+        }
         if (field.actualTypes.isNotEmpty()) {
-            map["actualTypes"] = field.actualTypes.map { typeStructureToMap(it) }
+            map["actualTypes"] = field.actualTypes.map {
+                typeStructureToMap(it, visited.toMutableSet(), depth + 1)
+            }
         }
         return map
     }
