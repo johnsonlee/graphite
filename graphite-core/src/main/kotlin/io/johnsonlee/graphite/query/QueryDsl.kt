@@ -266,11 +266,8 @@ class ArgumentConstantQuery {
         methodPattern = MethodPatternBuilder().apply(block).build()
     }
 
-    fun config(block: AnalysisConfig.() -> Unit) {
-        analysisConfig = AnalysisConfig().run {
-            block()
-            this
-        }
+    fun config(block: AnalysisConfig.() -> AnalysisConfig) {
+        analysisConfig = AnalysisConfig().block()
     }
 }
 

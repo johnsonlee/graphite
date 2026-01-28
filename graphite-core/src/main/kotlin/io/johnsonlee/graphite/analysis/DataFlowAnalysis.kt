@@ -58,6 +58,20 @@ class DataFlowAnalysis(
                     if (node.receiver != null) {
                         traverse(node.receiver, currentPath, depth + 1)
                     }
+
+                    // Expand collection factory calls if enabled
+                    if (config.expandCollections && isCollectionFactory(node.callee)) {
+                        val collectionDepth = currentPath.count { nodeId ->
+                            val n = graph.node(nodeId)
+                            n is CallSiteNode && isCollectionFactory(n.callee)
+                        }
+                        if (collectionDepth < config.maxCollectionDepth) {
+                            // Trace each argument in the collection factory
+                            node.arguments.forEach { argId ->
+                                traverse(argId, currentPath, depth + 1)
+                            }
+                        }
+                    }
                 }
                 else -> {}
             }
@@ -135,6 +149,44 @@ class DataFlowAnalysis(
         // Find all stores to this field and trace the stored values
         // (simplified - real implementation would handle this)
     }
+
+    companion object {
+        /**
+         * Known collection factory methods that create collections from varargs.
+         * Format: "fully.qualified.ClassName.methodName"
+         */
+        private val COLLECTION_FACTORY_METHODS = setOf(
+            // Kotlin stdlib
+            "kotlin.collections.CollectionsKt.listOf",
+            "kotlin.collections.CollectionsKt.listOfNotNull",
+            "kotlin.collections.CollectionsKt.mutableListOf",
+            "kotlin.collections.CollectionsKt.arrayListOf",
+            "kotlin.collections.CollectionsKt.setOf",
+            "kotlin.collections.CollectionsKt.mutableSetOf",
+            "kotlin.collections.CollectionsKt.hashSetOf",
+            "kotlin.collections.CollectionsKt.linkedSetOf",
+            "kotlin.collections.SetsKt.setOf",
+            "kotlin.collections.SetsKt.mutableSetOf",
+            // Java stdlib
+            "java.util.Arrays.asList",
+            "java.util.List.of",
+            "java.util.Set.of",
+            "java.util.Map.of",
+            // Guava
+            "com.google.common.collect.ImmutableList.of",
+            "com.google.common.collect.ImmutableSet.of",
+            "com.google.common.collect.Lists.newArrayList",
+            "com.google.common.collect.Sets.newHashSet"
+        )
+
+        /**
+         * Check if a method is a collection factory that creates a collection from varargs.
+         */
+        fun isCollectionFactory(method: MethodDescriptor): Boolean {
+            val fullName = "${method.declaringClass.className}.${method.name}"
+            return fullName in COLLECTION_FACTORY_METHODS
+        }
+    }
 }
 
 /**
@@ -144,7 +196,19 @@ data class AnalysisConfig(
     val maxDepth: Int = 50,
     val interProcedural: Boolean = true,
     val contextSensitive: Boolean = false,
-    val flowSensitive: Boolean = true
+    val flowSensitive: Boolean = true,
+    /**
+     * When true, expand collection factory calls (listOf, Arrays.asList, etc.)
+     * to trace constants inside the collection elements.
+     * Default: false (preserves backward compatibility)
+     */
+    val expandCollections: Boolean = false,
+    /**
+     * Maximum depth for nested collection expansion (e.g., listOf(listOf(1, 2))).
+     * Only used when expandCollections is true.
+     * Default: 3
+     */
+    val maxCollectionDepth: Int = 3
 )
 
 /**
