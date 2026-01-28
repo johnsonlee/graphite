@@ -54,10 +54,14 @@ data class TypeStructure(
         sb.append(formatTypeName())
         sb.appendLine()
 
-        fields.entries.sortedBy { it.key }.forEach { (name, field) ->
+        val sortedFields = fields.entries.sortedBy { it.key }
+        sortedFields.forEachIndexed { index, (name, field) ->
+            val isLast = index == sortedFields.size - 1
             sb.append(indent)
-            sb.append("├── $name: ")
-            sb.append(field.toTreeString("$indent│   "))
+            sb.append(if (isLast) "└── " else "├── ")
+            sb.append("$name: ")
+            val childIndent = indent + if (isLast) "    " else "│   "
+            sb.append(field.toTreeString(childIndent))
         }
 
         return sb.toString()
@@ -168,10 +172,14 @@ data class FieldStructure(
                 sb.appendLine(actual.formatTypeName())
             }
             // Print nested fields
-            actual.fields.entries.sortedBy { it.key }.forEach { (name, field) ->
+            val sortedFields = actual.fields.entries.sortedBy { it.key }
+            sortedFields.forEachIndexed { index, (name, field) ->
+                val isLast = index == sortedFields.size - 1
                 sb.append(indent)
-                sb.append("├── $name: ")
-                sb.append(field.toTreeString("$indent│   "))
+                sb.append(if (isLast) "└── " else "├── ")
+                sb.append("$name: ")
+                val childIndent = indent + if (isLast) "    " else "│   "
+                sb.append(field.toTreeString(childIndent))
             }
         } else {
             // Multiple possible types

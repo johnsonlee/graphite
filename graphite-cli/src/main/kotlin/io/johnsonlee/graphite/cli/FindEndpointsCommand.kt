@@ -219,15 +219,19 @@ class FindEndpointsCommand : Callable<Int> {
         }
         visited.add(structure.className)
 
-        structure.fields.entries
+        val filteredFields = structure.fields.entries
             .filter { !it.value.isJsonIgnored }  // Filter out @JsonIgnore fields
             .sortedBy { it.value.effectiveJsonName }  // Sort by effective JSON name
-            .forEach { (_, field) ->
-                val displayName = field.effectiveJsonName  // Use @JsonProperty name if available
-                sb.append(indent)
-                sb.append("├── $displayName: ")
-                formatFieldStructure(field, sb, "$indent│   ", visited.toMutableSet(), depth + 1)
-            }
+
+        filteredFields.forEachIndexed { index, (_, field) ->
+            val isLast = index == filteredFields.size - 1
+            val displayName = field.effectiveJsonName  // Use @JsonProperty name if available
+            sb.append(indent)
+            sb.append(if (isLast) "└── " else "├── ")
+            sb.append("$displayName: ")
+            val childIndent = indent + if (isLast) "    " else "│   "
+            formatFieldStructure(field, sb, childIndent, visited.toMutableSet(), depth + 1)
+        }
     }
 
     private fun formatFieldStructure(
@@ -237,7 +241,7 @@ class FindEndpointsCommand : Callable<Int> {
         visited: MutableSet<String>,
         depth: Int
     ) {
-        val declaredType = field.declaredType.simpleName
+        val declaredType = formatDeclaredType(field.declaredType)
         if (field.actualTypes.isEmpty()) {
             sb.appendLine(declaredType)
         } else if (field.actualTypes.size == 1) {
@@ -253,6 +257,19 @@ class FindEndpointsCommand : Callable<Int> {
             sb.append(" → [")
             sb.append(field.actualTypes.joinToString(" | ") { it.formatTypeName() })
             sb.appendLine("]")
+        }
+    }
+
+    /**
+     * Format a TypeDescriptor with generic arguments.
+     * e.g., List<User>, Map<String, Integer>
+     */
+    private fun formatDeclaredType(type: TypeDescriptor): String {
+        return if (type.typeArguments.isEmpty()) {
+            type.simpleName
+        } else {
+            val args = type.typeArguments.joinToString(", ") { it.simpleName }
+            "${type.simpleName}<$args>"
         }
     }
 
