@@ -10,6 +10,10 @@ import sootup.core.jimple.basic.Local
 import sootup.core.jimple.basic.Value
 import sootup.core.jimple.common.constant.IntConstant as SootIntConstant
 import sootup.core.jimple.common.constant.LongConstant as SootLongConstant
+import sootup.core.jimple.common.constant.FloatConstant as SootFloatConstant
+import sootup.core.jimple.common.constant.DoubleConstant as SootDoubleConstant
+import sootup.core.jimple.common.constant.BooleanConstant as SootBooleanConstant
+import sootup.core.jimple.common.constant.NullConstant as SootNullConstant
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.constant.Constant as SootConstant
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr
@@ -930,18 +934,36 @@ class SootUpAdapter(
                     id = nextNodeId("const"),
                     value = constant.value
                 )
-                is SootLongConstant -> IntConstant(
+                is SootLongConstant -> LongConstant(
                     id = nextNodeId("const"),
-                    value = constant.value.toInt() // Simplified
+                    value = constant.value
+                )
+                is SootFloatConstant -> FloatConstant(
+                    id = nextNodeId("const"),
+                    value = constant.value
+                )
+                is SootDoubleConstant -> DoubleConstant(
+                    id = nextNodeId("const"),
+                    value = constant.value
+                )
+                is SootBooleanConstant -> BooleanConstant(
+                    id = nextNodeId("const"),
+                    value = constant == SootBooleanConstant.getTrue()
                 )
                 is SootStringConstant -> StringConstant(
                     id = nextNodeId("const"),
                     value = constant.value
                 )
-                else -> IntConstant(
-                    id = nextNodeId("const"),
-                    value = 0 // Fallback
+                is SootNullConstant -> NullConstant(
+                    id = nextNodeId("const")
                 )
+                else -> {
+                    log("Unsupported constant type: ${constant.javaClass.simpleName} = $constant")
+                    IntConstant(
+                        id = nextNodeId("const"),
+                        value = 0
+                    )
+                }
             }
             graphBuilder.addNode(node)
             node
@@ -977,7 +999,11 @@ class SootUpAdapter(
         return when (constant) {
             is SootIntConstant -> constant.value
             is SootLongConstant -> constant.value
+            is SootFloatConstant -> constant.value
+            is SootDoubleConstant -> constant.value
+            is SootBooleanConstant -> constant == SootBooleanConstant.getTrue()
             is SootStringConstant -> constant.value
+            is SootNullConstant -> null
             else -> null
         }
     }

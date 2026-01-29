@@ -345,6 +345,47 @@ class StaticFieldIndirectReferenceTest {
             "Should extract 3333 from AbKeyBoxed.BOXED_TEST_C (Integer constructor param), but got: $boxedCValues")
     }
 
+    @Test
+    fun `should extract float, double, boolean, and long enum constructor values`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println("[LOADER] $it") }
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        // Check that mixed-type enum values are extracted correctly
+        println("\n=== Mixed Param Enum Values ===")
+        listOf("FLOAT_KEY", "DOUBLE_KEY", "BOOL_KEY", "LONG_KEY").forEach { enumName ->
+            val values = graph.enumValues("sample.ab.MixedParamKey", enumName)
+            println("  MixedParamKey.$enumName: $values")
+        }
+
+        // Verify float value
+        val floatValues = graph.enumValues("sample.ab.MixedParamKey", "FLOAT_KEY") ?: emptyList()
+        assertTrue(floatValues.any { it is Float && it == 1.5f },
+            "Should extract 1.5f from MixedParamKey.FLOAT_KEY, but got: $floatValues")
+
+        // Verify double value
+        val doubleValues = graph.enumValues("sample.ab.MixedParamKey", "DOUBLE_KEY") ?: emptyList()
+        assertTrue(doubleValues.any { it is Double && it == 2.718 },
+            "Should extract 2.718 from MixedParamKey.DOUBLE_KEY, but got: $doubleValues")
+
+        // Verify boolean value (JVM represents boolean true as int 1 in bytecode)
+        val boolValues = graph.enumValues("sample.ab.MixedParamKey", "BOOL_KEY") ?: emptyList()
+        assertTrue(boolValues.any { it == 1 },
+            "Should extract 1 (boolean true) from MixedParamKey.BOOL_KEY, but got: $boolValues")
+
+        // Verify long value (large value that would be truncated if stored as Int)
+        val longValues = graph.enumValues("sample.ab.MixedParamKey", "LONG_KEY") ?: emptyList()
+        assertTrue(longValues.any { it is Long && it == 9999999999L },
+            "Should extract 9999999999L from MixedParamKey.LONG_KEY, but got: $longValues")
+    }
+
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
         val submodulePath = projectDir.resolve("build/classes/java/test")
