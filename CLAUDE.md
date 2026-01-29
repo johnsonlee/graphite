@@ -228,6 +228,45 @@ Graph maps: 64 bytes → 31 bytes per entry (51% savings)
 Total:      63% memory reduction for large applications
 ```
 
+### Feature Flags & Special Case Handling Anti-Patterns
+
+When adding special handling for specific cases (like collection factory methods), several pitfalls emerged:
+
+#### 1. Testing "Bug as Feature" Trap
+- A test that validates "feature X disabled should NOT find results" may actually be testing broken behavior
+- **Correct approach**: Regression tests should verify "scenarios that worked before still work after changes"
+- Example: Testing `expandCollections=false` shouldn't find constants was actually validating a bug
+
+#### 2. Early Return Breaks Generic Traversal
+```kotlin
+// BAD: Special case with early return breaks default behavior
+if (isSpecialCase) {
+    if (config.enableSpecialHandling) {
+        // do special handling
+    }
+    return  // <- This breaks normal traversal when flag is false!
+}
+
+// GOOD: Special case only adds behavior, doesn't remove default
+if (isSpecialCase && config.enableSpecialHandling) {
+    // do special handling
+    return  // Return only when special handling is active
+}
+// Default traversal continues for all other cases
+```
+
+#### 3. Config Flags Add Complexity Without Value
+- Before adding a config flag, verify the default behavior actually needs changing
+- The original backward slice already traversed all incoming edges correctly
+- Adding `expandCollections` flag created complexity and introduced bugs
+- **Rule**: If the default behavior is correct, don't add flags to disable it
+
+#### 4. Test Coverage Blind Spots
+- Original `FeatureFlagAnalysisTest` tested direct constant passing: `getOption(1001)`
+- Real-world usage included collection patterns: `getOption(List.of(AbKey.KEY))`
+- Bug only surfaced in production use, not in tests
+- **Rule**: Test coverage should mirror real-world usage patterns
+
 ## Productivity Insights
 
 ### Claude vs Staff Engineer: Type Hierarchy Analysis Feature
