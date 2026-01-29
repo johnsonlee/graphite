@@ -33,8 +33,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-beta.7")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.7")
+    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-beta.8")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.8")
 }
 ```
 
@@ -52,8 +52,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.johnsonlee.graphite:graphite-core:0.1.0-beta.7'
-    implementation 'io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.7'
+    implementation 'io.johnsonlee.graphite:graphite-core:0.1.0-beta.8'
+    implementation 'io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.8'
 }
 ```
 
