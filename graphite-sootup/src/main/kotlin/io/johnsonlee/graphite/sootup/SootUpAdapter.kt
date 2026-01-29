@@ -15,6 +15,7 @@ import sootup.core.jimple.common.constant.Constant as SootConstant
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr
 import sootup.core.jimple.common.expr.AbstractInvokeExpr
 import sootup.core.jimple.common.expr.JNewExpr
+import sootup.core.jimple.common.expr.JStaticInvokeExpr
 import sootup.core.jimple.common.ref.JFieldRef
 import sootup.core.jimple.common.ref.JArrayRef
 import sootup.core.jimple.common.ref.JParameterRef
@@ -393,6 +394,15 @@ class SootUpAdapter(
                     // Track constant assignments to locals
                     if (left is Local && right is SootConstant) {
                         localValues[left.name] = extractConstantValue(right)
+                    }
+
+                    // Track boxing method calls: Integer.valueOf(int), Long.valueOf(long), etc.
+                    // Pattern: $stackN = staticinvoke Integer.valueOf(1234)
+                    if (left is Local && right is JStaticInvokeExpr) {
+                        val boxedValue = extractBoxedValue(right)
+                        if (boxedValue != null) {
+                            localValues[left.name] = boxedValue
+                        }
                     }
 
                     // Track local-to-local assignments (aliases)
@@ -968,6 +978,44 @@ class SootUpAdapter(
             is SootIntConstant -> constant.value
             is SootLongConstant -> constant.value
             is SootStringConstant -> constant.value
+            else -> null
+        }
+    }
+
+    /**
+     * Extract value from boxing method calls like Integer.valueOf(int), Long.valueOf(long), etc.
+     * These are used when enum constructor parameters are wrapper types (Integer, Long, etc.)
+     * instead of primitive types (int, long, etc.).
+     *
+     * Pattern in bytecode: $stackN = staticinvoke Integer.valueOf(1234)
+     */
+    private fun extractBoxedValue(invokeExpr: JStaticInvokeExpr): Any? {
+        val methodSig = invokeExpr.methodSignature
+        val className = methodSig.declClassType.fullyQualifiedName
+        val methodName = methodSig.name
+
+        // Check for boxing methods: Integer.valueOf, Long.valueOf, etc.
+        val isBoxingMethod = when (className) {
+            "java.lang.Integer" -> methodName == "valueOf"
+            "java.lang.Long" -> methodName == "valueOf"
+            "java.lang.Short" -> methodName == "valueOf"
+            "java.lang.Byte" -> methodName == "valueOf"
+            "java.lang.Float" -> methodName == "valueOf"
+            "java.lang.Double" -> methodName == "valueOf"
+            "java.lang.Boolean" -> methodName == "valueOf"
+            "java.lang.Character" -> methodName == "valueOf"
+            else -> false
+        }
+
+        if (!isBoxingMethod) return null
+
+        // Extract the primitive value from the first argument
+        val args = invokeExpr.args
+        if (args.isEmpty()) return null
+
+        val arg = args[0]
+        return when (arg) {
+            is SootConstant -> extractConstantValue(arg)
             else -> null
         }
     }
