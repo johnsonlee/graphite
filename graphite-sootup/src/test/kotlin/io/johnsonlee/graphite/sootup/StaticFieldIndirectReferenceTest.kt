@@ -244,6 +244,74 @@ class StaticFieldIndirectReferenceTest {
             "Should find SIMPLE_TEST_ID through direct enum reference in Arrays.asList")
     }
 
+    @Test
+    fun `should find constants through static field holding enum getId result`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+        val graphite = Graphite.from(graph)
+
+        // Query for getOption(Integer) - this is what getCachedIdOption calls
+        val results = graphite.query {
+            findArgumentConstants {
+                method {
+                    declaringClass = "sample.ab.AbClient"
+                    name = "getOption"
+                    parameterTypes = listOf("java.lang.Integer")
+                }
+                argumentIndex = 0
+            }
+        }
+
+        // Filter to results from getCachedIdOption and getCachedCheckoutOption methods
+        val cachedIdResults = results.filter {
+            it.callSite.caller.name in listOf("getCachedIdOption", "getCachedCheckoutOption")
+        }
+
+        println("\n=== Pattern 5 & 6: Static field holding enum.getId() result ===")
+        println("Results from cached ID methods: ${cachedIdResults.size}")
+        cachedIdResults.forEach { result ->
+            println("  Caller: ${result.callSite.caller.name}")
+            println("  Constant: ${result.constant}")
+            result.propagationPath?.let { path ->
+                println("  Path: ${path.toDisplayString()}")
+            }
+        }
+
+        // Expected: Should trace CACHED_SIMPLE_ID -> AbKey.SIMPLE_TEST_ID.getId() -> 1234
+        //           and CACHED_CHECKOUT_ID -> AbKey.CHECKOUT_FLOW.getId() -> 5678
+        val foundIntegers = cachedIdResults
+            .map { it.constant }
+            .filterIsInstance<IntConstant>()
+            .map { it.value }
+            .toSet()
+
+        val foundEnums = cachedIdResults
+            .map { it.constant }
+            .filterIsInstance<EnumConstant>()
+            .map { it.enumName to it.value }
+            .toSet()
+
+        println("Found integers: $foundIntegers")
+        println("Found enums with values: $foundEnums")
+
+        // The analysis should find either:
+        // 1. The integer constants directly (1234, 5678) if it traces through getId() return
+        // 2. The enum constants (SIMPLE_TEST_ID, CHECKOUT_FLOW) if it traces to the receiver
+        val foundValues = foundIntegers + foundEnums.mapNotNull { it.second as? Int }
+
+        assertTrue(foundValues.contains(1234) || foundEnums.any { it.first == "SIMPLE_TEST_ID" },
+            "Should find 1234 or SIMPLE_TEST_ID through CACHED_SIMPLE_ID static field")
+        assertTrue(foundValues.contains(5678) || foundEnums.any { it.first == "CHECKOUT_FLOW" },
+            "Should find 5678 or CHECKOUT_FLOW through CACHED_CHECKOUT_ID static field")
+    }
+
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
         val submodulePath = projectDir.resolve("build/classes/java/test")

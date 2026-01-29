@@ -30,6 +30,11 @@ public class AbTestResolver {
     // Mixed pattern: some keys from static field, combined at call site
     private static final AbKey SINGLE_KEY = AbKey.SIMPLE_TEST_ID;
 
+    // Pattern: Static field holds the result of enum.getId()
+    // This is a common pattern where the integer ID is cached in a static field
+    private static final Integer CACHED_SIMPLE_ID = AbKey.SIMPLE_TEST_ID.getId();  // 1234
+    private static final Integer CACHED_CHECKOUT_ID = AbKey.CHECKOUT_FLOW.getId(); // 5678
+
     /**
      * Pattern 1: Static field list passed directly to SDK method.
      * Expected to find: 1234 (from AbKey.SIMPLE_TEST_ID)
@@ -60,5 +65,21 @@ public class AbTestResolver {
      */
     public boolean isDirectEnumEnabled() {
         return abClient.getOption(Arrays.asList(AbKey.SIMPLE_TEST_ID)).isTreatment();
+    }
+
+    /**
+     * Pattern 5: Static field holds cached enum.getId() result.
+     * Expected to find: 1234 (from CACHED_SIMPLE_ID <- AbKey.SIMPLE_TEST_ID.getId())
+     */
+    public String getCachedIdOption() {
+        return abClient.getOption(CACHED_SIMPLE_ID);
+    }
+
+    /**
+     * Pattern 6: Another cached ID field.
+     * Expected to find: 5678 (from CACHED_CHECKOUT_ID <- AbKey.CHECKOUT_FLOW.getId())
+     */
+    public String getCachedCheckoutOption() {
+        return abClient.getOption(CACHED_CHECKOUT_ID);
     }
 }
