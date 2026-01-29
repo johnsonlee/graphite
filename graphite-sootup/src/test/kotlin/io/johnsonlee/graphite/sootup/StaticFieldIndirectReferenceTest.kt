@@ -312,6 +312,39 @@ class StaticFieldIndirectReferenceTest {
             "Should find 5678 or CHECKOUT_FLOW through CACHED_CHECKOUT_ID static field")
     }
 
+    @Test
+    fun `should extract values from boxed Integer enum constructor parameters`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.ab"),
+            buildCallGraph = false,
+            verbose = { println("[LOADER] $it") }
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        // Check that boxed enum values are extracted correctly
+        println("\n=== Boxed Integer Enum Values ===")
+        listOf("BOXED_TEST_A", "BOXED_TEST_B", "BOXED_TEST_C").forEach { enumName ->
+            val values = graph.enumValues("sample.ab.AbKeyBoxed", enumName)
+            println("  AbKeyBoxed.$enumName: $values")
+        }
+
+        // Verify the boxed enum values are extracted
+        val boxedAValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_A") ?: emptyList()
+        val boxedBValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_B") ?: emptyList()
+        val boxedCValues = graph.enumValues("sample.ab.AbKeyBoxed", "BOXED_TEST_C") ?: emptyList()
+
+        assertTrue(boxedAValues.contains(1111),
+            "Should extract 1111 from AbKeyBoxed.BOXED_TEST_A (Integer constructor param), but got: $boxedAValues")
+        assertTrue(boxedBValues.contains(2222),
+            "Should extract 2222 from AbKeyBoxed.BOXED_TEST_B (Integer constructor param), but got: $boxedBValues")
+        assertTrue(boxedCValues.contains(3333),
+            "Should extract 3333 from AbKeyBoxed.BOXED_TEST_C (Integer constructor param), but got: $boxedCValues")
+    }
+
     private fun findTestClassesDir(): Path {
         val projectDir = Path.of(System.getProperty("user.dir"))
         val submodulePath = projectDir.resolve("build/classes/java/test")

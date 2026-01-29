@@ -82,4 +82,28 @@ public class AbTestResolver {
     public String getCachedCheckoutOption() {
         return abClient.getOption(CACHED_CHECKOUT_ID);
     }
+
+    // ==================== Boxed Integer Enum Patterns ====================
+    // These test enums with Integer (boxed) constructor parameters instead of int (primitive)
+
+    // Static field holding boxed enum's cached ID
+    private static final Integer BOXED_CACHED_A = AbKeyBoxed.BOXED_TEST_A.getId();  // 1111
+    private static final Integer BOXED_CACHED_B = AbKeyBoxed.BOXED_TEST_B.getId();  // 2222
+
+    /**
+     * Pattern 7: Boxed enum with Integer constructor parameter.
+     * The bytecode uses Integer.valueOf(1111) for boxing.
+     * Expected to find: 1111 (from AbKeyBoxed.BOXED_TEST_A)
+     */
+    public String getBoxedEnumOption() {
+        return abClient.getOption(BOXED_CACHED_A);
+    }
+
+    /**
+     * Pattern 8: Another boxed enum cached ID.
+     * Expected to find: 2222 (from AbKeyBoxed.BOXED_TEST_B)
+     */
+    public String getBoxedEnumOptionB() {
+        return abClient.getOption(BOXED_CACHED_B);
+    }
 }
