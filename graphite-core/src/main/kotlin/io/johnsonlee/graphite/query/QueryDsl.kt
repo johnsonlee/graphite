@@ -42,14 +42,15 @@ class GraphiteQuery(private val graph: Graph) {
                 val argNodeId = callSite.arguments[argIndex]
                 val flowResult = analysis.backwardSlice(argNodeId)
 
-                // Use allConstants() to include enum constants from field accesses
-                flowResult.allConstants().forEach { constant ->
+                // Use constantsWithPaths() to get constants with their propagation paths
+                flowResult.constantsWithPaths().forEach { (constant, propagationPath) ->
                     results.add(
                         ArgumentConstantResult(
                             callSite = callSite,
                             argumentIndex = argIndex,
                             constant = constant,
-                            path = flowResult.paths.firstOrNull()
+                            path = flowResult.paths.firstOrNull(),
+                            propagationPath = propagationPath
                         )
                     )
                 }
@@ -322,11 +323,35 @@ data class ArgumentConstantResult(
     val callSite: CallSiteNode,
     val argumentIndex: Int,
     val constant: ConstantNode,
-    val path: io.johnsonlee.graphite.analysis.DataFlowPath?
+    val path: io.johnsonlee.graphite.analysis.DataFlowPath?,
+    val propagationPath: io.johnsonlee.graphite.analysis.PropagationPath? = null
 ) {
     val location: String get() = "${callSite.caller.signature}:${callSite.lineNumber ?: "?"}"
 
     val value: Any? get() = constant.value
+
+    /**
+     * Get the propagation depth (number of steps from source to sink).
+     * Higher depth indicates more complex value flow.
+     */
+    val propagationDepth: Int get() = propagationPath?.depth ?: 0
+
+    /**
+     * Get a human-readable description of the propagation path.
+     */
+    val propagationDescription: String get() = propagationPath?.toDisplayString() ?: "(direct)"
+
+    /**
+     * Check if this result involves method return value propagation.
+     */
+    val involvesReturnValue: Boolean get() =
+        propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.CALL_SITE } ?: false
+
+    /**
+     * Check if this result involves field access.
+     */
+    val involvesFieldAccess: Boolean get() =
+        propagationPath?.steps?.any { it.nodeType == io.johnsonlee.graphite.analysis.PropagationNodeType.FIELD } ?: false
 }
 
 data class ReturnTypeResult(
