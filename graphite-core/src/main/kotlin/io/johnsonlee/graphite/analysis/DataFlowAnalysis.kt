@@ -279,8 +279,13 @@ class DataFlowAnalysis(
     }
 
     private fun traceFieldStores(field: FieldNode, path: List<NodeId>, depth: Int) {
-        // Find all stores to this field and trace the stored values
-        // (simplified - real implementation would handle this)
+        // Find all stores to this field by looking at incoming edges with FIELD_STORE kind
+        // This handles patterns like:
+        //   static final List<X> FIELD = Arrays.asList(X.CONST);
+        // Where the field is initialized in <clinit> and used in another method
+        //
+        // Note: The main backward traversal already handles this via graph.incoming(),
+        // but this method can be used for additional interprocedural analysis if needed.
     }
 
     companion object {

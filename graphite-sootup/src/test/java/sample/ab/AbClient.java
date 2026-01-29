@@ -51,4 +51,37 @@ public class AbClient {
         // Mock implementation
         return java.util.Collections.emptyMap();
     }
+
+    /**
+     * Get variants for multiple AbKey enums.
+     * Used to test static field indirect reference pattern.
+     */
+    public java.util.Map<AbKey, String> getOptionsByAbKey(java.util.List<AbKey> keys) {
+        // Mock implementation
+        return java.util.Collections.emptyMap();
+    }
+
+    /**
+     * Treatment result wrapper (simulates real AB SDK response).
+     */
+    public static class TreatmentResult {
+        private final boolean treatment;
+
+        public TreatmentResult(boolean treatment) {
+            this.treatment = treatment;
+        }
+
+        public boolean isTreatment() {
+            return treatment;
+        }
+    }
+
+    /**
+     * Get treatment result for a list of AbKeys.
+     * Returns a TreatmentResult that can be checked with isTreatment().
+     */
+    public TreatmentResult getOption(java.util.List<AbKey> keys) {
+        // Mock implementation
+        return new TreatmentResult(false);
+    }
 }
