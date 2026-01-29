@@ -100,9 +100,6 @@ class StaticFieldIndirectReferenceTest {
                     parameterTypes = listOf("java.util.List")
                 }
                 argumentIndex = 0
-                config {
-                    copy(expandCollections = true)
-                }
             }
         }
 
@@ -178,9 +175,6 @@ class StaticFieldIndirectReferenceTest {
                     parameterTypes = listOf("java.util.List")
                 }
                 argumentIndex = 0
-                config {
-                    copy(expandCollections = true)
-                }
             }
         }
 
@@ -226,9 +220,6 @@ class StaticFieldIndirectReferenceTest {
                     parameterTypes = listOf("java.util.List")
                 }
                 argumentIndex = 0
-                config {
-                    copy(expandCollections = true)
-                }
             }
         }
 

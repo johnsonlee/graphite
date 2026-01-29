@@ -97,19 +97,6 @@ class FindArgumentsCommand : Callable<Int> {
     var libFilters: List<String> = emptyList()
 
     @Option(
-        names = ["--expand-collections"],
-        description = ["Expand collection factory calls (listOf, Arrays.asList, etc.) to trace element constants"]
-    )
-    var expandCollections: Boolean = false
-
-    @Option(
-        names = ["--max-collection-depth"],
-        description = ["Maximum depth for nested collection expansion (default: 3)"],
-        defaultValue = "3"
-    )
-    var maxCollectionDepth: Int = 3
-
-    @Option(
         names = ["--show-path"],
         description = ["Show propagation paths for each constant value (useful for complexity analysis)"]
     )
@@ -213,12 +200,6 @@ class FindArgumentsCommand : Callable<Int> {
                         }
                     }
                     argumentIndex = argIndex
-                    config {
-                        copy(
-                            expandCollections = this@FindArgumentsCommand.expandCollections,
-                            maxCollectionDepth = this@FindArgumentsCommand.maxCollectionDepth
-                        )
-                    }
                 }
             }
 

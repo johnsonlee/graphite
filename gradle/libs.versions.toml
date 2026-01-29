@@ -8,8 +8,10 @@ lombok = "1.18.30"
 asm = "9.7"
 fastutil = "8.5.13"
 jackson = "2.17.0"
+guava = "33.0.0-jre"
 
 [libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
 ff4j-core = { module = "org.ff4j:ff4j-core", version.ref = "ff4j" }
 spring-web = { module = "org.springframework:spring-web", version.ref = "spring" }
