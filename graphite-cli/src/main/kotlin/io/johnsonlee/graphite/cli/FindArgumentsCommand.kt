@@ -109,6 +109,26 @@ class FindArgumentsCommand : Callable<Int> {
     )
     var maxCollectionDepth: Int = 3
 
+    @Option(
+        names = ["--show-path"],
+        description = ["Show propagation paths for each constant value (useful for complexity analysis)"]
+    )
+    var showPath: Boolean = false
+
+    @Option(
+        names = ["--min-depth"],
+        description = ["Only show results with propagation depth >= this value (for complexity filtering)"],
+        defaultValue = "0"
+    )
+    var minDepth: Int = 0
+
+    @Option(
+        names = ["--max-path-depth"],
+        description = ["Only show results with propagation depth <= this value"],
+        defaultValue = "100"
+    )
+    var maxPathDepth: Int = 100
+
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
@@ -202,19 +222,31 @@ class FindArgumentsCommand : Callable<Int> {
                 }
             }
 
-            if (results.isEmpty()) {
+            // Filter results by propagation depth
+            val filteredResults = results.filter { result ->
+                val depth = result.propagationDepth
+                depth >= minDepth && depth <= maxPathDepth
+            }
+
+            if (filteredResults.isEmpty()) {
                 if (verbose) {
-                    System.err.println("\nNo call sites found for $targetClass.$targetMethod")
+                    if (results.isEmpty()) {
+                        System.err.println("\nNo call sites found for $targetClass.$targetMethod")
 
-                    // Try to help diagnose
-                    val similarMethods = graph.callSites(
-                        io.johnsonlee.graphite.graph.MethodPattern(name = targetMethod)
-                    ).map { it.callee.declaringClass.className }.distinct().toList()
+                        // Try to help diagnose
+                        val similarMethods = graph.callSites(
+                            io.johnsonlee.graphite.graph.MethodPattern(name = targetMethod)
+                        ).map { it.callee.declaringClass.className }.distinct().toList()
 
-                    if (similarMethods.isNotEmpty()) {
-                        System.err.println("But found '$targetMethod' in these classes:")
-                        similarMethods.forEach { System.err.println("  - $it") }
-                        System.err.println("\nDid you mean one of these?")
+                        if (similarMethods.isNotEmpty()) {
+                            System.err.println("But found '$targetMethod' in these classes:")
+                            similarMethods.forEach { System.err.println("  - $it") }
+                            System.err.println("\nDid you mean one of these?")
+                        }
+                    } else {
+                        System.err.println("\nFound ${results.size} result(s), but none matched depth filter (min=$minDepth, max=$maxPathDepth)")
+                        val depths = results.map { it.propagationDepth }.distinct().sorted()
+                        System.err.println("Available depths: $depths")
                     }
                 }
                 // Output empty result in the requested format
@@ -225,8 +257,8 @@ class FindArgumentsCommand : Callable<Int> {
             }
 
             val output = when (outputFormat.lowercase()) {
-                "json" -> formatJson(results)
-                else -> formatText(results)
+                "json" -> formatJson(filteredResults)
+                else -> formatText(filteredResults)
             }
 
             println(output)
@@ -249,12 +281,42 @@ class FindArgumentsCommand : Callable<Int> {
         // Group by constant value for deduplication
         val grouped = results.groupBy { constantToString(it.constant) }
 
+        // Calculate complexity statistics
+        val depths = results.map { it.propagationDepth }
+        val maxDepthFound = depths.maxOrNull() ?: 0
+        val avgDepth = if (depths.isNotEmpty()) depths.average() else 0.0
+        val complexResults = results.count { it.involvesReturnValue || it.involvesFieldAccess }
+
         grouped.forEach { (value, occurrences) ->
             sb.appendLine("  $value")
             sb.appendLine("    Type: ${constantTypeName(occurrences.first().constant)}")
             sb.appendLine("    Occurrences: ${occurrences.size}")
+
+            // Show depth statistics for this value
+            val valueDepths = occurrences.map { it.propagationDepth }
+            val maxValueDepth = valueDepths.maxOrNull() ?: 0
+            val minValueDepth = valueDepths.minOrNull() ?: 0
+            if (maxValueDepth > 0) {
+                sb.appendLine("    Propagation depth: ${if (minValueDepth == maxValueDepth) "$minValueDepth" else "$minValueDepth-$maxValueDepth"}")
+            }
+
             occurrences.take(5).forEach { result ->
-                sb.appendLine("      - ${result.location}")
+                val depthStr = if (result.propagationDepth > 0) " [depth=${result.propagationDepth}]" else ""
+                sb.appendLine("      - ${result.location}$depthStr")
+
+                // Show propagation path if --show-path is enabled
+                if (showPath) {
+                    result.propagationPath?.let { path ->
+                        sb.appendLine("        Path: ${path.toDisplayString()}")
+                        if (verbose) {
+                            sb.appendLine("        Source type: ${path.sourceType}")
+                            path.steps.forEachIndexed { idx, step ->
+                                val arrow = if (idx < path.steps.size - 1) " →" else ""
+                                sb.appendLine("          ${idx + 1}. ${step.toDisplayString()}${step.edgeKind?.let { " [$it]" } ?: ""}$arrow")
+                            }
+                        }
+                    }
+                }
             }
             if (occurrences.size > 5) {
                 sb.appendLine("      ... and ${occurrences.size - 5} more")
@@ -262,27 +324,75 @@ class FindArgumentsCommand : Callable<Int> {
             sb.appendLine()
         }
 
-        sb.appendLine("Summary: ${grouped.size} unique value(s), ${results.size} total occurrence(s)")
+        sb.appendLine("Summary:")
+        sb.appendLine("  Unique values: ${grouped.size}")
+        sb.appendLine("  Total occurrences: ${results.size}")
+        sb.appendLine("  Max propagation depth: $maxDepthFound")
+        sb.appendLine("  Avg propagation depth: ${"%.1f".format(avgDepth)}")
+        if (complexResults > 0) {
+            sb.appendLine("  Complex paths (method calls/field access): $complexResults")
+        }
+
         return sb.toString()
     }
 
     private fun formatJson(results: List<io.johnsonlee.graphite.query.ArgumentConstantResult>): String {
         val gson = GsonBuilder().setPrettyPrinting().create()
+
+        // Calculate complexity statistics
+        val depths = results.map { it.propagationDepth }
+        val maxDepthFound = depths.maxOrNull() ?: 0
+        val avgDepth = if (depths.isNotEmpty()) depths.average() else 0.0
+        val complexResults = results.count { it.involvesReturnValue || it.involvesFieldAccess }
+
         val output = mapOf(
             "targetClass" to targetClass,
             "targetMethod" to targetMethod,
             "argumentIndex" to argIndex,
             "totalOccurrences" to results.size,
+            "statistics" to mapOf(
+                "maxPropagationDepth" to maxDepthFound,
+                "avgPropagationDepth" to "%.2f".format(avgDepth).toDouble(),
+                "complexPaths" to complexResults
+            ),
             "uniqueValues" to results.groupBy { constantKey(it.constant) }.map { (_, occurrences) ->
                 val constant = occurrences.first().constant
+                val valueDepths = occurrences.map { it.propagationDepth }
                 val baseMap = mutableMapOf<String, Any?>(
                     "type" to constantTypeName(constant),
+                    "depthRange" to mapOf(
+                        "min" to (valueDepths.minOrNull() ?: 0),
+                        "max" to (valueDepths.maxOrNull() ?: 0)
+                    ),
                     "occurrences" to occurrences.map { result ->
-                        mapOf(
+                        val occMap = mutableMapOf<String, Any?>(
                             "location" to result.location,
                             "callerMethod" to result.callSite.caller.name,
-                            "callerClass" to result.callSite.caller.declaringClass.className
+                            "callerClass" to result.callSite.caller.declaringClass.className,
+                            "propagationDepth" to result.propagationDepth,
+                            "involvesReturnValue" to result.involvesReturnValue,
+                            "involvesFieldAccess" to result.involvesFieldAccess
                         )
+                        // Add propagation path if --show-path is enabled
+                        if (showPath) {
+                            result.propagationPath?.let { path ->
+                                occMap["propagationPath"] = mapOf(
+                                    "sourceType" to path.sourceType.name,
+                                    "depth" to path.depth,
+                                    "display" to path.toDisplayString(),
+                                    "steps" to path.steps.map { step ->
+                                        mapOf(
+                                            "nodeType" to step.nodeType.name,
+                                            "description" to step.description,
+                                            "location" to step.location,
+                                            "edgeKind" to step.edgeKind?.name,
+                                            "depth" to step.depth
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                        occMap
                     }
                 )
                 // Add type-specific fields
