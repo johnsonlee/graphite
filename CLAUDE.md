@@ -10,6 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Do NOT run `./gradlew publish*` without user approval
 - Always show a summary of changes and wait for explicit user confirmation before committing or publishing
 
+**Publishing policy:**
+- NEVER publish via local `./gradlew publish*` commands
+- ALWAYS publish by creating and pushing a git tag, which triggers GitHub Actions to publish automatically
+- Workflow: `git tag vX.Y.Z && git push origin vX.Y.Z`
+
 **Before publishing a new version:**
 1. ALWAYS check existing versions first: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
 2. Determine the next version number based on existing versions
