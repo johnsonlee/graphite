@@ -97,6 +97,26 @@ results.forEach { result ->
 }
 ```
 
+### Track Multiple Method Arguments
+
+```kotlin
+// Track constants passed to multiple parameters at once
+val results = Graphite.from(graph).query {
+    findArgumentConstants {
+        method {
+            declaringClass = "com.example.ab.AbClient"
+            name = "getOption"
+        }
+        argumentIndices = listOf(0, 1)  // analyze both arg 0 and arg 1
+    }
+}
+
+// Results include argumentIndex so you can distinguish which parameter each constant belongs to
+results.forEach { result ->
+    println("arg[${result.argumentIndex}] = ${result.value} at ${result.location}")
+}
+```
+
 ### Find Feature Flags (String Constants)
 
 ```kotlin
@@ -244,6 +264,13 @@ java -jar graphite-cli.jar find-args app.jar \
   -m getOption \
   -p com.example.ExperimentId \
   --include com.example
+
+# Track multiple arguments at once (comma-separated indices)
+java -jar graphite-cli.jar find-args app.jar \
+  -c com.example.AbClient \
+  -m getOption \
+  -i 0,1 \
+  --include com.example
 ```
 
 ### Find HTTP Endpoints
@@ -305,7 +332,7 @@ The `-e, --endpoint` option supports wildcard patterns for matching endpoint pat
 | `-m, --method` | Target method name (required) |
 | `-r, --regex` | Treat class and method names as regex patterns |
 | `-p, --param-types` | Method parameter signature (comma-separated for multi-param methods, e.g., `-p int,java.lang.String` matches `method(int, String)`) |
-| `-i, --arg-index` | Argument index (0-based, default: 0) |
+| `-i, --arg-index` | Argument indices (0-based, comma-separated, e.g., `0,1,2`; default: 0) |
 | `--include` | Package prefixes to include |
 | `--exclude` | Package prefixes to exclude |
 | `-f, --format` | Output format: `text` or `json` |

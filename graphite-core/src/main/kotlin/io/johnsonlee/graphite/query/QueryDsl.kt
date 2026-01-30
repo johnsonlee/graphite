@@ -18,7 +18,7 @@ class GraphiteQuery(private val graph: Graph) {
     /**
      * Find all constant values passed to methods matching the pattern.
      *
-     * Example - Find all AB IDs:
+     * Example - Find all AB IDs (single argument):
      * ```
      * graphite.findArgumentConstants {
      *     method {
@@ -29,30 +29,43 @@ class GraphiteQuery(private val graph: Graph) {
      *     argumentIndex = 0
      * }
      * ```
+     *
+     * Example - Track multiple arguments:
+     * ```
+     * graphite.findArgumentConstants {
+     *     method {
+     *         name = "setConfig"
+     *         declaringClass = "com.example.ConfigManager"
+     *     }
+     *     argumentIndices = listOf(0, 1, 2)
+     * }
+     * ```
      */
     fun findArgumentConstants(block: ArgumentConstantQuery.() -> Unit): List<ArgumentConstantResult> {
         val query = ArgumentConstantQuery().apply(block)
         val analysis = DataFlowAnalysis(graph, query.analysisConfig)
         val results = mutableListOf<ArgumentConstantResult>()
+        val indices = query.resolveIndices()
 
         // Find all call sites matching the method pattern
         graph.callSites(query.methodPattern).forEach { callSite ->
-            val argIndex = query.argumentIndex ?: 0
-            if (argIndex < callSite.arguments.size) {
-                val argNodeId = callSite.arguments[argIndex]
-                val flowResult = analysis.backwardSlice(argNodeId)
+            for (argIndex in indices) {
+                if (argIndex < callSite.arguments.size) {
+                    val argNodeId = callSite.arguments[argIndex]
+                    val flowResult = analysis.backwardSlice(argNodeId)
 
-                // Use constantsWithPaths() to get constants with their propagation paths
-                flowResult.constantsWithPaths().forEach { (constant, propagationPath) ->
-                    results.add(
-                        ArgumentConstantResult(
-                            callSite = callSite,
-                            argumentIndex = argIndex,
-                            constant = constant,
-                            path = flowResult.paths.firstOrNull(),
-                            propagationPath = propagationPath
+                    // Use constantsWithPaths() to get constants with their propagation paths
+                    flowResult.constantsWithPaths().forEach { (constant, propagationPath) ->
+                        results.add(
+                            ArgumentConstantResult(
+                                callSite = callSite,
+                                argumentIndex = argIndex,
+                                constant = constant,
+                                path = flowResult.paths.firstOrNull(),
+                                propagationPath = propagationPath
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -261,7 +274,20 @@ class GraphiteQuery(private val graph: Graph) {
 class ArgumentConstantQuery {
     var methodPattern: MethodPattern = MethodPattern()
     var argumentIndex: Int? = null
+    var argumentIndices: List<Int>? = null
     var analysisConfig: AnalysisConfig = AnalysisConfig()
+
+    /**
+     * Resolve the effective argument indices to analyze.
+     *
+     * Priority:
+     * 1. [argumentIndices] if explicitly set
+     * 2. [argumentIndex] if explicitly set (wrapped in a list)
+     * 3. Default: listOf(0)
+     */
+    internal fun resolveIndices(): List<Int> {
+        return argumentIndices ?: argumentIndex?.let { listOf(it) } ?: listOf(0)
+    }
 
     fun method(block: MethodPatternBuilder.() -> Unit) {
         methodPattern = MethodPatternBuilder().apply(block).build()
