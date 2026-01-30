@@ -51,10 +51,10 @@ class FindArgumentsCommand : Callable<Int> {
 
     @Option(
         names = ["-i", "--arg-index"],
-        description = ["Argument index to analyze (0-based, default: 0)"],
-        defaultValue = "0"
+        description = ["Argument indices to analyze (0-based, comma-separated, e.g., 0,1,2; default: 0)"],
+        split = ","
     )
-    var argIndex: Int = 0
+    var argIndices: List<Int> = listOf(0)
 
     @Option(
         names = ["--include"],
@@ -128,7 +128,7 @@ class FindArgumentsCommand : Callable<Int> {
             if (paramTypes.isNotEmpty()) {
                 System.err.println("Parameter types: $paramTypes")
             }
-            System.err.println("Argument index: $argIndex")
+            System.err.println("Argument indices: $argIndices")
         }
 
         try {
@@ -199,7 +199,7 @@ class FindArgumentsCommand : Callable<Int> {
                             parameterTypes = paramTypes
                         }
                     }
-                    argumentIndex = argIndex
+                    argumentIndices = argIndices
                 }
             }
 
@@ -256,11 +256,14 @@ class FindArgumentsCommand : Callable<Int> {
 
     private fun formatText(results: List<io.johnsonlee.graphite.query.ArgumentConstantResult>): String {
         val sb = StringBuilder()
-        sb.appendLine("Found ${results.size} argument constant(s) for $targetClass.$targetMethod (arg $argIndex):")
+        val argLabel = if (argIndices.size == 1) "arg ${argIndices.first()}" else "args ${argIndices.joinToString(",")}"
+        sb.appendLine("Found ${results.size} argument constant(s) for $targetClass.$targetMethod ($argLabel):")
         sb.appendLine()
 
-        // Group by constant value for deduplication
-        val grouped = results.groupBy { constantToString(it.constant) }
+        // Group by argument index first if multiple indices, then by constant value
+        val byArgIndex = results.groupBy { it.argumentIndex }
+        val sortedArgIndices = byArgIndex.keys.sorted()
+        val multiArg = sortedArgIndices.size > 1
 
         // Calculate complexity statistics
         val depths = results.map { it.propagationDepth }
@@ -268,46 +271,59 @@ class FindArgumentsCommand : Callable<Int> {
         val avgDepth = if (depths.isNotEmpty()) depths.average() else 0.0
         val complexResults = results.count { it.involvesReturnValue || it.involvesFieldAccess }
 
-        grouped.forEach { (value, occurrences) ->
-            sb.appendLine("  $value")
-            sb.appendLine("    Type: ${constantTypeName(occurrences.first().constant)}")
-            sb.appendLine("    Occurrences: ${occurrences.size}")
-
-            // Show depth statistics for this value
-            val valueDepths = occurrences.map { it.propagationDepth }
-            val maxValueDepth = valueDepths.maxOrNull() ?: 0
-            val minValueDepth = valueDepths.minOrNull() ?: 0
-            if (maxValueDepth > 0) {
-                sb.appendLine("    Propagation depth: ${if (minValueDepth == maxValueDepth) "$minValueDepth" else "$minValueDepth-$maxValueDepth"}")
+        for (argIdx in sortedArgIndices) {
+            val argResults = byArgIndex[argIdx] ?: continue
+            if (multiArg) {
+                sb.appendLine("  [arg $argIdx]")
             }
 
-            occurrences.take(5).forEach { result ->
-                val depthStr = if (result.propagationDepth > 0) " [depth=${result.propagationDepth}]" else ""
-                sb.appendLine("      - ${result.location}$depthStr")
+            val grouped = argResults.groupBy { constantToString(it.constant) }
+            val indent = if (multiArg) "    " else "  "
 
-                // Show propagation path if --show-path is enabled
-                if (showPath) {
-                    result.propagationPath?.let { path ->
-                        sb.appendLine("        Path: ${path.toDisplayString()}")
-                        if (verbose) {
-                            sb.appendLine("        Source type: ${path.sourceType}")
-                            path.steps.forEachIndexed { idx, step ->
-                                val arrow = if (idx < path.steps.size - 1) " →" else ""
-                                sb.appendLine("          ${idx + 1}. ${step.toDisplayString()}${step.edgeKind?.let { " [$it]" } ?: ""}$arrow")
+            grouped.forEach { (value, occurrences) ->
+                sb.appendLine("$indent$value")
+                sb.appendLine("$indent  Type: ${constantTypeName(occurrences.first().constant)}")
+                sb.appendLine("$indent  Occurrences: ${occurrences.size}")
+
+                // Show depth statistics for this value
+                val valueDepths = occurrences.map { it.propagationDepth }
+                val maxValueDepth = valueDepths.maxOrNull() ?: 0
+                val minValueDepth = valueDepths.minOrNull() ?: 0
+                if (maxValueDepth > 0) {
+                    sb.appendLine("$indent  Propagation depth: ${if (minValueDepth == maxValueDepth) "$minValueDepth" else "$minValueDepth-$maxValueDepth"}")
+                }
+
+                occurrences.take(5).forEach { result ->
+                    val depthStr = if (result.propagationDepth > 0) " [depth=${result.propagationDepth}]" else ""
+                    sb.appendLine("$indent    - ${result.location}$depthStr")
+
+                    // Show propagation path if --show-path is enabled
+                    if (showPath) {
+                        result.propagationPath?.let { path ->
+                            sb.appendLine("$indent      Path: ${path.toDisplayString()}")
+                            if (verbose) {
+                                sb.appendLine("$indent      Source type: ${path.sourceType}")
+                                path.steps.forEachIndexed { idx, step ->
+                                    val arrow = if (idx < path.steps.size - 1) " →" else ""
+                                    sb.appendLine("$indent        ${idx + 1}. ${step.toDisplayString()}${step.edgeKind?.let { " [$it]" } ?: ""}$arrow")
+                                }
                             }
                         }
                     }
                 }
+                if (occurrences.size > 5) {
+                    sb.appendLine("$indent    ... and ${occurrences.size - 5} more")
+                }
+                sb.appendLine()
             }
-            if (occurrences.size > 5) {
-                sb.appendLine("      ... and ${occurrences.size - 5} more")
-            }
-            sb.appendLine()
         }
 
         sb.appendLine("Summary:")
-        sb.appendLine("  Unique values: ${grouped.size}")
+        sb.appendLine("  Unique values: ${results.groupBy { constantToString(it.constant) }.size}")
         sb.appendLine("  Total occurrences: ${results.size}")
+        if (multiArg) {
+            sb.appendLine("  Arguments analyzed: ${sortedArgIndices.joinToString(", ")}")
+        }
         sb.appendLine("  Max propagation depth: $maxDepthFound")
         sb.appendLine("  Avg propagation depth: ${"%.1f".format(avgDepth)}")
         if (complexResults > 0) {
@@ -329,7 +345,7 @@ class FindArgumentsCommand : Callable<Int> {
         val output = mapOf(
             "targetClass" to targetClass,
             "targetMethod" to targetMethod,
-            "argumentIndex" to argIndex,
+            "argumentIndices" to argIndices,
             "totalOccurrences" to results.size,
             "statistics" to mapOf(
                 "maxPropagationDepth" to maxDepthFound,
@@ -347,6 +363,7 @@ class FindArgumentsCommand : Callable<Int> {
                     ),
                     "occurrences" to occurrences.map { result ->
                         val occMap = mutableMapOf<String, Any?>(
+                            "argumentIndex" to result.argumentIndex,
                             "location" to result.location,
                             "callerMethod" to result.callSite.caller.name,
                             "callerClass" to result.callSite.caller.declaringClass.className,
