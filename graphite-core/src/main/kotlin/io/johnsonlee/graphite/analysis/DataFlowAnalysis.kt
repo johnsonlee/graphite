@@ -13,6 +13,8 @@ class DataFlowAnalysis(
     private val graph: Graph,
     private val config: AnalysisConfig = AnalysisConfig()
 ) {
+    private val backwardSliceCache = mutableMapOf<NodeId, DataFlowResult>()
+
     /**
      * Backward slice: find all nodes that can flow TO the given node.
      *
@@ -21,6 +23,7 @@ class DataFlowAnalysis(
      * - Trace backward to find all possible constant values
      */
     fun backwardSlice(from: NodeId): DataFlowResult {
+        backwardSliceCache[from]?.let { return it }
         val visited = mutableSetOf<NodeId>()
         val sources = mutableListOf<SourceInfo>()
         val paths = mutableListOf<DataFlowPath>()
@@ -93,7 +96,9 @@ class DataFlowAnalysis(
         }
 
         traverse(from, emptyList(), emptyList(), null, 0)
-        return DataFlowResult(sources, paths, propagationPaths, graph)
+        return DataFlowResult(sources, paths, propagationPaths, graph).also {
+            backwardSliceCache[from] = it
+        }
     }
 
     /**
