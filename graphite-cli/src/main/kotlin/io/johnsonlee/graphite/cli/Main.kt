@@ -11,7 +11,6 @@ import kotlin.system.exitProcess
     description = ["Bytecode static analysis tool for finding argument constants, return types, and more."],
     subcommands = [
         FindArgumentsCommand::class,
-        FindReturnTypesCommand::class,
         FindEndpointsCommand::class,
         CommandLine.HelpCommand::class
     ]
