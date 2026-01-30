@@ -409,6 +409,20 @@ class SootUpAdapter(
                         }
                     }
 
+                    // Track static field reads (enum constant references from other enums)
+                    // Pattern: $stackN = <sample.ab.Priority: Priority HIGH>
+                    // This handles the case where one enum's constructor takes another enum as argument
+                    if (left is Local && right is JFieldRef) {
+                        val fieldSig = right.fieldSignature
+                        val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
+                        val fieldType = fieldSig.type
+                        // Check if the field type matches the declaring class (enum constant pattern)
+                        if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
+                            localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
+                            log("  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}")
+                        }
+                    }
+
                     // Track local-to-local assignments (aliases)
                     if (left is Local && right is Local) {
                         // left = right, so left is an alias for right
@@ -483,12 +497,23 @@ class SootUpAdapter(
     }
 
     /**
-     * Extract a value from a method argument (either a constant or a local variable).
+     * Extract a value from a method argument (either a constant, a local variable, or a field reference).
      */
     private fun extractValueFromArg(arg: Value, localValues: Map<String, Any?>): Any? {
         return when (arg) {
             is SootConstant -> extractConstantValue(arg)
             is Local -> localValues[arg.name]
+            is JFieldRef -> {
+                // Handle direct field references in constructor arguments (e.g., enum constant references)
+                val fieldSig = arg.fieldSignature
+                val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
+                val fieldType = fieldSig.type
+                if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
+                    EnumValueReference(fieldDeclClass, fieldSig.name)
+                } else {
+                    null
+                }
+            }
             else -> null
         }
     }
