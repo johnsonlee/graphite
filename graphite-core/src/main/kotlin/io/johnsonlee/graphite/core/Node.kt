@@ -109,6 +109,26 @@ data class NullConstant(
 }
 
 /**
+ * Represents a reference from one enum's constructor argument to another enum constant.
+ *
+ * For example, in:
+ * ```java
+ * enum TaskConfig {
+ *     URGENT(Priority.HIGH);
+ *     TaskConfig(Priority priority) { ... }
+ * }
+ * ```
+ * The constructor argument `Priority.HIGH` is stored as:
+ * `EnumValueReference(enumClass = "com.example.Priority", enumName = "HIGH")`
+ */
+data class EnumValueReference(
+    val enumClass: String,
+    val enumName: String
+) {
+    override fun toString(): String = "$enumClass.$enumName"
+}
+
+/**
  * A local variable in a method
  */
 data class LocalVariable(
