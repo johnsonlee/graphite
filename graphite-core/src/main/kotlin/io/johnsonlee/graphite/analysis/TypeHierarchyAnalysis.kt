@@ -609,37 +609,6 @@ class TypeHierarchyAnalysis(
     }
 
     /**
-     * Check if parentClass could be a parent of childClass.
-     * First uses the type hierarchy graph, then falls back to heuristics.
-     */
-    private fun isPotentialParentClass(childClass: String, parentClass: String): Boolean {
-        if (childClass == parentClass) return false
-
-        // First, check using the type hierarchy graph
-        val supertypes = mutableSetOf<String>()
-        collectAllSupertypes(TypeDescriptor(childClass), supertypes)
-        if (parentClass in supertypes) return true
-
-        // Fallback: Same package or nested class relationship (heuristic)
-        val childPkg = childClass.substringBeforeLast('.', "")
-        val parentPkg = parentClass.substringBeforeLast('.', "")
-
-        if (childPkg != parentPkg) return false
-
-        // Check if there are setter calls from child to parent's methods
-        val hasSetterCalls = graph.nodes<CallSiteNode>()
-            .any { callSite ->
-                val callerClass = callSite.caller.declaringClass.className
-                val calleeClass = callSite.callee.declaringClass.className
-                callerClass == childClass &&
-                calleeClass == parentClass &&
-                callSite.callee.name.startsWith("set")
-            }
-
-        return hasSetterCalls
-    }
-
-    /**
      * Find constructor calls for a type and map arguments to fields.
      *
      * For example:

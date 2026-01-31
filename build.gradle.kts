@@ -30,8 +30,8 @@ subprojects {
         configure<PublishingExtension> {
             publications {
                 create<MavenPublication>("mavenJava") {
-                    // For CLI module, use shadow jar; for others, use java component
-                    if (project.name == "graphite-cli") {
+                    // For CLI modules, use shadow jar; for others, use java component
+                    if (project.name.startsWith("graphite-cli-")) {
                         artifact(tasks.named("shadowJar"))
                     } else {
                         from(components["java"])

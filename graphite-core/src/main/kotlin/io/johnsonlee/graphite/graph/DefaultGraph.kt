@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,8 +23,39 @@ class DefaultGraph private constructor(
     private val enumValues: Map<String, List<Any?>>,
     private val endpointList: List<EndpointInfo>,
     private val jacksonFieldInfoMap: Map<String, JacksonFieldInfo>,
-    private val jacksonGetterInfoMap: Map<String, JacksonFieldInfo>
+    private val jacksonGetterInfoMap: Map<String, JacksonFieldInfo>,
+    private val rawBranchScopes: Array<RawBranchScope>
 ) : Graph {
+
+    /**
+     * Compact storage for branch scope data, used until [branchScopes] or
+     * [branchScopesFor] is first called.
+     *
+     * Uses [IntArray] (4 bytes/element) instead of `Set<NodeId>`
+     * (`HashSet<boxed Integer>`, ~36 bytes/element) so the idle cost is
+     * roughly **9× smaller** per branch entry.  The full [BranchScope]
+     * objects and lookup index are materialised lazily on first access.
+     */
+    internal class RawBranchScope(
+        val conditionNodeId: Int,
+        val method: MethodDescriptor,
+        val comparison: BranchComparison,
+        val trueBranchNodeIds: IntArray,
+        val falseBranchNodeIds: IntArray
+    )
+
+    /** Materialised on first access from [rawBranchScopes]. */
+    private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
+        rawBranchScopes.map { raw ->
+            BranchScope(
+                conditionNodeId = NodeId(raw.conditionNodeId),
+                method = raw.method,
+                comparison = raw.comparison,
+                trueBranchNodeIds = IntOpenHashSet(raw.trueBranchNodeIds),
+                falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
+            )
+        }.groupBy { it.conditionNodeId.value }
+    }
 
     override fun node(id: NodeId): Node? = nodesById.get(id.value)
 
@@ -70,6 +102,12 @@ class DefaultGraph private constructor(
         }
     }
 
+    override fun branchScopes(): Sequence<BranchScope> =
+        branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
+
+    override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
+        branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
+
     override fun jacksonFieldInfo(className: String, fieldName: String): JacksonFieldInfo? =
         jacksonFieldInfoMap["$className#$fieldName"]
 
@@ -90,6 +128,7 @@ class DefaultGraph private constructor(
         private val endpoints = ObjectArrayList<EndpointInfo>()
         private val jacksonFieldInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
         private val jacksonGetterInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
+        private val branchScopes = ObjectArrayList<RawBranchScope>()
 
         override fun addNode(node: Node): GraphBuilder {
             nodes.put(node.id.value, node)
@@ -99,14 +138,6 @@ class DefaultGraph private constructor(
         override fun addEdge(edge: Edge): GraphBuilder {
             outgoing.computeIfAbsent(edge.from.value) { ObjectArrayList() }.add(edge)
             incoming.computeIfAbsent(edge.to.value) { ObjectArrayList() }.add(edge)
-
-            // Track type hierarchy from TypeEdges
-            if (edge is TypeEdge) {
-                val fromNode = nodes.get(edge.from.value)
-                val toNode = nodes.get(edge.to.value)
-                // Type hierarchy is built separately
-            }
-
             return this
         }
 
@@ -140,6 +171,23 @@ class DefaultGraph private constructor(
             return this
         }
 
+        fun addBranchScope(
+            conditionNodeId: NodeId,
+            method: MethodDescriptor,
+            comparison: BranchComparison,
+            trueBranchNodeIds: IntArray,
+            falseBranchNodeIds: IntArray
+        ): Builder {
+            branchScopes.add(RawBranchScope(
+                conditionNodeId = conditionNodeId.value,
+                method = method,
+                comparison = comparison,
+                trueBranchNodeIds = trueBranchNodeIds,
+                falseBranchNodeIds = falseBranchNodeIds
+            ))
+            return this
+        }
+
         override fun build(): Graph {
             // Compact edge lists to immutable form
             val compactOutgoing = Int2ObjectOpenHashMap<List<Edge>>(outgoing.size)
@@ -166,7 +214,8 @@ class DefaultGraph private constructor(
                 enumValues = enumValues.toMap(),
                 endpointList = endpoints.toList(),
                 jacksonFieldInfoMap = jacksonFieldInfo.toMap(),
-                jacksonGetterInfoMap = jacksonGetterInfo.toMap()
+                jacksonGetterInfoMap = jacksonGetterInfo.toMap(),
+                rawBranchScopes = branchScopes.toTypedArray()
             )
         }
     }
