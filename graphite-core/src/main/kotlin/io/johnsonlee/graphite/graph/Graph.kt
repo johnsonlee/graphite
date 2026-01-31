@@ -78,6 +78,17 @@ interface Graph {
     fun endpoints(pattern: String? = null, httpMethod: HttpMethod? = null): Sequence<EndpointInfo>
 
     /**
+     * Get all branch scopes in the graph.
+     * Each BranchScope records which nodes belong to each branch of a condition.
+     */
+    fun branchScopes(): Sequence<BranchScope>
+
+    /**
+     * Get branch scopes where the given node is the condition operand.
+     */
+    fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope>
+
+    /**
      * Get Jackson annotation information for a field.
      *
      * @param className fully qualified class name

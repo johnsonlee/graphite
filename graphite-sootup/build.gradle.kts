@@ -1,5 +1,9 @@
 description = "Graphite SootUp Adapter - SootUp-based bytecode analysis backend"
 
+plugins {
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
+}
+
 dependencies {
     api(project(":graphite-core"))
 

@@ -46,6 +46,7 @@ object GenericSignatureParser {
         return try {
             val visitor = MethodSignatureVisitor()
             SignatureReader(signature).accept(visitor)
+            visitor.finalize()
             visitor.returnType
         } catch (e: Exception) {
             null
@@ -64,6 +65,7 @@ object GenericSignatureParser {
         return try {
             val visitor = MethodSignatureVisitor()
             SignatureReader(signature).accept(visitor)
+            visitor.finalize()
             visitor.parameterTypes
         } catch (e: Exception) {
             emptyList()
@@ -82,6 +84,7 @@ object GenericSignatureParser {
         return try {
             val visitor = ClassSignatureVisitor()
             SignatureReader(signature).accept(visitor)
+            visitor.finalize()
             ClassSignatureInfo(
                 typeParameters = visitor.typeParameters,
                 superClass = visitor.superClass,
@@ -190,7 +193,12 @@ object GenericSignatureParser {
             return currentVisitor!!
         }
 
-        override fun visitEnd() {
+        /**
+         * Extract the return type after ASM finishes parsing.
+         * ASM's SignatureReader.accept() does not call visitEnd() on the top-level
+         * MethodSignatureVisitor, so we must explicitly finalize after accept() returns.
+         */
+        fun finalize() {
             if (returnType == null) {
                 returnType = currentVisitor?.toTypeDescriptor()
             }
@@ -229,7 +237,12 @@ object GenericSignatureParser {
             return currentVisitor!!
         }
 
-        override fun visitEnd() {
+        /**
+         * Extract the last pending type after ASM finishes parsing.
+         * ASM's SignatureReader.accept() does not call visitEnd() on the top-level
+         * ClassSignatureVisitor, so we must explicitly finalize after accept() returns.
+         */
+        fun finalize() {
             if (inSuperClass) {
                 superClass = currentVisitor?.toTypeDescriptor()
             } else {

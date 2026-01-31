@@ -12,7 +12,6 @@ import sootup.core.jimple.common.constant.IntConstant as SootIntConstant
 import sootup.core.jimple.common.constant.LongConstant as SootLongConstant
 import sootup.core.jimple.common.constant.FloatConstant as SootFloatConstant
 import sootup.core.jimple.common.constant.DoubleConstant as SootDoubleConstant
-import sootup.core.jimple.common.constant.BooleanConstant as SootBooleanConstant
 import sootup.core.jimple.common.constant.NullConstant as SootNullConstant
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.constant.Constant as SootConstant
@@ -25,9 +24,17 @@ import sootup.core.jimple.common.ref.JArrayRef
 import sootup.core.jimple.common.ref.JParameterRef
 import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.jimple.common.stmt.JIdentityStmt
+import sootup.core.jimple.common.stmt.JIfStmt
 import sootup.core.jimple.common.stmt.JInvokeStmt
 import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.jimple.common.stmt.Stmt
+import sootup.core.jimple.common.expr.AbstractConditionExpr
+import sootup.core.jimple.common.expr.JEqExpr
+import sootup.core.jimple.common.expr.JNeExpr
+import sootup.core.jimple.common.expr.JLtExpr
+import sootup.core.jimple.common.expr.JGeExpr
+import sootup.core.jimple.common.expr.JGtExpr
+import sootup.core.jimple.common.expr.JLeExpr
 import sootup.core.model.SootClass
 import sootup.core.model.SootMethod
 import sootup.core.signatures.MethodSignature
@@ -63,6 +70,10 @@ class SootUpAdapter(
     private val constantNodes = mutableMapOf<Any, ConstantNode>()
     private val methodReturnNodes = mutableMapOf<String, ReturnNode>()
     private val allocationNodes = mutableMapOf<String, LocalVariable>()
+
+    // Per-method: tracks which NodeIds were created from each statement
+    // Reset per method in processMethod()
+    private var stmtNodeIds = mutableMapOf<Stmt, MutableList<NodeId>>()
 
     /**
      * Build the complete graph from the SootUp view
@@ -497,23 +508,14 @@ class SootUpAdapter(
     }
 
     /**
-     * Extract a value from a method argument (either a constant, a local variable, or a field reference).
+     * Extract a value from a method argument (either a constant or a local variable reference).
+     * Enum constant references passed as constructor arguments are tracked via local variables
+     * (see localValues map populated during JFieldRef processing above).
      */
     private fun extractValueFromArg(arg: Value, localValues: Map<String, Any?>): Any? {
         return when (arg) {
             is SootConstant -> extractConstantValue(arg)
             is Local -> localValues[arg.name]
-            is JFieldRef -> {
-                // Handle direct field references in constructor arguments (e.g., enum constant references)
-                val fieldSig = arg.fieldSignature
-                val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
-                val fieldType = fieldSig.type
-                if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
-                    EnumValueReference(fieldDeclClass, fieldSig.name)
-                } else {
-                    null
-                }
-            }
             else -> null
         }
     }
@@ -618,14 +620,27 @@ class SootUpAdapter(
             val body = method.body
             val stmtGraph = body.stmtGraph
 
+            // Reset per-method stmt tracking
+            stmtNodeIds = mutableMapOf()
+
             // Process parameters
             processParameters(method, methodDescriptor)
 
-            // Process each statement
+            // Process each statement (pass 1: data flow)
             stmtGraph.stmts.forEach { stmt ->
                 processStatement(stmt, methodDescriptor, stmtGraph)
             }
+
+            // Process control flow (pass 2: branch structure)
+            processControlFlow(stmtGraph, methodDescriptor)
         }
+    }
+
+    /**
+     * Record that a node was created from a given statement.
+     */
+    private fun recordStmtNode(stmt: Stmt, nodeId: NodeId) {
+        stmtNodeIds.getOrPut(stmt) { mutableListOf() }.add(nodeId)
     }
 
     private fun processParameters(method: SootMethod, methodDescriptor: MethodDescriptor) {
@@ -647,6 +662,7 @@ class SootUpAdapter(
             is JIdentityStmt -> processIdentity(stmt, method)
             is JInvokeStmt -> processInvoke(stmt, method)
             is JReturnStmt -> processReturn(stmt, method)
+            // JIfStmt is handled in processControlFlow (pass 2)
         }
     }
 
@@ -660,11 +676,16 @@ class SootUpAdapter(
             val allocType = toTypeDescriptor(rightOp.type)
             val allocNode = getOrCreateLocalWithType(leftOp, method, allocType)
             allocationNodes["${method.signature}#${leftOp.name}"] = allocNode
+            recordStmtNode(stmt, allocNode.id)
             return
         }
 
         val targetNode = getOrCreateValueNode(leftOp, method)
         val sourceNode = getOrCreateValueNode(rightOp, method)
+
+        if (targetNode != null) {
+            recordStmtNode(stmt, targetNode.id)
+        }
 
         if (targetNode != null && sourceNode != null) {
             val kind = when {
@@ -686,7 +707,7 @@ class SootUpAdapter(
 
         // Handle method invocations in assignments (e.g., x = foo())
         if (rightOp is AbstractInvokeExpr) {
-            processInvokeExpr(rightOp, method, targetNode)
+            processInvokeExpr(rightOp, method, targetNode, stmt)
         }
     }
 
@@ -714,14 +735,15 @@ class SootUpAdapter(
 
     private fun processInvoke(stmt: JInvokeStmt, method: MethodDescriptor) {
         stmt.invokeExpr.ifPresent { invokeExpr ->
-            processInvokeExpr(invokeExpr, method, null)
+            processInvokeExpr(invokeExpr, method, null, stmt)
         }
     }
 
     private fun processInvokeExpr(
         invokeExpr: AbstractInvokeExpr,
         caller: MethodDescriptor,
-        resultNode: ValueNode?
+        resultNode: ValueNode?,
+        stmt: Stmt? = null
     ) {
         val calleeSignature = invokeExpr.methodSignature
         val callee = toMethodDescriptor(calleeSignature)
@@ -778,6 +800,9 @@ class SootUpAdapter(
             arguments = argNodeIds
         )
         graphBuilder.addNode(callSite)
+        if (stmt != null) {
+            recordStmtNode(stmt, callSite.id)
+        }
 
         // Add dataflow edge from receiver to call site (for backward tracing)
         if (receiverNode != null) {
@@ -861,6 +886,173 @@ class SootUpAdapter(
                 )
             )
         }
+    }
+
+    /**
+     * Process control flow for a method (pass 2).
+     *
+     * For each JIfStmt, identifies:
+     * 1. The condition operand's NodeId
+     * 2. The JVM comparison operator and comparand
+     * 3. Which nodes belong to the true branch vs false branch
+     *
+     * Creates ControlFlowEdge and BranchScope entries.
+     */
+    private fun processControlFlow(stmtGraph: StmtGraph<*>, method: MethodDescriptor) {
+        val stmts = stmtGraph.stmts.toList()
+        val stmtSet = stmts.toSet()
+
+        for (stmt in stmts) {
+            if (stmt !is JIfStmt) continue
+
+            val condition = stmt.condition
+            if (condition !is AbstractConditionExpr) continue
+
+            val op1 = condition.op1
+            val op2 = condition.op2
+
+            // Resolve operands to NodeIds
+            val op1Node = getOrCreateValueNode(op1, method)
+            val op2Node = getOrCreateValueNode(op2, method)
+            if (op1Node == null || op2Node == null) continue
+
+            val comparisonOp = when (condition) {
+                is JEqExpr -> ComparisonOp.EQ
+                is JNeExpr -> ComparisonOp.NE
+                is JLtExpr -> ComparisonOp.LT
+                is JGeExpr -> ComparisonOp.GE
+                is JGtExpr -> ComparisonOp.GT
+                is JLeExpr -> ComparisonOp.LE
+                else -> continue
+            }
+
+            // Determine which operand is the "condition" (variable) and which is the comparand (constant).
+            // Convention: op1 is the variable being tested, op2 is the constant it's compared to.
+            val conditionNodeId = op1Node.id
+            val comparison = BranchComparison(
+                operator = comparisonOp,
+                comparandNodeId = op2Node.id
+            )
+
+            // In Jimple: "if <condition> goto target"
+            // - successors[0] = fall-through (condition is FALSE)
+            // - successors[1] = branch target (condition is TRUE)
+            val successors = stmtGraph.successors(stmt).toList()
+            if (successors.size != 2) continue
+
+            val falseSuccessor = successors[0]  // fall-through
+            val trueSuccessor = successors[1]   // goto target
+
+            // Walk each branch collecting all reachable statements until merge point
+            val trueBranchStmts = walkBranch(trueSuccessor, falseSuccessor, stmtGraph, stmtSet)
+            val falseBranchStmts = walkBranch(falseSuccessor, trueSuccessor, stmtGraph, stmtSet)
+
+            // Collect NodeIds from each branch's statements as IntArrays
+            val trueIds = trueBranchStmts.flatMap { stmtNodeIds[it] ?: emptyList() }
+                .map { it.value }.toIntArray()
+            val falseIds = falseBranchStmts.flatMap { stmtNodeIds[it] ?: emptyList() }
+                .map { it.value }.toIntArray()
+
+            // Create ControlFlowEdges from condition to first node in each branch
+            if (trueIds.isNotEmpty()) {
+                graphBuilder.addEdge(
+                    ControlFlowEdge(
+                        from = conditionNodeId,
+                        to = NodeId(trueIds[0]),
+                        kind = ControlFlowKind.BRANCH_TRUE,
+                        comparison = comparison
+                    )
+                )
+            }
+            if (falseIds.isNotEmpty()) {
+                graphBuilder.addEdge(
+                    ControlFlowEdge(
+                        from = conditionNodeId,
+                        to = NodeId(falseIds[0]),
+                        kind = ControlFlowKind.BRANCH_FALSE,
+                        comparison = comparison
+                    )
+                )
+            }
+
+            // Record branch data (BranchScope is materialised lazily by DefaultGraph)
+            if (trueIds.isNotEmpty() || falseIds.isNotEmpty()) {
+                graphBuilder.addBranchScope(
+                    conditionNodeId = conditionNodeId,
+                    method = method,
+                    comparison = comparison,
+                    trueBranchNodeIds = trueIds,
+                    falseBranchNodeIds = falseIds
+                )
+            }
+        }
+    }
+
+    /**
+     * Walk a branch from [start] collecting statements that are exclusively in this branch.
+     *
+     * Stops when reaching:
+     * - A statement also reachable from [otherBranchStart] (merge point)
+     * - A return/throw statement
+     * - A statement already visited
+     *
+     * Uses forward dominance: only includes statements that are reachable from [start]
+     * but not directly reachable from [otherBranchStart] without going through the merge point.
+     */
+    private fun walkBranch(
+        start: Stmt,
+        otherBranchStart: Stmt,
+        stmtGraph: StmtGraph<*>,
+        allStmts: Set<Stmt>
+    ): Set<Stmt> {
+        // Collect statements reachable from the other branch (to find merge points)
+        val otherReachable = collectReachable(otherBranchStart, stmtGraph)
+
+        val result = mutableSetOf<Stmt>()
+        val queue = ArrayDeque<Stmt>()
+        queue.add(start)
+
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst()
+            if (current in result) continue
+            if (current !in allStmts) continue
+
+            // Stop at merge point: a statement reachable from both branches
+            // But include the start itself even if it's reachable from the other branch
+            if (current != start && current in otherReachable) continue
+
+            result.add(current)
+
+            for (succ in stmtGraph.successors(current)) {
+                if (succ !in result) {
+                    queue.add(succ)
+                }
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Collect all statements reachable from [start] via forward traversal.
+     */
+    private fun collectReachable(start: Stmt, stmtGraph: StmtGraph<*>): Set<Stmt> {
+        val reachable = mutableSetOf<Stmt>()
+        val queue = ArrayDeque<Stmt>()
+        queue.add(start)
+
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst()
+            if (current in reachable) continue
+            reachable.add(current)
+            for (succ in stmtGraph.successors(current)) {
+                if (succ !in reachable) {
+                    queue.add(succ)
+                }
+            }
+        }
+
+        return reachable
     }
 
     private fun processCallGraph() {
@@ -971,10 +1163,8 @@ class SootUpAdapter(
                     id = nextNodeId("const"),
                     value = constant.value
                 )
-                is SootBooleanConstant -> BooleanConstant(
-                    id = nextNodeId("const"),
-                    value = constant == SootBooleanConstant.getTrue()
-                )
+                // Note: JVM bytecode represents boolean true/false as int constants (1/0),
+                // so SootUp produces IntConstant, not BooleanConstant, for boolean values.
                 is SootStringConstant -> StringConstant(
                     id = nextNodeId("const"),
                     value = constant.value
@@ -1026,7 +1216,6 @@ class SootUpAdapter(
             is SootLongConstant -> constant.value
             is SootFloatConstant -> constant.value
             is SootDoubleConstant -> constant.value
-            is SootBooleanConstant -> constant == SootBooleanConstant.getTrue()
             is SootStringConstant -> constant.value
             is SootNullConstant -> null
             else -> null
@@ -1113,17 +1302,6 @@ class SootUpAdapter(
         fallbackType: TypeDescriptor
     ): TypeDescriptor {
         return signatureReader?.getFieldType(declaringClass, fieldName) ?: fallbackType
-    }
-
-    /**
-     * Get method return type with generic arguments from bytecode signature.
-     */
-    private fun getMethodReturnTypeWithGenerics(
-        declaringClass: String,
-        methodKey: String,
-        fallbackType: TypeDescriptor
-    ): TypeDescriptor {
-        return signatureReader?.getMethodReturnType(declaringClass, methodKey) ?: fallbackType
     }
 
     private fun toMethodDescriptor(method: SootMethod): MethodDescriptor {
