@@ -148,13 +148,58 @@ class FindDeadCodeCommand : Callable<Int> {
     )
     var dryRun: Boolean = false
 
+    // --- Iteration options ---
+
+    @Option(
+        names = ["--iterate"],
+        description = ["Enable multi-round deletion (delete → rebuild → reanalyze until convergence)"]
+    )
+    var iterate: Boolean = false
+
+    @Option(
+        names = ["--build-command"],
+        description = ["Shell command to rebuild between rounds (e.g., './gradlew build -x test')"]
+    )
+    var buildCommand: String? = null
+
+    @Option(
+        names = ["--max-rounds"],
+        description = ["Maximum iteration rounds (default: 10)"],
+        defaultValue = "10"
+    )
+    var maxRounds: Int = 10
+
     override fun call(): Int {
         if (!input.toFile().exists()) {
             System.err.println("Error: Input path does not exist: $input")
             return 1
         }
 
+        // Validate --iterate options
+        if (iterate) {
+            if (!delete) {
+                System.err.println("Error: --iterate requires --delete")
+                return 1
+            }
+            if (buildCommand == null) {
+                System.err.println("Error: --iterate requires --build-command")
+                return 1
+            }
+            if (dryRun) {
+                System.err.println("Error: --iterate is incompatible with --dry-run")
+                return 1
+            }
+            if (exportAssumptions != null) {
+                System.err.println("Error: --iterate is incompatible with --export-assumptions")
+                return 1
+            }
+        }
+
         try {
+            if (iterate) {
+                return runIterative()
+            }
+
             val graph = loadGraph()
 
             return when {
@@ -205,6 +250,80 @@ class FindDeadCodeCommand : Callable<Int> {
         }
 
         return graph
+    }
+
+    // ========================================================================
+    // Extracted analysis methods (used by both single-pass and iterative modes)
+    // ========================================================================
+
+    internal fun performAssumptionAnalysis(graph: Graph): DeadCodeResult {
+        val assumptions = loadAssumptions(assumptionsFile!!)
+        if (assumptions.isEmpty()) {
+            if (verbose) {
+                System.err.println("No assumptions found in ${assumptionsFile!!.name}")
+            }
+            return DeadCodeResult(
+                deadBranches = emptyList(),
+                deadMethods = emptySet(),
+                deadCallSites = emptySet(),
+                unreferencedMethods = emptySet(),
+                unreferencedFields = emptySet()
+            )
+        }
+
+        if (verbose) {
+            System.err.println("Loaded ${assumptions.size} assumption(s)")
+        }
+
+        val analysis = BranchReachabilityAnalysis(graph)
+        val result = analysis.analyze(assumptions)
+
+        val unreferenced = analysis.findUnreferencedMethods()
+
+        val unreferencedFields = analysis.findUnreferencedFields()
+        val excludedFieldClasses = collectExcludedFieldClasses(graph)
+        val filteredFields = filterUnreferencedFields(unreferencedFields, excludedFieldClasses, graph)
+
+        return DeadCodeResult(
+            deadBranches = result.deadBranches,
+            deadMethods = result.deadMethods,
+            deadCallSites = result.deadCallSites,
+            unreferencedMethods = unreferenced,
+            unreferencedFields = filteredFields
+        )
+    }
+
+    internal fun performUnreferencedDetection(graph: Graph): DeadCodeResult {
+        val analysis = BranchReachabilityAnalysis(graph)
+        val unreferenced = analysis.findUnreferencedMethods()
+
+        val entryPointPatterns = entryPoints.map { Regex(it) }
+        val filtered = unreferenced.filter { method ->
+            entryPointPatterns.none { pattern ->
+                pattern.matches(method.signature) || pattern.matches(method.name)
+            }
+        }.filter { method ->
+            !isSyntheticMethod(method)
+        }.toSet()
+
+        val unreferencedFields = analysis.findUnreferencedFields()
+        val excludedFieldClasses = collectExcludedFieldClasses(graph)
+        val filteredFields = filterUnreferencedFields(unreferencedFields, excludedFieldClasses, graph)
+
+        return DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = filtered,
+            unreferencedFields = filteredFields
+        )
+    }
+
+    internal fun formatResult(result: DeadCodeResult): String {
+        return when (outputFormat.lowercase()) {
+            "json" -> formatDeadCodeResultJson(result)
+            else -> formatDeadCodeResult(result)
+        }
     }
 
     // ========================================================================
@@ -583,6 +702,178 @@ class FindDeadCodeCommand : Callable<Int> {
         println("${if (dryRun) "Would modify" else "Modified"} ${report.count { !it.contains("[SKIP]") && !it.contains("[ERROR]") }} file(s)")
 
         return 0
+    }
+
+    // ========================================================================
+    // Iterative deletion
+    // ========================================================================
+
+    internal data class RoundStatistics(
+        val round: Int,
+        val deletedMethods: Int,
+        val deletedFields: Int,
+        val deletedBranches: Int,
+        val deletedFiles: Int
+    )
+
+    internal fun executeDeletionsWithStats(result: DeadCodeResult, graph: Graph): RoundStatistics? {
+        if (sourceDirs.isEmpty()) {
+            System.err.println("Error: --iterate requires --source-dir")
+            return null
+        }
+
+        for (dir in sourceDirs) {
+            if (!dir.toFile().isDirectory) {
+                System.err.println("Error: Source directory does not exist: $dir")
+                return null
+            }
+        }
+
+        val resolver = SourceFileResolver(sourceDirs)
+        val editor = SourceCodeEditor(
+            resolver = resolver,
+            verbose = if (verbose) { msg -> System.err.println(msg) } else null
+        )
+
+        val actions = editor.planDeletions(result, graph)
+
+        if (actions.isEmpty()) {
+            return RoundStatistics(round = 0, deletedMethods = 0, deletedFields = 0, deletedBranches = 0, deletedFiles = 0)
+        }
+
+        println("Executing deletions:")
+        val report = editor.execute(actions, dryRun = false)
+        report.forEach { println("  $it") }
+
+        val successfulActions = actions.zip(report).filter { (_, r) ->
+            !r.contains("[SKIP]") && !r.contains("[ERROR]")
+        }.map { (action, _) -> action }
+
+        var deletedMethods = 0
+        var deletedFields = 0
+        var deletedBranches = 0
+        var deletedFiles = 0
+
+        for (action in successfulActions) {
+            when (action) {
+                is DeletionAction.DeleteFile -> deletedFiles++
+                is DeletionAction.DeleteMethod -> deletedMethods++
+                is DeletionAction.DeleteField -> deletedFields++
+                is DeletionAction.CleanupBranch -> deletedBranches++
+            }
+        }
+
+        return RoundStatistics(
+            round = 0,
+            deletedMethods = deletedMethods,
+            deletedFields = deletedFields,
+            deletedBranches = deletedBranches,
+            deletedFiles = deletedFiles
+        )
+    }
+
+    internal fun runBuildCommand(command: String): Int {
+        val isWindows = System.getProperty("os.name").lowercase().contains("win")
+        val pb = if (isWindows) ProcessBuilder("cmd", "/c", command)
+                 else ProcessBuilder("sh", "-c", command)
+        pb.inheritIO()
+        return pb.start().waitFor()
+    }
+
+    private fun runIterative(): Int {
+        val command = buildCommand!!
+        val allRounds = mutableListOf<RoundStatistics>()
+        var converged = false
+        var buildFailedOnRound: Int? = null
+
+        for (round in 1..maxRounds) {
+            System.err.println("=== Iteration round $round ===")
+
+            val graph = loadGraph()
+
+            val result = if (assumptionsFile != null) {
+                performAssumptionAnalysis(graph)
+            } else {
+                performUnreferencedDetection(graph)
+            }
+
+            val totalFindings = result.unreferencedMethods.size + result.unreferencedFields.size +
+                result.deadBranches.size + result.deadMethods.size
+            if (totalFindings == 0) {
+                System.err.println("No findings in round $round — converged.")
+                converged = true
+                break
+            }
+
+            print(formatResult(result))
+
+            val stats = executeDeletionsWithStats(result, graph) ?: return 1
+            val totalDeletions = stats.deletedMethods + stats.deletedFields +
+                stats.deletedBranches + stats.deletedFiles
+            val roundStats = stats.copy(round = round)
+            allRounds.add(roundStats)
+
+            if (totalDeletions == 0) {
+                System.err.println("No deletions executed in round $round — converged.")
+                converged = true
+                break
+            }
+
+            System.err.println("Round $round: deleted ${roundStats.deletedFiles} file(s), " +
+                "${roundStats.deletedMethods} method(s), ${roundStats.deletedFields} field(s), " +
+                "${roundStats.deletedBranches} branch(es)")
+
+            if (round < maxRounds) {
+                System.err.println("Running build command: $command")
+                val exitCode = runBuildCommand(command)
+                if (exitCode != 0) {
+                    System.err.println("Build failed with exit code $exitCode in round $round")
+                    buildFailedOnRound = round
+                    break
+                }
+            }
+        }
+
+        printIterationSummary(allRounds, converged, buildFailedOnRound)
+
+        return if (buildFailedOnRound != null) 1 else 0
+    }
+
+    internal fun printIterationSummary(
+        rounds: List<RoundStatistics>,
+        converged: Boolean,
+        buildFailedOnRound: Int?
+    ) {
+        System.err.println()
+        System.err.println("=== Iteration Summary ===")
+
+        if (rounds.isEmpty()) {
+            System.err.println("No rounds executed.")
+            return
+        }
+
+        System.err.println(String.format("%-7s %6s %9s %8s %10s", "Round", "Files", "Methods", "Fields", "Branches"))
+        System.err.println("-".repeat(42))
+
+        for (stats in rounds) {
+            System.err.println(String.format("%-7d %6d %9d %8d %10d",
+                stats.round, stats.deletedFiles, stats.deletedMethods, stats.deletedFields, stats.deletedBranches))
+        }
+
+        System.err.println("-".repeat(42))
+
+        val totalFiles = rounds.sumOf { it.deletedFiles }
+        val totalMethods = rounds.sumOf { it.deletedMethods }
+        val totalFields = rounds.sumOf { it.deletedFields }
+        val totalBranches = rounds.sumOf { it.deletedBranches }
+        System.err.println(String.format("%-7s %6d %9d %8d %10d", "Total", totalFiles, totalMethods, totalFields, totalBranches))
+
+        System.err.println()
+        when {
+            buildFailedOnRound != null -> System.err.println("Build failed after round $buildFailedOnRound.")
+            converged -> System.err.println("Converged after ${rounds.size} round(s).")
+            else -> System.err.println("Reached maximum rounds (${rounds.size}).")
+        }
     }
 
     // ========================================================================
