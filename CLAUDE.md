@@ -18,7 +18,7 @@ Follow these steps in order when working on a task:
    1. Check existing versions: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
    2. Determine the next version number based on existing versions
    3. Show the user the current latest version and proposed new version for confirmation
-10. **Update docs** — After tagging a release, update documentation (README version references, ROADMAP.md version number, etc.) to reflect the new version.
+10. **Update docs** — After tagging a release, update documentation (README version references, ROADMAP.md version number, etc.) to reflect the new version. This is a docs-only change — commit and push directly to `main` without a PR.
 
 ## Project Overview
 
