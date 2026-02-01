@@ -36,7 +36,8 @@ data class DeadCodeResult(
     val deadBranches: List<DeadBranch>,
     val deadMethods: Set<MethodDescriptor>,
     val deadCallSites: Set<CallSiteNode>,
-    val unreferencedMethods: Set<MethodDescriptor>
+    val unreferencedMethods: Set<MethodDescriptor>,
+    val unreferencedFields: Set<FieldDescriptor> = emptySet()
 )
 
 /**
@@ -78,6 +79,66 @@ class BranchReachabilityAnalysis(
             deadCallSites = allDeadCallSites,
             unreferencedMethods = emptySet() // filled separately by unreferenced detection
         )
+    }
+
+    /**
+     * Find fields that are never referenced from outside their declaring class.
+     *
+     * A field is unreferenced if:
+     * 1. No FIELD_LOAD or FIELD_STORE edges connect it to methods outside its declaring class
+     * 2. No external CallSiteNode targets a getter/setter matching JavaBean naming (getXxx/setXxx/isXxx)
+     *
+     * Excludes synthetic fields ($-prefixed, this$, $VALUES).
+     */
+    fun findUnreferencedFields(): Set<FieldDescriptor> {
+        val allFields = graph.nodes(FieldNode::class.java).toList()
+        val referencedFields = mutableSetOf<String>() // key: "class#field"
+
+        // Check FIELD_LOAD and FIELD_STORE edges for external references
+        for (field in allFields) {
+            val fieldKey = "${field.descriptor.declaringClass.className}#${field.descriptor.name}"
+            val declaringClass = field.descriptor.declaringClass.className
+
+            // Check outgoing edges (FIELD_LOAD: field -> local in some method)
+            for (edge in graph.outgoing(field.id, DataFlowEdge::class.java)) {
+                if (edge.kind == DataFlowKind.FIELD_LOAD || edge.kind == DataFlowKind.ASSIGN) {
+                    val targetNode = graph.node(edge.to)
+                    if (targetNode is LocalVariable && targetNode.method.declaringClass.className != declaringClass) {
+                        referencedFields.add(fieldKey)
+                        break
+                    }
+                }
+            }
+            if (fieldKey in referencedFields) continue
+
+            // Check incoming edges (FIELD_STORE: local in some method -> field)
+            for (edge in graph.incoming(field.id, DataFlowEdge::class.java)) {
+                if (edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN) {
+                    val sourceNode = graph.node(edge.from)
+                    if (sourceNode is LocalVariable && sourceNode.method.declaringClass.className != declaringClass) {
+                        referencedFields.add(fieldKey)
+                        break
+                    }
+                }
+            }
+        }
+
+        // Check external getter/setter/isXxx calls (Lombok support)
+        for (callSite in graph.nodes(CallSiteNode::class.java)) {
+            val calleeName = callSite.callee.name
+            val calleeClass = callSite.callee.declaringClass.className
+            val callerClass = callSite.caller.declaringClass.className
+            if (callerClass == calleeClass) continue // skip internal calls
+
+            val fieldName = extractFieldNameFromAccessor(calleeName) ?: continue
+            referencedFields.add("$calleeClass#$fieldName")
+        }
+
+        return allFields
+            .filter { !isSyntheticField(it) }
+            .filter { "${it.descriptor.declaringClass.className}#${it.descriptor.name}" !in referencedFields }
+            .map { it.descriptor }
+            .toSet()
     }
 
     /**
@@ -328,4 +389,32 @@ class BranchReachabilityAnalysis(
 
         return deadMethods
     }
+}
+
+/**
+ * Extract the field name from a JavaBean accessor method name.
+ * Supports getXxx, setXxx, and isXxx patterns.
+ *
+ * @return the field name (first char lowered) or null if not an accessor
+ */
+internal fun extractFieldNameFromAccessor(methodName: String): String? {
+    val prefix = when {
+        methodName.startsWith("get") && methodName.length > 3 -> "get"
+        methodName.startsWith("set") && methodName.length > 3 -> "set"
+        methodName.startsWith("is") && methodName.length > 2 -> "is"
+        else -> return null
+    }
+    val rest = methodName.removePrefix(prefix)
+    return rest.replaceFirstChar { it.lowercase() }
+}
+
+/**
+ * Check if a FieldNode is synthetic and should be excluded from unreferenced detection.
+ */
+private fun isSyntheticField(field: FieldNode): Boolean {
+    val name = field.descriptor.name
+    return name.startsWith("\$") ||
+        name.startsWith("this\$") ||
+        name == "\$VALUES" ||
+        name == "serialVersionUID"
 }

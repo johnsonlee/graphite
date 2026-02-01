@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cli
 
 import io.johnsonlee.graphite.analysis.DeadCodeResult
 import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.FieldDescriptor
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -68,6 +69,25 @@ sealed class DeletionAction {
                 append("[CLEANUP] ${sourceFile.path}")
                 if (startLine != null) append(":$startLine")
                 append(" remove ${deadBranchKind.name.lowercase().replace("branch_", "")} branch, keep $keptBranch branch")
+            }
+    }
+
+    /**
+     * Delete a single field from a source file.
+     */
+    data class DeleteField(
+        override val sourceFile: File,
+        val className: String,
+        val fieldName: String,
+        val fieldType: String,
+        val startLine: Int? = null,
+        val endLine: Int? = null
+    ) : DeletionAction() {
+        override val description: String
+            get() = buildString {
+                append("[DELETE] ${sourceFile.path}")
+                if (startLine != null && endLine != null) append(":$startLine-$endLine")
+                append(" field $fieldName: $fieldType")
             }
     }
 }
@@ -193,11 +213,33 @@ class SourceCodeEditor(
             }
         }
 
-        // Dead branch cleanups
+        // Unreferenced field deletions
         val deletedClasses = actions
             .filterIsInstance<DeletionAction.DeleteFile>()
             .map { it.className }
             .toSet()
+
+        val deadFieldsByClass = result.unreferencedFields.groupBy { it.declaringClass.className }
+        for ((className, deadFields) in deadFieldsByClass) {
+            if (className in deletedClasses) continue
+            val sourceFile = resolver.resolve(className)
+            if (sourceFile == null) {
+                verbose?.invoke("  No source file found for $className (field)")
+                continue
+            }
+            for (field in deadFields) {
+                actions.add(
+                    DeletionAction.DeleteField(
+                        sourceFile = sourceFile,
+                        className = className,
+                        fieldName = field.name,
+                        fieldType = field.type.simpleName
+                    )
+                )
+            }
+        }
+
+        // Dead branch cleanups
 
         for (branch in result.deadBranches) {
             val className = branch.method.declaringClass.className
@@ -298,6 +340,25 @@ class SourceCodeEditor(
             }
         }
 
+        // Process field deletions
+        for (action in actions.filterIsInstance<DeletionAction.DeleteField>()) {
+            val lineRange = javaEditor.fieldLineRange(file, action.fieldName)
+            if (lineRange != null) {
+                val (startLine, endLine) = lineRange
+                val desc = "${prefix}[DELETE] ${file.path}:$startLine-$endLine field ${action.fieldName}: ${action.fieldType}"
+                report.add(desc)
+
+                if (!dryRun) {
+                    val deleted = javaEditor.deleteField(file, action.fieldName)
+                    if (!deleted) {
+                        report.add("${prefix}[ERROR] ${file.path} field ${action.fieldName} (deletion failed)")
+                    }
+                }
+            } else {
+                report.add("${prefix}[SKIP] ${file.path} field ${action.fieldName} (field not found in source)")
+            }
+        }
+
         // Process branch cleanups
         for (action in actions.filterIsInstance<DeletionAction.CleanupBranch>()) {
             val deadBranchIsTrue = action.deadBranchKind == ControlFlowKind.BRANCH_TRUE
@@ -353,6 +414,25 @@ class SourceCodeEditor(
                 }
             } else {
                 report.add("${prefix}[SKIP] ${file.path} ${action.methodName}() (function not found in source)")
+            }
+        }
+
+        // Process field deletions
+        for (action in actions.filterIsInstance<DeletionAction.DeleteField>()) {
+            val lineRange = kotlinEditor.propertyLineRange(file, action.fieldName)
+            if (lineRange != null) {
+                val (startLine, endLine) = lineRange
+                val desc = "${prefix}[DELETE] ${file.path}:$startLine-$endLine field ${action.fieldName}: ${action.fieldType}"
+                report.add(desc)
+
+                if (!dryRun) {
+                    val deleted = kotlinEditor.deleteProperty(file, action.fieldName)
+                    if (!deleted) {
+                        report.add("${prefix}[ERROR] ${file.path} field ${action.fieldName} (deletion failed)")
+                    }
+                }
+            } else {
+                report.add("${prefix}[SKIP] ${file.path} field ${action.fieldName} (property not found in source)")
             }
         }
 

@@ -640,6 +640,238 @@ class FindDeadCodeCommandTest {
     }
 
     // ========================================================================
+    // formatDeadCodeResult with unreferenced fields
+    // ========================================================================
+
+    @Test
+    fun `formatDeadCodeResult shows unreferenced fields`() {
+        val type = TypeDescriptor("com.example.Foo")
+        val field = FieldDescriptor(type, "unusedField", TypeDescriptor("java.lang.String"))
+
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = setOf(field)
+        )
+
+        val output = cmd.formatDeadCodeResult(result)
+        assertTrue(output.contains("Unreferenced fields (1):"))
+        assertTrue(output.contains("com.example.Foo.unusedField: String"))
+        assertTrue(output.contains("Unreferenced fields: 1"))
+    }
+
+    @Test
+    fun `formatDeadCodeResult summary includes field count`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+
+        val output = cmd.formatDeadCodeResult(result)
+        assertTrue(output.contains("Unreferenced fields: 0"))
+    }
+
+    @Test
+    fun `formatDeadCodeResultJson includes unreferencedFields`() {
+        val type = TypeDescriptor("com.example.Foo")
+        val field = FieldDescriptor(type, "unused", TypeDescriptor("java.lang.String"))
+
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = setOf(field)
+        )
+
+        val json = cmd.formatDeadCodeResultJson(result)
+        val root = JsonParser.parseString(json).asJsonObject
+
+        val fields = root.getAsJsonArray("unreferencedFields")
+        assertEquals(1, fields.size())
+        val entry = fields[0].asJsonObject
+        assertEquals("com.example.Foo", entry.get("class").asString)
+        assertEquals("unused", entry.get("field").asString)
+        assertEquals("java.lang.String", entry.get("type").asString)
+
+        val summary = root.getAsJsonObject("summary")
+        assertEquals(1, summary.get("unreferencedFields").asInt)
+    }
+
+    @Test
+    fun `formatDeadCodeResultJson empty unreferencedFields`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+
+        val json = cmd.formatDeadCodeResultJson(result)
+        val root = JsonParser.parseString(json).asJsonObject
+
+        assertEquals(0, root.getAsJsonArray("unreferencedFields").size())
+        assertEquals(0, root.getAsJsonObject("summary").get("unreferencedFields").asInt)
+    }
+
+    // ========================================================================
+    // collectExcludedFieldClasses / filterUnreferencedFields
+    // ========================================================================
+
+    @Test
+    fun `collectExcludedFieldClasses returns empty for no endpoints`() {
+        val graph = stubGraph()
+        val excluded = cmd.collectExcludedFieldClasses(graph)
+        assertTrue(excluded.isEmpty())
+    }
+
+    @Test
+    fun `filterUnreferencedFields excludes fields in excluded classes`() {
+        val type = TypeDescriptor("com.example.ResponseDto")
+        val field = FieldDescriptor(type, "name", TypeDescriptor("java.lang.String"))
+        val excluded = setOf("com.example.ResponseDto")
+
+        val graph = stubGraph()
+        val filtered = cmd.filterUnreferencedFields(setOf(field), excluded, graph)
+        assertTrue(filtered.isEmpty())
+    }
+
+    @Test
+    fun `filterUnreferencedFields keeps fields not in excluded classes`() {
+        val type = TypeDescriptor("com.example.Internal")
+        val field = FieldDescriptor(type, "name", TypeDescriptor("java.lang.String"))
+        val excluded = setOf("com.example.ResponseDto")
+
+        val graph = stubGraph()
+        val filtered = cmd.filterUnreferencedFields(setOf(field), excluded, graph)
+        assertEquals(1, filtered.size)
+    }
+
+    @Test
+    fun `filterUnreferencedFields excludes field with JsonProperty`() {
+        val type = TypeDescriptor("com.example.Dto")
+        val field = FieldDescriptor(type, "name", TypeDescriptor("java.lang.String"))
+
+        val graph = stubGraph(
+            jacksonFieldInfoMap = mapOf(
+                "com.example.Dto#name" to io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName = "user_name")
+            )
+        )
+        val filtered = cmd.filterUnreferencedFields(setOf(field), emptySet(), graph)
+        assertTrue(filtered.isEmpty())
+    }
+
+    @Test
+    fun `filterUnreferencedFields keeps field with JsonIgnore`() {
+        val type = TypeDescriptor("com.example.Dto")
+        val field = FieldDescriptor(type, "secret", TypeDescriptor("java.lang.String"))
+
+        val graph = stubGraph(
+            jacksonFieldInfoMap = mapOf(
+                "com.example.Dto#secret" to io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName = "secret", isIgnored = true)
+            )
+        )
+        val filtered = cmd.filterUnreferencedFields(setOf(field), emptySet(), graph)
+        assertEquals(1, filtered.size)
+    }
+
+    @Test
+    fun `collectExcludedFieldClasses with endpoints includes return and param types`() {
+        val endpointMethod = MethodDescriptor(
+            TypeDescriptor("com.example.Controller"),
+            "getUser",
+            listOf(TypeDescriptor("com.example.RequestDto")),
+            TypeDescriptor("com.example.UserDto", listOf(TypeDescriptor("com.example.Address")))
+        )
+        val endpoint = EndpointInfo(
+            method = endpointMethod,
+            httpMethod = HttpMethod.GET,
+            path = "/user"
+        )
+        val graph = stubGraph(endpointList = listOf(endpoint))
+        val excluded = cmd.collectExcludedFieldClasses(graph)
+
+        assertTrue(excluded.contains("com.example.UserDto"))
+        assertTrue(excluded.contains("com.example.Address"))
+        assertTrue(excluded.contains("com.example.RequestDto"))
+        assertFalse(excluded.contains("com.example.Controller"))
+    }
+
+    @Test
+    fun `collectTypeClasses skips java and kotlin primitives`() {
+        val result = mutableSetOf<String>()
+        cmd.collectTypeClasses(TypeDescriptor("java.lang.String"), result)
+        cmd.collectTypeClasses(TypeDescriptor("kotlin.Int"), result)
+        cmd.collectTypeClasses(TypeDescriptor("void"), result)
+        cmd.collectTypeClasses(TypeDescriptor("boolean"), result)
+        cmd.collectTypeClasses(TypeDescriptor("int"), result)
+        cmd.collectTypeClasses(TypeDescriptor("long"), result)
+        cmd.collectTypeClasses(TypeDescriptor("double"), result)
+        cmd.collectTypeClasses(TypeDescriptor("float"), result)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `collectTypeClasses adds custom types with type arguments`() {
+        val result = mutableSetOf<String>()
+        val type = TypeDescriptor("com.example.Wrapper", listOf(TypeDescriptor("com.example.Inner")))
+        cmd.collectTypeClasses(type, result)
+        assertTrue(result.contains("com.example.Wrapper"))
+        assertTrue(result.contains("com.example.Inner"))
+    }
+
+    @Test
+    fun `collectTypeStructureClasses collects nested types`() {
+        val structure = TypeStructure(
+            type = TypeDescriptor("com.example.Outer"),
+            typeArguments = mapOf(
+                "T" to TypeStructure(type = TypeDescriptor("com.example.Inner"))
+            ),
+            fields = mapOf(
+                "data" to FieldStructure(
+                    name = "data",
+                    declaredType = TypeDescriptor("com.example.Data"),
+                    actualTypes = setOf(TypeStructure(type = TypeDescriptor("com.example.ActualData")))
+                )
+            )
+        )
+        val result = mutableSetOf<String>()
+        cmd.collectTypeStructureClasses(structure, result)
+
+        assertTrue(result.contains("com.example.Outer"))
+        assertTrue(result.contains("com.example.Inner"))
+        assertTrue(result.contains("com.example.ActualData"))
+    }
+
+    @Test
+    fun `collectTypeStructureClasses skips java and kotlin primitives`() {
+        val structure = TypeStructure(type = TypeDescriptor("java.lang.String"))
+        val result = mutableSetOf<String>()
+        cmd.collectTypeStructureClasses(structure, result)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `filterUnreferencedFields excludes field with getter Jackson info`() {
+        val type = TypeDescriptor("com.example.Dto")
+        val field = FieldDescriptor(type, "name", TypeDescriptor("java.lang.String"))
+
+        val graph = stubGraph(
+            jacksonGetterInfoMap = mapOf(
+                "com.example.Dto#getName" to io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName = "user_name")
+            )
+        )
+        val filtered = cmd.filterUnreferencedFields(setOf(field), emptySet(), graph)
+        assertTrue(filtered.isEmpty())
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 
@@ -653,5 +885,30 @@ class FindDeadCodeCommandTest {
         file.deleteOnExit()
         file.writeText(content)
         return file
+    }
+
+    private fun stubGraph(
+        jacksonFieldInfoMap: Map<String, io.johnsonlee.graphite.graph.JacksonFieldInfo> = emptyMap(),
+        jacksonGetterInfoMap: Map<String, io.johnsonlee.graphite.graph.JacksonFieldInfo> = emptyMap(),
+        endpointList: List<EndpointInfo> = emptyList()
+    ): io.johnsonlee.graphite.graph.Graph = object : io.johnsonlee.graphite.graph.Graph {
+        override fun node(id: NodeId): Node? = null
+        override fun <T : Node> nodes(type: Class<T>): Sequence<T> = emptySequence()
+        override fun outgoing(id: NodeId): Sequence<Edge> = emptySequence()
+        override fun incoming(id: NodeId): Sequence<Edge> = emptySequence()
+        override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> = emptySequence()
+        override fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T> = emptySequence()
+        override fun callSites(methodPattern: io.johnsonlee.graphite.graph.MethodPattern): Sequence<CallSiteNode> = emptySequence()
+        override fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> = emptySequence()
+        override fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> = emptySequence()
+        override fun methods(pattern: io.johnsonlee.graphite.graph.MethodPattern): Sequence<MethodDescriptor> = emptySequence()
+        override fun enumValues(enumClass: String, enumName: String): List<Any?>? = null
+        override fun endpoints(pattern: String?, httpMethod: HttpMethod?): Sequence<EndpointInfo> = endpointList.asSequence()
+        override fun branchScopes(): Sequence<BranchScope> = emptySequence()
+        override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> = emptySequence()
+        override fun jacksonFieldInfo(className: String, fieldName: String): io.johnsonlee.graphite.graph.JacksonFieldInfo? =
+            jacksonFieldInfoMap["$className#$fieldName"]
+        override fun jacksonGetterInfo(className: String, methodName: String): io.johnsonlee.graphite.graph.JacksonFieldInfo? =
+            jacksonGetterInfoMap["$className#$methodName"]
     }
 }

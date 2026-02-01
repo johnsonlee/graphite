@@ -57,6 +57,12 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Integration tests with runtime-compiled Java fixtures
 - [x] `--format json` output with Gson — structured JSON for unreferenced methods, dead branches, dead methods, and summary
 - [x] Kotlin source fixture integration tests (mixed Java+Kotlin source dir scenarios)
+- [x] Unreferenced field detection — fields with no external `FIELD_LOAD`/`FIELD_STORE` references
+- [x] Lombok-aware accessor linking — fields referenced via generated `getXxx`/`setXxx`/`isXxx` accessors
+- [x] Spring API-aware field exclusions — fields in endpoint return/parameter types excluded from dead reports
+- [x] Jackson annotation awareness — `@JsonProperty` keeps fields alive, `@JsonIgnore` does not
+- [x] `DeleteField` action with PSI support for Java (`deleteField`) and Kotlin (`deleteProperty`)
+- [x] Field output formatting in both text and JSON modes
 
 ### CLI: `find-endpoints` (`graphite-cli-find-endpoints`) — Test Coverage
 
@@ -75,7 +81,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 ### Test Coverage (>= 98% across all modules)
 
 - [x] `graphite-core` — 98.2% line coverage (unit tests for Node, Edge, Graph, DataFlowAnalysis, BranchReachabilityAnalysis, QueryDsl, TypeHierarchyAnalysis, LoaderConfig)
-- [x] `graphite-sootup` — 98.1% line coverage (SootUpAdapter, JavaProjectLoader, GenericSignatureParser, BytecodeSignatureReader tests; ASM visitEnd() bug fix; dead code removal for BooleanConstant/JFieldRef)
+- [x] `graphite-sootup` — 98.1% line coverage (SootUpAdapter, JavaProjectLoader, GenericSignatureParser, BytecodeSignatureReader tests; ASM visitEnd() bug fix; dead code removal for BooleanConstant/JFieldRef; isStatic fix for JFieldRef)
 - [x] `graphite-cli-find-args` — 99.6% line coverage (unit + integration tests with runtime-compiled Java fixtures)
 - [x] `graphite-cli-find-endpoints` — 100% line coverage (formatTypeStructure, formatFieldStructure, buildFieldSchema, formatJsonSchema tests)
 - [x] `graphite-cli-find-dead-code` — 98.3% line coverage (previously completed)
@@ -86,27 +92,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 
 ## Planned
 
-### 1. Unused Field Detection (`find-dead-code`)
-
-Detect fields that are never read or written outside their own class.
-
-**Spring API-aware analysis**: Fields and getters in Spring `@RestController`/`@Controller` response types are implicitly used by Jackson serialization at runtime, even if they have no static references in bytecode. These must be excluded from dead field reports.
-
-Exclusion heuristics:
-- Fields in classes reachable as **actual** return types of `@GetMapping`/`@PostMapping`/`@RequestMapping` etc. endpoint methods — not just the declared return type, but resolved through generic type arguments (`ResponseEntity<User>` → `User`), `Object` field assignments, and type hierarchy analysis (reusing `find-endpoints` infrastructure)
-- Fields in classes annotated with `@JsonInclude`, `@JsonProperty`, `@JsonSerialize`, or other Jackson annotations
-- Fields in classes used as `@RequestBody` parameter types (deserialization targets)
-- Getters matching JavaBean convention (`getX()`/`isX()`) in the above classes
-
-**Lombok-aware analysis**: Lombok annotations (`@Data`, `@Getter`, `@Setter`, `@Value`, `@Builder`, etc.) generate accessors at compile time that exist in bytecode but not in source. A field must be considered referenced if its generated getter/setter is called from elsewhere. Since SootUp operates on compiled bytecode, the generated methods are visible — `findUnreferencedFields()` must link fields to their Lombok-generated accessors (by JavaBean naming convention) and check whether those accessors are referenced.
-
-Scope:
-- `BranchReachabilityAnalysis` — add `findUnreferencedFields()` alongside existing `findUnreferencedMethods()`
-- `SootUpAdapter` — track field read/write references from bytecode (`JFieldRef`)
-- `SourceCodeEditor` — add `DeleteField` action with PSI support for Java and Kotlin
-- `FindDeadCodeCommand` — report unused fields in text/JSON output, support `--delete`
-
-### 2. Multi-Round Deletion (`find-dead-code`)
+### 1. Multi-Round Deletion (`find-dead-code`)
 
 Current implementation deletes dead code in a single pass. After cleanup branch or method deletion, new unreferenced methods/fields may emerge that weren't detectable in the first round. Add iterative deletion: delete → recompile → reload bytecode → reanalyze → delete again, until convergence (no new dead code found).
 

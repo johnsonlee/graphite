@@ -20,6 +20,7 @@ import sootup.core.jimple.common.expr.AbstractInvokeExpr
 import sootup.core.jimple.common.expr.JNewExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
 import sootup.core.jimple.common.ref.JFieldRef
+import sootup.core.jimple.common.ref.JStaticFieldRef
 import sootup.core.jimple.common.ref.JArrayRef
 import sootup.core.jimple.common.ref.JParameterRef
 import sootup.core.jimple.common.stmt.JAssignStmt
@@ -1171,7 +1172,7 @@ class SootUpAdapter(
                     name = fieldName,
                     type = fieldType
                 ),
-                isStatic = false // Would need to check the actual field
+                isStatic = fieldRef is JStaticFieldRef
             )
             graphBuilder.addNode(node)
             node
