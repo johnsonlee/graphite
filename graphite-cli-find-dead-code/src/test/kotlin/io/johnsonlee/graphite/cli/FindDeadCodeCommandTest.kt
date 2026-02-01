@@ -872,6 +872,264 @@ class FindDeadCodeCommandTest {
     }
 
     // ========================================================================
+    // --iterate validation
+    // ========================================================================
+
+    @Test
+    fun `iterate without delete returns 1`() {
+        val cmd = FindDeadCodeCommand()
+        cmd.input = Path.of(System.getProperty("java.io.tmpdir"))
+        cmd.iterate = true
+        cmd.buildCommand = "echo done"
+        cmd.delete = false
+
+        assertEquals(1, cmd.call())
+    }
+
+    @Test
+    fun `iterate without build-command returns 1`() {
+        val cmd = FindDeadCodeCommand()
+        cmd.input = Path.of(System.getProperty("java.io.tmpdir"))
+        cmd.iterate = true
+        cmd.delete = true
+        cmd.buildCommand = null
+
+        assertEquals(1, cmd.call())
+    }
+
+    @Test
+    fun `iterate with dry-run returns 1`() {
+        val cmd = FindDeadCodeCommand()
+        cmd.input = Path.of(System.getProperty("java.io.tmpdir"))
+        cmd.iterate = true
+        cmd.delete = true
+        cmd.buildCommand = "echo done"
+        cmd.dryRun = true
+
+        assertEquals(1, cmd.call())
+    }
+
+    @Test
+    fun `iterate with export-assumptions returns 1`() {
+        val cmd = FindDeadCodeCommand()
+        cmd.input = Path.of(System.getProperty("java.io.tmpdir"))
+        cmd.iterate = true
+        cmd.delete = true
+        cmd.buildCommand = "echo done"
+        cmd.exportAssumptions = File.createTempFile("test", ".yaml").also { it.deleteOnExit() }
+
+        assertEquals(1, cmd.call())
+    }
+
+    // ========================================================================
+    // runBuildCommand
+    // ========================================================================
+
+    @Test
+    fun `runBuildCommand returns 0 for successful command`() {
+        assertEquals(0, cmd.runBuildCommand("echo done"))
+    }
+
+    @Test
+    fun `runBuildCommand returns non-zero for failed command`() {
+        val exitCode = cmd.runBuildCommand("exit 1")
+        assertEquals(1, exitCode)
+    }
+
+    // ========================================================================
+    // formatResult
+    // ========================================================================
+
+    @Test
+    fun `formatResult dispatches to text formatter`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+        cmd.outputFormat = "text"
+        val output = cmd.formatResult(result)
+        assertTrue(output.contains("Summary:"))
+    }
+
+    @Test
+    fun `formatResult dispatches to json formatter`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+        cmd.outputFormat = "json"
+        val output = cmd.formatResult(result)
+        assertTrue(output.contains("\"summary\""))
+    }
+
+    // ========================================================================
+    // RoundStatistics
+    // ========================================================================
+
+    @Test
+    fun `RoundStatistics data class holds correct values`() {
+        val stats = FindDeadCodeCommand.RoundStatistics(
+            round = 1,
+            deletedMethods = 3,
+            deletedFields = 2,
+            deletedBranches = 1,
+            deletedFiles = 0
+        )
+        assertEquals(1, stats.round)
+        assertEquals(3, stats.deletedMethods)
+        assertEquals(2, stats.deletedFields)
+        assertEquals(1, stats.deletedBranches)
+        assertEquals(0, stats.deletedFiles)
+    }
+
+    @Test
+    fun `RoundStatistics copy updates round`() {
+        val stats = FindDeadCodeCommand.RoundStatistics(
+            round = 0,
+            deletedMethods = 5,
+            deletedFields = 0,
+            deletedBranches = 0,
+            deletedFiles = 1
+        )
+        val updated = stats.copy(round = 3)
+        assertEquals(3, updated.round)
+        assertEquals(5, updated.deletedMethods)
+    }
+
+    // ========================================================================
+    // printIterationSummary
+    // ========================================================================
+
+    @Test
+    fun `printIterationSummary with empty rounds prints no rounds message`() {
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldErr = System.err
+        System.setErr(java.io.PrintStream(errBaos))
+        try {
+            cmd.printIterationSummary(emptyList(), converged = false, buildFailedOnRound = null)
+        } finally {
+            System.setErr(oldErr)
+        }
+        val output = errBaos.toString()
+        assertTrue(output.contains("No rounds executed."))
+    }
+
+    @Test
+    fun `printIterationSummary with converged rounds prints summary table`() {
+        val rounds = listOf(
+            FindDeadCodeCommand.RoundStatistics(round = 1, deletedMethods = 3, deletedFields = 1, deletedBranches = 0, deletedFiles = 1),
+            FindDeadCodeCommand.RoundStatistics(round = 2, deletedMethods = 1, deletedFields = 0, deletedBranches = 0, deletedFiles = 0)
+        )
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldErr = System.err
+        System.setErr(java.io.PrintStream(errBaos))
+        try {
+            cmd.printIterationSummary(rounds, converged = true, buildFailedOnRound = null)
+        } finally {
+            System.setErr(oldErr)
+        }
+        val output = errBaos.toString()
+        assertTrue(output.contains("Iteration Summary"))
+        assertTrue(output.contains("Round"))
+        assertTrue(output.contains("Total"))
+        assertTrue(output.contains("Converged after 2 round(s)."))
+    }
+
+    @Test
+    fun `printIterationSummary with build failure prints failure message`() {
+        val rounds = listOf(
+            FindDeadCodeCommand.RoundStatistics(round = 1, deletedMethods = 2, deletedFields = 0, deletedBranches = 0, deletedFiles = 0)
+        )
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldErr = System.err
+        System.setErr(java.io.PrintStream(errBaos))
+        try {
+            cmd.printIterationSummary(rounds, converged = false, buildFailedOnRound = 1)
+        } finally {
+            System.setErr(oldErr)
+        }
+        val output = errBaos.toString()
+        assertTrue(output.contains("Build failed after round 1."))
+    }
+
+    @Test
+    fun `printIterationSummary with max rounds prints max rounds message`() {
+        val rounds = listOf(
+            FindDeadCodeCommand.RoundStatistics(round = 1, deletedMethods = 1, deletedFields = 0, deletedBranches = 0, deletedFiles = 0)
+        )
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldErr = System.err
+        System.setErr(java.io.PrintStream(errBaos))
+        try {
+            cmd.printIterationSummary(rounds, converged = false, buildFailedOnRound = null)
+        } finally {
+            System.setErr(oldErr)
+        }
+        val output = errBaos.toString()
+        assertTrue(output.contains("Reached maximum rounds (1)."))
+    }
+
+    // ========================================================================
+    // executeDeletionsWithStats
+    // ========================================================================
+
+    @Test
+    fun `executeDeletionsWithStats returns null when source dirs empty`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+        val graph = stubGraph()
+        cmd.sourceDirs = emptyList()
+        val stats = cmd.executeDeletionsWithStats(result, graph)
+        assertEquals(null, stats)
+    }
+
+    @Test
+    fun `executeDeletionsWithStats returns null when source dir does not exist`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+        val graph = stubGraph()
+        cmd.sourceDirs = listOf(Path.of("/nonexistent/source/dir"))
+        val stats = cmd.executeDeletionsWithStats(result, graph)
+        assertEquals(null, stats)
+    }
+
+    @Test
+    fun `executeDeletionsWithStats returns zero stats for empty result`() {
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = emptySet()
+        )
+        val graph = stubGraph()
+        val tempDir = java.nio.file.Files.createTempDirectory("test-source")
+        cmd.sourceDirs = listOf(tempDir)
+        val stats = cmd.executeDeletionsWithStats(result, graph)
+        assertEquals(0, stats?.deletedMethods)
+        assertEquals(0, stats?.deletedFields)
+        assertEquals(0, stats?.deletedBranches)
+        assertEquals(0, stats?.deletedFiles)
+        tempDir.toFile().deleteRecursively()
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 

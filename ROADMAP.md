@@ -63,6 +63,11 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Jackson annotation awareness — `@JsonProperty` keeps fields alive, `@JsonIgnore` does not
 - [x] `DeleteField` action with PSI support for Java (`deleteField`) and Kotlin (`deleteProperty`)
 - [x] Field output formatting in both text and JSON modes
+- [x] Multi-round deletion — `--iterate` flag for iterative delete-recompile-reanalyze cycles until convergence
+- [x] `--build-command` to invoke external build tool between rounds
+- [x] `--max-rounds` to cap iteration rounds (default 10)
+- [x] Per-round statistics and iteration summary reporting
+- [x] Kover coverage at 99.0% line coverage
 
 ### CLI: `find-endpoints` (`graphite-cli-find-endpoints`) — Test Coverage
 
@@ -84,7 +89,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] `graphite-sootup` — 98.1% line coverage (SootUpAdapter, JavaProjectLoader, GenericSignatureParser, BytecodeSignatureReader tests; ASM visitEnd() bug fix; dead code removal for BooleanConstant/JFieldRef; isStatic fix for JFieldRef)
 - [x] `graphite-cli-find-args` — 99.6% line coverage (unit + integration tests with runtime-compiled Java fixtures)
 - [x] `graphite-cli-find-endpoints` — 100% line coverage (formatTypeStructure, formatFieldStructure, buildFieldSchema, formatJsonSchema tests)
-- [x] `graphite-cli-find-dead-code` — 98.3% line coverage (previously completed)
+- [x] `graphite-cli-find-dead-code` — 99.0% line coverage
 
 ## In Progress
 
@@ -92,13 +97,4 @@ This document tracks the project's progress and planned work. Updated alongside 
 
 ## Planned
 
-### 1. Multi-Round Deletion (`find-dead-code`)
-
-Current implementation deletes dead code in a single pass. After cleanup branch or method deletion, new unreferenced methods/fields may emerge that weren't detectable in the first round. Add iterative deletion: delete → recompile → reload bytecode → reanalyze → delete again, until convergence (no new dead code found).
-
-The assumption YAML is idempotent across rounds — deleted call sites won't match, and already-cleaned branches produce no new findings. The same YAML can be safely reused without side effects.
-
-Scope:
-- `FindDeadCodeCommand` — add `--iterate` flag to enable multi-round deletion
-- Invoke external build tool (Gradle/Maven) between rounds to recompile, or operate on source-level analysis to avoid recompilation
-- Report per-round statistics (e.g., "Round 1: deleted 5 methods, Round 2: deleted 2 methods, Round 3: converged")
+(None)
