@@ -2,7 +2,7 @@
 
 This document tracks the project's progress and planned work. Updated alongside code changes per the development workflow in [CLAUDE.md](CLAUDE.md).
 
-**Current version:** `0.1.0-beta.15`
+**Current version:** `0.1.0-beta.16`
 
 ## Completed
 
