@@ -2,7 +2,7 @@
 
 This document tracks the project's progress and planned work. Updated alongside code changes per the development workflow in [CLAUDE.md](CLAUDE.md).
 
-**Current version:** `0.1.0-beta.12`
+**Current version:** `0.1.0-beta.13`
 
 ## Completed
 
@@ -81,8 +81,37 @@ This document tracks the project's progress and planned work. Updated alongside 
 
 ## In Progress
 
-- [ ] PR #19: `find-dead-code` CLI command — pending review and merge
+- [ ] PR #20: docs — bump version to 0.1.0-beta.13
 
 ## Planned
 
-(No pending items — all previously planned tasks have been completed.)
+### Unused Field Detection (`find-dead-code`)
+
+Detect fields that are never read or written outside their own class.
+
+**Spring API-aware analysis**: Fields and getters in Spring `@RestController`/`@Controller` response types are implicitly used by Jackson serialization at runtime, even if they have no static references in bytecode. These must be excluded from dead field reports.
+
+Exclusion heuristics:
+- Fields in classes reachable as **actual** return types of `@GetMapping`/`@PostMapping`/`@RequestMapping` etc. endpoint methods — not just the declared return type, but resolved through generic type arguments (`ResponseEntity<User>` → `User`), `Object` field assignments, and type hierarchy analysis (reusing `find-endpoints` infrastructure)
+- Fields in classes annotated with `@JsonInclude`, `@JsonProperty`, `@JsonSerialize`, or other Jackson annotations
+- Fields in classes used as `@RequestBody` parameter types (deserialization targets)
+- Getters matching JavaBean convention (`getX()`/`isX()`) in the above classes
+
+**Lombok-aware analysis**: Lombok annotations (`@Data`, `@Getter`, `@Setter`, `@Value`, `@Builder`, etc.) generate accessors at compile time that exist in bytecode but not in source. A field must be considered referenced if its generated getter/setter is called from elsewhere. Since SootUp operates on compiled bytecode, the generated methods are visible — `findUnreferencedFields()` must link fields to their Lombok-generated accessors (by JavaBean naming convention) and check whether those accessors are referenced.
+
+Scope:
+- `BranchReachabilityAnalysis` — add `findUnreferencedFields()` alongside existing `findUnreferencedMethods()`
+- `SootUpAdapter` — track field read/write references from bytecode (`JFieldRef`)
+- `SourceCodeEditor` — add `DeleteField` action with PSI support for Java and Kotlin
+- `FindDeadCodeCommand` — report unused fields in text/JSON output, support `--delete`
+
+### Multi-Round Deletion (`find-dead-code`)
+
+Current implementation deletes dead code in a single pass. After cleanup branch or method deletion, new unreferenced methods/fields may emerge that weren't detectable in the first round. Add iterative deletion: delete → recompile → reload bytecode → reanalyze → delete again, until convergence (no new dead code found).
+
+The assumption YAML is idempotent across rounds — deleted call sites won't match, and already-cleaned branches produce no new findings. The same YAML can be safely reused without side effects.
+
+Scope:
+- `FindDeadCodeCommand` — add `--iterate` flag to enable multi-round deletion
+- Invoke external build tool (Gradle/Maven) between rounds to recompile, or operate on source-level analysis to avoid recompilation
+- Report per-round statistics (e.g., "Round 1: deleted 5 methods, Round 2: deleted 2 methods, Round 3: converged")

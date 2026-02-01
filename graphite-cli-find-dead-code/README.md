@@ -12,9 +12,9 @@ Both should be handled by a single `find-dead-code` command. For type 1, the too
 ## 2. Workflow
 
 ```
-                          ┌──────────────────────┐
-                          │  graphite find-dead-code │
-                          └──────────┬───────────┘
+                          ┌───────────────────────────┐
+                          │  graphite find-dead-code   │
+                          └──────────┬────────────────┘
                                      │
                ┌─────────────────────┼─────────────────────┐
                ▼                     ▼                     ▼
