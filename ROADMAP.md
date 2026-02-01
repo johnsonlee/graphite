@@ -29,6 +29,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Smart JAR filtering to reduce memory usage
 - [x] Complete constant type support (int, long, float, double, string, boolean, null, enum)
 - [x] Branch scope and control flow edge support
+- [x] Single-pass class processing: reduced `buildGraph()` from 6 `view.classes` iterations to 2 (type hierarchy + enum values; methods + fields + endpoints + Jackson annotations)
 
 ### CLI: `find-args` (`graphite-cli-find-args`)
 
@@ -81,11 +82,11 @@ This document tracks the project's progress and planned work. Updated alongside 
 
 ## In Progress
 
-- [ ] PR #20: docs — bump version to 0.1.0-beta.13
+(None)
 
 ## Planned
 
-### Unused Field Detection (`find-dead-code`)
+### 1. Unused Field Detection (`find-dead-code`)
 
 Detect fields that are never read or written outside their own class.
 
@@ -105,7 +106,7 @@ Scope:
 - `SourceCodeEditor` — add `DeleteField` action with PSI support for Java and Kotlin
 - `FindDeadCodeCommand` — report unused fields in text/JSON output, support `--delete`
 
-### Multi-Round Deletion (`find-dead-code`)
+### 2. Multi-Round Deletion (`find-dead-code`)
 
 Current implementation deletes dead code in a single pass. After cleanup branch or method deletion, new unreferenced methods/fields may emerge that weren't detectable in the first round. Add iterative deletion: delete → recompile → reload bytecode → reanalyze → delete again, until convergence (no new dead code found).
 

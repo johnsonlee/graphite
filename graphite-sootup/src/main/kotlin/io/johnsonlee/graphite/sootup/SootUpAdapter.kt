@@ -79,25 +79,30 @@ class SootUpAdapter(
      * Build the complete graph from the SootUp view
      */
     fun buildGraph(): Graph {
-        // 1. Process all classes and build type hierarchy
-        processTypeHierarchy()
+        // Pass 1: All classes — type hierarchy + enum values
+        // Enum values must be fully collected before processing methods
+        // (a method in class A may reference an enum from class B)
+        view.classes.forEach { sootClass ->
+            processTypeHierarchyForClass(sootClass)
+            if (sootClass.isEnum) {
+                extractEnumValues(sootClass)
+            }
+        }
 
-        // 2. Extract enum constant values
-        processEnumValues()
+        // Pass 2: Filtered classes — methods + fields + endpoints + Jackson
+        // Methods before fields (fields check fieldNodes map for duplicates)
+        view.classes
+            .filter { shouldIncludeClass(it) }
+            .forEach { sootClass ->
+                sootClass.methods.forEach { method ->
+                    processMethod(method)
+                }
+                processClassFieldsForClass(sootClass)
+                processEndpointsForClass(sootClass)
+                processJacksonAnnotationsForClass(sootClass)
+            }
 
-        // 3. Process all methods and build intraprocedural graphs
-        processMethods()
-
-        // 4. Process all class fields (creates FieldNodes for all declared fields)
-        processClassFields()
-
-        // 5. Extract HTTP endpoints from annotations
-        processEndpoints()
-
-        // 6. Extract Jackson annotation information
-        processJacksonAnnotations()
-
-        // 7. Build call graph if configured
+        // Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
@@ -105,100 +110,79 @@ class SootUpAdapter(
         return graphBuilder.build()
     }
 
-    /**
-     * Extract enum constant values from enum classes.
-     * Parses the <clinit> method to find constructor arguments.
-     */
-    private fun processEnumValues() {
-        val enumClasses = view.classes.filter { it.isEnum }.toList()
-        log("Found ${enumClasses.size} enum classes to process")
-
-        enumClasses.forEach { enumClass ->
-            extractEnumValues(enumClass)
-        }
-    }
-
     private fun log(message: String) {
         config.verbose?.invoke(message)
     }
 
     /**
-     * Extract HTTP endpoints from Spring MVC annotations.
+     * Extract HTTP endpoints from Spring MVC annotations for a single class.
      * Supports @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
      */
-    private fun processEndpoints() {
-        view.classes
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-            if (sootClass !is JavaSootClass) return@forEach
+    private fun processEndpointsForClass(sootClass: SootClass) {
+        if (sootClass !is JavaSootClass) return
 
-            val className = sootClass.type.fullyQualifiedName
+        val className = sootClass.type.fullyQualifiedName
 
-            // Get class-level @RequestMapping path prefix
-            val classAnnotations = sootClass.annotations
-            val classPath = extractRequestMappingPath(classAnnotations)
+        // Get class-level @RequestMapping path prefix
+        val classAnnotations = sootClass.annotations
+        val classPath = extractRequestMappingPath(classAnnotations)
 
-            sootClass.methods.toList().forEach { method ->
-                if (method !is JavaSootMethod) return@forEach
+        sootClass.methods.toList().forEach { method ->
+            if (method !is JavaSootMethod) return@forEach
 
-                val methodAnnotations = method.annotations
-                val httpMethod = findHttpMethod(methodAnnotations)
+            val methodAnnotations = method.annotations
+            val httpMethod = findHttpMethod(methodAnnotations)
 
-                if (httpMethod != null) {
-                    val methodPath = extractMappingPath(methodAnnotations)
-                    val fullPath = combinePaths(classPath, methodPath)
-                    val produces = extractAnnotationArrayValue(methodAnnotations, "produces")
-                    val consumes = extractAnnotationArrayValue(methodAnnotations, "consumes")
+            if (httpMethod != null) {
+                val methodPath = extractMappingPath(methodAnnotations)
+                val fullPath = combinePaths(classPath, methodPath)
+                val produces = extractAnnotationArrayValue(methodAnnotations, "produces")
+                val consumes = extractAnnotationArrayValue(methodAnnotations, "consumes")
 
-                    val methodDescriptor = toMethodDescriptor(method)
+                val methodDescriptor = toMethodDescriptor(method)
 
-                    val endpoint = EndpointInfo(
-                        method = methodDescriptor,
-                        httpMethod = httpMethod,
-                        path = fullPath,
-                        produces = produces,
-                        consumes = consumes
-                    )
-                    graphBuilder.addEndpoint(endpoint)
-                    log("Found endpoint: ${httpMethod.name} $fullPath -> ${className}.${methodDescriptor.name}")
-                }
+                val endpoint = EndpointInfo(
+                    method = methodDescriptor,
+                    httpMethod = httpMethod,
+                    path = fullPath,
+                    produces = produces,
+                    consumes = consumes
+                )
+                graphBuilder.addEndpoint(endpoint)
+                log("Found endpoint: ${httpMethod.name} $fullPath -> ${className}.${methodDescriptor.name}")
             }
         }
     }
 
     /**
-     * Extract Jackson annotation information from fields and getter methods.
+     * Extract Jackson annotation information from fields and getter methods for a single class.
      * Supports @JsonProperty, @JsonIgnore, and @JsonProperty(access = JsonProperty.Access.*)
      */
-    private fun processJacksonAnnotations() {
-        view.classes
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-            if (sootClass !is JavaSootClass) return@forEach
+    private fun processJacksonAnnotationsForClass(sootClass: SootClass) {
+        if (sootClass !is JavaSootClass) return
 
-            val className = sootClass.type.fullyQualifiedName
+        val className = sootClass.type.fullyQualifiedName
 
-            // Process field annotations
-            sootClass.fields.forEach { field ->
-                val fieldName = field.name
-                val jacksonInfo = extractJacksonInfo(field.annotations)
-                if (jacksonInfo != null) {
-                    graphBuilder.addJacksonFieldInfo(className, fieldName, jacksonInfo)
-                }
+        // Process field annotations
+        sootClass.fields.forEach { field ->
+            val fieldName = field.name
+            val jacksonInfo = extractJacksonInfo(field.annotations)
+            if (jacksonInfo != null) {
+                graphBuilder.addJacksonFieldInfo(className, fieldName, jacksonInfo)
             }
+        }
 
-            // Process getter method annotations
-            sootClass.methods.forEach { method ->
-                if (method !is JavaSootMethod) return@forEach
+        // Process getter method annotations
+        sootClass.methods.forEach { method ->
+            if (method !is JavaSootMethod) return@forEach
 
-                val methodName = method.name
-                // Only process getter methods (getXxx or isXxx)
-                if ((methodName.startsWith("get") && methodName.length > 3) ||
-                    (methodName.startsWith("is") && methodName.length > 2)) {
-                    val jacksonInfo = extractJacksonInfo(method.annotations)
-                    if (jacksonInfo != null) {
-                        graphBuilder.addJacksonGetterInfo(className, methodName, jacksonInfo)
-                    }
+            val methodName = method.name
+            // Only process getter methods (getXxx or isXxx)
+            if ((methodName.startsWith("get") && methodName.length > 3) ||
+                (methodName.startsWith("is") && methodName.length > 2)) {
+                val jacksonInfo = extractJacksonInfo(method.annotations)
+                if (jacksonInfo != null) {
+                    graphBuilder.addJacksonGetterInfo(className, methodName, jacksonInfo)
                 }
             }
         }
@@ -520,42 +504,30 @@ class SootUpAdapter(
         }
     }
 
-    private fun processTypeHierarchy() {
-        view.classes.forEach { sootClass ->
-            val classType = toTypeDescriptor(sootClass.type)
+    private fun processTypeHierarchyForClass(sootClass: SootClass) {
+        val classType = toTypeDescriptor(sootClass.type)
 
-            // Process superclass
-            sootClass.superclass.ifPresent { superType ->
-                graphBuilder.addTypeRelation(
-                    classType,
-                    toTypeDescriptor(superType),
-                    TypeRelation.EXTENDS
-                )
-            }
+        // Process superclass
+        sootClass.superclass.ifPresent { superType ->
+            graphBuilder.addTypeRelation(
+                classType,
+                toTypeDescriptor(superType),
+                TypeRelation.EXTENDS
+            )
+        }
 
-            // Process interfaces
-            sootClass.interfaces.forEach { interfaceType ->
-                graphBuilder.addTypeRelation(
-                    classType,
-                    toTypeDescriptor(interfaceType),
-                    TypeRelation.IMPLEMENTS
-                )
-            }
+        // Process interfaces
+        sootClass.interfaces.forEach { interfaceType ->
+            graphBuilder.addTypeRelation(
+                classType,
+                toTypeDescriptor(interfaceType),
+                TypeRelation.IMPLEMENTS
+            )
         }
     }
 
-    private fun processMethods() {
-        view.classes
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-                sootClass.methods.forEach { method ->
-                    processMethod(method)
-                }
-            }
-    }
-
     /**
-     * Process all class fields to ensure FieldNodes are created for all declared fields.
+     * Process all declared fields for a single class, ensuring FieldNodes are created.
      *
      * This is important for return type analysis to discover ALL fields in a class,
      * not just those that are referenced in methods. Fields may be:
@@ -563,44 +535,40 @@ class SootUpAdapter(
      * - Fields only used by frameworks (Jackson, Lombok, etc.)
      * - Fields initialized via reflection or deserialization
      */
-    private fun processClassFields() {
-        view.classes
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-                val className = sootClass.type.fullyQualifiedName
-                sootClass.fields.forEach { field ->
-                    val fieldName = field.name
+    private fun processClassFieldsForClass(sootClass: SootClass) {
+        val className = sootClass.type.fullyQualifiedName
+        sootClass.fields.forEach { field ->
+            val fieldName = field.name
 
-                    // Skip synthetic fields
-                    if (fieldName.startsWith("\$") || fieldName.startsWith("this\$")) {
-                        return@forEach
-                    }
-
-                    // Use field signature as key (same format as getOrCreateField)
-                    val fieldSig = field.signature.toString()
-                    if (fieldNodes.containsKey(fieldSig)) {
-                        return@forEach
-                    }
-
-                    val declaringClassType = toTypeDescriptor(sootClass.type)
-                    val baseType = toTypeDescriptor(field.type)
-
-                    // Try to get generic type from bytecode signature
-                    val fieldType = getFieldTypeWithGenerics(className, fieldName, baseType)
-
-                    val node = FieldNode(
-                        id = nextNodeId("field"),
-                        descriptor = FieldDescriptor(
-                            declaringClass = declaringClassType,
-                            name = fieldName,
-                            type = fieldType
-                        ),
-                        isStatic = field.isStatic
-                    )
-                    fieldNodes[fieldSig] = node
-                    graphBuilder.addNode(node)
-                }
+            // Skip synthetic fields
+            if (fieldName.startsWith("\$") || fieldName.startsWith("this\$")) {
+                return@forEach
             }
+
+            // Use field signature as key (same format as getOrCreateField)
+            val fieldSig = field.signature.toString()
+            if (fieldNodes.containsKey(fieldSig)) {
+                return@forEach
+            }
+
+            val declaringClassType = toTypeDescriptor(sootClass.type)
+            val baseType = toTypeDescriptor(field.type)
+
+            // Try to get generic type from bytecode signature
+            val fieldType = getFieldTypeWithGenerics(className, fieldName, baseType)
+
+            val node = FieldNode(
+                id = nextNodeId("field"),
+                descriptor = FieldDescriptor(
+                    declaringClass = declaringClassType,
+                    name = fieldName,
+                    type = fieldType
+                ),
+                isStatic = field.isStatic
+            )
+            fieldNodes[fieldSig] = node
+            graphBuilder.addNode(node)
+        }
     }
 
     private fun processMethod(method: SootMethod) {

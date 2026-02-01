@@ -276,6 +276,35 @@ if (isSpecialCase && config.enableSpecialHandling) {
 - Bug only surfaced in production use, not in tests
 - **Rule**: Test coverage should mirror real-world usage patterns
 
+### Why `buildGraph()` Is Not Parallelized
+
+After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.
+
+#### Where time is spent
+
+| Phase | Per-class cost | Notes |
+|-------|---------------|-------|
+| `processTypeHierarchyForClass` | Trivial | A few map insertions per class |
+| `extractEnumValues` | Moderate | `<clinit>` parsing, enum classes only |
+| `processMethod` | **Heavy** | Statement graph traversal, node/edge creation — the bottleneck |
+| `processClassFieldsForClass` | Light | Iterate declared fields |
+| `processEndpointsForClass` | Light | Annotation reflection |
+| `processJacksonAnnotationsForClass` | Light | Annotation reflection |
+
+#### Why not parallel
+
+1. **The bottleneck is upstream.** SootUp's `JavaView` construction (class resolution, body interception) dominates total load time. `buildGraph()` itself is a small fraction — parallelizing it yields marginal wall-clock improvement.
+
+2. **Memory regression.** `DefaultGraph.Builder` uses fastutil `Int2ObjectOpenHashMap` for nodes and edges (51% memory savings over `HashMap`). There is no concurrent fastutil equivalent — parallelism would require falling back to `ConcurrentHashMap<Int, *>`, undoing the memory optimization that matters most for large applications.
+
+3. **Shared mutable state.** Six adapter-level maps (`localNodes`, `fieldNodes`, `parameterNodes`, `constantNodes`, `methodReturnNodes`, `allocationNodes`) are written during method processing. `constantNodes` deduplication (`getOrPut` + `graphBuilder.addNode` side-effect) is particularly hard to make atomic without locking.
+
+4. **Complexity vs. gain.** Thread-safe constant deduplication, concurrent edge list building, and race condition testing add significant complexity for a phase that processes ~200 filtered classes in under a second on typical workloads.
+
+#### If revisited
+
+If profiling reveals `buildGraph()` as a bottleneck on very large codebases, the preferred approach would be **per-class builders merged at end** (each class gets an independent builder, results merged sequentially after all classes are processed) rather than concurrent shared state. This avoids thread-safety issues but requires handling cross-class constant deduplication at merge time.
+
 ## Productivity Insights
 
 ### Claude vs Staff Engineer: Type Hierarchy Analysis Feature
