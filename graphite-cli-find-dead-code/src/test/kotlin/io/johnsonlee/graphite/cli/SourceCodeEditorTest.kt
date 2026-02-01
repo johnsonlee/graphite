@@ -672,6 +672,380 @@ class SourceCodeEditorTest {
     }
 
     // ========================================================================
+    // planDeletions with fields
+    // ========================================================================
+
+    @Test
+    fun `planDeletions creates DeleteField for unreferenced fields`() {
+        val sourceDir = createSourceTree(
+            "com/example/WithField.java" to """
+                package com.example;
+                public class WithField {
+                    private int dead;
+                    public void alive() {}
+                }
+            """.trimIndent()
+        )
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val className = "com.example.WithField"
+        val type = TypeDescriptor(className)
+        val field = FieldDescriptor(type, "dead", TypeDescriptor("int"))
+
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = setOf(field)
+        )
+
+        val graph = stubGraph(emptyList())
+        val actions = editor.planDeletions(result, graph)
+
+        assertEquals(1, actions.size)
+        assertTrue(actions[0] is DeletionAction.DeleteField)
+        val action = actions[0] as DeletionAction.DeleteField
+        assertEquals("dead", action.fieldName)
+    }
+
+    @Test
+    fun `planDeletions skips fields in deleted classes`() {
+        val sourceDir = createSourceTree(
+            "com/example/Dead.java" to """
+                package com.example;
+                public class Dead {
+                    private int field;
+                    public void method() {}
+                }
+            """.trimIndent()
+        )
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val className = "com.example.Dead"
+        val type = TypeDescriptor(className)
+        val voidType = TypeDescriptor("void")
+        val method = MethodDescriptor(type, "method", emptyList(), voidType)
+        val field = FieldDescriptor(type, "field", TypeDescriptor("int"))
+
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = setOf(method),
+            unreferencedFields = setOf(field)
+        )
+
+        val graph = stubGraph(listOf(method))
+        val actions = editor.planDeletions(result, graph)
+
+        // Should be a DeleteFile (all methods dead) and no DeleteField
+        assertEquals(1, actions.size)
+        assertTrue(actions[0] is DeletionAction.DeleteFile)
+    }
+
+    @Test
+    fun `DeleteField description includes field name and type`() {
+        val action = DeletionAction.DeleteField(
+            sourceFile = File("src/main/java/Foo.java"),
+            className = "Foo",
+            fieldName = "bar",
+            fieldType = "String",
+            startLine = 5,
+            endLine = 5
+        )
+        assertTrue(action.description.contains("[DELETE]"))
+        assertTrue(action.description.contains("field bar: String"))
+        assertTrue(action.description.contains(":5-5"))
+    }
+
+    @Test
+    fun `DeleteField description without line range`() {
+        val action = DeletionAction.DeleteField(
+            sourceFile = File("src/main/java/Foo.java"),
+            className = "Foo",
+            fieldName = "bar",
+            fieldType = "int"
+        )
+        assertTrue(action.description.contains("[DELETE]"))
+        assertTrue(action.description.contains("field bar: int"))
+        // No line range info (no ":N-N" pattern)
+        assertFalse(action.description.contains(Regex(":\\d+-\\d+")))
+    }
+
+    @Test
+    fun `execute deletes field from Java file`() {
+        val sourceDir = createSourceTree(
+            "com/example/FieldEdit.java" to """
+                package com.example;
+
+                public class FieldEdit {
+                    private String keep = "keep";
+
+                    private int dead = 42;
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/FieldEdit.java").toFile()
+
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteField(
+                sourceFile = file,
+                className = "com.example.FieldEdit",
+                fieldName = "dead",
+                fieldType = "int"
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+        assertTrue(report.any { it.contains("[DELETE]") && it.contains("field dead") })
+    }
+
+    @Test
+    fun `execute deletes property from Kotlin file`() {
+        val sourceDir = createSourceTree(
+            "com/example/PropEdit.kt" to """
+                package com.example
+
+                class PropEdit {
+                    val keep = "keep"
+
+                    val dead = 42
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/PropEdit.kt").toFile()
+
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteField(
+                sourceFile = file,
+                className = "com.example.PropEdit",
+                fieldName = "dead",
+                fieldType = "Int"
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+        assertTrue(report.any { it.contains("[DELETE]") && it.contains("field dead") })
+    }
+
+    @Test
+    fun `planDeletions verbose for field with no source file`() {
+        val messages = mutableListOf<String>()
+        val sourceDir = createSourceTree(
+            "com/example/Other.java" to "class Other {}"
+        )
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver, verbose = { messages.add(it) })
+
+        val className = "com.example.Missing"
+        val type = TypeDescriptor(className)
+        val field = FieldDescriptor(type, "dead", TypeDescriptor("int"))
+
+        val result = DeadCodeResult(
+            deadBranches = emptyList(),
+            deadMethods = emptySet(),
+            deadCallSites = emptySet(),
+            unreferencedMethods = emptySet(),
+            unreferencedFields = setOf(field)
+        )
+
+        val graph = stubGraph(emptyList())
+        editor.planDeletions(result, graph)
+
+        assertTrue(messages.any { it.contains("No source file found") && it.contains("field") })
+    }
+
+    @Test
+    fun `execute uses default dryRun parameter`() {
+        val sourceDir = createSourceTree(
+            "com/example/Default.java" to """
+                package com.example;
+
+                public class Default {
+                    public void keep() {}
+
+                    public void dead() {}
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/Default.java").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteMethod(
+                sourceFile = file,
+                className = "com.example.Default",
+                methodName = "dead",
+                parameterTypes = emptyList()
+            )
+        )
+
+        val report = editor.execute(actions)
+        assertFalse(file.readText().contains("public void dead()"))
+        assertTrue(report.any { it.contains("[DELETE]") })
+    }
+
+    @Test
+    fun `execute field not found skip for Java file`() {
+        val sourceDir = createSourceTree(
+            "com/example/NoField.java" to """
+                package com.example;
+
+                public class NoField {
+                    private String existing = "value";
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/NoField.java").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteField(
+                sourceFile = file,
+                className = "com.example.NoField",
+                fieldName = "nonExistent",
+                fieldType = "int"
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        assertTrue(report.any { it.contains("[SKIP]") && it.contains("field not found") })
+    }
+
+    @Test
+    fun `execute function not found skip for Kotlin file`() {
+        val sourceDir = createSourceTree(
+            "com/example/NoFunc.kt" to """
+                package com.example
+
+                fun existing() {}
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/NoFunc.kt").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteMethod(
+                sourceFile = file,
+                className = "com.example.NoFunc",
+                methodName = "nonExistent",
+                parameterTypes = emptyList()
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        assertTrue(report.any { it.contains("[SKIP]") && it.contains("function not found") })
+    }
+
+    @Test
+    fun `execute field not found skip for Kotlin file`() {
+        val sourceDir = createSourceTree(
+            "com/example/NoProp.kt" to """
+                package com.example
+
+                class NoProp {
+                    val existing = "value"
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/NoProp.kt").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.DeleteField(
+                sourceFile = file,
+                className = "com.example.NoProp",
+                fieldName = "nonExistent",
+                fieldType = "Int"
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        assertTrue(report.any { it.contains("[SKIP]") && it.contains("property not found") })
+    }
+
+    @Test
+    fun `execute branch cleanup error for Java file`() {
+        val sourceDir = createSourceTree(
+            "com/example/NoIfJava.java" to """
+                package com.example;
+
+                public class NoIfJava {
+                    public void check() {
+                        System.out.println("no if");
+                    }
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/NoIfJava.java").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.CleanupBranch(
+                sourceFile = file,
+                methodName = "check",
+                deadBranchKind = ControlFlowKind.BRANCH_TRUE,
+                deadCallSiteNames = listOf("Foo.bar()")
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        assertTrue(report.any { it.contains("[CLEANUP]") })
+        assertTrue(report.any { it.contains("[ERROR]") && it.contains("cleanup failed") })
+    }
+
+    @Test
+    fun `execute branch cleanup error for Kotlin file`() {
+        val sourceDir = createSourceTree(
+            "com/example/NoIfKotlin.kt" to """
+                package com.example
+
+                class NoIfKotlin {
+                    fun check() {
+                        println("no if")
+                    }
+                }
+            """.trimIndent()
+        )
+        val file = sourceDir.resolve("com/example/NoIfKotlin.kt").toFile()
+        val resolver = SourceFileResolver(listOf(sourceDir))
+        val editor = SourceCodeEditor(resolver)
+
+        val actions = listOf(
+            DeletionAction.CleanupBranch(
+                sourceFile = file,
+                methodName = "check",
+                deadBranchKind = ControlFlowKind.BRANCH_TRUE,
+                deadCallSiteNames = listOf("Foo.bar()")
+            )
+        )
+
+        val report = editor.execute(actions, dryRun = false)
+        assertTrue(report.any { it.contains("[CLEANUP]") })
+        assertTrue(report.any { it.contains("[ERROR]") && it.contains("cleanup failed") })
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 

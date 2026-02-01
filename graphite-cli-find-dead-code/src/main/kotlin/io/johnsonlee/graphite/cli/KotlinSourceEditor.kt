@@ -20,6 +20,43 @@ class KotlinSourceEditor {
     }
 
     /**
+     * Delete a property from a Kotlin source file.
+     *
+     * Handles val, var, annotated, and documented properties.
+     *
+     * @return true if the property was found and deleted
+     */
+    fun deleteProperty(file: File, propertyName: String): Boolean {
+        val sourceText = file.readText()
+        val ktFile = parseKtFile(sourceText, file.name) ?: return false
+
+        val property = findProperty(ktFile, propertyName) ?: return false
+
+        val startOffset = findDeletionStart(sourceText, property.textRange.startOffset)
+        val endOffset = findDeletionEnd(sourceText, property.textRange.endOffset)
+
+        val newText = sourceText.removeRange(startOffset, endOffset)
+        file.writeText(newText)
+        return true
+    }
+
+    /**
+     * Get the line range of a property for reporting.
+     *
+     * @return pair of (startLine, endLine) or null if property not found
+     */
+    fun propertyLineRange(file: File, propertyName: String): Pair<Int, Int>? {
+        val sourceText = file.readText()
+        val ktFile = parseKtFile(sourceText, file.name) ?: return null
+
+        val property = findProperty(ktFile, propertyName) ?: return null
+
+        val startLine = sourceText.substring(0, property.textRange.startOffset).count { it == '\n' } + 1
+        val endLine = sourceText.substring(0, property.textRange.endOffset).count { it == '\n' } + 1
+        return startLine to endLine
+    }
+
+    /**
      * Delete a named function from a Kotlin source file.
      *
      * Handles:
@@ -189,6 +226,43 @@ class KotlinSourceEditor {
                 typeText.substringAfterLast('.') == expected ||
                 typeText.substringBefore('<') == expected // Handle generic types
         }
+    }
+
+    // ========================================================================
+    // Property finding
+    // ========================================================================
+
+    /**
+     * Find a property by name.
+     * Searches top-level declarations, class members, and companion objects.
+     */
+    private fun findProperty(ktFile: KtFile, propertyName: String): KtProperty? {
+        return collectAllProperties(ktFile).firstOrNull { it.name == propertyName }
+    }
+
+    /**
+     * Collect all properties from a KtFile, including nested in classes and companions.
+     */
+    private fun collectAllProperties(ktFile: KtFile): List<KtProperty> {
+        val properties = mutableListOf<KtProperty>()
+
+        fun visit(declarations: List<KtDeclaration>) {
+            for (decl in declarations) {
+                when (decl) {
+                    is KtProperty -> properties.add(decl)
+                    is KtClassOrObject -> {
+                        visit(decl.declarations)
+                        decl.companionObjects.forEach { companion ->
+                            visit(companion.declarations)
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        visit(ktFile.declarations)
+        return properties
     }
 
     // ========================================================================

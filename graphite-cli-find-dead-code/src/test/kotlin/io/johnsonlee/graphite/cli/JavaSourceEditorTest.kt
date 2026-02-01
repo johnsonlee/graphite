@@ -452,6 +452,240 @@ class JavaSourceEditorTest {
     }
 
     // ========================================================================
+    // deleteField
+    // ========================================================================
+
+    @Test
+    fun `deleteField removes simple field`() {
+        val file = createTempJavaFile(
+            "FieldSimple.java",
+            """
+            package com.example;
+
+            public class FieldSimple {
+                private String keep = "keep";
+
+                private int dead = 42;
+
+                public String getKeep() { return keep; }
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteField(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+    }
+
+    @Test
+    fun `deleteField removes annotated field`() {
+        val file = createTempJavaFile(
+            "FieldAnnotated.java",
+            """
+            package com.example;
+
+            public class FieldAnnotated {
+                private String keep;
+
+                @Deprecated
+                private int dead;
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteField(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+        assertFalse(result.contains("@Deprecated"))
+    }
+
+    @Test
+    fun `deleteField removes field with javadoc`() {
+        val file = createTempJavaFile(
+            "FieldJavadoc.java",
+            """
+            package com.example;
+
+            public class FieldJavadoc {
+                private String keep;
+
+                /**
+                 * This field is dead.
+                 */
+                private int dead;
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteField(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+    }
+
+    @Test
+    fun `deleteField returns false for nonexistent field`() {
+        val file = createTempJavaFile(
+            "NoField.java",
+            """
+            package com.example;
+
+            public class NoField {
+                private String existing;
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteField(file, "nonExistent")
+        assertFalse(deleted)
+    }
+
+    // ========================================================================
+    // fieldLineRange
+    // ========================================================================
+
+    @Test
+    fun `fieldLineRange returns correct lines`() {
+        val file = createTempJavaFile(
+            "FieldLines.java",
+            """
+            package com.example;
+
+            public class FieldLines {
+                private String first;
+
+                private int second;
+            }
+            """.trimIndent()
+        )
+
+        val range = editor.fieldLineRange(file, "second")
+        assertNotNull(range)
+        val (start, end) = range
+        assertTrue(start >= 5, "start=$start should be >= 5")
+        assertTrue(end >= start, "end=$end should be >= start=$start")
+    }
+
+    @Test
+    fun `fieldLineRange returns null for missing field`() {
+        val file = createTempJavaFile(
+            "FieldMissing.java",
+            """
+            package com.example;
+
+            public class FieldMissing {
+                private String existing;
+            }
+            """.trimIndent()
+        )
+
+        val range = editor.fieldLineRange(file, "missing")
+        assertNull(range)
+    }
+
+    @Test
+    fun `deleteField finds field in inner class`() {
+        val file = createTempJavaFile(
+            "InnerField.java",
+            """
+            package com.example;
+
+            public class InnerField {
+                private String outerField = "keep";
+
+                public static class Inner {
+                    private int innerDead = 42;
+                }
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteField(file, "innerDead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("outerField"))
+        assertFalse(result.contains("innerDead"))
+    }
+
+    @Test
+    fun `cleanupBranch finds method in inner class`() {
+        val file = createTempJavaFile(
+            "InnerBranch.java",
+            """
+            package com.example;
+
+            public class InnerBranch {
+                public static class Inner {
+                    public void check(boolean flag) {
+                        if (flag) {
+                            deadCall();
+                        } else {
+                            aliveCall();
+                        }
+                    }
+
+                    private void deadCall() {}
+                    private void aliveCall() {}
+                }
+            }
+            """.trimIndent()
+        )
+
+        val cleaned = editor.cleanupBranch(
+            file, "check",
+            deadBranchIsTrue = true,
+            deadCallSiteNames = listOf("Inner.deadCall()")
+        )
+        assertTrue(cleaned)
+
+        val result = file.readText()
+        assertTrue(result.contains("aliveCall"))
+        assertFalse(result.contains("if (flag)"))
+    }
+
+    @Test
+    fun `cleanupBranch with single-statement non-block branch`() {
+        val file = createTempJavaFile(
+            "SingleStmt.java",
+            """
+            package com.example;
+
+            public class SingleStmt {
+                public void check(boolean flag) {
+                    if (flag)
+                        aliveCall();
+                    else
+                        deadCall();
+                }
+
+                private void deadCall() {}
+                private void aliveCall() {}
+            }
+            """.trimIndent()
+        )
+
+        val cleaned = editor.cleanupBranch(
+            file, "check",
+            deadBranchIsTrue = false,
+            deadCallSiteNames = listOf("SingleStmt.deadCall()")
+        )
+        assertTrue(cleaned)
+
+        val result = file.readText()
+        assertTrue(result.contains("aliveCall"))
+        assertFalse(result.contains("if (flag)"))
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 

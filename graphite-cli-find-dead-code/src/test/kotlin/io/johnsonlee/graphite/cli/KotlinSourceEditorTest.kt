@@ -523,6 +523,201 @@ class KotlinSourceEditorTest {
     }
 
     // ========================================================================
+    // deleteProperty
+    // ========================================================================
+
+    @Test
+    fun `deleteProperty removes val property`() {
+        val file = createTempKtFile(
+            "PropVal.kt",
+            """
+            package com.example
+
+            class PropVal {
+                val keep = "keep"
+
+                val dead = 42
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteProperty(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+    }
+
+    @Test
+    fun `deleteProperty removes var property`() {
+        val file = createTempKtFile(
+            "PropVar.kt",
+            """
+            package com.example
+
+            class PropVar {
+                val keep = "keep"
+
+                var dead = ""
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteProperty(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+    }
+
+    @Test
+    fun `deleteProperty removes annotated property`() {
+        val file = createTempKtFile(
+            "PropAnnotated.kt",
+            """
+            package com.example
+
+            class PropAnnotated {
+                val keep = "keep"
+
+                @Deprecated("unused")
+                val dead = 42
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteProperty(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+        assertFalse(result.contains("@Deprecated"))
+    }
+
+    @Test
+    fun `deleteProperty returns false for nonexistent property`() {
+        val file = createTempKtFile(
+            "NoProp.kt",
+            """
+            package com.example
+
+            class NoProp {
+                val existing = "value"
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteProperty(file, "nonExistent")
+        assertFalse(deleted)
+    }
+
+    // ========================================================================
+    // propertyLineRange
+    // ========================================================================
+
+    @Test
+    fun `propertyLineRange returns correct lines`() {
+        val file = createTempKtFile(
+            "PropLines.kt",
+            """
+            package com.example
+
+            class PropLines {
+                val first = "first"
+
+                val second = 42
+            }
+            """.trimIndent()
+        )
+
+        val range = editor.propertyLineRange(file, "second")
+        assertNotNull(range)
+        val (start, end) = range
+        assertTrue(start >= 5, "start=$start should be >= 5")
+        assertTrue(end >= start, "end=$end should be >= start=$start")
+    }
+
+    @Test
+    fun `propertyLineRange returns null for missing property`() {
+        val file = createTempKtFile(
+            "PropMissing.kt",
+            """
+            package com.example
+
+            class PropMissing {
+                val existing = "value"
+            }
+            """.trimIndent()
+        )
+
+        val range = editor.propertyLineRange(file, "missing")
+        assertNull(range)
+    }
+
+    @Test
+    fun `deleteProperty finds property in companion of nested class`() {
+        val file = createTempKtFile(
+            "NestedCompanion.kt",
+            """
+            package com.example
+
+            class Outer {
+                class Nested {
+                    companion object {
+                        val dead = 42
+                    }
+                }
+
+                val keep = "keep"
+            }
+            """.trimIndent()
+        )
+
+        val deleted = editor.deleteProperty(file, "dead")
+        assertTrue(deleted)
+
+        val result = file.readText()
+        assertTrue(result.contains("keep"))
+        assertFalse(result.contains("dead"))
+    }
+
+    @Test
+    fun `cleanupBranch with single-expression non-block branch`() {
+        val file = createTempKtFile(
+            "SingleExpr.kt",
+            """
+            package com.example
+
+            class SingleExpr {
+                fun check(flag: Boolean) {
+                    if (flag)
+                        aliveCall()
+                    else
+                        deadCall()
+                }
+
+                private fun deadCall() {}
+                private fun aliveCall() {}
+            }
+            """.trimIndent()
+        )
+
+        val cleaned = editor.cleanupBranch(
+            file, "check",
+            deadBranchIsTrue = false,
+            deadCallSiteNames = listOf("SingleExpr.deadCall()")
+        )
+        assertTrue(cleaned)
+
+        val result = file.readText()
+        assertTrue(result.contains("aliveCall"))
+        assertFalse(result.contains("if (flag)"))
+    }
+
+    // ========================================================================
     // Helpers
     // ========================================================================
 

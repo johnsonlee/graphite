@@ -305,11 +305,17 @@ class FindDeadCodeCommand : Callable<Int> {
         // Also run unreferenced detection
         val unreferenced = analysis.findUnreferencedMethods()
 
+        // Find unreferenced fields
+        val unreferencedFields = analysis.findUnreferencedFields()
+        val excludedFieldClasses = collectExcludedFieldClasses(graph)
+        val filteredFields = filterUnreferencedFields(unreferencedFields, excludedFieldClasses, graph)
+
         val combinedResult = DeadCodeResult(
             deadBranches = result.deadBranches,
             deadMethods = result.deadMethods,
             deadCallSites = result.deadCallSites,
-            unreferencedMethods = unreferenced
+            unreferencedMethods = unreferenced,
+            unreferencedFields = filteredFields
         )
 
         print(
@@ -393,11 +399,17 @@ class FindDeadCodeCommand : Callable<Int> {
             !isSyntheticMethod(method)
         }.toSet()
 
+        // Find unreferenced fields
+        val unreferencedFields = analysis.findUnreferencedFields()
+        val excludedFieldClasses = collectExcludedFieldClasses(graph)
+        val filteredFields = filterUnreferencedFields(unreferencedFields, excludedFieldClasses, graph)
+
         val result = DeadCodeResult(
             deadBranches = emptyList(),
             deadMethods = emptySet(),
             deadCallSites = emptySet(),
-            unreferencedMethods = filtered
+            unreferencedMethods = filtered,
+            unreferencedFields = filteredFields
         )
 
         print(
@@ -421,6 +433,105 @@ class FindDeadCodeCommand : Callable<Int> {
             method.name == "values" ||
             method.name == "valueOf" ||
             method.name.startsWith("lambda\$")
+    }
+
+    // ========================================================================
+    // Spring API-aware field exclusions
+    // ========================================================================
+
+    /**
+     * Collect class names that should be excluded from unreferenced field detection.
+     * These are Spring endpoint return/parameter types (including nested generics).
+     */
+    internal fun collectExcludedFieldClasses(graph: Graph): Set<String> {
+        val excluded = mutableSetOf<String>()
+
+        for (endpoint in graph.endpoints()) {
+            // Return type classes
+            collectTypeClasses(endpoint.method.returnType, excluded)
+
+            // Parameter type classes (heuristic for @RequestBody)
+            for (paramType in endpoint.method.parameterTypes) {
+                collectTypeClasses(paramType, excluded)
+            }
+        }
+
+        // Also resolve through TypeHierarchyAnalysis for generic types
+        val tha = TypeHierarchyAnalysis(graph)
+        for (endpoint in graph.endpoints()) {
+            val results = tha.analyzeReturnTypes(
+                MethodPattern(
+                    declaringClass = endpoint.method.declaringClass.className,
+                    name = endpoint.method.name
+                )
+            )
+            for (result in results) {
+                for (structure in result.returnStructures) {
+                    collectTypeStructureClasses(structure, excluded)
+                }
+            }
+        }
+
+        return excluded
+    }
+
+    internal fun collectTypeClasses(type: TypeDescriptor, result: MutableSet<String>) {
+        val className = type.className
+        if (className.startsWith("java.") || className.startsWith("kotlin.") ||
+            className == "void" || className == "boolean" || className == "int" ||
+            className == "long" || className == "double" || className == "float") {
+            return
+        }
+        result.add(className)
+        type.typeArguments.forEach { collectTypeClasses(it, result) }
+    }
+
+    internal fun collectTypeStructureClasses(structure: TypeStructure, result: MutableSet<String>) {
+        val className = structure.type.className
+        if (className.startsWith("java.") || className.startsWith("kotlin.") ||
+            className == "void" || className == "boolean" || className == "int" ||
+            className == "long" || className == "double" || className == "float") {
+            return
+        }
+        result.add(className)
+        structure.typeArguments.values.forEach { collectTypeStructureClasses(it, result) }
+        structure.fields.values.forEach { fieldStructure ->
+            fieldStructure.actualTypes.forEach { collectTypeStructureClasses(it, result) }
+        }
+    }
+
+    /**
+     * Filter unreferenced fields by excluding:
+     * - Fields in Spring endpoint return/parameter classes
+     * - Fields with Jackson @JsonProperty annotation (but keep @JsonIgnore)
+     * - Fields with Jackson-annotated getters
+     */
+    internal fun filterUnreferencedFields(
+        unreferencedFields: Set<FieldDescriptor>,
+        excludedClasses: Set<String>,
+        graph: Graph
+    ): Set<FieldDescriptor> {
+        return unreferencedFields.filter { field ->
+            val className = field.declaringClass.className
+
+            // Exclude fields in Spring endpoint types
+            if (className in excludedClasses) return@filter false
+
+            // Check Jackson annotations on field
+            val fieldInfo = graph.jacksonFieldInfo(className, field.name)
+            if (fieldInfo != null && fieldInfo.jsonName != null && !fieldInfo.isIgnored) {
+                return@filter false // Has @JsonProperty → keep as alive
+            }
+
+            // Check Jackson annotations on getter
+            val getterName = "get${field.name.replaceFirstChar { it.uppercase() }}"
+            val getterInfo = graph.jacksonGetterInfo(className, getterName)
+            if (getterInfo != null && getterInfo.jsonName != null && !getterInfo.isIgnored) {
+                return@filter false
+            }
+
+            true
+        }.toSet()
     }
 
     // ========================================================================
@@ -492,6 +603,17 @@ class FindDeadCodeCommand : Callable<Int> {
             sb.appendLine()
         }
 
+        // Unreferenced fields
+        if (result.unreferencedFields.isNotEmpty()) {
+            sb.appendLine("Unreferenced fields (${result.unreferencedFields.size}):")
+            result.unreferencedFields
+                .sortedBy { "${it.declaringClass.className}#${it.name}" }
+                .forEach { field ->
+                    sb.appendLine("  ${field.declaringClass.className}.${field.name}: ${field.type.simpleName}")
+                }
+            sb.appendLine()
+        }
+
         // Dead branches
         if (result.deadBranches.isNotEmpty()) {
             sb.appendLine("Dead branches (${result.deadBranches.size}):")
@@ -525,6 +647,7 @@ class FindDeadCodeCommand : Callable<Int> {
         val totalDeadCallSites = result.deadCallSites.size
         sb.appendLine("Summary:")
         sb.appendLine("  Unreferenced methods: ${result.unreferencedMethods.size}")
+        sb.appendLine("  Unreferenced fields: ${result.unreferencedFields.size}")
         sb.appendLine("  Dead branches: ${result.deadBranches.size}")
         sb.appendLine("  Transitively dead methods: ${result.deadMethods.size}")
         sb.appendLine("  Dead call sites: $totalDeadCallSites")
@@ -544,6 +667,16 @@ class FindDeadCodeCommand : Callable<Int> {
                     "method" to method.name,
                     "parameters" to method.parameterTypes.map { it.className },
                     "signature" to "${method.declaringClass.className}.${method.name}(${method.parameterTypes.joinToString(",") { it.simpleName }})"
+                )
+            }
+
+        val unreferencedFields = result.unreferencedFields
+            .sortedBy { "${it.declaringClass.className}#${it.name}" }
+            .map { field ->
+                mapOf(
+                    "class" to field.declaringClass.className,
+                    "field" to field.name,
+                    "type" to field.type.className
                 )
             }
 
@@ -576,10 +709,12 @@ class FindDeadCodeCommand : Callable<Int> {
 
         val output = linkedMapOf(
             "unreferencedMethods" to unreferencedMethods,
+            "unreferencedFields" to unreferencedFields,
             "deadBranches" to deadBranches,
             "deadMethods" to deadMethods,
             "summary" to linkedMapOf(
                 "unreferencedMethods" to result.unreferencedMethods.size,
+                "unreferencedFields" to result.unreferencedFields.size,
                 "deadBranches" to result.deadBranches.size,
                 "transitivelyDeadMethods" to result.deadMethods.size,
                 "deadCallSites" to result.deadCallSites.size,

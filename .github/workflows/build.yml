@@ -105,6 +105,28 @@ jobs:
             });
           }
 
+    - name: Enforce coverage threshold
+      if: success() && github.event_name == 'pull_request'
+      run: |
+        FAILED=false
+        MODULE=""
+        while IFS= read -r line; do
+          if [[ "$line" == *":koverPrintCoverage"* ]]; then
+            MODULE=$(echo "$line" | sed 's/.*> Task :\(.*\):koverPrintCoverage.*/\1/')
+          fi
+          if [[ "$line" == *"application line coverage:"* ]]; then
+            PCT=$(echo "$line" | sed 's/.*coverage: \([0-9.]*\)%.*/\1/')
+            if awk "BEGIN{exit !($PCT < 98)}"; then
+              echo "::error::Module $MODULE coverage is ${PCT}%, below 98% threshold"
+              FAILED=true
+            fi
+          fi
+        done < coverage-output.txt
+
+        if [ "$FAILED" = true ]; then
+          exit 1
+        fi
+
     - name: Comment build failure on PR
       if: failure() && github.event_name == 'pull_request'
       uses: actions/github-script@v7

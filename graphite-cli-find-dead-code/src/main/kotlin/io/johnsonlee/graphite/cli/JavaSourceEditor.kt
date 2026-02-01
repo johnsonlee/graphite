@@ -22,6 +22,43 @@ class JavaSourceEditor {
     }
 
     /**
+     * Delete a field from a Java source file.
+     *
+     * Handles fields with annotations and Javadoc.
+     *
+     * @return true if the field was found and deleted
+     */
+    fun deleteField(file: File, fieldName: String): Boolean {
+        val sourceText = file.readText()
+        val psiFile = parseJavaFile(sourceText, file.name) ?: return false
+
+        val field = findField(psiFile, fieldName) ?: return false
+
+        val startOffset = findDeletionStart(sourceText, field.textRange.startOffset)
+        val endOffset = findDeletionEnd(sourceText, field.textRange.endOffset)
+
+        val newText = sourceText.removeRange(startOffset, endOffset)
+        file.writeText(newText)
+        return true
+    }
+
+    /**
+     * Get the line range of a field for reporting.
+     *
+     * @return pair of (startLine, endLine) or null if field not found
+     */
+    fun fieldLineRange(file: File, fieldName: String): Pair<Int, Int>? {
+        val sourceText = file.readText()
+        val psiFile = parseJavaFile(sourceText, file.name) ?: return null
+
+        val field = findField(psiFile, fieldName) ?: return null
+
+        val startLine = sourceText.substring(0, field.textRange.startOffset).count { it == '\n' } + 1
+        val endLine = sourceText.substring(0, field.textRange.endOffset).count { it == '\n' } + 1
+        return startLine to endLine
+    }
+
+    /**
      * Delete a method from a Java source file.
      *
      * Handles:
@@ -186,6 +223,33 @@ class JavaSourceEditor {
             val typeName = param.type.presentableText
             typeName == expected || typeName.substringAfterLast('.') == expected
         }
+    }
+
+    // ========================================================================
+    // Field finding
+    // ========================================================================
+
+    /**
+     * Find a field by name.
+     * Searches all classes (including inner classes) in the file.
+     */
+    private fun findField(psiFile: PsiJavaFile, fieldName: String): PsiField? {
+        for (psiClass in psiFile.classes) {
+            val found = findFieldInClass(psiClass, fieldName)
+            if (found != null) return found
+        }
+        return null
+    }
+
+    private fun findFieldInClass(psiClass: PsiClass, fieldName: String): PsiField? {
+        for (field in psiClass.fields) {
+            if (field.name == fieldName) return field
+        }
+        for (innerClass in psiClass.innerClasses) {
+            val found = findFieldInClass(innerClass, fieldName)
+            if (found != null) return found
+        }
+        return null
     }
 
     // ========================================================================
