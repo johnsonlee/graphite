@@ -40,6 +40,11 @@ public class ApiController {
         return new OrderResponse(orderId, "100.00");
     }
 
+    @RequestMapping(value = "/health", method = RequestMethod.GET)
+    public String healthCheck() {
+        return "OK";
+    }
+
     public static class UserRequest {
         public String name;
         public String email;

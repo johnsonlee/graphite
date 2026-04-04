@@ -69,13 +69,13 @@ interface Graph {
     fun enumValues(enumClass: String, enumName: String): List<Any?>?
 
     /**
-     * Get all HTTP endpoints extracted from annotations.
+     * Get annotations for a class member (field or method).
      *
-     * @param pattern optional endpoint path pattern (supports * and ** wildcards)
-     * @param httpMethod optional HTTP method filter
-     * @return sequence of matching endpoints
+     * @param className fully qualified class name
+     * @param memberName field name or method name
+     * @return map of annotation FQN to annotation values, or empty map if none
      */
-    fun endpoints(pattern: String? = null, httpMethod: HttpMethod? = null): Sequence<EndpointInfo>
+    fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>>
 
     /**
      * Get all branch scopes in the graph.
@@ -88,39 +88,7 @@ interface Graph {
      */
     fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope>
 
-    /**
-     * Get Jackson annotation information for a field.
-     *
-     * @param className fully qualified class name
-     * @param fieldName field name
-     * @return JacksonFieldInfo containing @JsonProperty name and @JsonIgnore status, or null if not available
-     */
-    fun jacksonFieldInfo(className: String, fieldName: String): JacksonFieldInfo?
-
-    /**
-     * Get Jackson annotation information for a getter method.
-     *
-     * @param className fully qualified class name
-     * @param methodName getter method name (e.g., "getName")
-     * @return JacksonFieldInfo containing @JsonProperty name and @JsonIgnore status, or null if not available
-     */
-    fun jacksonGetterInfo(className: String, methodName: String): JacksonFieldInfo?
 }
-
-/**
- * Jackson annotation information for a field or getter.
- */
-data class JacksonFieldInfo(
-    /**
-     * The JSON property name from @JsonProperty annotation, or null if not specified
-     */
-    val jsonName: String? = null,
-
-    /**
-     * True if the field/getter is marked with @JsonIgnore
-     */
-    val isIgnored: Boolean = false
-)
 
 /**
  * Pattern for matching methods.

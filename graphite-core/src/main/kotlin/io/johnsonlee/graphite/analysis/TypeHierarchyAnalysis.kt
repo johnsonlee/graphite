@@ -440,17 +440,11 @@ class TypeHierarchyAnalysis(
             val actualTypes = analyzeSetterArgument(setterCall, contextMethod, depth + 1)
             val declaredType = inferDeclaredTypeFromSetter(setterCall)
 
-            // Get Jackson annotation info for the field
-            val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
-                ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
-
             fields[fieldName] = FieldStructure(
                 name = fieldName,
                 declaredType = declaredType,
                 actualTypes = actualTypes,
-                isGenericParameter = false,
-                jsonName = jacksonInfo?.jsonName,
-                isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                isGenericParameter = false
             )
         }
 
@@ -464,14 +458,10 @@ class TypeHierarchyAnalysis(
                     actualTypes = existing.actualTypes + assignedTypes
                 )
             } else {
-                val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
-                    ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                 fields[fieldName] = FieldStructure(
                     name = fieldName,
                     declaredType = fieldNode.descriptor.type,
-                    actualTypes = assignedTypes,
-                    jsonName = jacksonInfo?.jsonName,
-                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                    actualTypes = assignedTypes
                 )
             }
         }
@@ -510,15 +500,11 @@ class TypeHierarchyAnalysis(
                 val actualTypes = analyzeSetterArgument(setterCall, contextMethod, depth + 1)
                 val declaredType = inferDeclaredTypeFromSetter(setterCall)
 
-                val jacksonInfo = graph.jacksonFieldInfo(type.className, fieldName)
-                    ?: graph.jacksonGetterInfo(type.className, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                 fields[fieldName] = FieldStructure(
                     name = fieldName,
                     declaredType = declaredType,
                     actualTypes = actualTypes,
-                    isGenericParameter = false,
-                    jsonName = jacksonInfo?.jsonName,
-                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                    isGenericParameter = false
                 )
             }
         }
@@ -581,15 +567,10 @@ class TypeHierarchyAnalysis(
                         actualTypes = existing.actualTypes + actualTypes
                     )
                 } else if (actualTypes.isNotEmpty()) {
-                    // Get Jackson annotation info (try field first, then getter)
-                    val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
-                        ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                     fields[fieldName] = FieldStructure(
                         name = fieldName,
                         declaredType = fieldNode.descriptor.type,
-                        actualTypes = actualTypes,
-                        jsonName = jacksonInfo?.jsonName,
-                        isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                        actualTypes = actualTypes
                     )
                 }
             }
@@ -670,14 +651,10 @@ class TypeHierarchyAnalysis(
                                 actualTypes = existing.actualTypes + argTypes
                             )
                         } else {
-                            val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
-                                ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
                             fields[fieldName] = FieldStructure(
                                 name = fieldName,
                                 declaredType = matchingField.descriptor.type,
-                                actualTypes = argTypes,
-                                jsonName = jacksonInfo?.jsonName,
-                                isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                                actualTypes = argTypes
                             )
                         }
                     }
@@ -740,16 +717,11 @@ class TypeHierarchyAnalysis(
                             emptySet()
                         }
 
-                        // Get Jackson annotation info from getter method
-                        val jacksonInfo = graph.jacksonGetterInfo(className, getter.name)
-                            ?: graph.jacksonFieldInfo(className, fieldName)
                         fields[fieldName] = FieldStructure(
                             name = fieldName,
                             declaredType = returnType,
                             actualTypes = actualTypes,
-                            isGenericParameter = false,
-                            jsonName = jacksonInfo?.jsonName,
-                            isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                            isGenericParameter = false
                         )
                     }
                 }
@@ -799,11 +771,6 @@ class TypeHierarchyAnalysis(
                     return@forEach
                 }
 
-                // Get Jackson annotation info
-                val jacksonInfo = graph.jacksonFieldInfo(declaringClass, fieldName)
-                    ?: graph.jacksonGetterInfo(declaringClass, "get${fieldName.replaceFirstChar { it.uppercase() }}")
-                    ?: graph.jacksonGetterInfo(declaringClass, "is${fieldName.replaceFirstChar { it.uppercase() }}")
-
                 // Build actual types if we can analyze the field type
                 val actualTypes = if (shouldAnalyzeType(fieldType.className) && depth < config.maxDepth) {
                     setOf(buildTypeStructure(fieldType, MethodDescriptor(
@@ -820,9 +787,7 @@ class TypeHierarchyAnalysis(
                     name = fieldName,
                     declaredType = fieldType,
                     actualTypes = actualTypes,
-                    isGenericParameter = false,
-                    jsonName = jacksonInfo?.jsonName,
-                    isJsonIgnored = jacksonInfo?.isIgnored ?: false
+                    isGenericParameter = false
                 )
             }
     }

@@ -4,7 +4,10 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
+import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.input.ResourceAccessor
+import java.util.ServiceLoader
 import sootup.core.graph.StmtGraph
 import sootup.core.jimple.basic.Local
 import sootup.core.jimple.basic.Value
@@ -59,7 +62,9 @@ import sootup.callgraph.RapidTypeAnalysisAlgorithm
 class SootUpAdapter(
     private val view: View,
     private val config: LoaderConfig,
-    private val signatureReader: BytecodeSignatureReader? = null
+    private val signatureReader: BytecodeSignatureReader? = null,
+    private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
+    private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 ) {
     // NodeId counter is now managed by NodeId.next() for memory efficiency
     private val graphBuilder = DefaultGraph.Builder()
@@ -90,17 +95,34 @@ class SootUpAdapter(
             }
         }
 
-        // Pass 2: Filtered classes — methods + fields + endpoints + Jackson
+        // Pass 2: Filtered classes — methods + fields + extensions
         // Methods before fields (fields check fieldNodes map for duplicates)
+        val extensionContext = GraphiteContext(
+            methodDescriptorFactory = ::toMethodDescriptor,
+            logger = ::log,
+            resources = resourceAccessor
+        )
         view.classes
             .filter { shouldIncludeClass(it) }
             .forEach { sootClass ->
                 sootClass.methods.forEach { method ->
                     processMethod(method)
                 }
-                processClassFieldsForClass(sootClass)
-                processEndpointsForClass(sootClass)
-                processJacksonAnnotationsForClass(sootClass)
+                visitFieldsForClass(sootClass)
+                // Extract annotations from class, fields, and methods
+                if (sootClass is JavaSootClass) {
+                    val className = sootClass.type.fullyQualifiedName
+                    extractAnnotations(sootClass.annotations, className, "<class>")
+                    sootClass.fields.forEach { field ->
+                        extractAnnotations(field.annotations, className, field.name)
+                    }
+                    sootClass.methods.forEach { method ->
+                        if (method is JavaSootMethod) {
+                            extractAnnotations(method.annotations, className, method.name)
+                        }
+                    }
+                }
+                extensions.forEach { it.visit(sootClass, extensionContext) }
             }
 
         // Build call graph if configured
@@ -113,236 +135,6 @@ class SootUpAdapter(
 
     private fun log(message: String) {
         config.verbose?.invoke(message)
-    }
-
-    /**
-     * Extract HTTP endpoints from Spring MVC annotations for a single class.
-     * Supports @RequestMapping, @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
-     */
-    private fun processEndpointsForClass(sootClass: SootClass) {
-        if (sootClass !is JavaSootClass) return
-
-        val className = sootClass.type.fullyQualifiedName
-
-        // Get class-level @RequestMapping path prefix
-        val classAnnotations = sootClass.annotations
-        val classPath = extractRequestMappingPath(classAnnotations)
-
-        sootClass.methods.toList().forEach { method ->
-            if (method !is JavaSootMethod) return@forEach
-
-            val methodAnnotations = method.annotations
-            val httpMethod = findHttpMethod(methodAnnotations)
-
-            if (httpMethod != null) {
-                val methodPath = extractMappingPath(methodAnnotations)
-                val fullPath = combinePaths(classPath, methodPath)
-                val produces = extractAnnotationArrayValue(methodAnnotations, "produces")
-                val consumes = extractAnnotationArrayValue(methodAnnotations, "consumes")
-
-                val methodDescriptor = toMethodDescriptor(method)
-
-                val endpoint = EndpointInfo(
-                    method = methodDescriptor,
-                    httpMethod = httpMethod,
-                    path = fullPath,
-                    produces = produces,
-                    consumes = consumes
-                )
-                graphBuilder.addEndpoint(endpoint)
-                log("Found endpoint: ${httpMethod.name} $fullPath -> ${className}.${methodDescriptor.name}")
-            }
-        }
-    }
-
-    /**
-     * Extract Jackson annotation information from fields and getter methods for a single class.
-     * Supports @JsonProperty, @JsonIgnore, and @JsonProperty(access = JsonProperty.Access.*)
-     */
-    private fun processJacksonAnnotationsForClass(sootClass: SootClass) {
-        if (sootClass !is JavaSootClass) return
-
-        val className = sootClass.type.fullyQualifiedName
-
-        // Process field annotations
-        sootClass.fields.forEach { field ->
-            val fieldName = field.name
-            val jacksonInfo = extractJacksonInfo(field.annotations)
-            if (jacksonInfo != null) {
-                graphBuilder.addJacksonFieldInfo(className, fieldName, jacksonInfo)
-            }
-        }
-
-        // Process getter method annotations
-        sootClass.methods.forEach { method ->
-            if (method !is JavaSootMethod) return@forEach
-
-            val methodName = method.name
-            // Only process getter methods (getXxx or isXxx)
-            if ((methodName.startsWith("get") && methodName.length > 3) ||
-                (methodName.startsWith("is") && methodName.length > 2)) {
-                val jacksonInfo = extractJacksonInfo(method.annotations)
-                if (jacksonInfo != null) {
-                    graphBuilder.addJacksonGetterInfo(className, methodName, jacksonInfo)
-                }
-            }
-        }
-    }
-
-    /**
-     * Extract Jackson annotation information from a list of annotations.
-     */
-    private fun extractJacksonInfo(annotations: Iterable<*>): io.johnsonlee.graphite.graph.JacksonFieldInfo? {
-        var jsonName: String? = null
-        var isIgnored = false
-
-        for (annot in annotations) {
-            val fullName = getAnnotationFullName(annot)
-
-            when {
-                fullName == "com.fasterxml.jackson.annotation.JsonIgnore" -> {
-                    isIgnored = true
-                }
-                fullName == "com.fasterxml.jackson.annotation.JsonProperty" -> {
-                    val values = getAnnotationValues(annot)
-                    // Get the "value" property for the JSON name
-                    val value = values["value"]
-                    jsonName = extractStringValue(value)
-                    // Check for access = JsonProperty.Access.WRITE_ONLY (means ignore in serialization)
-                    val access = values["access"]?.toString()
-                    if (access?.contains("WRITE_ONLY") == true) {
-                        isIgnored = true
-                    }
-                }
-            }
-        }
-
-        // Only return if there's something to report
-        return if (jsonName != null || isIgnored) {
-            io.johnsonlee.graphite.graph.JacksonFieldInfo(jsonName, isIgnored)
-        } else {
-            null
-        }
-    }
-
-    /**
-     * Extract a string value from annotation value which may be String, List, or other type.
-     */
-    private fun extractStringValue(value: Any?): String? {
-        if (value == null) return null
-        return when (value) {
-            is String -> value.takeIf { it.isNotEmpty() }
-            is List<*> -> value.firstOrNull()?.let { extractStringValue(it) }
-            else -> {
-                // SootUp may wrap values in ConstantValue or similar
-                val strValue = value.toString()
-                    .removeSurrounding("\"")
-                    .removeSurrounding("[", "]")
-                    .removeSurrounding("\"")
-                strValue.takeIf { it.isNotEmpty() && it != "null" }
-            }
-        }
-    }
-
-    private fun findHttpMethod(annotations: Iterable<*>): HttpMethod? {
-        for (annot in annotations) {
-            val className = getAnnotationClassName(annot)
-            val httpMethod = HttpMethod.fromAnnotation(className)
-            if (httpMethod != null) return httpMethod
-        }
-        return null
-    }
-
-    private fun getAnnotationClassName(annot: Any?): String {
-        if (annot == null) return ""
-        // AnnotationUsage has annotation.className property
-        return try {
-            val annotationProp = annot::class.java.getMethod("getAnnotation").invoke(annot)
-            annotationProp?.let {
-                it::class.java.getMethod("getClassName").invoke(it)?.toString() ?: ""
-            } ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-    }
-
-    private fun getAnnotationFullName(annot: Any?): String {
-        if (annot == null) return ""
-        return try {
-            val annotationProp = annot::class.java.getMethod("getAnnotation").invoke(annot)
-            annotationProp?.let {
-                it::class.java.getMethod("getFullyQualifiedName").invoke(it)?.toString() ?: ""
-            } ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getAnnotationValues(annot: Any?): Map<String, Any?> {
-        if (annot == null) return emptyMap()
-        return try {
-            annot::class.java.getMethod("getValues").invoke(annot) as? Map<String, Any?> ?: emptyMap()
-        } catch (e: Exception) {
-            emptyMap()
-        }
-    }
-
-    private fun extractRequestMappingPath(annotations: Iterable<*>): String {
-        for (annot in annotations) {
-            val className = getAnnotationClassName(annot)
-            val fullName = getAnnotationFullName(annot)
-            if (className == "RequestMapping" || fullName == "org.springframework.web.bind.annotation.RequestMapping") {
-                return extractPathFromAnnotation(annot)
-            }
-        }
-        return ""
-    }
-
-    private fun extractMappingPath(annotations: Iterable<*>): String {
-        for (annot in annotations) {
-            val className = getAnnotationClassName(annot)
-            if (className.endsWith("Mapping")) {
-                return extractPathFromAnnotation(annot)
-            }
-        }
-        return ""
-    }
-
-    private fun extractPathFromAnnotation(annot: Any?): String {
-        val values = getAnnotationValues(annot)
-        val valueElement = values["value"] ?: values["path"]
-        return when (valueElement) {
-            is String -> valueElement
-            is List<*> -> valueElement.firstOrNull()?.toString()?.removeSurrounding("\"") ?: ""
-            else -> valueElement?.toString()?.removeSurrounding("[", "]")?.removeSurrounding("\"") ?: ""
-        }
-    }
-
-    private fun extractAnnotationArrayValue(annotations: Iterable<*>, key: String): List<String> {
-        val result = mutableListOf<String>()
-        for (annot in annotations) {
-            val values = getAnnotationValues(annot)
-            val value = values[key]
-            when (value) {
-                is String -> result.add(value)
-                is List<*> -> result.addAll(value.filterIsInstance<String>())
-                null -> {} // ignore
-                else -> result.add(value.toString().removeSurrounding("[", "]").removeSurrounding("\""))
-            }
-        }
-        return result
-    }
-
-    private fun combinePaths(classPath: String, methodPath: String): String {
-        val normalizedClass = classPath.trimEnd('/')
-        val normalizedMethod = methodPath.trimStart('/')
-        return when {
-            normalizedClass.isEmpty() && normalizedMethod.isEmpty() -> "/"
-            normalizedClass.isEmpty() -> "/$normalizedMethod"
-            normalizedMethod.isEmpty() -> normalizedClass
-            else -> "$normalizedClass/$normalizedMethod"
-        }
     }
 
     /**
@@ -536,7 +328,7 @@ class SootUpAdapter(
      * - Fields only used by frameworks (Jackson, Lombok, etc.)
      * - Fields initialized via reflection or deserialization
      */
-    private fun processClassFieldsForClass(sootClass: SootClass) {
+    private fun visitFieldsForClass(sootClass: SootClass) {
         val className = sootClass.type.fullyQualifiedName
         sootClass.fields.forEach { field ->
             val fieldName = field.name
@@ -1226,6 +1018,47 @@ class SootUpAdapter(
         return when (arg) {
             is SootConstant -> extractConstantValue(arg)
             else -> null
+        }
+    }
+
+    private fun extractAnnotations(annotations: Iterable<*>, className: String, memberName: String) {
+        for (annot in annotations) {
+            val fullName = getAnnotationFullName(annot)
+            if (fullName.isEmpty()) continue
+
+            val values = getAnnotationValues(annot)
+            val cleanValues = mutableMapOf<String, Any?>()
+            for ((key, value) in values) {
+                cleanValues[key] = when (value) {
+                    is String -> value.takeIf { it.isNotEmpty() }
+                    is List<*> -> value.firstOrNull()?.toString()?.removeSurrounding("\"")
+                    null -> null
+                    else -> value.toString().removeSurrounding("\"").removeSurrounding("[", "]").removeSurrounding("\"").takeIf { it.isNotEmpty() && it != "null" }
+                }
+            }
+            graphBuilder.addMemberAnnotation(className, memberName, fullName, cleanValues)
+        }
+    }
+
+    private fun getAnnotationFullName(annot: Any?): String {
+        if (annot == null) return ""
+        return try {
+            val annotationProp = annot::class.java.getMethod("getAnnotation").invoke(annot)
+            annotationProp?.let {
+                it::class.java.getMethod("getFullyQualifiedName").invoke(it)?.toString() ?: ""
+            } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun getAnnotationValues(annot: Any?): Map<String, Any?> {
+        if (annot == null) return emptyMap()
+        return try {
+            annot::class.java.getMethod("getValues").invoke(annot) as? Map<String, Any?> ?: emptyMap()
+        } catch (e: Exception) {
+            emptyMap()
         }
     }
 

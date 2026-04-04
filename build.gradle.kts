@@ -31,14 +31,16 @@ subprojects {
             publications {
                 create<MavenPublication>("mavenJava") {
                     // For CLI modules, use shadow jar; for others, use java component
-                    if (project.name.startsWith("graphite-cli-")) {
+                    val moduleId = project.path.removePrefix(":").replace(':', '-')
+                    artifactId = moduleId
+                    if (project.path.startsWith(":cli:")) {
                         artifact(tasks.named("shadowJar"))
                     } else {
                         from(components["java"])
                     }
 
                     pom {
-                        name.set(project.name)
+                        name.set(moduleId)
                         description.set(project.description ?: "Graphite - Graph-based static analysis framework")
                         url.set("https://github.com/johnsonlee/graphite")
 

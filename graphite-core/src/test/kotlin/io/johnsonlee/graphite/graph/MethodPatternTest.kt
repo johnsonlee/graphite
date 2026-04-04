@@ -142,21 +142,4 @@ class MethodPatternTest {
         assertTrue(pattern.matches(method(className = "com.other.Bar", name = "other")))
     }
 
-    // ========================================================================
-    // JacksonFieldInfo
-    // ========================================================================
-
-    @Test
-    fun `JacksonFieldInfo default values`() {
-        val info = JacksonFieldInfo()
-        kotlin.test.assertNull(info.jsonName)
-        assertFalse(info.isIgnored)
-    }
-
-    @Test
-    fun `JacksonFieldInfo with values`() {
-        val info = JacksonFieldInfo(jsonName = "user_name", isIgnored = true)
-        kotlin.test.assertEquals("user_name", info.jsonName)
-        assertTrue(info.isIgnored)
-    }
 }
