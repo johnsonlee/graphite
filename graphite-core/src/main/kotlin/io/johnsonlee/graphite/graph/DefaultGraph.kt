@@ -21,9 +21,9 @@ class DefaultGraph private constructor(
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValues: Map<String, List<Any?>>,
-    private val endpointList: List<EndpointInfo>,
-    private val jacksonFieldInfoMap: Map<String, JacksonFieldInfo>,
-    private val jacksonGetterInfoMap: Map<String, JacksonFieldInfo>,
+    // Key format: "$className#$memberName" — simple concatenation is sufficient
+    // for current scale. Consider two-level map if profiling shows GC pressure.
+    private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val rawBranchScopes: Array<RawBranchScope>
 ) : Graph {
 
@@ -94,25 +94,14 @@ class DefaultGraph private constructor(
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValues["$enumClass#$enumName"]
 
-    override fun endpoints(pattern: String?, httpMethod: HttpMethod?): Sequence<EndpointInfo> {
-        return endpointList.asSequence().filter { endpoint ->
-            val pathMatches = pattern == null || endpoint.matchesPattern(pattern)
-            val methodMatches = httpMethod == null || endpoint.httpMethod == httpMethod || endpoint.httpMethod == HttpMethod.ANY
-            pathMatches && methodMatches
-        }
-    }
+    override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
+        memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
-
-    override fun jacksonFieldInfo(className: String, fieldName: String): JacksonFieldInfo? =
-        jacksonFieldInfoMap["$className#$fieldName"]
-
-    override fun jacksonGetterInfo(className: String, methodName: String): JacksonFieldInfo? =
-        jacksonGetterInfoMap["$className#$methodName"]
 
     /**
      * Builder for constructing DefaultGraph instances.
@@ -125,9 +114,10 @@ class DefaultGraph private constructor(
         private val methods = ConcurrentHashMap<String, MethodDescriptor>()
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
-        private val endpoints = ObjectArrayList<EndpointInfo>()
-        private val jacksonFieldInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
-        private val jacksonGetterInfo = ConcurrentHashMap<String, JacksonFieldInfo>()
+        // Extension processing is single-threaded (sequential forEach in buildGraph),
+        // so these collections don't need to be thread-safe.
+        // See CLAUDE.md "Why buildGraph() Is Not Parallelized" for rationale.
+        private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
         private val branchScopes = ObjectArrayList<RawBranchScope>()
 
         override fun addNode(node: Node): GraphBuilder {
@@ -156,18 +146,8 @@ class DefaultGraph private constructor(
             return this
         }
 
-        fun addEndpoint(endpoint: EndpointInfo): Builder {
-            endpoints.add(endpoint)
-            return this
-        }
-
-        fun addJacksonFieldInfo(className: String, fieldName: String, info: JacksonFieldInfo): Builder {
-            jacksonFieldInfo["$className#$fieldName"] = info
-            return this
-        }
-
-        fun addJacksonGetterInfo(className: String, methodName: String, info: JacksonFieldInfo): Builder {
-            jacksonGetterInfo["$className#$methodName"] = info
+        fun addMemberAnnotation(className: String, memberName: String, annotationFqn: String, values: Map<String, Any?> = emptyMap()): Builder {
+            memberAnnotations.getOrPut("$className#$memberName") { mutableMapOf() }[annotationFqn] = values
             return this
         }
 
@@ -212,9 +192,7 @@ class DefaultGraph private constructor(
                 methodIndex = methods.toMap(),
                 typeHierarchy = typeHierarchyBuilder.build(),
                 enumValues = enumValues.toMap(),
-                endpointList = endpoints.toList(),
-                jacksonFieldInfoMap = jacksonFieldInfo.toMap(),
-                jacksonGetterInfoMap = jacksonGetterInfo.toMap(),
+                memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray()
             )
         }

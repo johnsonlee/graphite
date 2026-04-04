@@ -35,7 +35,8 @@ class JavaProjectLoader(
         val signatureReader = BytecodeSignatureReader()
         loadSignatures(path, signatureReader)
 
-        val adapter = SootUpAdapter(view, config, signatureReader)
+        val resourceAccessor = ArchiveResourceAccessor.create(path)
+        val adapter = SootUpAdapter(view, config, signatureReader, resourceAccessor = resourceAccessor)
         return adapter.buildGraph()
     }
 

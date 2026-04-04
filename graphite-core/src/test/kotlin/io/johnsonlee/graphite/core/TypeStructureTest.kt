@@ -147,18 +147,6 @@ class TypeStructureTest {
     // ========================================================================
 
     @Test
-    fun `effectiveJsonName returns jsonName when present`() {
-        val fs = FieldStructure("myField", TypeDescriptor("int"), jsonName = "my_field")
-        assertEquals("my_field", fs.effectiveJsonName)
-    }
-
-    @Test
-    fun `effectiveJsonName returns field name when no jsonName`() {
-        val fs = FieldStructure("myField", TypeDescriptor("int"))
-        assertEquals("myField", fs.effectiveJsonName)
-    }
-
-    @Test
     fun `hasPolymorphicAssignment true when actual types differ from declared`() {
         val fs = FieldStructure(
             "data",

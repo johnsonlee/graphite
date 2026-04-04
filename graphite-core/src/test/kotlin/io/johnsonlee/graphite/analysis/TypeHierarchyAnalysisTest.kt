@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.analysis
 
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
-import io.johnsonlee.graphite.graph.JacksonFieldInfo
 import io.johnsonlee.graphite.graph.MethodPattern
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -491,28 +490,6 @@ class TypeHierarchyAnalysisTest {
         val result = analysis.analyzeMethod(testMethod)
 
         assertTrue(result.returnStructures.isNotEmpty())
-    }
-
-    // ========================================================================
-    // Jackson annotation integration
-    // ========================================================================
-
-    @Test
-    fun `analysis uses Jackson field info for json names`() {
-        val builder = buildResponseGraph()
-        builder.addJacksonFieldInfo("com.example.User", "name", JacksonFieldInfo(jsonName = "user_name"))
-
-        val graph = builder.build()
-        val config = TypeHierarchyConfig(
-            includePackages = listOf("com.example"),
-            excludePackages = emptyList()
-        )
-        val analysis = TypeHierarchyAnalysis(graph, config)
-        val createMethod = method("com.example.Controller", "createResponse", responseType)
-        val result = analysis.analyzeMethod(createMethod)
-
-        // Analysis should pick up Jackson info
-        assertEquals("createResponse", result.method.name)
     }
 
     // ========================================================================
@@ -1101,25 +1078,6 @@ class TypeHierarchyAnalysisTest {
     // Jackson getter info
     // ========================================================================
 
-    @Test
-    fun `analysis picks up Jackson getter info for fields`() {
-        val builder = buildResponseGraph()
-
-        // Add Jackson getter info
-        builder.addJacksonGetterInfo("com.example.ApiResponse", "getData", JacksonFieldInfo(jsonName = "response_data"))
-
-        val graph = builder.build()
-        val config = TypeHierarchyConfig(
-            includePackages = listOf("com.example"),
-            excludePackages = emptyList()
-        )
-        val analysis = TypeHierarchyAnalysis(graph, config)
-        val createMethod = method("com.example.Controller", "createResponse", responseType)
-        val result = analysis.analyzeMethod(createMethod)
-
-        assertEquals("createResponse", result.method.name)
-    }
-
     // ========================================================================
     // Call site node in traceTypeFromNode
     // ========================================================================
@@ -1435,43 +1393,6 @@ class TypeHierarchyAnalysisTest {
             userType, "isEnabled", emptyList(), TypeDescriptor("java.lang.Boolean")
         )
         builder.addMethod(isEnabledMethod)
-
-        val userVarId = NodeId.next()
-        val userVar = LocalVariable(userVarId, "user", userType, testMethod)
-        builder.addNode(userVar)
-        val returnId = NodeId.next()
-        val returnNode = ReturnNode(returnId, testMethod)
-        builder.addNode(returnNode)
-        builder.addEdge(DataFlowEdge(userVarId, returnId, DataFlowKind.ASSIGN))
-
-        val graph = builder.build()
-        val config = TypeHierarchyConfig(
-            includePackages = listOf("com.example"),
-            excludePackages = emptyList()
-        )
-        val analysis = TypeHierarchyAnalysis(graph, config)
-        val result = analysis.analyzeMethod(testMethod)
-
-        assertTrue(result.returnStructures.isNotEmpty())
-    }
-
-    // ========================================================================
-    // Jackson annotation with isXxx getters in declared fields
-    // ========================================================================
-
-    @Test
-    fun `analysis uses isXxx Jackson getter info for declared fields`() {
-        val builder = DefaultGraph.Builder()
-
-        val testMethod = method("com.example.Controller", "get", userType)
-        builder.addMethod(testMethod)
-
-        // Declared field 'active' with boolean type
-        val activeFieldDesc = FieldDescriptor(userType, "active", TypeDescriptor("boolean"))
-        builder.addNode(FieldNode(NodeId.next(), activeFieldDesc, isStatic = false))
-
-        // Jackson getter info for isActive
-        builder.addJacksonGetterInfo("com.example.User", "isActive", JacksonFieldInfo(jsonName = "is_active"))
 
         val userVarId = NodeId.next()
         val userVar = LocalVariable(userVarId, "user", userType, testMethod)
@@ -2544,4 +2465,5 @@ class TypeHierarchyAnalysisTest {
         assertTrue(result.returnStructures.isNotEmpty())
         assertEquals("com.example.User", result.returnStructures.first().className)
     }
+
 }

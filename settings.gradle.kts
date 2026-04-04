@@ -2,6 +2,6 @@ rootProject.name = "graphite"
 
 include(":graphite-core")
 include(":graphite-sootup")
-include(":graphite-cli-find-args")
-include(":graphite-cli-find-endpoints")
-include(":graphite-cli-find-dead-code")
+include(":cli:find-args")
+include(":cli:find-endpoints")
+include(":cli:find-dead-code")

@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.nodes
-import io.johnsonlee.graphite.graph.JacksonFieldInfo
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.LoaderConfig
@@ -335,30 +334,35 @@ class SootUpAdapterTest {
         val graph = loader.load(testClassesDir)
 
         // JacksonWriteOnlyDTO has fields with access = WRITE_ONLY
-        // Check specific fields
-        val secretTokenInfo = graph.jacksonFieldInfo("sample.jackson.JacksonWriteOnlyDTO", "secretToken")
-        println("secretToken jackson info: $secretTokenInfo")
+        // Check specific fields via memberAnnotations
+        val secretTokenAnnotations = graph.memberAnnotations("sample.jackson.JacksonWriteOnlyDTO", "secretToken")
+        println("secretToken annotations: $secretTokenAnnotations")
 
-        if (secretTokenInfo != null) {
-            assertTrue(secretTokenInfo.isIgnored,
-                "secretToken with WRITE_ONLY should be marked as ignored")
+        val secretTokenJsonProp = secretTokenAnnotations["com.fasterxml.jackson.annotation.JsonProperty"]
+        if (secretTokenJsonProp != null) {
+            val access = secretTokenJsonProp["access"]?.toString()
+            assertTrue(access != null && access.contains("WRITE_ONLY"),
+                "secretToken with WRITE_ONLY should have access=WRITE_ONLY")
         }
 
-        val displayNameInfo = graph.jacksonFieldInfo("sample.jackson.JacksonWriteOnlyDTO", "displayName")
-        println("displayName jackson info: $displayNameInfo")
+        val displayNameAnnotations = graph.memberAnnotations("sample.jackson.JacksonWriteOnlyDTO", "displayName")
+        println("displayName annotations: $displayNameAnnotations")
 
-        if (displayNameInfo != null) {
-            assertEquals("display_name", displayNameInfo.jsonName,
+        val displayNameJsonProp = displayNameAnnotations["com.fasterxml.jackson.annotation.JsonProperty"]
+        if (displayNameJsonProp != null) {
+            assertEquals("display_name", displayNameJsonProp["value"],
                 "displayName should have json name 'display_name'")
         }
 
         // Also check getter info
-        val getSecretTokenInfo = graph.jacksonGetterInfo("sample.jackson.JacksonWriteOnlyDTO", "getSecretToken")
-        println("getSecretToken getter info: $getSecretTokenInfo")
+        val getSecretTokenAnnotations = graph.memberAnnotations("sample.jackson.JacksonWriteOnlyDTO", "getSecretToken")
+        println("getSecretToken getter annotations: $getSecretTokenAnnotations")
 
-        if (getSecretTokenInfo != null) {
-            assertTrue(getSecretTokenInfo.isIgnored,
-                "getSecretToken getter with WRITE_ONLY should be marked as ignored")
+        val getSecretTokenJsonProp = getSecretTokenAnnotations["com.fasterxml.jackson.annotation.JsonProperty"]
+        if (getSecretTokenJsonProp != null) {
+            val access = getSecretTokenJsonProp["access"]?.toString()
+            assertTrue(access != null && access.contains("WRITE_ONLY"),
+                "getSecretToken getter with WRITE_ONLY should have access=WRITE_ONLY")
         }
     }
 
@@ -595,13 +599,25 @@ class SootUpAdapterTest {
         val graph = loader.load(testClassesDir)
 
         // HealthController has no @RequestMapping at class level
-        // Its endpoints should still be found with method-level paths
-        val endpoints = graph.endpoints().toList()
-        println("Endpoints found: ${endpoints.map { "${it.httpMethod} ${it.path}" }}")
+        // Its method-level mapping annotations should still be stored
+        val springMappingFqns = setOf(
+            "org.springframework.web.bind.annotation.RequestMapping",
+            "org.springframework.web.bind.annotation.GetMapping",
+            "org.springframework.web.bind.annotation.PostMapping",
+            "org.springframework.web.bind.annotation.PutMapping",
+            "org.springframework.web.bind.annotation.DeleteMapping",
+            "org.springframework.web.bind.annotation.PatchMapping"
+        )
 
-        val healthEndpoints = endpoints.filter { it.path.contains("health") }
-        assertTrue(healthEndpoints.isNotEmpty(),
-            "Should find /health endpoint from HealthController without class-level mapping")
+        val methods = graph.methods(io.johnsonlee.graphite.graph.MethodPattern()).toList()
+        val healthMethods = methods.filter { method ->
+            val annotations = graph.memberAnnotations(method.declaringClass.className, method.name)
+            annotations.keys.any { it in springMappingFqns }
+        }.filter { it.declaringClass.className.contains("HealthController") }
+
+        println("Health controller methods with mapping annotations: ${healthMethods.map { it.name }}")
+        assertTrue(healthMethods.isNotEmpty(),
+            "Should find methods with mapping annotations from HealthController without class-level mapping")
     }
 
     // ========== Enum with static block ==========

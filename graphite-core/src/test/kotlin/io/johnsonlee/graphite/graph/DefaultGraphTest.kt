@@ -227,53 +227,6 @@ class DefaultGraphTest {
     }
 
     // ========================================================================
-    // Endpoints
-    // ========================================================================
-
-    @Test
-    fun `addEndpoint and endpoints query`() {
-        val m = makeMethod("com.example.UserCtrl", "getUsers")
-        val ep = EndpointInfo(m, HttpMethod.GET, "/api/users")
-        val graph = DefaultGraph.Builder().addEndpoint(ep).build()
-
-        val endpoints = graph.endpoints().toList()
-        assertEquals(1, endpoints.size)
-        assertEquals("/api/users", endpoints[0].path)
-    }
-
-    @Test
-    fun `endpoints with pattern filter`() {
-        val m = makeMethod("com.example.UserCtrl", "getUsers")
-        val ep1 = EndpointInfo(m, HttpMethod.GET, "/api/users")
-        val ep2 = EndpointInfo(m, HttpMethod.POST, "/api/orders")
-        val graph = DefaultGraph.Builder().addEndpoint(ep1).addEndpoint(ep2).build()
-
-        val filtered = graph.endpoints(pattern = "/api/users").toList()
-        assertEquals(1, filtered.size)
-    }
-
-    @Test
-    fun `endpoints with httpMethod filter`() {
-        val m = makeMethod("com.example.UserCtrl", "getUsers")
-        val ep1 = EndpointInfo(m, HttpMethod.GET, "/api/users")
-        val ep2 = EndpointInfo(m, HttpMethod.POST, "/api/users")
-        val graph = DefaultGraph.Builder().addEndpoint(ep1).addEndpoint(ep2).build()
-
-        val filtered = graph.endpoints(httpMethod = HttpMethod.GET).toList()
-        assertEquals(1, filtered.size)
-    }
-
-    @Test
-    fun `endpoints matches ANY httpMethod`() {
-        val m = makeMethod("com.example.UserCtrl", "handle")
-        val ep = EndpointInfo(m, HttpMethod.ANY, "/api/users")
-        val graph = DefaultGraph.Builder().addEndpoint(ep).build()
-
-        val filtered = graph.endpoints(httpMethod = HttpMethod.GET).toList()
-        assertEquals(1, filtered.size)
-    }
-
-    // ========================================================================
     // Branch scopes
     // ========================================================================
 
@@ -313,46 +266,6 @@ class DefaultGraphTest {
     }
 
     // ========================================================================
-    // Jackson info
-    // ========================================================================
-
-    @Test
-    fun `addJacksonFieldInfo and jacksonFieldInfo query`() {
-        val info = JacksonFieldInfo(jsonName = "user_name", isIgnored = false)
-        val graph = DefaultGraph.Builder()
-            .addJacksonFieldInfo("com.example.User", "name", info)
-            .build()
-
-        val result = graph.jacksonFieldInfo("com.example.User", "name")
-        assertNotNull(result)
-        assertEquals("user_name", result.jsonName)
-    }
-
-    @Test
-    fun `addJacksonGetterInfo and jacksonGetterInfo query`() {
-        val info = JacksonFieldInfo(jsonName = "user_name", isIgnored = false)
-        val graph = DefaultGraph.Builder()
-            .addJacksonGetterInfo("com.example.User", "getName", info)
-            .build()
-
-        val result = graph.jacksonGetterInfo("com.example.User", "getName")
-        assertNotNull(result)
-        assertEquals("user_name", result.jsonName)
-    }
-
-    @Test
-    fun `jacksonFieldInfo returns null for missing field`() {
-        val graph = DefaultGraph.Builder().build()
-        assertNull(graph.jacksonFieldInfo("com.example.User", "missing"))
-    }
-
-    @Test
-    fun `jacksonGetterInfo returns null for missing getter`() {
-        val graph = DefaultGraph.Builder().build()
-        assertNull(graph.jacksonGetterInfo("com.example.User", "getMissing"))
-    }
-
-    // ========================================================================
     // Call sites query
     // ========================================================================
 
@@ -376,5 +289,80 @@ class DefaultGraphTest {
 
         val result = graph.callSites(MethodPattern(name = "missing")).toList()
         assertTrue(result.isEmpty())
+    }
+
+    // ========================================================================
+    // Member annotations
+    // ========================================================================
+
+    @Test
+    fun `memberAnnotations returns empty for unknown member`() {
+        val graph = DefaultGraph.Builder().build()
+        assertTrue(graph.memberAnnotations("com.example.Foo", "bar").isEmpty())
+    }
+
+    @Test
+    fun `addMemberAnnotation and memberAnnotations query`() {
+        val graph = DefaultGraph.Builder()
+            .addMemberAnnotation("com.example.User", "name", "javax.validation.NotNull", mapOf("message" to "required"))
+            .build()
+        val annotations = graph.memberAnnotations("com.example.User", "name")
+        assertEquals(1, annotations.size)
+        assertEquals("required", annotations["javax.validation.NotNull"]?.get("message"))
+    }
+
+    @Test
+    fun `addMemberAnnotation with default empty values`() {
+        val graph = DefaultGraph.Builder()
+            .addMemberAnnotation("com.example.User", "id", "javax.persistence.Id")
+            .build()
+        val annotations = graph.memberAnnotations("com.example.User", "id")
+        assertTrue(annotations.containsKey("javax.persistence.Id"))
+        assertTrue(annotations["javax.persistence.Id"]!!.isEmpty())
+    }
+
+    // ========================================================================
+    // Reified extension functions
+    // ========================================================================
+
+    @Test
+    fun `reified nodes extension returns typed sequence`() {
+        val builder = DefaultGraph.Builder()
+        builder.addNode(IntConstant(NodeId.next(), 1))
+        builder.addNode(StringConstant(NodeId.next(), "hello"))
+        val graph = builder.build()
+
+        val intConstants = graph.nodes<IntConstant>().toList()
+        assertEquals(1, intConstants.size)
+    }
+
+    @Test
+    fun `reified outgoing extension returns typed edges`() {
+        val from = NodeId.next()
+        val to = NodeId.next()
+        val edge = DataFlowEdge(from, to, DataFlowKind.ASSIGN)
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(from, 1))
+            .addNode(IntConstant(to, 2))
+            .addEdge(edge)
+            .build()
+
+        val edges = graph.outgoing<DataFlowEdge>(from).toList()
+        assertEquals(1, edges.size)
+    }
+
+    @Test
+    fun `reified incoming extension returns typed edges`() {
+        val from = NodeId.next()
+        val to = NodeId.next()
+        val edge = DataFlowEdge(from, to, DataFlowKind.ASSIGN)
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(from, 1))
+            .addNode(IntConstant(to, 2))
+            .addEdge(edge)
+            .build()
+
+        val edges = graph.incoming<DataFlowEdge>(to).toList()
+        assertEquals(1, edges.size)
     }
 }
