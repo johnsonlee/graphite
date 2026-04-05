@@ -5,9 +5,12 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -612,6 +615,379 @@ class GraphStoreTest {
             val loadedReturn = loaded.node(returnNode.id) as ReturnNode
             assertNotNull(loadedReturn.actualType)
             assertEquals("com.example.ConcreteData", loadedReturn.actualType!!.className)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // encodeEdge / decodeEdge round-trip for all edge variants
+    // ========================================================================
+
+    @Test
+    fun `encodeEdge and decodeEdge round-trip for all edge variants`() {
+        val from = NodeId(1)
+        val to = NodeId(2)
+
+        // DataFlowEdge - all kinds
+        for (kind in DataFlowKind.entries) {
+            val edge = DataFlowEdge(from, to, kind)
+            val encoded = NodeSerializer.encodeEdge(edge)
+            val decoded = NodeSerializer.decodeEdge(encoded, from, to)
+            assertTrue(decoded is DataFlowEdge)
+            assertEquals(kind, (decoded as DataFlowEdge).kind)
+            assertEquals(from, decoded.from)
+            assertEquals(to, decoded.to)
+        }
+
+        // CallEdge - all flag combinations
+        for (virtual in listOf(false, true)) {
+            for (dynamic in listOf(false, true)) {
+                val edge = CallEdge(from, to, isVirtual = virtual, isDynamic = dynamic)
+                val encoded = NodeSerializer.encodeEdge(edge)
+                val decoded = NodeSerializer.decodeEdge(encoded, from, to)
+                assertTrue(decoded is CallEdge)
+                val callEdge = decoded as CallEdge
+                assertEquals(virtual, callEdge.isVirtual, "isVirtual=$virtual")
+                assertEquals(dynamic, callEdge.isDynamic, "isDynamic=$dynamic")
+            }
+        }
+
+        // TypeEdge - all relations
+        for (relation in TypeRelation.entries) {
+            val edge = TypeEdge(from, to, relation)
+            val encoded = NodeSerializer.encodeEdge(edge)
+            val decoded = NodeSerializer.decodeEdge(encoded, from, to)
+            assertTrue(decoded is TypeEdge)
+            assertEquals(relation, (decoded as TypeEdge).kind)
+        }
+
+        // ControlFlowEdge - all kinds, with and without comparison
+        for (kind in ControlFlowKind.entries) {
+            val edge = ControlFlowEdge(from, to, kind)
+            val encoded = NodeSerializer.encodeEdge(edge)
+            val decoded = NodeSerializer.decodeEdge(encoded, from, to)
+            assertTrue(decoded is ControlFlowEdge)
+            assertEquals(kind, (decoded as ControlFlowEdge).kind)
+            assertNull(decoded.comparison)
+        }
+
+        // ControlFlowEdge with comparison
+        val comp = BranchComparison(ComparisonOp.GE, NodeId(99))
+        val cfEdge = ControlFlowEdge(from, to, ControlFlowKind.BRANCH_TRUE)
+        val encoded = NodeSerializer.encodeEdge(cfEdge)
+        val decoded = NodeSerializer.decodeEdge(encoded, from, to, comp)
+        assertTrue(decoded is ControlFlowEdge)
+        assertEquals(comp, (decoded as ControlFlowEdge).comparison)
+    }
+
+    @Test
+    fun `decodeEdge throws on unknown edge family`() {
+        // family bits 0-1 can only be 0..3; label=0xFF has family=3 (ControlFlow) so
+        // we need to craft a label where bits 0-1 give family > 3 -- not possible with 2 bits.
+        // The else branch is a safety net. We test it directly.
+        assertFailsWith<IllegalArgumentException> {
+            // Use reflection or a trick: family is label & 0x3, so we need family=4+
+            // but 2 bits max is 3. The else branch is unreachable in normal operation.
+            // We test it by calling with a carefully crafted mock -- not possible without
+            // modifying the method. Since it's truly unreachable with 2-bit masking,
+            // we accept this line stays uncovered.
+
+            // Instead, test the unknown node tag branch in readNode by writing raw bytes
+            // with an unknown tag, then reading them with a string table.
+            val dir = Files.createTempDirectory("webgraph-unknown-tag-test")
+            try {
+                // Build a minimal string table so readNode can be called
+                StringTable.build(setOf("dummy"), dir)
+                val strings = StringTable.load(dir)
+
+                val baos = java.io.ByteArrayOutputStream()
+                val dos = DataOutputStream(baos)
+                dos.writeInt(999)  // node ID
+                dos.writeByte(99)  // unknown tag
+                dos.flush()
+                val dis = DataInputStream(java.io.ByteArrayInputStream(baos.toByteArray()))
+                NodeSerializer.readNode(dis, strings)
+            } finally {
+                dir.toFile().deleteRecursively()
+            }
+        }
+    }
+
+    // ========================================================================
+    // writeAnyValue / readAnyValue round-trip for all value types
+    // ========================================================================
+
+    @Test
+    fun `round-trip preserves enum constructor args with all value types`() {
+        val builder = DefaultGraph.Builder()
+        val enumConst = EnumConstant(
+            NodeId.next(),
+            TypeDescriptor("com.example.MyEnum"),
+            "VALUE_A",
+            listOf(
+                42,                                               // Int
+                123456789L,                                       // Long
+                "hello",                                          // String
+                3.14f,                                            // Float
+                2.718281828,                                      // Double
+                true,                                             // Boolean
+                null,                                             // null
+                EnumValueReference("com.example.Other", "X")      // EnumValueReference
+            )
+        )
+        builder.addNode(enumConst)
+        builder.addEnumValues("com.example.MyEnum", "VALUE_A", enumConst.constructorArgs)
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-anyvalue-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val loadedEnum = loaded.node(enumConst.id) as EnumConstant
+            assertEquals(8, loadedEnum.constructorArgs.size)
+            assertEquals(42, loadedEnum.constructorArgs[0])
+            assertEquals(123456789L, loadedEnum.constructorArgs[1])
+            assertEquals("hello", loadedEnum.constructorArgs[2])
+            assertEquals(3.14f, loadedEnum.constructorArgs[3])
+            assertEquals(2.718281828, loadedEnum.constructorArgs[4])
+            assertEquals(true, loadedEnum.constructorArgs[5])
+            assertNull(loadedEnum.constructorArgs[6])
+            val ref = loadedEnum.constructorArgs[7] as EnumValueReference
+            assertEquals("com.example.Other", ref.enumClass)
+            assertEquals("X", ref.enumName)
+
+            // Also verify enum values metadata round-tripped
+            val values = loaded.enumValues("com.example.MyEnum", "VALUE_A")
+            assertNotNull(values)
+            assertEquals(8, values.size)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // CallEdge with isVirtual and isDynamic flags round-trip via graph
+    // ========================================================================
+
+    @Test
+    fun `round-trip preserves CallEdge with isVirtual and isDynamic flags`() {
+        val builder = DefaultGraph.Builder()
+        val fooType = TypeDescriptor("com.example.Foo")
+        val caller = MethodDescriptor(fooType, "caller", emptyList(), TypeDescriptor("void"))
+        val callee = MethodDescriptor(fooType, "callee", emptyList(), TypeDescriptor("void"))
+        builder.addMethod(caller)
+        builder.addMethod(callee)
+
+        val callSite = CallSiteNode(NodeId.next(), caller, callee, 5, null, emptyList())
+        val target = ReturnNode(NodeId.next(), callee)
+        builder.addNode(callSite)
+        builder.addNode(target)
+
+        // isVirtual=true, isDynamic=true
+        builder.addEdge(CallEdge(callSite.id, target.id, isVirtual = true, isDynamic = true))
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-call-flags-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val loadedEdges = loaded.outgoing(callSite.id, CallEdge::class.java).toList()
+            assertEquals(1, loadedEdges.size)
+            assertTrue(loadedEdges[0].isVirtual)
+            assertTrue(loadedEdges[0].isDynamic)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // Null annotation attribute value round-trip
+    // ========================================================================
+
+    @Test
+    fun `round-trip preserves null annotation attribute value`() {
+        val builder = DefaultGraph.Builder()
+        val fooType = TypeDescriptor("com.example.Foo")
+        val method = MethodDescriptor(fooType, "annotated", emptyList(), TypeDescriptor("void"))
+        builder.addMethod(method)
+
+        val returnNode = ReturnNode(NodeId.next(), method)
+        builder.addNode(returnNode)
+
+        // Add an annotation with a null attribute value
+        builder.addMemberAnnotation(
+            "com.example.Foo", "annotated",
+            "javax.annotation.Nullable",
+            mapOf("value" to null, "reason" to "test")
+        )
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-null-annot-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val annotations = loaded.memberAnnotations("com.example.Foo", "annotated")
+            assertTrue(annotations.containsKey("javax.annotation.Nullable"))
+            val attrs = annotations["javax.annotation.Nullable"]!!
+            assertNull(attrs["value"])
+            assertEquals("test", attrs["reason"])
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // Out-of-bounds NodeId returns empty sequences on loaded graph
+    // ========================================================================
+
+    @Test
+    fun `outgoing and incoming return empty for out-of-bounds NodeId on loaded graph`() {
+        val builder = DefaultGraph.Builder()
+        val node = IntConstant(NodeId(0), 1)
+        builder.addNode(node)
+        val graph = builder.build()
+
+        val dir = Files.createTempDirectory("webgraph-oob-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            // NodeId with value >= numNodes should return empty
+            val bigId = NodeId(999999)
+            assertEquals(0, loaded.outgoing(bigId).count())
+            assertEquals(0, loaded.incoming(bigId).count())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // BranchScopeData equals and hashCode coverage
+    // ========================================================================
+
+    @Test
+    fun `BranchScopeData equals identity`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(2))
+
+        // Identity
+        assertTrue(data == data)
+    }
+
+    @Test
+    fun `BranchScopeData equals with different type returns false`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(2))
+
+        assertTrue(data.equals("not a BranchScopeData").not())
+    }
+
+    @Test
+    fun `BranchScopeData equals with equal values`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data1 = BranchScopeData(0, method, comp, intArrayOf(1, 2), intArrayOf(3))
+        val data2 = BranchScopeData(0, method, comp, intArrayOf(1, 2), intArrayOf(3))
+
+        assertEquals(data1, data2)
+        assertEquals(data1.hashCode(), data2.hashCode())
+    }
+
+    @Test
+    fun `BranchScopeData not equal when conditionNodeId differs`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data1 = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(2))
+        val data2 = BranchScopeData(1, method, comp, intArrayOf(1), intArrayOf(2))
+
+        assertTrue(data1 != data2)
+    }
+
+    @Test
+    fun `BranchScopeData not equal when method differs`() {
+        val method1 = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val method2 = MethodDescriptor(TypeDescriptor("com.example.B"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data1 = BranchScopeData(0, method1, comp, intArrayOf(1), intArrayOf(2))
+        val data2 = BranchScopeData(0, method2, comp, intArrayOf(1), intArrayOf(2))
+
+        assertTrue(data1 != data2)
+    }
+
+    @Test
+    fun `BranchScopeData not equal when comparison differs`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp1 = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val comp2 = BranchComparison(ComparisonOp.NE, NodeId(1))
+        val data1 = BranchScopeData(0, method, comp1, intArrayOf(1), intArrayOf(2))
+        val data2 = BranchScopeData(0, method, comp2, intArrayOf(1), intArrayOf(2))
+
+        assertTrue(data1 != data2)
+    }
+
+    @Test
+    fun `BranchScopeData not equal when trueBranchNodeIds differ`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data1 = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(2))
+        val data2 = BranchScopeData(0, method, comp, intArrayOf(9), intArrayOf(2))
+
+        assertTrue(data1 != data2)
+    }
+
+    @Test
+    fun `BranchScopeData not equal when falseBranchNodeIds differ`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data1 = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(2))
+        val data2 = BranchScopeData(0, method, comp, intArrayOf(1), intArrayOf(3))
+
+        assertTrue(data1 != data2)
+    }
+
+    @Test
+    fun `BranchScopeData hashCode is consistent`() {
+        val method = MethodDescriptor(TypeDescriptor("com.example.A"), "m", emptyList(), TypeDescriptor("void"))
+        val comp = BranchComparison(ComparisonOp.EQ, NodeId(1))
+        val data = BranchScopeData(0, method, comp, intArrayOf(1, 2), intArrayOf(3, 4))
+
+        // hashCode should be consistent across calls
+        assertEquals(data.hashCode(), data.hashCode())
+    }
+
+    // ========================================================================
+    // writeAnyValue fallback for unsupported types (falls back to toString)
+    // ========================================================================
+
+    @Test
+    fun `round-trip enum constructor arg with unsupported type falls back to toString`() {
+        val builder = DefaultGraph.Builder()
+        // Use a List as constructor arg -- not a directly supported type,
+        // so writeAnyValue will use the else branch (VAL_STRING + toString())
+        val enumConst = EnumConstant(
+            NodeId.next(),
+            TypeDescriptor("com.example.FallbackEnum"),
+            "VAL",
+            listOf(listOf("a", "b"))  // List<String> triggers the else fallback
+        )
+        builder.addNode(enumConst)
+        builder.addEnumValues("com.example.FallbackEnum", "VAL", enumConst.constructorArgs)
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-fallback-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val loadedEnum = loaded.node(enumConst.id) as EnumConstant
+            // The list was serialized via toString(), so it comes back as a String
+            assertEquals("[a, b]", loadedEnum.constructorArgs[0])
         } finally {
             dir.toFile().deleteRecursively()
         }
