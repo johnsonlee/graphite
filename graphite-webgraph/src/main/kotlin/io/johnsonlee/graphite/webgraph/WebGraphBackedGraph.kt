@@ -11,26 +11,19 @@ import it.unimi.dsi.webgraph.ImmutableGraph
 /**
  * A [Graph] implementation backed by WebGraph's compressed adjacency structure.
  *
- * Forward and backward edges are stored as separate BVGraph files for efficient
- * successor and predecessor queries. Node data and metadata are loaded into memory.
+ * Edges are reconstructed on-the-fly from the BVGraph successor lists and
+ * a compact label map (8 bits per edge) instead of storing full [Edge] objects.
+ * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
+ * `(from << 32 | to)`.
  */
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: ImmutableGraph,
     private val nodesById: Map<Int, Node>,
-    private val allEdges: List<Edge>,
+    private val edgeLabelMap: Map<Long, Int>,
+    private val comparisonMap: Map<Long, BranchComparison>,
     private val metadata: GraphMetadata
 ) : Graph {
-
-    // Index: nodeId -> outgoing edges
-    private val outgoingIndex: Map<Int, List<Edge>> by lazy {
-        allEdges.groupBy { it.from.value }
-    }
-
-    // Index: nodeId -> incoming edges
-    private val incomingIndex: Map<Int, List<Edge>> by lazy {
-        allEdges.groupBy { it.to.value }
-    }
 
     // Lazy branch scope materialization
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
@@ -51,11 +44,33 @@ internal class WebGraphBackedGraph(
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
         nodesById.values.asSequence().filter { type.isInstance(it) } as Sequence<T>
 
-    override fun outgoing(id: NodeId): Sequence<Edge> =
-        outgoingIndex[id.value]?.asSequence() ?: emptySequence()
+    override fun outgoing(id: NodeId): Sequence<Edge> {
+        val nodeIdx = id.value
+        if (nodeIdx >= forward.numNodes()) return emptySequence()
+        val succs = forward.successorArray(nodeIdx)
+        val outdeg = forward.outdegree(nodeIdx)
+        return (0 until outdeg).asSequence().map { i ->
+            val to = succs[i]
+            val key = nodeIdx.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
+            val label = edgeLabelMap[key] ?: 0
+            val comparison = comparisonMap[key]
+            NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison)
+        }
+    }
 
-    override fun incoming(id: NodeId): Sequence<Edge> =
-        incomingIndex[id.value]?.asSequence() ?: emptySequence()
+    override fun incoming(id: NodeId): Sequence<Edge> {
+        val nodeIdx = id.value
+        if (nodeIdx >= backward.numNodes()) return emptySequence()
+        val preds = backward.successorArray(nodeIdx)
+        val indeg = backward.outdegree(nodeIdx)
+        return (0 until indeg).asSequence().map { i ->
+            val from = preds[i]
+            val key = from.toLong() shl 32 or (nodeIdx.toLong() and 0xFFFFFFFFL)
+            val label = edgeLabelMap[key] ?: 0
+            val comparison = comparisonMap[key]
+            NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison)
+        }
+    }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
