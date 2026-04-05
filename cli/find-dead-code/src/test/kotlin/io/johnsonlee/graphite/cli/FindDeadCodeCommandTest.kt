@@ -4,7 +4,7 @@ import com.google.gson.JsonParser
 import io.johnsonlee.graphite.analysis.DeadBranch
 import io.johnsonlee.graphite.analysis.DeadCodeResult
 import io.johnsonlee.graphite.core.*
-
+import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.File
 import java.nio.file.Path
@@ -1176,6 +1176,7 @@ class FindDeadCodeCommandTest {
             override fun enumValues(enumClass: String, enumName: String): List<Any?>? = null
             override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
                 memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
+            override val resources = EmptyResourceAccessor
             override fun branchScopes(): Sequence<BranchScope> = emptySequence()
             override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> = emptySequence()
         }

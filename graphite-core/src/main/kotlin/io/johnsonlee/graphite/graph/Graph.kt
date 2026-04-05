@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.input.ResourceAccessor
 
 /**
  * The unified program graph that combines all analysis graphs.
@@ -76,6 +77,11 @@ interface Graph {
      * @return map of annotation FQN to annotation values, or empty map if none
      */
     fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>>
+
+    /**
+     * Access resource files from the analyzed archive (JAR, WAR, directory).
+     */
+    val resources: ResourceAccessor
 
     /**
      * Get all branch scopes in the graph.
