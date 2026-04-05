@@ -2,6 +2,7 @@ description = "Graphite WebGraph Store - Disk-backed graph storage using WebGrap
 
 plugins {
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
+    id("me.champeau.jmh")
 }
 
 val testFixtures: Configuration by configurations.creating
@@ -10,14 +11,21 @@ dependencies {
     api(project(":graphite-core"))
     implementation(libs.webgraph)
     testImplementation(project(":graphite-sootup"))
-    "testFixtures"("${libs.zipkin.server.get().module}:${libs.zipkin.server.get().versionConstraint.requiredVersion}:exec@jar")
+    testFixtures(libs.elasticsearch)
+    testFixtures(libs.android.all)
+
+    jmh(libs.jmh.core)
+    jmhAnnotationProcessor(libs.jmh.generator)
 }
 
 tasks.test {
+    maxHeapSize = "2g"
     doFirst {
-        val zipkinJar = testFixtures.resolve().firstOrNull()
-        if (zipkinJar != null) {
-            systemProperty("zipkin.jar.path", zipkinJar.absolutePath)
+        testFixtures.resolve().forEach { jar ->
+            when {
+                jar.name.contains("elasticsearch") -> systemProperty("elasticsearch.jar.path", jar.absolutePath)
+                jar.name.contains("android-all") -> systemProperty("android.jar.path", jar.absolutePath)
+            }
         }
     }
 }

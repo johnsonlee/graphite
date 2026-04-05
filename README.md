@@ -37,6 +37,8 @@ Graphite builds a **program graph** from compiled bytecode — nodes are program
 | Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
 | Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
 
+Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is built into `graphite-core` with zero external dependencies.
+
 ## Why Not Tree-sitter?
 
 Tools like [GitNexus](https://github.com/nicobailon/gitnexus), Aider, and most LLM code assistants use [Tree-sitter](https://tree-sitter.github.io/) for codebase understanding. Tree-sitter parses syntax — it sees **text structure**, not **program semantics**.
@@ -68,6 +70,16 @@ val graph = JavaProjectLoader(LoaderConfig(
 ### Query It
 
 ```kotlin
+// Cypher query — standard graph query language (built into graphite-core)
+val result = graph.query("""
+    MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
+    WHERE cs.callee_class =~ 'com.example.*'
+    RETURN c.value, cs.callee_name
+""")
+result.rows.forEach { row ->
+    println("${row["c.value"]} -> ${row["cs.callee_name"]}")
+}
+
 // Find all constants passed to a method
 val results = Graphite.from(graph).query {
     findArgumentConstants {
@@ -101,6 +113,9 @@ graphite-query /data/app-graph call-sites -c "com.example.*"
 graphite-query /data/app-graph methods -c "com.example.UserService"
 graphite-query /data/app-graph annotations -c com.example.User -m name
 
+# Cypher query from the command line
+graphite-query /data/app-graph cypher "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
+
 # Interactive web visualization
 graphite-query /data/app-graph serve -p 8080
 ```
@@ -118,7 +133,7 @@ graph.resources.list("**/*.xml").forEach { entry ->
 
 ```
 graphite/
-├── graphite-core/          # Graph interface, nodes, edges, analysis
+├── graphite-core/          # Graph interface, nodes, edges, analysis, Cypher engine
 ├── graphite-sootup/        # SootUp bytecode → graph builder
 ├── graphite-webgraph/      # WebGraph disk persistence (BVGraph + LAW tools)
 └── cli/
@@ -152,6 +167,7 @@ Graphs are persisted using the [WebGraph](https://webgraph.di.unimi.it/) ecosyst
 | Generic type analysis | `ApiResponse<PageData<User>>` nested structure |
 | Branch reachability | Dead code via condition constant analysis |
 | Annotations | Generic `memberAnnotations()` for any framework |
+| Cypher queries | `graph.query("MATCH ...")` -- full openCypher read grammar |
 | Resource access | Files inside JAR/WAR/fat JAR (nested JARs) |
 
 ## Extension Mechanism
@@ -183,7 +199,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.2")
+    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.2")    // includes Cypher engine
     implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.2")
     // Optional: disk persistence
     implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.2")

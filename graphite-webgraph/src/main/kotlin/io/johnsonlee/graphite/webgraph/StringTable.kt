@@ -48,7 +48,7 @@ internal class StringTable private constructor(
          */
         fun build(strings: Collection<String>, dir: Path): StringTable {
             val sorted = strings.toSortedSet().toList()
-            val fcl = FrontCodedStringList(sorted.iterator(), 8, true)
+            val fcl = FrontCodedStringList(sorted.iterator(), 8, false)
             BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
             val indexMap = HashMap<String, Int>(sorted.size)
             for (i in sorted.indices) {

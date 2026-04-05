@@ -25,6 +25,12 @@
         </div>
     </header>
 
+    <div id="cypher-panel">
+        <textarea id="cypher-input" placeholder="MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'com.example.*' RETURN n.callee_name LIMIT 10" rows="3"></textarea>
+        <button id="cypher-run">Run Cypher</button>
+        <div id="cypher-result"></div>
+    </div>
+
     <main>
         <aside id="sidebar">
             <section id="stats-cards">
