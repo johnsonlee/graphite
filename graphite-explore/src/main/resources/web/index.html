@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphite Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>Graphite <span class="accent">Explorer</span></h1>
+        </div>
+        <div class="header-right">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search classes, methods, or node IDs...">
+                <select id="search-type">
+                    <option value="call-sites">Call Sites</option>
+                    <option value="methods">Methods</option>
+                    <option value="nodes">Nodes</option>
+                </select>
+                <button id="search-btn">Search</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <aside id="sidebar">
+            <section id="stats-cards">
+                <div class="stat-card" id="stat-nodes"><div class="stat-value">-</div><div class="stat-label">Nodes</div></div>
+                <div class="stat-card" id="stat-edges"><div class="stat-value">-</div><div class="stat-label">Edges</div></div>
+                <div class="stat-card" id="stat-methods"><div class="stat-value">-</div><div class="stat-label">Methods</div></div>
+                <div class="stat-card" id="stat-callsites"><div class="stat-value">-</div><div class="stat-label">Call Sites</div></div>
+            </section>
+
+            <section id="top-classes">
+                <h3>Top Classes</h3>
+                <div id="class-list" class="item-list"></div>
+            </section>
+
+            <section id="results-section" style="display:none">
+                <div class="section-header">
+                    <h3>Search Results</h3>
+                    <button id="close-results" class="btn-icon">&times;</button>
+                </div>
+                <div id="results-list" class="item-list"></div>
+            </section>
+
+            <section id="detail-section">
+                <h3>Details</h3>
+                <div id="detail-content">
+                    <p class="hint">Click a node in the graph to inspect it</p>
+                </div>
+            </section>
+        </aside>
+
+        <div id="graph-area">
+            <div id="cy"></div>
+            <div id="graph-controls">
+                <button id="btn-fit" title="Fit to view">Fit</button>
+                <button id="btn-reset" title="Reset view">Reset</button>
+                <span id="graph-info"></span>
+            </div>
+        </div>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>

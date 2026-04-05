@@ -1,4 +1,4 @@
-description = "Graphite Query CLI - Query and visualize saved graphs"
+description = "Graphite Explorer - Interactive web visualization for saved graphs"
 
 plugins {
     application
@@ -12,10 +12,10 @@ application {
 
 dependencies {
     implementation(project(":graphite-core"))
-    implementation(project(":graphite-sootup"))
     implementation(project(":graphite-webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)
+    implementation(libs.javalin)
 }
 
 tasks.shadowJar {

@@ -11,8 +11,12 @@ import picocli.CommandLine.*
 import java.nio.file.Path
 import java.util.concurrent.Callable
 
-@Command(name = "serve", description = ["Start web visualization server"])
-class ServeCommand : Callable<Int> {
+@Command(
+    name = "graphite-explore",
+    description = ["Interactive web visualization for saved Graphite graphs"],
+    mixinStandardHelpOptions = true
+)
+class ExploreCommand : Callable<Int> {
 
     @Parameters(index = "0", description = ["Path to saved graph directory"])
     lateinit var graphDir: Path
@@ -106,6 +110,26 @@ class ServeCommand : Callable<Int> {
             val className = ctx.queryParam("class") ?: run { ctx.status(400).result("Missing 'class' parameter"); return@get }
             val memberName = ctx.queryParam("member") ?: run { ctx.status(400).result("Missing 'member' parameter"); return@get }
             ctx.json(graph.memberAnnotations(className, memberName))
+        }
+
+        app.get("/api/overview") { ctx ->
+            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: 5000
+            val nodes = mutableListOf<Map<String, Any?>>()
+            val edges = mutableListOf<Map<String, Any?>>()
+            val nodeIds = mutableSetOf<Int>()
+
+            graph.nodes(Node::class.java).take(limit).forEach { node ->
+                nodes.add(nodeToMap(node))
+                nodeIds.add(node.id.value)
+            }
+            for (id in nodeIds.toList()) {
+                graph.outgoing(NodeId(id)).forEach { edge ->
+                    if (edge.to.value in nodeIds) {
+                        edges.add(edgeToMap(edge))
+                    }
+                }
+            }
+            ctx.json(mapOf("nodes" to nodes, "edges" to edges))
         }
 
         app.get("/api/subgraph") { ctx ->

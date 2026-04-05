@@ -17,7 +17,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.*
 
-class ServeCommandTest {
+class ExploreCommandTest {
 
     companion object {
         private lateinit var graphDir: Path
@@ -84,7 +84,7 @@ class ServeCommandTest {
             )
 
             val graph = builder.build()
-            graphDir = Files.createTempDirectory("serve-test")
+            graphDir = Files.createTempDirectory("explore-test")
             GraphStore.save(graph, graphDir)
 
             val loadedGraph = GraphStore.load(graphDir)
@@ -93,8 +93,8 @@ class ServeCommandTest {
             }.start(0)
             port = app.port()
 
-            val serve = ServeCommand()
-            serve.registerApiRoutes(app, loadedGraph)
+            val explore = ExploreCommand()
+            explore.registerApiRoutes(app, loadedGraph)
         }
 
         @AfterClass
@@ -376,6 +376,27 @@ class ServeCommandTest {
     }
 
     // ========================================================================
+    // /api/overview
+    // ========================================================================
+
+    @Test
+    fun `GET api overview returns all nodes and edges`() {
+        val (code, body) = get("/api/overview")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, List<Any>> = parseJson(body)
+        assertTrue(result["nodes"]!!.isNotEmpty(), "Should have nodes")
+        assertTrue(result["edges"]!!.isNotEmpty(), "Should have edges")
+    }
+
+    @Test
+    fun `GET api overview respects limit`() {
+        val (code, body) = get("/api/overview?limit=3")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, List<Any>> = parseJson(body)
+        assertTrue(result["nodes"]!!.size <= 3, "Should respect limit")
+    }
+
+    // ========================================================================
     // /api/subgraph
     // ========================================================================
 
@@ -438,21 +459,21 @@ class ServeCommandTest {
     }
 
     // ========================================================================
-    // ServeCommand.call() integration test
+    // ExploreCommand.call() integration test
     // ========================================================================
 
     @Test
     fun `call starts server and blocks until interrupted`() {
         // Test that call() actually starts a server and blocks
-        val serve = ServeCommand()
-        serve.graphDir = graphDir
-        serve.port = 0 // random port
+        val explore = ExploreCommand()
+        explore.graphDir = graphDir
+        explore.port = 0 // random port
 
         var result: Int? = null
         var exception: Throwable? = null
         val thread = Thread {
             try {
-                result = serve.call()
+                result = explore.call()
             } catch (e: Throwable) {
                 exception = e
             }
@@ -475,8 +496,8 @@ class ServeCommandTest {
     @Test
     fun `buildSubgraph traverses outgoing and incoming edges`() {
         val graph = GraphStore.load(graphDir)
-        val serve = ServeCommand()
-        val result = serve.buildSubgraph(graph, localNode.id, 1)
+        val explore = ExploreCommand()
+        val result = explore.buildSubgraph(graph, localNode.id, 1)
         @Suppress("UNCHECKED_CAST")
         val nodes = result["nodes"] as List<Map<String, Any?>>
         @Suppress("UNCHECKED_CAST")
@@ -489,9 +510,9 @@ class ServeCommandTest {
     @Test
     fun `buildSubgraph with negative depth returns only center`() {
         val graph = GraphStore.load(graphDir)
-        val serve = ServeCommand()
+        val explore = ExploreCommand()
         // depth -1: visit returns immediately due to remaining < 0
-        val result = serve.buildSubgraph(graph, localNode.id, -1)
+        val result = explore.buildSubgraph(graph, localNode.id, -1)
         @Suppress("UNCHECKED_CAST")
         val nodes = result["nodes"] as List<Map<String, Any?>>
         assertEquals(0, nodes.size, "Negative depth should return nothing (remaining < 0 check)")
