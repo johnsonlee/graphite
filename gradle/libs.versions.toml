@@ -10,6 +10,8 @@ fastutil = "8.5.13"
 jackson = "2.17.0"
 guava = "33.0.0-jre"
 snakeyaml = "2.2"
+webgraph = "3.6.12"
+zipkin = "3.5.1"
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
@@ -28,3 +30,5 @@ sootup-callgraph = { module = "org.soot-oss:sootup.callgraph", version.ref = "so
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
+webgraph = { module = "it.unimi.dsi:webgraph", version.ref = "webgraph" }
+zipkin-server = { module = "io.zipkin:zipkin-server", version.ref = "zipkin" }

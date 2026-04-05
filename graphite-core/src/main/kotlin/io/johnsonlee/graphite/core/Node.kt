@@ -1,12 +1,13 @@
 package io.johnsonlee.graphite.core
 
+import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Base interface for all nodes in the analysis graph.
  * Every element in the program that can participate in dataflow is a Node.
  */
-sealed interface Node {
+sealed interface Node : Serializable {
     val id: NodeId
 }
 
@@ -15,7 +16,7 @@ sealed interface Node {
  * Saves ~36 bytes per node compared to String-based IDs.
  */
 @JvmInline
-value class NodeId(val value: Int) {
+value class NodeId(val value: Int) : Serializable {
     companion object {
         private val counter = AtomicInteger(0)
 
@@ -124,7 +125,7 @@ data class NullConstant(
 data class EnumValueReference(
     val enumClass: String,
     val enumName: String
-) {
+) : Serializable {
     override fun toString(): String = "$enumClass.$enumName"
 }
 
@@ -184,7 +185,7 @@ data class CallSiteNode(
 data class TypeDescriptor(
     val className: String,
     val typeArguments: List<TypeDescriptor> = emptyList()
-) {
+) : Serializable {
     val simpleName: String get() = className.substringAfterLast('.')
 
     fun isSubtypeOf(other: TypeDescriptor): Boolean {
@@ -198,7 +199,7 @@ data class MethodDescriptor(
     val name: String,
     val parameterTypes: List<TypeDescriptor>,
     val returnType: TypeDescriptor
-) {
+) : Serializable {
     val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"
 }
 
@@ -206,4 +207,4 @@ data class FieldDescriptor(
     val declaringClass: TypeDescriptor,
     val name: String,
     val type: TypeDescriptor
-)
+) : Serializable

@@ -203,6 +203,24 @@ class DefaultGraphTest {
         assertEquals(0, graph.supertypes(fooType).count())
     }
 
+    @Test
+    fun `typeHierarchyTypes returns all types with relations`() {
+        val graph = DefaultGraph.Builder()
+            .addTypeRelation(barType, fooType, TypeRelation.EXTENDS)
+            .build()
+
+        val types = graph.typeHierarchyTypes()
+        assertTrue(types.contains("com.example.Foo"))
+        assertTrue(types.contains("com.example.Bar"))
+        assertEquals(2, types.size)
+    }
+
+    @Test
+    fun `typeHierarchyTypes returns empty when no relations`() {
+        val graph = DefaultGraph.Builder().build()
+        assertTrue(graph.typeHierarchyTypes().isEmpty())
+    }
+
     // ========================================================================
     // Enum values
     // ========================================================================

@@ -1,12 +1,13 @@
 package io.johnsonlee.graphite.core
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import java.io.Serializable
 
 /**
  * Edges represent relationships between nodes.
  * The edge type determines how values flow or relate.
  */
-sealed interface Edge {
+sealed interface Edge : Serializable {
     val from: NodeId
     val to: NodeId
 }
@@ -101,7 +102,7 @@ enum class ControlFlowKind {
 data class BranchComparison(
     val operator: ComparisonOp,
     val comparandNodeId: NodeId
-)
+) : Serializable
 
 enum class ComparisonOp {
     EQ, NE, LT, GE, GT, LE

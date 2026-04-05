@@ -94,6 +94,11 @@ interface Graph {
      */
     fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope>
 
+    /**
+     * Get all type names that have type hierarchy information (supertypes or subtypes).
+     */
+    fun typeHierarchyTypes(): Set<String> = emptySet()
+
 }
 
 /**
