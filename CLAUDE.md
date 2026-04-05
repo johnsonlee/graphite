@@ -48,15 +48,20 @@ Graphite is a graph-based static analysis framework for JVM bytecode. It provide
 
 ```
 graphite/
-├── graphite-core/          # Core framework (zero external dependencies)
+├── graphite-core/          # Core framework (zero external dependencies except fastutil)
 │   ├── core/               # Node, Edge, TypeDescriptor, MethodDescriptor
 │   ├── graph/              # Graph interface, DefaultGraph
 │   ├── analysis/           # DataFlowAnalysis
 │   ├── query/              # QueryDsl - declarative query API
 │   └── input/              # ProjectLoader interface, LoaderConfig
 │
-└── graphite-sootup/        # SootUp backend
-    └── sootup/             # JavaProjectLoader, SootUpAdapter
+├── graphite-sootup/        # SootUp backend + GraphiteExtension SPI
+│   └── sootup/             # JavaProjectLoader, SootUpAdapter
+│
+└── cli/
+    ├── find-args/          # Find argument constants CLI
+    ├── find-endpoints/     # Find HTTP endpoints CLI
+    └── find-dead-code/     # Find dead code CLI
 ```
 
 ## Key Abstractions

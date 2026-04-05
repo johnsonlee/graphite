@@ -3,7 +3,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.johnsonlee.graphite/graphite-core.svg)](https://search.maven.org/search?q=g:io.johnsonlee.graphite)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A graph-based static analysis framework for JVM bytecode. Graphite provides a clean abstraction layer for building custom program analyses with an intuitive Query DSL.
+A graph-based static analysis framework for JVM bytecode. Graphite provides a clean abstraction layer over [SootUp](https://github.com/soot-oss/SootUp) for building custom program analyses with an intuitive Query DSL.
 
 ## Use Cases
 
@@ -33,8 +33,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-beta.16")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.16")
+    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-beta.17")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.17")
 }
 ```
 
@@ -52,8 +52,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.johnsonlee.graphite:graphite-core:0.1.0-beta.16'
-    implementation 'io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.16'
+    implementation 'io.johnsonlee.graphite:graphite-core:0.1.0-beta.17'
+    implementation 'io.johnsonlee.graphite:graphite-sootup:0.1.0-beta.17'
 }
 ```
 
@@ -97,117 +97,33 @@ results.forEach { result ->
 }
 ```
 
-### Track Multiple Method Arguments
+### Query Member Annotations
 
 ```kotlin
-// Track constants passed to multiple parameters at once
-val results = Graphite.from(graph).query {
-    findArgumentConstants {
-        method {
-            declaringClass = "com.example.ab.AbClient"
-            name = "getOption"
-        }
-        argumentIndices = listOf(0, 1)  // analyze both arg 0 and arg 1
-    }
-}
+// Get annotations on a class member (field or method)
+val annotations = graph.memberAnnotations("com.example.User", "name")
+// Returns: {"com.fasterxml.jackson.annotation.JsonProperty": {"value": "user_name"}}
 
-// Results include argumentIndex so you can distinguish which parameter each constant belongs to
-results.forEach { result ->
-    println("arg[${result.argumentIndex}] = ${result.value} at ${result.location}")
+annotations.forEach { (annotationFqn, values) ->
+    println("@$annotationFqn $values")
 }
 ```
 
-### Find Feature Flags (String Constants)
+### Access Archive Resources
 
 ```kotlin
-// Find all feature flags passed to FF4j.check()
-val featureFlags = Graphite.from(graph).query {
-    findArgumentConstants {
-        method {
-            declaringClass = "org.ff4j.FF4j"
-            name = "check"
-        }
-        argumentIndex = 0
-    }
+// Access resource files from the analyzed archive (JAR, WAR, directory)
+val resources = graph.resources
+
+// List resources matching a glob pattern
+resources.list("**/*.xml").forEach { entry ->
+    println(entry.path)
 }
 
-featureFlags.forEach { result ->
-    println("Feature flag: ${result.value}")
+// Read a specific resource
+resources.open("META-INF/spring.factories")?.use { stream ->
+    println(stream.bufferedReader().readText())
 }
-```
-
-### Find Actual Return Types
-
-```kotlin
-// Find actual return types for REST controllers returning Object
-val returnTypes = Graphite.from(graph).query {
-    findActualReturnTypes {
-        method {
-            annotations = listOf("org.springframework.web.bind.annotation.GetMapping")
-        }
-    }
-}
-
-returnTypes.forEach { result ->
-    println("${result.method.name}: declared=${result.declaredType}, actual=${result.actualTypes}")
-}
-```
-
-### Analyze Type Hierarchy (Nested Generics)
-
-Discover the complete type structure of returned objects, including nested generic types and Object field assignments:
-
-```kotlin
-// Analyze nested type hierarchy like ApiResponse<PageData<User>>
-val results = Graphite.from(graph).query {
-    findTypeHierarchy {
-        method {
-            declaringClass = "com.example.UserService"
-            name = "getUserResponse"
-        }
-        // Optional: increase maxDepth for deeply nested types (default: 10)
-        // config { copy(maxDepth = 25) }
-    }
-}
-
-results.forEach { result ->
-    println(result.toTreeString())
-    // Output:
-    // ApiResponse<PageData<User>>
-    //   ├── data: PageData<User>
-    //   │   ├── items: List<User>
-    //   │   └── extra: Object → PageMetadata
-    //   └── metadata: Object → RequestMetadata
-}
-```
-
-The type hierarchy analysis discovers:
-- **Generic type arguments**: `List<User>`, `Map<String, Order>`
-- **Object field assignments**: Actual types assigned to `Object` fields via setters
-- **Cross-method tracking**: Fields assigned in one method, returned in another
-- **Nested structures**: Up to 10 levels deep (configurable)
-
-### Find HTTP Endpoints
-
-```kotlin
-// Load a Spring Boot application
-val loader = JavaProjectLoader(LoaderConfig(
-    includePackages = listOf("com.example"),
-    includeLibraries = true
-))
-val graph = loader.load(Path.of("/path/to/app.jar"))
-
-// Find all endpoints
-val endpoints = graph.endpoints().toList()
-endpoints.forEach { endpoint ->
-    println("${endpoint.httpMethod} ${endpoint.path} -> ${endpoint.method.name}")
-}
-
-// Filter by pattern and HTTP method
-val userEndpoints = graph.endpoints(
-    pattern = "/api/users/*",
-    httpMethod = HttpMethod.GET
-).toList()
 ```
 
 ### Low-Level Dataflow Analysis
@@ -225,68 +141,90 @@ result.allConstants()   // Including enum constants from field access
 result.intConstants()   // Integer values only
 ```
 
-## CLI Tool
+## CLI Tools
 
-Graphite includes a command-line tool for quick analysis without writing code.
+Graphite includes three command-line tools for quick analysis without writing code.
 
 ### Build CLI
 
 ```bash
-./gradlew :graphite-cli:fatJar
+# Build all CLI shadow JARs
+./gradlew :cli:find-args:shadowJar
+./gradlew :cli:find-endpoints:shadowJar
+./gradlew :cli:find-dead-code:shadowJar
 ```
 
-### Usage
+This produces standalone JARs under each CLI module's `build/libs/` directory:
+- `cli/find-args/build/libs/find-args-<version>.jar`
+- `cli/find-endpoints/build/libs/find-endpoints-<version>.jar`
+- `cli/find-dead-code/build/libs/find-dead-code-<version>.jar`
 
-```bash
-java -jar graphite-cli-1.0.0-SNAPSHOT-all.jar find-args <input> [options]
-```
+### find-args
 
-### Examples
+Find constant values passed as arguments to specified methods.
 
 ```bash
 # Find integer AB IDs
-java -jar graphite-cli.jar find-args app.jar \
+java -jar find-args-<version>.jar app.jar \
   -c com.example.AbClient \
   -m getOption \
   -p java.lang.Integer \
   --include com.example
 
 # Find feature flags with JSON output
-java -jar graphite-cli.jar find-args app.jar \
+java -jar find-args-<version>.jar app.jar \
   -c org.ff4j.FF4j \
   -m check \
   --include com.example \
   -f json
 
 # Find enum AB IDs
-java -jar graphite-cli.jar find-args app.jar \
+java -jar find-args-<version>.jar app.jar \
   -c com.example.AbClient \
   -m getOption \
   -p com.example.ExperimentId \
   --include com.example
 
 # Track multiple arguments at once (comma-separated indices)
-java -jar graphite-cli.jar find-args app.jar \
+java -jar find-args-<version>.jar app.jar \
   -c com.example.AbClient \
   -m getOption \
   -i 0,1 \
   --include com.example
 ```
 
-### Find HTTP Endpoints
+#### Options (find-args)
+
+| Option | Description |
+|--------|-------------|
+| `-c, --class` | Target class name (required) |
+| `-m, --method` | Target method name (required) |
+| `-r, --regex` | Treat class and method names as regex patterns |
+| `-p, --param-types` | Method parameter signature (comma-separated, e.g., `-p int,java.lang.String`) |
+| `-i, --arg-index` | Argument indices (0-based, comma-separated, e.g., `0,1,2`; default: 0) |
+| `--include` | Package prefixes to include |
+| `--exclude` | Package prefixes to exclude |
+| `-f, --format` | Output format: `text` or `json` |
+| `-v, --verbose` | Enable verbose output |
+
+### find-endpoints
+
+Find HTTP endpoints from Spring MVC annotations and analyze return type hierarchy.
+
+Endpoint discovery works by querying `graph.memberAnnotations()` and `graph.methods()` to find methods annotated with Spring mapping annotations (`@GetMapping`, `@PostMapping`, etc.), then resolving class-level `@RequestMapping` path prefixes.
 
 ```bash
 # Find all endpoints (includes type hierarchy analysis by default)
-java -jar graphite-cli.jar find-endpoints app.jar
+java -jar find-endpoints-<version>.jar app.jar
 
 # Find endpoints matching a pattern
-java -jar graphite-cli.jar find-endpoints app.jar -e "/api/users/*"
+java -jar find-endpoints-<version>.jar app.jar -e "/api/users/*"
 
 # Find all GET endpoints under /api
-java -jar graphite-cli.jar find-endpoints app.jar -e "/api/**" -m GET
+java -jar find-endpoints-<version>.jar app.jar -e "/api/**" -m GET
 
 # JSON output with full type hierarchy
-java -jar graphite-cli.jar find-endpoints app.jar -f json
+java -jar find-endpoints-<version>.jar app.jar -f json
 ```
 
 **Sample Output:**
@@ -299,7 +237,7 @@ Found 2 endpoint(s):
           -> UserController.getUser()
           Declared: ResponseEntity
           Actual:   ApiResponse<User>
-                    ├── data: Object → User
+                    ├── data: Object -> User
                     │   ├── id: Long
                     │   └── name: String
                     └── message: String
@@ -307,7 +245,7 @@ Found 2 endpoint(s):
 Summary: 2 endpoint(s)
 ```
 
-### Endpoint Pattern Syntax
+#### Endpoint Pattern Syntax
 
 The `-e, --endpoint` option supports wildcard patterns for matching endpoint paths:
 
@@ -317,28 +255,7 @@ The `-e, --endpoint` option supports wildcard patterns for matching endpoint pat
 | `**` | Matches multiple path segments | `/api/**` matches `/api/users/123/orders` |
 | `{param}` | Path parameters are treated as wildcards | `/api/users/{id}` matches `/api/users/*` |
 
-**Examples:**
-
-- `/api/users/*` - Matches `/api/users/{id}`, `/api/users/123`
-- `/api/**/orders` - Matches `/api/v1/orders`, `/api/users/123/orders`
-- `/api/**` - Matches all paths under `/api/`
-- `/users/{userId}/posts/{postId}` - Matches `/users/*/posts/*`
-
-### CLI Options (find-args)
-
-| Option | Description |
-|--------|-------------|
-| `-c, --class` | Target class name (required) |
-| `-m, --method` | Target method name (required) |
-| `-r, --regex` | Treat class and method names as regex patterns |
-| `-p, --param-types` | Method parameter signature (comma-separated for multi-param methods, e.g., `-p int,java.lang.String` matches `method(int, String)`) |
-| `-i, --arg-index` | Argument indices (0-based, comma-separated, e.g., `0,1,2`; default: 0) |
-| `--include` | Package prefixes to include |
-| `--exclude` | Package prefixes to exclude |
-| `-f, --format` | Output format: `text` or `json` |
-| `-v, --verbose` | Enable verbose output |
-
-### CLI Options (find-endpoints)
+#### Options (find-endpoints)
 
 | Option | Description |
 |--------|-------------|
@@ -351,7 +268,21 @@ The `-e, --endpoint` option supports wildcard patterns for matching endpoint pat
 | `-f, --format` | Output format: `text` or `json` |
 | `-v, --verbose` | Enable verbose output |
 
+### find-dead-code
+
+Find unreferenced code and optionally remove it with multi-round iterative deletion.
+
+```bash
+# Find dead code
+java -jar find-dead-code-<version>.jar app.jar --include com.example
+
+# JSON output
+java -jar find-dead-code-<version>.jar app.jar --include com.example -f json
+```
+
 ### Supported Input Types
+
+All CLI tools accept:
 
 - Class directories
 - JAR files
@@ -362,17 +293,20 @@ The `-e, --endpoint` option supports wildcard patterns for matching endpoint pat
 
 ```
 graphite/
-├── graphite-core/     # Core framework (zero external dependencies)
-│   ├── core/          # Node, Edge, TypeDescriptor
-│   ├── graph/         # Graph interface
-│   ├── analysis/      # DataFlowAnalysis
-│   ├── query/         # Query DSL
-│   └── input/         # ProjectLoader interface
+├── graphite-core/          # Core framework (zero external dependencies except fastutil)
+│   ├── core/               # Node, Edge, TypeDescriptor
+│   ├── graph/              # Graph interface
+│   ├── analysis/           # DataFlowAnalysis
+│   ├── query/              # Query DSL
+│   └── input/              # ProjectLoader, ResourceAccessor
 │
-├── graphite-sootup/   # SootUp bytecode backend
-│   └── sootup/        # JavaProjectLoader, SootUpAdapter
+├── graphite-sootup/        # SootUp backend + GraphiteExtension SPI
+│   └── sootup/             # JavaProjectLoader, SootUpAdapter
 │
-└── graphite-cli/      # Command-line tool
+└── cli/
+    ├── find-args/          # Find argument constants CLI
+    ├── find-endpoints/     # Find HTTP endpoints CLI
+    └── find-dead-code/     # Find dead code CLI
 ```
 
 ## Supported Analysis Patterns
@@ -386,6 +320,39 @@ graphite/
 | Enum constants | `getOption(ExperimentId.CHECKOUT)` |
 | Conditional branches | Both branches in `if/else` are detected |
 | Auto-boxing | `Integer.valueOf()` is handled transparently |
+| Lambda / method ref | `invokedynamic` with lambda and method reference support |
+| Functional dispatch | Parameter callbacks, return values, fields, varargs |
+| Controller inheritance | Endpoint discovery follows controller class hierarchy |
+
+## Extension Mechanism
+
+Graphite supports pluggable extensions via the `GraphiteExtension` SPI. Custom extensions are discovered automatically through `java.util.ServiceLoader`.
+
+```kotlin
+import io.johnsonlee.graphite.sootup.GraphiteExtension
+import io.johnsonlee.graphite.sootup.GraphiteContext
+import sootup.core.model.SootClass
+
+class MyExtension : GraphiteExtension {
+    override fun visit(sootClass: SootClass, context: GraphiteContext) {
+        // Access SootUp class model to extract domain-specific metadata.
+        // Use context.toMethodDescriptor() to convert SootUp methods.
+        // Use context.resources to access archive resources.
+        // Use context.log() for verbose logging.
+    }
+}
+```
+
+Register your extension in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
+
+### Key Extension Points
+
+| Feature | Description |
+|---------|-------------|
+| `GraphiteExtension` SPI | ServiceLoader-based plugin mechanism for custom class processing |
+| `GraphiteContext` | Provides method descriptor conversion, resource access, and logging |
+| `graph.memberAnnotations()` | Query annotations on class members (fields and methods) |
+| `graph.resources` | Access resource files inside JAR/WAR archives |
 
 ## Building from Source
 
@@ -398,10 +365,10 @@ cd graphite
 ./gradlew build
 
 # Run tests
-./gradlew test
+./gradlew check
 
-# Build CLI fat jar
-./gradlew :graphite-cli:fatJar
+# Build CLI shadow JARs
+./gradlew :cli:find-args:shadowJar :cli:find-endpoints:shadowJar :cli:find-dead-code:shadowJar
 ```
 
 ## License
