@@ -2,7 +2,7 @@
 
 This document tracks the project's progress and planned work. Updated alongside code changes per the development workflow in [CLAUDE.md](CLAUDE.md).
 
-**Current version:** `0.1.0-beta.16`
+**Current version:** `0.1.0-beta.17`
 
 ## Completed
 
@@ -30,8 +30,15 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Complete constant type support (int, long, float, double, string, boolean, null, enum)
 - [x] Branch scope and control flow edge support
 - [x] Single-pass class processing: reduced `buildGraph()` from 6 `view.classes` iterations to 2 (type hierarchy + enum values; methods + fields + endpoints + Jackson annotations)
+- [x] `GraphiteExtension` SPI — pluggable extension mechanism via `ServiceLoader` for custom class processing
+- [x] `ResourceAccessor` — archive resource access for JAR/WAR contents
+- [x] Generic annotation extraction via `graph.memberAnnotations()`
+- [x] `invokedynamic` / lambda / method reference support
+- [x] Functional interface dispatch resolution (parameter callbacks, return values, fields, varargs)
+- [x] Controller inheritance in endpoint discovery
+- [x] Spring/Jackson processing extracted into pluggable extensions
 
-### CLI: `find-args` (`graphite-cli-find-args`)
+### CLI: `find-args` (`cli/find-args`)
 
 - [x] Find constant arguments passed to specific methods
 - [x] Regex-based class/method matching
@@ -39,14 +46,14 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Propagation path display
 - [x] Enum value reference support
 
-### CLI: `find-endpoints` (`graphite-cli-find-endpoints`)
+### CLI: `find-endpoints` (`cli/find-endpoints`)
 
 - [x] HTTP endpoint discovery from Spring MVC annotations
 - [x] Return type field discovery with `@JsonProperty` handling
 - [x] OpenAPI 3.0 JSON output format
 - [x] Type hierarchy display with tree formatting
 
-### CLI: `find-dead-code` (`graphite-cli-find-dead-code`)
+### CLI: `find-dead-code` (`cli/find-dead-code`)
 
 - [x] Three analysis modes: unreferenced detection, scan & export, assumption-based analysis
 - [x] Source code editing via IntelliJ PSI (Java and Kotlin)
@@ -69,7 +76,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] Per-round statistics and iteration summary reporting
 - [x] Kover coverage at 99.0% line coverage
 
-### CLI: `find-endpoints` (`graphite-cli-find-endpoints`) — Test Coverage
+### CLI: `find-endpoints` (`cli/find-endpoints`) — Test Coverage
 
 - [x] Unit tests for `formatDeclaredType`, `formatText`, `formatJsonSchema`, `buildFieldSchema`, `buildTypeSchema` (24 tests)
 - [x] OpenAPI type mapping coverage: int, long, float, double, boolean, String, Date, DateTime, List, Map
@@ -81,7 +88,7 @@ This document tracks the project's progress and planned work. Updated alongside 
 - [x] GitHub Actions publishing (`publish.yml`) — tag-triggered release to GitHub Packages
 - [x] Automated release notes via `softprops/action-gh-release`
 - [x] Version catalog for dependency management (`gradle/libs.versions.toml`)
-- [x] Kover coverage expanded to all modules (graphite-core, graphite-sootup, graphite-cli-find-args, graphite-cli-find-endpoints)
+- [x] Kover coverage expanded to all modules (graphite-core, graphite-sootup, cli/find-args, cli/find-endpoints, cli/find-dead-code)
 
 ### Test Coverage (>= 98% across all modules)
 
