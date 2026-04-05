@@ -3,29 +3,37 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
+import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.webgraph.ArrayListMutableGraph
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.Transform
+import java.io.*
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Save and load [Graph] instances using WebGraph compression.
+ * Save and load [Graph] instances using WebGraph compression with native LAW
+ * ecosystem tools (dsiutils + sux4j + fastutil).
  *
- * The graph is stored as:
- * - BVGraph files for adjacency structure (forward + backward per edge type)
- * - Binary files for node data, edge metadata, and graph metadata
+ * Storage layout:
+ * - `forward.*` / `backward.*` -- BVGraph adjacency (forward + transpose)
+ * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
+ * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
+ * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
+ * - `graph.nodedata`           -- sequential binary node data with string table indices
+ * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
  */
 object GraphStore {
 
-    private const val NODES_FILE = "nodes.bin"
-    private const val EDGES_FILE = "edges.bin"
-    private const val METADATA_FILE = "metadata.bin"
     private const val FORWARD_GRAPH = "forward"
     private const val BACKWARD_GRAPH = "backward"
+    private const val LABELS_FILE = "graph.labels"
+    private const val COMPARISONS_FILE = "graph.comparisons"
+    private const val NODE_DATA_FILE = "graph.nodedata"
+    private const val METADATA_FILE = "graph.metadata"
 
     /**
-     * Save a graph to disk in WebGraph format.
+     * Save a graph to disk in WebGraph + native LAW format.
      */
     fun save(graph: Graph, dir: Path) {
         Files.createDirectories(dir)
@@ -34,38 +42,66 @@ object GraphStore {
         val allNodes = mutableListOf<Node>()
         val maxNodeId = collectNodes(graph, allNodes)
 
-        // 2. Collect all edges
-        val allEdges = mutableListOf<Edge>()
-        val forwardAdj = ArrayListMutableGraph(maxNodeId + 1)
+        // 2. Collect metadata
+        val metadata = collectMetadata(graph)
+
+        // 3. Collect all unique strings and build the string table
+        val allStrings = mutableSetOf<String>()
+        NodeSerializer.collectNodeStrings(allNodes, allStrings)
+        NodeSerializer.collectMetadataStrings(metadata, allStrings)
+        val stringTable = StringTable.build(allStrings, dir)
+
+        // 4. Build adjacency and collect edge labels + comparisons
+        val mutableGraph = ArrayListMutableGraph(maxNodeId + 1)
+        // (from << 32 | to) -> encoded label
+        val edgeLabelMap = mutableMapOf<Long, Int>()
+        // (from << 32 | to) -> BranchComparison  (only for ControlFlowEdges with non-null comparison)
+        val comparisonMap = mutableMapOf<Long, BranchComparison>()
 
         for (node in allNodes) {
             for (edge in graph.outgoing(node.id)) {
-                allEdges.add(edge)
                 try {
-                    forwardAdj.addArc(edge.from.value, edge.to.value)
-                } catch (e: IllegalArgumentException) {
-                    // Duplicate arc - skip
+                    mutableGraph.addArc(edge.from.value, edge.to.value)
+                } catch (_: IllegalArgumentException) {
+                    // Duplicate arc -- skip
+                }
+                val key = edge.from.value.toLong() shl 32 or (edge.to.value.toLong() and 0xFFFFFFFFL)
+                edgeLabelMap[key] = NodeSerializer.encodeEdge(edge)
+                if (edge is ControlFlowEdge && edge.comparison != null) {
+                    comparisonMap[key] = edge.comparison!!
                 }
             }
         }
 
-        // 3. Save BVGraph (forward)
-        val forwardImmutable = forwardAdj.immutableView()
+        // 5. Store BVGraph (forward)
+        val forwardImmutable = mutableGraph.immutableView()
         BVGraph.store(forwardImmutable, dir.resolve(FORWARD_GRAPH).toString())
 
-        // 4. Save BVGraph (backward = transpose)
+        // 6. Store BVGraph (backward = transpose)
         val backward = Transform.transpose(forwardImmutable)
         BVGraph.store(backward, dir.resolve(BACKWARD_GRAPH).toString())
 
-        // 5. Save nodes
-        NodeSerializer.saveNodes(allNodes.asSequence(), dir.resolve(NODES_FILE))
+        // 7. Store edge labels -- byte[] via BinIO, one byte per arc in BVGraph successor order
+        val labelArray = buildLabelArray(forwardImmutable, edgeLabelMap)
+        BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
 
-        // 6. Save edges (with type info)
-        NodeSerializer.saveEdges(allEdges, dir.resolve(EDGES_FILE))
+        // 8. Store comparisons for ControlFlowEdges
+        DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.writeComparisons(dos, comparisonMap)
+        }
 
-        // 7. Save metadata
-        val metadata = collectMetadata(graph)
-        NodeSerializer.saveMetadata(metadata, dir.resolve(METADATA_FILE))
+        // 9. Save nodes using DataOutputStream with string table indices
+        DataOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { dos ->
+            dos.writeInt(allNodes.size)
+            for (node in allNodes) {
+                NodeSerializer.writeNode(dos, node, stringTable)
+            }
+        }
+
+        // 10. Save metadata with string table indices
+        DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.saveMetadata(metadata, dos, stringTable)
+        }
     }
 
     /**
@@ -74,13 +110,81 @@ object GraphStore {
     fun load(dir: Path): Graph {
         require(Files.isDirectory(dir)) { "Not a directory: $dir" }
 
+        // 1. Load string table first (needed for node and metadata deserialization)
+        val stringTable = StringTable.load(dir)
+
         val forward = BVGraph.load(dir.resolve(FORWARD_GRAPH).toString())
         val backward = BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
-        val nodes = NodeSerializer.loadNodes(dir.resolve(NODES_FILE))
-        val edges = NodeSerializer.loadEdges(dir.resolve(EDGES_FILE))
-        val metadata = NodeSerializer.loadMetadata(dir.resolve(METADATA_FILE))
 
-        return WebGraphBackedGraph(forward, backward, nodes, edges, metadata)
+        // 2. Load edge labels from byte[] via BinIO
+        val labelBytes = BinIO.loadBytes(dir.resolve(LABELS_FILE).toString())
+        val edgeLabelMap = buildEdgeLabelMap(forward, labelBytes)
+
+        // 3. Load comparisons
+        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
+            NodeSerializer.readComparisons(dis)
+        }
+
+        // 4. Load nodes with string table
+        val nodesById = mutableMapOf<Int, Node>()
+        DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
+            val count = dis.readInt()
+            repeat(count) {
+                val node = NodeSerializer.readNode(dis, stringTable)
+                nodesById[node.id.value] = node
+            }
+        }
+
+        // 5. Load metadata with string table
+        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+            NodeSerializer.loadMetadata(dis, stringTable)
+        }
+
+        return WebGraphBackedGraph(forward, backward, nodesById, edgeLabelMap, comparisonMap, metadata)
+    }
+
+    /**
+     * Build a byte array of edge labels in BVGraph successor order.
+     */
+    private fun buildLabelArray(
+        graph: it.unimi.dsi.webgraph.ImmutableGraph,
+        edgeLabelMap: Map<Long, Int>
+    ): ByteArray {
+        var totalEdges = 0
+        for (node in 0 until graph.numNodes()) {
+            totalEdges += graph.outdegree(node)
+        }
+        val labels = ByteArray(totalEdges)
+        var idx = 0
+        for (node in 0 until graph.numNodes()) {
+            val succs = graph.successorArray(node)
+            val outdeg = graph.outdegree(node)
+            for (i in 0 until outdeg) {
+                val key = node.toLong() shl 32 or (succs[i].toLong() and 0xFFFFFFFFL)
+                labels[idx++] = (edgeLabelMap[key] ?: 0).toByte()
+            }
+        }
+        return labels
+    }
+
+    /**
+     * Reconstruct the edge label map from a byte array loaded via BinIO.
+     */
+    private fun buildEdgeLabelMap(
+        forward: it.unimi.dsi.webgraph.ImmutableGraph,
+        labelBytes: ByteArray
+    ): HashMap<Long, Int> {
+        val edgeLabelMap = HashMap<Long, Int>(labelBytes.size)
+        var idx = 0
+        for (node in 0 until forward.numNodes()) {
+            val succs = forward.successorArray(node)
+            val outdeg = forward.outdegree(node)
+            for (i in 0 until outdeg) {
+                val key = node.toLong() shl 32 or (succs[i].toLong() and 0xFFFFFFFFL)
+                edgeLabelMap[key] = labelBytes[idx++].toInt() and 0xFF
+            }
+        }
+        return edgeLabelMap
     }
 
     private fun collectNodes(graph: Graph, result: MutableList<Node>): Int {
