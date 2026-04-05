@@ -106,6 +106,8 @@ class DefaultGraph private constructor(
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
+    override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
+
     /**
      * Builder for constructing DefaultGraph instances.
      * Uses concurrent collections during building, then compacts to fastutil collections.
@@ -221,6 +223,8 @@ class TypeHierarchy private constructor(
 
     fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
         subtypeMap[type.className]?.asSequence() ?: emptySequence()
+
+    fun allKeys(): Set<String> = supertypeMap.keys + subtypeMap.keys
 
     class Builder {
         private val supertypes = mutableMapOf<String, MutableSet<TypeDescriptor>>()
