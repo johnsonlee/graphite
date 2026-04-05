@@ -1,6 +1,8 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.input.EmptyResourceAccessor
+import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
@@ -24,7 +26,8 @@ class DefaultGraph private constructor(
     // Key format: "$className#$memberName" — simple concatenation is sufficient
     // for current scale. Consider two-level map if profiling shows GC pressure.
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
-    private val rawBranchScopes: Array<RawBranchScope>
+    private val rawBranchScopes: Array<RawBranchScope>,
+    override val resources: ResourceAccessor
 ) : Graph {
 
     /**
@@ -119,6 +122,7 @@ class DefaultGraph private constructor(
         // See CLAUDE.md "Why buildGraph() Is Not Parallelized" for rationale.
         private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
         private val branchScopes = ObjectArrayList<RawBranchScope>()
+        private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 
         override fun addNode(node: Node): GraphBuilder {
             nodes.put(node.id.value, node)
@@ -168,6 +172,11 @@ class DefaultGraph private constructor(
             return this
         }
 
+        fun setResources(resources: ResourceAccessor): Builder {
+            this.resourceAccessor = resources
+            return this
+        }
+
         override fun build(): Graph {
             // Compact edge lists to immutable form
             val compactOutgoing = Int2ObjectOpenHashMap<List<Edge>>(outgoing.size)
@@ -193,7 +202,8 @@ class DefaultGraph private constructor(
                 typeHierarchy = typeHierarchyBuilder.build(),
                 enumValues = enumValues.toMap(),
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
-                rawBranchScopes = branchScopes.toTypedArray()
+                rawBranchScopes = branchScopes.toTypedArray(),
+                resources = resourceAccessor
             )
         }
     }

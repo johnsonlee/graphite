@@ -18,8 +18,10 @@ import sootup.core.jimple.common.constant.DoubleConstant as SootDoubleConstant
 import sootup.core.jimple.common.constant.NullConstant as SootNullConstant
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.constant.Constant as SootConstant
+import sootup.core.jimple.common.constant.MethodHandle
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr
 import sootup.core.jimple.common.expr.AbstractInvokeExpr
+import sootup.core.jimple.common.expr.JDynamicInvokeExpr
 import sootup.core.jimple.common.expr.JNewExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
 import sootup.core.jimple.common.ref.JFieldRef
@@ -77,6 +79,45 @@ class SootUpAdapter(
     private val methodReturnNodes = mutableMapOf<String, ReturnNode>()
     private val allocationNodes = mutableMapOf<String, LocalVariable>()
 
+    // Maps local variable key to target methods resolved from invokedynamic
+    // Key: "methodSignature#localName", same format as localNodes
+    private val dynamicTargets = mutableMapOf<String, List<MethodDescriptor>>()
+
+    // Maps method signature to dynamic targets returned by that method
+    private val returnDynamicTargets = mutableMapOf<String, List<MethodDescriptor>>()
+
+    // Maps local key to (methodSignature, paramIndex) for locals assigned from parameters
+    private val localToParamIndex = mutableMapOf<String, Pair<String, Int>>()
+
+    // Tracks call sites where an argument has dynamic targets
+    // Key: callee method signature, Value: list of (argIndex, targets) pairs
+    private val callSiteDynamicArgs = mutableMapOf<String, MutableList<Pair<Int, List<MethodDescriptor>>>>()
+
+    // Tracks virtual calls on parameters within a method
+    // Key: method signature, Value: list of (paramIndex, callSiteNode) pairs
+    private val parameterVirtualCalls = mutableMapOf<String, MutableList<Pair<Int, CallSiteNode>>>()
+
+    // Tracks call result locals: callee method signature -> list of caller local keys
+    private val callResultLocals = mutableMapOf<String, MutableList<String>>()
+
+    // Tracks virtual calls on locals that have no dynamic targets yet
+    // (for resolution after return value propagation)
+    // Key: local key ("methodSig#localName"), Value: list of CallSiteNodes
+    private val unresolvedLocalVirtualCalls = mutableMapOf<String, MutableList<CallSiteNode>>()
+
+    // Maps field key (field signature string) to dynamic targets assigned to that field
+    // Enables resolution when a lambda/method reference is stored to a field and later invoked
+    private val fieldDynamicTargets = mutableMapOf<String, MutableList<MethodDescriptor>>()
+
+    // Maps array local key to dynamic targets stored in that array (via ARRAY_STORE)
+    // Enables resolution when lambdas/method references are passed as varargs
+    private val arrayDynamicTargets = mutableMapOf<String, MutableList<MethodDescriptor>>()
+
+    // Tracks locals that were loaded from a field but had no dynamic targets at load time
+    // Key: field key (field signature string), Value: list of local keys that loaded from this field
+    // Resolved in resolveFunctionalDispatch after all methods have been processed
+    private val fieldLoadLocals = mutableMapOf<String, MutableList<String>>()
+
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
     private var stmtNodeIds = mutableMapOf<Stmt, MutableList<NodeId>>()
@@ -125,11 +166,15 @@ class SootUpAdapter(
                 extensions.forEach { it.visit(sootClass, extensionContext) }
             }
 
+        // Pass 2B: Resolve cross-method functional interface dispatch
+        resolveFunctionalDispatch()
+
         // Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
         }
 
+        graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build()
     }
 
@@ -466,6 +511,63 @@ class SootUpAdapter(
             )
         }
 
+        // Track dynamic targets flowing through field stores:
+        // When a local with dynamic targets is stored to a field, remember the mapping
+        if (leftOp is JFieldRef && rightOp is Local) {
+            val localKey = "${method.signature}#${rightOp.name}"
+            val targets = dynamicTargets[localKey]
+            if (targets != null) {
+                val fieldKey = leftOp.fieldSignature.toString()
+                fieldDynamicTargets.getOrPut(fieldKey) { mutableListOf() }.addAll(targets)
+            }
+        }
+
+        // Track dynamic targets flowing through array stores (varargs):
+        // When a local with dynamic targets is stored into an array element, remember the mapping
+        if (leftOp is JArrayRef && rightOp is Local) {
+            val base = leftOp.base
+            if (base is Local) {
+                val rightKey = "${method.signature}#${rightOp.name}"
+                val targets = dynamicTargets[rightKey]
+                if (targets != null) {
+                    val arrayKey = "${method.signature}#${base.name}"
+                    arrayDynamicTargets.getOrPut(arrayKey) { mutableListOf() }.addAll(targets)
+                }
+            }
+        }
+
+        // Track dynamic targets flowing through array loads:
+        // When an array element is loaded into a local, propagate the array's dynamic targets
+        if (rightOp is JArrayRef && targetNode is LocalVariable) {
+            val base = rightOp.base
+            if (base is Local) {
+                val arrayKey = "${method.signature}#${base.name}"
+                val targets = arrayDynamicTargets[arrayKey]
+                if (targets != null) {
+                    val localKey = "${method.signature}#${targetNode.name}"
+                    val existing = dynamicTargets[localKey]
+                    dynamicTargets[localKey] = if (existing != null) existing + targets else targets.toList()
+                }
+            }
+        }
+
+        // Track dynamic targets flowing through field loads:
+        // When a field with dynamic targets is loaded into a local, propagate the targets.
+        // If the field has no dynamic targets yet (e.g., constructor not processed yet),
+        // record for deferred resolution in resolveFunctionalDispatch.
+        if (rightOp is JFieldRef && targetNode is LocalVariable) {
+            val fieldKey = rightOp.fieldSignature.toString()
+            val localKey = "${method.signature}#${targetNode.name}"
+            val targets = fieldDynamicTargets[fieldKey]
+            if (targets != null) {
+                val existing = dynamicTargets[localKey]
+                dynamicTargets[localKey] = if (existing != null) existing + targets else targets.toList()
+            } else {
+                // Record for deferred resolution
+                fieldLoadLocals.getOrPut(fieldKey) { mutableListOf() }.add(localKey)
+            }
+        }
+
         // Handle method invocations in assignments (e.g., x = foo())
         if (rightOp is AbstractInvokeExpr) {
             processInvokeExpr(rightOp, method, targetNode, stmt)
@@ -490,6 +592,12 @@ class SootUpAdapter(
                         kind = DataFlowKind.ASSIGN
                     )
                 )
+            }
+
+            // Track which locals correspond to parameters for cross-method dispatch
+            if (leftOp is Local) {
+                val localKey = "${method.signature}#${leftOp.name}"
+                localToParamIndex[localKey] = method.signature to paramIndex
             }
         }
     }
@@ -544,6 +652,13 @@ class SootUpAdapter(
             return
         }
 
+        // Handle invokedynamic (lambdas and method references)
+        // Extract the actual target method from bootstrap arguments
+        if (invokeExpr is JDynamicInvokeExpr) {
+            processDynamicInvoke(invokeExpr, caller, resultNode, stmt)
+            return
+        }
+
         // Extract receiver for instance method calls
         val receiverNode = if (invokeExpr is AbstractInstanceInvokeExpr) {
             getOrCreateValueNode(invokeExpr.base, caller)
@@ -563,6 +678,74 @@ class SootUpAdapter(
         graphBuilder.addNode(callSite)
         if (stmt != null) {
             recordStmtNode(stmt, callSite.id)
+        }
+
+        // Resolve functional interface dispatch:
+        // If the receiver was assigned from an invokedynamic, connect this
+        // virtual call (e.g., Function.apply) to the actual target method
+        if (receiverNode is LocalVariable) {
+            val key = "${caller.signature}#${receiverNode.name}"
+            val targets = dynamicTargets[key]
+
+            // If this local has no direct dynamic targets, record for
+            // cross-method resolution in resolveFunctionalDispatch()
+            if (targets == null) {
+                val paramInfo = localToParamIndex[key]
+                if (paramInfo != null) {
+                    // Local is a parameter — record for parameter-based dispatch
+                    parameterVirtualCalls
+                        .getOrPut(paramInfo.first) { mutableListOf() }
+                        .add(paramInfo.second to callSite)
+                } else {
+                    // Local is not a parameter — may get targets from return propagation
+                    unresolvedLocalVirtualCalls
+                        .getOrPut(key) { mutableListOf() }
+                        .add(callSite)
+                }
+            }
+
+            if (targets != null) {
+                for (target in targets) {
+                    graphBuilder.addEdge(
+                        CallEdge(
+                            from = callSite.id,
+                            to = callSite.id,
+                            isVirtual = false,
+                            isDynamic = true
+                        )
+                    )
+                    // Create an additional call site that records the resolved target
+                    val resolvedCallSite = CallSiteNode(
+                        id = nextNodeId("call"),
+                        caller = caller,
+                        callee = target,
+                        lineNumber = null,
+                        receiver = receiverNode.id,
+                        arguments = argNodeIds
+                    )
+                    graphBuilder.addNode(resolvedCallSite)
+                    // Forward dataflow: arguments flow to resolved target too
+                    argNodeIds.forEach { argNodeId ->
+                        graphBuilder.addEdge(
+                            DataFlowEdge(
+                                from = argNodeId,
+                                to = resolvedCallSite.id,
+                                kind = DataFlowKind.PARAMETER_PASS
+                            )
+                        )
+                    }
+                    // If there's a result, dataflow from resolved call site too
+                    if (resultNode != null) {
+                        graphBuilder.addEdge(
+                            DataFlowEdge(
+                                from = resolvedCallSite.id,
+                                to = resultNode.id,
+                                kind = DataFlowKind.RETURN_VALUE
+                            )
+                        )
+                    }
+                }
+            }
         }
 
         // Add dataflow edge from receiver to call site (for backward tracing)
@@ -585,6 +768,21 @@ class SootUpAdapter(
                     kind = DataFlowKind.PARAMETER_PASS
                 )
             )
+
+            // Track dynamic targets flowing through arguments for cross-method dispatch
+            // Check both direct dynamic targets and array dynamic targets (for varargs)
+            if (index < invokeExpr.args.size) {
+                val arg = invokeExpr.args[index]
+                if (arg is Local) {
+                    val argKey = "${caller.signature}#${arg.name}"
+                    val targets = dynamicTargets[argKey] ?: arrayDynamicTargets[argKey]
+                    if (targets != null) {
+                        callSiteDynamicArgs
+                            .getOrPut(callee.signature) { mutableListOf() }
+                            .add(index to targets)
+                    }
+                }
+            }
         }
 
         // If there's a result, add dataflow from call to result
@@ -596,6 +794,151 @@ class SootUpAdapter(
                     kind = DataFlowKind.RETURN_VALUE
                 )
             )
+        }
+
+        // Track call result locals for return value propagation
+        if (resultNode is LocalVariable) {
+            val resultKey = "${caller.signature}#${resultNode.name}"
+            callResultLocals
+                .getOrPut(callee.signature) { mutableListOf() }
+                .add(resultKey)
+        }
+    }
+
+    /**
+     * Process an invokedynamic instruction (lambda or method reference).
+     *
+     * The bootstrap arguments contain MethodHandle objects that reference
+     * the actual target method. For example:
+     * - `handler::listUsers` -> MethodHandle pointing to `Handler.listUsers`
+     * - `x -> x.getName()` -> MethodHandle pointing to a synthetic lambda method
+     *
+     * We create CallEdges to the actual target methods, enabling backward
+     * tracing through lambdas and method references.
+     */
+    private fun processDynamicInvoke(
+        invokeExpr: JDynamicInvokeExpr,
+        caller: MethodDescriptor,
+        resultNode: ValueNode?,
+        stmt: Stmt?
+    ) {
+        // Extract actual target method(s) from bootstrap arguments
+        val targetMethods = invokeExpr.bootstrapArgs
+            .filterIsInstance<MethodHandle>()
+            .filter { it.isMethodRef }
+            .mapNotNull { handle ->
+                val sig = handle.referenceSignature
+                if (sig is MethodSignature) toMethodDescriptor(sig) else null
+            }
+
+        // Create argument nodes
+        val argNodeIds = invokeExpr.args.mapIndexed { _, arg ->
+            val argNode = getOrCreateValueNode(arg, caller)
+            argNode?.id ?: nextNodeId("unknown")
+        }
+
+        // For each target method, create a call site
+        for (target in targetMethods) {
+            val callSite = CallSiteNode(
+                id = nextNodeId("call"),
+                caller = caller,
+                callee = target,
+                lineNumber = null,
+                receiver = null,
+                arguments = argNodeIds
+            )
+            graphBuilder.addNode(callSite)
+            if (stmt != null) {
+                recordStmtNode(stmt, callSite.id)
+            }
+
+            // Add call edge (marked as dynamic)
+            graphBuilder.addEdge(
+                CallEdge(
+                    from = callSite.id,
+                    to = callSite.id, // Self-referencing for now; will be resolved with method entry nodes
+                    isVirtual = false,
+                    isDynamic = true
+                )
+            )
+
+            // Dataflow from arguments to call site
+            argNodeIds.forEach { argNodeId ->
+                graphBuilder.addEdge(
+                    DataFlowEdge(
+                        from = argNodeId,
+                        to = callSite.id,
+                        kind = DataFlowKind.PARAMETER_PASS
+                    )
+                )
+            }
+
+            // If there's a result, add dataflow from call to result
+            if (resultNode != null) {
+                graphBuilder.addEdge(
+                    DataFlowEdge(
+                        from = callSite.id,
+                        to = resultNode.id,
+                        kind = DataFlowKind.RETURN_VALUE
+                    )
+                )
+            }
+        }
+
+        // Track dynamic targets for functional interface dispatch resolution
+        // Merge with existing targets (supports conditional assignment where both branches
+        // assign different lambdas/method references to the same local)
+        if (resultNode is LocalVariable && targetMethods.isNotEmpty()) {
+            val key = "${caller.signature}#${resultNode.name}"
+            val existing = dynamicTargets[key]
+            dynamicTargets[key] = if (existing != null) existing + targetMethods else targetMethods
+        }
+
+        // Track dynamic targets flowing directly to a field store:
+        // e.g., this.mapper = invokedynamic(...) where resultNode is a FieldNode
+        if (resultNode is FieldNode && targetMethods.isNotEmpty() && stmt is JAssignStmt) {
+            val leftOp = stmt.leftOp
+            if (leftOp is JFieldRef) {
+                val fieldKey = leftOp.fieldSignature.toString()
+                fieldDynamicTargets.getOrPut(fieldKey) { mutableListOf() }.addAll(targetMethods)
+            }
+        }
+
+        // If no method handles found, fall back to creating a call site with the synthetic method
+        if (targetMethods.isEmpty()) {
+            val callee = toMethodDescriptor(invokeExpr.methodSignature)
+            val callSite = CallSiteNode(
+                id = nextNodeId("call"),
+                caller = caller,
+                callee = callee,
+                lineNumber = null,
+                receiver = null,
+                arguments = argNodeIds
+            )
+            graphBuilder.addNode(callSite)
+            if (stmt != null) {
+                recordStmtNode(stmt, callSite.id)
+            }
+
+            argNodeIds.forEach { argNodeId ->
+                graphBuilder.addEdge(
+                    DataFlowEdge(
+                        from = argNodeId,
+                        to = callSite.id,
+                        kind = DataFlowKind.PARAMETER_PASS
+                    )
+                )
+            }
+
+            if (resultNode != null) {
+                graphBuilder.addEdge(
+                    DataFlowEdge(
+                        from = callSite.id,
+                        to = resultNode.id,
+                        kind = DataFlowKind.RETURN_VALUE
+                    )
+                )
+            }
         }
     }
 
@@ -646,6 +989,15 @@ class SootUpAdapter(
                     kind = DataFlowKind.RETURN_VALUE
                 )
             )
+
+            // Track dynamic targets flowing through return values
+            if (valueNode is LocalVariable) {
+                val key = "${method.signature}#${valueNode.name}"
+                val targets = dynamicTargets[key]
+                if (targets != null) {
+                    returnDynamicTargets[method.signature] = targets
+                }
+            }
         }
     }
 
@@ -814,6 +1166,120 @@ class SootUpAdapter(
         }
 
         return reachable
+    }
+
+    /**
+     * Post-processing: resolve functional interface dispatch across method boundaries.
+     *
+     * When a lambda/method reference is passed as an argument to another method,
+     * and that method calls the functional interface method on the parameter,
+     * this creates resolved CallSiteNodes connecting the virtual call to the actual target.
+     *
+     * Also handles return values: when a method returns a lambda/method reference,
+     * callers that invoke the functional interface on the result get resolved.
+     */
+    private fun resolveFunctionalDispatch() {
+        // Phase 1: Propagate return dynamic targets to caller locals
+        for ((methodSig, targets) in returnDynamicTargets) {
+            val resultLocalKeys = callResultLocals[methodSig] ?: continue
+            for (localKey in resultLocalKeys) {
+                if (localKey !in dynamicTargets) {
+                    dynamicTargets[localKey] = targets
+                }
+            }
+        }
+
+        // Phase 2: Resolve parameter virtual calls using dynamic args from callers
+        for ((methodSig, virtualCalls) in parameterVirtualCalls) {
+            val dynamicArgs = callSiteDynamicArgs[methodSig] ?: continue
+
+            for ((paramIndex, callSiteNode) in virtualCalls) {
+                val targets = dynamicArgs
+                    .filter { it.first == paramIndex }
+                    .flatMap { it.second }
+
+                for (target in targets) {
+                    val resolvedCallSite = CallSiteNode(
+                        id = nextNodeId("call"),
+                        caller = callSiteNode.caller,
+                        callee = target,
+                        lineNumber = callSiteNode.lineNumber,
+                        receiver = callSiteNode.receiver,
+                        arguments = callSiteNode.arguments
+                    )
+                    graphBuilder.addNode(resolvedCallSite)
+                    graphBuilder.addEdge(
+                        CallEdge(
+                            from = resolvedCallSite.id,
+                            to = resolvedCallSite.id,
+                            isVirtual = false,
+                            isDynamic = true
+                        )
+                    )
+                    // Forward dataflow: arguments flow to resolved target
+                    callSiteNode.arguments.forEach { argNodeId ->
+                        graphBuilder.addEdge(
+                            DataFlowEdge(
+                                from = argNodeId,
+                                to = resolvedCallSite.id,
+                                kind = DataFlowKind.PARAMETER_PASS
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // Phase 2B: Propagate field dynamic targets to locals that loaded from those fields
+        // This handles the case where the field store (in a constructor or setter) was processed
+        // after the field load (in a different method), so the targets weren't available at load time.
+        for ((fieldKey, localKeys) in fieldLoadLocals) {
+            val targets = fieldDynamicTargets[fieldKey] ?: continue
+            for (localKey in localKeys) {
+                val existing = dynamicTargets[localKey]
+                dynamicTargets[localKey] = if (existing != null) existing + targets else targets.toList()
+            }
+        }
+
+        // Phase 3: Re-resolve virtual calls on locals that gained dynamic targets
+        // from return value propagation (Phase 1) or field propagation (Phase 2B).
+        // These are non-parameter locals
+        // whose dynamicTargets were empty during processInvokeExpr, but now have
+        // targets after return propagation.
+        for ((localKey, unresolvedCalls) in unresolvedLocalVirtualCalls) {
+            val targets = dynamicTargets[localKey] ?: continue
+            for (callSiteNode in unresolvedCalls) {
+                for (target in targets) {
+                    val resolvedCallSite = CallSiteNode(
+                        id = nextNodeId("call"),
+                        caller = callSiteNode.caller,
+                        callee = target,
+                        lineNumber = callSiteNode.lineNumber,
+                        receiver = callSiteNode.receiver,
+                        arguments = callSiteNode.arguments
+                    )
+                    graphBuilder.addNode(resolvedCallSite)
+                    graphBuilder.addEdge(
+                        CallEdge(
+                            from = resolvedCallSite.id,
+                            to = resolvedCallSite.id,
+                            isVirtual = false,
+                            isDynamic = true
+                        )
+                    )
+                    callSiteNode.arguments.forEach { argNodeId ->
+                        graphBuilder.addEdge(
+                            DataFlowEdge(
+                                from = argNodeId,
+                                to = resolvedCallSite.id,
+                                kind = DataFlowKind.PARAMETER_PASS
+                            )
+                        )
+                    }
+                    // If there's a result node for the original call, add return value edge
+                }
+            }
+        }
     }
 
     private fun processCallGraph() {
