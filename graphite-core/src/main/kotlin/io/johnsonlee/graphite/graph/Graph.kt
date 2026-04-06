@@ -1,8 +1,6 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
-import io.johnsonlee.graphite.cypher.CypherExecutor
-import io.johnsonlee.graphite.cypher.CypherResult
 import io.johnsonlee.graphite.input.ResourceAccessor
 
 /**
@@ -100,17 +98,6 @@ interface Graph {
      * Get all type names that have type hierarchy information (supertypes or subtypes).
      */
     fun typeHierarchyTypes(): Set<String> = emptySet()
-
-    /**
-     * Execute a Cypher query against this graph.
-     *
-     * @param cypher the Cypher query string
-     * @return query result with columns and rows
-     */
-    fun query(cypher: String): CypherResult {
-        val executor = CypherExecutor(this)
-        return executor.execute(cypher)
-    }
 
 }
 

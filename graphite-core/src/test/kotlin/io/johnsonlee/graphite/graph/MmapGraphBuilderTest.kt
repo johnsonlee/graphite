@@ -947,18 +947,6 @@ class MmapGraphBuilderTest {
     }
 
     @Test
-    fun `Cypher query works on MmapGraph`() {
-        val (graph, _, _) = buildTestGraph()
-
-        val result = graph.query("MATCH (n:IntConstant) RETURN n.value")
-        assertEquals(listOf("n.value"), result.columns)
-        assertEquals(2, result.rows.size)
-        val values = result.rows.map { it["n.value"] }.toSet()
-        assertTrue(values.contains(42))
-        assertTrue(values.contains(99))
-    }
-
-    @Test
     fun `graph data persists on disk after builder completes`() {
         // Build a graph, then verify it works -- the builder's temp buffers are gone
         // but the disk files remain accessible

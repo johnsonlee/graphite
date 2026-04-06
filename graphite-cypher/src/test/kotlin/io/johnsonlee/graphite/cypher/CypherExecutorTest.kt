@@ -13,6 +13,7 @@ import kotlin.test.assertTrue
 class CypherExecutorTest {
 
     private lateinit var executor: CypherExecutor
+    private lateinit var graph: io.johnsonlee.graphite.graph.Graph
 
     // Stable node IDs for test assertions
     private var intConst42 = NodeId(0)
@@ -103,7 +104,7 @@ class CypherExecutorTest {
         builder.addMethod(callee)
         builder.addMethod(callee2)
 
-        val graph = builder.build()
+        graph = builder.build()
         executor = CypherExecutor(graph)
     }
 
@@ -1066,5 +1067,55 @@ class CypherExecutorTest {
             val cls = row["n.callee_class"] as String
             assertFalse(cls.endsWith("Service"))
         }
+    }
+
+    // --- Extension function ---
+
+    @Test
+    fun `Graph query extension function delegates to CypherExecutor`() {
+        val result = graph.query("MATCH (n:IntConstant) RETURN n.value LIMIT 1")
+        assertEquals(1, result.rows.size)
+        assertEquals(listOf("n.value"), result.columns)
+    }
+
+    // --- DISTINCT in expression atom context ---
+
+    @Test
+    fun `DISTINCT as expression atom inside arithmetic`() {
+        // Exercises the DISTINCT branch in parseAtom (not the clause-level DISTINCT)
+        val result = executor.execute("UNWIND [1, 1, 2, 2, 3] AS x RETURN sum(DISTINCT x) AS total")
+        assertEquals(1, result.rows.size)
+        assertEquals(6.0, result.rows[0]["total"])
+    }
+
+    // --- toDouble with String argument ---
+
+    @Test
+    fun `math function with string argument exercises toDouble String branch`() {
+        // CypherFunctions.toDouble has an uncovered String branch; ceil('3.7') triggers it
+        val result = executor.execute("RETURN ceil('3.7') AS v")
+        assertEquals(1, result.rows.size)
+        assertEquals(4.0, result.rows[0]["v"])
+    }
+
+    // --- percentileDisc with explicit percentile ---
+
+    @Test
+    fun `percentileDisc aggregation`() {
+        val result = executor.execute("UNWIND [10, 20, 30, 40, 50] AS x RETURN percentileDisc(x, 0.5) AS v")
+        assertEquals(1, result.rows.size)
+        // percentileDisc(0.5) on [10,20,30,40,50]: ceil(0.5*5)-1 = 2 -> 30.0
+        assertEquals(30.0, result.rows[0]["v"])
+    }
+
+    // --- Arithmetic with non-numeric type exercises toDouble else branch ---
+
+    @Test
+    fun `arithmetic with boolean coerces to zero via toDouble else branch`() {
+        // Boolean is not Number or String, so ExpressionEvaluator.toDouble returns 0.0
+        val result = executor.execute("RETURN true + 1 AS v")
+        assertEquals(1, result.rows.size)
+        // true is not Number/String, toDouble returns 0.0; 0.0 + 1 = 1.0 (double result)
+        assertEquals(1.0, result.rows[0]["v"])
     }
 }

@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig

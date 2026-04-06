@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.Graph
 import org.openjdk.jmh.annotations.*
 import java.io.Closeable
