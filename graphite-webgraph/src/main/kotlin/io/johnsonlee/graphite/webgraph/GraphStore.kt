@@ -123,28 +123,42 @@ object GraphStore {
     /**
      * Load a graph from disk.
      *
-     * Automatically selects the loading strategy based on graph size:
-     * - **< 1M nodes**: eager (all nodes in JVM heap) — fastest queries
-     * - **>= 1M nodes**: memory-mapped (nodes in OS page cache, off heap) — 75% less heap
-     *
-     * The threshold is based on benchmark evidence:
-     * - Eager LIMIT queries: 0.006 ms, full scan: 10 ms, heap: ~4 GB at 5.9M nodes
-     * - Mapped LIMIT queries: 0.069 ms, full scan: 250 ms, heap: ~500 MB at 5.9M nodes
+     * @param mode loading strategy; defaults to [LoadMode.AUTO] which selects
+     *   based on graph size (< 1M nodes → eager, >= 1M → mapped).
      */
-    fun load(dir: Path): Graph {
+    fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
         require(Files.isDirectory(dir)) { "Not a directory: $dir" }
 
-        // Peek at node count to select strategy
-        val nodeCount = DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
-            dis.readInt()
+        return when (mode) {
+            LoadMode.EAGER -> loadEager(dir)
+            LoadMode.MAPPED -> {
+                ensureNodeIndex(dir)
+                loadMapped(dir)
+            }
+            LoadMode.AUTO -> {
+                val nodeCount = DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
+                    dis.readInt()
+                }
+                if (nodeCount < MAPPED_THRESHOLD) {
+                    loadEager(dir)
+                } else {
+                    ensureNodeIndex(dir)
+                    loadMapped(dir)
+                }
+            }
         }
+    }
 
-        return if (nodeCount < MAPPED_THRESHOLD) {
-            loadEager(dir)
-        } else {
-            ensureNodeIndex(dir)
-            loadMapped(dir)
-        }
+    /**
+     * Loading strategy for [load].
+     */
+    enum class LoadMode {
+        /** All nodes deserialized into JVM heap. Fastest queries, highest memory. */
+        EAGER,
+        /** Node data memory-mapped via OS page cache. 75% less heap, slightly slower queries. */
+        MAPPED,
+        /** Auto-select based on graph size (< 1M nodes → [EAGER], >= 1M → [MAPPED]). */
+        AUTO
     }
 
     /**
