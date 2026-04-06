@@ -12,6 +12,7 @@ application {
 
 dependencies {
     implementation(project(":graphite-core"))
+    implementation(project(":graphite-cypher"))
     implementation(project(":graphite-webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)

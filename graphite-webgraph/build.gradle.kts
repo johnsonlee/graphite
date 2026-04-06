@@ -20,10 +20,12 @@ val testFixtures: Configuration by configurations.creating
 dependencies {
     api(project(":graphite-core"))
     implementation(libs.webgraph)
+    testImplementation(project(":graphite-cypher"))
     testImplementation(project(":graphite-sootup"))
     testFixtures(libs.elasticsearch)
     testFixtures(libs.android.all)
 
+    jmh(project(":graphite-cypher"))
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)
 }
