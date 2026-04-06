@@ -37,7 +37,7 @@ Graphite builds a **program graph** from compiled bytecode — nodes are program
 | Find dead code | Entire codebase, 5M tokens | `branchScopes` + `callSites` → dead paths | **99.99%** |
 | Resolve type hierarchy | ~100 files per type chain | `supertypes` / `subtypes` → direct answer | **99%** |
 
-Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is built into `graphite-core` with zero external dependencies.
+Graphite uses **Cypher** (the industry-standard graph query language) for querying. The Cypher engine is in the `graphite-cypher` module, powered by an ANTLR-based openCypher parser.
 
 ## Why Not Tree-sitter?
 
@@ -60,9 +60,8 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ## Quick Start
 
 ```bash
-# Build the CLI
-./gradlew :cli:query:shadowJar
-alias graphite='java -jar cli/query/build/libs/query.jar'
+# Install all CLI tools (no token needed)
+curl -sL https://raw.githubusercontent.com/johnsonlee/graphite/main/install.sh | bash
 
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
@@ -159,14 +158,12 @@ graph.resources.list("**/*.xml").forEach { entry ->
 
 ```
 graphite/
-├── graphite-core/          # Graph interface, nodes, edges, analysis, Cypher engine
+├── graphite-core/          # Graph interface, nodes, edges, analysis
+├── graphite-cypher/        # Cypher query engine (ANTLR parser + executor)
 ├── graphite-sootup/        # SootUp bytecode → graph builder
 ├── graphite-webgraph/      # WebGraph disk persistence (BVGraph + LAW tools)
-└── cli/
-    ├── find-args/          # Find argument constants
-    ├── find-endpoints/     # Find HTTP endpoints
-    ├── find-dead-code/     # Find dead code
-    └── query/              # Query saved graphs + web visualization
+├── graphite-query/         # CLI: build, query, Cypher
+└── graphite-explore/       # CLI: web visualization
 ```
 
 ### Storage Format
@@ -225,10 +222,12 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.4")    // includes Cypher engine
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.4")
-    // Optional: disk persistence
-    implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.4")
+    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.5")
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.5")
+    // Optional: Cypher query support (graph.query("MATCH ..."))
+    implementation("io.johnsonlee.graphite:graphite-cypher:0.1.0-rc.5")
+    // Optional: disk persistence (WebGraph format)
+    implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.5")
 }
 ```
 

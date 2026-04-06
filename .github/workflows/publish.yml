@@ -36,11 +36,20 @@ jobs:
         JVM_OPTS: -Xmx4g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Build CLI shadow JARs
+      run: |
+        VERSION=${GITHUB_REF/refs\/tags\/v/}
+        ./gradlew :graphite-query:shadowJar :graphite-explore:shadowJar --no-daemon -Pversion=${VERSION}
+        mkdir -p release-assets
+        cp graphite-query/build/libs/query.jar release-assets/graphite-query.jar
+        cp graphite-explore/build/libs/graphite-explore.jar release-assets/graphite-explore.jar
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
         generate_release_notes: true
+        files: release-assets/*.jar
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
