@@ -122,7 +122,7 @@ class DefaultGraph private constructor(
      * Builder for constructing DefaultGraph instances.
      * Uses concurrent collections during building, then compacts to fastutil collections.
      */
-    class Builder : GraphBuilder {
+    class Builder : FullGraphBuilder {
         private val nodes = Int2ObjectOpenHashMap<Node>()
         private val outgoing = Int2ObjectOpenHashMap<MutableList<Edge>>()
         private val incoming = Int2ObjectOpenHashMap<MutableList<Edge>>()
@@ -136,44 +136,44 @@ class DefaultGraph private constructor(
         private val branchScopes = ObjectArrayList<RawBranchScope>()
         private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 
-        override fun addNode(node: Node): GraphBuilder {
+        override fun addNode(node: Node): FullGraphBuilder {
             nodes.put(node.id.value, node)
             return this
         }
 
-        override fun addEdge(edge: Edge): GraphBuilder {
+        override fun addEdge(edge: Edge): FullGraphBuilder {
             outgoing.computeIfAbsent(edge.from.value) { ObjectArrayList() }.add(edge)
             incoming.computeIfAbsent(edge.to.value) { ObjectArrayList() }.add(edge)
             return this
         }
 
-        fun addMethod(method: MethodDescriptor): Builder {
+        override fun addMethod(method: MethodDescriptor): FullGraphBuilder {
             methods[method.signature] = method
             return this
         }
 
-        fun addTypeRelation(subtype: TypeDescriptor, supertype: TypeDescriptor, relation: TypeRelation): Builder {
+        override fun addTypeRelation(subtype: TypeDescriptor, supertype: TypeDescriptor, relation: TypeRelation): FullGraphBuilder {
             typeHierarchyBuilder.addRelation(subtype, supertype, relation)
             return this
         }
 
-        fun addEnumValues(enumClass: String, enumName: String, values: List<Any?>): Builder {
+        override fun addEnumValues(enumClass: String, enumName: String, values: List<Any?>): FullGraphBuilder {
             enumValues["$enumClass#$enumName"] = values
             return this
         }
 
-        fun addMemberAnnotation(className: String, memberName: String, annotationFqn: String, values: Map<String, Any?> = emptyMap()): Builder {
+        override fun addMemberAnnotation(className: String, memberName: String, annotationFqn: String, values: Map<String, Any?>): FullGraphBuilder {
             memberAnnotations.getOrPut("$className#$memberName") { mutableMapOf() }[annotationFqn] = values
             return this
         }
 
-        fun addBranchScope(
+        override fun addBranchScope(
             conditionNodeId: NodeId,
             method: MethodDescriptor,
             comparison: BranchComparison,
             trueBranchNodeIds: IntArray,
             falseBranchNodeIds: IntArray
-        ): Builder {
+        ): FullGraphBuilder {
             branchScopes.add(RawBranchScope(
                 conditionNodeId = conditionNodeId.value,
                 method = method,
@@ -184,7 +184,7 @@ class DefaultGraph private constructor(
             return this
         }
 
-        fun setResources(resources: ResourceAccessor): Builder {
+        override fun setResources(resources: ResourceAccessor): FullGraphBuilder {
             this.resourceAccessor = resources
             return this
         }

@@ -1,6 +1,9 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ProjectLoader
 import sootup.core.inputlocation.AnalysisInputLocation
@@ -24,8 +27,22 @@ import kotlin.io.path.isDirectory
  * - Spring Boot fat JARs (BOOT-INF layout)
  */
 class JavaProjectLoader(
-    private val config: LoaderConfig = LoaderConfig()
+    private val config: LoaderConfig = LoaderConfig(),
+    private val graphBuilderFactory: () -> FullGraphBuilder = { MmapGraphBuilder() }
 ) : ProjectLoader {
+
+    /**
+     * Convenience constructor that selects the builder implementation
+     * based on a simple flag.
+     *
+     * When [useMmapBuilder] is `true` (the default), nodes and edges are
+     * spilled to disk during construction so that the JVM heap stays small
+     * while SootUp processes classes.  See [MmapGraphBuilder] for details.
+     */
+    constructor(config: LoaderConfig, useMmapBuilder: Boolean) : this(
+        config = config,
+        graphBuilderFactory = if (useMmapBuilder) ({ MmapGraphBuilder() }) else ({ DefaultGraph.Builder() })
+    )
 
     override fun load(path: Path): Graph {
         val inputLocations = createInputLocations(path)
@@ -36,7 +53,11 @@ class JavaProjectLoader(
         loadSignatures(path, signatureReader)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path)
-        val adapter = SootUpAdapter(view, config, signatureReader, resourceAccessor = resourceAccessor)
+        val adapter = SootUpAdapter(
+            view, config, signatureReader,
+            resourceAccessor = resourceAccessor,
+            graphBuilder = graphBuilderFactory()
+        )
         return adapter.buildGraph()
     }
 

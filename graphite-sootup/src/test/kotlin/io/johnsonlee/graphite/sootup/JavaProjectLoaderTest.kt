@@ -474,6 +474,54 @@ class JavaProjectLoaderTest {
         }
     }
 
+    // ========== Builder selection ==========
+
+    @Test
+    fun `should load with explicit DefaultGraph Builder via useMmapBuilder false`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val jarPath = buildJarFromClasses(testClassesDir, "sample/simple/")
+
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(includePackages = listOf("sample.simple"), buildCallGraph = false),
+                useMmapBuilder = false
+            )
+
+            val graph = loader.load(jarPath)
+            val fieldNodes = graph.nodes<FieldNode>()
+                .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
+                .toList()
+            assertTrue(fieldNodes.isNotEmpty(), "Should find fields using DefaultGraph.Builder")
+        } finally {
+            Files.deleteIfExists(jarPath)
+        }
+    }
+
+    @Test
+    fun `should load with explicit MmapGraphBuilder via useMmapBuilder true`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val jarPath = buildJarFromClasses(testClassesDir, "sample/simple/")
+
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(includePackages = listOf("sample.simple"), buildCallGraph = false),
+                useMmapBuilder = true
+            )
+
+            val graph = loader.load(jarPath)
+            val fieldNodes = graph.nodes<FieldNode>()
+                .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
+                .toList()
+            assertTrue(fieldNodes.isNotEmpty(), "Should find fields using MmapGraphBuilder")
+        } finally {
+            Files.deleteIfExists(jarPath)
+        }
+    }
+
     // ========== Helper methods ==========
 
     /**
