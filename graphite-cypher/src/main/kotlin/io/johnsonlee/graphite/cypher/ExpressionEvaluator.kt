@@ -346,7 +346,7 @@ class ExpressionEvaluator {
 
 /**
  * AST for Cypher expressions.
- * Produced by the Cypher parser adapter from neo4j-cypher-dsl AST.
+ * Produced by the ANTLR-based Cypher parser adapter.
  */
 sealed class CypherExpr {
     data class Literal(val value: Any?) : CypherExpr()

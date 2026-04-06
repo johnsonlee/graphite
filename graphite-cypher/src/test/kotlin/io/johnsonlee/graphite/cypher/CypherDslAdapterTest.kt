@@ -1132,4 +1132,93 @@ class CypherDslAdapterTest {
         val fn = assertIs<CypherExpr.FunctionCall>(ret.items[0].expression)
         assertEquals("all", fn.name)
     }
+
+    // --- Arithmetic operator parsing in ANTLR visitor ---
+
+    @Test
+    fun `subtraction operator parsed correctly`() {
+        val clauses = CypherDslAdapter.parse("RETURN 10 - 3 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val binOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("-", binOp.op)
+        assertEquals(CypherExpr.Literal(10), binOp.left)
+        assertEquals(CypherExpr.Literal(3), binOp.right)
+    }
+
+    @Test
+    fun `mixed addition and subtraction parsed in order`() {
+        // Exercises the count++ branch in findAddSubOp for SUB token
+        val clauses = CypherDslAdapter.parse("RETURN 10 - 3 + 2 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        // Should be ((10 - 3) + 2) -- left-associative
+        val outerOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("+", outerOp.op)
+        val innerOp = assertIs<CypherExpr.BinaryOp>(outerOp.left)
+        assertEquals("-", innerOp.op)
+    }
+
+    @Test
+    fun `multiplication operator parsed correctly`() {
+        val clauses = CypherDslAdapter.parse("RETURN 3 * 4 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val binOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("*", binOp.op)
+    }
+
+    @Test
+    fun `division operator parsed correctly`() {
+        val clauses = CypherDslAdapter.parse("RETURN 12 / 4 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val binOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("/", binOp.op)
+    }
+
+    @Test
+    fun `modulo operator parsed correctly`() {
+        val clauses = CypherDslAdapter.parse("RETURN 10 % 3 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val binOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("%", binOp.op)
+    }
+
+    @Test
+    fun `mixed multiplication and division parsed in order`() {
+        // Exercises the count++ branch in findMultDivOp for MULT token
+        val clauses = CypherDslAdapter.parse("RETURN 10 * 3 / 2 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val outerOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("/", outerOp.op)
+        val innerOp = assertIs<CypherExpr.BinaryOp>(outerOp.left)
+        assertEquals("*", innerOp.op)
+    }
+
+    @Test
+    fun `mixed division and modulo parsed in order`() {
+        // Exercises the count++ branch in findMultDivOp for DIV token
+        val clauses = CypherDslAdapter.parse("RETURN 10 / 3 % 2 AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val outerOp = assertIs<CypherExpr.BinaryOp>(ret.items[0].expression)
+        assertEquals("%", outerOp.op)
+        val innerOp = assertIs<CypherExpr.BinaryOp>(outerOp.left)
+        assertEquals("/", innerOp.op)
+    }
+
+    @Test
+    fun `list comprehension with pipe expression only`() {
+        val clauses = CypherDslAdapter.parse("RETURN [x IN list | x * 2] AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val comp = assertIs<CypherExpr.ListComprehension>(ret.items[0].expression)
+        assertEquals("x", comp.variable)
+        assertNull(comp.predicate)
+        assertIs<CypherExpr.BinaryOp>(comp.mapExpr!!)
+    }
+
+    @Test
+    fun `rand function with no args`() {
+        val clauses = CypherDslAdapter.parse("RETURN rand() AS v")
+        val ret = assertIs<CypherClause.Return>(clauses[0])
+        val fn = assertIs<CypherExpr.FunctionCall>(ret.items[0].expression)
+        assertEquals("rand", fn.name)
+        assertTrue(fn.args.isEmpty())
+    }
 }

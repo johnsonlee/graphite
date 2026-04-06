@@ -687,11 +687,39 @@ class CypherFunctionsTest {
     }
 
     @Test
-    fun `aggregate with explicit percentile`() {
+    fun `aggregate with explicit percentile for percentileCont`() {
         val result = CypherFunctions.aggregate("percentileCont", listOf(10, 20, 30, 40, 50), 0.9) as Double
         // 0.9 * 4 = 3.6 -> interpolate between index 3 (40) and index 4 (50)
         // 40 + 0.6 * (50 - 40) = 46.0
         assertEquals(46.0, result, 0.001)
+    }
+
+    @Test
+    fun `aggregate with explicit percentile for percentileDisc`() {
+        val result = CypherFunctions.aggregate("percentileDisc", listOf(10, 20, 30, 40, 50), 0.9) as Double
+        // ceil(0.9 * 5) - 1 = 4, nums[4] = 50.0
+        assertEquals(50.0, result, 0.001)
+    }
+
+    @Test
+    fun `aggregate with explicit percentile falls through for non-percentile function`() {
+        // The 3-arg aggregate delegates to 2-arg for non-percentile functions
+        assertEquals(6.0, CypherFunctions.aggregate("sum", listOf(1, 2, 3), 0.5))
+    }
+
+    @Test
+    fun `toDouble with String input`() {
+        assertEquals(3.14, CypherFunctions.toDouble("3.14"), 0.001)
+    }
+
+    @Test
+    fun `toDouble with non-numeric String returns 0`() {
+        assertEquals(0.0, CypherFunctions.toDouble("abc"), 0.001)
+    }
+
+    @Test
+    fun `toDouble with boolean returns 0`() {
+        assertEquals(0.0, CypherFunctions.toDouble(true), 0.001)
     }
 
     // ========================================================================
