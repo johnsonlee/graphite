@@ -4,8 +4,10 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
-import it.unimi.dsi.webgraph.ArrayListMutableGraph
 import it.unimi.dsi.webgraph.BVGraph
+import it.unimi.dsi.webgraph.ImmutableGraph
+import it.unimi.dsi.webgraph.LazyIntIterator
+import it.unimi.dsi.webgraph.LazyIntIterators
 import it.unimi.dsi.webgraph.Transform
 import java.io.*
 import java.nio.file.Files
@@ -34,6 +36,12 @@ object GraphStore {
 
     /**
      * Save a graph to disk in WebGraph + native LAW format.
+     *
+     * Uses a streaming [ImmutableGraph] wrapper over the source [Graph] to avoid
+     * copying all edge data into a second adjacency structure
+     * ([ArrayListMutableGraph][it.unimi.dsi.webgraph.ArrayListMutableGraph]).
+     * For large graphs (millions of nodes) this eliminates the OOM caused by
+     * duplicating the entire adjacency list in memory.
      */
     fun save(graph: Graph, dir: Path) {
         Files.createDirectories(dir)
@@ -50,21 +58,15 @@ object GraphStore {
         NodeSerializer.collectNodeStrings(allNodes, allStrings)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
         val stringTable = StringTable.build(allStrings, dir)
+        allStrings.clear() // free the string collection set
 
-        // 4. Build adjacency and collect edge labels + comparisons
-        val mutableGraph = ArrayListMutableGraph(maxNodeId + 1)
-        // (from << 32 | to) -> encoded label
+        // 4. Build edge label + comparison maps (needed for label storage)
+        //    and wrap the graph as an ImmutableGraph for BVGraph (no adjacency copy)
         val edgeLabelMap = mutableMapOf<Long, Int>()
-        // (from << 32 | to) -> BranchComparison  (only for ControlFlowEdges with non-null comparison)
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
 
         for (node in allNodes) {
             for (edge in graph.outgoing(node.id)) {
-                try {
-                    mutableGraph.addArc(edge.from.value, edge.to.value)
-                } catch (_: IllegalArgumentException) {
-                    // Duplicate arc -- skip
-                }
                 val key = edge.from.value.toLong() shl 32 or (edge.to.value.toLong() and 0xFFFFFFFFL)
                 edgeLabelMap[key] = NodeSerializer.encodeEdge(edge)
                 if (edge is ControlFlowEdge && edge.comparison != null) {
@@ -73,16 +75,17 @@ object GraphStore {
             }
         }
 
+        val forwardView = GraphImmutableView(graph, maxNodeId + 1)
+
         // 5. Store BVGraph (forward)
-        val forwardImmutable = mutableGraph.immutableView()
-        BVGraph.store(forwardImmutable, dir.resolve(FORWARD_GRAPH).toString())
+        BVGraph.store(forwardView, dir.resolve(FORWARD_GRAPH).toString())
 
         // 6. Store BVGraph (backward = transpose)
-        val backward = Transform.transpose(forwardImmutable)
+        val backward = Transform.transpose(forwardView)
         BVGraph.store(backward, dir.resolve(BACKWARD_GRAPH).toString())
 
         // 7. Store edge labels -- byte[] via BinIO, one byte per arc in BVGraph successor order
-        val labelArray = buildLabelArray(forwardImmutable, edgeLabelMap)
+        val labelArray = buildLabelArray(forwardView, edgeLabelMap)
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
 
         // 8. Store comparisons for ControlFlowEdges
@@ -194,6 +197,52 @@ object GraphStore {
             if (node.id.value > maxId) maxId = node.id.value
         }
         return maxId
+    }
+
+    /**
+     * Wraps a Graphite [Graph] as a WebGraph [ImmutableGraph] for BVGraph storage.
+     *
+     * Delegates successor iteration to [Graph.outgoing] -- no data is copied into a
+     * second adjacency structure. This avoids the OOM that
+     * [ArrayListMutableGraph][it.unimi.dsi.webgraph.ArrayListMutableGraph] causes on
+     * large graphs (e.g. 5.9M nodes, 8GB heap).
+     *
+     * BVGraph requires successors in strictly increasing order with no duplicates.
+     * This wrapper sorts and deduplicates the successor list for each node on every
+     * call. The overhead is negligible compared to BVGraph compression I/O.
+     */
+    private class GraphImmutableView(
+        private val graph: Graph,
+        private val numNodes: Int
+    ) : ImmutableGraph() {
+
+        override fun numNodes(): Int = numNodes
+
+        override fun randomAccess(): Boolean = true
+
+        override fun outdegree(x: Int): Int = successorArray(x).size
+
+        override fun successors(x: Int): LazyIntIterator {
+            return LazyIntIterators.wrap(successorArray(x))
+        }
+
+        /**
+         * Returns the sorted, deduplicated successor array for node [x].
+         *
+         * The returned array length equals the outdegree (no trailing slack),
+         * so callers can use `array.size` directly.
+         */
+        override fun successorArray(x: Int): IntArray {
+            val succs = mutableSetOf<Int>()
+            for (edge in graph.outgoing(NodeId(x))) {
+                succs.add(edge.to.value)
+            }
+            val arr = succs.toIntArray()
+            arr.sort()
+            return arr
+        }
+
+        override fun copy(): ImmutableGraph = this
     }
 
     private fun collectMetadata(graph: Graph): GraphMetadata {
