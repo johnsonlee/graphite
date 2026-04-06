@@ -5,6 +5,16 @@ plugins {
     id("me.champeau.jmh")
 }
 
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Benchmark*")
+            }
+        }
+    }
+}
+
 dependencies {
     // Fastutil for memory-efficient primitive collections
     // This is the only external dependency - justified for performance

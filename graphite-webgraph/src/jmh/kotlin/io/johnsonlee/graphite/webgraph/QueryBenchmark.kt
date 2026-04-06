@@ -87,15 +87,80 @@ open class QueryBenchmark {
 }
 
 /**
+ * JMH benchmark for Cypher queries on Android SDK graph (5.9M nodes).
+ *
+ * Requires a pre-built graph at `/tmp/android-graph-v2`.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 2, time = 1)
+@Measurement(iterations = 3, time = 1)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class AndroidQueryBenchmark {
+
+    private lateinit var graph: Graph
+
+    @Setup
+    fun setup() {
+        val graphPath = Path.of("/tmp/android-graph-v2")
+        if (!Files.isDirectory(graphPath)) {
+            throw IllegalStateException("Android graph not found at /tmp/android-graph-v2")
+        }
+        graph = GraphStore.load(graphPath)
+    }
+
+    @Benchmark
+    fun simpleNodeMatch() = graph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+    )
+
+    @Benchmark
+    fun intConstantFilter() = graph.query(
+        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
+    )
+
+    @Benchmark
+    fun regexFilter() = graph.query(
+        "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'android\\.widget\\..*' RETURN n.callee_name LIMIT 50"
+    )
+
+    @Benchmark
+    fun countStar() = graph.query(
+        "MATCH (n:CallSiteNode) RETURN count(*)"
+    )
+
+    @Benchmark
+    fun singleHopRelationship() = graph.query(
+        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+    )
+
+    @Benchmark
+    fun returnDistinct() = graph.query(
+        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    )
+
+    @Benchmark
+    fun aggregationCountGroupBy() = graph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS cnt"
+    )
+
+    @Benchmark
+    fun fieldFilter() = graph.query(
+        "MATCH (n:FieldNode) WHERE n.class =~ 'android\\.view\\..*' RETURN n.name LIMIT 30"
+    )
+}
+
+/**
  * Run benchmarks from command line:
- *   java -cp <classpath> io.johnsonlee.graphite.webgraph.QueryBenchmarkRunner
+ *   ./gradlew :graphite-webgraph:jmh
  */
 class QueryBenchmarkRunner {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
             val options = OptionsBuilder()
-                .include(QueryBenchmark::class.java.simpleName)
+                .include(".*QueryBenchmark.*")
                 .build()
             Runner(options).run()
         }

@@ -5,6 +5,16 @@ plugins {
     id("me.champeau.jmh")
 }
 
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Benchmark*")
+            }
+        }
+    }
+}
+
 val testFixtures: Configuration by configurations.creating
 
 dependencies {

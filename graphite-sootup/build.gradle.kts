@@ -2,7 +2,20 @@ description = "Graphite SootUp Adapter - SootUp-based bytecode analysis backend"
 
 plugins {
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
+    id("me.champeau.jmh")
 }
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Benchmark*")
+            }
+        }
+    }
+}
+
+val testFixtures: Configuration by configurations.creating
 
 dependencies {
     api(project(":graphite-core"))
@@ -22,4 +35,10 @@ dependencies {
     // Lombok for testing Lombok-generated code analysis
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+
+    // JMH benchmark dependencies
+    jmh(libs.jmh.core)
+    jmhAnnotationProcessor(libs.jmh.generator)
+    testFixtures(libs.elasticsearch)
+    testFixtures(libs.android.all)
 }
