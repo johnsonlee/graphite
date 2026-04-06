@@ -114,6 +114,20 @@ class PropertyFilterTest {
     }
 
     @Test
+    fun `EQUALS with string value`() {
+        val node = StringConstant(NodeId.next(), "hello")
+        // String equals goes through the non-numeric branch of compareEquals
+        assertTrue(filter("value", FilterOperator.EQUALS, "hello").matches(node))
+        assertFalse(filter("value", FilterOperator.EQUALS, "world").matches(node))
+    }
+
+    @Test
+    fun `EQUALS one null other non-null returns false`() {
+        val node = IntConstant(NodeId.next(), 42)
+        assertFalse(filter("value", FilterOperator.EQUALS, null).matches(node))
+    }
+
+    @Test
     fun `comparison with non-numeric property returns false`() {
         val node = StringConstant(NodeId.next(), "hello")
         assertFalse(filter("value", FilterOperator.GREATER_THAN, 10).matches(node))

@@ -49,30 +49,43 @@ class NodePropertyAccessorTest {
     fun `StringConstant properties`() {
         val node = StringConstant(NodeId.next(), "hello")
         assertEquals("hello", NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }
 
     @Test
     fun `LongConstant properties`() {
         val node = LongConstant(NodeId.next(), 100L)
         assertEquals(100L, NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }
 
     @Test
     fun `FloatConstant properties`() {
         val node = FloatConstant(NodeId.next(), 3.14f)
         assertEquals(3.14f, NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }
 
     @Test
     fun `DoubleConstant properties`() {
         val node = DoubleConstant(NodeId.next(), 2.718)
         assertEquals(2.718, NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }
 
     @Test
     fun `BooleanConstant properties`() {
         val node = BooleanConstant(NodeId.next(), true)
         assertEquals(true, NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
+    }
+
+    @Test
+    fun `NullConstant properties with unknown key`() {
+        val node = NullConstant(NodeId.next())
+        // NullConstant.value is always null
+        assertNull(NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "nonexistent"))
     }
 
     @Test

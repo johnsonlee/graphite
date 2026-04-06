@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -27,6 +28,10 @@ class CypherExecutorTest {
     private var localVar1 = NodeId(0)
     private var boolConst = NodeId(0)
     private var enumConst = NodeId(0)
+    private var longConst = NodeId(0)
+    private var floatConst = NodeId(0)
+    private var doubleConst = NodeId(0)
+    private var nullConst = NodeId(0)
     // Intermediate node for multi-hop paths
     private var localVar2 = NodeId(0)
 
@@ -81,6 +86,18 @@ class CypherExecutorTest {
 
         enumConst = NodeId.next()
         builder.addNode(EnumConstant(enumConst, enumType, "ACTIVE", listOf("active")))
+
+        longConst = NodeId.next()
+        builder.addNode(LongConstant(longConst, 999999999999L))
+
+        floatConst = NodeId.next()
+        builder.addNode(FloatConstant(floatConst, 3.14f))
+
+        doubleConst = NodeId.next()
+        builder.addNode(DoubleConstant(doubleConst, 2.718))
+
+        nullConst = NodeId.next()
+        builder.addNode(NullConstant(nullConst))
 
         // Create edges
         // intConst42 -> param1 (dataflow)
@@ -275,8 +292,8 @@ class CypherExecutorTest {
     // --- Edge Cases ---
 
     @Test
-    fun `empty result for non-matching label`() {
-        val result = executor.execute("MATCH (n:NullConstant) RETURN n.id")
+    fun `empty result for non-existent value`() {
+        val result = executor.execute("MATCH (n:IntConstant) WHERE n.value = 99999 RETURN n.id")
         assertEquals(0, result.rows.size)
     }
 
@@ -357,9 +374,12 @@ class CypherExecutorTest {
 
     @Test
     fun `return full LongConstant node as map`() {
-        // No LongConstant in our graph, but verify the query runs for coverage
         val result = executor.execute("MATCH (n:LongConstant) RETURN n")
-        assertEquals(0, result.rows.size)
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val nodeMap = result.rows[0]["n"] as Map<String, Any?>
+        assertEquals(999999999999L, nodeMap["value"])
+        assertEquals("LongConstant", nodeMap["type"])
     }
 
     @Test
@@ -464,10 +484,8 @@ class CypherExecutorTest {
 
     @Test
     fun `return NullConstant as map`() {
-        // Note: NullConstant may not exist in our graph.
-        // We test via OPTIONAL MATCH to get null values.
         val result = executor.execute("MATCH (n:NullConstant) RETURN n.id")
-        assertEquals(0, result.rows.size)
+        assertEquals(1, result.rows.size)
     }
 
     // --- Inline WHERE ---
@@ -901,9 +919,9 @@ class CypherExecutorTest {
 
     @Test
     fun `OPTIONAL MATCH with no match fills nulls`() {
-        // NullConstant label has 0 nodes, so OPTIONAL MATCH should null-fill
+        // Use an IntConstant filter that won't match to trigger null-fill
         val result = executor.execute(
-            "OPTIONAL MATCH (m:NullConstant) RETURN m"
+            "OPTIONAL MATCH (m:IntConstant {value: 99999}) RETURN m"
         )
         assertEquals(1, result.rows.size)
         assertNull(result.rows[0]["m"])
@@ -940,7 +958,7 @@ class CypherExecutorTest {
 
     @Test
     fun `no results returns empty columns`() {
-        val result = executor.execute("MATCH (n:NullConstant) RETURN n.id")
+        val result = executor.execute("MATCH (n:IntConstant) WHERE n.value = 99999 RETURN n.id")
         assertEquals(0, result.rows.size)
         // columns still populated from RETURN items
         assertEquals(listOf("n.id"), result.columns)
@@ -1019,7 +1037,7 @@ class CypherExecutorTest {
 
     @Test
     fun `path variable assignment returns path`() {
-        val result = executor.execute("MATCH p = (c:IntConstant)-[:DATAFLOW]->(ps:ParameterNode) RETURN p LIMIT 1")
+        val result = executor.execute("MATCH p = (c:IntConstant)-[:DATAFLOW]->(ps:ParameterNode) RETURN p")
         assertEquals(1, result.columns.size)
         assertEquals("p", result.columns[0])
         assertTrue(result.rows.isNotEmpty())
@@ -1032,7 +1050,7 @@ class CypherExecutorTest {
 
     @Test
     fun `path variable without relationship variable still builds path`() {
-        val result = executor.execute("MATCH p = (c:IntConstant)-[]->(ps:ParameterNode) RETURN p LIMIT 1")
+        val result = executor.execute("MATCH p = (c:IntConstant)-[]->(ps:ParameterNode) RETURN p")
         assertTrue(result.rows.isNotEmpty())
         val path = result.rows[0]["p"]
         assertTrue(path is List<*>, "Path should be a list")
@@ -1117,5 +1135,336 @@ class CypherExecutorTest {
         assertEquals(1, result.rows.size)
         // true is not Number/String, toDouble returns 0.0; 0.0 + 1 = 1.0 (double result)
         assertEquals(1.0, result.rows[0]["v"])
+    }
+
+    // --- Subtraction operator (covers findAddSubOp SUB branch) ---
+
+    @Test
+    fun `arithmetic subtraction via ANTLR parser`() {
+        val result = executor.execute("MATCH (n:IntConstant) WHERE n.value = 42 RETURN n.value - 1 AS diff")
+        assertEquals(1, result.rows.size)
+        assertEquals(41L, result.rows[0]["diff"])
+    }
+
+    // --- Multiplication and division (covers findMultDivOp MULT/DIV branches) ---
+
+    @Test
+    fun `arithmetic multiplication and division`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) WHERE n.value = 42 RETURN n.value * 2 AS mult, n.value / 7 AS div"
+        )
+        assertEquals(1, result.rows.size)
+        assertEquals(84L, result.rows[0]["mult"])
+        assertEquals(6L, result.rows[0]["div"])
+    }
+
+    // --- Variable-length path with explicit min and max (covers *2..5 branch) ---
+
+    @Test
+    fun `variable length path with explicit min and max`() {
+        // intConst42 -> param1 -> localVar1 -> localVar2 -> callSite1 = 4 hops
+        // *2..5 requires at least 2 hops, so intConst42 should reach callSite1
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*2..5]->(b:CallSiteNode) RETURN a.value, b.callee_name"
+        )
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals(42, result.rows.first()["a.value"])
+    }
+
+    // --- Variable-length path with min only (covers n.. branch) ---
+
+    @Test
+    fun `variable length path with min only`() {
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*2..]->(b:LocalVariable) RETURN a.value, b.name LIMIT 5"
+        )
+        assertNotNull(result)
+    }
+
+    // --- Exact variable-length path (covers *3 branch) ---
+
+    @Test
+    fun `exact hop variable length path`() {
+        // intConst42 -> param1 -> localVar1 -> localVar2 = exactly 3 hops
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*3]->(b:LocalVariable) RETURN a.value, b.name"
+        )
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals("y", result.rows.first()["b.name"])
+    }
+
+    // --- List comprehension with only pipe expression, no WHERE ---
+
+    @Test
+    fun `list comprehension with pipe expression only`() {
+        val result = executor.execute("RETURN [x IN [1, 2, 3] | x * 2] AS doubled")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val doubled = result.rows[0]["doubled"] as List<*>
+        assertEquals(listOf(2L, 4L, 6L), doubled)
+    }
+
+    // --- Function with no arguments (covers rand()) ---
+
+    @Test
+    fun `function with no arguments`() {
+        val result = executor.execute("RETURN rand() AS r")
+        assertEquals(1, result.rows.size)
+        val r = result.rows[0]["r"] as Double
+        assertTrue(r in 0.0..1.0)
+    }
+
+    // --- Return full LongConstant node as map ---
+
+    @Test
+    fun `return full LongConstant node as map with value`() {
+        val result = executor.execute("MATCH (n:LongConstant) RETURN n")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val nodeMap = result.rows[0]["n"] as Map<String, Any?>
+        assertEquals(999999999999L, nodeMap["value"])
+        assertEquals("LongConstant", nodeMap["type"])
+    }
+
+    // --- Return full FloatConstant node as map ---
+
+    @Test
+    fun `return full FloatConstant node as map`() {
+        val result = executor.execute("MATCH (n:FloatConstant) RETURN n")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val nodeMap = result.rows[0]["n"] as Map<String, Any?>
+        assertEquals(3.14f, nodeMap["value"])
+        assertEquals("FloatConstant", nodeMap["type"])
+    }
+
+    // --- Return full DoubleConstant node as map ---
+
+    @Test
+    fun `return full DoubleConstant node as map`() {
+        val result = executor.execute("MATCH (n:DoubleConstant) RETURN n")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val nodeMap = result.rows[0]["n"] as Map<String, Any?>
+        assertEquals(2.718, nodeMap["value"])
+        assertEquals("DoubleConstant", nodeMap["type"])
+    }
+
+    // --- Return full NullConstant node as map ---
+
+    @Test
+    fun `return full NullConstant node as map`() {
+        val result = executor.execute("MATCH (n:NullConstant) RETURN n")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        val nodeMap = result.rows[0]["n"] as Map<String, Any?>
+        assertEquals(null, nodeMap["value"])
+        assertEquals("NullConstant", nodeMap["type"])
+    }
+
+    // --- LongConstant property access ---
+
+    @Test
+    fun `LongConstant property access`() {
+        val result = executor.execute("MATCH (n:LongConstant) RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertEquals(999999999999L, result.rows[0]["n.value"])
+    }
+
+    // --- FloatConstant property access ---
+
+    @Test
+    fun `FloatConstant property access`() {
+        val result = executor.execute("MATCH (n:FloatConstant) RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertEquals(3.14f, result.rows[0]["n.value"])
+    }
+
+    // --- DoubleConstant property access ---
+
+    @Test
+    fun `DoubleConstant property access`() {
+        val result = executor.execute("MATCH (n:DoubleConstant) RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertEquals(2.718, result.rows[0]["n.value"])
+    }
+
+    // --- NullConstant property access ---
+
+    @Test
+    fun `NullConstant property access`() {
+        val result = executor.execute("MATCH (n:NullConstant) RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertNull(result.rows[0]["n.value"])
+    }
+
+    // --- stdev aggregation ---
+
+    @Test
+    fun `stdev aggregation in query`() {
+        val result = executor.execute("UNWIND [2, 4, 4, 4, 5, 5, 7, 9] AS x RETURN stdev(x) AS v")
+        assertEquals(1, result.rows.size)
+        assertNotNull(result.rows[0]["v"])
+    }
+
+    // --- stdevp aggregation ---
+
+    @Test
+    fun `stdevp aggregation in query`() {
+        val result = executor.execute("UNWIND [2, 4, 4, 4, 5, 5, 7, 9] AS x RETURN stdevp(x) AS v")
+        assertEquals(1, result.rows.size)
+        assertNotNull(result.rows[0]["v"])
+    }
+
+    // --- Subscript with index 0 ---
+
+    @Test
+    fun `subscript access at index 0`() {
+        val result = executor.execute("RETURN [10, 20, 30][0] AS first")
+        assertEquals(1, result.rows.size)
+        assertEquals(10, result.rows[0]["first"])
+    }
+
+    // --- Slice with only to (covers SliceToContext) ---
+
+    @Test
+    fun `slice to only`() {
+        val result = executor.execute("RETURN [1, 2, 3, 4][..2] AS v")
+        assertEquals(1, result.rows.size)
+        @Suppress("UNCHECKED_CAST")
+        assertEquals(listOf(1, 2), result.rows[0]["v"])
+    }
+
+    // --- Relationship property constraints on edge ---
+
+    @Test
+    fun `relationship property constraint on DataFlowEdge kind`() {
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[r:DATAFLOW {kind: 'PARAMETER_PASS'}]->(b:ParameterNode) RETURN a.value"
+        )
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows[0]["a.value"])
+    }
+
+    // --- Aggregation with grouping ---
+
+    @Test
+    fun `aggregation with grouping key`() {
+        // Exercises the grouped aggregation branch (groupByIndices non-empty + aggIndices)
+        val result = executor.execute(
+            "MATCH (n:IntConstant) RETURN n.value AS v, count(*) AS cnt ORDER BY v"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(7, result.rows[0]["v"])
+        assertEquals(1L, result.rows[0]["cnt"])
+    }
+
+    // --- Grouping aggregation (group by + aggregate) ---
+
+    @Test
+    fun `grouped aggregation with non-agg and agg columns`() {
+        val result = executor.execute(
+            "UNWIND [{k: 'a', v: 1}, {k: 'a', v: 2}, {k: 'b', v: 3}] AS item " +
+            "RETURN item.k AS key, count(*) AS cnt"
+        )
+        // Groups: 'a' -> 2 rows, 'b' -> 1 row
+        assertEquals(2, result.rows.size)
+    }
+
+    // --- String concatenation via + operator ---
+
+    @Test
+    fun `string concatenation via plus operator`() {
+        val result = executor.execute("RETURN 'hello' + ' ' + 'world' AS greeting")
+        assertEquals(1, result.rows.size)
+        assertEquals("hello world", result.rows[0]["greeting"])
+    }
+
+    // --- Unary minus ---
+
+    @Test
+    fun `unary minus operator`() {
+        val result = executor.execute("RETURN -42 AS v")
+        assertEquals(1, result.rows.size)
+        assertEquals(-42, result.rows[0]["v"])
+    }
+
+    // --- CypherFunctions toDouble with String input ---
+
+    @Test
+    fun `floor with string argument exercises CypherFunctions toDouble String branch`() {
+        val result = executor.execute("RETURN floor('3.7') AS v")
+        assertEquals(1, result.rows.size)
+        assertEquals(3.0, result.rows[0]["v"])
+    }
+
+    // --- Undirected RelFullPattern (no arrow) ---
+
+    @Test
+    fun `undirected relationship pattern`() {
+        // (a)-[r]-(b) uses RelFullPattern or RelBothPattern
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[r]-(b) RETURN a.value LIMIT 5"
+        )
+        assertNotNull(result)
+        assertTrue(result.rows.isNotEmpty())
+    }
+
+    // --- RETURN DISTINCT ---
+
+    @Test
+    fun `RETURN DISTINCT removes duplicates`() {
+        val result = executor.execute("UNWIND [1, 1, 2, 2, 3] AS x RETURN DISTINCT x")
+        assertEquals(3, result.rows.size)
+    }
+
+    // --- DESCENDING keyword in ORDER BY ---
+
+    @Test
+    fun `ORDER BY DESCENDING keyword`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) RETURN n.value AS v ORDER BY v DESCENDING"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(42, result.rows[0]["v"])
+        assertEquals(7, result.rows[1]["v"])
+    }
+
+    // --- DESC keyword in ORDER BY ---
+
+    @Test
+    fun `ORDER BY DESC keyword`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) RETURN n.value AS v ORDER BY v DESC"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(42, result.rows[0]["v"])
+        assertEquals(7, result.rows[1]["v"])
+    }
+
+    // --- Null comparison operators ---
+
+    @Test
+    fun `comparison with null returns null`() {
+        val result = executor.execute("RETURN null = 1 AS v")
+        assertEquals(1, result.rows.size)
+        // null = 1 returns null in three-valued logic
+        assertNull(result.rows[0]["v"])
+    }
+
+    // --- LE and GE comparison operators ---
+
+    @Test
+    fun `less than or equal comparison`() {
+        val result = executor.execute("MATCH (n:IntConstant) WHERE n.value <= 7 RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertEquals(7, result.rows[0]["n.value"])
+    }
+
+    @Test
+    fun `greater than or equal comparison`() {
+        val result = executor.execute("MATCH (n:IntConstant) WHERE n.value >= 42 RETURN n.value")
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows[0]["n.value"])
     }
 }

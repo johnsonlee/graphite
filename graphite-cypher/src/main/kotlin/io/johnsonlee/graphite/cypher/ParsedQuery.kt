@@ -2,7 +2,7 @@ package io.johnsonlee.graphite.cypher
 
 /**
  * Supplementary query parsing for information not easily accessible from the
- * neo4j-cypher-dsl [StatementCatalog]: variable bindings, RETURN projections,
+ * the ANTLR-based Cypher parser: variable bindings, RETURN projections,
  * LIMIT, and relationship patterns with variable-length syntax.
  *
  * This parser handles a practical subset of Cypher patterns used with Graphite:

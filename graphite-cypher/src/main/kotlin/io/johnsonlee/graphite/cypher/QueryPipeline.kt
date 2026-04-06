@@ -124,9 +124,11 @@ class QueryPipeline(private val graph: Graph) {
             }
 
             if (currentMatches.isEmpty()) {
-                // Optional match: keep the row with nulls for unbound variables
-                val nullBindings = patterns.flatMap { it.variables() }
-                    .associateWith { null as Any? }
+                // Optional match: null only NEW variables introduced by this pattern,
+                // not variables already bound in inputRow
+                val newVars = patterns.flatMap { it.variables() }
+                    .filter { it !in inputRow }
+                val nullBindings = newVars.associateWith { null as Any? }
                 results.add(inputRow + nullBindings)
             } else {
                 results.addAll(currentMatches)
@@ -488,42 +490,53 @@ class QueryPipeline(private val graph: Graph) {
         rows: List<Map<String, Any?>>,
         distinct: Boolean
     ): Pair<List<Map<String, Any?>>, List<String>> {
-        val columns = items.map { it.alias ?: it.expression.toCypherString() }
+        // Expand RETURN * into individual variable references for all bound names
+        val expandedItems = if (items.size == 1 &&
+            items[0].expression is CypherExpr.Variable &&
+            (items[0].expression as CypherExpr.Variable).name == "*"
+        ) {
+            val allKeys = rows.firstOrNull()?.keys ?: emptySet()
+            allKeys.map { key -> ReturnItem(CypherExpr.Variable(key)) }
+        } else {
+            items
+        }
+
+        val columns = expandedItems.map { it.alias ?: it.expression.toCypherString() }
 
         // Check if any item uses aggregation
-        val hasAggregation = items.any { containsAggregation(it.expression) }
+        val hasAggregation = expandedItems.any { containsAggregation(it.expression) }
 
         val resultRows = if (hasAggregation) {
             // Group by non-aggregated columns
-            val groupByIndices = items.indices.filter { !containsAggregation(items[it].expression) }
-            val aggIndices = items.indices.filter { containsAggregation(items[it].expression) }.toSet()
+            val groupByIndices = expandedItems.indices.filter { !containsAggregation(expandedItems[it].expression) }
+            val aggIndices = expandedItems.indices.filter { containsAggregation(expandedItems[it].expression) }.toSet()
 
             if (groupByIndices.isEmpty()) {
                 // No grouping -- aggregate over all rows
                 val row = mutableMapOf<String, Any?>()
-                for (i in items.indices) {
+                for (i in expandedItems.indices) {
                     val col = columns[i]
                     row[col] = if (i in aggIndices) {
-                        evaluateAggregation(items[i].expression, rows)
+                        evaluateAggregation(expandedItems[i].expression, rows)
                     } else {
-                        evaluator.evaluate(items[i].expression, rows.firstOrNull() ?: emptyMap())
+                        evaluator.evaluate(expandedItems[i].expression, rows.firstOrNull() ?: emptyMap())
                     }
                 }
                 listOf(row)
             } else {
                 // Group by non-aggregated columns
                 val groups = rows.groupBy { row ->
-                    groupByIndices.map { i -> evaluator.evaluate(items[i].expression, row) }
+                    groupByIndices.map { i -> evaluator.evaluate(expandedItems[i].expression, row) }
                 }
 
                 groups.map { (_, groupRows) ->
                     val row = mutableMapOf<String, Any?>()
-                    for (i in items.indices) {
+                    for (i in expandedItems.indices) {
                         val col = columns[i]
                         row[col] = if (i in aggIndices) {
-                            evaluateAggregation(items[i].expression, groupRows)
+                            evaluateAggregation(expandedItems[i].expression, groupRows)
                         } else {
-                            evaluator.evaluate(items[i].expression, groupRows.first())
+                            evaluator.evaluate(expandedItems[i].expression, groupRows.first())
                         }
                     }
                     row
@@ -532,8 +545,8 @@ class QueryPipeline(private val graph: Graph) {
         } else {
             rows.map { row ->
                 val projected = mutableMapOf<String, Any?>()
-                for (i in items.indices) {
-                    projected[columns[i]] = evaluator.evaluate(items[i].expression, row)
+                for (i in expandedItems.indices) {
+                    projected[columns[i]] = evaluator.evaluate(expandedItems[i].expression, row)
                 }
                 projected
             }

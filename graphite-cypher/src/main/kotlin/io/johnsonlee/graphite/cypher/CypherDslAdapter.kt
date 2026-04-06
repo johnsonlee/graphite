@@ -1,23 +1,18 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.cypher.parser.CypherLexer
+import io.johnsonlee.graphite.cypher.parser.CypherParser
+import org.antlr.v4.runtime.BaseErrorListener
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.RecognitionException
+import org.antlr.v4.runtime.Recognizer
+
 /**
  * Parses a Cypher query string into a list of [CypherClause] AST nodes.
  *
- * This is a hand-written recursive descent parser that covers the full Cypher
- * read grammar (MATCH, OPTIONAL MATCH, WHERE, RETURN, WITH, UNWIND, ORDER BY,
- * SKIP, LIMIT, UNION) plus write clauses (CREATE, DELETE, SET, REMOVE) for
- * structural completeness.
- *
- * ## Design rationale
- *
- * The neo4j-cypher-dsl library (version 2025.0.1) exposes parsed queries via
- * `StatementCatalog`, which provides catalog-level metadata (labels, property
- * filters, relationship types) but does not expose the full AST in a form
- * suitable for clause-by-clause execution. Clause ordering, WITH projections,
- * UNWIND bindings, and ORDER BY expressions are not directly accessible.
- *
- * A hand-written parser gives full control over the AST shape and avoids
- * coupling to the internal structure of the DSL builder objects.
+ * Uses ANTLR-generated [CypherParser] for parsing and a custom visitor
+ * to build the internal AST.
  */
 object CypherDslAdapter {
 
@@ -29,9 +24,32 @@ object CypherDslAdapter {
      * @throws CypherParseException if the query cannot be parsed
      */
     fun parse(cypher: String): List<CypherClause> {
-        val tokens = CypherTokenizer.tokenize(cypher)
-        val parser = ClauseParser(tokens)
-        return parser.parseClauses()
+        if (cypher.isBlank()) return emptyList()
+
+        // Handle semicolon-separated statements
+        if (cypher.contains(';')) {
+            val parts = cypher.split(';').map { it.trim() }.filter { it.isNotEmpty() }
+            if (parts.size > 1) {
+                return parts.flatMap { parse(it) }
+            }
+        }
+
+        return buildAst(cypher)
+    }
+
+    internal fun buildAst(cypher: String): List<CypherClause> {
+        val lexer = CypherLexer(CharStreams.fromString(cypher))
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(ThrowingErrorListener)
+
+        val tokens = CommonTokenStream(lexer)
+        val parser = CypherParser(tokens)
+        parser.removeErrorListeners()
+        parser.addErrorListener(ThrowingErrorListener)
+
+        val tree = parser.script()
+        val visitor = CypherAstVisitor()
+        return visitor.visitScript(tree)
     }
 }
 
@@ -40,191 +58,710 @@ object CypherDslAdapter {
  */
 class CypherParseException(message: String) : RuntimeException(message)
 
-// ============================================================================
-// Token types
-// ============================================================================
-
-internal enum class TokenType {
-    MATCH, OPTIONAL, WHERE, RETURN, WITH, UNWIND, ORDER, BY,
-    SKIP, LIMIT, UNION, ALL, CREATE, DELETE, DETACH, SET, REMOVE, MERGE,
-    AS, DISTINCT, ASC, DESC, ASCENDING, DESCENDING,
-    AND, OR, XOR, NOT, IN, IS, NULL, TRUE, FALSE,
-    STARTS, ENDS, CONTAINS, CASE, WHEN, THEN, ELSE, END,
-    EXISTS,
-
-    IDENTIFIER,
-    INTEGER_LITERAL,
-    FLOAT_LITERAL,
-    STRING_LITERAL,
-    PARAMETER,
-
-    LPAREN, RPAREN,
-    LBRACKET, RBRACKET,
-    LBRACE, RBRACE,
-    DOT, COMMA, COLON, SEMICOLON, PIPE,
-    EQ, NEQ, LT, GT, LTE, GTE,
-    PLUS, MINUS, STAR, SLASH, PERCENT, CARET,
-    ARROW_RIGHT,
-    ARROW_LEFT,
-    DASH,
-    DOTDOT,
-    REGEX_MATCH,
-    PLUS_EQ,
-
-    EOF
+/**
+ * ANTLR error listener that throws [CypherParseException] on any syntax error.
+ */
+private object ThrowingErrorListener : BaseErrorListener() {
+    override fun syntaxError(
+        recognizer: Recognizer<*, *>?,
+        offendingSymbol: Any?,
+        line: Int,
+        charPositionInLine: Int,
+        msg: String?,
+        e: RecognitionException?
+    ) {
+        throw CypherParseException("Syntax error at position $charPositionInLine: $msg")
+    }
 }
 
-internal data class Token(
-    val type: TokenType,
-    val text: String,
-    val position: Int
-)
-
 // ============================================================================
-// Tokenizer
+// ANTLR Visitor that builds internal AST
 // ============================================================================
 
-internal object CypherTokenizer {
+private class CypherAstVisitor {
 
-    private val KEYWORDS = mapOf(
-        "MATCH" to TokenType.MATCH, "OPTIONAL" to TokenType.OPTIONAL,
-        "WHERE" to TokenType.WHERE, "RETURN" to TokenType.RETURN,
-        "WITH" to TokenType.WITH, "UNWIND" to TokenType.UNWIND,
-        "ORDER" to TokenType.ORDER, "BY" to TokenType.BY,
-        "SKIP" to TokenType.SKIP, "LIMIT" to TokenType.LIMIT,
-        "UNION" to TokenType.UNION, "ALL" to TokenType.ALL,
-        "CREATE" to TokenType.CREATE, "DELETE" to TokenType.DELETE,
-        "DETACH" to TokenType.DETACH, "SET" to TokenType.SET,
-        "REMOVE" to TokenType.REMOVE, "MERGE" to TokenType.MERGE,
-        "AS" to TokenType.AS, "DISTINCT" to TokenType.DISTINCT,
-        "ASC" to TokenType.ASC, "DESC" to TokenType.DESC,
-        "ASCENDING" to TokenType.ASCENDING, "DESCENDING" to TokenType.DESCENDING,
-        "AND" to TokenType.AND, "OR" to TokenType.OR,
-        "XOR" to TokenType.XOR, "NOT" to TokenType.NOT,
-        "IN" to TokenType.IN, "IS" to TokenType.IS,
-        "NULL" to TokenType.NULL, "TRUE" to TokenType.TRUE,
-        "FALSE" to TokenType.FALSE, "STARTS" to TokenType.STARTS,
-        "ENDS" to TokenType.ENDS, "CONTAINS" to TokenType.CONTAINS,
-        "CASE" to TokenType.CASE, "WHEN" to TokenType.WHEN,
-        "THEN" to TokenType.THEN, "ELSE" to TokenType.ELSE,
-        "END" to TokenType.END, "EXISTS" to TokenType.EXISTS
-    )
+    // -- Script / top-level ---------------------------------------------------
 
-    fun tokenize(input: String): List<Token> {
-        val tokens = mutableListOf<Token>()
-        var pos = 0
+    fun visitScript(ctx: CypherParser.ScriptContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        for (stmt in ctx.statement()) {
+            clauses.addAll(visitStatement(stmt))
+        }
+        return clauses
+    }
 
-        while (pos < input.length) {
-            val c = input[pos]
+    @Suppress("UNCHECKED_CAST")
+    private fun visitStatement(ctx: CypherParser.StatementContext): List<CypherClause> {
+        return visitQuery(ctx.query())
+    }
 
-            if (c.isWhitespace()) { pos++; continue }
+    private fun visitQuery(ctx: CypherParser.QueryContext): List<CypherClause> {
+        return visitRegularQuery(ctx.regularQuery())
+    }
 
-            // Single-line comment
-            if (c == '/' && pos + 1 < input.length && input[pos + 1] == '/') {
-                pos = input.indexOf('\n', pos).let { if (it < 0) input.length else it + 1 }
-                continue
+    private fun visitRegularQuery(ctx: CypherParser.RegularQueryContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        val queries = ctx.singleQuery()
+        val unions = ctx.unionSt()
+
+        clauses.addAll(visitSingleQuery(queries[0]))
+        for (i in unions.indices) {
+            clauses.add(visitUnionSt(unions[i]))
+            if (i + 1 < queries.size) {
+                clauses.addAll(visitSingleQuery(queries[i + 1]))
             }
+        }
+        return clauses
+    }
 
-            // Multi-line comment
-            if (c == '/' && pos + 1 < input.length && input[pos + 1] == '*') {
-                val end = input.indexOf("*/", pos + 2)
-                pos = if (end < 0) input.length else end + 2
-                continue
+    private fun visitUnionSt(ctx: CypherParser.UnionStContext): CypherClause.Union {
+        return CypherClause.Union(all = ctx.ALL() != null)
+    }
+
+    private fun visitSingleQuery(ctx: CypherParser.SingleQueryContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        for (clause in ctx.clause()) {
+            clauses.addAll(visitClause(clause))
+        }
+        return clauses
+    }
+
+    private fun visitClause(ctx: CypherParser.ClauseContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        when {
+            ctx.matchSt() != null -> {
+                val matchCtx = ctx.matchSt()
+                clauses.add(visitMatchSt(matchCtx))
+                if (matchCtx.whereSt() != null) {
+                    clauses.add(visitWhereSt(matchCtx.whereSt()))
+                }
             }
+            ctx.unwindSt() != null -> clauses.add(visitUnwindStClause(ctx.unwindSt()))
+            ctx.withSt() != null -> clauses.addAll(visitWithStClauses(ctx.withSt()))
+            ctx.returnSt() != null -> clauses.addAll(visitReturnStClauses(ctx.returnSt()))
+            ctx.createSt() != null -> clauses.add(visitCreateStClause(ctx.createSt()))
+            ctx.deleteSt() != null -> clauses.add(visitDeleteStClause(ctx.deleteSt()))
+            ctx.setSt() != null -> clauses.add(visitSetStClause(ctx.setSt()))
+            ctx.removeSt() != null -> clauses.add(visitRemoveStClause(ctx.removeSt()))
+            ctx.mergeSt() != null -> clauses.add(visitMergeStClause(ctx.mergeSt()))
+        }
+        return clauses
+    }
 
-            // String literals
-            if (c == '\'' || c == '"') {
-                val (str, newPos) = readString(input, pos, c)
-                tokens.add(Token(TokenType.STRING_LITERAL, str, pos))
-                pos = newPos
-                continue
+    // -- Clause visitors ------------------------------------------------------
+
+    private fun visitMatchSt(ctx: CypherParser.MatchStContext): CypherClause.Match {
+        val optional = ctx.OPTIONAL() != null
+        val patterns = visitPatternList(ctx.patternList())
+        return CypherClause.Match(patterns, optional)
+    }
+
+    private fun visitWhereSt(ctx: CypherParser.WhereStContext): CypherClause.Where {
+        return CypherClause.Where(visitExpr(ctx.expression()))
+    }
+
+    private fun visitReturnStClauses(ctx: CypherParser.ReturnStContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        val distinct = ctx.DISTINCT() != null
+        val items = visitReturnItemsList(ctx.returnItems())
+        clauses.add(CypherClause.Return(items, distinct))
+        if (ctx.orderBySt() != null) clauses.add(visitOrderBySt(ctx.orderBySt()))
+        if (ctx.skipSt() != null) clauses.add(visitSkipSt(ctx.skipSt()))
+        if (ctx.limitSt() != null) clauses.add(visitLimitSt(ctx.limitSt()))
+        return clauses
+    }
+
+    private fun visitWithStClauses(ctx: CypherParser.WithStContext): List<CypherClause> {
+        val clauses = mutableListOf<CypherClause>()
+        val distinct = ctx.DISTINCT() != null
+        val items = visitReturnItemsList(ctx.returnItems())
+        val where = ctx.whereSt()?.let { visitExpr(it.expression()) }
+        clauses.add(CypherClause.With(items, distinct, where))
+        if (ctx.orderBySt() != null) clauses.add(visitOrderBySt(ctx.orderBySt()))
+        if (ctx.skipSt() != null) clauses.add(visitSkipSt(ctx.skipSt()))
+        if (ctx.limitSt() != null) clauses.add(visitLimitSt(ctx.limitSt()))
+        return clauses
+    }
+
+    private fun visitUnwindStClause(ctx: CypherParser.UnwindStContext): CypherClause.Unwind {
+        val expr = visitExpr(ctx.expression())
+        val variable = getSymbolicName(ctx.variable())
+        return CypherClause.Unwind(expr, variable)
+    }
+
+    private fun visitOrderBySt(ctx: CypherParser.OrderByStContext): CypherClause.OrderBy {
+        val items = ctx.orderItem().map { item ->
+            val expr = visitExpr(item.expression())
+            val asc = when {
+                item.DESC() != null || item.DESCENDING() != null -> false
+                else -> true
             }
+            SortItem(expr, asc)
+        }
+        return CypherClause.OrderBy(items)
+    }
 
-            // Backtick-escaped identifier
-            if (c == '`') {
-                val end = input.indexOf('`', pos + 1)
-                if (end < 0) throw CypherParseException("Unterminated backtick at position $pos")
-                tokens.add(Token(TokenType.IDENTIFIER, input.substring(pos + 1, end), pos))
-                pos = end + 1
-                continue
+    private fun visitSkipSt(ctx: CypherParser.SkipStContext): CypherClause.Skip {
+        return CypherClause.Skip(visitExpr(ctx.expression()))
+    }
+
+    private fun visitLimitSt(ctx: CypherParser.LimitStContext): CypherClause.Limit {
+        return CypherClause.Limit(visitExpr(ctx.expression()))
+    }
+
+    private fun visitCreateStClause(ctx: CypherParser.CreateStContext): CypherClause.Create {
+        return CypherClause.Create(visitPatternList(ctx.patternList()))
+    }
+
+    private fun visitDeleteStClause(ctx: CypherParser.DeleteStContext): CypherClause.Delete {
+        val detach = ctx.DETACH() != null
+        val exprs = ctx.expressionList().expression().map { visitExpr(it) }
+        return CypherClause.Delete(exprs, detach)
+    }
+
+    private fun visitSetStClause(ctx: CypherParser.SetStContext): CypherClause.Set {
+        val items = ctx.setItem().map { visitSetItem(it) }
+        return CypherClause.Set(items)
+    }
+
+    private fun visitSetItem(ctx: CypherParser.SetItemContext): SetItem {
+        return when (ctx) {
+            is CypherParser.SetPropertyContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val property = getSymbolicName(ctx.propertyKeyName())
+                val expr = visitExpr(ctx.expression())
+                SetItem.PropertySet(variable, property, expr)
             }
-
-            // Parameter: $name
-            if (c == '$') {
-                pos++
-                val start = pos
-                while (pos < input.length && (input[pos].isLetterOrDigit() || input[pos] == '_')) pos++
-                tokens.add(Token(TokenType.PARAMETER, input.substring(start, pos), start - 1))
-                continue
+            is CypherParser.SetMergePropertiesContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val expr = visitExpr(ctx.expression())
+                SetItem.MergePropertiesSet(variable, expr)
             }
-
-            // Number
-            if (c.isDigit() || (c == '.' && pos + 1 < input.length && input[pos + 1].isDigit())) {
-                val (token, newPos) = readNumber(input, pos)
-                tokens.add(token)
-                pos = newPos
-                continue
+            is CypherParser.SetAllPropertiesContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val expr = visitExpr(ctx.expression())
+                SetItem.AllPropertiesSet(variable, expr)
             }
-
-            // Identifier or keyword
-            if (c.isLetter() || c == '_') {
-                val start = pos
-                while (pos < input.length && (input[pos].isLetterOrDigit() || input[pos] == '_')) pos++
-                val word = input.substring(start, pos)
-                val kwType = KEYWORDS[word.uppercase()]
-                tokens.add(Token(kwType ?: TokenType.IDENTIFIER, word, start))
-                continue
+            is CypherParser.SetLabelsContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val labels = ctx.nodeLabels().labelName().map { getSymbolicName(it) }
+                SetItem.LabelSet(variable, labels)
             }
+            else -> throw CypherParseException("Unknown SET item type")
+        }
+    }
 
-            // Multi-character operators
-            val next = if (pos + 1 < input.length) input[pos + 1] else '\u0000'
-            when {
-                c == '<' && next == '>' -> { tokens.add(Token(TokenType.NEQ, "<>", pos)); pos += 2 }
-                c == '<' && next == '=' -> { tokens.add(Token(TokenType.LTE, "<=", pos)); pos += 2 }
-                c == '>' && next == '=' -> { tokens.add(Token(TokenType.GTE, ">=", pos)); pos += 2 }
-                c == '=' && next == '~' -> { tokens.add(Token(TokenType.REGEX_MATCH, "=~", pos)); pos += 2 }
-                c == '+' && next == '=' -> { tokens.add(Token(TokenType.PLUS_EQ, "+=", pos)); pos += 2 }
-                c == '-' && next == '>' -> { tokens.add(Token(TokenType.ARROW_RIGHT, "->", pos)); pos += 2 }
-                c == '<' && next == '-' -> { tokens.add(Token(TokenType.ARROW_LEFT, "<-", pos)); pos += 2 }
-                c == '.' && next == '.' -> { tokens.add(Token(TokenType.DOTDOT, "..", pos)); pos += 2 }
+    private fun visitRemoveStClause(ctx: CypherParser.RemoveStContext): CypherClause.Remove {
+        val items = ctx.removeItem().map { visitRemoveItem(it) }
+        return CypherClause.Remove(items)
+    }
 
-                c == '(' -> { tokens.add(Token(TokenType.LPAREN, "(", pos)); pos++ }
-                c == ')' -> { tokens.add(Token(TokenType.RPAREN, ")", pos)); pos++ }
-                c == '[' -> { tokens.add(Token(TokenType.LBRACKET, "[", pos)); pos++ }
-                c == ']' -> { tokens.add(Token(TokenType.RBRACKET, "]", pos)); pos++ }
-                c == '{' -> { tokens.add(Token(TokenType.LBRACE, "{", pos)); pos++ }
-                c == '}' -> { tokens.add(Token(TokenType.RBRACE, "}", pos)); pos++ }
-                c == '.' -> { tokens.add(Token(TokenType.DOT, ".", pos)); pos++ }
-                c == ',' -> { tokens.add(Token(TokenType.COMMA, ",", pos)); pos++ }
-                c == ':' -> { tokens.add(Token(TokenType.COLON, ":", pos)); pos++ }
-                c == ';' -> { tokens.add(Token(TokenType.SEMICOLON, ";", pos)); pos++ }
-                c == '|' -> { tokens.add(Token(TokenType.PIPE, "|", pos)); pos++ }
-                c == '=' -> { tokens.add(Token(TokenType.EQ, "=", pos)); pos++ }
-                c == '<' -> { tokens.add(Token(TokenType.LT, "<", pos)); pos++ }
-                c == '>' -> { tokens.add(Token(TokenType.GT, ">", pos)); pos++ }
-                c == '+' -> { tokens.add(Token(TokenType.PLUS, "+", pos)); pos++ }
-                c == '-' -> { tokens.add(Token(TokenType.DASH, "-", pos)); pos++ }
-                c == '*' -> { tokens.add(Token(TokenType.STAR, "*", pos)); pos++ }
-                c == '/' -> { tokens.add(Token(TokenType.SLASH, "/", pos)); pos++ }
-                c == '%' -> { tokens.add(Token(TokenType.PERCENT, "%", pos)); pos++ }
-                c == '^' -> { tokens.add(Token(TokenType.CARET, "^", pos)); pos++ }
+    private fun visitRemoveItem(ctx: CypherParser.RemoveItemContext): RemoveItem {
+        return when (ctx) {
+            is CypherParser.RemovePropertyContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val property = getSymbolicName(ctx.propertyKeyName())
+                RemoveItem.PropertyRemove(variable, property)
+            }
+            is CypherParser.RemoveLabelsContext -> {
+                val variable = getSymbolicName(ctx.variable())
+                val labels = ctx.nodeLabels().labelName().map { getSymbolicName(it) }
+                RemoveItem.LabelRemove(variable, labels)
+            }
+            else -> throw CypherParseException("Unknown REMOVE item type")
+        }
+    }
 
-                else -> throw CypherParseException("Unexpected character '$c' at position $pos")
+    private fun visitMergeStClause(ctx: CypherParser.MergeStContext): CypherClause.Create {
+        return CypherClause.Create(listOf(visitPatternPart(ctx.patternPart())))
+    }
+
+    // -- Return items ---------------------------------------------------------
+
+    private fun visitReturnItemsList(ctx: CypherParser.ReturnItemsContext): List<ReturnItem> {
+        if (ctx.MULT() != null) {
+            return listOf(ReturnItem(CypherExpr.Variable("*")))
+        }
+        return ctx.returnItem().map { item ->
+            val expr = visitExpr(item.expression())
+            val alias = item.variable()?.let { getSymbolicName(it) }
+            ReturnItem(expr, alias)
+        }
+    }
+
+    // -- Pattern parsing ------------------------------------------------------
+
+    private fun visitPatternList(ctx: CypherParser.PatternListContext): List<CypherPattern> {
+        return ctx.patternPart().map { visitPatternPart(it) }
+    }
+
+    private fun visitPatternPart(ctx: CypherParser.PatternPartContext): CypherPattern {
+        val pathVariable = ctx.variable()?.let { getSymbolicName(it) }
+        val elements = visitPatternElement(ctx.patternElement())
+        return CypherPattern(elements, pathVariable)
+    }
+
+    private fun visitPatternElement(ctx: CypherParser.PatternElementContext): List<PatternElement> {
+        val elements = mutableListOf<PatternElement>()
+        val nodePatterns = ctx.nodePattern()
+        val relPatterns = ctx.relationshipPattern()
+
+        elements.add(visitNodePattern(nodePatterns[0]))
+        for (i in relPatterns.indices) {
+            elements.add(visitRelationshipPattern(relPatterns[i]))
+            if (i + 1 < nodePatterns.size) {
+                elements.add(visitNodePattern(nodePatterns[i + 1]))
+            }
+        }
+        return elements
+    }
+
+    private fun visitNodePattern(ctx: CypherParser.NodePatternContext): PatternElement.NodePattern {
+        val variable = ctx.variable()?.let { getSymbolicName(it) }
+        val labels = ctx.nodeLabels()?.labelName()?.map { getSymbolicName(it) } ?: emptyList()
+        val props = ctx.properties()?.let { visitMapLiteralAsExprMap(it.mapLiteral()) } ?: emptyMap()
+        return PatternElement.NodePattern(variable, labels, props)
+    }
+
+    private fun visitRelationshipPattern(ctx: CypherParser.RelationshipPatternContext): PatternElement.RelationshipPattern {
+        val detail = when (ctx) {
+            is CypherParser.RelFullPatternContext -> ctx.relationDetail()
+            is CypherParser.RelLeftPatternContext -> ctx.relationDetail()
+            is CypherParser.RelRightPatternContext -> ctx.relationDetail()
+            is CypherParser.RelBothPatternContext -> ctx.relationDetail()
+            else -> null
+        }
+
+        val direction = when (ctx) {
+            is CypherParser.RelLeftPatternContext -> Direction.INCOMING
+            is CypherParser.RelRightPatternContext -> Direction.OUTGOING
+            is CypherParser.RelFullPatternContext -> Direction.BOTH
+            is CypherParser.RelBothPatternContext -> Direction.BOTH
+            else -> Direction.BOTH
+        }
+
+        var variable: String? = null
+        var types = emptyList<String>()
+        var props = emptyMap<String, CypherExpr>()
+        var varLen = false
+        var minH: Int? = null
+        var maxH: Int? = null
+
+        if (detail != null) {
+            variable = detail.variable()?.let { getSymbolicName(it) }
+            types = detail.relationshipTypes()?.relTypeName()?.map { getSymbolicName(it) } ?: emptyList()
+            props = detail.properties()?.let { visitMapLiteralAsExprMap(it.mapLiteral()) } ?: emptyMap()
+
+            val range = detail.rangeLiteral()
+            if (range != null) {
+                varLen = true
+                val intLiterals = range.integerLiteral()
+                val hasRange = range.RANGE() != null
+
+                when {
+                    intLiterals.size == 2 && hasRange -> {
+                        minH = parseIntLiteral(intLiterals[0])
+                        maxH = parseIntLiteral(intLiterals[1])
+                    }
+                    intLiterals.size == 1 && hasRange -> {
+                        // Could be min.. or ..max
+                        // Need to check if the integer comes before or after RANGE
+                        val intToken = intLiterals[0].start
+                        val rangeToken = range.RANGE().symbol
+                        if (intToken.startIndex < rangeToken.startIndex) {
+                            // n..  (min only)
+                            minH = parseIntLiteral(intLiterals[0])
+                        } else {
+                            // ..n  (max only)
+                            minH = 1
+                            maxH = parseIntLiteral(intLiterals[0])
+                        }
+                    }
+                    intLiterals.size == 1 && !hasRange -> {
+                        // Exact: *3
+                        val v = parseIntLiteral(intLiterals[0])
+                        minH = v
+                        maxH = v
+                    }
+                    intLiterals.isEmpty() && hasRange -> {
+                        // *..  (unbounded with range - treat as *1..)
+                        minH = 1
+                    }
+                    // intLiterals.isEmpty() && !hasRange -> just *, unbounded
+                }
             }
         }
 
-        tokens.add(Token(TokenType.EOF, "", input.length))
-        return tokens
+        return PatternElement.RelationshipPattern(variable, types, props, direction, minH, maxH, varLen)
     }
 
-    private fun readString(input: String, startPos: Int, quote: Char): Pair<String, Int> {
+    private fun parseIntLiteral(ctx: CypherParser.IntegerLiteralContext): Int {
+        val text = ctx.text
+        return when {
+            text.startsWith("0x", true) -> java.lang.Long.decode(text).toInt()
+            text.startsWith("0o", true) -> text.substring(2).toInt(8)
+            else -> text.toInt()
+        }
+    }
+
+    // -- Expression visitors --------------------------------------------------
+
+    private fun visitExpr(ctx: CypherParser.ExpressionContext): CypherExpr {
+        return visitOrExpr(ctx.orExpression())
+    }
+
+    private fun visitOrExpr(ctx: CypherParser.OrExpressionContext): CypherExpr {
+        val parts = ctx.xorExpression()
+        var result = visitXorExpr(parts[0])
+        for (i in 1 until parts.size) {
+            result = CypherExpr.Or(result, visitXorExpr(parts[i]))
+        }
+        return result
+    }
+
+    private fun visitXorExpr(ctx: CypherParser.XorExpressionContext): CypherExpr {
+        val parts = ctx.andExpression()
+        var result = visitAndExpr(parts[0])
+        for (i in 1 until parts.size) {
+            result = CypherExpr.Xor(result, visitAndExpr(parts[i]))
+        }
+        return result
+    }
+
+    private fun visitAndExpr(ctx: CypherParser.AndExpressionContext): CypherExpr {
+        val parts = ctx.notExpression()
+        var result = visitNotExpr(parts[0])
+        for (i in 1 until parts.size) {
+            result = CypherExpr.And(result, visitNotExpr(parts[i]))
+        }
+        return result
+    }
+
+    private fun visitNotExpr(ctx: CypherParser.NotExpressionContext): CypherExpr {
+        return if (ctx.NOT() != null) {
+            CypherExpr.Not(visitNotExpr(ctx.notExpression()))
+        } else {
+            visitComparisonExpr(ctx.comparisonExpression())
+        }
+    }
+
+    private fun visitComparisonExpr(ctx: CypherParser.ComparisonExpressionContext): CypherExpr {
+        val operands = ctx.stringPredicateExpression()
+        val ops = ctx.compOp()
+        var result = visitStringPredicateExpr(operands[0])
+        for (i in ops.indices) {
+            val op = when {
+                ops[i].ASSIGN() != null -> "="
+                ops[i].NOT_EQUAL() != null -> "<>"
+                ops[i].LT() != null -> "<"
+                ops[i].GT() != null -> ">"
+                ops[i].LE() != null -> "<="
+                ops[i].GE() != null -> ">="
+                else -> throw CypherParseException("Unknown comparison operator")
+            }
+            result = CypherExpr.Comparison(op, result, visitStringPredicateExpr(operands[i + 1]))
+        }
+        return result
+    }
+
+    private fun visitStringPredicateExpr(ctx: CypherParser.StringPredicateExpressionContext): CypherExpr {
+        var result = visitAddSubExpr(ctx.addSubExpression())
+        for (suffix in ctx.stringPredicateSuffix()) {
+            result = when (suffix) {
+                is CypherParser.StartsWithPredicateContext ->
+                    CypherExpr.StringOp("STARTS WITH", result, visitAddSubExpr(suffix.addSubExpression()))
+                is CypherParser.EndsWithPredicateContext ->
+                    CypherExpr.StringOp("ENDS WITH", result, visitAddSubExpr(suffix.addSubExpression()))
+                is CypherParser.ContainsPredicateContext ->
+                    CypherExpr.StringOp("CONTAINS", result, visitAddSubExpr(suffix.addSubExpression()))
+                is CypherParser.InPredicateContext ->
+                    CypherExpr.ListOp("IN", result, visitAddSubExpr(suffix.addSubExpression()))
+                is CypherParser.RegexPredicateContext ->
+                    CypherExpr.RegexMatch(result, visitAddSubExpr(suffix.addSubExpression()))
+                is CypherParser.IsNullPredicateContext ->
+                    CypherExpr.IsNull(result)
+                is CypherParser.IsNotNullPredicateContext ->
+                    CypherExpr.IsNotNull(result)
+                is CypherParser.NotContainsPredicateContext ->
+                    CypherExpr.Not(CypherExpr.StringOp("CONTAINS", result, visitAddSubExpr(suffix.addSubExpression())))
+                is CypherParser.NotStartsWithPredicateContext ->
+                    CypherExpr.Not(CypherExpr.StringOp("STARTS WITH", result, visitAddSubExpr(suffix.addSubExpression())))
+                is CypherParser.NotEndsWithPredicateContext ->
+                    CypherExpr.Not(CypherExpr.StringOp("ENDS WITH", result, visitAddSubExpr(suffix.addSubExpression())))
+                else -> throw CypherParseException("Unknown string predicate suffix")
+            }
+        }
+        return result
+    }
+
+    private fun visitAddSubExpr(ctx: CypherParser.AddSubExpressionContext): CypherExpr {
+        val operands = ctx.multDivExpression()
+        var result = visitMultDivExpr(operands[0])
+        // The operators alternate with operands: operand (op operand)*
+        // In the parse tree, we need to find the PLUS/SUB tokens
+        var opIndex = 0
+        for (i in 1 until operands.size) {
+            // Find the operator between operands[i-1] and operands[i]
+            val op = findAddSubOp(ctx, opIndex++)
+            result = CypherExpr.BinaryOp(op, result, visitMultDivExpr(operands[i]))
+        }
+        return result
+    }
+
+    private fun findAddSubOp(ctx: CypherParser.AddSubExpressionContext, index: Int): String {
+        var count = 0
+        for (child in ctx.children) {
+            if (child is org.antlr.v4.runtime.tree.TerminalNode) {
+                when (child.symbol.type) {
+                    CypherLexer.PLUS -> {
+                        if (count == index) return "+"
+                        count++
+                    }
+                    CypherLexer.SUB -> {
+                        if (count == index) return "-"
+                        count++
+                    }
+                }
+            }
+        }
+        throw CypherParseException("Could not find add/sub operator at index $index")
+    }
+
+    private fun visitMultDivExpr(ctx: CypherParser.MultDivExpressionContext): CypherExpr {
+        val operands = ctx.powerExpression()
+        var result = visitPowerExpr(operands[0])
+        var opIndex = 0
+        for (i in 1 until operands.size) {
+            val op = findMultDivOp(ctx, opIndex++)
+            result = CypherExpr.BinaryOp(op, result, visitPowerExpr(operands[i]))
+        }
+        return result
+    }
+
+    private fun findMultDivOp(ctx: CypherParser.MultDivExpressionContext, index: Int): String {
+        var count = 0
+        for (child in ctx.children) {
+            if (child is org.antlr.v4.runtime.tree.TerminalNode) {
+                when (child.symbol.type) {
+                    CypherLexer.MULT -> {
+                        if (count == index) return "*"
+                        count++
+                    }
+                    CypherLexer.DIV -> {
+                        if (count == index) return "/"
+                        count++
+                    }
+                    CypherLexer.MOD -> {
+                        if (count == index) return "%"
+                        count++
+                    }
+                }
+            }
+        }
+        throw CypherParseException("Could not find mult/div/mod operator at index $index")
+    }
+
+    private fun visitPowerExpr(ctx: CypherParser.PowerExpressionContext): CypherExpr {
+        val left = visitUnaryExpr(ctx.unaryExpression())
+        // Right-associative via grammar: powerExpression : unaryExpression (CARET powerExpression)?
+        return if (ctx.CARET() != null && ctx.powerExpression() != null) {
+            CypherExpr.BinaryOp("^", left, visitPowerExpr(ctx.powerExpression()))
+        } else {
+            left
+        }
+    }
+
+    private fun visitUnaryExpr(ctx: CypherParser.UnaryExpressionContext): CypherExpr {
+        return when {
+            ctx.SUB() != null -> CypherExpr.UnaryOp("-", visitUnaryExpr(ctx.unaryExpression()))
+            ctx.PLUS() != null -> visitUnaryExpr(ctx.unaryExpression())
+            else -> visitPostfixExpr(ctx.postfixExpression())
+        }
+    }
+
+    private fun visitPostfixExpr(ctx: CypherParser.PostfixExpressionContext): CypherExpr {
+        var result = visitAtomExpr(ctx.atomExpression())
+
+        // Process postfix chains: property access and subscript/slice
+        val propertyKeys = ctx.propertyKeyName()
+        val subscripts = ctx.subscriptOrSlice()
+
+        // We need to iterate through the children to get the right order
+        var propIdx = 0
+        var subIdx = 0
+        for (child in ctx.children) {
+            when {
+                child is org.antlr.v4.runtime.tree.TerminalNode && child.symbol.type == CypherLexer.DOT -> {
+                    if (propIdx < propertyKeys.size) {
+                        result = CypherExpr.Property(result, getSymbolicName(propertyKeys[propIdx]))
+                        propIdx++
+                    }
+                }
+                child is CypherParser.SubscriptOrSliceContext ||
+                child is CypherParser.SliceFromToContext ||
+                child is CypherParser.SliceToContext ||
+                child is CypherParser.SubscriptIndexContext -> {
+                    if (subIdx < subscripts.size) {
+                        result = visitSubscriptOrSlice(result, subscripts[subIdx])
+                        subIdx++
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    private fun visitSubscriptOrSlice(target: CypherExpr, ctx: CypherParser.SubscriptOrSliceContext): CypherExpr {
+        return when (ctx) {
+            is CypherParser.SliceFromToContext -> {
+                val from = visitExpr(ctx.expression(0))
+                val to = ctx.expression(1)?.let { visitExpr(it) }
+                CypherExpr.Slice(target, from, to)
+            }
+            is CypherParser.SliceToContext -> {
+                val to = visitExpr(ctx.expression())
+                CypherExpr.Slice(target, null, to)
+            }
+            is CypherParser.SubscriptIndexContext -> {
+                val index = visitExpr(ctx.expression())
+                CypherExpr.Subscript(target, index)
+            }
+            else -> throw CypherParseException("Unknown subscript/slice type")
+        }
+    }
+
+    private fun visitAtomExpr(ctx: CypherParser.AtomExpressionContext): CypherExpr {
+        return when (ctx) {
+            is CypherParser.LiteralAtomContext -> visitLiteral(ctx.literal())
+            is CypherParser.ParameterAtomContext -> {
+                val name = getSymbolicName(ctx.parameter().symbolicName())
+                CypherExpr.Parameter(name)
+            }
+            is CypherParser.CaseAtomContext -> visitCaseExpr(ctx.caseExpression())
+            is CypherParser.CountStarAtomContext -> CypherExpr.CountStar
+            is CypherParser.ListComprehensionAtomContext -> visitListComprehensionExpr(ctx.listComprehension())
+            is CypherParser.ExistsAtomContext -> {
+                val expr = visitExpr(ctx.expression())
+                CypherExpr.FunctionCall("exists", listOf(expr))
+            }
+            is CypherParser.FunctionAtomContext -> visitFunctionInvocationExpr(ctx.functionInvocation())
+            is CypherParser.ParenAtomContext -> visitExpr(ctx.expression())
+            is CypherParser.DistinctAtomContext -> CypherExpr.Distinct(visitUnaryExpr(ctx.unaryExpression()))
+            is CypherParser.VariableAtomContext -> CypherExpr.Variable(getSymbolicName(ctx.variable()))
+            else -> throw CypherParseException("Unknown atom expression type")
+        }
+    }
+
+    private fun visitLiteral(ctx: CypherParser.LiteralContext): CypherExpr {
+        return when (ctx) {
+            is CypherParser.TrueLiteralContext -> CypherExpr.Literal(true)
+            is CypherParser.FalseLiteralContext -> CypherExpr.Literal(false)
+            is CypherParser.NullLiteralContext -> CypherExpr.Literal(null)
+            is CypherParser.IntLiteralContext -> {
+                val text = ctx.integerLiteral().text
+                val v: Number = when {
+                    text.startsWith("0x", true) -> java.lang.Long.decode(text)
+                    text.startsWith("0o", true) -> text.substring(2).toLong(8)
+                    else -> text.toLong().let { if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it }
+                }
+                CypherExpr.Literal(v)
+            }
+            is CypherParser.FloatLitContext -> CypherExpr.Literal(ctx.floatLiteral().text.toDouble())
+            is CypherParser.StringLitContext -> CypherExpr.Literal(parseStringLiteral(ctx.stringLiteral().text))
+            is CypherParser.ListLitContext -> {
+                val elements = ctx.listLiteral().expressionList()?.expression()?.map { visitExpr(it) } ?: emptyList()
+                CypherExpr.ListLiteral(elements)
+            }
+            is CypherParser.MapLitContext -> {
+                val entries = visitMapLiteralAsExprMap(ctx.mapLiteral())
+                CypherExpr.MapLiteral(entries)
+            }
+            else -> throw CypherParseException("Unknown literal type")
+        }
+    }
+
+    private fun visitFunctionInvocationExpr(ctx: CypherParser.FunctionInvocationContext): CypherExpr {
+        val name = ctx.functionName().symbolicName().joinToString(".") { getSymbolicName(it) }
+        if (name.equals("count", ignoreCase = true) && ctx.expressionList() == null) {
+            // Could be count() with no args, but count(*) is a separate rule
+            return CypherExpr.FunctionCall(name, emptyList())
+        }
+        val distinct = ctx.DISTINCT() != null
+        val args = ctx.expressionList()?.expression()?.map { visitExpr(it) } ?: emptyList()
+        return CypherExpr.FunctionCall(name, args, distinct)
+    }
+
+    private fun visitCaseExpr(ctx: CypherParser.CaseExpressionContext): CypherExpr {
+        // CASE expr? (WHEN expr THEN expr)+ (ELSE expr)? END
+        // ctx.expression() returns the optional test expression (simple CASE)
+        val test = ctx.expression()?.let { visitExpr(it) }
+
+        val whens = ctx.caseWhen().map { w ->
+            val cond = visitExpr(w.expression(0))
+            val result = visitExpr(w.expression(1))
+            cond to result
+        }
+
+        val elseExpr = ctx.caseElse()?.let { visitExpr(it.expression()) }
+
+        return CypherExpr.CaseExpr(test, whens, elseExpr)
+    }
+
+    private fun visitListComprehensionExpr(ctx: CypherParser.ListComprehensionContext): CypherExpr {
+        val varName = getSymbolicName(ctx.variable())
+        val expressions = ctx.expression()
+
+        // [x IN listExpr WHERE predicate | mapExpr]
+        val listExpr = visitExpr(expressions[0])
+
+        // Check for WHERE and PIPE
+        val hasWhere = ctx.WHERE() != null
+        val hasStick = ctx.STICK() != null
+
+        var predicate: CypherExpr? = null
+        var mapExpr: CypherExpr? = null
+
+        when {
+            hasWhere && hasStick && expressions.size >= 3 -> {
+                predicate = visitExpr(expressions[1])
+                mapExpr = visitExpr(expressions[2])
+            }
+            hasWhere && !hasStick && expressions.size >= 2 -> {
+                predicate = visitExpr(expressions[1])
+            }
+            !hasWhere && hasStick && expressions.size >= 2 -> {
+                mapExpr = visitExpr(expressions[1])
+            }
+        }
+
+        return CypherExpr.ListComprehension(varName, listExpr, predicate, mapExpr)
+    }
+
+    // -- Map literal helper ---------------------------------------------------
+
+    private fun visitMapLiteralAsExprMap(ctx: CypherParser.MapLiteralContext): Map<String, CypherExpr> {
+        val map = mutableMapOf<String, CypherExpr>()
+        for (pair in ctx.mapPair()) {
+            val key = getSymbolicName(pair.propertyKeyName())
+            val value = visitExpr(pair.expression())
+            map[key] = value
+        }
+        return map
+    }
+
+    // -- String literal parsing -----------------------------------------------
+
+    private fun parseStringLiteral(text: String): String {
+        // Remove surrounding quotes
+        val content = text.substring(1, text.length - 1)
+        val quote = text[0]
         val sb = StringBuilder()
-        var pos = startPos + 1
-        while (pos < input.length) {
-            val c = input[pos]
-            if (c == '\\' && pos + 1 < input.length) {
-                pos++
-                when (input[pos]) {
+        var i = 0
+        while (i < content.length) {
+            val c = content[i]
+            if (c == '\\' && i + 1 < content.length) {
+                i++
+                when (content[i]) {
                     '\\' -> sb.append('\\')
                     '\'' -> sb.append('\'')
                     '"' -> sb.append('"')
@@ -233,709 +770,50 @@ internal object CypherTokenizer {
                     't' -> sb.append('\t')
                     'b' -> sb.append('\b')
                     'u' -> {
-                        if (pos + 4 < input.length) {
-                            sb.append(input.substring(pos + 1, pos + 5).toInt(16).toChar())
-                            pos += 4
+                        if (i + 4 < content.length) {
+                            sb.append(content.substring(i + 1, i + 5).toInt(16).toChar())
+                            i += 4
                         }
                     }
-                    else -> { sb.append('\\'); sb.append(input[pos]) }
+                    else -> { sb.append('\\'); sb.append(content[i]) }
                 }
-                pos++
-            } else if (c == quote) {
-                if (pos + 1 < input.length && input[pos + 1] == quote) {
-                    sb.append(quote)
-                    pos += 2
-                } else {
-                    return sb.toString() to (pos + 1)
-                }
+            } else if (c == quote && i + 1 < content.length && content[i + 1] == quote) {
+                // Escaped quote via doubling: '' or ""
+                sb.append(quote)
+                i++
             } else {
                 sb.append(c)
-                pos++
             }
+            i++
         }
-        throw CypherParseException("Unterminated string at position $startPos")
+        return sb.toString()
     }
 
-    private fun readNumber(input: String, startPos: Int): Pair<Token, Int> {
-        var pos = startPos
-        var isFloat = false
+    // -- Name extraction helpers ----------------------------------------------
 
-        if (pos + 1 < input.length && input[pos] == '0' && input[pos + 1].lowercaseChar() == 'x') {
-            pos += 2
-            while (pos < input.length && input[pos].isLetterOrDigit()) pos++
-            return Token(TokenType.INTEGER_LITERAL, input.substring(startPos, pos), startPos) to pos
+    private fun getSymbolicName(ctx: CypherParser.VariableContext): String {
+        return getSymbolicName(ctx.symbolicName())
+    }
+
+    private fun getSymbolicName(ctx: CypherParser.LabelNameContext): String {
+        return getSymbolicName(ctx.symbolicName())
+    }
+
+    private fun getSymbolicName(ctx: CypherParser.RelTypeNameContext): String {
+        return getSymbolicName(ctx.symbolicName())
+    }
+
+    private fun getSymbolicName(ctx: CypherParser.PropertyKeyNameContext): String {
+        return getSymbolicName(ctx.symbolicName())
+    }
+
+    private fun getSymbolicName(ctx: CypherParser.SymbolicNameContext): String {
+        val esc = ctx.ESC_LITERAL()
+        if (esc != null) {
+            // Remove backtick delimiters
+            val text = esc.text
+            return text.substring(1, text.length - 1)
         }
-        if (pos + 1 < input.length && input[pos] == '0' && input[pos + 1].lowercaseChar() == 'o') {
-            pos += 2
-            while (pos < input.length && input[pos].isDigit()) pos++
-            return Token(TokenType.INTEGER_LITERAL, input.substring(startPos, pos), startPos) to pos
-        }
-
-        while (pos < input.length && input[pos].isDigit()) pos++
-        if (pos < input.length && input[pos] == '.' && pos + 1 < input.length && input[pos + 1].isDigit()) {
-            isFloat = true; pos++
-            while (pos < input.length && input[pos].isDigit()) pos++
-        }
-        if (pos < input.length && input[pos].lowercaseChar() == 'e') {
-            isFloat = true; pos++
-            if (pos < input.length && (input[pos] == '+' || input[pos] == '-')) pos++
-            while (pos < input.length && input[pos].isDigit()) pos++
-        }
-
-        val text = input.substring(startPos, pos)
-        return Token(if (isFloat) TokenType.FLOAT_LITERAL else TokenType.INTEGER_LITERAL, text, startPos) to pos
-    }
-}
-
-// ============================================================================
-// Clause Parser
-// ============================================================================
-
-internal class ClauseParser(internal val tokens: List<Token>) {
-
-    internal var pos = 0
-
-    internal fun peek(): Token = tokens[pos]
-    internal fun peekType(): TokenType = tokens[pos].type
-
-    internal fun advance(): Token {
-        val t = tokens[pos]
-        if (pos < tokens.size - 1) pos++
-        return t
-    }
-
-    internal fun expect(type: TokenType): Token {
-        val t = peek()
-        if (t.type != type) {
-            throw CypherParseException(
-                "Expected $type but got ${t.type} '${t.text}' at position ${t.position}"
-            )
-        }
-        return advance()
-    }
-
-    internal fun match(type: TokenType): Boolean {
-        if (peekType() == type) { advance(); return true }
-        return false
-    }
-
-    internal fun isAtEnd(): Boolean = peekType() == TokenType.EOF
-
-    fun parseClauses(): List<CypherClause> {
-        val clauses = mutableListOf<CypherClause>()
-        while (!isAtEnd()) {
-            if (match(TokenType.SEMICOLON)) continue
-            when (peekType()) {
-                TokenType.MATCH -> clauses.add(parseMatch(optional = false))
-                TokenType.OPTIONAL -> clauses.add(parseOptionalMatch())
-                TokenType.WHERE -> clauses.add(parseWhere())
-                TokenType.RETURN -> clauses.addAll(parseReturnWithTrailing())
-                TokenType.WITH -> clauses.addAll(parseWith())
-                TokenType.UNWIND -> clauses.add(parseUnwind())
-                TokenType.ORDER -> clauses.add(parseOrderBy())
-                TokenType.SKIP -> clauses.add(parseSkip())
-                TokenType.LIMIT -> clauses.add(parseLimit())
-                TokenType.UNION -> clauses.add(parseUnion())
-                TokenType.CREATE -> clauses.add(parseCreate())
-                TokenType.DELETE -> clauses.add(parseDelete(detach = false))
-                TokenType.DETACH -> clauses.add(parseDetachDelete())
-                TokenType.SET -> clauses.add(parseSet())
-                TokenType.REMOVE -> clauses.add(parseRemove())
-                TokenType.MERGE -> { advance(); clauses.add(CypherClause.Create(parsePatternList())) }
-                else -> throw CypherParseException(
-                    "Expected clause keyword but got '${peek().text}' at position ${peek().position}"
-                )
-            }
-        }
-        return clauses
-    }
-
-    // -- Clause parsers -------------------------------------------------------
-
-    private fun parseMatch(optional: Boolean): CypherClause.Match {
-        expect(TokenType.MATCH)
-        return CypherClause.Match(parsePatternList(), optional)
-    }
-
-    private fun parseOptionalMatch(): CypherClause.Match {
-        expect(TokenType.OPTIONAL)
-        return parseMatch(optional = true)
-    }
-
-    private fun parseWhere(): CypherClause.Where {
-        expect(TokenType.WHERE)
-        return CypherClause.Where(ExprParser(this).parseExpression())
-    }
-
-    private fun parseReturnWithTrailing(): List<CypherClause> {
-        expect(TokenType.RETURN)
-        val distinct = match(TokenType.DISTINCT)
-        val items = parseReturnItems()
-        val result = mutableListOf<CypherClause>(CypherClause.Return(items, distinct))
-        if (peekType() == TokenType.ORDER) result.add(parseOrderBy())
-        if (peekType() == TokenType.SKIP) result.add(parseSkip())
-        if (peekType() == TokenType.LIMIT) result.add(parseLimit())
-        return result
-    }
-
-    private fun parseWith(): List<CypherClause> {
-        expect(TokenType.WITH)
-        val distinct = match(TokenType.DISTINCT)
-        val items = parseReturnItems()
-        val where = if (peekType() == TokenType.WHERE) {
-            advance(); ExprParser(this).parseExpression()
-        } else null
-        val result = mutableListOf<CypherClause>(CypherClause.With(items, distinct, where))
-        if (peekType() == TokenType.ORDER) result.add(parseOrderBy())
-        if (peekType() == TokenType.SKIP) result.add(parseSkip())
-        if (peekType() == TokenType.LIMIT) result.add(parseLimit())
-        return result
-    }
-
-    private fun parseUnwind(): CypherClause.Unwind {
-        expect(TokenType.UNWIND)
-        val expr = ExprParser(this).parseExpression()
-        expect(TokenType.AS)
-        val variable = expect(TokenType.IDENTIFIER).text
-        return CypherClause.Unwind(expr, variable)
-    }
-
-    private fun parseOrderBy(): CypherClause.OrderBy {
-        expect(TokenType.ORDER); expect(TokenType.BY)
-        val items = mutableListOf<SortItem>()
-        do {
-            val expr = ExprParser(this).parseExpression()
-            val asc = when (peekType()) {
-                TokenType.ASC, TokenType.ASCENDING -> { advance(); true }
-                TokenType.DESC, TokenType.DESCENDING -> { advance(); false }
-                else -> true
-            }
-            items.add(SortItem(expr, asc))
-        } while (match(TokenType.COMMA))
-        return CypherClause.OrderBy(items)
-    }
-
-    private fun parseSkip(): CypherClause.Skip {
-        expect(TokenType.SKIP)
-        return CypherClause.Skip(ExprParser(this).parseUnary())
-    }
-
-    private fun parseLimit(): CypherClause.Limit {
-        expect(TokenType.LIMIT)
-        return CypherClause.Limit(ExprParser(this).parseUnary())
-    }
-
-    private fun parseUnion(): CypherClause.Union {
-        expect(TokenType.UNION)
-        return CypherClause.Union(all = match(TokenType.ALL))
-    }
-
-    private fun parseCreate(): CypherClause.Create {
-        expect(TokenType.CREATE)
-        return CypherClause.Create(parsePatternList())
-    }
-
-    private fun parseDelete(detach: Boolean): CypherClause.Delete {
-        expect(TokenType.DELETE)
-        val exprs = mutableListOf<CypherExpr>()
-        do { exprs.add(ExprParser(this).parseExpression()) } while (match(TokenType.COMMA))
-        return CypherClause.Delete(exprs, detach)
-    }
-
-    private fun parseDetachDelete(): CypherClause.Delete {
-        expect(TokenType.DETACH); return parseDelete(detach = true)
-    }
-
-    private fun parseSet(): CypherClause.Set {
-        expect(TokenType.SET)
-        val items = mutableListOf<SetItem>()
-        do { items.add(parseSetItem()) } while (match(TokenType.COMMA))
-        return CypherClause.Set(items)
-    }
-
-    private fun parseSetItem(): SetItem {
-        val name = expect(TokenType.IDENTIFIER).text
-        if (peekType() == TokenType.COLON) {
-            val labels = mutableListOf<String>()
-            while (match(TokenType.COLON)) labels.add(readIdentOrKeyword())
-            return SetItem.LabelSet(name, labels)
-        }
-        if (peekType() == TokenType.DOT) {
-            advance()
-            val prop = readIdentOrKeyword()
-            expect(TokenType.EQ)
-            return SetItem.PropertySet(name, prop, ExprParser(this).parseExpression())
-        }
-        if (peekType() == TokenType.PLUS_EQ) {
-            advance()
-            return SetItem.MergePropertiesSet(name, ExprParser(this).parseExpression())
-        }
-        expect(TokenType.EQ)
-        return SetItem.AllPropertiesSet(name, ExprParser(this).parseExpression())
-    }
-
-    private fun parseRemove(): CypherClause.Remove {
-        expect(TokenType.REMOVE)
-        val items = mutableListOf<RemoveItem>()
-        do {
-            val name = expect(TokenType.IDENTIFIER).text
-            if (peekType() == TokenType.DOT) {
-                advance(); items.add(RemoveItem.PropertyRemove(name, readIdentOrKeyword()))
-            } else if (peekType() == TokenType.COLON) {
-                val labels = mutableListOf<String>()
-                while (match(TokenType.COLON)) labels.add(readIdentOrKeyword())
-                items.add(RemoveItem.LabelRemove(name, labels))
-            }
-        } while (match(TokenType.COMMA))
-        return CypherClause.Remove(items)
-    }
-
-    // -- Return items ---------------------------------------------------------
-
-    private fun parseReturnItems(): List<ReturnItem> {
-        val items = mutableListOf<ReturnItem>()
-        do {
-            if (peekType() == TokenType.STAR && items.isEmpty()) {
-                advance(); items.add(ReturnItem(CypherExpr.Variable("*"))); continue
-            }
-            val expr = ExprParser(this).parseExpression()
-            val alias = if (peekType() == TokenType.AS) { advance(); readIdentOrKeyword() } else null
-            items.add(ReturnItem(expr, alias))
-        } while (match(TokenType.COMMA))
-        return items
-    }
-
-    // -- Pattern parsing ------------------------------------------------------
-
-    internal fun parsePatternList(): List<CypherPattern> {
-        val patterns = mutableListOf(parsePattern())
-        while (match(TokenType.COMMA)) patterns.add(parsePattern())
-        return patterns
-    }
-
-    private fun parsePattern(): CypherPattern {
-        // Check for path variable assignment: p = (...)
-        var pathVariable: String? = null
-        if (peekType() == TokenType.IDENTIFIER &&
-            pos + 1 < tokens.size && tokens[pos + 1].type == TokenType.EQ &&
-            pos + 2 < tokens.size && tokens[pos + 2].type == TokenType.LPAREN
-        ) {
-            pathVariable = advance().text
-            expect(TokenType.EQ)
-        }
-
-        val elements = mutableListOf<PatternElement>()
-        elements.add(parseNodePattern())
-        while (peekType() == TokenType.DASH || peekType() == TokenType.ARROW_LEFT) {
-            elements.add(parseRelPattern())
-            elements.add(parseNodePattern())
-        }
-        return CypherPattern(elements, pathVariable)
-    }
-
-    private fun parseNodePattern(): PatternElement.NodePattern {
-        expect(TokenType.LPAREN)
-        var variable: String? = null
-        val labels = mutableListOf<String>()
-        var props = emptyMap<String, CypherExpr>()
-
-        if (peekType() == TokenType.IDENTIFIER) variable = advance().text
-        while (peekType() == TokenType.COLON) { advance(); labels.add(readIdentOrKeyword()) }
-        if (peekType() == TokenType.LBRACE) props = parseInlineMap()
-        expect(TokenType.RPAREN)
-        return PatternElement.NodePattern(variable, labels, props)
-    }
-
-    private fun parseRelPattern(): PatternElement.RelationshipPattern {
-        val leftArrow = match(TokenType.ARROW_LEFT)
-        if (!leftArrow) expect(TokenType.DASH)
-
-        var variable: String? = null
-        val types = mutableListOf<String>()
-        var props = emptyMap<String, CypherExpr>()
-        var varLen = false
-        var minH: Int? = null
-        var maxH: Int? = null
-
-        if (peekType() == TokenType.LBRACKET) {
-            advance()
-            if (peekType() == TokenType.IDENTIFIER) variable = advance().text
-            if (peekType() == TokenType.COLON) {
-                advance(); types.add(readIdentOrKeyword())
-                while (peekType() == TokenType.PIPE) { advance(); types.add(readIdentOrKeyword()) }
-            }
-            if (peekType() == TokenType.LBRACE) props = parseInlineMap()
-            if (peekType() == TokenType.STAR) {
-                advance(); varLen = true
-                if (peekType() == TokenType.INTEGER_LITERAL) {
-                    val first = advance().text.toInt()
-                    if (peekType() == TokenType.DOTDOT) {
-                        advance(); minH = first
-                        if (peekType() == TokenType.INTEGER_LITERAL) maxH = advance().text.toInt()
-                    } else { minH = first; maxH = first }
-                } else if (peekType() == TokenType.DOTDOT) {
-                    advance(); minH = 1
-                    if (peekType() == TokenType.INTEGER_LITERAL) maxH = advance().text.toInt()
-                }
-            }
-            expect(TokenType.RBRACKET)
-        }
-
-        val rightArrow = match(TokenType.ARROW_RIGHT)
-        if (!rightArrow && peekType() == TokenType.DASH) advance()
-
-        val dir = when {
-            leftArrow && !rightArrow -> Direction.INCOMING
-            !leftArrow && rightArrow -> Direction.OUTGOING
-            leftArrow && rightArrow -> Direction.BOTH
-            else -> Direction.BOTH
-        }
-
-        return PatternElement.RelationshipPattern(variable, types, props, dir, minH, maxH, varLen)
-    }
-
-    private fun parseInlineMap(): Map<String, CypherExpr> {
-        expect(TokenType.LBRACE)
-        val map = mutableMapOf<String, CypherExpr>()
-        if (peekType() != TokenType.RBRACE) {
-            do {
-                val key = readIdentOrKeyword()
-                expect(TokenType.COLON)
-                map[key] = ExprParser(this).parseExpression()
-            } while (match(TokenType.COMMA))
-        }
-        expect(TokenType.RBRACE)
-        return map
-    }
-
-    // -- Utilities ------------------------------------------------------------
-
-    internal fun readIdentOrKeyword(): String {
-        val t = peek()
-        if (t.type == TokenType.IDENTIFIER) return advance().text
-        if (t.type in KEYWORD_TOKENS) return advance().text
-        throw CypherParseException("Expected identifier but got ${t.type} '${t.text}' at position ${t.position}")
-    }
-
-    companion object {
-        private val SYMBOL_TOKENS = setOf(
-            TokenType.LPAREN, TokenType.RPAREN, TokenType.LBRACKET, TokenType.RBRACKET,
-            TokenType.LBRACE, TokenType.RBRACE, TokenType.DOT, TokenType.COMMA,
-            TokenType.COLON, TokenType.SEMICOLON, TokenType.PIPE,
-            TokenType.EQ, TokenType.NEQ, TokenType.LT, TokenType.GT,
-            TokenType.LTE, TokenType.GTE, TokenType.PLUS, TokenType.MINUS,
-            TokenType.STAR, TokenType.SLASH, TokenType.PERCENT, TokenType.CARET,
-            TokenType.ARROW_RIGHT, TokenType.ARROW_LEFT, TokenType.DASH,
-            TokenType.DOTDOT, TokenType.REGEX_MATCH, TokenType.PLUS_EQ
-        )
-        private val NON_KEYWORD_TOKENS = SYMBOL_TOKENS + setOf(
-            TokenType.IDENTIFIER, TokenType.INTEGER_LITERAL, TokenType.FLOAT_LITERAL,
-            TokenType.STRING_LITERAL, TokenType.PARAMETER, TokenType.EOF
-        )
-        internal val KEYWORD_TOKENS = TokenType.entries.toSet() - NON_KEYWORD_TOKENS
-    }
-}
-
-// ============================================================================
-// Expression Parser
-// ============================================================================
-
-/**
- * Recursive descent expression parser with standard Cypher operator precedence.
- *
- * Precedence (lowest to highest):
- *  1. OR
- *  2. XOR
- *  3. AND
- *  4. NOT
- *  5. Comparison (=, <>, <, >, <=, >=)
- *  6. String/list predicates (STARTS WITH, ENDS WITH, CONTAINS, IN, IS NULL, =~)
- *  7. Addition (+, -)
- *  8. Multiplication (*, /, %)
- *  9. Exponentiation (^)
- * 10. Unary (+, -)
- * 11. Postfix (property access, subscript/slice)
- * 12. Atoms (literals, variables, function calls, parenthesized, list, map, CASE)
- */
-internal class ExprParser(private val cp: ClauseParser) {
-
-    fun parseExpression(): CypherExpr = parseOr()
-
-    private fun parseOr(): CypherExpr {
-        var left = parseXor()
-        while (cp.peekType() == TokenType.OR) { cp.advance(); left = CypherExpr.Or(left, parseXor()) }
-        return left
-    }
-
-    private fun parseXor(): CypherExpr {
-        var left = parseAnd()
-        while (cp.peekType() == TokenType.XOR) { cp.advance(); left = CypherExpr.Xor(left, parseAnd()) }
-        return left
-    }
-
-    private fun parseAnd(): CypherExpr {
-        var left = parseNot()
-        while (cp.peekType() == TokenType.AND) { cp.advance(); left = CypherExpr.And(left, parseNot()) }
-        return left
-    }
-
-    private fun parseNot(): CypherExpr {
-        if (cp.peekType() == TokenType.NOT) { cp.advance(); return CypherExpr.Not(parseNot()) }
-        return parseComparison()
-    }
-
-    private fun parseComparison(): CypherExpr {
-        var left = parseStringPredicate()
-        while (true) {
-            val op = when (cp.peekType()) {
-                TokenType.EQ -> "="; TokenType.NEQ -> "<>"
-                TokenType.LT -> "<"; TokenType.GT -> ">"
-                TokenType.LTE -> "<="; TokenType.GTE -> ">="
-                else -> break
-            }
-            cp.advance()
-            left = CypherExpr.Comparison(op, left, parseStringPredicate())
-        }
-        return left
-    }
-
-    private fun parseStringPredicate(): CypherExpr {
-        var left = parseAddition()
-        while (true) {
-            when (cp.peekType()) {
-                TokenType.STARTS -> {
-                    cp.advance(); cp.expect(TokenType.WITH)
-                    left = CypherExpr.StringOp("STARTS WITH", left, parseAddition())
-                }
-                TokenType.ENDS -> {
-                    cp.advance(); cp.expect(TokenType.WITH)
-                    left = CypherExpr.StringOp("ENDS WITH", left, parseAddition())
-                }
-                TokenType.CONTAINS -> {
-                    cp.advance()
-                    left = CypherExpr.StringOp("CONTAINS", left, parseAddition())
-                }
-                TokenType.IN -> { cp.advance(); left = CypherExpr.ListOp("IN", left, parseAddition()) }
-                TokenType.REGEX_MATCH -> { cp.advance(); left = CypherExpr.RegexMatch(left, parseAddition()) }
-                TokenType.IS -> {
-                    cp.advance()
-                    if (cp.peekType() == TokenType.NOT) {
-                        cp.advance(); cp.expect(TokenType.NULL); left = CypherExpr.IsNotNull(left)
-                    } else {
-                        cp.expect(TokenType.NULL); left = CypherExpr.IsNull(left)
-                    }
-                }
-                TokenType.NOT -> {
-                    // NOT CONTAINS / NOT STARTS WITH / NOT ENDS WITH
-                    when {
-                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.CONTAINS -> {
-                            cp.advance(); cp.advance() // consume NOT, CONTAINS
-                            left = CypherExpr.Not(CypherExpr.StringOp("CONTAINS", left, parseAddition()))
-                        }
-                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.STARTS -> {
-                            cp.advance(); cp.advance(); cp.expect(TokenType.WITH) // consume NOT, STARTS, WITH
-                            left = CypherExpr.Not(CypherExpr.StringOp("STARTS WITH", left, parseAddition()))
-                        }
-                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.ENDS -> {
-                            cp.advance(); cp.advance(); cp.expect(TokenType.WITH) // consume NOT, ENDS, WITH
-                            left = CypherExpr.Not(CypherExpr.StringOp("ENDS WITH", left, parseAddition()))
-                        }
-                        else -> break
-                    }
-                }
-                else -> break
-            }
-        }
-        return left
-    }
-
-    private fun parseAddition(): CypherExpr {
-        var left = parseMultiplication()
-        while (true) {
-            val op = when (cp.peekType()) {
-                TokenType.PLUS -> "+"; TokenType.DASH -> "-"; else -> break
-            }
-            cp.advance(); left = CypherExpr.BinaryOp(op, left, parseMultiplication())
-        }
-        return left
-    }
-
-    private fun parseMultiplication(): CypherExpr {
-        var left = parseExponentiation()
-        while (true) {
-            val op = when (cp.peekType()) {
-                TokenType.STAR -> "*"; TokenType.SLASH -> "/"; TokenType.PERCENT -> "%"; else -> break
-            }
-            cp.advance(); left = CypherExpr.BinaryOp(op, left, parseExponentiation())
-        }
-        return left
-    }
-
-    private fun parseExponentiation(): CypherExpr {
-        val left = parseUnary()
-        if (cp.peekType() == TokenType.CARET) {
-            cp.advance(); return CypherExpr.BinaryOp("^", left, parseExponentiation())
-        }
-        return left
-    }
-
-    internal fun parseUnary(): CypherExpr {
-        if (cp.peekType() == TokenType.DASH) { cp.advance(); return CypherExpr.UnaryOp("-", parseUnary()) }
-        if (cp.peekType() == TokenType.PLUS) { cp.advance(); return parseUnary() }
-        return parsePostfix()
-    }
-
-    private fun parsePostfix(): CypherExpr {
-        var expr = parseAtom()
-        while (true) {
-            when (cp.peekType()) {
-                TokenType.DOT -> { cp.advance(); expr = CypherExpr.Property(expr, cp.readIdentOrKeyword()) }
-                TokenType.LBRACKET -> { cp.advance(); expr = parseSubscriptOrSlice(expr) }
-                else -> break
-            }
-        }
-        return expr
-    }
-
-    private fun parseSubscriptOrSlice(target: CypherExpr): CypherExpr {
-        if (cp.peekType() == TokenType.DOTDOT) {
-            cp.advance()
-            val to = parseExpression()
-            cp.expect(TokenType.RBRACKET)
-            return CypherExpr.Slice(target, null, to)
-        }
-        val first = parseExpression()
-        if (cp.peekType() == TokenType.DOTDOT) {
-            cp.advance()
-            val to = if (cp.peekType() != TokenType.RBRACKET) parseExpression() else null
-            cp.expect(TokenType.RBRACKET)
-            return CypherExpr.Slice(target, first, to)
-        }
-        cp.expect(TokenType.RBRACKET)
-        return CypherExpr.Subscript(target, first)
-    }
-
-    private fun parseAtom(): CypherExpr {
-        val tok = cp.peek()
-        return when (tok.type) {
-            TokenType.INTEGER_LITERAL -> {
-                cp.advance()
-                val v: Number = when {
-                    tok.text.startsWith("0x", true) -> java.lang.Long.decode(tok.text)
-                    tok.text.startsWith("0o", true) -> tok.text.substring(2).toLong(8)
-                    else -> tok.text.toLong().let { if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it }
-                }
-                CypherExpr.Literal(v)
-            }
-            TokenType.FLOAT_LITERAL -> { cp.advance(); CypherExpr.Literal(tok.text.toDouble()) }
-            TokenType.STRING_LITERAL -> { cp.advance(); CypherExpr.Literal(tok.text) }
-            TokenType.TRUE -> { cp.advance(); CypherExpr.Literal(true) }
-            TokenType.FALSE -> { cp.advance(); CypherExpr.Literal(false) }
-            TokenType.NULL -> { cp.advance(); CypherExpr.Literal(null) }
-            TokenType.PARAMETER -> { cp.advance(); CypherExpr.Parameter(tok.text) }
-
-            TokenType.LPAREN -> { cp.advance(); val e = parseExpression(); cp.expect(TokenType.RPAREN); e }
-            TokenType.LBRACKET -> parseListOrComprehension()
-            TokenType.LBRACE -> parseMapExpr()
-            TokenType.CASE -> parseCaseExpr()
-            TokenType.DISTINCT -> { cp.advance(); CypherExpr.Distinct(parseUnary()) }
-            TokenType.EXISTS -> {
-                cp.advance(); cp.expect(TokenType.LPAREN)
-                val e = parseExpression(); cp.expect(TokenType.RPAREN)
-                CypherExpr.FunctionCall("exists", listOf(e))
-            }
-            TokenType.NOT -> { cp.advance(); CypherExpr.Not(parseComparison()) }
-            TokenType.IDENTIFIER -> parseIdentExpr()
-
-            else -> {
-                if (tok.type in ClauseParser.KEYWORD_TOKENS && cp.peekType() != TokenType.EOF) {
-                    // Keywords usable as function names
-                    val name = cp.advance().text
-                    if (cp.peekType() == TokenType.LPAREN) parseFnCall(name)
-                    else CypherExpr.Variable(name)
-                } else {
-                    throw CypherParseException(
-                        "Unexpected '${tok.text}' (${tok.type}) at position ${tok.position}"
-                    )
-                }
-            }
-        }
-    }
-
-    private fun parseIdentExpr(): CypherExpr {
-        val name = cp.advance().text
-        if (cp.peekType() == TokenType.LPAREN) return parseFnCall(name)
-        return CypherExpr.Variable(name)
-    }
-
-    private fun parseFnCall(name: String): CypherExpr {
-        cp.expect(TokenType.LPAREN)
-        if (name.equals("count", ignoreCase = true) && cp.peekType() == TokenType.STAR) {
-            cp.advance(); cp.expect(TokenType.RPAREN); return CypherExpr.CountStar
-        }
-        val distinct = cp.match(TokenType.DISTINCT)
-        val args = mutableListOf<CypherExpr>()
-        if (cp.peekType() != TokenType.RPAREN) {
-            args.add(parseExpression())
-            while (cp.match(TokenType.COMMA)) args.add(parseExpression())
-        }
-        cp.expect(TokenType.RPAREN)
-        return CypherExpr.FunctionCall(name, args, distinct)
-    }
-
-    private fun parseListOrComprehension(): CypherExpr {
-        cp.expect(TokenType.LBRACKET)
-        if (cp.peekType() == TokenType.RBRACKET) { cp.advance(); return CypherExpr.ListLiteral(emptyList()) }
-
-        // Try list comprehension: [x IN list WHERE pred | expr]
-        val saved = cp.pos
-        if (cp.peekType() == TokenType.IDENTIFIER) {
-            val varName = cp.advance().text
-            if (cp.peekType() == TokenType.IN) {
-                cp.advance()
-                val listExpr = parseExpression()
-                var pred: CypherExpr? = null
-                if (cp.peekType() == TokenType.WHERE) { cp.advance(); pred = parseExpression() }
-                var mapExpr: CypherExpr? = null
-                if (cp.peekType() == TokenType.PIPE) { cp.advance(); mapExpr = parseExpression() }
-                cp.expect(TokenType.RBRACKET)
-                return CypherExpr.ListComprehension(varName, listExpr, pred, mapExpr)
-            }
-            cp.pos = saved // backtrack
-        }
-
-        val elems = mutableListOf(parseExpression())
-        while (cp.match(TokenType.COMMA)) elems.add(parseExpression())
-        cp.expect(TokenType.RBRACKET)
-        return CypherExpr.ListLiteral(elems)
-    }
-
-    private fun parseMapExpr(): CypherExpr {
-        cp.expect(TokenType.LBRACE)
-        val entries = mutableMapOf<String, CypherExpr>()
-        if (cp.peekType() != TokenType.RBRACE) {
-            do {
-                val key = cp.readIdentOrKeyword()
-                cp.expect(TokenType.COLON)
-                entries[key] = parseExpression()
-            } while (cp.match(TokenType.COMMA))
-        }
-        cp.expect(TokenType.RBRACE)
-        return CypherExpr.MapLiteral(entries)
-    }
-
-    private fun parseCaseExpr(): CypherExpr {
-        cp.expect(TokenType.CASE)
-        val test = if (cp.peekType() != TokenType.WHEN) parseExpression() else null
-        val whens = mutableListOf<Pair<CypherExpr, CypherExpr>>()
-        while (cp.peekType() == TokenType.WHEN) {
-            cp.advance()
-            val cond = parseExpression()
-            cp.expect(TokenType.THEN)
-            whens.add(cond to parseExpression())
-        }
-        val elseE = if (cp.peekType() == TokenType.ELSE) { cp.advance(); parseExpression() } else null
-        cp.expect(TokenType.END)
-        return CypherExpr.CaseExpr(test, whens, elseE)
+        return ctx.text
     }
 }
