@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
@@ -66,10 +67,9 @@ class SootUpAdapter(
     private val config: LoaderConfig,
     private val signatureReader: BytecodeSignatureReader? = null,
     private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
-    private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor
+    private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
+    private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
 ) {
-    // NodeId counter is now managed by NodeId.next() for memory efficiency
-    private val graphBuilder = DefaultGraph.Builder()
 
     // Maps to track created nodes for cross-referencing
     private val localNodes = mutableMapOf<String, LocalVariable>()
