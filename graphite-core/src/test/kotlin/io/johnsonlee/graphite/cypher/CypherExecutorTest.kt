@@ -6,6 +6,7 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -1011,5 +1012,59 @@ class CypherExecutorTest {
             "MATCH (b:CallSiteNode)<-[:DATAFLOW*..5]-(a:IntConstant) RETURN a.value, b.callee_name LIMIT 1"
         )
         assertTrue(result.rows.isNotEmpty())
+    }
+
+    // --- Path variable assignment ---
+
+    @Test
+    fun `path variable assignment returns path`() {
+        val result = executor.execute("MATCH p = (c:IntConstant)-[:DATAFLOW]->(ps:ParameterNode) RETURN p LIMIT 1")
+        assertEquals(1, result.columns.size)
+        assertEquals("p", result.columns[0])
+        assertTrue(result.rows.isNotEmpty())
+        val path = result.rows[0]["p"]
+        assertTrue(path is List<*>, "Path should be a list of nodes and edges")
+        val pathList = path as List<*>
+        // Path should have at least startNode, edge, endNode = 3 elements
+        assertTrue(pathList.size >= 3, "Path should contain at least 3 elements (node, edge, node), got ${pathList.size}")
+    }
+
+    @Test
+    fun `path variable without relationship variable still builds path`() {
+        val result = executor.execute("MATCH p = (c:IntConstant)-[]->(ps:ParameterNode) RETURN p LIMIT 1")
+        assertTrue(result.rows.isNotEmpty())
+        val path = result.rows[0]["p"]
+        assertTrue(path is List<*>, "Path should be a list")
+        val pathList = path as List<*>
+        assertTrue(pathList.size >= 3, "Path should contain at least 3 elements")
+    }
+
+    // --- NOT CONTAINS / NOT STARTS WITH / NOT ENDS WITH ---
+
+    @Test
+    fun `NOT CONTAINS filters correctly`() {
+        val result = executor.execute("MATCH (n:CallSiteNode) WHERE n.callee_class NOT CONTAINS 'example' RETURN n.callee_class LIMIT 5")
+        result.rows.forEach { row ->
+            val cls = row["n.callee_class"] as String
+            assertFalse(cls.contains("example"))
+        }
+    }
+
+    @Test
+    fun `NOT STARTS WITH filters correctly`() {
+        val result = executor.execute("MATCH (n:CallSiteNode) WHERE n.callee_class NOT STARTS WITH 'java' RETURN n.callee_class LIMIT 5")
+        result.rows.forEach { row ->
+            val cls = row["n.callee_class"] as String
+            assertFalse(cls.startsWith("java"))
+        }
+    }
+
+    @Test
+    fun `NOT ENDS WITH filters correctly`() {
+        val result = executor.execute("MATCH (n:CallSiteNode) WHERE n.callee_class NOT ENDS WITH 'Service' RETURN n.callee_class LIMIT 5")
+        result.rows.forEach { row ->
+            val cls = row["n.callee_class"] as String
+            assertFalse(cls.endsWith("Service"))
+        }
     }
 }

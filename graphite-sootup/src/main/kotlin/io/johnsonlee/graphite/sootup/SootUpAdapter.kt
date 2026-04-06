@@ -614,7 +614,7 @@ class SootUpAdapter(
         resultNode: ValueNode?,
         stmt: Stmt? = null
     ) {
-        val calleeSignature = invokeExpr.methodSignature
+        val calleeSignature = resolveMethodDefiningClass(invokeExpr.methodSignature)
         val callee = toMethodDescriptor(calleeSignature)
 
         // Create argument nodes and track dataflow
@@ -1588,5 +1588,43 @@ class SootUpAdapter(
             parameterTypes = sig.parameterTypes.map { toTypeDescriptor(it) },
             returnType = toTypeDescriptor(sig.type)
         )
+    }
+
+    /**
+     * Resolve a method signature to the class that actually defines it.
+     *
+     * When bytecode says `invokevirtual ServiceImpl.doSomething()` but
+     * `ServiceImpl` doesn't override `doSomething()` (it's defined in
+     * `AbstractService` or `IService`), this method walks the type hierarchy
+     * to find the actual defining class and returns a signature with that class.
+     *
+     * This ensures the callee in CallSiteNode matches the caller in call sites
+     * inside the method body, enabling call chain traversal.
+     */
+    private fun resolveMethodDefiningClass(sig: MethodSignature): MethodSignature {
+        // If the method exists directly in the declared class, use as-is
+        if (view.getMethod(sig).isPresent) return sig
+
+        val hierarchy = view.typeHierarchy
+        val declClass = sig.declClassType
+
+        // Walk superclasses
+        try {
+            for (superClass in hierarchy.superClassesOf(declClass)) {
+                val resolved = MethodSignature(superClass, sig.subSignature)
+                if (view.getMethod(resolved).isPresent) return resolved
+            }
+        } catch (_: Exception) { /* class not in hierarchy */ }
+
+        // Walk implemented interfaces
+        try {
+            for (iface in hierarchy.implementedInterfacesOf(declClass)) {
+                val resolved = MethodSignature(iface, sig.subSignature)
+                if (view.getMethod(resolved).isPresent) return resolved
+            }
+        } catch (_: Exception) { /* class not in hierarchy */ }
+
+        // Fallback: use original signature
+        return sig
     }
 }

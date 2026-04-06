@@ -174,7 +174,61 @@ class QueryPipeline(private val graph: Graph) {
             }
         }
 
+        // If the pattern has a path variable, bind it to the matched path
+        if (pattern.pathVariable != null) {
+            return currentMatches.map { bindings ->
+                val path = buildPathRepresentation(pattern, bindings)
+                bindings + (pattern.pathVariable to path)
+            }
+        }
+
         return currentMatches
+    }
+
+    /**
+     * Build a path representation as a list of alternating nodes and edges:
+     * [startNode, edge1, node2, edge2, ..., endNode]
+     *
+     * For relationships without explicit variables, we look up edges between
+     * consecutive node pairs in the graph.
+     */
+    private fun buildPathRepresentation(
+        pattern: CypherPattern,
+        bindings: Map<String, Any?>
+    ): List<Any> {
+        val path = mutableListOf<Any>()
+        val elements = pattern.elements
+
+        for (i in elements.indices) {
+            when (val element = elements[i]) {
+                is PatternElement.NodePattern -> {
+                    val node = element.variable?.let { bindings[it] }
+                    if (node is Node) path.add(node)
+                }
+                is PatternElement.RelationshipPattern -> {
+                    val edge = element.variable?.let { bindings[it] }
+                    if (edge is Edge) {
+                        path.add(edge)
+                    } else {
+                        // Look up the edge between the previous and next nodes
+                        val prevNode = elements.getOrNull(i - 1)
+                            ?.let { it as? PatternElement.NodePattern }
+                            ?.variable?.let { bindings[it] as? Node }
+                        val nextNode = elements.getOrNull(i + 1)
+                            ?.let { it as? PatternElement.NodePattern }
+                            ?.variable?.let { bindings[it] as? Node }
+                        if (prevNode != null && nextNode != null) {
+                            val foundEdge = graph.outgoing(prevNode.id)
+                                .firstOrNull { it.to == nextNode.id }
+                                ?: graph.incoming(prevNode.id)
+                                    .firstOrNull { it.from == nextNode.id }
+                            if (foundEdge != null) path.add(foundEdge)
+                        }
+                    }
+                }
+            }
+        }
+        return path
     }
 
     /**
@@ -628,6 +682,7 @@ class QueryPipeline(private val graph: Graph) {
  */
 fun CypherPattern.variables(): Set<String> {
     val vars = mutableSetOf<String>()
+    pathVariable?.let { vars.add(it) }
     for (element in elements) {
         when (element) {
             is PatternElement.NodePattern -> element.variable?.let { vars.add(it) }

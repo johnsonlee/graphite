@@ -26,10 +26,11 @@ class ExploreCommandTest {
         private val gson = Gson()
 
         private val fooType = TypeDescriptor("com.example.Foo")
+        private val bazType = TypeDescriptor("com.example.Baz")
         private val parentType = TypeDescriptor("com.example.Parent")
         private val childType = TypeDescriptor("com.example.Child")
         private val barMethod = MethodDescriptor(fooType, "bar", listOf(TypeDescriptor("int")), TypeDescriptor("void"))
-        private val bazMethod = MethodDescriptor(fooType, "baz", emptyList(), TypeDescriptor("void"))
+        private val bazMethod = MethodDescriptor(bazType, "baz", emptyList(), TypeDescriptor("void"))
         private val quxMethod = MethodDescriptor(childType, "qux", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("int"))
 
         private lateinit var paramNode: ParameterNode
@@ -280,7 +281,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api call-sites returns matching call sites`() {
-        val (code, body) = get("/api/call-sites?class=com.example.Foo")
+        val (code, body) = get("/api/call-sites?class=com.example.Baz")
         assertEquals(200, code)
         val sites: List<Map<String, Any?>> = parseJson(body)
         assertEquals(1, sites.size)

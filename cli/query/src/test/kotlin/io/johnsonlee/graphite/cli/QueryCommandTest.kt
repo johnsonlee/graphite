@@ -480,7 +480,6 @@ class QueryCommandTest {
             cmd.output = outputDir
             cmd.includePackages = listOf("example")
             cmd.excludePackages = listOf("example.internal")
-            cmd.buildCallGraph = true
             val (_, err, code) = captureOutput { cmd.call() }
             assertEquals(0, code, "Build should succeed, stderr: $err")
         } finally {
