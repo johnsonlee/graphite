@@ -3,6 +3,7 @@ import org.gradle.api.Project.DEFAULT_VERSION
 plugins {
     kotlin("jvm") version embeddedKotlinVersion apply false
     id("io.johnsonlee.sonatype-publish-plugin") version "1.10.0" apply false
+    id("me.champeau.jmh") version "0.7.2" apply false
 }
 
 allprojects {

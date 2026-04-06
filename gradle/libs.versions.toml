@@ -11,8 +11,10 @@ jackson = "2.17.0"
 guava = "33.0.0-jre"
 snakeyaml = "2.2"
 webgraph = "3.6.12"
-zipkin = "3.5.1"
+elasticsearch = "8.17.0"
+android-all = "14-robolectric-10818077"
 javalin = "6.4.0"
+jmh = "1.37"
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
@@ -32,5 +34,8 @@ picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 webgraph = { module = "it.unimi.dsi:webgraph", version.ref = "webgraph" }
-zipkin-server = { module = "io.zipkin:zipkin-server", version.ref = "zipkin" }
+elasticsearch = { module = "org.elasticsearch:elasticsearch", version.ref = "elasticsearch" }
+android-all = { module = "org.robolectric:android-all", version.ref = "android-all" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }

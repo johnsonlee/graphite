@@ -75,6 +75,18 @@ header h1 { font-size: 16px; font-weight: 600; }
 }
 .search-box button:hover { background: var(--accent-hover); }
 
+#cypher-panel { padding: 0 20px 8px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+#cypher-input { width: 100%; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; resize: vertical; outline: none; }
+#cypher-input:focus { border-color: var(--accent); }
+#cypher-run { margin-top: 6px; padding: 5px 16px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+#cypher-run:hover { background: var(--accent-hover); }
+#cypher-result { margin-top: 8px; max-height: 200px; overflow-y: auto; font-size: 11px; }
+#cypher-result table { width: 100%; border-collapse: collapse; }
+#cypher-result th { text-align: left; padding: 4px 8px; color: var(--text-secondary); border-bottom: 1px solid var(--border); font-size: 10px; text-transform: uppercase; }
+#cypher-result td { padding: 4px 8px; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 11px; cursor: pointer; }
+#cypher-result td:hover { background: var(--bg-tertiary); }
+#cypher-error { color: var(--red); font-size: 12px; margin-top: 4px; }
+
 main { flex: 1; display: flex; overflow: hidden; }
 
 #sidebar {

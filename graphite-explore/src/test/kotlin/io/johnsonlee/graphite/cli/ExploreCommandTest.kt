@@ -121,6 +121,25 @@ class ExploreCommandTest {
         return code to body
     }
 
+    private fun post(path: String, jsonBody: String): Pair<Int, String> {
+        val url = URI("http://localhost:$port$path").toURL()
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.doOutput = true
+        conn.connectTimeout = 5000
+        conn.readTimeout = 5000
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.outputStream.use { it.write(jsonBody.toByteArray()) }
+        val code = conn.responseCode
+        val body = if (code in 200..299) {
+            InputStreamReader(conn.inputStream).use { it.readText() }
+        } else {
+            conn.errorStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
+        }
+        conn.disconnect()
+        return code to body
+    }
+
     private inline fun <reified T> parseJson(json: String): T {
         return gson.fromJson(json, object : TypeToken<T>() {}.type)
     }
@@ -516,5 +535,41 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val nodes = result["nodes"] as List<Map<String, Any?>>
         assertEquals(0, nodes.size, "Negative depth should return nothing (remaining < 0 check)")
+    }
+
+    // ========================================================================
+    // /api/cypher
+    // ========================================================================
+
+    @Test
+    fun `POST api cypher returns query results`() {
+        val (code, body) = post("/api/cypher", """{"query": "MATCH (n:IntConstant) RETURN n.value"}""")
+        assertEquals(200, code, "Expected 200, body: $body")
+        assertTrue(body.contains("columns"), "Response should contain 'columns', body: $body")
+    }
+
+    @Test
+    fun `POST api cypher returns error for bad query`() {
+        val (code, body) = post("/api/cypher", """{"query": "INVALID QUERY"}""")
+        assertEquals(400, code, "Expected 400 for invalid query, body: $body")
+        assertTrue(body.contains("error"), "Response should contain 'error', body: $body")
+    }
+
+    @Test
+    fun `GET api cypher with query param`() {
+        val (code, body) = get("/api/cypher?query=" + java.net.URLEncoder.encode("MATCH (n) RETURN n.id LIMIT 1", "UTF-8"))
+        assertEquals(200, code, "Expected 200, body: $body")
+    }
+
+    @Test
+    fun `POST api cypher missing query returns 400`() {
+        val (code, _) = post("/api/cypher", """{}""")
+        assertEquals(400, code)
+    }
+
+    @Test
+    fun `GET api cypher missing query returns 400`() {
+        val (code, _) = get("/api/cypher")
+        assertEquals(400, code)
     }
 }

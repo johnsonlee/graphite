@@ -243,6 +243,75 @@ document.getElementById('close-results').addEventListener('click', function() { 
 document.getElementById('btn-fit').addEventListener('click', function() { cy.fit(null, 30); });
 document.getElementById('btn-reset').addEventListener('click', function() { cy.elements().remove(); loadInitialGraph(); });
 
+// Cypher query support
+async function runCypher() {
+    var query = document.getElementById('cypher-input').value.trim();
+    if (!query) return;
+
+    var resultDiv = document.getElementById('cypher-result');
+    resultDiv.innerHTML = '<span style="color: var(--text-muted)">Running...</span>';
+
+    try {
+        var res = await fetch('/api/cypher', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        });
+        var data = await res.json();
+
+        if (data.error) {
+            resultDiv.innerHTML = '<div id="cypher-error">' + data.error + '</div>';
+            return;
+        }
+
+        if (!data.columns || data.columns.length === 0) {
+            resultDiv.innerHTML = '<span style="color: var(--text-muted)">(no results)</span>';
+            return;
+        }
+
+        var html = '<table><tr>';
+        data.columns.forEach(function(col) { html += '<th>' + col + '</th>'; });
+        html += '</tr>';
+        data.rows.forEach(function(row) {
+            html += '<tr>';
+            data.columns.forEach(function(col) {
+                var val = row[col];
+                var display = val === null ? 'null' : (typeof val === 'object' ? JSON.stringify(val) : val);
+                var nodeId = (typeof val === 'object' && val !== null && val.id) ? val.id : null;
+                if (nodeId) {
+                    html += '<td onclick="loadSubgraph(' + nodeId + ', 2)">' + display + '</td>';
+                } else {
+                    html += '<td>' + display + '</td>';
+                }
+            });
+            html += '</tr>';
+        });
+        html += '</table>';
+        html += '<div style="color: var(--text-muted); margin-top: 4px; font-size: 10px;">' + data.rowCount + ' row(s)</div>';
+        resultDiv.innerHTML = html;
+
+        var nodeIds = [];
+        data.rows.forEach(function(row) {
+            data.columns.forEach(function(col) {
+                var val = row[col];
+                if (typeof val === 'object' && val !== null && val.id) {
+                    nodeIds.push(val.id);
+                }
+            });
+        });
+        if (nodeIds.length > 0 && nodeIds.length <= 50) {
+            loadSubgraph(nodeIds[0], 1);
+        }
+    } catch (e) {
+        resultDiv.innerHTML = '<div id="cypher-error">Error: ' + e.message + '</div>';
+    }
+}
+
+document.getElementById('cypher-run').addEventListener('click', runCypher);
+document.getElementById('cypher-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runCypher();
+});
+
 // Init
 initCytoscape();
 loadDashboard();

@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cli
 
 import com.google.gson.GsonBuilder
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.webgraph.GraphStore
@@ -137,6 +138,33 @@ class ExploreCommand : Callable<Int> {
             val depth = ctx.queryParam("depth")?.toIntOrNull() ?: 2
             val subgraph = buildSubgraph(graph, NodeId(centerId), depth)
             ctx.json(subgraph)
+        }
+
+        app.post("/api/cypher") { ctx ->
+            val body = ctx.body()
+            val query = try {
+                com.google.gson.JsonParser.parseString(body).asJsonObject.get("query").asString
+            } catch (e: Exception) {
+                ctx.queryParam("query") ?: run { ctx.status(400).result("Missing 'query' parameter"); return@post }
+            }
+            try {
+                val executor = CypherExecutor(graph)
+                val result = executor.execute(query)
+                ctx.json(mapOf("columns" to result.columns, "rows" to result.rows, "rowCount" to result.rows.size))
+            } catch (e: Exception) {
+                ctx.status(400).json(mapOf("error" to (e.message ?: "Query execution failed")))
+            }
+        }
+
+        app.get("/api/cypher") { ctx ->
+            val query = ctx.queryParam("query") ?: run { ctx.status(400).result("Missing 'query' parameter"); return@get }
+            try {
+                val executor = CypherExecutor(graph)
+                val result = executor.execute(query)
+                ctx.json(mapOf("columns" to result.columns, "rows" to result.rows, "rowCount" to result.rows.size))
+            } catch (e: Exception) {
+                ctx.status(400).json(mapOf("error" to (e.message ?: "Query execution failed")))
+            }
         }
     }
 

@@ -25,6 +25,9 @@ internal class WebGraphBackedGraph(
     private val metadata: GraphMetadata
 ) : Graph {
 
+    /** Pre-computed index: concrete node class -> list of nodes of that class. */
+    private val nodesByType: Map<Class<out Node>, List<Node>> = nodesById.values.groupBy { it::class.java }
+
     // Lazy branch scope materialization
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
         metadata.branchScopes.map { raw ->
@@ -41,8 +44,14 @@ internal class WebGraphBackedGraph(
     override fun node(id: NodeId): Node? = nodesById[id.value]
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
-        nodesById.values.asSequence().filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+        // Fast path: exact type match
+        nodesByType[type]?.let { return (it as List<T>).asSequence() }
+        // Slow path: supertype match
+        return nodesByType.entries.asSequence()
+            .filter { type.isAssignableFrom(it.key) }
+            .flatMap { it.value.asSequence() } as Sequence<T>
+    }
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
