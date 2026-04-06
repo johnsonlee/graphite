@@ -59,18 +59,52 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 
 ## Quick Start
 
-### Build a Graph
+```bash
+# Build the CLI
+./gradlew :cli:query:shadowJar
+alias graphite='java -jar cli/query/build/libs/query.jar'
+
+# Build a graph from your JAR
+graphite build app.jar -o /data/app-graph --include com.example
+
+# Inspect it
+graphite /data/app-graph info
+
+# Query with Cypher
+graphite /data/app-graph cypher \
+  "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
+   WHERE cs.callee_class =~ 'com.example.*'
+   RETURN c.value, cs.callee_name"
+
+# JSON output (for LLM consumption)
+graphite /data/app-graph cypher --format json \
+  "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
+```
+
+### More CLI Commands
+
+```bash
+# List call sites matching a pattern
+graphite /data/app-graph call-sites -c "com.example.*"
+
+# List methods in a class
+graphite /data/app-graph methods -c "com.example.UserService"
+
+# Query annotations
+graphite /data/app-graph annotations -c com.example.User -m name
+```
+
+## Kotlin API
+
+### Build & Query
 
 ```kotlin
+// Build graph from bytecode
 val graph = JavaProjectLoader(LoaderConfig(
     includePackages = listOf("com.example")
 )).load(Path.of("/path/to/app.jar"))
-```
 
-### Query It
-
-```kotlin
-// Cypher query — standard graph query language (built into graphite-core)
+// Cypher query
 val result = graph.query("""
     MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
     WHERE cs.callee_class =~ 'com.example.*'
@@ -80,7 +114,7 @@ result.rows.forEach { row ->
     println("${row["c.value"]} -> ${row["cs.callee_name"]}")
 }
 
-// Find all constants passed to a method
+// Programmatic query DSL
 val results = Graphite.from(graph).query {
     findArgumentConstants {
         method {
@@ -91,39 +125,31 @@ val results = Graphite.from(graph).query {
     }
 }
 
-// Query annotations on any class member
+// Annotations, dataflow analysis
 val annotations = graph.memberAnnotations("com.example.User", "name")
-// → {"com.fasterxml.jackson.annotation.JsonProperty": {"value": "user_name"}}
-
-// Backward dataflow analysis
-val analysis = DataFlowAnalysis(graph)
-val slice = analysis.backwardSlice(nodeId)
+val slice = DataFlowAnalysis(graph).backwardSlice(nodeId)
 slice.constants()  // all constant values that reach this node
 ```
 
-### Persist & Query from Disk
+### Persist & Load
 
-```bash
-# Build graph and save (WebGraph compressed format)
-graphite-query build app.jar -o /data/app-graph --include com.example
+```kotlin
+// Save to disk (WebGraph compressed format)
+GraphStore.save(graph, Path.of("/data/app-graph"))
 
-# CLI queries
-graphite-query /data/app-graph info
-graphite-query /data/app-graph call-sites -c "com.example.*"
-graphite-query /data/app-graph methods -c "com.example.UserService"
-graphite-query /data/app-graph annotations -c com.example.User -m name
+// Load — auto-adaptive based on graph size:
+//   < 1M nodes → eager (all in heap, fastest queries)
+//   >= 1M nodes → mmap (nodes off heap, 75% less memory)
+val graph = GraphStore.load(Path.of("/data/app-graph"))
 
-# Cypher query from the command line
-graphite-query /data/app-graph cypher "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
-
-# Interactive web visualization
-graphite-query /data/app-graph serve -p 8080
+// Or force a specific strategy
+val graph = GraphStore.load(dir, GraphStore.LoadMode.EAGER)   // always in-heap
+val graph = GraphStore.load(dir, GraphStore.LoadMode.MAPPED)  // always mmap
 ```
 
 ### Access Resources
 
 ```kotlin
-// Access files inside the analyzed archive
 graph.resources.list("**/*.xml").forEach { entry ->
     println(entry.path)  // e.g., "config/application.yml"
 }
