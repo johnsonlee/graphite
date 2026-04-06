@@ -601,6 +601,32 @@ class MmapGraphBuilderTest {
     }
 
     @Test
+    fun `setResources is propagated to built graph`() {
+        val graph = MmapGraphBuilder()
+            .setResources(io.johnsonlee.graphite.input.EmptyResourceAccessor)
+            .build()
+        assertNotNull(graph.resources)
+    }
+
+    @Test
+    fun `EnumConstant with unknown type constructor arg round-trips via toString`() {
+        // A non-primitive, non-String, non-EnumValueReference argument triggers the else branch
+        // in writeAnyValue (writes as VAL_STRING + toString()) and readAnyValue (reads as String)
+        val id = NodeId.next()
+        val customValue = java.math.BigDecimal("123.456")
+        val node = EnumConstant(
+            id,
+            TypeDescriptor("com.example.Custom"),
+            "VALUE",
+            listOf(customValue)
+        )
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as EnumConstant
+        // The value is serialized via toString() and deserialized as a String
+        assertEquals("123.456", restored.constructorArgs[0])
+    }
+
+    @Test
     fun `EnumConstant with float, double, long constructor args`() {
         val id = NodeId.next()
         val node = EnumConstant(

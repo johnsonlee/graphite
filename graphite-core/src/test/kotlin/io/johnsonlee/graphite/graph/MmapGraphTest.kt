@@ -416,4 +416,51 @@ class MmapGraphTest {
         assertNull(graph.node(NodeId(1)))
         assertEquals(0, graph.branchScopes().count())
     }
+
+    // ========================================================================
+    // close() releases resources
+    // ========================================================================
+
+    @Test
+    fun `close does not throw and cleans up RAF handles`() {
+        val n1 = NodeId.next()
+        val n2 = NodeId.next()
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(n1, 1))
+            .addNode(IntConstant(n2, 2))
+            .addEdge(DataFlowEdge(n1, n2, DataFlowKind.ASSIGN))
+            .build()
+        assertIs<MmapGraph>(graph)
+
+        // Access nodes and edges to trigger RAF creation
+        assertNotNull(graph.node(n1))
+        assertEquals(1, graph.outgoing(n1).count())
+
+        // close() should not throw
+        (graph as MmapGraph).close()
+    }
+
+    // ========================================================================
+    // typed incoming edge query
+    // ========================================================================
+
+    @Test
+    fun `incoming with type filter returns only matching edge types`() {
+        val n1 = NodeId.next()
+        val n2 = NodeId.next()
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(n1, 1))
+            .addNode(IntConstant(n2, 2))
+            .addEdge(DataFlowEdge(n1, n2, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(n1, n2, isVirtual = false))
+            .build()
+
+        val dataFlowEdges = graph.incoming(n2, DataFlowEdge::class.java).toList()
+        assertEquals(1, dataFlowEdges.size)
+        assertIs<DataFlowEdge>(dataFlowEdges[0])
+
+        val callEdges = graph.incoming(n2, CallEdge::class.java).toList()
+        assertEquals(1, callEdges.size)
+        assertIs<CallEdge>(callEdges[0])
+    }
 }
