@@ -30,9 +30,6 @@ class BuildCommand : Callable<Int> {
     @Option(names = ["--lib-filter"], description = ["Only load JARs matching these patterns (comma-separated)"], split = ",")
     var libFilters: List<String> = emptyList()
 
-    @Option(names = ["--call-graph"], description = ["Build call graph (CHA/RTA)"], defaultValue = "false")
-    var buildCallGraph: Boolean = false
-
     @Option(names = ["-v", "--verbose"], description = ["Enable verbose output"])
     var verbose: Boolean = false
 
@@ -48,7 +45,7 @@ class BuildCommand : Callable<Int> {
                 excludePackages = excludePackages,
                 includeLibraries = includeLibs,
                 libraryFilters = libFilters,
-                buildCallGraph = buildCallGraph,
+                buildCallGraph = true,
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )
 

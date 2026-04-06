@@ -114,22 +114,52 @@ class ExploreCommand : Callable<Int> {
         }
 
         app.get("/api/overview") { ctx ->
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: 5000
-            val nodes = mutableListOf<Map<String, Any?>>()
-            val edges = mutableListOf<Map<String, Any?>>()
-            val nodeIds = mutableSetOf<Int>()
+            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: 200
+            // Build class-level dependency graph from call sites
+            val classEdges = mutableMapOf<Pair<String, String>, Int>() // (callerClass, calleeClass) -> count
+            val classCounts = mutableMapOf<String, Int>() // class -> number of call sites
 
-            graph.nodes(Node::class.java).take(limit).forEach { node ->
-                nodes.add(nodeToMap(node))
-                nodeIds.add(node.id.value)
-            }
-            for (id in nodeIds.toList()) {
-                graph.outgoing(NodeId(id)).forEach { edge ->
-                    if (edge.to.value in nodeIds) {
-                        edges.add(edgeToMap(edge))
-                    }
+            graph.nodes(CallSiteNode::class.java).forEach { cs ->
+                val callerClass = cs.caller.declaringClass.className
+                val calleeClass = cs.callee.declaringClass.className
+                if (callerClass != calleeClass) {
+                    val key = callerClass to calleeClass
+                    classEdges[key] = (classEdges[key] ?: 0) + 1
                 }
+                classCounts[callerClass] = (classCounts[callerClass] ?: 0) + 1
+                classCounts[calleeClass] = (classCounts[calleeClass] ?: 0) + 1
             }
+
+            // Take top classes by call site involvement
+            val topClasses = classCounts.entries
+                .sortedByDescending { it.value }
+                .take(limit)
+                .map { it.key }
+                .toSet()
+
+            val nodes = topClasses.mapIndexed { idx, cls ->
+                val shortName = cls.substringAfterLast('.')
+                mapOf(
+                    "id" to cls.hashCode(),
+                    "type" to "Class",
+                    "label" to shortName,
+                    "fullName" to cls,
+                    "callSites" to (classCounts[cls] ?: 0)
+                )
+            }
+
+            val nodeIdSet = topClasses.map { it.hashCode() }.toSet()
+            val edges = classEdges.entries
+                .filter { it.key.first.hashCode() in nodeIdSet && it.key.second.hashCode() in nodeIdSet }
+                .map { (key, count) ->
+                    mapOf(
+                        "from" to key.first.hashCode(),
+                        "to" to key.second.hashCode(),
+                        "type" to "Call",
+                        "weight" to count
+                    )
+                }
+
             ctx.json(mapOf("nodes" to nodes, "edges" to edges))
         }
 

@@ -291,7 +291,7 @@ internal object CypherTokenizer {
 // Clause Parser
 // ============================================================================
 
-internal class ClauseParser(private val tokens: List<Token>) {
+internal class ClauseParser(internal val tokens: List<Token>) {
 
     internal var pos = 0
 
@@ -514,13 +514,23 @@ internal class ClauseParser(private val tokens: List<Token>) {
     }
 
     private fun parsePattern(): CypherPattern {
+        // Check for path variable assignment: p = (...)
+        var pathVariable: String? = null
+        if (peekType() == TokenType.IDENTIFIER &&
+            pos + 1 < tokens.size && tokens[pos + 1].type == TokenType.EQ &&
+            pos + 2 < tokens.size && tokens[pos + 2].type == TokenType.LPAREN
+        ) {
+            pathVariable = advance().text
+            expect(TokenType.EQ)
+        }
+
         val elements = mutableListOf<PatternElement>()
         elements.add(parseNodePattern())
         while (peekType() == TokenType.DASH || peekType() == TokenType.ARROW_LEFT) {
             elements.add(parseRelPattern())
             elements.add(parseNodePattern())
         }
-        return CypherPattern(elements)
+        return CypherPattern(elements, pathVariable)
     }
 
     private fun parseNodePattern(): PatternElement.NodePattern {
@@ -713,6 +723,24 @@ internal class ExprParser(private val cp: ClauseParser) {
                         cp.advance(); cp.expect(TokenType.NULL); left = CypherExpr.IsNotNull(left)
                     } else {
                         cp.expect(TokenType.NULL); left = CypherExpr.IsNull(left)
+                    }
+                }
+                TokenType.NOT -> {
+                    // NOT CONTAINS / NOT STARTS WITH / NOT ENDS WITH
+                    when {
+                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.CONTAINS -> {
+                            cp.advance(); cp.advance() // consume NOT, CONTAINS
+                            left = CypherExpr.Not(CypherExpr.StringOp("CONTAINS", left, parseAddition()))
+                        }
+                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.STARTS -> {
+                            cp.advance(); cp.advance(); cp.expect(TokenType.WITH) // consume NOT, STARTS, WITH
+                            left = CypherExpr.Not(CypherExpr.StringOp("STARTS WITH", left, parseAddition()))
+                        }
+                        cp.pos + 1 < cp.tokens.size && cp.tokens[cp.pos + 1].type == TokenType.ENDS -> {
+                            cp.advance(); cp.advance(); cp.expect(TokenType.WITH) // consume NOT, ENDS, WITH
+                            left = CypherExpr.Not(CypherExpr.StringOp("ENDS WITH", left, parseAddition()))
+                        }
+                        else -> break
                     }
                 }
                 else -> break

@@ -7,7 +7,10 @@ package io.johnsonlee.graphite.cypher
  * [PatternElement.RelationshipPattern] elements representing a path through
  * the graph.
  */
-data class CypherPattern(val elements: List<PatternElement>)
+data class CypherPattern(
+    val elements: List<PatternElement>,
+    val pathVariable: String? = null
+)
 
 /**
  * An element of a graph pattern -- either a node or a relationship.

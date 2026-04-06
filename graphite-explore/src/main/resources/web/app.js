@@ -1,6 +1,7 @@
 let cy;
 
 const NODE_COLORS = {
+    Class: '#58a6ff',
     CallSiteNode: '#f85149',
     IntConstant: '#39d2c0', StringConstant: '#58a6ff', EnumConstant: '#d29922',
     FieldNode: '#bc8cff', ParameterNode: '#3fb950', ReturnNode: '#f778ba',
@@ -10,7 +11,7 @@ const NODE_COLORS = {
 };
 
 const NODE_SIZES = {
-    CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
+    Class: 32, CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
 };
 
 const EDGE_COLORS = { DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
@@ -243,6 +244,29 @@ document.getElementById('close-results').addEventListener('click', function() { 
 document.getElementById('btn-fit').addEventListener('click', function() { cy.fit(null, 30); });
 document.getElementById('btn-reset').addEventListener('click', function() { cy.elements().remove(); loadInitialGraph(); });
 
+// Load Cypher result nodes onto the canvas
+async function loadCypherResults(nodeIds) {
+    if (nodeIds.length === 0) return;
+    // Fetch subgraphs for all result nodes and merge them
+    var allNodes = new Map();
+    var allEdges = [];
+
+    // Limit to first 50 nodes to avoid overloading
+    var ids = nodeIds.slice(0, 50);
+
+    for (var i = 0; i < ids.length; i++) {
+        try {
+            var res = await fetch('/api/subgraph?center=' + ids[i] + '&depth=1');
+            var data = await res.json();
+            data.nodes.forEach(function(n) { if (!allNodes.has(n.id)) allNodes.set(n.id, n); });
+            data.edges.forEach(function(e) { allEdges.push(e); });
+        } catch (e) { /* skip failed fetches */ }
+    }
+
+    renderGraph({ nodes: Array.from(allNodes.values()), edges: allEdges }, ids[0]);
+    document.getElementById('graph-info').textContent = allNodes.size + ' nodes, ' + allEdges.length + ' edges';
+}
+
 // Cypher query support
 async function runCypher() {
     var query = document.getElementById('cypher-input').value.trim();
@@ -290,17 +314,33 @@ async function runCypher() {
         html += '<div style="color: var(--text-muted); margin-top: 4px; font-size: 10px;">' + data.rowCount + ' row(s)</div>';
         resultDiv.innerHTML = html;
 
+        // Collect node IDs from results
         var nodeIds = [];
         data.rows.forEach(function(row) {
             data.columns.forEach(function(col) {
                 var val = row[col];
-                if (typeof val === 'object' && val !== null && val.id) {
+                // Object with .id (node reference)
+                if (typeof val === 'object' && val !== null && val.id !== undefined) {
                     nodeIds.push(val.id);
+                }
+                // Column named *.id with integer value (e.g., n.id)
+                else if (col.endsWith('.id') && typeof val === 'number') {
+                    nodeIds.push(val);
+                }
+                // Path variable (list of nodes/edges)
+                else if (Array.isArray(val)) {
+                    val.forEach(function(item) {
+                        if (typeof item === 'object' && item !== null && item.id !== undefined) {
+                            nodeIds.push(item.id);
+                        }
+                    });
                 }
             });
         });
-        if (nodeIds.length > 0 && nodeIds.length <= 50) {
-            loadSubgraph(nodeIds[0], 1);
+        // Deduplicate
+        nodeIds = [...new Set(nodeIds)];
+        if (nodeIds.length > 0) {
+            loadCypherResults(nodeIds);
         }
     } catch (e) {
         resultDiv.innerHTML = '<div id="cypher-error">Error: ' + e.message + '</div>';
