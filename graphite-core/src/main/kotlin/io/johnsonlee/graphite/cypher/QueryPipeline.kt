@@ -29,13 +29,18 @@ class QueryPipeline(private val graph: Graph) {
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
 
+        // Pre-compute early limit: if clauses between MATCH and LIMIT contain
+        // no WHERE, WITH, ORDER BY, UNWIND, or aggregation, we can stop the
+        // node scan early instead of materialising all candidates first.
+        val earlyLimit = computeEarlyLimit(clauses)
+
         for (clause in clauses) {
             when (clause) {
                 is CypherClause.Match -> {
                     rows = if (clause.optional) {
                         executeOptionalMatch(clause.patterns, rows)
                     } else {
-                        executeMatch(clause.patterns, rows)
+                        executeMatch(clause.patterns, rows, earlyLimit)
                     }
                 }
                 is CypherClause.Where -> rows = executeWhere(clause, rows)
@@ -86,15 +91,17 @@ class QueryPipeline(private val graph: Graph) {
 
     private fun executeMatch(
         patterns: List<CypherPattern>,
-        inputRows: List<Map<String, Any?>>
+        inputRows: List<Map<String, Any?>>,
+        limit: Int? = null
     ): List<Map<String, Any?>> {
         var rows = inputRows
         for (pattern in patterns) {
             val nextRows = mutableListOf<Map<String, Any?>>()
             for (inputRow in rows) {
-                nextRows.addAll(matchPattern(pattern, inputRow))
+                nextRows.addAll(matchPattern(pattern, inputRow, limit))
+                if (limit != null && nextRows.size >= limit) break
             }
-            rows = nextRows
+            rows = if (limit != null && nextRows.size > limit) nextRows.subList(0, limit) else nextRows
         }
         return rows
     }
@@ -139,14 +146,15 @@ class QueryPipeline(private val graph: Graph) {
      */
     private fun matchPattern(
         pattern: CypherPattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        limit: Int? = null
     ): List<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
 
         // A pattern is a chain: Node [Rel Node [Rel Node ...]]
         // Start by matching the first node, then alternate rel+node.
-        var currentMatches = matchNodeElement(elements[0] as PatternElement.NodePattern, existingBindings)
+        var currentMatches = matchNodeElement(elements[0] as PatternElement.NodePattern, existingBindings, limit)
 
         var i = 1
         while (i < elements.size) {
@@ -157,8 +165,13 @@ class QueryPipeline(private val graph: Graph) {
             val nextMatches = mutableListOf<Map<String, Any?>>()
             for (bindings in currentMatches) {
                 nextMatches.addAll(matchRelationship(rel, targetNode, bindings))
+                if (limit != null && nextMatches.size >= limit) break
             }
-            currentMatches = nextMatches
+            currentMatches = if (limit != null && nextMatches.size > limit) {
+                nextMatches.subList(0, limit)
+            } else {
+                nextMatches
+            }
         }
 
         return currentMatches
@@ -169,7 +182,8 @@ class QueryPipeline(private val graph: Graph) {
      */
     private fun matchNodeElement(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        limit: Int? = null
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
 
@@ -191,11 +205,12 @@ class QueryPipeline(private val graph: Graph) {
             graph.nodes(nodeClass)
         }
 
-        candidates.forEach { node ->
+        for (node in candidates) {
             if (matchesNodeConstraints(node, nodePattern, existingBindings)) {
                 val bindings = existingBindings.toMutableMap()
                 if (nodePattern.variable != null) bindings[nodePattern.variable] = node
                 results.add(bindings)
+                if (limit != null && results.size >= limit) break
             }
         }
 
@@ -558,6 +573,41 @@ class QueryPipeline(private val graph: Graph) {
     // ========================================================================
     // Helpers
     // ========================================================================
+
+    /**
+     * Determine whether LIMIT can be pushed down into pattern matching.
+     *
+     * This is safe only when the clause sequence between MATCH and LIMIT
+     * contains nothing that could filter, reorder, or aggregate rows
+     * (i.e. no WHERE, WITH, ORDER BY, UNWIND, SKIP, or aggregation in RETURN).
+     * When those intermediate clauses are absent the final row count is
+     * bounded by the number of pattern matches, so we can stop scanning early.
+     */
+    private fun computeEarlyLimit(clauses: List<CypherClause>): Int? {
+        val matchIndex = clauses.indexOfFirst { it is CypherClause.Match && !it.optional }
+        if (matchIndex < 0) return null
+
+        val limitIndex = clauses.indexOfFirst { it is CypherClause.Limit }
+        if (limitIndex <= matchIndex) return null
+
+        // Check that nothing between MATCH and LIMIT invalidates pushdown
+        val between = clauses.subList(matchIndex + 1, limitIndex)
+        val safe = between.all { clause ->
+            when (clause) {
+                is CypherClause.Return -> !clause.items.any { containsAggregation(it.expression) } && !clause.distinct
+                is CypherClause.Where,
+                is CypherClause.With,
+                is CypherClause.OrderBy,
+                is CypherClause.Skip,
+                is CypherClause.Unwind -> false
+                else -> true
+            }
+        }
+        if (!safe) return null
+
+        val limitClause = clauses[limitIndex] as CypherClause.Limit
+        return evaluateToInt(limitClause.count, emptyMap()).takeIf { it > 0 }
+    }
 
     private fun evaluateToInt(expr: CypherExpr, bindings: Map<String, Any?>): Int {
         val value = evaluator.evaluate(expr, bindings)

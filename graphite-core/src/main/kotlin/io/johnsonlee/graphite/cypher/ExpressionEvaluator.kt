@@ -9,6 +9,8 @@ import io.johnsonlee.graphite.core.*
  */
 class ExpressionEvaluator {
 
+    private val regexCache = mutableMapOf<String, Regex>()
+
     /**
      * Evaluate a parsed expression node.
      * The expression is represented as a sealed class hierarchy.
@@ -191,7 +193,8 @@ class ExpressionEvaluator {
     private fun evaluateRegex(expr: CypherExpr.RegexMatch, bindings: Map<String, Any?>): Any? {
         val value = evaluate(expr.left, bindings) as? String ?: return null
         val pattern = evaluate(expr.right, bindings) as? String ?: return null
-        return Regex(pattern).matches(value)
+        val regex = regexCache.getOrPut(pattern) { Regex(pattern) }
+        return regex.matches(value)
     }
 
     // ========================================================================

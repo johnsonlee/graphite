@@ -27,7 +27,9 @@ class DefaultGraph private constructor(
     // for current scale. Consider two-level map if profiling shows GC pressure.
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val rawBranchScopes: Array<RawBranchScope>,
-    override val resources: ResourceAccessor
+    override val resources: ResourceAccessor,
+    /** Pre-computed index: concrete node class -> list of nodes of that class. */
+    private val nodesByType: Map<Class<out Node>, List<Node>>
 ) : Graph {
 
     /**
@@ -63,8 +65,16 @@ class DefaultGraph private constructor(
     override fun node(id: NodeId): Node? = nodesById.get(id.value)
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
-        nodesById.values.asSequence().filter { type.isInstance(it) } as Sequence<T>
+    override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+        // Fast path: exact type match (covers the common case where callers
+        // pass a concrete class like CallSiteNode::class.java)
+        nodesByType[type]?.let { return (it as List<T>).asSequence() }
+        // Slow path: supertype match (e.g., querying an abstract Node subtype
+        // that has multiple concrete implementations in the index)
+        return nodesByType.entries.asSequence()
+            .filter { type.isAssignableFrom(it.key) }
+            .flatMap { it.value.asSequence() } as Sequence<T>
+    }
 
     override fun outgoing(id: NodeId): Sequence<Edge> =
         outgoingEdges.get(id.value)?.asSequence() ?: emptySequence()
@@ -196,6 +206,9 @@ class DefaultGraph private constructor(
             compactOutgoing.trim()
             compactIncoming.trim()
 
+            // Pre-compute node type index: concrete class -> list of nodes
+            val nodesByType = nodes.values.groupBy { it::class.java }
+
             return DefaultGraph(
                 nodesById = nodes,
                 outgoingEdges = compactOutgoing,
@@ -205,7 +218,8 @@ class DefaultGraph private constructor(
                 enumValues = enumValues.toMap(),
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray(),
-                resources = resourceAccessor
+                resources = resourceAccessor,
+                nodesByType = nodesByType
             )
         }
     }
