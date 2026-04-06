@@ -34,7 +34,7 @@ subprojects {
                     // For CLI modules, use shadow jar; for others, use java component
                     val moduleId = project.path.removePrefix(":").replace(':', '-')
                     artifactId = moduleId
-                    if (project.path.startsWith(":cli:") || project.path == ":graphite-explore") {
+                    if (project.path == ":graphite-query" || project.path == ":graphite-explore") {
                         artifact(tasks.named("shadowJar"))
                     } else {
                         from(components["java"])
