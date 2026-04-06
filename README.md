@@ -199,10 +199,10 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.2")    // includes Cypher engine
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.2")
+    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.3")    // includes Cypher engine
+    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.3")
     // Optional: disk persistence
-    implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.2")
+    implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.3")
 }
 ```
 
