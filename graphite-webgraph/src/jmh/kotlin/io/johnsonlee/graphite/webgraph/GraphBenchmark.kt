@@ -27,6 +27,9 @@ open class EsLoadBenchmark {
 
     @Benchmark
     fun lazy_load(): Graph = GraphStore.loadLazy(Path.of("/tmp/es-graph"))
+
+    @Benchmark
+    fun mapped_load(): Graph = GraphStore.loadMapped(Path.of("/tmp/es-graph"))
 }
 
 /**
@@ -45,6 +48,9 @@ open class AndroidLoadBenchmark {
 
     @Benchmark
     fun lazy_load(): Graph = GraphStore.loadLazy(Path.of("/tmp/android-graph-v2"))
+
+    @Benchmark
+    fun mapped_load(): Graph = GraphStore.loadMapped(Path.of("/tmp/android-graph-v2"))
 }
 
 // ============================================================================
@@ -67,6 +73,7 @@ open class EsQueryBenchmark {
 
     private lateinit var eagerGraph: Graph
     private lateinit var lazyGraph: Graph
+    private lateinit var mappedGraph: Graph
 
     @Setup
     fun setup() {
@@ -76,11 +83,13 @@ open class EsQueryBenchmark {
         }
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
+        mappedGraph = GraphStore.loadMapped(graphPath)
     }
 
     @TearDown
     fun tearDown() {
         (lazyGraph as? Closeable)?.close()
+        (mappedGraph as? Closeable)?.close()
     }
 
     // --- Eager ---
@@ -146,6 +155,38 @@ open class EsQueryBenchmark {
     fun lazy_regexFilter() = lazyGraph.query(
         "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
     )
+
+    // --- Mapped ---
+
+    @Benchmark
+    fun mapped_simpleNodeMatch() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+    )
+
+    @Benchmark
+    fun mapped_intConstantFilter() = mappedGraph.query(
+        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id"
+    )
+
+    @Benchmark
+    fun mapped_countStar() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) RETURN count(*)"
+    )
+
+    @Benchmark
+    fun mapped_singleHopRelationship() = mappedGraph.query(
+        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+    )
+
+    @Benchmark
+    fun mapped_returnDistinct() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    )
+
+    @Benchmark
+    fun mapped_regexFilter() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
+    )
 }
 
 // ============================================================================
@@ -165,6 +206,7 @@ open class AndroidQueryBenchmark {
 
     private lateinit var eagerGraph: Graph
     private lateinit var lazyGraph: Graph
+    private lateinit var mappedGraph: Graph
 
     @Setup
     fun setup() {
@@ -174,11 +216,13 @@ open class AndroidQueryBenchmark {
         }
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
+        mappedGraph = GraphStore.loadMapped(graphPath)
     }
 
     @TearDown
     fun tearDown() {
         (lazyGraph as? Closeable)?.close()
+        (mappedGraph as? Closeable)?.close()
     }
 
     // --- Eager ---
@@ -232,6 +276,33 @@ open class AndroidQueryBenchmark {
 
     @Benchmark
     fun lazy_returnDistinct() = lazyGraph.query(
+        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    )
+
+    // --- Mapped ---
+
+    @Benchmark
+    fun mapped_simpleNodeMatch() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+    )
+
+    @Benchmark
+    fun mapped_intConstantFilter() = mappedGraph.query(
+        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
+    )
+
+    @Benchmark
+    fun mapped_countStar() = mappedGraph.query(
+        "MATCH (n:CallSiteNode) RETURN count(*)"
+    )
+
+    @Benchmark
+    fun mapped_singleHopRelationship() = mappedGraph.query(
+        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+    )
+
+    @Benchmark
+    fun mapped_returnDistinct() = mappedGraph.query(
         "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
     )
 }
