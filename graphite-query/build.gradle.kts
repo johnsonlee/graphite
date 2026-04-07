@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":graphite-webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)
+    implementation(libs.snakeyaml)
 }
 
 tasks.shadowJar {

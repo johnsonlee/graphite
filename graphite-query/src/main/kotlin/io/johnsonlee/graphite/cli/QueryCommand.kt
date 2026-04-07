@@ -15,7 +15,8 @@ import java.util.concurrent.Callable
         CallSitesCommand::class,
         MethodsCommand::class,
         AnnotationsCommand::class,
-        CypherCommand::class
+        CypherCommand::class,
+        AbKeysCommand::class
     ]
 )
 class QueryCommand : Callable<Int> {
