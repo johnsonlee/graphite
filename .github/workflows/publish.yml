@@ -41,7 +41,7 @@ jobs:
         VERSION=${GITHUB_REF/refs\/tags\/v/}
         ./gradlew :graphite-query:shadowJar :graphite-explore:shadowJar --no-daemon -Pversion=${VERSION}
         mkdir -p release-assets
-        cp graphite-query/build/libs/query.jar release-assets/graphite-query.jar
+        cp graphite-query/build/libs/graphite-query.jar release-assets/graphite-query.jar
         cp graphite-explore/build/libs/graphite-explore.jar release-assets/graphite-explore.jar
 
     - name: Create GitHub Release

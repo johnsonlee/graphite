@@ -20,7 +20,9 @@ dependencies {
 }
 
 tasks.shadowJar {
+    archiveBaseName.set("graphite-query")
     archiveClassifier.set("")
+    archiveVersion.set("")
     mergeServiceFiles()
     manifest {
         attributes("Main-Class" to "io.johnsonlee.graphite.cli.MainKt")
