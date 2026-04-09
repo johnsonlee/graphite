@@ -55,26 +55,71 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update Homebrew tap
-      if: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
+      env:
+        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       run: |
+        if [ -z "${HOMEBREW_TAP_TOKEN:-}" ]; then
+          echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
+          exit 0
+        fi
+
         VERSION=${GITHUB_REF/refs\/tags\/v/}
         QUERY_SHA=$(sha256sum release-assets/graphite-query.jar | awk '{print $1}')
         EXPLORE_SHA=$(sha256sum release-assets/graphite-explore.jar | awk '{print $1}')
 
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
         cd tap
+        mkdir -p Formula
 
-        python3 - <<PYEOF
-        import re
-        for (name, sha) in [("graphite-query", "${QUERY_SHA}"), ("graphite-explore", "${EXPLORE_SHA}")]:
-            path = f"Formula/{name}.rb"
-            with open(path) as f:
-                content = f.read()
-            content = re.sub(r'version ".*?"', f'version "${VERSION}"', content, count=1)
-            content = re.sub(r'sha256 ".*?"', f'sha256 "{sha}"', content, count=1)
-            with open(path, "w") as f:
-                f.write(content)
-        PYEOF
+        cat > Formula/graphite-query.rb <<RUBY
+        class GraphiteQuery < Formula
+          desc "Query and inspect Graphite static analysis graphs"
+          homepage "https://github.com/johnsonlee/graphite"
+          version "${VERSION}"
+          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite-query.jar"
+          sha256 "${QUERY_SHA}"
+          license "Apache-2.0"
+
+          depends_on "openjdk@17"
+
+          def install
+            libexec.install "graphite-query.jar"
+            (bin/"graphite-query").write <<~EOS
+              #!/bin/bash
+              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx4g} -jar "#{libexec}/graphite-query.jar" "\$@"
+            EOS
+          end
+
+          test do
+            assert_match "Usage", shell_output("#{bin}/graphite-query --help")
+          end
+        end
+        RUBY
+
+        cat > Formula/graphite-explore.rb <<RUBY
+        class GraphiteExplore < Formula
+          desc "Interactive web visualization for Graphite static analysis graphs"
+          homepage "https://github.com/johnsonlee/graphite"
+          version "${VERSION}"
+          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite-explore.jar"
+          sha256 "${EXPLORE_SHA}"
+          license "Apache-2.0"
+
+          depends_on "openjdk@17"
+
+          def install
+            libexec.install "graphite-explore.jar"
+            (bin/"graphite-explore").write <<~EOS
+              #!/bin/bash
+              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx4g} -jar "#{libexec}/graphite-explore.jar" "\$@"
+            EOS
+          end
+
+          test do
+            assert_match "Usage", shell_output("#{bin}/graphite-explore --help")
+          end
+        end
+        RUBY
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -83,5 +128,3 @@ jobs:
           git commit -m "graphite ${VERSION}"
           git push origin main
         fi
-      env:
-        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
