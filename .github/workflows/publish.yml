@@ -71,8 +71,11 @@ jobs:
         cd tap
         mkdir -p Formula
 
-        cat > Formula/graphite-query.rb <<RUBY
-        class GraphiteQuery < Formula
+        # remove legacy file if present
+        rm -f Formula/graphite-query.rb
+
+        cat > Formula/graphite.rb <<RUBY
+        class Graphite < Formula
           desc "Query and inspect Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
           version "${VERSION}"
@@ -84,14 +87,14 @@ jobs:
 
           def install
             libexec.install "graphite-query.jar"
-            (bin/"graphite-query").write <<~EOS
+            (bin/"graphite").write <<~EOS
               #!/bin/bash
               exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx4g} -jar "#{libexec}/graphite-query.jar" "\$@"
             EOS
           end
 
           test do
-            assert_match "Usage", shell_output("#{bin}/graphite-query --help")
+            assert_match "Usage", shell_output("#{bin}/graphite --help")
           end
         end
         RUBY
