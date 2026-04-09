@@ -62,36 +62,23 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ```bash
 # Install via Homebrew
 brew tap johnsonlee/tap
-brew install graphite-query graphite-explore
+brew install graphite graphite-explore
 
 # Build a graph from your JAR
-graphite-query build app.jar -o /data/app-graph --include com.example
-
-# Inspect it
-graphite-query info /data/app-graph
+graphite build app.jar -o /data/app-graph --include com.example
 
 # Query with Cypher
-graphite-query cypher /data/app-graph \
+graphite query /data/app-graph \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
    WHERE cs.callee_class =~ 'com.example.*'
    RETURN c.value, cs.callee_name"
 
 # JSON output (for LLM consumption)
-graphite-query cypher --format json /data/app-graph \
+graphite query --format json /data/app-graph \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
-```
 
-### More CLI Commands
-
-```bash
-# List call sites matching a pattern
-graphite /data/app-graph call-sites -c "com.example.*"
-
-# List methods in a class
-graphite /data/app-graph methods -c "com.example.UserService"
-
-# Query annotations
-graphite /data/app-graph annotations -c com.example.User -m name
+# Launch the web UI
+graphite-explore /data/app-graph --port 8080
 ```
 
 ## Kotlin API
