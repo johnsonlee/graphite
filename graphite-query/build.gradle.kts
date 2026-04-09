@@ -24,6 +24,14 @@ tasks.shadowJar {
     archiveClassifier.set("")
     archiveVersion.set("")
     mergeServiceFiles()
+
+    minimize {
+        exclude(dependency("org.antlr:antlr4-runtime:.*"))
+        exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
+        exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:.*"))
+        exclude(dependency("org.soot-oss:.*:.*"))
+    }
+
     manifest {
         attributes("Main-Class" to "io.johnsonlee.graphite.cli.MainKt")
     }

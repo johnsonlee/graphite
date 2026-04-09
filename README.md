@@ -60,23 +60,24 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ## Quick Start
 
 ```bash
-# Install all CLI tools (no token needed)
-curl -sL https://raw.githubusercontent.com/johnsonlee/graphite/main/install.sh | bash
+# Install via Homebrew
+brew tap johnsonlee/tap
+brew install graphite-query graphite-explore
 
 # Build a graph from your JAR
-graphite build app.jar -o /data/app-graph --include com.example
+graphite-query build app.jar -o /data/app-graph --include com.example
 
 # Inspect it
-graphite /data/app-graph info
+graphite-query info /data/app-graph
 
 # Query with Cypher
-graphite /data/app-graph cypher \
+graphite-query cypher /data/app-graph \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
    WHERE cs.callee_class =~ 'com.example.*'
    RETURN c.value, cs.callee_name"
 
 # JSON output (for LLM consumption)
-graphite /data/app-graph cypher --format json \
+graphite-query cypher --format json /data/app-graph \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
 ```
 
