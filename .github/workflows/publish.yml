@@ -53,3 +53,35 @@ jobs:
         files: release-assets/*.jar
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update Homebrew tap
+      if: ${{ secrets.HOMEBREW_TAP_TOKEN != '' }}
+      run: |
+        VERSION=${GITHUB_REF/refs\/tags\/v/}
+        QUERY_SHA=$(sha256sum release-assets/graphite-query.jar | awk '{print $1}')
+        EXPLORE_SHA=$(sha256sum release-assets/graphite-explore.jar | awk '{print $1}')
+
+        git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
+        cd tap
+
+        python3 - <<PYEOF
+        import re
+        for (name, sha) in [("graphite-query", "${QUERY_SHA}"), ("graphite-explore", "${EXPLORE_SHA}")]:
+            path = f"Formula/{name}.rb"
+            with open(path) as f:
+                content = f.read()
+            content = re.sub(r'version ".*?"', f'version "${VERSION}"', content, count=1)
+            content = re.sub(r'sha256 ".*?"', f'sha256 "{sha}"', content, count=1)
+            with open(path, "w") as f:
+                f.write(content)
+        PYEOF
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add Formula/
+        if ! git diff --cached --quiet; then
+          git commit -m "graphite ${VERSION}"
+          git push origin main
+        fi
+      env:
+        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
