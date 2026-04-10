@@ -3,7 +3,9 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
@@ -14,7 +16,6 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.util.HashMap
 
 /**
  * Save and load [Graph] instances using WebGraph compression with native LAW
@@ -72,13 +73,13 @@ object GraphStore {
 
         // 4. Build edge label + comparison maps (needed for label storage)
         //    and wrap the graph as an ImmutableGraph for BVGraph (no adjacency copy)
-        val edgeLabelMap = mutableMapOf<Long, Int>()
+        val edgeLabelMap = Long2IntOpenHashMap()
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
 
         for (node in allNodes) {
             for (edge in graph.outgoing(node.id)) {
                 val key = edge.from.value.toLong() shl 32 or (edge.to.value.toLong() and 0xFFFFFFFFL)
-                edgeLabelMap[key] = NodeSerializer.encodeEdge(edge)
+                edgeLabelMap.put(key, NodeSerializer.encodeEdge(edge))
                 if (edge is ControlFlowEdge && edge.comparison != null) {
                     comparisonMap[key] = edge.comparison!!
                 }
@@ -215,7 +216,7 @@ object GraphStore {
         require(nodeIndexFile.exists()) {
             "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
         }
-        val nodeIndex = HashMap<Int, Long>()
+        val nodeIndex = Int2LongOpenHashMap()
         val nodeTypeByTag = HashMap<Int, MutableList<Int>>()
 
         DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
@@ -224,7 +225,7 @@ object GraphStore {
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
                 val offset = dis.readLong()
-                nodeIndex[nodeId] = offset
+                nodeIndex.put(nodeId, offset)
                 nodeTypeByTag.getOrPut(tag) { mutableListOf() }.add(nodeId)
             }
         }
@@ -296,7 +297,7 @@ object GraphStore {
         require(nodeIndexFile.exists()) {
             "Node index file not found: $nodeIndexFile. Re-save the graph or call ensureNodeIndex()."
         }
-        val nodeIndex = HashMap<Int, Long>()
+        val nodeIndex = Int2LongOpenHashMap()
         val nodeTypeByTag = HashMap<Int, MutableList<Int>>()
 
         DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
@@ -305,7 +306,7 @@ object GraphStore {
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
                 val offset = dis.readLong()
-                nodeIndex[nodeId] = offset
+                nodeIndex.put(nodeId, offset)
                 nodeTypeByTag.getOrPut(tag) { mutableListOf() }.add(nodeId)
             }
         }
@@ -361,7 +362,7 @@ object GraphStore {
      */
     private fun buildLabelArray(
         graph: it.unimi.dsi.webgraph.ImmutableGraph,
-        edgeLabelMap: Map<Long, Int>
+        edgeLabelMap: Long2IntOpenHashMap
     ): ByteArray {
         var totalEdges = 0
         for (node in 0 until graph.numNodes()) {
@@ -374,7 +375,7 @@ object GraphStore {
             val outdeg = graph.outdegree(node)
             for (i in 0 until outdeg) {
                 val key = node.toLong() shl 32 or (succs[i].toLong() and 0xFFFFFFFFL)
-                labels[idx++] = (edgeLabelMap[key] ?: 0).toByte()
+                labels[idx++] = edgeLabelMap.get(key).toByte()
             }
         }
         return labels
@@ -386,15 +387,15 @@ object GraphStore {
     private fun buildEdgeLabelMap(
         forward: it.unimi.dsi.webgraph.ImmutableGraph,
         labelBytes: ByteArray
-    ): HashMap<Long, Int> {
-        val edgeLabelMap = HashMap<Long, Int>(labelBytes.size)
+    ): Long2IntOpenHashMap {
+        val edgeLabelMap = Long2IntOpenHashMap(labelBytes.size)
         var idx = 0
         for (node in 0 until forward.numNodes()) {
             val succs = forward.successorArray(node)
             val outdeg = forward.outdegree(node)
             for (i in 0 until outdeg) {
                 val key = node.toLong() shl 32 or (succs[i].toLong() and 0xFFFFFFFFL)
-                edgeLabelMap[key] = labelBytes[idx++].toInt() and 0xFF
+                edgeLabelMap.put(key, labelBytes[idx++].toInt() and 0xFF)
             }
         }
         return edgeLabelMap
