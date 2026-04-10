@@ -36,6 +36,7 @@ internal object NodeSerializer {
     private const val TAG_PARAMETER_NODE = 10
     private const val TAG_RETURN_NODE = 11
     private const val TAG_CALL_SITE_NODE = 12
+    private const val TAG_ANNOTATION_NODE = 13
 
     // Value type tags (for heterogeneous value lists like enum constructor args)
     private const val VAL_INT = 0
@@ -128,6 +129,15 @@ internal object NodeSerializer {
                 is CallSiteNode -> {
                     collectMethodDescriptorStrings(node.caller, dest)
                     collectMethodDescriptorStrings(node.callee, dest)
+                }
+                is AnnotationNode -> {
+                    dest.add(node.name)
+                    dest.add(node.className)
+                    dest.add(node.memberName)
+                    for ((k, v) in node.values) {
+                        dest.add(k)
+                        dest.add(v?.toString() ?: "")
+                    }
                 }
                 else -> {} // IntConstant, LongConstant, FloatConstant, DoubleConstant, BooleanConstant, NullConstant
             }
@@ -273,6 +283,17 @@ internal object NodeSerializer {
                 dos.writeInt(node.arguments.size)
                 for (arg in node.arguments) dos.writeInt(arg.value)
             }
+            is AnnotationNode -> {
+                dos.writeByte(TAG_ANNOTATION_NODE)
+                dos.writeInt(strings.indexOf(node.name))
+                dos.writeInt(strings.indexOf(node.className))
+                dos.writeInt(strings.indexOf(node.memberName))
+                dos.writeInt(node.values.size)
+                for ((k, v) in node.values) {
+                    dos.writeInt(strings.indexOf(k))
+                    dos.writeInt(strings.indexOf(v?.toString() ?: ""))
+                }
+            }
         }
     }
 
@@ -326,6 +347,19 @@ internal object NodeSerializer {
                 val argCount = dis.readInt()
                 val arguments = (0 until argCount).map { NodeId(dis.readInt()) }
                 CallSiteNode(id, caller, callee, lineNumber, receiver, arguments)
+            }
+            TAG_ANNOTATION_NODE -> {
+                val name = strings.get(dis.readInt())
+                val className = strings.get(dis.readInt())
+                val memberName = strings.get(dis.readInt())
+                val kvCount = dis.readInt()
+                val values = mutableMapOf<String, Any?>()
+                repeat(kvCount) {
+                    val k = strings.get(dis.readInt())
+                    val v = strings.get(dis.readInt()).let { s -> s.ifEmpty { null } }
+                    values[k] = v
+                }
+                AnnotationNode(id, name, className, memberName, values)
             }
             else -> throw IllegalArgumentException("Unknown node tag: $tag")
         }

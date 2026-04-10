@@ -245,7 +245,8 @@ object GraphStore {
             9 to FieldNode::class.java,
             10 to ParameterNode::class.java,
             11 to ReturnNode::class.java,
-            12 to CallSiteNode::class.java
+            12 to CallSiteNode::class.java,
+            13 to AnnotationNode::class.java
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue
@@ -326,7 +327,8 @@ object GraphStore {
             9 to FieldNode::class.java,
             10 to ParameterNode::class.java,
             11 to ReturnNode::class.java,
-            12 to CallSiteNode::class.java
+            12 to CallSiteNode::class.java,
+            13 to AnnotationNode::class.java
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue
@@ -535,6 +537,7 @@ object GraphStore {
                     allTypes.add(node.caller.declaringClass)
                 }
                 is EnumConstant -> allTypes.add(node.enumType)
+                is AnnotationNode -> {}
                 else -> {}
             }
         }
@@ -579,6 +582,7 @@ object GraphStore {
                 is CallSiteNode -> classMembers.add(node.callee.declaringClass.className to node.callee.name)
                 is ParameterNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
                 is ReturnNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
+                is AnnotationNode -> {}
                 else -> {}
             }
         }

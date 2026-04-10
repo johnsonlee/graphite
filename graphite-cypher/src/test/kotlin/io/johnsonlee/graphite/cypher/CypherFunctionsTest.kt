@@ -511,6 +511,12 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `labels returns correct labels for AnnotationNode`() {
+        val node = AnnotationNode(NodeId.next(), "com.example.MyAnnotation", "com.example.Foo", "bar", emptyMap())
+        assertEquals(listOf("AnnotationNode", "Annotation"), CypherFunctions.call("labels", listOf(node)))
+    }
+
+    @Test
     fun `labels returns empty for non-node`() {
         assertEquals(emptyList<String>(), CypherFunctions.call("labels", listOf("not a node")))
     }

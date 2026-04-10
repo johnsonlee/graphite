@@ -99,6 +99,22 @@ class CypherExecutorTest {
         nullConst = NodeId.next()
         builder.addNode(NullConstant(nullConst))
 
+        // Annotation nodes
+        builder.addNode(AnnotationNode(
+            NodeId.next(),
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}")
+        ))
+        builder.addNode(AnnotationNode(
+            NodeId.next(),
+            "org.springframework.web.bind.annotation.PostMapping",
+            "com.example.UserController",
+            "createUser",
+            mapOf("value" to "/api/users")
+        ))
+
         // Create edges
         // intConst42 -> param1 (dataflow)
         builder.addEdge(DataFlowEdge(intConst42, param1, DataFlowKind.PARAMETER_PASS))
@@ -1466,5 +1482,52 @@ class CypherExecutorTest {
         val result = executor.execute("MATCH (n:IntConstant) WHERE n.value >= 42 RETURN n.value")
         assertEquals(1, result.rows.size)
         assertEquals(42, result.rows[0]["n.value"])
+    }
+
+    // --- AnnotationNode Tests ---
+
+    @Test
+    fun `query AnnotationNode by label`() {
+        val result = executor.execute("MATCH (a:Annotation) RETURN a.name, a.class, a.member")
+        assertEquals(2, result.rows.size)
+        val names = result.rows.map { it["a.name"] }.toSet()
+        assertTrue(names.contains("org.springframework.web.bind.annotation.GetMapping"))
+        assertTrue(names.contains("org.springframework.web.bind.annotation.PostMapping"))
+    }
+
+    @Test
+    fun `query AnnotationNode with CONTAINS filter`() {
+        val result = executor.execute("MATCH (a:Annotation) WHERE a.name CONTAINS 'GetMapping' RETURN a.class, a.member")
+        assertEquals(1, result.rows.size)
+        assertEquals("com.example.UserController", result.rows[0]["a.class"])
+        assertEquals("getUser", result.rows[0]["a.member"])
+    }
+
+    @Test
+    fun `query AnnotationNode by AnnotationNode label`() {
+        val result = executor.execute("MATCH (a:AnnotationNode) RETURN a.name")
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
+    fun `query AnnotationNode with custom annotation value property`() {
+        val result = executor.execute("MATCH (a:Annotation) WHERE a.value = '/api/users/{id}' RETURN a.name, a.member")
+        assertEquals(1, result.rows.size)
+        assertEquals("getUser", result.rows[0]["a.member"])
+    }
+
+    @Test
+    fun `return full AnnotationNode materializes to map`() {
+        val result = executor.execute("MATCH (a:Annotation) WHERE a.name CONTAINS 'GetMapping' RETURN a")
+        assertEquals(1, result.rows.size)
+        val nodeMap = result.rows[0]["a"]
+        assertTrue(nodeMap is Map<*, *>)
+        @Suppress("UNCHECKED_CAST")
+        val map = nodeMap as Map<String, Any?>
+        assertEquals("AnnotationNode", map["type"])
+        assertEquals("org.springframework.web.bind.annotation.GetMapping", map["name"])
+        assertEquals("com.example.UserController", map["class"])
+        assertEquals("getUser", map["member"])
+        assertEquals("/api/users/{id}", map["value"])
     }
 }

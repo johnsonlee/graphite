@@ -179,6 +179,19 @@ data class CallSiteNode(
 ) : Node
 
 /**
+ * An annotation on a class, field, or method.
+ *
+ * Standalone node that makes annotations queryable via Cypher.
+ */
+data class AnnotationNode(
+    override val id: NodeId,
+    val name: String,              // annotation FQN, e.g. "org.springframework.web.bind.annotation.GetMapping"
+    val className: String,         // declaring class FQN
+    val memberName: String,        // method/field name, or "<class>" for class-level
+    val values: Map<String, Any?>  // annotation attributes
+) : Node
+
+/**
  * Descriptors for program elements
  */
 data class TypeDescriptor(
