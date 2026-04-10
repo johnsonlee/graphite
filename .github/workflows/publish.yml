@@ -32,8 +32,8 @@ jobs:
         ./gradlew clean publishAllPublicationsToGitHubPackagesRepository -S --no-daemon \
             -Pversion=${VERSION}
       env:
-        JAVA_OPTS: -Xmx4g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
-        JVM_OPTS: -Xmx4g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+        JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+        JVM_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build CLI shadow JARs
@@ -89,7 +89,7 @@ jobs:
             libexec.install "graphite-query.jar"
             (bin/"graphite").write <<~EOS
               #!/bin/bash
-              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx4g} -jar "#{libexec}/graphite-query.jar" "\$@"
+              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx8g} -jar "#{libexec}/graphite-query.jar" "\$@"
             EOS
           end
 
@@ -114,7 +114,7 @@ jobs:
             libexec.install "graphite-explore.jar"
             (bin/"graphite-explore").write <<~EOS
               #!/bin/bash
-              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx4g} -jar "#{libexec}/graphite-explore.jar" "\$@"
+              exec "#{Formula["openjdk@17"].opt_bin}/java" \${GRAPHITE_OPTS:--Xmx8g} -jar "#{libexec}/graphite-explore.jar" "\$@"
             EOS
           end
 
