@@ -5,7 +5,9 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.webgraph.ImmutableGraph
 import java.io.*
 import java.nio.ByteBuffer
@@ -39,9 +41,9 @@ internal class MappedWebGraphBackedGraph(
     private val backward: ImmutableGraph,
     private val mappedNodeData: MappedByteBuffer,
     private val stringTable: StringTable,
-    private val nodeIndex: Map<Int, Long>,
+    private val nodeIndex: Int2LongOpenHashMap,
     private val nodeTypeIndex: Map<Class<out Node>, List<Int>>,
-    private val edgeLabelMap: Map<Long, Int>,
+    private val edgeLabelMap: Long2IntOpenHashMap,
     private val comparisonMap: Map<Long, BranchComparison>,
     private val metadata: GraphMetadata
 ) : Graph, Closeable {
@@ -59,7 +61,8 @@ internal class MappedWebGraphBackedGraph(
     }
 
     override fun node(id: NodeId): Node? {
-        val offset = nodeIndex[id.value] ?: return null
+        if (!nodeIndex.containsKey(id.value)) return null
+        val offset = nodeIndex.get(id.value)
         return readNodeAt(offset)
     }
 
@@ -84,7 +87,7 @@ internal class MappedWebGraphBackedGraph(
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
             val key = nodeIdx.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
-            val label = edgeLabelMap[key] ?: 0
+            val label = edgeLabelMap.get(key)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison)
         }
@@ -98,7 +101,7 @@ internal class MappedWebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val key = from.toLong() shl 32 or (nodeIdx.toLong() and 0xFFFFFFFFL)
-            val label = edgeLabelMap[key] ?: 0
+            val label = edgeLabelMap.get(key)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison)
         }

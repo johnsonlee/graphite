@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.webgraph.ImmutableGraph
 
 /**
@@ -20,7 +21,7 @@ internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: ImmutableGraph,
     private val nodesById: Map<Int, Node>,
-    private val edgeLabelMap: Map<Long, Int>,
+    private val edgeLabelMap: Long2IntOpenHashMap,
     private val comparisonMap: Map<Long, BranchComparison>,
     private val metadata: GraphMetadata
 ) : Graph {
@@ -61,7 +62,7 @@ internal class WebGraphBackedGraph(
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
             val key = nodeIdx.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
-            val label = edgeLabelMap[key] ?: 0
+            val label = edgeLabelMap.get(key)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison)
         }
@@ -75,7 +76,7 @@ internal class WebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val key = from.toLong() shl 32 or (nodeIdx.toLong() and 0xFFFFFFFFL)
-            val label = edgeLabelMap[key] ?: 0
+            val label = edgeLabelMap.get(key)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison)
         }
