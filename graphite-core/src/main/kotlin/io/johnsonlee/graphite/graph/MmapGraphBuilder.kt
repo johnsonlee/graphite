@@ -172,6 +172,7 @@ class MmapGraphBuilder(
         internal const val TAG_PARAMETER_NODE = 10
         internal const val TAG_RETURN_NODE = 11
         internal const val TAG_CALL_SITE_NODE = 12
+        internal const val TAG_ANNOTATION_NODE = 13
 
         // Edge type tags
         internal const val TAG_EDGE_DATAFLOW = 0
@@ -230,6 +231,19 @@ class MmapGraphBuilder(
                     val argCount = s.readInt()
                     val args = (0 until argCount).map { NodeId(s.readInt()) }
                     CallSiteNode(id, caller, callee, line, receiver, args)
+                }
+                TAG_ANNOTATION_NODE -> {
+                    val name = s.readUTF()
+                    val className = s.readUTF()
+                    val memberName = s.readUTF()
+                    val kvCount = s.readInt()
+                    val values = mutableMapOf<String, Any?>()
+                    repeat(kvCount) {
+                        val k = s.readUTF()
+                        val v = s.readUTF().let { str -> str.ifEmpty { null } }
+                        values[k] = v
+                    }
+                    AnnotationNode(id, name, className, memberName, values)
                 }
                 else -> throw IllegalStateException("Unknown node type tag: $tag")
             }
@@ -362,6 +376,17 @@ class MmapGraphBuilder(
                 dos.writeInt(node.receiver?.value ?: -1)
                 dos.writeInt(node.arguments.size)
                 node.arguments.forEach { dos.writeInt(it.value) }
+            }
+            is AnnotationNode -> {
+                dos.writeByte(TAG_ANNOTATION_NODE)
+                dos.writeUTF(node.name)
+                dos.writeUTF(node.className)
+                dos.writeUTF(node.memberName)
+                dos.writeInt(node.values.size)
+                for ((k, v) in node.values) {
+                    dos.writeUTF(k)
+                    dos.writeUTF(v?.toString() ?: "")
+                }
             }
         }
         dos.flush()

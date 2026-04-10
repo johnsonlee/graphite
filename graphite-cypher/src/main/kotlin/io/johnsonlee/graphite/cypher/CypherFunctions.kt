@@ -186,6 +186,7 @@ object CypherFunctions {
         is FieldNode -> listOf("FieldNode")
         is ParameterNode -> listOf("ParameterNode")
         is ReturnNode -> listOf("ReturnNode")
+        is AnnotationNode -> listOf("AnnotationNode", "Annotation")
         else -> emptyList()
     }
 

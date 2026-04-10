@@ -160,6 +160,97 @@ class NodePropertyAccessorTest {
     }
 
     @Test
+    fun `AnnotationNode properties`() {
+        val node = AnnotationNode(
+            NodeId(100),
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}")
+        )
+        assertEquals("org.springframework.web.bind.annotation.GetMapping", NodePropertyAccessor.getProperty(node, "name"))
+        assertEquals("com.example.UserController", NodePropertyAccessor.getProperty(node, "class"))
+        assertEquals("getUser", NodePropertyAccessor.getProperty(node, "member"))
+        assertEquals("/api/users/{id}", NodePropertyAccessor.getProperty(node, "value"))
+        assertNull(NodePropertyAccessor.getProperty(node, "nonexistent"))
+    }
+
+    @Test
+    fun `AnnotationNode values property returns map toString`() {
+        val node = AnnotationNode(
+            NodeId(101),
+            "com.example.MyAnnotation",
+            "com.example.Foo",
+            "bar",
+            mapOf("key1" to "val1", "key2" to "val2")
+        )
+        val valuesStr = NodePropertyAccessor.getProperty(node, "values") as String
+        assertTrue(valuesStr.contains("key1"))
+        assertTrue(valuesStr.contains("val1"))
+    }
+
+    @Test
+    fun `AnnotationNode custom annotation value accessed via property name`() {
+        val node = AnnotationNode(
+            NodeId(102),
+            "com.example.MyAnnotation",
+            "com.example.Foo",
+            "bar",
+            mapOf("path" to "/api/test", "method" to "GET")
+        )
+        assertEquals("/api/test", NodePropertyAccessor.getProperty(node, "path"))
+        assertEquals("GET", NodePropertyAccessor.getProperty(node, "method"))
+    }
+
+    @Test
+    fun `AnnotationNode unknown property returns null from values map`() {
+        val node = AnnotationNode(
+            NodeId(103),
+            "com.example.MyAnnotation",
+            "com.example.Foo",
+            "bar",
+            mapOf("key" to "value")
+        )
+        assertNull(NodePropertyAccessor.getProperty(node, "nonexistent_key"))
+    }
+
+    @Test
+    fun `nodeTypeName returns AnnotationNode for AnnotationNode`() {
+        val node = AnnotationNode(NodeId(200), "com.example.Ann", "com.example.Cls", "m", emptyMap())
+        assertEquals("AnnotationNode", NodePropertyAccessor.nodeTypeName(node))
+    }
+
+    @Test
+    fun `getAllProperties for AnnotationNode includes base and annotation values`() {
+        val node = AnnotationNode(
+            NodeId(300),
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
+        )
+        val props = NodePropertyAccessor.getAllProperties(node)
+        assertEquals(300, props["id"])
+        assertEquals("org.springframework.web.bind.annotation.GetMapping", props["name"])
+        assertEquals("com.example.UserController", props["class"])
+        assertEquals("getUser", props["member"])
+        assertEquals("/api/users/{id}", props["value"])
+        assertEquals("application/json", props["produces"])
+    }
+
+    @Test
+    fun `getAllProperties for AnnotationNode with empty values`() {
+        val node = AnnotationNode(NodeId(301), "javax.persistence.Id", "com.example.User", "id", emptyMap())
+        val props = NodePropertyAccessor.getAllProperties(node)
+        assertEquals(301, props["id"])
+        assertEquals("javax.persistence.Id", props["name"])
+        assertEquals("com.example.User", props["class"])
+        assertEquals("id", props["member"])
+        // Only base properties, no annotation values
+        assertEquals(4, props.size)
+    }
+
+    @Test
     fun `resolveNodeLabel maps standard names`() {
         assertEquals(CallSiteNode::class.java, NodePropertyAccessor.resolveNodeLabel("CallSiteNode"))
         assertEquals(CallSiteNode::class.java, NodePropertyAccessor.resolveNodeLabel("callsite"))
@@ -183,6 +274,12 @@ class NodePropertyAccessorTest {
         assertEquals(LocalVariable::class.java, NodePropertyAccessor.resolveNodeLabel("local"))
         assertEquals(Node::class.java, NodePropertyAccessor.resolveNodeLabel("node"))
         assertEquals(Node::class.java, NodePropertyAccessor.resolveNodeLabel("Node"))
+    }
+
+    @Test
+    fun `resolveNodeLabel maps annotation labels`() {
+        assertEquals(AnnotationNode::class.java, NodePropertyAccessor.resolveNodeLabel("Annotation"))
+        assertEquals(AnnotationNode::class.java, NodePropertyAccessor.resolveNodeLabel("AnnotationNode"))
     }
 
     @Test

@@ -294,6 +294,58 @@ class HelpersTest {
         assertEquals("null", map["label"])
     }
 
+    @Test
+    fun `formatNode formats AnnotationNode`() {
+        val node = AnnotationNode(
+            NodeId.next(),
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}")
+        )
+        val result = formatNode(node)
+        assertTrue(result.startsWith("Annotation["), "Should start with 'Annotation[', got: $result")
+        assertTrue(result.contains("@GetMapping"), "Should contain short annotation name, got: $result")
+        assertTrue(result.contains("UserController.getUser"), "Should contain class.member, got: $result")
+    }
+
+    @Test
+    fun `nodeToMap for AnnotationNode includes correct fields`() {
+        val node = AnnotationNode(
+            NodeId.next(),
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
+        )
+        val map = nodeToMap(node)
+        assertEquals("AnnotationNode", map["type"])
+        assertEquals(node.id.value, map["id"])
+        assertEquals("org.springframework.web.bind.annotation.GetMapping", map["name"])
+        assertEquals("com.example.UserController", map["class"])
+        assertEquals("getUser", map["member"])
+        assertEquals("@GetMapping", map["label"])
+        assertEquals("/api/users/{id}", map["value"])
+        assertEquals("application/json", map["produces"])
+    }
+
+    @Test
+    fun `nodeToMap for AnnotationNode with empty values`() {
+        val node = AnnotationNode(
+            NodeId.next(),
+            "javax.persistence.Id",
+            "com.example.User",
+            "id",
+            emptyMap()
+        )
+        val map = nodeToMap(node)
+        assertEquals("AnnotationNode", map["type"])
+        assertEquals("javax.persistence.Id", map["name"])
+        assertEquals("com.example.User", map["class"])
+        assertEquals("id", map["member"])
+        assertEquals("@Id", map["label"])
+    }
+
     // ========================================================================
     // edgeToMap
     // ========================================================================

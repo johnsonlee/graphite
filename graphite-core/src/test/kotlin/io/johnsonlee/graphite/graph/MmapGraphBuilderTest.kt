@@ -179,6 +179,54 @@ class MmapGraphBuilderTest {
         assertEquals(node, graph.node(id))
     }
 
+    @Test
+    fun `round-trip AnnotationNode with values`() {
+        val id = NodeId.next()
+        val node = AnnotationNode(
+            id,
+            "org.springframework.web.bind.annotation.GetMapping",
+            "com.example.UserController",
+            "getUser",
+            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
+        )
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as AnnotationNode
+        assertEquals(node.name, restored.name)
+        assertEquals(node.className, restored.className)
+        assertEquals(node.memberName, restored.memberName)
+        assertEquals(node.values, restored.values)
+    }
+
+    @Test
+    fun `round-trip AnnotationNode with empty values`() {
+        val id = NodeId.next()
+        val node = AnnotationNode(id, "javax.persistence.Id", "com.example.User", "id", emptyMap())
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as AnnotationNode
+        assertEquals(node, restored)
+    }
+
+    @Test
+    fun `round-trip AnnotationNode with null value serialized as empty string`() {
+        val id = NodeId.next()
+        val node = AnnotationNode(id, "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("key" to null))
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as AnnotationNode
+        assertEquals(node.name, restored.name)
+        // null values are serialized as empty string, deserialized as null
+        assertNull(restored.values["key"])
+    }
+
+    @Test
+    fun `round-trip AnnotationNode class-level annotation`() {
+        val id = NodeId.next()
+        val node = AnnotationNode(id, "org.springframework.stereotype.Controller", "com.example.MyController", "<class>", emptyMap())
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as AnnotationNode
+        assertEquals("<class>", restored.memberName)
+        assertEquals(node, restored)
+    }
+
     // ========================================================================
     // Round-trip: every edge type
     // ========================================================================

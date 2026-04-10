@@ -26,6 +26,7 @@ object NodePropertyAccessor {
             is FieldNode -> getFieldNodeProperty(node, property)
             is ParameterNode -> getParameterNodeProperty(node, property)
             is ReturnNode -> getReturnNodeProperty(node, property)
+            is AnnotationNode -> getAnnotationNodeProperty(node, property)
         }
         if (nodeSpecific != null) return nodeSpecific
 
@@ -50,6 +51,7 @@ object NodePropertyAccessor {
         is FieldNode -> "FieldNode"
         is ParameterNode -> "ParameterNode"
         is ReturnNode -> "ReturnNode"
+        is AnnotationNode -> "AnnotationNode"
     }
 
     private fun getCallSiteProperty(node: CallSiteNode, prop: String) = when (prop) {
@@ -128,6 +130,14 @@ object NodePropertyAccessor {
         else -> null
     }
 
+    private fun getAnnotationNodeProperty(node: AnnotationNode, prop: String) = when (prop) {
+        "name" -> node.name
+        "class" -> node.className
+        "member" -> node.memberName
+        "values" -> node.values.toString()
+        else -> node.values[prop]
+    }
+
     /**
      * Returns all properties of a node as a map.
      */
@@ -179,6 +189,12 @@ object NodePropertyAccessor {
             "method" to node.method.signature,
             "actual_type" to node.actualType?.className
         )
+        is AnnotationNode -> mutableMapOf<String, Any?>(
+            "id" to node.id.value,
+            "name" to node.name,
+            "class" to node.className,
+            "member" to node.memberName
+        ).also { map -> node.values.forEach { (k, v) -> map[k] = v } }
     }
 
     /**
@@ -199,6 +215,7 @@ object NodePropertyAccessor {
         "parameternode", "parameter" -> ParameterNode::class.java
         "returnnode", "return" -> ReturnNode::class.java
         "localvariable", "local" -> LocalVariable::class.java
+        "annotationnode", "annotation" -> AnnotationNode::class.java
         "node" -> Node::class.java
         else -> Node::class.java
     }

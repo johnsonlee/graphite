@@ -26,6 +26,7 @@ internal fun formatNode(node: Node): String = when (node) {
     is ParameterNode -> "Parameter[${node.id}] ${node.method.name}#${node.index}: ${node.type.simpleName}"
     is ReturnNode -> "Return[${node.id}] ${node.method.name}"
     is LocalVariable -> "Local[${node.id}] ${node.name}: ${node.type.simpleName}"
+    is AnnotationNode -> "Annotation[${node.id}] @${node.name.substringAfterLast('.')} on ${node.className.substringAfterLast('.')}.${node.memberName}"
 }
 
 internal fun nodeToMap(node: Node): Map<String, Any?> = when (node) {
@@ -42,6 +43,7 @@ internal fun nodeToMap(node: Node): Map<String, Any?> = when (node) {
     is ParameterNode -> mapOf("type" to "ParameterNode", "id" to node.id.value, "index" to node.index, "paramType" to node.type.className, "method" to node.method.signature, "label" to "param#${node.index}")
     is ReturnNode -> mapOf("type" to "ReturnNode", "id" to node.id.value, "method" to node.method.signature, "label" to "return")
     is LocalVariable -> mapOf("type" to "LocalVariable", "id" to node.id.value, "name" to node.name, "varType" to node.type.className, "method" to node.method.signature, "label" to node.name)
+    is AnnotationNode -> mutableMapOf<String, Any?>("type" to "AnnotationNode", "id" to node.id.value, "name" to node.name, "class" to node.className, "member" to node.memberName, "label" to "@${node.name.substringAfterLast('.')}").also { map -> node.values.forEach { (k, v) -> map[k] = v } }
 }
 
 internal fun edgeToMap(edge: Edge): Map<String, Any?> = when (edge) {

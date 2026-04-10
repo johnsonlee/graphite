@@ -133,6 +133,25 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `round-trip preserves AnnotationNode`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val annotations = loaded.nodes(AnnotationNode::class.java).toList()
+            assertEquals(1, annotations.size)
+            assertEquals("javax.annotation.Nullable", annotations[0].name)
+            assertEquals("com.example.Foo", annotations[0].className)
+            assertEquals("bar", annotations[0].memberName)
+            assertEquals("true", annotations[0].values["value"])
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves type hierarchy`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-test")
@@ -1332,7 +1351,7 @@ class GraphStoreTest {
 
                 // Node is the ultimate supertype
                 val allNodes = loaded.nodes(Node::class.java).toList()
-                assertEquals(7, allNodes.size)
+                assertEquals(8, allNodes.size)
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1353,7 +1372,7 @@ class GraphStoreTest {
                 assertTrue(constants.size >= 2, "Should find at least IntConstant and EnumConstant")
 
                 val allNodes = loaded.nodes(Node::class.java).toList()
-                assertEquals(7, allNodes.size)
+                assertEquals(8, allNodes.size)
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1580,6 +1599,9 @@ class GraphStoreTest {
         builder.addNode(callSite)
         builder.addNode(enumConst)
         builder.addNode(field)
+
+        val annotNode = AnnotationNode(NodeId.next(), "javax.annotation.Nullable", "com.example.Foo", "bar", mapOf("value" to "true"))
+        builder.addNode(annotNode)
 
         // Edges
         builder.addEdge(DataFlowEdge(param.id, local.id, DataFlowKind.ASSIGN))

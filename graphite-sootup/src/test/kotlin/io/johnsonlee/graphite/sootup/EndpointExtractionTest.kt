@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.nio.file.Path
@@ -123,6 +124,26 @@ class EndpointExtractionTest {
 
         println("Methods with annotations: ${methodsWithAnnotations.size}")
         assertTrue(methodsWithAnnotations.isNotEmpty(), "Should find methods with annotations")
+    }
+
+    @Test
+    fun `AnnotationNodes are created from sample controllers`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val loader = JavaProjectLoader(LoaderConfig(
+            includePackages = listOf("sample.api"),
+            buildCallGraph = false
+        ))
+
+        val graph = loader.load(testClassesDir)
+
+        val annotations = graph.nodes(AnnotationNode::class.java).toList()
+        assertTrue(annotations.isNotEmpty(), "Should have AnnotationNodes")
+
+        // Check that GetMapping annotations are present
+        val getMappings = annotations.filter { it.name.contains("GetMapping") }
+        assertTrue(getMappings.isNotEmpty(), "Should have @GetMapping annotations")
     }
 
     private fun findTestClassesDir(): Path {

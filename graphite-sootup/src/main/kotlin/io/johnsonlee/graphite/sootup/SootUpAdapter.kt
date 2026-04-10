@@ -1503,6 +1503,13 @@ class SootUpAdapter(
                 }
             }
             graphBuilder.addMemberAnnotation(className, memberName, fullName, cleanValues)
+            graphBuilder.addNode(AnnotationNode(
+                id = NodeId.next(),
+                name = fullName,
+                className = className,
+                memberName = memberName,
+                values = cleanValues
+            ))
         }
     }
 
