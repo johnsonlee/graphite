@@ -6,19 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Follow these steps in order when working on a task:
 
-1. **Design** — Explore the codebase, understand the problem, and plan the implementation approach. Use plan mode for non-trivial tasks. After the plan is finalized, write it to `ROADMAP.md` and commit.
+1. **Design** — Explore the codebase, understand the problem, and plan the implementation approach. Use plan mode for non-trivial tasks.
 2. **Implement** — Write the code changes. Keep changes focused and avoid over-engineering.
 3. **Run tests** — Run `./gradlew check` to verify all tests pass. *(Optional when running as Claude Code on web, since CI will catch failures.)*
-4. **Update ROADMAP.md** — Before committing, update `ROADMAP.md` to reflect what was actually implemented, ensuring the roadmap stays in sync with the code. Mark completed items, adjust plans if the implementation diverged, and remove items that are no longer relevant.
-5. **Commit** — Always show a summary of changes and wait for explicit user confirmation before committing.
-6. **Squash commits and submit PR** — Squash all commits on the branch into a single commit, push, and create a PR via `gh pr create`.
-7. **Watch CI build result** — CI posts build results as PR comments on failure. If the build fails, read the failure comment, fix the issue, and repeat from step 3.
-8. **Ask user to approve and merge** — Once CI passes, ask the user to review, approve, and merge the PR.
-9. **Publish** — NEVER publish via local `./gradlew publish*` commands. ALWAYS publish by creating and pushing a git tag, which triggers GitHub Actions to publish automatically: `git tag vX.Y.Z && git push origin vX.Y.Z`. Before publishing:
+4. **Commit** — Always show a summary of changes and wait for explicit user confirmation before committing.
+5. **Squash commits and submit PR** — Squash all commits on the branch into a single commit, push, and create a PR via `gh pr create`.
+6. **Watch CI build result** — CI posts build results as PR comments on failure. If the build fails, read the failure comment, fix the issue, and repeat from step 3.
+7. **Ask user to approve and merge** — Once CI passes, ask the user to review, approve, and merge the PR.
+8. **Publish** — NEVER publish via local `./gradlew publish*` commands. ALWAYS publish by creating and pushing a git tag, which triggers GitHub Actions to publish automatically: `git tag vX.Y.Z && git push origin vX.Y.Z`. Before publishing:
    1. Check existing versions: `gh api /users/johnsonlee/packages/maven/io.johnsonlee.graphite.graphite-cli/versions --jq '.[].name' | head -5`
    2. Determine the next version number based on existing versions
    3. Show the user the current latest version and proposed new version for confirmation
-10. **Update docs** — After tagging a release, update documentation (README version references, ROADMAP.md version number, etc.) to reflect the new version. This is a docs-only change — commit and push directly to `main` without a PR.
+9. **Update docs** — After tagging a release, update documentation (README version references, etc.) to reflect the new version. This is a docs-only change — commit and push directly to `main` without a PR.
 
 ## Project Overview
 
