@@ -166,31 +166,24 @@ Off-heap (mmap):
   └── graph.nodedata (OS page cache)             ~250 MB
 ```
 
-## JMH Benchmark Results
+## Save Optimization
 
-All benchmarks on 10M nodes / 10M edges.
+Save builds forward adjacency and labels by iterating `graph.outgoing()` per node. The nodeindex is built inline during nodedata write via `CountingOutputStream`, eliminating the 70s re-scan that previously dominated save time.
 
-### Save — 4g vs 8g heap (SingleShot, thread sweep)
+### Phase Breakdown (SavePhaseBreakdownBenchmark, 10M nodes)
 
-| Threads | 4g (ms) | 8g (ms) |
-|---------|---------|---------|
-| 1 | 84,862 | 85,203 |
-| **2** | **83,828** | **84,018** |
-| 3 | 84,018 | 83,758 |
-| 4 | 83,703 | 82,555 |
+| Phase | Before optimization | After |
+|-------|-------------------|-------|
+| 7. Nodeindex re-scan | **69,895 ms (92%)** | **0 ms (inline)** |
+| 5. BVGraph.store | 1,793 ms | 1,793 ms |
+| Everything else | < 2s | < 2s |
 
-Save time is CPU-bound (BVGraph compression), not memory-bound. 4g and 8g perform identically.
+### End-to-End Save/Load (10M nodes, 4g)
 
-### Load — 4g vs 8g heap (SingleShot, thread sweep)
-
-| Threads | 4g (ms) | 8g (ms) |
-|---------|---------|---------|
-| 1 | 2,800 | 2,717 |
-| **2** | **2,787** | **2,432** |
-| 3 | 2,661 | 2,433 |
-| 4 | 2,661 | 2,442 |
-
-Load is ~10% faster at 8g due to less GC pressure during backward-from-forward construction.
+| Operation | Before (PR #53) | After | Improvement |
+|-----------|----------------|-------|-------------|
+| save | 83,828 ms | **15,988 ms** | **5.2x faster** |
+| load | 2,787 ms | **2,314 ms** | 17% faster |
 
 ### Flat Array vs HashMap (10M scale)
 

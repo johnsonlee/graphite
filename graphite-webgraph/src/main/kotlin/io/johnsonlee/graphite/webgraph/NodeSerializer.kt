@@ -246,70 +246,62 @@ internal object NodeSerializer {
     // Node writing / reading (string-table-aware)
     // ========================================================================
 
-    fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable) {
+    fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable): Int {
         dos.writeInt(node.id.value)
+        val tag = when (node) {
+            is IntConstant -> TAG_INT_CONSTANT
+            is StringConstant -> TAG_STRING_CONSTANT
+            is LongConstant -> TAG_LONG_CONSTANT
+            is FloatConstant -> TAG_FLOAT_CONSTANT
+            is DoubleConstant -> TAG_DOUBLE_CONSTANT
+            is BooleanConstant -> TAG_BOOLEAN_CONSTANT
+            is NullConstant -> TAG_NULL_CONSTANT
+            is EnumConstant -> TAG_ENUM_CONSTANT
+            is LocalVariable -> TAG_LOCAL_VARIABLE
+            is FieldNode -> TAG_FIELD_NODE
+            is ParameterNode -> TAG_PARAMETER_NODE
+            is ReturnNode -> TAG_RETURN_NODE
+            is CallSiteNode -> TAG_CALL_SITE_NODE
+            is AnnotationNode -> TAG_ANNOTATION_NODE
+        }
+        dos.writeByte(tag)
+        // Type-specific fields
         when (node) {
-            is IntConstant -> {
-                dos.writeByte(TAG_INT_CONSTANT)
-                dos.writeInt(node.value)
-            }
-            is StringConstant -> {
-                dos.writeByte(TAG_STRING_CONSTANT)
-                dos.writeInt(strings.indexOf(node.value))
-            }
-            is LongConstant -> {
-                dos.writeByte(TAG_LONG_CONSTANT)
-                dos.writeLong(node.value)
-            }
-            is FloatConstant -> {
-                dos.writeByte(TAG_FLOAT_CONSTANT)
-                dos.writeFloat(node.value)
-            }
-            is DoubleConstant -> {
-                dos.writeByte(TAG_DOUBLE_CONSTANT)
-                dos.writeDouble(node.value)
-            }
-            is BooleanConstant -> {
-                dos.writeByte(TAG_BOOLEAN_CONSTANT)
-                dos.writeBoolean(node.value)
-            }
-            is NullConstant -> {
-                dos.writeByte(TAG_NULL_CONSTANT)
-            }
+            is IntConstant -> dos.writeInt(node.value)
+            is StringConstant -> dos.writeInt(strings.indexOf(node.value))
+            is LongConstant -> dos.writeLong(node.value)
+            is FloatConstant -> dos.writeFloat(node.value)
+            is DoubleConstant -> dos.writeDouble(node.value)
+            is BooleanConstant -> dos.writeBoolean(node.value)
+            is NullConstant -> {} // no additional data
             is EnumConstant -> {
-                dos.writeByte(TAG_ENUM_CONSTANT)
                 dos.writeInt(strings.indexOf(node.enumType.className))
                 dos.writeInt(strings.indexOf(node.enumName))
                 dos.writeInt(node.constructorArgs.size)
                 for (arg in node.constructorArgs) writeAnyValue(dos, arg, strings)
             }
             is LocalVariable -> {
-                dos.writeByte(TAG_LOCAL_VARIABLE)
                 dos.writeInt(strings.indexOf(node.name))
                 dos.writeInt(strings.indexOf(node.type.className))
                 writeMethodDescriptor(dos, node.method, strings)
             }
             is FieldNode -> {
-                dos.writeByte(TAG_FIELD_NODE)
                 dos.writeInt(strings.indexOf(node.descriptor.declaringClass.className))
                 dos.writeInt(strings.indexOf(node.descriptor.name))
                 dos.writeInt(strings.indexOf(node.descriptor.type.className))
                 dos.writeBoolean(node.isStatic)
             }
             is ParameterNode -> {
-                dos.writeByte(TAG_PARAMETER_NODE)
                 dos.writeInt(node.index)
                 dos.writeInt(strings.indexOf(node.type.className))
                 writeMethodDescriptor(dos, node.method, strings)
             }
             is ReturnNode -> {
-                dos.writeByte(TAG_RETURN_NODE)
                 writeMethodDescriptor(dos, node.method, strings)
                 dos.writeBoolean(node.actualType != null)
                 if (node.actualType != null) dos.writeInt(strings.indexOf(node.actualType!!.className))
             }
             is CallSiteNode -> {
-                dos.writeByte(TAG_CALL_SITE_NODE)
                 writeMethodDescriptor(dos, node.caller, strings)
                 writeMethodDescriptor(dos, node.callee, strings)
                 dos.writeInt(node.lineNumber ?: -1)
@@ -318,7 +310,6 @@ internal object NodeSerializer {
                 for (arg in node.arguments) dos.writeInt(arg.value)
             }
             is AnnotationNode -> {
-                dos.writeByte(TAG_ANNOTATION_NODE)
                 dos.writeInt(strings.indexOf(node.name))
                 dos.writeInt(strings.indexOf(node.className))
                 dos.writeInt(strings.indexOf(node.memberName))
@@ -329,6 +320,7 @@ internal object NodeSerializer {
                 }
             }
         }
+        return tag
     }
 
     fun readNode(dis: DataInputStream, strings: StringTable): Node {

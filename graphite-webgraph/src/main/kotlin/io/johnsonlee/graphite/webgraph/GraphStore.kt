@@ -15,6 +15,25 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.CompletableFuture
 
+/** OutputStream wrapper that tracks total bytes written. */
+private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
+    var bytesWritten: Long = 0L
+        private set
+
+    override fun write(b: Int) {
+        delegate.write(b)
+        bytesWritten++
+    }
+
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        delegate.write(b, off, len)
+        bytesWritten += len
+    }
+
+    override fun flush() = delegate.flush()
+    override fun close() = delegate.close()
+}
+
 /**
  * Save and load [Graph] instances using WebGraph compression with native LAW
  * ecosystem tools (dsiutils + sux4j + fastutil).
@@ -74,9 +93,12 @@ private const val LABELS_FILE = "graph.labels"
         val stringTable = StringTable.build(allStrings, dir)
         allStrings.clear()
 
-        // 3. Precompute forward adjacency (backward is rebuilt from forward at load time)
+        // 3. Build forward adjacency + labels + comparisons
         val numNodes = maxNodeId + 1
         val forwardAdj = buildForwardAdjacency(graph, numNodes)
+        val comparisonMap = mutableMapOf<Long, BranchComparison>()
+        val labelArray = buildLabelArrayDirect(graph, numNodes, comparisonMap)
+
         val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
 
         // 4. Store BVGraph (forward only, limited threads to control memory)
@@ -88,9 +110,7 @@ private const val LABELS_FILE = "graph.labels"
             compressionThreads
         )
 
-        // 5. Build labels + comparisons directly in BVGraph successor order (no HashMap)
-        val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val labelArray = buildLabelArrayDirect(graph, numNodes, comparisonMap)
+        // 5. Store labels + comparisons
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
 
         // 6. Store comparisons
@@ -98,17 +118,23 @@ private const val LABELS_FILE = "graph.labels"
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
 
-        // 7. Write nodes (stream graph.nodes again, no list)
-        DataOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { dos ->
-            NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
-            dos.writeInt(nodeCount)
-            for (node in graph.nodes(Node::class.java)) {
-                NodeSerializer.writeNode(dos, node, stringTable)
+        // 7. Write nodedata + nodeindex simultaneously (zero intermediate collection)
+        CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
+            val dataDos = DataOutputStream(cos)
+            DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
+                NodeSerializer.writeHeader(dataDos, NodeSerializer.MAGIC_NODEDATA)
+                dataDos.writeInt(nodeCount)
+                NodeSerializer.writeHeader(idxDos, NodeSerializer.MAGIC_NODEINDEX)
+                idxDos.writeInt(nodeCount)
+                for (node in graph.nodes(Node::class.java)) {
+                    val offset = cos.bytesWritten
+                    val tag = NodeSerializer.writeNode(dataDos, node, stringTable)
+                    idxDos.writeInt(node.id.value)
+                    idxDos.writeByte(tag)
+                    idxDos.writeLong(offset)
+                }
             }
         }
-
-        // 8. Build node index
-        buildNodeIndex(dir.resolve(NODE_DATA_FILE), dir.resolve(NODE_INDEX_FILE), stringTable)
 
         // 9. Save metadata
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
@@ -355,7 +381,7 @@ private const val LABELS_FILE = "graph.labels"
      * Flat sorted adjacency: targets[offsets[node]..offsets[node+1]] are the
      * sorted, deduplicated successors of node. Zero per-node allocation on access.
      */
-    private class PrecomputedAdjacency(
+    internal class PrecomputedAdjacency(
         val numNodes: Int,
         val targets: IntArray,
         val offsets: LongArray
@@ -372,7 +398,7 @@ private const val LABELS_FILE = "graph.labels"
      * Wraps a [PrecomputedAdjacency] as a WebGraph [ImmutableGraph] for BVGraph storage.
      * Zero allocation per node access -- successorArray returns a copy of the pre-sorted slice.
      */
-    private class PrecomputedImmutableGraph(
+    internal class PrecomputedImmutableGraph(
         private val adj: PrecomputedAdjacency
     ) : ImmutableGraph() {
         override fun numNodes(): Int = adj.numNodes
@@ -564,7 +590,7 @@ private const val LABELS_FILE = "graph.labels"
         buildNodeIndex(dir.resolve(NODE_DATA_FILE), indexFile, stringTable)
     }
 
-    private fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) {
+    internal fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) {
         // Stream directly: read nodedata, write nodeindex entry by entry (no intermediate list)
         RandomAccessFile(nodeDataPath.toFile(), "r").use { raf ->
             NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
@@ -591,7 +617,7 @@ private const val LABELS_FILE = "graph.labels"
         }
     }
 
-    private fun collectMetadata(graph: Graph): GraphMetadata {
+    internal fun collectMetadata(graph: Graph): GraphMetadata {
         // Collect type hierarchy
         val supertypes = mutableMapOf<String, Set<TypeDescriptor>>()
         val subtypes = mutableMapOf<String, Set<TypeDescriptor>>()
