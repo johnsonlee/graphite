@@ -9,12 +9,21 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 // ============================================================================
-//  Save/load at 10M scale — 4GB and 8GB heap comparison
+//  Save/load at 10M scale with 4GB heap
 //  Run with: ./gradlew :graphite-webgraph:jmh -Pjmh.filter='GraphBuildPersist'
 // ============================================================================
 
+/**
+ * End-to-end save/load benchmark at 10M nodes under 4GB heap.
+ * Validates that inline nodeindex build works without OOM.
+ */
 @State(Scope.Benchmark)
-open class GraphBuildPersistBase {
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Fork(value = 1, jvmArgs = ["-Xmx4g"])
+@Warmup(iterations = 0)
+@Measurement(iterations = 1)
+open class GraphBuildPersistBenchmark {
 
     @Param("10000000")
     var nodeCount: Int = 0
@@ -22,8 +31,8 @@ open class GraphBuildPersistBase {
     @Param("1", "2", "3", "4")
     var compressionThreads: Int = 0
 
-    protected lateinit var graph: Graph
-    protected lateinit var savedDir: Path
+    private lateinit var graph: Graph
+    private lateinit var savedDir: Path
 
     @Setup(Level.Trial)
     fun setup() {
@@ -55,52 +64,21 @@ open class GraphBuildPersistBase {
         GraphStore.save(graph, savedDir, compressionThreads = 2)
     }
 
+    @Benchmark
+    fun save() {
+        val dir = Files.createTempDirectory("graphite-bench-save")
+        try {
+            GraphStore.save(graph, dir, compressionThreads = compressionThreads)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Benchmark
+    fun load(): Graph = GraphStore.load(savedDir)
+
     @TearDown(Level.Trial)
     fun teardown() {
         savedDir.toFile().deleteRecursively()
     }
-}
-
-/** 10M nodes, 4GB heap. */
-@BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Fork(value = 1, jvmArgs = ["-Xmx4g"])
-@Warmup(iterations = 0)
-@Measurement(iterations = 1)
-open class GraphBuildPersist4g : GraphBuildPersistBase() {
-
-    @Benchmark
-    fun save() {
-        val dir = Files.createTempDirectory("graphite-bench-save")
-        try {
-            GraphStore.save(graph, dir, compressionThreads = compressionThreads)
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Benchmark
-    fun load(): Graph = GraphStore.load(savedDir)
-}
-
-/** 10M nodes, 8GB heap. */
-@BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Fork(value = 1, jvmArgs = ["-Xmx8g"])
-@Warmup(iterations = 0)
-@Measurement(iterations = 1)
-open class GraphBuildPersist8g : GraphBuildPersistBase() {
-
-    @Benchmark
-    fun save() {
-        val dir = Files.createTempDirectory("graphite-bench-save")
-        try {
-            GraphStore.save(graph, dir, compressionThreads = compressionThreads)
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Benchmark
-    fun load(): Graph = GraphStore.load(savedDir)
 }
