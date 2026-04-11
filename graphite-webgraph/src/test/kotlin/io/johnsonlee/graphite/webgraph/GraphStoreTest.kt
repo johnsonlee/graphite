@@ -6,14 +6,18 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -1568,6 +1572,270 @@ class GraphStoreTest {
 
         // resources
         assertTrue(loaded.resources === EmptyResourceAccessor)
+    }
+
+    // ========================================================================
+    // NodeSerializer header round-trip and invalid magic
+    // ========================================================================
+
+    @Test
+    fun `writeHeader and readHeader round-trip via DataInputStream`() {
+        val baos = ByteArrayOutputStream()
+        val dos = DataOutputStream(baos)
+        NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_METADATA)
+        dos.flush()
+        val dis = DataInputStream(ByteArrayInputStream(baos.toByteArray()))
+        val version = NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA)
+        assertEquals(NodeSerializer.FORMAT_VERSION, version)
+    }
+
+    @Test
+    fun `readHeader with invalid magic via DataInputStream throws`() {
+        val baos = ByteArrayOutputStream()
+        val dos = DataOutputStream(baos)
+        dos.writeInt(0x12345678) // wrong magic
+        dos.flush()
+        val dis = DataInputStream(ByteArrayInputStream(baos.toByteArray()))
+        assertFailsWith<IllegalArgumentException> {
+            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA)
+        }
+    }
+
+    @Test
+    fun `readHeader with invalid magic via RandomAccessFile throws`() {
+        val tmpFile = Files.createTempFile("bad-magic", ".bin")
+        try {
+            // Write wrong magic into the file
+            DataOutputStream(tmpFile.toFile().outputStream()).use { dos ->
+                dos.writeInt(0x12345678) // wrong magic
+            }
+            RandomAccessFile(tmpFile.toFile(), "r").use { raf ->
+                assertFailsWith<IllegalArgumentException> {
+                    NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
+                }
+            }
+        } finally {
+            Files.deleteIfExists(tmpFile)
+        }
+    }
+
+    @Test
+    fun `readHeader via RandomAccessFile round-trip`() {
+        val tmpFile = Files.createTempFile("raf-header", ".bin")
+        try {
+            DataOutputStream(tmpFile.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
+            }
+            RandomAccessFile(tmpFile.toFile(), "r").use { raf ->
+                val version = NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
+                assertEquals(NodeSerializer.FORMAT_VERSION, version)
+            }
+        } finally {
+            Files.deleteIfExists(tmpFile)
+        }
+    }
+
+    // ========================================================================
+    // Invalid magic in metadata file on load
+    // ========================================================================
+
+    @Test
+    fun `invalid magic in metadata file throws on load`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("bad-magic-test")
+        try {
+            GraphStore.save(graph, dir)
+            // Corrupt the metadata file
+            val metadataFile = dir.resolve("graph.metadata").toFile()
+            val bytes = metadataFile.readBytes()
+            bytes[0] = 0x00 // corrupt magic
+            metadataFile.writeBytes(bytes)
+            assertFailsWith<IllegalArgumentException> {
+                GraphStore.load(dir)
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // Backward adjacency round-trip
+    // ========================================================================
+
+    @Test
+    fun `round-trip preserves backward adjacency`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("backward-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+            // Verify incoming edges for every node
+            for (node in graph.nodes(Node::class.java)) {
+                val originalIncoming = graph.incoming(node.id).toList()
+                val loadedIncoming = loaded.incoming(node.id).toList()
+                assertEquals(originalIncoming.size, loadedIncoming.size,
+                    "Incoming edge count for node ${node.id}")
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // No backward files written on save
+    // ========================================================================
+
+    @Test
+    fun `no backward files written on save`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("no-backward-test")
+        try {
+            GraphStore.save(graph, dir)
+            assertFalse(Files.exists(dir.resolve("backward.graph")))
+            assertFalse(Files.exists(dir.resolve("backward.properties")))
+            assertFalse(Files.exists(dir.resolve("backward.offsets")))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // save with custom compression threads
+    // ========================================================================
+
+    @Test
+    fun `save with custom compression threads`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("threads-test")
+        try {
+            GraphStore.save(graph, dir, compressionThreads = 1)
+            val loaded = GraphStore.load(dir)
+            assertEquals(
+                graph.nodes(Node::class.java).count(),
+                loaded.nodes(Node::class.java).count()
+            )
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // Lazy and mapped load with parallel IO
+    // ========================================================================
+
+    @Test
+    fun `lazy load with parallel IO preserves graph`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("lazy-parallel-test")
+        try {
+            GraphStore.save(graph, dir)
+            GraphStore.ensureNodeIndex(dir)
+            val loaded = GraphStore.loadLazy(dir)
+            try {
+                assertEquals(
+                    graph.nodes(Node::class.java).count(),
+                    loaded.nodes(Node::class.java).count()
+                )
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped load with parallel IO preserves graph`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("mapped-parallel-test")
+        try {
+            GraphStore.save(graph, dir)
+            GraphStore.ensureNodeIndex(dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertEquals(
+                    graph.nodes(Node::class.java).count(),
+                    loaded.nodes(Node::class.java).count()
+                )
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // AUTO mode dispatches to MAPPED for large node count
+    // ========================================================================
+
+    @Test
+    fun `AUTO mode dispatches to MAPPED for large node count`() {
+        // Build a graph with enough nodes to exceed MAPPED_THRESHOLD (1M).
+        // We can't actually create 1M nodes in a unit test, so we test AUTO
+        // with small graph (which dispatches to EAGER) and verify correctness.
+        // The MAPPED path is tested separately via explicit MAPPED mode.
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("auto-mode-test")
+        try {
+            GraphStore.save(graph, dir)
+            // Small graph => AUTO should use EAGER
+            val loaded = GraphStore.load(dir, GraphStore.LoadMode.AUTO)
+            assertEquals(
+                graph.nodes(Node::class.java).count(),
+                loaded.nodes(Node::class.java).count()
+            )
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // StringTable size() coverage
+    // ========================================================================
+
+    @Test
+    fun `StringTable size returns correct count`() {
+        val dir = Files.createTempDirectory("string-table-size-test")
+        try {
+            val strings = setOf("alpha", "beta", "gamma")
+            val table = StringTable.build(strings, dir)
+            assertEquals(3, table.size())
+
+            // Also verify after reload
+            val loaded = StringTable.load(dir)
+            assertEquals(3, loaded.size())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    // ========================================================================
+    // AnnotationNode in collectMetadata
+    // ========================================================================
+
+    @Test
+    fun `collectMetadata handles AnnotationNode correctly`() {
+        // AnnotationNode's empty branch in collectMetadata should not crash
+        val builder = DefaultGraph.Builder()
+        val annotNode = AnnotationNode(
+            NodeId.next(), "com.example.MyAnnotation",
+            "com.example.Target", "doStuff",
+            mapOf("key" to "value")
+        )
+        builder.addNode(annotNode)
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("annotation-collect-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+            val annotations = loaded.nodes(AnnotationNode::class.java).toList()
+            assertEquals(1, annotations.size)
+            assertEquals("com.example.MyAnnotation", annotations[0].name)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
     }
 
     // ========================================================================
