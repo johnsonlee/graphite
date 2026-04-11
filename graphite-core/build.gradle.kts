@@ -1,6 +1,7 @@
 description = "Graphite Core - A graph-based static analysis framework"
 
 plugins {
+    id("io.johnsonlee.sonatype-publish-plugin")
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     id("me.champeau.jmh")
 }

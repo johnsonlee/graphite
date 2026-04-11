@@ -1,6 +1,7 @@
 description = "Graphite SootUp Adapter - SootUp-based bytecode analysis backend"
 
 plugins {
+    id("io.johnsonlee.sonatype-publish-plugin")
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     id("me.champeau.jmh")
 }
@@ -18,7 +19,7 @@ kover {
 val testFixtures: Configuration by configurations.creating
 
 dependencies {
-    api(project(":graphite-core"))
+    api(project(":core"))
 
     implementation(libs.sootup.core)
     implementation(libs.sootup.java.core)

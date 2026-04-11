@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages
+name: Publish to Sonatype Central
 
 on:
   push:
@@ -25,16 +25,29 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Publish to GitHub Packages
+    - name: Publish to Sonatype Central
       run: |
         VERSION=${GITHUB_REF/refs\/tags\/v/}
         echo "Publishing version ${VERSION} ..."
-        ./gradlew clean publishAllPublicationsToGitHubPackagesRepository -S --no-daemon \
-            -Pversion=${VERSION}
+        echo "Create GPG private key"
+        echo $GPG_KEY_ARMOR | base64 --decode > ${GITHUB_WORKSPACE}/secring.gpg
+        ./gradlew clean publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository -S --no-daemon \
+            -Pversion=${VERSION} \
+            -POSSRH_USERNAME=${OSSRH_USERNAME} \
+            -POSSRH_PASSWORD=${OSSRH_PASSWORD} \
+            -POSSRH_PACKAGE_GROUP=${OSSRH_PACKAGE_GROUP} \
+            -Psigning.keyId=${GPG_KEY_ID} \
+            -Psigning.password=${GPG_PASSPHRASE} \
+            -Psigning.secretKeyRingFile=${GITHUB_WORKSPACE}/secring.gpg
       env:
         JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
         JVM_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GPG_KEY_ARMOR: ${{ secrets.GPG_KEY_ARMOR }}
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PACKAGE_GROUP: ${{ secrets.OSSRH_PACKAGE_GROUP }}
 
     - name: Build CLI shadow JARs
       run: |
