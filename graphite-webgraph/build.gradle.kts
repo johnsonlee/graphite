@@ -9,7 +9,7 @@ kover {
     reports {
         filters {
             excludes {
-                classes("*Benchmark*")
+                classes("*Benchmark*", "*GraphBuildPersist*")
             }
         }
     }
@@ -28,6 +28,13 @@ dependencies {
     jmh(project(":graphite-cypher"))
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)
+}
+
+jmh {
+    val filter = project.findProperty("jmh.filter") as String?
+    if (filter != null) {
+        includes.set(listOf(filter))
+    }
 }
 
 tasks.test {

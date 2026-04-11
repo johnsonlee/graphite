@@ -22,6 +22,40 @@ import java.io.*
  */
 internal object NodeSerializer {
 
+    /** File type magic prefixes (3 bytes, big-endian high bits of the header int). */
+    internal const val MAGIC_METADATA    = 0x47524D00  // "GRM"
+    internal const val MAGIC_NODEDATA    = 0x47524E00  // "GRN"
+    internal const val MAGIC_NODEINDEX   = 0x47524900  // "GRI"
+    internal const val MAGIC_COMPARISONS = 0x47524300  // "GRC"
+
+    /** Current format version (occupies the low byte of the 4-byte header int). */
+    const val FORMAT_VERSION: Int = 1
+
+    /** Write a 4-byte file header: 3-byte magic prefix | 1-byte version. */
+    fun writeHeader(dos: DataOutputStream, magic: Int) {
+        dos.writeInt(magic or FORMAT_VERSION)
+    }
+
+    /** Read and validate the 4-byte file header. Returns the format version. */
+    fun readHeader(dis: DataInputStream, expectedMagic: Int): Int {
+        val h = dis.readInt()
+        val prefix = h and 0xFFFFFF00.toInt()
+        require(prefix == expectedMagic) {
+            "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
+        }
+        return h and 0xFF
+    }
+
+    /** Overload for [RandomAccessFile]. */
+    fun readHeader(raf: RandomAccessFile, expectedMagic: Int): Int {
+        val h = raf.readInt()
+        val prefix = h and 0xFFFFFF00.toInt()
+        require(prefix == expectedMagic) {
+            "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
+        }
+        return h and 0xFF
+    }
+
     // Node type tags
     private const val TAG_INT_CONSTANT = 0
     private const val TAG_STRING_CONSTANT = 1
@@ -370,6 +404,7 @@ internal object NodeSerializer {
     // ========================================================================
 
     fun saveMetadata(metadata: GraphMetadata, dos: DataOutputStream, strings: StringTable) {
+        writeHeader(dos, MAGIC_METADATA)
         // Methods
         dos.writeInt(metadata.methods.size)
         for ((_, md) in metadata.methods) {
@@ -430,6 +465,7 @@ internal object NodeSerializer {
     }
 
     fun loadMetadata(dis: DataInputStream, strings: StringTable): GraphMetadata {
+        readHeader(dis, MAGIC_METADATA)
         // Methods
         val methodCount = dis.readInt()
         val methods = mutableMapOf<String, MethodDescriptor>()
@@ -509,6 +545,7 @@ internal object NodeSerializer {
     // ========================================================================
 
     fun writeComparisons(dos: DataOutputStream, comparisons: Map<Long, BranchComparison>) {
+        writeHeader(dos, MAGIC_COMPARISONS)
         dos.writeInt(comparisons.size)
         for ((key, comp) in comparisons) {
             dos.writeLong(key)
@@ -518,6 +555,7 @@ internal object NodeSerializer {
     }
 
     fun readComparisons(dis: DataInputStream): Map<Long, BranchComparison> {
+        readHeader(dis, MAGIC_COMPARISONS)
         val count = dis.readInt()
         val result = HashMap<Long, BranchComparison>(count)
         repeat(count) {
