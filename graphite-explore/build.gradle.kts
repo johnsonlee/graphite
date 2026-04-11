@@ -11,12 +11,16 @@ application {
 }
 
 dependencies {
-    implementation(project(":graphite-core"))
-    implementation(project(":graphite-cypher"))
-    implementation(project(":graphite-webgraph"))
+    implementation(project(":core"))
+    implementation(project(":cypher"))
+    implementation(project(":webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)
     implementation(libs.javalin)
+}
+
+tasks.jar {
+    archiveClassifier.set("slim")
 }
 
 tasks.shadowJar {

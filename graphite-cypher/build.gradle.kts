@@ -1,6 +1,7 @@
 description = "Graphite Cypher - Cypher query engine for Graphite graphs"
 
 plugins {
+    id("io.johnsonlee.sonatype-publish-plugin")
     antlr
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     id("me.champeau.jmh")
@@ -18,7 +19,7 @@ kover {
 
 dependencies {
     antlr("org.antlr:antlr4:4.13.2")
-    api(project(":graphite-core"))
+    api(project(":core"))
     implementation("org.antlr:antlr4-runtime:4.13.2")
 
     jmh(libs.jmh.core)
@@ -47,6 +48,20 @@ tasks.compileJava {
     dependsOn(tasks.generateGrammarSource)
 }
 
+plugins.withId("org.jetbrains.dokka") {
+    tasks.named("dokkaHtml") {
+        dependsOn(tasks.generateGrammarSource)
+    }
+}
+
+tasks.withType<Jar>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.named("compileTestKotlin") {
     dependsOn(tasks.named("generateTestGrammarSource"))
+}
+
+tasks.named("compileJmhKotlin") {
+    dependsOn(tasks.named("generateJmhGrammarSource"))
 }
