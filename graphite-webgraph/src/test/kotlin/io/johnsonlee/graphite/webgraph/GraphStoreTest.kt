@@ -1839,6 +1839,219 @@ class GraphStoreTest {
     }
 
     // ========================================================================
+    // Flat storage format tests
+    // ========================================================================
+
+    @Test
+    fun `flat format round-trip preserves nodes`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-graph-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            val originalNodes = graph.nodes(Node::class.java).toList()
+            val loadedNodes = loaded.nodes(Node::class.java).toList()
+            assertEquals(originalNodes.size, loadedNodes.size, "Node count should match")
+            for (node in originalNodes) {
+                assertNotNull(loaded.node(node.id), "Node ${node.id} should exist in loaded graph")
+            }
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format round-trip preserves outgoing edges`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-edges-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            val nodes = graph.nodes(Node::class.java).toList()
+            for (node in nodes) {
+                val originalEdges = graph.outgoing(node.id).toList()
+                val loadedEdges = loaded.outgoing(node.id).toList()
+                assertEquals(originalEdges.size, loadedEdges.size,
+                    "Outgoing edge count for node ${node.id}")
+            }
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format round-trip preserves incoming edges`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-incoming-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            for (node in graph.nodes(Node::class.java)) {
+                val originalIncoming = graph.incoming(node.id).toList()
+                val loadedIncoming = loaded.incoming(node.id).toList()
+                assertEquals(originalIncoming.size, loadedIncoming.size,
+                    "Incoming edge count for node ${node.id}")
+            }
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format round-trip preserves metadata`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-meta-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            // Type hierarchy
+            val childType = TypeDescriptor("com.example.Child")
+            val parentType = TypeDescriptor("com.example.Parent")
+            assertTrue(loaded.supertypes(childType).toList().any { it.className == parentType.className })
+            assertTrue(loaded.subtypes(parentType).toList().any { it.className == childType.className })
+
+            // Methods
+            val methods = loaded.methods(MethodPattern()).toList()
+            assertTrue(methods.isNotEmpty())
+
+            // Enum values
+            val enumVals = loaded.enumValues("com.example.Status", "ACTIVE")
+            assertNotNull(enumVals)
+            assertEquals(2, enumVals!!.size)
+
+            // Annotations
+            val annotations = loaded.memberAnnotations("com.example.Foo", "bar")
+            assertTrue(annotations.isNotEmpty())
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format empty graph round-trips`() {
+        val graph = DefaultGraph.Builder().build()
+        val file = Files.createTempFile("flat-empty-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+            assertEquals(0, loaded.nodes(Node::class.java).count())
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format preserves node types`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-types-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            assertEquals(
+                graph.nodes(IntConstant::class.java).count(),
+                loaded.nodes(IntConstant::class.java).count()
+            )
+            assertEquals(
+                graph.nodes(ParameterNode::class.java).count(),
+                loaded.nodes(ParameterNode::class.java).count()
+            )
+            assertEquals(
+                graph.nodes(CallSiteNode::class.java).count(),
+                loaded.nodes(CallSiteNode::class.java).count()
+            )
+            assertEquals(
+                graph.nodes(EnumConstant::class.java).count(),
+                loaded.nodes(EnumConstant::class.java).count()
+            )
+            assertEquals(
+                graph.nodes(AnnotationNode::class.java).count(),
+                loaded.nodes(AnnotationNode::class.java).count()
+            )
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `flat format preserves edge types`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-edge-types-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            for (node in graph.nodes(Node::class.java)) {
+                val origDataFlow = graph.outgoing(node.id, DataFlowEdge::class.java).count()
+                val loadedDataFlow = loaded.outgoing(node.id, DataFlowEdge::class.java).count()
+                assertEquals(origDataFlow, loadedDataFlow, "DataFlowEdge count for ${node.id}")
+
+                val origCall = graph.outgoing(node.id, CallEdge::class.java).count()
+                val loadedCall = loaded.outgoing(node.id, CallEdge::class.java).count()
+                assertEquals(origCall, loadedCall, "CallEdge count for ${node.id}")
+            }
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `load auto-detects flat file format`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-autodetect-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            // load() should auto-detect flat format from the magic header
+            val loaded = GraphStore.load(file)
+            assertEquals(
+                graph.nodes(Node::class.java).count(),
+                loaded.nodes(Node::class.java).count()
+            )
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    @Test
+    fun `load non-flat regular file throws`() {
+        val tempFile = Files.createTempFile("not-flat", ".txt")
+        try {
+            tempFile.toFile().writeText("not a graph file")
+            assertFailsWith<IllegalArgumentException> {
+                GraphStore.load(tempFile)
+            }
+        } finally {
+            Files.deleteIfExists(tempFile)
+        }
+    }
+
+    @Test
+    fun `flat format preserves call site details`() {
+        val graph = buildTestGraph()
+        val file = Files.createTempFile("flat-callsite-test", ".dat")
+        try {
+            GraphStore.save(graph, file, StorageFormat.FLAT)
+            val loaded = GraphStore.load(file)
+
+            val originalCallSites = graph.nodes(CallSiteNode::class.java).toList()
+            val loadedCallSites = loaded.nodes(CallSiteNode::class.java).toList()
+            assertEquals(originalCallSites.size, loadedCallSites.size)
+            for (orig in originalCallSites) {
+                val loadedCs = loaded.node(orig.id) as CallSiteNode
+                assertEquals(orig.callee.name, loadedCs.callee.name)
+                assertEquals(orig.caller.name, loadedCs.caller.name)
+                assertEquals(orig.lineNumber, loadedCs.lineNumber)
+            }
+        } finally {
+            Files.deleteIfExists(file)
+        }
+    }
+
+    // ========================================================================
     // Test graph builder
     // ========================================================================
 

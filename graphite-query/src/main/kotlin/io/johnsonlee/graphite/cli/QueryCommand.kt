@@ -26,8 +26,8 @@ class QueryCommand : Callable<Int> {
 
     override fun call(): Int {
         try {
-            if (!java.nio.file.Files.isDirectory(graphDir)) {
-                System.err.println("Error: Not a directory: $graphDir")
+            if (!java.nio.file.Files.isDirectory(graphDir) && !java.nio.file.Files.isRegularFile(graphDir)) {
+                System.err.println("Error: Not a graph file or directory: $graphDir")
                 return 1
             }
 

@@ -4,11 +4,13 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.util.FrontCodedStringList
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
 import it.unimi.dsi.webgraph.LazyIntIterators
 import java.io.*
+import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,10 +18,38 @@ import java.nio.file.StandardOpenOption
 import java.util.concurrent.CompletableFuture
 
 /**
- * Save and load [Graph] instances using WebGraph compression with native LAW
- * ecosystem tools (dsiutils + sux4j + fastutil).
+ * Storage format for persisted graphs.
+ */
+enum class StorageFormat {
+    /** Raw flat arrays in a single file. Fast save, mmap-friendly load. */
+    FLAT,
+    /** BVGraph compressed in a directory. Small disk, slower save. Default. */
+    COMPRESSED
+}
+
+/**
+ * Save and load [Graph] instances using either a flat single-file format or
+ * BVGraph compression with native LAW ecosystem tools (dsiutils + sux4j + fastutil).
  *
- * Storage layout:
+ * ### Flat format (single file `graph.dat`)
+ *
+ * ```
+ * [magic: int = 0x47524654]   // "GRFT"
+ * [version: int = 1]
+ * [sectionCount: int = 8]
+ * [index: 8 x (offset: long, length: long)]  = 128 bytes
+ * [section 0: forward.targets]
+ * [section 1: forward.offsets]
+ * [section 2: graph.labels]
+ * [section 3: graph.nodedata]
+ * [section 4: graph.nodeindex]
+ * [section 5: graph.metadata]
+ * [section 6: graph.comparisons]
+ * [section 7: graph.strings]
+ * ```
+ *
+ * ### Compressed format (directory layout)
+ *
  * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt at load time)
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
@@ -36,26 +66,326 @@ object GraphStore {
     private const val MAPPED_THRESHOLD = 1_000_000
 
     private const val FORWARD_GRAPH = "forward"
-private const val LABELS_FILE = "graph.labels"
+    private const val LABELS_FILE = "graph.labels"
     private const val COMPARISONS_FILE = "graph.comparisons"
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val NODE_INDEX_FILE = "graph.nodeindex"
     private const val METADATA_FILE = "graph.metadata"
 
+    // Flat file format constants
+    private const val FLAT_MAGIC = 0x47524654          // "GRFT"
+    private const val FLAT_VERSION = 1
+    private const val SECTION_FORWARD_TARGETS = 0
+    private const val SECTION_FORWARD_OFFSETS = 1
+    private const val SECTION_LABELS = 2
+    private const val SECTION_NODEDATA = 3
+    private const val SECTION_NODEINDEX = 4
+    private const val SECTION_METADATA = 5
+    private const val SECTION_COMPARISONS = 6
+    private const val SECTION_STRINGS = 7
+    private const val SECTION_COUNT = 8
+
     /**
-     * Get a [Future]'s result, unwrapping [ExecutionException] so that the
-     * original exception propagates with its real type.
+     * Save a graph to disk.
+     *
+     * When [format] is [StorageFormat.FLAT], the graph is written as a single flat file
+     * at [path]. Raw int/long arrays are used for adjacency -- no BVGraph compression.
+     *
+     * When [format] is [StorageFormat.COMPRESSED] (default), the graph is written as a directory
+     * at [path] using BVGraph compression. [compressionThreads] controls BVGraph's internal
+     * parallelism.
      */
+    fun save(graph: Graph, path: Path, format: StorageFormat = StorageFormat.COMPRESSED, compressionThreads: Int = 2) {
+        when (format) {
+            StorageFormat.FLAT -> saveFlat(graph, path)
+            StorageFormat.COMPRESSED -> saveCompressed(graph, path, compressionThreads)
+        }
+    }
+
     /**
-     * Save a graph to disk in WebGraph + native LAW format.
+     * Load a graph from disk.
+     *
+     * Auto-detects the storage format:
+     * - If [path] is a regular file with the flat format magic header, loads as flat.
+     * - If [path] is a directory, loads as compressed (BVGraph) format.
+     *
+     * @param mode loading strategy for compressed format; defaults to [LoadMode.AUTO] which selects
+     *   based on graph size (< 1M nodes -> eager, >= 1M -> mapped). Ignored for flat format.
+     */
+    fun load(path: Path, mode: LoadMode = LoadMode.AUTO): Graph {
+        return if (Files.isRegularFile(path) && isFlatFormat(path)) {
+            loadFlat(path)
+        } else if (Files.isDirectory(path)) {
+            loadFromDirectory(path, mode)
+        } else {
+            throw IllegalArgumentException("Not a graph file or directory: $path")
+        }
+    }
+
+    /**
+     * Loading strategy for [load].
+     */
+    enum class LoadMode {
+        /** All nodes deserialized into JVM heap. Fastest queries, highest memory. */
+        EAGER,
+        /** Node data memory-mapped via OS page cache. 75% less heap, slightly slower queries. */
+        MAPPED,
+        /** Auto-select based on graph size (< 1M nodes -> [EAGER], >= 1M -> [MAPPED]). */
+        AUTO
+    }
+
+    // ========================================================================
+    // Flat format: save
+    // ========================================================================
+
+    private fun saveFlat(graph: Graph, path: Path) {
+        val tmpDir = Files.createTempDirectory("graphite-flat")
+        try {
+            saveFlatToDirectory(graph, tmpDir)
+            packageToFlatFile(tmpDir, path)
+        } finally {
+            tmpDir.toFile().deleteRecursively()
+        }
+    }
+
+    /**
+     * Write graph data as individual files in a temp directory using raw flat adjacency
+     * (no BVGraph compression). The files are later packaged into a single flat file.
+     */
+    private fun saveFlatToDirectory(graph: Graph, dir: Path) {
+        Files.createDirectories(dir)
+
+        // 1. Stream nodes: find maxNodeId, count nodes, collect strings
+        var maxNodeId = 0
+        var nodeCount = 0
+        val allStrings = mutableSetOf<String>()
+        for (node in graph.nodes(Node::class.java)) {
+            if (node.id.value > maxNodeId) maxNodeId = node.id.value
+            nodeCount++
+            collectSingleNodeStrings(node, allStrings)
+        }
+
+        // 2. Collect metadata
+        val metadata = collectMetadata(graph)
+        NodeSerializer.collectMetadataStrings(metadata, allStrings)
+        val stringTable = StringTable.build(allStrings, dir)
+        allStrings.clear()
+
+        // 3. Build forward adjacency + labels + comparisons in 2 passes
+        val numNodes = maxNodeId + 1
+        val forwardData = buildForwardData(graph, numNodes)
+        val forwardAdj = forwardData.adjacency
+        val labelArray = forwardData.labels
+        val comparisonMap = forwardData.comparisons
+
+        // 4. Write raw flat adjacency (instead of BVGraph)
+        DataOutputStream(BufferedOutputStream(dir.resolve("forward.targets").toFile().outputStream())).use { dos ->
+            dos.writeInt(forwardAdj.targets.size)
+            for (t in forwardAdj.targets) dos.writeInt(t)
+        }
+        DataOutputStream(BufferedOutputStream(dir.resolve("forward.offsets").toFile().outputStream())).use { dos ->
+            dos.writeInt(forwardAdj.offsets.size)
+            for (o in forwardAdj.offsets) dos.writeLong(o)
+        }
+        // 5. Write labels as raw: count (int) + bytes
+        DataOutputStream(BufferedOutputStream(dir.resolve(LABELS_FILE).toFile().outputStream())).use { dos ->
+            dos.writeInt(labelArray.size)
+            dos.write(labelArray)
+        }
+
+        // 6. Store comparisons
+        DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.writeComparisons(dos, comparisonMap)
+        }
+
+        // 7. Write nodes
+        DataOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEDATA)
+            dos.writeInt(nodeCount)
+            for (node in graph.nodes(Node::class.java)) {
+                NodeSerializer.writeNode(dos, node, stringTable)
+            }
+        }
+
+        // 8. Build node index
+        buildNodeIndex(dir.resolve(NODE_DATA_FILE), dir.resolve(NODE_INDEX_FILE), stringTable)
+
+        // 9. Save metadata
+        DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.saveMetadata(metadata, dos, stringTable)
+        }
+    }
+
+    /**
+     * Package individual section files from a temp directory into a single flat file.
+     */
+    private fun packageToFlatFile(dir: Path, outputPath: Path) {
+        // Ensure parent directory exists for the output file
+        outputPath.parent?.let { Files.createDirectories(it) }
+
+        val sectionFiles = listOf(
+            "forward.targets",
+            "forward.offsets",
+            LABELS_FILE,
+            NODE_DATA_FILE,
+            NODE_INDEX_FILE,
+            METADATA_FILE,
+            COMPARISONS_FILE,
+            StringTable.STRINGS_FILE_NAME
+        )
+
+        RandomAccessFile(outputPath.toFile(), "rw").use { raf ->
+            // Write header
+            raf.writeInt(FLAT_MAGIC)
+            raf.writeInt(FLAT_VERSION)
+            raf.writeInt(SECTION_COUNT)
+
+            // Reserve space for the section index (8 sections x 2 longs = 128 bytes)
+            val indexPos = raf.filePointer
+            repeat(SECTION_COUNT * 2) { raf.writeLong(0) }
+
+            val offsets = LongArray(SECTION_COUNT)
+            val lengths = LongArray(SECTION_COUNT)
+
+            // Write each section's content
+            for (i in sectionFiles.indices) {
+                val file = dir.resolve(sectionFiles[i]).toFile()
+                offsets[i] = raf.filePointer
+                lengths[i] = file.length()
+                file.inputStream().buffered().use { input ->
+                    val buf = ByteArray(65536)
+                    var read: Int
+                    while (input.read(buf).also { read = it } != -1) {
+                        raf.write(buf, 0, read)
+                    }
+                }
+            }
+
+            // Go back and fill in the section index
+            raf.seek(indexPos)
+            for (i in 0 until SECTION_COUNT) {
+                raf.writeLong(offsets[i])
+                raf.writeLong(lengths[i])
+            }
+        }
+    }
+
+    // ========================================================================
+    // Flat format: load
+    // ========================================================================
+
+    /**
+     * Check if the file at [path] starts with the flat format magic header.
+     */
+    private fun isFlatFormat(path: Path): Boolean {
+        if (!Files.isRegularFile(path)) return false
+        return try {
+            DataInputStream(BufferedInputStream(path.toFile().inputStream())).use { dis ->
+                dis.readInt() == FLAT_MAGIC
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Load a graph from a flat single-file format.
+     * Mmaps the entire file and reads sections from their indexed offsets.
+     */
+    private fun loadFlat(path: Path): Graph {
+        val channel = FileChannel.open(path, StandardOpenOption.READ)
+        val fileSize = channel.size()
+        val mapped = channel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize)
+        channel.close()
+
+        // Read header
+        val magic = mapped.getInt()
+        require(magic == FLAT_MAGIC) { "Not a flat graph file: $path (magic=0x${magic.toString(16)})" }
+        @Suppress("UNUSED_VARIABLE")
+        val version = mapped.getInt()
+        val sectionCount = mapped.getInt()
+        require(sectionCount == SECTION_COUNT) { "Expected $SECTION_COUNT sections, got $sectionCount" }
+
+        // Read section index (interleaved: offset, length, offset, length, ...)
+        val sectionOffsets = LongArray(sectionCount)
+        val sectionLengths = LongArray(sectionCount)
+        for (i in 0 until sectionCount) {
+            sectionOffsets[i] = mapped.getLong()
+            sectionLengths[i] = mapped.getLong()
+        }
+
+        // Helper to extract a section as a byte array
+        fun sectionBytes(index: Int): ByteArray {
+            val off = sectionOffsets[index].toInt()
+            val len = sectionLengths[index].toInt()
+            val bytes = ByteArray(len)
+            val dup = mapped.duplicate()
+            dup.position(off)
+            dup.get(bytes)
+            return bytes
+        }
+
+        // Section 0: forward targets
+        val targetsBuf = ByteBuffer.wrap(sectionBytes(SECTION_FORWARD_TARGETS))
+        val targetCount = targetsBuf.getInt()
+        val forwardTargets = IntArray(targetCount) { targetsBuf.getInt() }
+
+        // Section 1: forward offsets
+        val offsetsBuf = ByteBuffer.wrap(sectionBytes(SECTION_FORWARD_OFFSETS))
+        val offsetCount = offsetsBuf.getInt()
+        val forwardOffsets = LongArray(offsetCount) { offsetsBuf.getLong() }
+
+        val numNodes = forwardOffsets.size - 1
+        val forward = PrecomputedImmutableGraph(PrecomputedAdjacency(numNodes, forwardTargets, forwardOffsets))
+        val backward = buildBackwardFromForward(forward)
+        val cumulativeOutdeg = forwardOffsets  // same data
+
+        // Section 2: labels (raw: count + bytes)
+        val labelsBuf = ByteBuffer.wrap(sectionBytes(SECTION_LABELS))
+        val labelCount = labelsBuf.getInt()
+        val forwardLabels = ByteArray(labelCount)
+        labelsBuf.get(forwardLabels)
+
+        // Section 7: strings (needed before nodedata and metadata)
+        val stringsBytes = sectionBytes(SECTION_STRINGS)
+        @Suppress("UNCHECKED_CAST")
+        val fcl = ObjectInputStream(ByteArrayInputStream(stringsBytes)).use {
+            it.readObject() as FrontCodedStringList
+        }
+        val stringTable = StringTable.fromFrontCodedStringList(fcl)
+
+        // Section 6: comparisons
+        val compDis = DataInputStream(ByteArrayInputStream(sectionBytes(SECTION_COMPARISONS)))
+        val comparisonMap = NodeSerializer.readComparisons(compDis)
+
+        // Section 3: nodedata
+        val nodeDis = DataInputStream(ByteArrayInputStream(sectionBytes(SECTION_NODEDATA)))
+        NodeSerializer.readHeader(nodeDis, NodeSerializer.MAGIC_NODEDATA)
+        val nodeCount = nodeDis.readInt()
+        val nodesById = mutableMapOf<Int, Node>()
+        repeat(nodeCount) {
+            val node = NodeSerializer.readNode(nodeDis, stringTable)
+            nodesById[node.id.value] = node
+        }
+
+        // Section 5: metadata
+        val metaDis = DataInputStream(ByteArrayInputStream(sectionBytes(SECTION_METADATA)))
+        val metadata = NodeSerializer.loadMetadata(metaDis, stringTable)
+
+        return WebGraphBackedGraph(forward, backward, nodesById, forwardLabels, cumulativeOutdeg, comparisonMap, metadata)
+    }
+
+    // ========================================================================
+    // Compressed format: save
+    // ========================================================================
+
+    /**
+     * Save a graph to disk in BVGraph compressed directory format.
      *
      * Uses a streaming [ImmutableGraph] wrapper over the source [Graph] to avoid
-     * copying all edge data into a second adjacency structure
-     * ([ArrayListMutableGraph][it.unimi.dsi.webgraph.ArrayListMutableGraph]).
-     * For large graphs (millions of nodes) this eliminates the OOM caused by
-     * duplicating the entire adjacency list in memory.
+     * copying all edge data into a second adjacency structure.
      */
-    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
+    private fun saveCompressed(graph: Graph, dir: Path, compressionThreads: Int) {
         Files.createDirectories(dir)
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
@@ -74,9 +404,12 @@ private const val LABELS_FILE = "graph.labels"
         val stringTable = StringTable.build(allStrings, dir)
         allStrings.clear()
 
-        // 3. Precompute forward adjacency (backward is rebuilt from forward at load time)
+        // 3. Build forward adjacency + labels + comparisons in 2 passes
         val numNodes = maxNodeId + 1
-        val forwardAdj = buildForwardAdjacency(graph, numNodes)
+        val forwardData = buildForwardData(graph, numNodes)
+        val forwardAdj = forwardData.adjacency
+        val labelArray = forwardData.labels
+        val comparisonMap = forwardData.comparisons
         val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
 
         // 4. Store BVGraph (forward only, limited threads to control memory)
@@ -88,9 +421,7 @@ private const val LABELS_FILE = "graph.labels"
             compressionThreads
         )
 
-        // 5. Build labels + comparisons directly in BVGraph successor order (no HashMap)
-        val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val labelArray = buildLabelArrayDirect(graph, numNodes, comparisonMap)
+        // 5. Store labels
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
 
         // 6. Store comparisons
@@ -116,15 +447,14 @@ private const val LABELS_FILE = "graph.labels"
         }
     }
 
-    /**
-     * Load a graph from disk.
-     *
-     * @param mode loading strategy; defaults to [LoadMode.AUTO] which selects
-     *   based on graph size (< 1M nodes → eager, >= 1M → mapped).
-     */
-    fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
-        require(Files.isDirectory(dir)) { "Not a directory: $dir" }
+    // ========================================================================
+    // Compressed format: load
+    // ========================================================================
 
+    /**
+     * Load a graph from a compressed (BVGraph) directory.
+     */
+    private fun loadFromDirectory(dir: Path, mode: LoadMode): Graph {
         return when (mode) {
             LoadMode.EAGER -> loadEager(dir)
             LoadMode.MAPPED -> {
@@ -144,18 +474,6 @@ private const val LABELS_FILE = "graph.labels"
                 }
             }
         }
-    }
-
-    /**
-     * Loading strategy for [load].
-     */
-    enum class LoadMode {
-        /** All nodes deserialized into JVM heap. Fastest queries, highest memory. */
-        EAGER,
-        /** Node data memory-mapped via OS page cache. 75% less heap, slightly slower queries. */
-        MAPPED,
-        /** Auto-select based on graph size (< 1M nodes → [EAGER], >= 1M → [MAPPED]). */
-        AUTO
     }
 
     /**
@@ -241,7 +559,7 @@ private const val LABELS_FILE = "graph.labels"
     }
 
     /**
-     * Load a graph with memory-mapped node data — BVGraph adjacency and edge
+     * Load a graph with memory-mapped node data -- BVGraph adjacency and edge
      * labels are loaded into JVM heap, but node data is memory-mapped (mmap).
      *
      * The OS page cache manages which node pages are in physical RAM.
@@ -269,9 +587,9 @@ private const val LABELS_FILE = "graph.labels"
         }
 
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
-        val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
-        val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
-        channel.close()
+        val nodeChannel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
+        val mappedBuffer = nodeChannel.map(FileChannel.MapMode.READ_ONLY, 0, nodeChannel.size())
+        nodeChannel.close()
 
         val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.loadMetadata(dis, stringTable)
@@ -291,43 +609,69 @@ private const val LABELS_FILE = "graph.labels"
         )
     }
 
+    // ========================================================================
+    // Shared helpers
+    // ========================================================================
+
     /**
-     * Build label byte array directly in BVGraph successor order without
-     * an intermediate HashMap. For each node, collects outgoing edges,
-     * groups by target (dedup), sorts by target, and writes labels.
+     * Result of building forward adjacency, labels, and comparisons together.
      */
-    private fun buildLabelArrayDirect(
-        graph: Graph,
-        numNodes: Int,
-        comparisonMap: MutableMap<Long, BranchComparison>
-    ): ByteArray {
-        // Count total arcs first
-        var totalArcs = 0L
+    private data class ForwardData(
+        val adjacency: PrecomputedAdjacency,
+        val labels: ByteArray,
+        val comparisons: Map<Long, BranchComparison>
+    )
+
+    /**
+     * Build forward adjacency, labels, and comparisons in 2 passes over graph edges.
+     * Pass 1: count outdegree per node.
+     * Pass 2: fill sorted successor arrays, labels, and comparisons.
+     */
+    private fun buildForwardData(graph: Graph, numNodes: Int): ForwardData {
+        // Pass 1: count outdegree
+        val outdeg = IntArray(numNodes)
         for (node in 0 until numNodes) {
             val targets = mutableSetOf<Int>()
             for (edge in graph.outgoing(NodeId(node))) {
                 targets.add(edge.to.value)
             }
-            totalArcs += targets.size
+            outdeg[node] = targets.size
         }
 
-        val labels = ByteArray(totalArcs.toInt())
-        var idx = 0
+        // Build offsets
+        val offsets = LongArray(numNodes + 1)
+        for (i in 0 until numNodes) {
+            offsets[i + 1] = offsets[i] + outdeg[i]
+        }
+        val totalArcs = offsets[numNodes].toInt()
+        val targets = IntArray(totalArcs)
+        val labels = ByteArray(totalArcs)
+        val comparisons = mutableMapOf<Long, BranchComparison>()
+
+        // Pass 2: fill targets + labels + comparisons together
         for (node in 0 until numNodes) {
             val edgesByTarget = mutableMapOf<Int, Edge>()
             for (edge in graph.outgoing(NodeId(node))) {
                 edgesByTarget[edge.to.value] = edge
             }
-            for (to in edgesByTarget.keys.sorted()) {
+            val sortedTargets = edgesByTarget.keys.sorted()
+            val start = offsets[node].toInt()
+            for ((i, to) in sortedTargets.withIndex()) {
+                targets[start + i] = to
                 val edge = edgesByTarget[to]!!
-                labels[idx++] = NodeSerializer.encodeEdge(edge).toByte()
+                labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
                 if (edge is ControlFlowEdge && edge.comparison != null) {
                     val key = node.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
-                    comparisonMap[key] = edge.comparison!!
+                    comparisons[key] = edge.comparison!!
                 }
             }
         }
-        return labels
+
+        return ForwardData(
+            PrecomputedAdjacency(numNodes, targets, offsets),
+            labels,
+            comparisons
+        )
     }
 
     /**
@@ -383,47 +727,6 @@ private const val LABELS_FILE = "graph.labels"
         override fun copy(): ImmutableGraph = this
     }
 
-    /**
-     * Build forward sorted adjacency in two passes over the graph.
-     *
-     * Pass 1: count outdegree per node.
-     * Pass 2: fill target array and sort each node's successors.
-     *
-     * Backward adjacency is no longer precomputed at save time; it is
-     * rebuilt from the compressed forward BVGraph at load time via
-     * [buildBackwardFromForward].
-     */
-    private fun buildForwardAdjacency(graph: Graph, numNodes: Int): PrecomputedAdjacency {
-        // Pass 1: count degrees
-        val forwardDeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
-            }
-            forwardDeg[node] = targets.size
-        }
-
-        // Build offsets
-        val forwardOffsets = LongArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            forwardOffsets[i + 1] = forwardOffsets[i] + forwardDeg[i]
-        }
-
-        val forwardTargets = IntArray(forwardOffsets[numNodes].toInt())
-
-        // Pass 2: fill targets
-        for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
-            }
-            val sorted = targets.toIntArray().also { it.sort() }
-            System.arraycopy(sorted, 0, forwardTargets, forwardOffsets[node].toInt(), sorted.size)
-        }
-
-        return PrecomputedAdjacency(numNodes, forwardTargets, forwardOffsets)
-    }
 
     /** Build backward adjacency from forward BVGraph. */
     private fun loadBackward(forward: ImmutableGraph): ImmutableGraph =
@@ -549,13 +852,9 @@ private const val LABELS_FILE = "graph.labels"
     }
 
     /**
-     * Build `graph.nodeindex` by scanning `graph.nodedata` sequentially.
-     * Each entry: nodeId (4 bytes) + tag (1 byte) + offset in nodedata (8 bytes).
-     */
-    /**
      * Ensure the `graph.nodeindex` file exists for the given graph directory.
      * If it doesn't exist, scans `graph.nodedata` to build it.
-     * This is idempotent — safe to call on graphs that already have the index.
+     * This is idempotent -- safe to call on graphs that already have the index.
      */
     fun ensureNodeIndex(dir: Path) {
         val indexFile = dir.resolve(NODE_INDEX_FILE)

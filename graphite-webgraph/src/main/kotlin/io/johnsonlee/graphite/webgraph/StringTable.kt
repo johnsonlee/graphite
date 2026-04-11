@@ -15,7 +15,7 @@ import java.nio.file.Path
  * [FrontCodedStringList]'s native Java serialization support (designed by the
  * LAW team for this purpose).
  */
-internal class StringTable private constructor(
+internal class StringTable internal constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>
 ) {
@@ -63,6 +63,13 @@ internal class StringTable private constructor(
         fun load(dir: Path): StringTable {
             @Suppress("UNCHECKED_CAST")
             val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
+            return fromFrontCodedStringList(fcl)
+        }
+
+        /**
+         * Build a [StringTable] from a [FrontCodedStringList] (e.g. deserialized from bytes).
+         */
+        internal fun fromFrontCodedStringList(fcl: FrontCodedStringList): StringTable {
             val sz = fcl.size
             val indexMap = HashMap<String, Int>(sz)
             for (i in 0 until sz) {
@@ -70,5 +77,7 @@ internal class StringTable private constructor(
             }
             return StringTable(fcl, indexMap)
         }
+
+        internal const val STRINGS_FILE_NAME = FILE_NAME
     }
 }

@@ -200,7 +200,7 @@ class QueryCommandTest {
                 System.setErr(oldErr)
             }
             assertEquals(1, code)
-            assertTrue(errBaos.toString().contains("Not a directory"))
+            assertTrue(errBaos.toString().contains("Not a graph file or directory"))
         } finally {
             Files.deleteIfExists(tempFile)
         }
