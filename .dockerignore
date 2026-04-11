@@ -1,0 +1,13 @@
+**/.git
+**/.gitignore
+**/.gradle
+**/build
+**/.idea
+**/.vscode
+**/*.iml
+**/.DS_Store
+release-assets/
+build-output.txt
+coverage-output.txt
+**/out/
+tap/
