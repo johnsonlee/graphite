@@ -125,7 +125,7 @@ class JavaProjectLoader(
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> listOf(
-                PathBasedAnalysisInputLocation.create(path, SourceType.Application)
+                FastArchiveAnalysisInputLocation(path, SourceType.Application)
             )
         }
     }
@@ -195,7 +195,7 @@ class JavaProjectLoader(
                             }
                             // Only add JAR if it contains classes from included packages
                             if (jarContainsIncludedPackages(targetFile)) {
-                                locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                                locations.add(FastArchiveAnalysisInputLocation(targetFile, SourceType.Library))
                             }
                         }
                 }
@@ -272,7 +272,7 @@ class JavaProjectLoader(
 
                         // Only add JAR if it contains classes from included packages
                         if (jarContainsIncludedPackages(targetFile)) {
-                            locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            locations.add(FastArchiveAnalysisInputLocation(targetFile, SourceType.Library))
                             loadedJarCount++
                             log("  + Loading JAR: $jarName")
                         } else {

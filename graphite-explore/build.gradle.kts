@@ -33,6 +33,7 @@ tasks.shadowJar {
         exclude(dependency("org.antlr:antlr4-runtime:.*"))
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
         exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:.*"))
+        exclude(dependency("org.slf4j:slf4j-nop:.*"))
         exclude(dependency("io.javalin:.*:.*"))
         exclude(dependency("org.eclipse.jetty:.*:.*"))
         exclude(dependency("org.eclipse.jetty.websocket:.*:.*"))
