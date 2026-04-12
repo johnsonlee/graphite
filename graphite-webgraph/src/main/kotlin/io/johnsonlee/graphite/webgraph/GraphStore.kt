@@ -99,12 +99,11 @@ private const val LABELS_FILE = "graph.labels"
         allStrings.clear()
         System.err.println("[save] 2. Metadata + StringTable: ${(System.nanoTime() - t0) / 1_000_000}ms")
 
-        // 3. Build forward adjacency + labels + comparisons
+        // 3. Build forward adjacency + labels + comparisons (single merged pass)
         t0 = System.nanoTime()
         val numNodes = maxNodeId + 1
-        val forwardAdj = buildForwardAdjacency(graph, numNodes)
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val labelArray = buildLabelArrayDirect(graph, numNodes, comparisonMap)
+        val (forwardAdj, labelArray) = buildForwardData(graph, numNodes, comparisonMap)
         System.err.println("[save] 3. Forward adjacency + labels: ${(System.nanoTime() - t0) / 1_000_000}ms ($numNodes nodes, ${labelArray.size} edges)")
 
         // 4. Store BVGraph (forward only)
@@ -335,38 +334,58 @@ private const val LABELS_FILE = "graph.labels"
      * an intermediate HashMap. For each node, collects outgoing edges,
      * groups by target (dedup), sorts by target, and writes labels.
      */
-    private fun buildLabelArrayDirect(
+    /**
+     * Build forward adjacency, labels, and comparisons in 2 passes (not 4).
+     *
+     * Pass 1: count unique outdegree per node (1 Set per node, short-lived).
+     * Pass 2: fill sorted targets + encode labels + extract comparisons (1 Map per node).
+     *
+     * Returns (adjacency, labels).
+     */
+    private fun buildForwardData(
         graph: Graph,
         numNodes: Int,
         comparisonMap: MutableMap<Long, BranchComparison>
-    ): ByteArray {
-        // Count total arcs first
-        var totalArcs = 0L
+    ): Pair<PrecomputedAdjacency, ByteArray> {
+        // Pass 1: count outdegree
+        val outdeg = IntArray(numNodes)
         for (node in 0 until numNodes) {
             val targets = mutableSetOf<Int>()
             for (edge in graph.outgoing(NodeId(node))) {
                 targets.add(edge.to.value)
             }
-            totalArcs += targets.size
+            outdeg[node] = targets.size
         }
 
-        val labels = ByteArray(totalArcs.toInt())
-        var idx = 0
+        // Build offsets
+        val offsets = LongArray(numNodes + 1)
+        for (i in 0 until numNodes) {
+            offsets[i + 1] = offsets[i] + outdeg[i]
+        }
+        val totalArcs = offsets[numNodes].toInt()
+        val targets = IntArray(totalArcs)
+        val labels = ByteArray(totalArcs)
+
+        // Pass 2: fill targets + labels + comparisons
         for (node in 0 until numNodes) {
             val edgesByTarget = mutableMapOf<Int, Edge>()
             for (edge in graph.outgoing(NodeId(node))) {
                 edgesByTarget[edge.to.value] = edge
             }
-            for (to in edgesByTarget.keys.sorted()) {
+            val sorted = edgesByTarget.keys.sorted()
+            val start = offsets[node].toInt()
+            for ((i, to) in sorted.withIndex()) {
+                targets[start + i] = to
                 val edge = edgesByTarget[to]!!
-                labels[idx++] = NodeSerializer.encodeEdge(edge).toByte()
+                labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
                 if (edge is ControlFlowEdge && edge.comparison != null) {
                     val key = node.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
                     comparisonMap[key] = edge.comparison!!
                 }
             }
         }
-        return labels
+
+        return PrecomputedAdjacency(numNodes, targets, offsets) to labels
     }
 
     /**
@@ -432,37 +451,6 @@ private const val LABELS_FILE = "graph.labels"
      * rebuilt from the compressed forward BVGraph at load time via
      * [buildBackwardFromForward].
      */
-    private fun buildForwardAdjacency(graph: Graph, numNodes: Int): PrecomputedAdjacency {
-        // Pass 1: count degrees
-        val forwardDeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
-            }
-            forwardDeg[node] = targets.size
-        }
-
-        // Build offsets
-        val forwardOffsets = LongArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            forwardOffsets[i + 1] = forwardOffsets[i] + forwardDeg[i]
-        }
-
-        val forwardTargets = IntArray(forwardOffsets[numNodes].toInt())
-
-        // Pass 2: fill targets
-        for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
-            }
-            val sorted = targets.toIntArray().also { it.sort() }
-            System.arraycopy(sorted, 0, forwardTargets, forwardOffsets[node].toInt(), sorted.size)
-        }
-
-        return PrecomputedAdjacency(numNodes, forwardTargets, forwardOffsets)
-    }
 
     /** Build backward adjacency from forward BVGraph. */
     private fun loadBackward(forward: ImmutableGraph): ImmutableGraph =

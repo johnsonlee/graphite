@@ -166,37 +166,106 @@ Off-heap (mmap):
   └── graph.nodedata (OS page cache)             ~250 MB
 ```
 
-## Save Optimization
+## Performance
 
-Save builds forward adjacency and labels by iterating `graph.outgoing()` per node. The nodeindex is built inline during nodedata write via `CountingOutputStream`, eliminating the 70s re-scan that previously dominated save time.
+### Constraints
 
-### Phase Breakdown (SavePhaseBreakdownBenchmark, 10M nodes)
+Every change must satisfy both constraints simultaneously. Trading one for the other is not acceptable.
 
-| Phase | Before optimization | After |
-|-------|-------------------|-------|
-| 7. Nodeindex re-scan | **69,895 ms (92%)** | **0 ms (inline)** |
-| 5. BVGraph.store | 1,793 ms | 1,793 ms |
-| Everything else | < 2s | < 2s |
+| Constraint | Target | How measured |
+|------------|--------|-------------|
+| **Time** | Minimize save + load | JMH SingleShotTime, back-to-back same session |
+| **Peak memory** | <= 4 GB for 10M nodes | `-Xmx4g`, no OOM |
 
-### End-to-End Save/Load (10M nodes, 4g)
+### Methodology
 
-| Operation | Before (PR #53) | After | Improvement |
-|-----------|----------------|-------|-------------|
-| save | 83,828 ms | **15,988 ms** | **5.2x faster** |
-| load | 2,787 ms | **2,314 ms** | 17% faster |
+1. **Measure** — `SavePhaseBreakdownBenchmark` isolates each save phase to pinpoint the bottleneck
+2. **Hypothesize** — propose an optimization targeting the bottleneck
+3. **Validate** — JMH before/after on same machine, same session, same heap. Both metrics must hold
+4. **Reject** if either metric regresses
 
-### Flat Array vs HashMap (10M scale)
+Production timing is built into `GraphStore.save()` via `System.err` output per phase.
 
-**Allocation (SingleShot)**
+### Pipeline Overview
 
-| Structure | HashMap | Flat Array | Speedup |
-|-----------|---------|------------|---------|
-| edgeLabelMap (10M) | 226.1 ms | 14.3 ms | **16x** |
-| nodeIndex (10M) | 140.3 ms | 9.2 ms | **15x** |
+```
+BUILD                          SAVE                              LOAD
+SootUpAdapter                  GraphStore.save()                 GraphStore.load()
+  → DefaultGraph                 1. String collection              1. BVGraph.load (parallel)
+  (or MmapGraph)                 2. Metadata + StringTable         2. StringTable.load (parallel)
+                                 3. Forward adjacency + labels     3. Labels + comparisons (parallel)
+                                 4. BVGraph.store                  4. Build backward from forward
+                                 5. Labels + comparisons write     5. Read nodes + metadata
+                                 6. Nodedata + nodeindex write
+                                 7. Metadata write
+```
 
-**Lookup throughput (ops/us, higher = better)**
+### Current Results
 
-| Structure | HashMap | Flat Array | Speedup |
-|-----------|---------|------------|---------|
-| edgeLabelMap (10M) | 0.032 | 0.054 | **1.7x** |
-| nodeIndex (10M) | 0.034 | 0.119 | **3.5x** |
+**Synthetic (10M nodes / 10M edges, -Xmx4g, same-session back-to-back):**
+
+| Stage | Time | Heap peak |
+|-------|------|-----------|
+| save | **9,090 ms** | < 4 GB (no OOM) |
+| load | **2,241 ms** | < 4 GB (no OOM) |
+
+**Production (4.1M nodes, 4.43M edges, 310 MB bootJar):**
+
+| Stage | Metric | Before | After | Change |
+|-------|--------|--------|-------|--------|
+| build + save | real | 15m57s | 11m24s | -28% |
+| build + save | sys | 24m11s | 5m50s | **-76%** |
+| build + save | heap peak | > 7 GB | > 7 GB | GC smoothed, peak unchanged |
+
+### Per-Stage Analysis
+
+#### BUILD (SootUpAdapter → Graph)
+
+| Metric | DefaultGraph | MmapGraph |
+|--------|-------------|-----------|
+| Heap | ~1.4 GB (10M nodes) | ~175 MB (indexes only, data on disk) |
+| Speed | Fast (in-memory) | 2-3x slower (disk I/O per node/edge) |
+
+BUILD currently uses `DefaultGraph` which holds all nodes + edges in heap. This is why peak memory exceeds 7 GB in production — the graph itself is the dominant consumer. MmapGraph reduces heap but makes subsequent save slower due to disk-backed edge reads.
+
+**Optimization direction:** reduce `DefaultGraph` in-heap footprint (e.g., intern `MethodDescriptor`, compress edge storage) without requiring MmapGraph.
+
+#### SAVE (GraphStore.save)
+
+Phase breakdown (`SavePhaseBreakdownBenchmark`, 10M nodes):
+
+| Step | Phase | Time | % | Bottleneck? |
+|------|-------|------|---|-------------|
+| 1 | String collection | 329 ms | 3% | |
+| 2 | Metadata + StringTable | 1,057 ms | 10% | |
+| **3** | **Forward adjacency + labels** | **9,000 ms** | **~85%** | **Yes — `graph.outgoing()` iteration** |
+| 4 | BVGraph.store | 1,793 ms | ~2% | |
+| 5 | Labels + comparisons write | 12 ms | 0% | |
+| 6 | Nodedata + nodeindex | 490 ms | 5% | |
+| 7 | Metadata write | 2 ms | 0% | |
+
+**What was optimized:**
+- Step 6 was 70s (92% of original 84s) due to `buildNodeIndex` re-scanning nodedata via `RandomAccessFile.seek()`. Fixed by inline write — dropped to 490ms.
+- Step 3 was 4 passes over `graph.outgoing()`. Merged to 2 passes — halved from ~16s to ~9s.
+
+**What didn't work and why:**
+- Flat single-file format (PR #55): identical time to BVGraph because the real bottleneck was step 6 (re-scan), not step 4 (BVGraph compression)
+- Precomputed SortedAdjacency: reduced step 3 to ~1s but added 200 MB permanent heap → OOM @4g
+- BVGraph thread tuning (1-4): < 1% difference — reference coding has serial data dependency
+
+**Optimization direction:** step 3 (`outgoing()` iteration) dominates. Options: expose raw edge map from DefaultGraph, or pre-sort edges at build time.
+
+#### LOAD (GraphStore.load)
+
+| Component | Technique | Effect |
+|-----------|-----------|--------|
+| Edge labels | `Long2IntOpenHashMap` → `ByteArray` + `LongArray` | 60% less memory, 1.7x faster lookup |
+| Node index | `Int2LongOpenHashMap` → flat `LongArray` | 69% less memory, 3.5x faster lookup |
+| I/O | `CompletableFuture` parallel load | BVGraph, StringTable, labels concurrently |
+| Backward adjacency | Rebuilt from forward BVGraph at load time | No backward files on disk; 50% less disk |
+
+**Optimization direction:** load is already fast (2.2s). Dominated by backward adjacency rebuild from BVGraph. Further gains possible by storing backward on disk (trading disk for time) but unlikely to be worth the complexity.
+
+### Key Lesson
+
+Optimizations that **add precomputed data** to reduce time tend to **increase memory** (violated constraint). The successful path was **eliminating redundant work** (fewer passes, no re-scans) — which improves both metrics simultaneously.
