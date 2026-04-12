@@ -45,20 +45,42 @@ class JavaProjectLoader(
     )
 
     override fun load(path: Path): Graph {
+        val threadMx = java.lang.management.ManagementFactory.getThreadMXBean()
+        val buildWall = System.nanoTime()
+        val buildCpu = threadMx.currentThreadCpuTime
+
+        fun phase(name: String, wallStart: Long, cpuStart: Long) {
+            val wall = (System.nanoTime() - wallStart) / 1_000_000
+            val cpu = (threadMx.currentThreadCpuTime - cpuStart) / 1_000_000
+            System.err.println("[build] $name: ${wall}ms wall, ${cpu}ms cpu")
+        }
+
+        var t0 = System.nanoTime()
+        var c0 = threadMx.currentThreadCpuTime
         val inputLocations = createInputLocations(path)
         val view = JavaView(inputLocations)
+        phase("1. JavaView creation", t0, c0)
 
         // Load generic signatures from bytecode
+        t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         val signatureReader = BytecodeSignatureReader()
         loadSignatures(path, signatureReader)
+        phase("2. Signature loading", t0, c0)
 
+        t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         val resourceAccessor = ArchiveResourceAccessor.create(path)
         val adapter = SootUpAdapter(
             view, config, signatureReader,
             resourceAccessor = resourceAccessor,
             graphBuilder = graphBuilderFactory()
         )
-        return adapter.buildGraph()
+        val graph = adapter.buildGraph()
+        phase("3. Graph construction", t0, c0)
+        phase("Total", buildWall, buildCpu)
+
+        return graph
     }
 
     /**

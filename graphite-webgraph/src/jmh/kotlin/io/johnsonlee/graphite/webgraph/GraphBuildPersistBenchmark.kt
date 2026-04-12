@@ -9,14 +9,10 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 // ============================================================================
-//  Save/load at 10M scale with 4GB heap
-//  Run with: ./gradlew :graphite-webgraph:jmh -Pjmh.filter='GraphBuildPersist'
+//  Save parallelism sweep at 10M scale, 4GB heap
+//  Run with: ./gradlew :webgraph:jmh -Pjmh.filter='GraphBuildPersist'
 // ============================================================================
 
-/**
- * End-to-end save/load benchmark at 10M nodes under 4GB heap.
- * Validates that inline nodeindex build works without OOM.
- */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -28,8 +24,8 @@ open class GraphBuildPersistBenchmark {
     @Param("10000000")
     var nodeCount: Int = 0
 
-    @Param("1", "2", "3", "4")
-    var compressionThreads: Int = 0
+    @Param("1", "2", "4", "8")
+    var parallelism: Int = 0
 
     private lateinit var graph: Graph
     private lateinit var savedDir: Path
@@ -61,14 +57,14 @@ open class GraphBuildPersistBenchmark {
         graph = builder.build()
 
         savedDir = Files.createTempDirectory("graphite-bench")
-        GraphStore.save(graph, savedDir, compressionThreads = 2)
+        GraphStore.save(graph, savedDir, compressionThreads = 2, parallelism = 1)
     }
 
     @Benchmark
     fun save() {
         val dir = Files.createTempDirectory("graphite-bench-save")
         try {
-            GraphStore.save(graph, dir, compressionThreads = compressionThreads)
+            GraphStore.save(graph, dir, compressionThreads = 2, parallelism = parallelism)
         } finally {
             dir.toFile().deleteRecursively()
         }
