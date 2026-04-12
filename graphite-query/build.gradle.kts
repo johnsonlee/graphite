@@ -34,6 +34,7 @@ tasks.shadowJar {
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib:.*"))
         exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:.*"))
         exclude(dependency("org.soot-oss:.*:.*"))
+        exclude(dependency("org.slf4j:slf4j-nop:.*"))
     }
 
     manifest {
