@@ -4,8 +4,12 @@ import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
-import java.io.RandomAccessFile
+import java.io.DataInputStream
+import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 
 /**
  * A [Graph] implementation backed by disk files.
@@ -36,16 +40,11 @@ class MmapGraph internal constructor(
     override val resources: ResourceAccessor
 ) : Graph, Closeable {
 
-    // Track all opened RAF handles for close()
-    private val openNodeRafs = java.util.Collections.synchronizedList(mutableListOf<RandomAccessFile>())
-    private val openEdgeRafs = java.util.Collections.synchronizedList(mutableListOf<RandomAccessFile>())
-
-    private val nodeRafLocal = ThreadLocal.withInitial {
-        RandomAccessFile(dataDir.resolve("nodes.dat").toFile(), "r").also { openNodeRafs.add(it) }
+    private val nodeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use {
+        it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
     }
-
-    private val edgeRafLocal = ThreadLocal.withInitial {
-        RandomAccessFile(dataDir.resolve("edges.dat").toFile(), "r").also { openEdgeRafs.add(it) }
+    private val edgeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("edges.dat"), StandardOpenOption.READ).use {
+        it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
     }
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
@@ -123,28 +122,32 @@ class MmapGraph internal constructor(
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 
     override fun close() {
-        openNodeRafs.forEach { runCatching { it.close() } }
-        openEdgeRafs.forEach { runCatching { it.close() } }
-        openNodeRafs.clear()
-        openEdgeRafs.clear()
+        // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
 
     private fun readNodeAt(offset: Long): Node {
-        val raf = nodeRafLocal.get()
-        synchronized(raf) {
-            raf.seek(offset)
-            val len = raf.readInt()
-            val bytes = ByteArray(len)
-            raf.readFully(bytes)
-            return MmapGraphBuilder.deserializeNode(bytes)
-        }
+        val buf = nodeMmap.duplicate()
+        buf.position(offset.toInt())
+        val len = buf.getInt()
+        val bytes = ByteArray(len)
+        buf.get(bytes)
+        return MmapGraphBuilder.deserializeNode(bytes)
     }
 
     private fun readEdgeAt(offset: Long): Edge {
-        val raf = edgeRafLocal.get()
-        synchronized(raf) {
-            raf.seek(offset)
-            return MmapGraphBuilder.deserializeEdge(raf)
+        val buf = edgeMmap.duplicate()
+        buf.position(offset.toInt())
+        val dis = DataInputStream(ByteBufferInputStream(buf))
+        return MmapGraphBuilder.deserializeEdge(dis)
+    }
+
+    internal class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {
+        override fun read(): Int = if (buf.hasRemaining()) buf.get().toInt() and 0xFF else -1
+        override fun read(b: ByteArray, off: Int, len: Int): Int {
+            if (!buf.hasRemaining()) return -1
+            val n = minOf(len, buf.remaining())
+            buf.get(b, off, n)
+            return n
         }
     }
 }

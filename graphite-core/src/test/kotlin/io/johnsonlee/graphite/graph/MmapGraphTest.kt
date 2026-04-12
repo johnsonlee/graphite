@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import java.nio.ByteBuffer
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -462,5 +463,100 @@ class MmapGraphTest {
         val callEdges = graph.incoming(n2, CallEdge::class.java).toList()
         assertEquals(1, callEdges.size)
         assertIs<CallEdge>(callEdges[0])
+    }
+
+    // ========================================================================
+    // ByteBufferInputStream tests
+    // ========================================================================
+
+    @Test
+    fun `ByteBufferInputStream read returns bytes as unsigned int`() {
+        val data = byteArrayOf(0x00, 0x7F, 0xFF.toByte(), 0x80.toByte())
+        val buf = ByteBuffer.wrap(data)
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        assertEquals(0x00, stream.read())
+        assertEquals(0x7F, stream.read())
+        assertEquals(0xFF, stream.read())
+        assertEquals(0x80, stream.read())
+    }
+
+    @Test
+    fun `ByteBufferInputStream read returns -1 when buffer is exhausted`() {
+        val buf = ByteBuffer.wrap(byteArrayOf(42))
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        assertEquals(42, stream.read())
+        assertEquals(-1, stream.read())
+        assertEquals(-1, stream.read())  // repeated calls still return -1
+    }
+
+    @Test
+    fun `ByteBufferInputStream read returns -1 for empty buffer`() {
+        val buf = ByteBuffer.wrap(byteArrayOf())
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        assertEquals(-1, stream.read())
+    }
+
+    @Test
+    fun `ByteBufferInputStream bulk read fills array`() {
+        val data = byteArrayOf(1, 2, 3, 4, 5)
+        val buf = ByteBuffer.wrap(data)
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        val out = ByteArray(5)
+        val n = stream.read(out, 0, 5)
+        assertEquals(5, n)
+        assertTrue(data.contentEquals(out))
+    }
+
+    @Test
+    fun `ByteBufferInputStream bulk read with offset`() {
+        val data = byteArrayOf(10, 20, 30)
+        val buf = ByteBuffer.wrap(data)
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        val out = ByteArray(5)
+        val n = stream.read(out, 1, 3)
+        assertEquals(3, n)
+        assertEquals(0, out[0])
+        assertEquals(10, out[1])
+        assertEquals(20, out[2])
+        assertEquals(30, out[3])
+        assertEquals(0, out[4])
+    }
+
+    @Test
+    fun `ByteBufferInputStream bulk read returns fewer bytes when buffer has less than requested`() {
+        val data = byteArrayOf(1, 2, 3)
+        val buf = ByteBuffer.wrap(data)
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        val out = ByteArray(10)
+        val n = stream.read(out, 0, 10)
+        assertEquals(3, n)
+        assertEquals(1, out[0])
+        assertEquals(2, out[1])
+        assertEquals(3, out[2])
+    }
+
+    @Test
+    fun `ByteBufferInputStream bulk read returns -1 when buffer is exhausted`() {
+        val buf = ByteBuffer.wrap(byteArrayOf(1))
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        val out = ByteArray(5)
+        assertEquals(1, stream.read(out, 0, 5))  // reads the 1 byte
+        assertEquals(-1, stream.read(out, 0, 5))  // buffer exhausted
+    }
+
+    @Test
+    fun `ByteBufferInputStream bulk read returns -1 for empty buffer`() {
+        val buf = ByteBuffer.wrap(byteArrayOf())
+        val stream = MmapGraph.ByteBufferInputStream(buf)
+
+        val out = ByteArray(5)
+        assertEquals(-1, stream.read(out, 0, 5))
     }
 }

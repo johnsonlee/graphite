@@ -19,6 +19,10 @@ allprojects {
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    configurations.all {
+        exclude(group = "ch.qos.logback")
+    }
+
     dependencies {
         add("implementation", kotlin("stdlib"))
         add("runtimeOnly", "org.slf4j:slf4j-nop:2.0.13")
