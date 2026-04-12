@@ -122,9 +122,8 @@ Every optimization must satisfy both simultaneously — trading one for the othe
 | [#55](https://github.com/johnsonlee/graphite/pull/55) | Flat single-file format | no change | — | :x: closed |
 | [#56](https://github.com/johnsonlee/graphite/pull/56) | Inline nodeindex | **16s (-81%)** | **real 8m31s (-47%)** | :white_check_mark: |
 | [#61](https://github.com/johnsonlee/graphite/pull/61) | Merge passes (4→2) | **9s (-44%)** | — | :white_check_mark: |
-| [#62](https://github.com/johnsonlee/graphite/pull/62) | Parallelize step 3 | **3.8s (-59%)** | real unchanged, sys +35% | :x: reverted |
-
-Production total includes build (SootUpAdapter → DefaultGraph) which is 76% of wall time.
+| [#62](https://github.com/johnsonlee/graphite/pull/62) | Parallelize step 3 | 3.8s (-59% synthetic) | real unchanged, sys +35% | :x: reverted |
+| [#65](https://github.com/johnsonlee/graphite/pull/65) | Buffer MmapGraphBuilder I/O | — | **real 5m43s (-33%), sys -44%** | :white_check_mark: |
 
 ### How Each Bottleneck Was Found and Fixed
 
@@ -168,6 +167,20 @@ Fix (PR #62): `ForkJoinPool` parallelism for both passes.
 | 8 | 3,794 | -59% |
 
 Synthetic results looked promising, but production measurement (rc8, 4.1M nodes) showed real time unchanged and sys time +35% from ForkJoinPool thread management overhead. Reverted to sequential 2-pass structure from PR #61.
+
+**PR #62 → #65: unbuffered RAF → buffered streams**
+
+async-profiler flame graph on production showed `MmapGraphBuilder.addEdge → RandomAccessFile.write` as a major hotspot. Default `MmapGraphBuilder` wrote every node and edge directly to `RandomAccessFile` — millions of syscalls.
+
+Fix (PR #65): wrap with `.buffered()`. Two lines changed.
+
+| Metric | PR #56+#61 | PR #65 | Change |
+|--------|-----------|--------|--------|
+| real | 8m31s | **5m43s** | **-33%** |
+| user | 8m32s | 8m | -6% |
+| sys | 4m56s | **2m46s** | **-44%** |
+
+user unchanged (same CPU work), sys halved (buffered writes consolidated millions of syscalls), real dropped because main thread no longer blocked on I/O.
 
 ### Rejected Approaches
 

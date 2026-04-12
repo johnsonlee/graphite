@@ -260,21 +260,21 @@ class MmapGraphBuilder(
          * Deserialize an edge from a [RandomAccessFile] at its current position.
          * The file pointer is advanced past the entire edge record.
          */
-        internal fun deserializeEdge(raf: RandomAccessFile): Edge {
-            val from = NodeId(raf.readInt())
-            val to = NodeId(raf.readInt())
-            return when (val tag = raf.readByte().toInt()) {
-                TAG_EDGE_DATAFLOW -> DataFlowEdge(from, to, DataFlowKind.entries[raf.readByte().toInt()])
+        internal fun deserializeEdge(input: java.io.DataInput): Edge {
+            val from = NodeId(input.readInt())
+            val to = NodeId(input.readInt())
+            return when (val tag = input.readByte().toInt()) {
+                TAG_EDGE_DATAFLOW -> DataFlowEdge(from, to, DataFlowKind.entries[input.readByte().toInt()])
                 TAG_EDGE_CALL -> {
-                    val flags = raf.readByte().toInt()
+                    val flags = input.readByte().toInt()
                     CallEdge(from, to, isVirtual = (flags and 1) != 0, isDynamic = (flags and 2) != 0)
                 }
-                TAG_EDGE_TYPE -> TypeEdge(from, to, TypeRelation.entries[raf.readByte().toInt()])
+                TAG_EDGE_TYPE -> TypeEdge(from, to, TypeRelation.entries[input.readByte().toInt()])
                 TAG_EDGE_CONTROL_FLOW -> {
-                    val kind = ControlFlowKind.entries[raf.readByte().toInt()]
-                    val hasComparison = raf.readByte().toInt() == 1
+                    val kind = ControlFlowKind.entries[input.readByte().toInt()]
+                    val hasComparison = input.readByte().toInt() == 1
                     val comparison = if (hasComparison) {
-                        BranchComparison(ComparisonOp.entries[raf.readByte().toInt()], NodeId(raf.readInt()))
+                        BranchComparison(ComparisonOp.entries[input.readByte().toInt()], NodeId(input.readInt()))
                     } else {
                         null
                     }
