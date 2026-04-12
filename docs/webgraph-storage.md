@@ -44,7 +44,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
   → DefaultGraph                 1. String collection              1. BVGraph.load       ┐
                                  2. Metadata + StringTable         2. StringTable.load    ├ parallel
                                  3. Forward adjacency + labels     3. Labels + comparisons┘
-                                    (parallel, ForkJoinPool)       4. Build backward from forward
+                                                                   4. Build backward from forward
                                  4. BVGraph.store                  5. Read nodes + metadata
                                  5. Labels + comparisons write
                                  6. Nodedata + nodeindex write
@@ -59,7 +59,7 @@ graph TD
     B --> B1[Collect maxNodeId + nodeCount]
     B --> B2[Collect unique strings]
     B1 & B2 --> C[2. Collect metadata + build StringTable]
-    C --> D["3. Build forward adjacency + labels (parallel)"]
+    C --> D["3. Build forward adjacency + labels"]
     D --> D1["Pass 1: Count outdegree per node"]
     D --> D2["Pass 2: Fill sorted targets + encode labels"]
     D2 --> E["4. BVGraph.store(forward)"]
@@ -122,7 +122,7 @@ Every optimization must satisfy both simultaneously — trading one for the othe
 | [#55](https://github.com/johnsonlee/graphite/pull/55) | Flat single-file format | no change | — | :x: closed |
 | [#56](https://github.com/johnsonlee/graphite/pull/56) | Inline nodeindex | **16s (-81%)** | **real 8m31s (-47%)** | :white_check_mark: |
 | [#61](https://github.com/johnsonlee/graphite/pull/61) | Merge passes (4→2) | **9s (-44%)** | — | :white_check_mark: |
-| [#62](https://github.com/johnsonlee/graphite/pull/62) | Parallelize step 3 | **3.8s (-59%)** | _pending_ | :white_check_mark: |
+| [#62](https://github.com/johnsonlee/graphite/pull/62) | Parallelize step 3 | **3.8s (-59%)** | real unchanged, sys +35% | :x: reverted |
 
 Production total includes build (SootUpAdapter → DefaultGraph) which is 76% of wall time.
 
@@ -154,7 +154,7 @@ Fix (PR #61): merge into single `buildForwardData` with 2 passes.
 | PR #56 | 15,132 ms |
 | PR #61 | **9,090 ms (-40%)** |
 
-**PR #61 → #62: sequential → parallel**
+**PR #61 → #62: sequential → parallel (reverted)**
 
 Each node in step 3 is independent — `outgoing()` is read-only, array writes are non-overlapping. Only shared state is `comparisonMap` (switched to `ConcurrentHashMap`).
 
@@ -167,7 +167,7 @@ Fix (PR #62): `ForkJoinPool` parallelism for both passes.
 | 4 | 4,927 | -47% |
 | 8 | 3,794 | -59% |
 
-Default: `min(availableProcessors, 4)`. Diminishing returns beyond 4 — serial portions (BVGraph.store + nodedata write ~2s) cap parallel speedup.
+Synthetic results looked promising, but production measurement (rc8, 4.1M nodes) showed real time unchanged and sys time +35% from ForkJoinPool thread management overhead. Reverted to sequential 2-pass structure from PR #61.
 
 ### Rejected Approaches
 
@@ -178,8 +178,9 @@ Default: `min(availableProcessors, 4)`. Diminishing returns beyond 4 — serial 
 | Lazy SortedAdjacency | :x: OOM @4g | Delays but doesn't reduce allocation |
 | MmapGraph + disk adjacency | :x: 100s @6g | 10M random seeks for deserialization |
 | BVGraph thread tuning (1-4) | :x: < 1% change | Algorithm-bound (serial dependency) |
+| ForkJoinPool parallelism for step 3 ([#62](https://github.com/johnsonlee/graphite/pull/62)) | :x: real unchanged, sys +35% | Production: ForkJoinPool overhead outweighed parallel gains; synthetic benchmarks overstated benefit |
 
-### Production Phase Breakdown (PR #56 + #61, 4.1M nodes)
+### Production Phase Breakdown (rc8, PR #56 + #61, 4.1M nodes)
 
 | Step | Phase | Time | % |
 |------|-------|------|---|
@@ -204,4 +205,4 @@ Synthetic benchmarks (IntConstant) understate steps 1/2/6 because production use
 
 ### Key Lesson
 
-Adding precomputed caches to reduce time tends to increase memory — violating the constraint. The path that works: **eliminate redundant work** (fewer passes, no re-scans, parallelism). Both metrics improve simultaneously.
+Adding precomputed caches to reduce time tends to increase memory — violating the constraint. The path that works: **eliminate redundant work** (fewer passes, no re-scans). Both metrics improve simultaneously. Parallelism that shows gains in synthetic benchmarks can regress in production due to thread management overhead.
