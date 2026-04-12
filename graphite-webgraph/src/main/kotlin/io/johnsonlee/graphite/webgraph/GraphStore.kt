@@ -74,13 +74,22 @@ private const val LABELS_FILE = "graph.labels"
      * For large graphs (millions of nodes) this eliminates the OOM caused by
      * duplicating the entire adjacency list in memory.
      */
-    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
+    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2, parallelism: Int = Runtime.getRuntime().availableProcessors().coerceAtMost(4)) {
         Files.createDirectories(dir)
-        val saveStart = System.nanoTime()
-        fun elapsed() = (System.nanoTime() - saveStart) / 1_000_000
+        val threadMx = java.lang.management.ManagementFactory.getThreadMXBean()
+        val saveWall = System.nanoTime()
+        val saveCpu = threadMx.currentThreadCpuTime
+
+        fun phase(name: String, wallStart: Long, cpuStart: Long, detail: String = "") {
+            val wall = (System.nanoTime() - wallStart) / 1_000_000
+            val cpu = (threadMx.currentThreadCpuTime - cpuStart) / 1_000_000
+            val suffix = if (detail.isNotEmpty()) " ($detail)" else ""
+            System.err.println("[save] $name: ${wall}ms wall, ${cpu}ms cpu$suffix")
+        }
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var t0 = System.nanoTime()
+        var c0 = threadMx.currentThreadCpuTime
         var maxNodeId = 0
         var nodeCount = 0
         val allStrings = mutableSetOf<String>()
@@ -89,25 +98,28 @@ private const val LABELS_FILE = "graph.labels"
             nodeCount++
             collectSingleNodeStrings(node, allStrings)
         }
-        System.err.println("[save] 1. String collection: ${(System.nanoTime() - t0) / 1_000_000}ms ($nodeCount nodes, ${allStrings.size} strings)")
+        phase("1. String collection", t0, c0, "$nodeCount nodes, ${allStrings.size} strings")
 
         // 2. Collect metadata
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         val metadata = collectMetadata(graph)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
         val stringTable = StringTable.build(allStrings, dir)
         allStrings.clear()
-        System.err.println("[save] 2. Metadata + StringTable: ${(System.nanoTime() - t0) / 1_000_000}ms")
+        phase("2. Metadata + StringTable", t0, c0)
 
-        // 3. Build forward adjacency + labels + comparisons (single merged pass)
+        // 3. Build forward adjacency + labels + comparisons (parallel)
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         val numNodes = maxNodeId + 1
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val (forwardAdj, labelArray) = buildForwardData(graph, numNodes, comparisonMap)
-        System.err.println("[save] 3. Forward adjacency + labels: ${(System.nanoTime() - t0) / 1_000_000}ms ($numNodes nodes, ${labelArray.size} edges)")
+        val (forwardAdj, labelArray) = buildForwardData(graph, numNodes, comparisonMap, parallelism)
+        phase("3. Forward adjacency + labels", t0, c0, "$numNodes nodes, ${labelArray.size} edges, $parallelism threads")
 
         // 4. Store BVGraph (forward only)
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
         BVGraph.store(
             forwardGraph, dir.resolve(FORWARD_GRAPH).toString(),
@@ -115,18 +127,20 @@ private const val LABELS_FILE = "graph.labels"
             BVGraph.DEFAULT_MIN_INTERVAL_LENGTH, BVGraph.DEFAULT_ZETA_K,
             0, compressionThreads
         )
-        System.err.println("[save] 4. BVGraph.store: ${(System.nanoTime() - t0) / 1_000_000}ms")
+        phase("4. BVGraph.store", t0, c0)
 
-        // 5. Store labels
+        // 5. Store labels + comparisons
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
         DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
-        System.err.println("[save] 5. Labels + comparisons: ${(System.nanoTime() - t0) / 1_000_000}ms")
+        phase("5. Labels + comparisons", t0, c0)
 
         // 6. Write nodedata + nodeindex simultaneously
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
             val dataDos = DataOutputStream(cos)
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
@@ -143,15 +157,16 @@ private const val LABELS_FILE = "graph.labels"
                 }
             }
         }
-        System.err.println("[save] 6. Nodedata + nodeindex: ${(System.nanoTime() - t0) / 1_000_000}ms")
+        phase("6. Nodedata + nodeindex", t0, c0)
 
         // 7. Save metadata
         t0 = System.nanoTime()
+        c0 = threadMx.currentThreadCpuTime
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
         }
-        System.err.println("[save] 7. Metadata write: ${(System.nanoTime() - t0) / 1_000_000}ms")
-        System.err.println("[save] Total: ${elapsed()}ms")
+        phase("7. Metadata write", t0, c0)
+        phase("Total", saveWall, saveCpu)
     }
 
     /**
@@ -162,26 +177,31 @@ private const val LABELS_FILE = "graph.labels"
      */
     fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
         require(Files.isDirectory(dir)) { "Not a directory: $dir" }
+        val threadMx = java.lang.management.ManagementFactory.getThreadMXBean()
+        val t0 = System.nanoTime()
+        val c0 = threadMx.currentThreadCpuTime
 
-        return when (mode) {
-            LoadMode.EAGER -> loadEager(dir)
-            LoadMode.MAPPED -> {
-                ensureNodeIndex(dir)
-                loadMapped(dir)
-            }
+        val resolvedMode: LoadMode
+        val graph = when (mode) {
+            LoadMode.EAGER -> { resolvedMode = LoadMode.EAGER; loadEager(dir) }
+            LoadMode.MAPPED -> { resolvedMode = LoadMode.MAPPED; ensureNodeIndex(dir); loadMapped(dir) }
             LoadMode.AUTO -> {
                 val nodeCount = DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
                     NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
                     dis.readInt()
                 }
                 if (nodeCount < MAPPED_THRESHOLD) {
-                    loadEager(dir)
+                    resolvedMode = LoadMode.EAGER; loadEager(dir)
                 } else {
-                    ensureNodeIndex(dir)
-                    loadMapped(dir)
+                    resolvedMode = LoadMode.MAPPED; ensureNodeIndex(dir); loadMapped(dir)
                 }
             }
         }
+
+        val wall = (System.nanoTime() - t0) / 1_000_000
+        val cpu = (threadMx.currentThreadCpuTime - c0) / 1_000_000
+        System.err.println("[load] ${wall}ms wall, ${cpu}ms cpu (mode=$resolvedMode)")
+        return graph
     }
 
     /**
@@ -335,29 +355,45 @@ private const val LABELS_FILE = "graph.labels"
      * groups by target (dedup), sorts by target, and writes labels.
      */
     /**
-     * Build forward adjacency, labels, and comparisons in 2 passes (not 4).
+     * Build forward adjacency, labels, and comparisons in 2 parallel passes.
      *
-     * Pass 1: count unique outdegree per node (1 Set per node, short-lived).
-     * Pass 2: fill sorted targets + encode labels + extract comparisons (1 Map per node).
+     * Pass 1 (parallel): count unique outdegree per node.
+     * Pass 2 (parallel): fill sorted targets + encode labels + extract comparisons.
      *
-     * Returns (adjacency, labels).
+     * Each node's work is independent: outgoing() is read-only, array writes
+     * are to non-overlapping ranges, comparisons go to ConcurrentHashMap.
+     *
+     * @param parallelism number of threads (1 = sequential, default = available processors)
      */
     private fun buildForwardData(
         graph: Graph,
         numNodes: Int,
-        comparisonMap: MutableMap<Long, BranchComparison>
+        comparisonMap: MutableMap<Long, BranchComparison>,
+        parallelism: Int = Runtime.getRuntime().availableProcessors()
     ): Pair<PrecomputedAdjacency, ByteArray> {
-        // Pass 1: count outdegree
-        val outdeg = IntArray(numNodes)
-        for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
-            }
-            outdeg[node] = targets.size
+        val pool = if (parallelism > 1) {
+            java.util.concurrent.ForkJoinPool(parallelism)
+        } else null
+
+        fun <T> runParallel(task: () -> T): T {
+            return if (pool != null) pool.submit(java.util.concurrent.Callable { task() }).get() else task()
         }
 
-        // Build offsets
+        // Pass 1: count outdegree (parallel)
+        val outdeg = IntArray(numNodes)
+        runParallel {
+            java.util.stream.IntStream.range(0, numNodes).let {
+                if (pool != null) it.parallel() else it
+            }.forEach { node ->
+                val targets = mutableSetOf<Int>()
+                for (edge in graph.outgoing(NodeId(node))) {
+                    targets.add(edge.to.value)
+                }
+                outdeg[node] = targets.size
+            }
+        }
+
+        // Build offsets (sequential — O(N) prefix sum)
         val offsets = LongArray(numNodes + 1)
         for (i in 0 until numNodes) {
             offsets[i + 1] = offsets[i] + outdeg[i]
@@ -365,26 +401,33 @@ private const val LABELS_FILE = "graph.labels"
         val totalArcs = offsets[numNodes].toInt()
         val targets = IntArray(totalArcs)
         val labels = ByteArray(totalArcs)
+        val concurrentComparisons = java.util.concurrent.ConcurrentHashMap<Long, BranchComparison>()
 
-        // Pass 2: fill targets + labels + comparisons
-        for (node in 0 until numNodes) {
-            val edgesByTarget = mutableMapOf<Int, Edge>()
-            for (edge in graph.outgoing(NodeId(node))) {
-                edgesByTarget[edge.to.value] = edge
-            }
-            val sorted = edgesByTarget.keys.sorted()
-            val start = offsets[node].toInt()
-            for ((i, to) in sorted.withIndex()) {
-                targets[start + i] = to
-                val edge = edgesByTarget[to]!!
-                labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
-                if (edge is ControlFlowEdge && edge.comparison != null) {
-                    val key = node.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
-                    comparisonMap[key] = edge.comparison!!
+        // Pass 2: fill targets + labels + comparisons (parallel)
+        runParallel {
+            java.util.stream.IntStream.range(0, numNodes).let {
+                if (pool != null) it.parallel() else it
+            }.forEach { node ->
+                val edgesByTarget = mutableMapOf<Int, Edge>()
+                for (edge in graph.outgoing(NodeId(node))) {
+                    edgesByTarget[edge.to.value] = edge
+                }
+                val sorted = edgesByTarget.keys.sorted()
+                val start = offsets[node].toInt()
+                for ((i, to) in sorted.withIndex()) {
+                    targets[start + i] = to
+                    val edge = edgesByTarget[to]!!
+                    labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
+                    if (edge is ControlFlowEdge && edge.comparison != null) {
+                        val key = node.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
+                        concurrentComparisons[key] = edge.comparison!!
+                    }
                 }
             }
         }
 
+        pool?.shutdown()
+        comparisonMap.putAll(concurrentComparisons)
         return PrecomputedAdjacency(numNodes, targets, offsets) to labels
     }
 
