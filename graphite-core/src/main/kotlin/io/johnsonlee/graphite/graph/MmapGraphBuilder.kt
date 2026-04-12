@@ -32,8 +32,8 @@ class MmapGraphBuilder(
     internal val workDir: Path = Files.createTempDirectory("graphite-mmap")
 ) : FullGraphBuilder {
 
-    private val nodeFile = RandomAccessFile(workDir.resolve("nodes.dat").toFile(), "rw")
-    private val edgeFile = RandomAccessFile(workDir.resolve("edges.dat").toFile(), "rw")
+    private val nodeStream = workDir.resolve("nodes.dat").toFile().outputStream().buffered()
+    private val edgeStream = workDir.resolve("edges.dat").toFile().outputStream().buffered()
 
     private var nodeCount = 0
     private var edgeCount = 0L
@@ -46,14 +46,17 @@ class MmapGraphBuilder(
     private val branchScopes = mutableListOf<DefaultGraph.RawBranchScope>()
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
 
+    private val nodeDos = DataOutputStream(nodeStream)
+    private val edgeDos = DataOutputStream(edgeStream)
+
     override fun addNode(node: Node): FullGraphBuilder {
-        writeNode(nodeFile, node)
+        writeNode(nodeDos, node)
         nodeCount++
         return this
     }
 
     override fun addEdge(edge: Edge): FullGraphBuilder {
-        writeEdge(edgeFile, edge)
+        writeEdge(edgeDos, edge)
         edgeCount++
         return this
     }
@@ -108,39 +111,43 @@ class MmapGraphBuilder(
     }
 
     override fun build(): Graph {
-        nodeFile.close()
-        edgeFile.close()
+        nodeDos.flush()
+        edgeDos.flush()
+        nodeStream.close()
+        edgeStream.close()
 
-        // Build indexes by scanning files with RandomAccessFile (gives us file position)
+        // Build indexes by scanning files sequentially
         val nodeIndex = HashMap<Int, Long>()
         val nodeTypeIndex = HashMap<Class<out Node>, MutableList<Int>>()
 
-        val nodeRaf = RandomAccessFile(workDir.resolve("nodes.dat").toFile(), "r")
-        while (nodeRaf.filePointer < nodeRaf.length()) {
-            val offset = nodeRaf.filePointer
-            val len = nodeRaf.readInt()
-            val bytes = ByteArray(len)
-            nodeRaf.readFully(bytes)
-            val node = deserializeNode(bytes)
-            nodeIndex[node.id.value] = offset
-            nodeTypeIndex.getOrPut(node::class.java) { mutableListOf() }.add(node.id.value)
+        var offset = 0L
+        DataInputStream(workDir.resolve("nodes.dat").toFile().inputStream().buffered()).use { dis ->
+            val fileLen = workDir.resolve("nodes.dat").toFile().length()
+            while (offset < fileLen) {
+                val len = dis.readInt()
+                val bytes = ByteArray(len)
+                dis.readFully(bytes)
+                val node = deserializeNode(bytes)
+                nodeIndex[node.id.value] = offset
+                nodeTypeIndex.getOrPut(node::class.java) { mutableListOf() }.add(node.id.value)
+                offset += 4 + len // 4 bytes for length prefix + payload
+            }
         }
-        nodeRaf.close()
 
         val outgoingIndex = HashMap<Int, MutableList<Long>>()
         val incomingIndex = HashMap<Int, MutableList<Long>>()
 
-        val edgeRaf = RandomAccessFile(workDir.resolve("edges.dat").toFile(), "r")
-        while (edgeRaf.filePointer < edgeRaf.length()) {
-            val offset = edgeRaf.filePointer
-            val from = edgeRaf.readInt()
-            val to = edgeRaf.readInt()
-            // Read and skip the rest of the edge to advance the file pointer
-            skipEdgePayload(edgeRaf)
-            outgoingIndex.getOrPut(from) { mutableListOf() }.add(offset)
-            incomingIndex.getOrPut(to) { mutableListOf() }.add(offset)
+        offset = 0L
+        RandomAccessFile(workDir.resolve("edges.dat").toFile(), "r").use { edgeRaf ->
+            while (edgeRaf.filePointer < edgeRaf.length()) {
+                offset = edgeRaf.filePointer
+                val from = edgeRaf.readInt()
+                val to = edgeRaf.readInt()
+                skipEdgePayload(edgeRaf)
+                outgoingIndex.getOrPut(from) { mutableListOf() }.add(offset)
+                incomingIndex.getOrPut(to) { mutableListOf() }.add(offset)
+            }
         }
-        edgeRaf.close()
 
         return MmapGraph(
             dataDir = workDir,
@@ -324,7 +331,7 @@ class MmapGraphBuilder(
     // Instance serialization methods (write to RandomAccessFile during build)
     // ========================================================================
 
-    private fun writeNode(raf: RandomAccessFile, node: Node) {
+    private fun writeNode(out: DataOutputStream, node: Node) {
         val baos = ByteArrayOutputStream(128)
         val dos = DataOutputStream(baos)
         dos.writeInt(node.id.value)
@@ -391,35 +398,35 @@ class MmapGraphBuilder(
         }
         dos.flush()
         val bytes = baos.toByteArray()
-        raf.writeInt(bytes.size)
-        raf.write(bytes)
+        out.writeInt(bytes.size)
+        out.write(bytes)
     }
 
-    private fun writeEdge(raf: RandomAccessFile, edge: Edge) {
-        raf.writeInt(edge.from.value)
-        raf.writeInt(edge.to.value)
+    private fun writeEdge(out: DataOutputStream, edge: Edge) {
+        out.writeInt(edge.from.value)
+        out.writeInt(edge.to.value)
         when (edge) {
             is DataFlowEdge -> {
-                raf.writeByte(TAG_EDGE_DATAFLOW)
-                raf.writeByte(edge.kind.ordinal)
+                out.writeByte(TAG_EDGE_DATAFLOW)
+                out.writeByte(edge.kind.ordinal)
             }
             is CallEdge -> {
-                raf.writeByte(TAG_EDGE_CALL)
-                raf.writeByte((if (edge.isVirtual) 1 else 0) or (if (edge.isDynamic) 2 else 0))
+                out.writeByte(TAG_EDGE_CALL)
+                out.writeByte((if (edge.isVirtual) 1 else 0) or (if (edge.isDynamic) 2 else 0))
             }
             is TypeEdge -> {
-                raf.writeByte(TAG_EDGE_TYPE)
-                raf.writeByte(edge.kind.ordinal)
+                out.writeByte(TAG_EDGE_TYPE)
+                out.writeByte(edge.kind.ordinal)
             }
             is ControlFlowEdge -> {
-                raf.writeByte(TAG_EDGE_CONTROL_FLOW)
-                raf.writeByte(edge.kind.ordinal)
+                out.writeByte(TAG_EDGE_CONTROL_FLOW)
+                out.writeByte(edge.kind.ordinal)
                 if (edge.comparison != null) {
-                    raf.writeByte(1)
-                    raf.writeByte(edge.comparison.operator.ordinal)
-                    raf.writeInt(edge.comparison.comparandNodeId.value)
+                    out.writeByte(1)
+                    out.writeByte(edge.comparison.operator.ordinal)
+                    out.writeInt(edge.comparison.comparandNodeId.value)
                 } else {
-                    raf.writeByte(0)
+                    out.writeByte(0)
                 }
             }
         }
