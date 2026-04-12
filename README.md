@@ -200,22 +200,16 @@ Register in `META-INF/services/io.johnsonlee.graphite.sootup.GraphiteExtension`.
 
 ```kotlin
 repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/johnsonlee/graphite")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.1.0-rc.5")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.1.0-rc.5")
+    implementation("io.johnsonlee.graphite:core:1.0.0-rc5")
+    implementation("io.johnsonlee.graphite:sootup:1.0.0-rc5")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:graphite-cypher:0.1.0-rc.5")
+    implementation("io.johnsonlee.graphite:cypher:1.0.0-rc5")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:graphite-webgraph:0.1.0-rc.5")
+    implementation("io.johnsonlee.graphite:webgraph:1.0.0-rc5")
 }
 ```
 

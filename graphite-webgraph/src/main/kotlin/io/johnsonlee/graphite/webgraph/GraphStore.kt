@@ -76,8 +76,11 @@ private const val LABELS_FILE = "graph.labels"
      */
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
         Files.createDirectories(dir)
+        val saveStart = System.nanoTime()
+        fun elapsed() = (System.nanoTime() - saveStart) / 1_000_000
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
+        var t0 = System.nanoTime()
         var maxNodeId = 0
         var nodeCount = 0
         val allStrings = mutableSetOf<String>()
@@ -86,39 +89,45 @@ private const val LABELS_FILE = "graph.labels"
             nodeCount++
             collectSingleNodeStrings(node, allStrings)
         }
+        System.err.println("[save] 1. String collection: ${(System.nanoTime() - t0) / 1_000_000}ms ($nodeCount nodes, ${allStrings.size} strings)")
 
-        // 2. Collect metadata (iterates graph again but doesn't store node list)
+        // 2. Collect metadata
+        t0 = System.nanoTime()
         val metadata = collectMetadata(graph)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
         val stringTable = StringTable.build(allStrings, dir)
         allStrings.clear()
+        System.err.println("[save] 2. Metadata + StringTable: ${(System.nanoTime() - t0) / 1_000_000}ms")
 
         // 3. Build forward adjacency + labels + comparisons
+        t0 = System.nanoTime()
         val numNodes = maxNodeId + 1
         val forwardAdj = buildForwardAdjacency(graph, numNodes)
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
         val labelArray = buildLabelArrayDirect(graph, numNodes, comparisonMap)
+        System.err.println("[save] 3. Forward adjacency + labels: ${(System.nanoTime() - t0) / 1_000_000}ms ($numNodes nodes, ${labelArray.size} edges)")
 
+        // 4. Store BVGraph (forward only)
+        t0 = System.nanoTime()
         val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
-
-        // 4. Store BVGraph (forward only, limited threads to control memory)
         BVGraph.store(
             forwardGraph, dir.resolve(FORWARD_GRAPH).toString(),
             BVGraph.DEFAULT_WINDOW_SIZE, BVGraph.DEFAULT_MAX_REF_COUNT,
             BVGraph.DEFAULT_MIN_INTERVAL_LENGTH, BVGraph.DEFAULT_ZETA_K,
-            0, // flags
-            compressionThreads
+            0, compressionThreads
         )
+        System.err.println("[save] 4. BVGraph.store: ${(System.nanoTime() - t0) / 1_000_000}ms")
 
-        // 5. Store labels + comparisons
+        // 5. Store labels
+        t0 = System.nanoTime()
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
-
-        // 6. Store comparisons
         DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
+        System.err.println("[save] 5. Labels + comparisons: ${(System.nanoTime() - t0) / 1_000_000}ms")
 
-        // 7. Write nodedata + nodeindex simultaneously (zero intermediate collection)
+        // 6. Write nodedata + nodeindex simultaneously
+        t0 = System.nanoTime()
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
             val dataDos = DataOutputStream(cos)
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
@@ -135,11 +144,15 @@ private const val LABELS_FILE = "graph.labels"
                 }
             }
         }
+        System.err.println("[save] 6. Nodedata + nodeindex: ${(System.nanoTime() - t0) / 1_000_000}ms")
 
-        // 9. Save metadata
+        // 7. Save metadata
+        t0 = System.nanoTime()
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
         }
+        System.err.println("[save] 7. Metadata write: ${(System.nanoTime() - t0) / 1_000_000}ms")
+        System.err.println("[save] Total: ${elapsed()}ms")
     }
 
     /**
