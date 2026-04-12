@@ -20,8 +20,9 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        "implementation"(kotlin("stdlib"))
-        "testImplementation"(kotlin("test"))
-        "testImplementation"(kotlin("test-junit"))
+        add("implementation", kotlin("stdlib"))
+        add("runtimeOnly", "org.slf4j:slf4j-nop:2.0.13")
+        add("testImplementation", kotlin("test"))
+        add("testImplementation", kotlin("test-junit"))
     }
 }
