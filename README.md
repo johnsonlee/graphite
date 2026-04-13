@@ -204,13 +204,44 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:core:1.0.0-rc5")
-    implementation("io.johnsonlee.graphite:sootup:1.0.0-rc5")
+    implementation("io.johnsonlee.graphite:core:1.0.0-rc13")
+    implementation("io.johnsonlee.graphite:sootup:1.0.0-rc13")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:cypher:1.0.0-rc5")
+    implementation("io.johnsonlee.graphite:cypher:1.0.0-rc13")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:webgraph:1.0.0-rc5")
+    implementation("io.johnsonlee.graphite:webgraph:1.0.0-rc13")
 }
+```
+
+## MCP Integration
+
+Connect LLMs to Graphite via [Model Context Protocol](https://modelcontextprotocol.io):
+
+```bash
+npx graphite-mcp
+```
+
+Configure in Claude Code (`~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "graphite": {
+      "command": "npx",
+      "args": ["graphite-mcp"],
+      "env": { "GRAPHITE_URL": "http://localhost:8080" }
+    }
+  }
+}
+```
+
+Start the Explorer first, then LLMs can query the graph:
+
+```bash
+# Start Explorer
+graphite-explore /path/to/saved-graph
+
+# LLM can now use tools: cypher, nodes, methods, call_sites, annotations, etc.
 ```
 
 ## License
