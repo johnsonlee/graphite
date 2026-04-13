@@ -125,6 +125,7 @@ Every optimization must satisfy both simultaneously — trading one for the othe
 | [#62](https://github.com/johnsonlee/graphite/pull/62) | Parallelize step 3 | 3.8s (-59% synthetic) | real unchanged, sys +35% | :x: reverted |
 | [#65](https://github.com/johnsonlee/graphite/pull/65) | Buffer MmapGraphBuilder I/O | — | **real 5m43s (-33%), sys -44%** | :white_check_mark: |
 | [#66](https://github.com/johnsonlee/graphite/pull/66) | MmapGraph reads via mmap | — | **real 4m04s (-29%), sys -43%** | :white_check_mark: |
+| [#67](https://github.com/johnsonlee/graphite/pull/67) | FastArchiveAnalysisInputLocation | — | real 9m41s (+138%), user +76% | :x: reverted |
 
 ### How Each Bottleneck Was Found and Fixed
 
@@ -182,18 +183,6 @@ Fix (PR #65): wrap with `.buffered()`. Two lines changed.
 | sys | 4m56s | **2m46s** | **-44%** |
 
 user unchanged (same CPU work), sys halved (buffered writes consolidated millions of syscalls), real dropped because main thread no longer blocked on I/O.
-
-**PR #65 → #66: RAF reads → mmap reads**
-
-Save calls `graph.outgoing()` which on MmapGraph does per-edge `RandomAccessFile.seek()` + `read()`. Replaced with `MappedByteBuffer` — zero syscall per read.
-
-| Metric | PR #65 | PR #66 | Change |
-|--------|--------|--------|--------|
-| real | 5m43s | **4m04s** | **-29%** |
-| user | 8m | 7m47s | -3% |
-| sys | 2m46s | **1m34s** | **-43%** |
-
-Cumulative from baseline: real **15m57s → 4m04s (-74%)**, sys **24m11s → 1m34s (-94%)**.
 
 ### Rejected Approaches
 
