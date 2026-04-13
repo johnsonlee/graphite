@@ -1,0 +1,20 @@
+{
+  "name": "graphite-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Graphite static analysis graphs",
+  "type": "module",
+  "bin": {
+    "graphite-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

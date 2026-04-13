@@ -256,3 +256,26 @@ jobs:
           VERSION=${{ github.ref_name }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+  # ---- npm (MCP server) ----
+  npm:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'johnsonlee'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+    - name: Publish graphite-mcp to npm
+      working-directory: graphite-mcp
+      run: |
+        VERSION=${GITHUB_REF/refs\/tags\/v/}
+        npm version "$VERSION" --no-git-tag-version
+        npm install
+        npm run build
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
