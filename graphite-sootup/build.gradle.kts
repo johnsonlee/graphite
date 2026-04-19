@@ -16,7 +16,7 @@ kover {
     }
 }
 
-val testFixtures: Configuration by configurations.creating
+val integrationFixtures: Configuration by configurations.creating
 
 dependencies {
     api(project(":core"))
@@ -40,6 +40,13 @@ dependencies {
     // JMH benchmark dependencies
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)
-    testFixtures(libs.elasticsearch)
-    testFixtures(libs.android.all)
+    add(integrationFixtures.name, libs.elasticsearch)
+    add(integrationFixtures.name, libs.android.all)
+}
+
+jmh {
+    val filter = project.findProperty("jmh.filter") as String?
+    if (filter != null) {
+        includes.set(listOf(filter))
+    }
 }

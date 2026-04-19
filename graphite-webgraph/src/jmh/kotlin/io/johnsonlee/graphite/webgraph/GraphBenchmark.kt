@@ -1,10 +1,10 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.Graph
 import org.openjdk.jmh.annotations.*
 import java.io.Closeable
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Benchmarks [GraphStore.load] vs [GraphStore.loadLazy] on the ES graph (968K nodes).
+ * The persisted graph is auto-prepared from the fixture JAR if needed.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -22,19 +23,35 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 3, time = 1)
 @Fork(1)
 open class EsLoadBenchmark {
+    private lateinit var graphPath: Path
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ELASTICSEARCH)
+    }
 
     @Benchmark
-    fun eager_load(): Graph = GraphStore.load(Path.of("/tmp/es-graph"))
+    fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
 
     @Benchmark
-    fun lazy_load(): Graph = GraphStore.loadLazy(Path.of("/tmp/es-graph"))
+    fun lazy_load(): Long = loadAndTouch { GraphStore.loadLazy(graphPath) }
 
     @Benchmark
-    fun mapped_load(): Graph = GraphStore.loadMapped(Path.of("/tmp/es-graph"))
+    fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
+
+    private fun loadAndTouch(loader: () -> Graph): Long {
+        val graph = loader()
+        return try {
+            graph.nodes(Node::class.java).take(1).count().toLong()
+        } finally {
+            (graph as? Closeable)?.close()
+        }
+    }
 }
 
 /**
  * Benchmarks [GraphStore.load] vs [GraphStore.loadLazy] on Android SDK graph (5.9M nodes).
+ * The persisted graph is auto-prepared from the fixture JAR if needed.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -43,15 +60,30 @@ open class EsLoadBenchmark {
 @Measurement(iterations = 2, time = 1)
 @Fork(1, jvmArgs = ["-Xmx8g"])
 open class AndroidLoadBenchmark {
+    private lateinit var graphPath: Path
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ANDROID)
+    }
 
     @Benchmark
-    fun eager_load(): Graph = GraphStore.load(Path.of("/tmp/android-graph-v2"))
+    fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
 
     @Benchmark
-    fun lazy_load(): Graph = GraphStore.loadLazy(Path.of("/tmp/android-graph-v2"))
+    fun lazy_load(): Long = loadAndTouch { GraphStore.loadLazy(graphPath) }
 
     @Benchmark
-    fun mapped_load(): Graph = GraphStore.loadMapped(Path.of("/tmp/android-graph-v2"))
+    fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
+
+    private fun loadAndTouch(loader: () -> Graph): Long {
+        val graph = loader()
+        return try {
+            graph.nodes(Node::class.java).take(1).count().toLong()
+        } finally {
+            (graph as? Closeable)?.close()
+        }
+    }
 }
 
 // ============================================================================
@@ -78,10 +110,7 @@ open class EsQueryBenchmark {
 
     @Setup
     fun setup() {
-        val graphPath = Path.of("/tmp/es-graph")
-        if (!Files.isDirectory(graphPath)) {
-            throw IllegalStateException("ES graph not found at /tmp/es-graph")
-        }
+        val graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ELASTICSEARCH)
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)
@@ -211,10 +240,7 @@ open class AndroidQueryBenchmark {
 
     @Setup
     fun setup() {
-        val graphPath = Path.of("/tmp/android-graph-v2")
-        if (!Files.isDirectory(graphPath)) {
-            throw IllegalStateException("Android graph not found at /tmp/android-graph-v2")
-        }
+        val graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ANDROID)
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)

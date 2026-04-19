@@ -187,7 +187,12 @@ class MmapGraphBuilderTest {
             "org.springframework.web.bind.annotation.GetMapping",
             "com.example.UserController",
             "getUser",
-            mapOf("value" to "/api/users/{id}", "produces" to "application/json")
+            mapOf(
+                "value" to "/api/users/{id}",
+                "produces" to listOf("application/json", "application/xml"),
+                "required" to true,
+                "status" to 200
+            )
         )
         val graph = MmapGraphBuilder().addNode(node).build()
         val restored = graph.node(id) as AnnotationNode
@@ -207,14 +212,29 @@ class MmapGraphBuilderTest {
     }
 
     @Test
-    fun `round-trip AnnotationNode with null value serialized as empty string`() {
+    fun `round-trip AnnotationNode with null value`() {
         val id = NodeId.next()
         val node = AnnotationNode(id, "com.example.MyAnnotation", "com.example.Foo", "bar", mapOf("key" to null))
         val graph = MmapGraphBuilder().addNode(node).build()
         val restored = graph.node(id) as AnnotationNode
         assertEquals(node.name, restored.name)
-        // null values are serialized as empty string, deserialized as null
         assertNull(restored.values["key"])
+    }
+
+    @Test
+    fun `round-trip AnnotationNode with very large string value`() {
+        val id = NodeId.next()
+        val largeValue = "x".repeat(70_000)
+        val node = AnnotationNode(
+            id,
+            "com.example.BigAnnotation",
+            "com.example.Foo",
+            "bar",
+            mapOf("value" to largeValue)
+        )
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as AnnotationNode
+        assertEquals(largeValue, restored.values["value"])
     }
 
     @Test
@@ -384,13 +404,25 @@ class MmapGraphBuilderTest {
     @Test
     fun `round-trip member annotations`() {
         val graph = MmapGraphBuilder()
-            .addMemberAnnotation("com.example.User", "name", "javax.validation.NotNull", mapOf("message" to "required"))
-            .addMemberAnnotation("com.example.User", "name", "javax.persistence.Column", mapOf("length" to 255))
+            .addMemberAnnotation(
+                "com.example.User",
+                "name",
+                "javax.validation.NotNull",
+                mapOf("message" to "required", "groups" to listOf("Create", "Update"))
+            )
+            .addMemberAnnotation(
+                "com.example.User",
+                "name",
+                "javax.persistence.Column",
+                mapOf("length" to 255, "nullable" to false)
+            )
             .build()
         val annotations = graph.memberAnnotations("com.example.User", "name")
         assertEquals(2, annotations.size)
         assertEquals("required", annotations["javax.validation.NotNull"]?.get("message"))
+        assertEquals(listOf("Create", "Update"), annotations["javax.validation.NotNull"]?.get("groups"))
         assertEquals(255, annotations["javax.persistence.Column"]?.get("length"))
+        assertEquals(false, annotations["javax.persistence.Column"]?.get("nullable"))
     }
 
     @Test

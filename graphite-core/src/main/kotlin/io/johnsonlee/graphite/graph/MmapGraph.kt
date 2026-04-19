@@ -19,19 +19,20 @@ import java.nio.file.StandardOpenOption
  * nodeType -> nodeIds) are held in memory.
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
- * - Node index: ~47 MB (8 bytes per entry x 5.9M)
- * - Edge indexes: ~104 MB (8 bytes x 6.5M x 2 for outgoing+incoming)
- * - Type index: ~24 MB (4 bytes per nodeId)
- * - Total: ~175 MB vs ~8 GB for [DefaultGraph]
+ * - Node index: ~47 MB (`LongArray`, 8 bytes per slot x 5.9M)
+ * - Edge indexes: ~132 MB (`LongArray` offsets + `IntArray` starts)
+ * - Type index: ~24 MB (`IntArray` node ids)
+ * - Total: ~200 MB without per-entry `HashMap` / `MutableList` object overhead
  *
  * Created by [MmapGraphBuilder.build].
  */
 class MmapGraph internal constructor(
     private val dataDir: Path,
-    private val nodeIndex: Map<Int, Long>,
-    private val nodeTypeIndex: Map<Class<out Node>, List<Int>>,
-    private val outgoingIndex: Map<Int, List<Long>>,
-    private val incomingIndex: Map<Int, List<Long>>,
+    private val nodeIndex: LongArray,
+    private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
+    private val outgoingIndex: EdgeOffsetIndex,
+    private val incomingIndex: EdgeOffsetIndex,
+    private val nodeMethods: List<MethodDescriptor>,
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValuesMap: Map<String, List<Any?>>,
@@ -59,8 +60,16 @@ class MmapGraph internal constructor(
         }.groupBy { it.conditionNodeId.value }
     }
 
+    internal data class EdgeOffsetIndex(
+        val starts: IntArray,
+        val offsets: LongArray
+    )
+
     override fun node(id: NodeId): Node? {
-        val offset = nodeIndex[id.value] ?: return null
+        val nodeId = id.value
+        if (nodeId < 0 || nodeId >= nodeIndex.size) return null
+        val offset = nodeIndex[nodeId]
+        if (offset < 0L) return null
         return readNodeAt(offset)
     }
 
@@ -78,13 +87,11 @@ class MmapGraph internal constructor(
     }
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
-        val offsets = outgoingIndex[id.value] ?: return emptySequence()
-        return offsets.asSequence().map { readEdgeAt(it) }
+        return edgeOffsets(outgoingIndex, id).map { readEdgeAt(it) }
     }
 
     override fun incoming(id: NodeId): Sequence<Edge> {
-        val offsets = incomingIndex[id.value] ?: return emptySequence()
-        return offsets.asSequence().map { readEdgeAt(it) }
+        return edgeOffsets(incomingIndex, id).map { readEdgeAt(it) }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -131,7 +138,7 @@ class MmapGraph internal constructor(
         val len = buf.getInt()
         val bytes = ByteArray(len)
         buf.get(bytes)
-        return MmapGraphBuilder.deserializeNode(bytes)
+        return MmapGraphBuilder.deserializeNode(bytes, nodeMethods)
     }
 
     private fun readEdgeAt(offset: Long): Edge {
@@ -139,6 +146,15 @@ class MmapGraph internal constructor(
         buf.position(offset.toInt())
         val dis = DataInputStream(ByteBufferInputStream(buf))
         return MmapGraphBuilder.deserializeEdge(dis)
+    }
+
+    private fun edgeOffsets(index: EdgeOffsetIndex, id: NodeId): Sequence<Long> {
+        val nodeId = id.value
+        if (nodeId < 0 || nodeId + 1 >= index.starts.size) return emptySequence()
+        val start = index.starts[nodeId]
+        val end = index.starts[nodeId + 1]
+        if (start == end) return emptySequence()
+        return (start until end).asSequence().map { position -> index.offsets[position] }
     }
 
     internal class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {

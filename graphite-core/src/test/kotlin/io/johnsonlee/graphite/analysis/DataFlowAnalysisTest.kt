@@ -911,7 +911,7 @@ class DataFlowAnalysisTest {
     // ========================================================================
 
     @Test
-    fun `traceParameterSources finds call sites for parameter`() {
+    fun `traceParameterSources traces caller arguments into callee parameter`() {
         val builder = DefaultGraph.Builder()
         val callerMethod = MethodDescriptor(
             TypeDescriptor("com.example.Caller"), "call", emptyList(), TypeDescriptor("void")
@@ -941,8 +941,41 @@ class DataFlowAnalysisTest {
         val analysis = DataFlowAnalysis(graph)
         val result = analysis.backwardSlice(paramId)
 
-        // traceParameterSources should find the call site and trace the argument
-        // The simplified stub doesn't merge results, so check it completes without error
-        assertEquals("process", result.propagationPaths.firstOrNull()?.steps?.firstOrNull()?.let { "process" } ?: "process")
+        assertTrue(result.sources.any { it is SourceInfo.Parameter && it.node.id == paramId })
+        assertEquals(listOf(100), result.intConstants())
+    }
+
+    @Test
+    fun `traceParameterSources matches the full method signature`() {
+        val builder = DefaultGraph.Builder()
+        val callerMethod = MethodDescriptor(
+            TypeDescriptor("com.example.Caller"), "call", emptyList(), TypeDescriptor("void")
+        )
+        val intOverload = MethodDescriptor(
+            TypeDescriptor("com.example.Callee"), "process", listOf(TypeDescriptor("int")), TypeDescriptor("void")
+        )
+        val stringOverload = MethodDescriptor(
+            TypeDescriptor("com.example.Callee"), "process", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("void")
+        )
+        builder.addMethod(callerMethod)
+        builder.addMethod(intOverload)
+        builder.addMethod(stringOverload)
+
+        val paramId = NodeId.next()
+        builder.addNode(ParameterNode(paramId, 0, TypeDescriptor("int"), intOverload))
+
+        val intConstId = NodeId.next()
+        builder.addNode(IntConstant(intConstId, 100))
+        val stringConstId = NodeId.next()
+        builder.addNode(StringConstant(stringConstId, "wrong-overload"))
+
+        builder.addNode(CallSiteNode(NodeId.next(), callerMethod, intOverload, 10, null, listOf(intConstId)))
+        builder.addNode(CallSiteNode(NodeId.next(), callerMethod, stringOverload, 11, null, listOf(stringConstId)))
+
+        val graph = builder.build()
+        val result = DataFlowAnalysis(graph).backwardSlice(paramId)
+
+        assertEquals(listOf(100), result.intConstants())
+        assertTrue(result.constants().none { it is StringConstant })
     }
 }

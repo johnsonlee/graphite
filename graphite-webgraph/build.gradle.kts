@@ -7,6 +7,12 @@ plugins {
 }
 
 kover {
+    currentProject {
+        instrumentation {
+            disabledForTestTasks.add("test")
+        }
+    }
+
     reports {
         filters {
             excludes {
@@ -16,19 +22,36 @@ kover {
     }
 }
 
-val testFixtures: Configuration by configurations.creating
+val integrationFixtures: Configuration by configurations.creating
+val asmVersion = libs.versions.asm.get()
 
 dependencies {
     api(project(":core"))
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
     testImplementation(project(":sootup"))
-    testFixtures(libs.elasticsearch)
-    testFixtures(libs.android.all)
+    add(integrationFixtures.name, libs.elasticsearch)
+    add(integrationFixtures.name, libs.android.all)
 
     jmh(project(":cypher"))
+    jmh(project(":sootup"))
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)
+    jmh("org.ow2.asm:asm:$asmVersion")
+    jmh("org.ow2.asm:asm-tree:$asmVersion")
+    jmh("org.ow2.asm:asm-util:$asmVersion")
+    jmh("org.ow2.asm:asm-commons:$asmVersion")
+    jmh("org.ow2.asm:asm-analysis:$asmVersion")
+}
+
+configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configureEach {
+    resolutionStrategy.force(
+        "org.ow2.asm:asm:$asmVersion",
+        "org.ow2.asm:asm-tree:$asmVersion",
+        "org.ow2.asm:asm-util:$asmVersion",
+        "org.ow2.asm:asm-commons:$asmVersion",
+        "org.ow2.asm:asm-analysis:$asmVersion"
+    )
 }
 
 jmh {
@@ -39,9 +62,9 @@ jmh {
 }
 
 tasks.test {
-    maxHeapSize = "2g"
+    maxHeapSize = "4g"
     doFirst {
-        testFixtures.resolve().forEach { jar ->
+        integrationFixtures.resolve().forEach { jar ->
             when {
                 jar.name.contains("elasticsearch") -> systemProperty("elasticsearch.jar.path", jar.absolutePath)
                 jar.name.contains("android-all") -> systemProperty("android.jar.path", jar.absolutePath)
