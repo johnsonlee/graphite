@@ -15,6 +15,13 @@ class DataFlowAnalysis(
 ) {
     private val backwardSliceCache = mutableMapOf<NodeId, DataFlowResult>()
 
+    private data class BackwardSliceState(
+        val visited: MutableSet<NodeId> = mutableSetOf(),
+        val sources: MutableList<SourceInfo> = mutableListOf(),
+        val paths: MutableList<DataFlowPath> = mutableListOf(),
+        val propagationPaths: MutableList<PropagationPath> = mutableListOf()
+    )
+
     /**
      * Backward slice: find all nodes that can flow TO the given node.
      *
@@ -24,80 +31,77 @@ class DataFlowAnalysis(
      */
     fun backwardSlice(from: NodeId): DataFlowResult {
         backwardSliceCache[from]?.let { return it }
-        val visited = mutableSetOf<NodeId>()
-        val sources = mutableListOf<SourceInfo>()
-        val paths = mutableListOf<DataFlowPath>()
-        val propagationPaths = mutableListOf<PropagationPath>()
+        val state = BackwardSliceState()
+        traverseBackward(from, emptyList(), emptyList(), null, 0, state)
+        return DataFlowResult(state.sources, state.paths, state.propagationPaths, graph).also {
+            backwardSliceCache[from] = it
+        }
+    }
 
-        fun traverse(
-            current: NodeId,
-            path: List<NodeId>,
-            propSteps: List<PropagationStep>,
-            lastEdgeKind: DataFlowKind?,
-            depth: Int
-        ) {
-            if (current in visited) return
-            if (depth > config.maxDepth) return
-            visited.add(current)
+    private fun traverseBackward(
+        current: NodeId,
+        path: List<NodeId>,
+        propSteps: List<PropagationStep>,
+        lastEdgeKind: DataFlowKind?,
+        depth: Int,
+        state: BackwardSliceState
+    ) {
+        if (current in state.visited) return
+        if (depth > config.maxDepth) return
+        state.visited.add(current)
 
-            val node = graph.node(current) ?: return
-            val currentPath = path + current
+        val node = graph.node(current) ?: return
+        val currentPath = path + current
+        val currentPropSteps = propSteps + createPropagationStep(node, lastEdgeKind, depth)
 
-            // Create a propagation step for the current node
-            val step = createPropagationStep(node, lastEdgeKind, depth)
-            val currentPropSteps = propSteps + step
-
-            // Check if we've reached a source (constant or parameter)
-            when (node) {
-                is ConstantNode -> {
-                    sources.add(SourceInfo.Constant(node, currentPath))
-                    paths.add(DataFlowPath(currentPath.reversed()))
-                    // Create propagation path (reversed to show source → sink)
-                    val sourceType = when (node) {
-                        is EnumConstant -> PropagationSourceType.ENUM_CONSTANT
-                        else -> PropagationSourceType.CONSTANT
-                    }
-                    propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
-                }
-                is ParameterNode -> {
-                    sources.add(SourceInfo.Parameter(node, currentPath))
-                    propagationPaths.add(PropagationPath(currentPropSteps.reversed(), PropagationSourceType.PARAMETER, depth))
-                    if (config.interProcedural) {
-                        // Find all call sites and trace arguments
-                        traceParameterSources(node, currentPath, depth)
-                    }
-                }
-                is FieldNode -> {
-                    sources.add(SourceInfo.Field(node, currentPath))
-                    val sourceType = if (isEnumConstantField(node)) {
-                        PropagationSourceType.ENUM_CONSTANT
-                    } else {
-                        PropagationSourceType.FIELD
-                    }
-                    propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
-                    if (config.interProcedural) {
-                        traceFieldStores(node, currentPath, depth)
-                    }
-                }
-                is CallSiteNode -> {
-                    // Trace backward through receiver for instance method calls
-                    // This enables tracing patterns like receiver.getId() back to the receiver
-                    if (node.receiver != null) {
-                        traverse(node.receiver, currentPath, currentPropSteps, DataFlowKind.RETURN_VALUE, depth + 1)
-                    }
-                }
-                else -> {}
-            }
-
-            // Continue backward traversal (skip for collection factories - handled above)
-            graph.incoming(current, DataFlowEdge::class.java).forEach { edge ->
-                traverse(edge.from, currentPath, currentPropSteps, edge.kind, depth + 1)
-            }
+        val skipDefaultIncoming = when (node) {
+            is FieldNode -> config.interProcedural
+            else -> false
         }
 
-        traverse(from, emptyList(), emptyList(), null, 0)
-        return DataFlowResult(sources, paths, propagationPaths, graph).also {
-            backwardSliceCache[from] = it
+        when (node) {
+            is ConstantNode -> {
+                state.sources.add(SourceInfo.Constant(node, currentPath))
+                state.paths.add(DataFlowPath(currentPath.reversed()))
+                val sourceType = when (node) {
+                    is EnumConstant -> PropagationSourceType.ENUM_CONSTANT
+                    else -> PropagationSourceType.CONSTANT
+                }
+                state.propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
+            }
+            is ParameterNode -> {
+                state.sources.add(SourceInfo.Parameter(node, currentPath))
+                state.propagationPaths.add(
+                    PropagationPath(currentPropSteps.reversed(), PropagationSourceType.PARAMETER, depth)
+                )
+                if (config.interProcedural) {
+                    traceParameterSources(node, currentPath, currentPropSteps, depth, state)
+                }
+            }
+            is FieldNode -> {
+                state.sources.add(SourceInfo.Field(node, currentPath))
+                val sourceType = if (isEnumConstantField(node)) {
+                    PropagationSourceType.ENUM_CONSTANT
+                } else {
+                    PropagationSourceType.FIELD
+                }
+                state.propagationPaths.add(PropagationPath(currentPropSteps.reversed(), sourceType, depth))
+                if (config.interProcedural) {
+                    traceFieldStores(node, currentPath, currentPropSteps, depth, state)
+                }
+            }
+            is CallSiteNode -> {
+                if (node.receiver != null) {
+                    traverseBackward(node.receiver, currentPath, currentPropSteps, DataFlowKind.ASSIGN, depth + 1, state)
+                }
+            }
+            else -> {}
+        }
+
+        if (!skipDefaultIncoming) {
+            graph.incoming(current, DataFlowEdge::class.java).forEach { edge ->
+                traverseBackward(edge.from, currentPath, currentPropSteps, edge.kind, depth + 1, state)
+            }
         }
     }
 
@@ -245,30 +249,43 @@ class DataFlowAnalysis(
         return DataFlowResult(sinks, paths, propagationPaths, graph)
     }
 
-    private fun traceParameterSources(param: ParameterNode, path: List<NodeId>, depth: Int) {
-        // Find all call sites to this method and trace the argument at param.index
+    private fun traceParameterSources(
+        param: ParameterNode,
+        path: List<NodeId>,
+        propSteps: List<PropagationStep>,
+        depth: Int,
+        state: BackwardSliceState
+    ) {
+        // Match the full signature to avoid mixing overloads that share the same name.
         graph.callSites(
             io.johnsonlee.graphite.graph.MethodPattern(
                 declaringClass = param.method.declaringClass.className,
-                name = param.method.name
+                name = param.method.name,
+                parameterTypes = param.method.parameterTypes.map { it.className },
+                returnType = param.method.returnType.className
             )
         ).forEach { callSite ->
             if (param.index < callSite.arguments.size) {
                 val argNodeId = callSite.arguments[param.index]
-                // Recursively trace this argument
-                // (simplified - real implementation would merge results)
+                traverseBackward(argNodeId, path, propSteps, DataFlowKind.PARAMETER_PASS, depth + 1, state)
             }
         }
     }
 
-    private fun traceFieldStores(field: FieldNode, path: List<NodeId>, depth: Int) {
-        // Find all stores to this field by looking at incoming edges with FIELD_STORE kind
-        // This handles patterns like:
-        //   static final List<X> FIELD = Arrays.asList(X.CONST);
-        // Where the field is initialized in <clinit> and used in another method
-        //
-        // Note: The main backward traversal already handles this via graph.incoming(),
-        // but this method can be used for additional interprocedural analysis if needed.
+    private fun traceFieldStores(
+        field: FieldNode,
+        path: List<NodeId>,
+        propSteps: List<PropagationStep>,
+        depth: Int,
+        state: BackwardSliceState
+    ) {
+        graph.incoming(field.id, DataFlowEdge::class.java)
+            .filter { edge ->
+                edge.kind == DataFlowKind.FIELD_STORE || edge.kind == DataFlowKind.ASSIGN
+            }
+            .forEach { edge ->
+                traverseBackward(edge.from, path, propSteps, edge.kind, depth + 1, state)
+            }
     }
 
 }

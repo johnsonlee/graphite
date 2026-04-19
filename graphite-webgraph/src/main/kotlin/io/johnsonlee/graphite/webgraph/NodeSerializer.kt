@@ -81,6 +81,7 @@ internal object NodeSerializer {
     private const val VAL_BOOLEAN = 5
     private const val VAL_NULL = 6
     private const val VAL_ENUM_REF = 7
+    private const val VAL_LIST = 8
 
     // ========================================================================
     // Edge encoding / decoding
@@ -170,7 +171,7 @@ internal object NodeSerializer {
                     dest.add(node.memberName)
                     for ((k, v) in node.values) {
                         dest.add(k)
-                        dest.add(v?.toString() ?: "")
+                        collectAnyValueString(v, dest)
                     }
                 }
                 else -> {} // IntConstant, LongConstant, FloatConstant, DoubleConstant, BooleanConstant, NullConstant
@@ -210,7 +211,7 @@ internal object NodeSerializer {
                 dest.add(fqn)
                 for ((k, v) in attrs) {
                     dest.add(k)
-                    dest.add(v?.toString() ?: "")
+                    collectAnyValueString(v, dest)
                 }
             }
         }
@@ -230,15 +231,20 @@ internal object NodeSerializer {
 
     private fun collectAnyValueStrings(values: List<Any?>, dest: MutableSet<String>) {
         for (value in values) {
-            when (value) {
-                is String -> dest.add(value)
-                is EnumValueReference -> {
-                    dest.add(value.enumClass)
-                    dest.add(value.enumName)
-                }
-                is Int, is Long, is Float, is Double, is Boolean, null -> {}
-                else -> dest.add(value.toString())
+            collectAnyValueString(value, dest)
+        }
+    }
+
+    private fun collectAnyValueString(value: Any?, dest: MutableSet<String>) {
+        when (value) {
+            is String -> dest.add(value)
+            is EnumValueReference -> {
+                dest.add(value.enumClass)
+                dest.add(value.enumName)
             }
+            is List<*> -> value.forEach { collectAnyValueString(it, dest) }
+            is Int, is Long, is Float, is Double, is Boolean, null -> {}
+            else -> dest.add(value.toString())
         }
     }
 
@@ -316,7 +322,7 @@ internal object NodeSerializer {
                 dos.writeInt(node.values.size)
                 for ((k, v) in node.values) {
                     dos.writeInt(strings.indexOf(k))
-                    dos.writeInt(strings.indexOf(v?.toString() ?: ""))
+                    writeAnyValue(dos, v, strings)
                 }
             }
         }
@@ -382,7 +388,7 @@ internal object NodeSerializer {
                 val values = mutableMapOf<String, Any?>()
                 repeat(kvCount) {
                     val k = strings.get(dis.readInt())
-                    val v = strings.get(dis.readInt()).let { s -> s.ifEmpty { null } }
+                    val v = readAnyValue(dis, strings)
                     values[k] = v
                 }
                 AnnotationNode(id, name, className, memberName, values)
@@ -437,7 +443,7 @@ internal object NodeSerializer {
                 dos.writeInt(attrs.size)
                 for ((k, v) in attrs) {
                     dos.writeInt(strings.indexOf(k))
-                    dos.writeInt(strings.indexOf(v?.toString() ?: ""))
+                    writeAnyValue(dos, v, strings)
                 }
             }
         }
@@ -506,7 +512,7 @@ internal object NodeSerializer {
                 val kv = mutableMapOf<String, Any?>()
                 repeat(kvCount) {
                     val k = strings.get(dis.readInt())
-                    val v = strings.get(dis.readInt()).let { s -> s.ifEmpty { null } }
+                    val v = readAnyValue(dis, strings)
                     kv[k] = v
                 }
                 annotations[fqn] = kv
@@ -590,6 +596,11 @@ internal object NodeSerializer {
             is Boolean -> { dos.writeByte(VAL_BOOLEAN); dos.writeBoolean(value) }
             null -> { dos.writeByte(VAL_NULL) }
             is EnumValueReference -> { dos.writeByte(VAL_ENUM_REF); dos.writeInt(strings.indexOf(value.enumClass)); dos.writeInt(strings.indexOf(value.enumName)) }
+            is List<*> -> {
+                dos.writeByte(VAL_LIST)
+                dos.writeInt(value.size)
+                value.forEach { writeAnyValue(dos, it, strings) }
+            }
             else -> { dos.writeByte(VAL_STRING); dos.writeInt(strings.indexOf(value.toString())) }
         }
     }
@@ -603,6 +614,7 @@ internal object NodeSerializer {
         VAL_BOOLEAN -> dis.readBoolean()
         VAL_NULL -> null
         VAL_ENUM_REF -> EnumValueReference(strings.get(dis.readInt()), strings.get(dis.readInt()))
+        VAL_LIST -> List(dis.readInt()) { readAnyValue(dis, strings) }
         else -> strings.get(dis.readInt()) // fallback
     }
 }

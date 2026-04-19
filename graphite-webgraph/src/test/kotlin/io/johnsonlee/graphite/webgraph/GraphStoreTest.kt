@@ -156,6 +156,47 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `round-trip preserves typed annotation values`() {
+        val builder = DefaultGraph.Builder()
+        val ownerType = TypeDescriptor("com.example.Foo")
+        val method = MethodDescriptor(ownerType, "bar", emptyList(), TypeDescriptor("void"))
+        val annotationNode = AnnotationNode(
+            NodeId.next(),
+            "com.example.Http",
+            "com.example.Foo",
+            "bar",
+            mapOf(
+                "paths" to listOf("/a", "/b"),
+                "required" to true,
+                "code" to 200,
+                "note" to null
+            )
+        )
+        builder.addMethod(method)
+        builder.addNode(ReturnNode(NodeId.next(), method))
+        builder.addNode(annotationNode)
+        builder.addMemberAnnotation(
+            "com.example.Foo",
+            "bar",
+            "com.example.Http",
+            annotationNode.values
+        )
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-typed-annot-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val loadedNode = loaded.node(annotationNode.id) as AnnotationNode
+            assertEquals(annotationNode.values, loadedNode.values)
+            assertEquals(annotationNode.values, loaded.memberAnnotations("com.example.Foo", "bar")["com.example.Http"])
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves type hierarchy`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-test")
@@ -992,15 +1033,13 @@ class GraphStoreTest {
     // ========================================================================
 
     @Test
-    fun `round-trip enum constructor arg with unsupported type falls back to toString`() {
+    fun `round-trip preserves list enum constructor arg`() {
         val builder = DefaultGraph.Builder()
-        // Use a List as constructor arg -- not a directly supported type,
-        // so writeAnyValue will use the else branch (VAL_STRING + toString())
         val enumConst = EnumConstant(
             NodeId.next(),
             TypeDescriptor("com.example.FallbackEnum"),
             "VAL",
-            listOf(listOf("a", "b"))  // List<String> triggers the else fallback
+            listOf(listOf("a", "b"))
         )
         builder.addNode(enumConst)
         builder.addEnumValues("com.example.FallbackEnum", "VAL", enumConst.constructorArgs)
@@ -1012,8 +1051,7 @@ class GraphStoreTest {
             val loaded = GraphStore.load(dir)
 
             val loadedEnum = loaded.node(enumConst.id) as EnumConstant
-            // The list was serialized via toString(), so it comes back as a String
-            assertEquals("[a, b]", loadedEnum.constructorArgs[0])
+            assertEquals(listOf("a", "b"), loadedEnum.constructorArgs[0])
         } finally {
             dir.toFile().deleteRecursively()
         }

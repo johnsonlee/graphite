@@ -114,6 +114,19 @@ Every optimization must satisfy both simultaneously — trading one for the othe
 3. **Validate** — same machine, same session, both metrics must hold
 4. **Reject** if either metric regresses
 
+### Benchmark Suites
+
+Use both micro and end-to-end benchmarks. A change is not accepted based on synthetic numbers alone.
+
+| Suite | Scope | Command |
+|------|-------|---------|
+| `SavePhaseBreakdownBenchmark` | Isolate save phases | `./gradlew :webgraph:jmh -Pjmh.filter=SavePhaseBreakdownBenchmark` |
+| `GraphBuildPersistBenchmark` | Synthetic 10M save/load guardrail | `./gradlew :webgraph:jmh -Pjmh.filter=GraphBuildPersistBenchmark` |
+| `GraphEndToEndBenchmark` | Real JAR `build -> save -> load -> query` | `./gradlew :webgraph:jmh -Pjmh.filter=GraphEndToEndBenchmark` |
+| `GraphBenchmark` | Persisted-graph load/query comparisons | `./gradlew :webgraph:jmh -Pjmh.filter='(Es|Android).*(Load|Query)Benchmark'` |
+
+`GraphEndToEndBenchmark` and `GraphBenchmark` auto-discover fixture JARs from Gradle cache, or accept explicit overrides via `-Delasticsearch.jar.path`, `-Dandroid.jar.path`, `-Delasticsearch.graph.path`, and `-Dandroid.graph.path`.
+
 ### Results Summary
 
 | PR | What | Synthetic save (10M, 4g) | Production (4.1M) | |
