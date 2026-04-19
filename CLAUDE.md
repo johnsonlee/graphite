@@ -125,7 +125,7 @@ Specify the version via command line property:
 
 ```bash
 # Publish alpha version
-./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=0.0.1-alpha.2
+./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.1.0-alpha.1
 
 # Publish release version
 ./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.0.0
@@ -137,8 +137,8 @@ Publishing is triggered by creating a git tag. GitHub Actions automatically deri
 
 ```bash
 # Create and push a tag to trigger release
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0-alpha.1
+git push origin v1.1.0-alpha.1
 ```
 
 ### Using Published Artifacts
@@ -157,8 +157,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:0.0.1-alpha.2")
-    implementation("io.johnsonlee.graphite:graphite-sootup:0.0.1-alpha.2")
+    implementation("io.johnsonlee.graphite:graphite-core:1.1.0-alpha.1")
+    implementation("io.johnsonlee.graphite:graphite-sootup:1.1.0-alpha.1")
 }
 ```
 
@@ -175,7 +175,7 @@ Follow this progression when releasing versions:
 
 Example version progression:
 ```
-0.0.1-alpha.2 → 0.0.1-beta.1 → 0.0.1-rc.1 → 0.0.1
+1.1.0-alpha.1 → 1.1.0-beta.1 → 1.1.0-rc.1 → 1.1.0
 ```
 
 ## Implementation Learnings
