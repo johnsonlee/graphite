@@ -23,10 +23,12 @@ Backward adjacency is rebuilt from `forward.*` at load time — not stored on di
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D01` |
-| graph.nodedata | `GRN` | `0x47524E01` |
-| graph.nodeindex | `GRI` | `0x47524901` |
-| graph.comparisons | `GRC` | `0x47524301` |
+| graph.metadata | `GRM` | `0x47524D02` |
+| graph.nodedata | `GRN` | `0x47524E02` |
+| graph.nodeindex | `GRI` | `0x47524902` |
+| graph.comparisons | `GRC` | `0x47524302` |
+
+Current writers emit version `2`. Readers accept legacy version `1` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current build is upgraded to version `2`.
 
 ### Edge Label Encoding (8-bit)
 

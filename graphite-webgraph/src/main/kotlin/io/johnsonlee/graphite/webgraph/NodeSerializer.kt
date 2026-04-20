@@ -29,7 +29,8 @@ internal object NodeSerializer {
     internal const val MAGIC_COMPARISONS = 0x47524300  // "GRC"
 
     /** Current format version (occupies the low byte of the 4-byte header int). */
-    const val FORMAT_VERSION: Int = 1
+    const val FORMAT_VERSION: Int = 2
+    private const val LEGACY_FORMAT_VERSION: Int = 1
 
     /** Write a 4-byte file header: 3-byte magic prefix | 1-byte version. */
     fun writeHeader(dos: DataOutputStream, magic: Int) {
@@ -43,7 +44,9 @@ internal object NodeSerializer {
         require(prefix == expectedMagic) {
             "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
         }
-        return h and 0xFF
+        val version = h and 0xFF
+        validateVersion(version, expectedMagic)
+        return version
     }
 
     /** Overload for [RandomAccessFile]. */
@@ -53,7 +56,16 @@ internal object NodeSerializer {
         require(prefix == expectedMagic) {
             "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
         }
-        return h and 0xFF
+        val version = h and 0xFF
+        validateVersion(version, expectedMagic)
+        return version
+    }
+
+    private fun validateVersion(version: Int, expectedMagic: Int) {
+        require(version == LEGACY_FORMAT_VERSION || version == FORMAT_VERSION) {
+            "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(16)}. " +
+                "This build supports versions $LEGACY_FORMAT_VERSION and $FORMAT_VERSION."
+        }
     }
 
     // Node type tags
@@ -329,7 +341,7 @@ internal object NodeSerializer {
         return tag
     }
 
-    fun readNode(dis: DataInputStream, strings: StringTable): Node {
+    fun readNode(dis: DataInputStream, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
         val id = NodeId(dis.readInt())
         return when (val tag = dis.readByte().toInt()) {
             TAG_INT_CONSTANT -> IntConstant(id, dis.readInt())
@@ -343,7 +355,7 @@ internal object NodeSerializer {
                 val enumType = TypeDescriptor(strings.get(dis.readInt()))
                 val enumName = strings.get(dis.readInt())
                 val argCount = dis.readInt()
-                val args = (0 until argCount).map { readAnyValue(dis, strings) }
+                val args = (0 until argCount).map { readAnyValue(dis, strings, formatVersion) }
                 EnumConstant(id, enumType, enumName, args)
             }
             TAG_LOCAL_VARIABLE -> {
@@ -388,7 +400,7 @@ internal object NodeSerializer {
                 val values = mutableMapOf<String, Any?>()
                 repeat(kvCount) {
                     val k = strings.get(dis.readInt())
-                    val v = readAnyValue(dis, strings)
+                    val v = readAnnotationValue(dis, strings, formatVersion)
                     values[k] = v
                 }
                 AnnotationNode(id, name, className, memberName, values)
@@ -463,7 +475,7 @@ internal object NodeSerializer {
     }
 
     fun loadMetadata(dis: DataInputStream, strings: StringTable): GraphMetadata {
-        readHeader(dis, MAGIC_METADATA)
+        val formatVersion = readHeader(dis, MAGIC_METADATA)
         // Methods
         val methodCount = dis.readInt()
         val methods = mutableMapOf<String, MethodDescriptor>()
@@ -496,7 +508,7 @@ internal object NodeSerializer {
         repeat(enumCount) {
             val key = strings.get(dis.readInt())
             val count = dis.readInt()
-            enumValues[key] = (0 until count).map { readAnyValue(dis, strings) }
+            enumValues[key] = (0 until count).map { readAnyValue(dis, strings, formatVersion) }
         }
 
         // Member annotations
@@ -512,7 +524,7 @@ internal object NodeSerializer {
                 val kv = mutableMapOf<String, Any?>()
                 repeat(kvCount) {
                     val k = strings.get(dis.readInt())
-                    val v = readAnyValue(dis, strings)
+                    val v = readAnnotationValue(dis, strings, formatVersion)
                     kv[k] = v
                 }
                 annotations[fqn] = kv
@@ -605,7 +617,7 @@ internal object NodeSerializer {
         }
     }
 
-    private fun readAnyValue(dis: DataInputStream, strings: StringTable): Any? = when (dis.readByte().toInt()) {
+    private fun readAnyValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? = when (dis.readByte().toInt()) {
         VAL_INT -> dis.readInt()
         VAL_LONG -> dis.readLong()
         VAL_STRING -> strings.get(dis.readInt())
@@ -614,8 +626,21 @@ internal object NodeSerializer {
         VAL_BOOLEAN -> dis.readBoolean()
         VAL_NULL -> null
         VAL_ENUM_REF -> EnumValueReference(strings.get(dis.readInt()), strings.get(dis.readInt()))
-        VAL_LIST -> List(dis.readInt()) { readAnyValue(dis, strings) }
+        VAL_LIST -> {
+            require(formatVersion >= FORMAT_VERSION) {
+                "Encountered list value in GraphStore format version $formatVersion. Re-save the graph with a current Graphite build."
+            }
+            List(dis.readInt()) { readAnyValue(dis, strings, formatVersion) }
+        }
         else -> strings.get(dis.readInt()) // fallback
+    }
+
+    private fun readAnnotationValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? {
+        return if (formatVersion == LEGACY_FORMAT_VERSION) {
+            strings.get(dis.readInt()).let { it.ifEmpty { null } }
+        } else {
+            readAnyValue(dis, strings, formatVersion)
+        }
     }
 }
 

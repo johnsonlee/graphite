@@ -145,10 +145,7 @@ private const val LABELS_FILE = "graph.labels"
             LoadMode.EAGER -> loadEager(dir)
             LoadMode.MAPPED -> { ensureNodeIndex(dir); loadMapped(dir) }
             LoadMode.AUTO -> {
-                val nodeCount = DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
-                    NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
-                    dis.readInt()
-                }
+                val (_, nodeCount) = readNodeDataHeader(dir)
                 if (nodeCount < MAPPED_THRESHOLD) {
                     loadEager(dir)
                 } else {
@@ -174,6 +171,7 @@ private const val LABELS_FILE = "graph.labels"
      * Load all nodes eagerly into JVM heap. Best for graphs < 1M nodes.
      */
     private fun loadEager(dir: Path): Graph {
+        val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
@@ -194,7 +192,7 @@ private const val LABELS_FILE = "graph.labels"
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
             val count = dis.readInt()
             repeat(count) {
-                val node = NodeSerializer.readNode(dis, stringTable)
+                val node = NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
                 nodesById[node.id.value] = node
             }
         }
@@ -217,6 +215,7 @@ private const val LABELS_FILE = "graph.labels"
     fun loadLazy(dir: Path): Graph {
         require(Files.isDirectory(dir)) { "Not a directory: $dir" }
 
+        val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
 
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
@@ -242,6 +241,7 @@ private const val LABELS_FILE = "graph.labels"
             forward = forward,
             backward = backward,
             nodeDataFile = dir.resolve(NODE_DATA_FILE).toFile(),
+            nodeDataVersion = nodeDataVersion,
             stringTable = stringTable,
             nodeOffsets = nodeIndex.nodeOffsets,
             nodeTypeIndex = nodeIndex.nodeTypeIndex,
@@ -263,6 +263,7 @@ private const val LABELS_FILE = "graph.labels"
     fun loadMapped(dir: Path): Graph {
         require(Files.isDirectory(dir)) { "Not a directory: $dir" }
 
+        val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
 
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
@@ -293,6 +294,7 @@ private const val LABELS_FILE = "graph.labels"
             forward = forward,
             backward = backward,
             mappedNodeData = mappedBuffer,
+            nodeDataVersion = nodeDataVersion,
             stringTable = stringTable,
             nodeOffsets = nodeIndex.nodeOffsets,
             nodeTypeIndex = nodeIndex.nodeTypeIndex,
@@ -546,7 +548,7 @@ private const val LABELS_FILE = "graph.labels"
     internal fun buildNodeIndex(nodeDataPath: Path, nodeIndexPath: Path, stringTable: StringTable) {
         // Stream directly: read nodedata, write nodeindex entry by entry (no intermediate list)
         RandomAccessFile(nodeDataPath.toFile(), "r").use { raf ->
-            NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
+            val nodeDataVersion = NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
             val count = raf.readInt()
             DataOutputStream(BufferedOutputStream(nodeIndexPath.toFile().outputStream())).use { dos ->
                 NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEINDEX)
@@ -564,9 +566,16 @@ private const val LABELS_FILE = "graph.labels"
                         override fun read(): Int = raf.read()
                         override fun read(b: ByteArray, off: Int, len: Int): Int = raf.read(b, off, len)
                     }) {}
-                    NodeSerializer.readNode(dis, stringTable)
+                    NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
                 }
             }
+        }
+    }
+
+    private fun readNodeDataHeader(dir: Path): Pair<Int, Int> {
+        return DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
+            val version = NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA)
+            version to dis.readInt()
         }
     }
 
