@@ -38,6 +38,7 @@ internal class MappedWebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: ImmutableGraph,
     private val mappedNodeData: MappedByteBuffer,
+    private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: LongArray,
     private val nodeTypeIndex: Map<Class<out Node>, List<Int>>,
@@ -162,7 +163,7 @@ internal class MappedWebGraphBackedGraph(
         val buf = mappedNodeData.duplicate()
         buf.position(offset.toInt())
         val dis = DataInputStream(ByteBufferInputStream(buf))
-        return NodeSerializer.readNode(dis, stringTable)
+        return NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
     }
 }
 

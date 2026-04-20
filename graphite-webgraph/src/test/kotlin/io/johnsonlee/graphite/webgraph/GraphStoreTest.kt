@@ -1640,6 +1640,17 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `readHeader with legacy version via DataInputStream succeeds`() {
+        val baos = ByteArrayOutputStream()
+        val dos = DataOutputStream(baos)
+        dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x01)
+        dos.flush()
+        val dis = DataInputStream(ByteArrayInputStream(baos.toByteArray()))
+        val version = NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA)
+        assertEquals(1, version)
+    }
+
+    @Test
     fun `readHeader with invalid magic via RandomAccessFile throws`() {
         val tmpFile = Files.createTempFile("bad-magic", ".bin")
         try {
@@ -1673,6 +1684,35 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `readHeader with legacy version via RandomAccessFile succeeds`() {
+        val tmpFile = Files.createTempFile("raf-unsupported-version", ".bin")
+        try {
+            DataOutputStream(tmpFile.toFile().outputStream()).use { dos ->
+                dos.writeInt(NodeSerializer.MAGIC_NODEDATA or 0x01)
+            }
+            RandomAccessFile(tmpFile.toFile(), "r").use { raf ->
+                val version = NodeSerializer.readHeader(raf, NodeSerializer.MAGIC_NODEDATA)
+                assertEquals(1, version)
+            }
+        } finally {
+            Files.deleteIfExists(tmpFile)
+        }
+    }
+
+    @Test
+    fun `readHeader with unknown version throws`() {
+        val baos = ByteArrayOutputStream()
+        val dos = DataOutputStream(baos)
+        dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x03)
+        dos.flush()
+        val dis = DataInputStream(ByteArrayInputStream(baos.toByteArray()))
+        val error = assertFailsWith<IllegalArgumentException> {
+            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA)
+        }
+        assertTrue(error.message!!.contains("Unsupported GraphStore format version 3"))
+    }
+
     // ========================================================================
     // Invalid magic in metadata file on load
     // ========================================================================
@@ -1693,6 +1733,120 @@ class GraphStoreTest {
             }
         } finally {
             dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `legacy v1 annotation node decodes as string values`() {
+        val dir = Files.createTempDirectory("legacy-node-strings")
+        try {
+            val strings = StringTable.build(
+                listOf("Lcom/example/Foo;", "com.example.Foo", "bar", "value", "hello"),
+                dir
+            )
+            val baos = ByteArrayOutputStream()
+            DataOutputStream(baos).use { dos ->
+                dos.writeInt(42)
+                dos.writeByte(13)
+                dos.writeInt(strings.indexOf("Lcom/example/Foo;"))
+                dos.writeInt(strings.indexOf("com.example.Foo"))
+                dos.writeInt(strings.indexOf("bar"))
+                dos.writeInt(1)
+                dos.writeInt(strings.indexOf("value"))
+                dos.writeInt(strings.indexOf("hello"))
+            }
+            val node = NodeSerializer.readNode(
+                DataInputStream(ByteArrayInputStream(baos.toByteArray())),
+                strings,
+                1
+            ) as AnnotationNode
+            assertEquals("hello", node.values["value"])
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `legacy v1 metadata decodes annotation values as strings`() {
+        val dir = Files.createTempDirectory("legacy-metadata-strings")
+        try {
+            val strings = StringTable.build(
+                listOf("com.example.Foo#bar", "javax.annotation.Nullable", "value", "hello"),
+                dir
+            )
+            val baos = ByteArrayOutputStream()
+            DataOutputStream(baos).use { dos ->
+                dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x01)
+                dos.writeInt(0)
+                dos.writeInt(0)
+                dos.writeInt(0)
+                dos.writeInt(0)
+                dos.writeInt(1)
+                dos.writeInt(strings.indexOf("com.example.Foo#bar"))
+                dos.writeInt(1)
+                dos.writeInt(strings.indexOf("javax.annotation.Nullable"))
+                dos.writeInt(1)
+                dos.writeInt(strings.indexOf("value"))
+                dos.writeInt(strings.indexOf("hello"))
+                dos.writeInt(0)
+            }
+            val metadata = NodeSerializer.loadMetadata(
+                DataInputStream(ByteArrayInputStream(baos.toByteArray())),
+                strings
+            )
+            assertEquals(
+                "hello",
+                metadata.memberAnnotations["com.example.Foo#bar"]!!["javax.annotation.Nullable"]!!["value"]
+            )
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `legacy v1 graph directory migrates end to end`() {
+        val fixture = createLegacyV1GraphDir()
+        try {
+            val loaded = GraphStore.load(fixture.dir)
+            val loadedNode = loaded.node(fixture.annotationNode.id) as AnnotationNode
+            assertEquals("hello", loadedNode.values["value"])
+            assertEquals(
+                "hello",
+                loaded.memberAnnotations("com.example.Foo", "bar")["javax.annotation.Nullable"]!!["value"]
+            )
+
+            Files.deleteIfExists(fixture.dir.resolve("graph.nodeindex"))
+            val mapped = GraphStore.load(fixture.dir, GraphStore.LoadMode.MAPPED)
+            try {
+                val mappedNode = mapped.node(fixture.annotationNode.id) as AnnotationNode
+                assertEquals("hello", mappedNode.values["value"])
+            } finally {
+                (mapped as Closeable).close()
+            }
+
+            val migratedDir = Files.createTempDirectory("legacy-v2-migrated")
+            try {
+                GraphStore.save(loaded, migratedDir)
+
+                DataInputStream(migratedDir.resolve("graph.nodedata").toFile().inputStream()).use { dis ->
+                    assertEquals(2, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA))
+                }
+                DataInputStream(migratedDir.resolve("graph.metadata").toFile().inputStream()).use { dis ->
+                    assertEquals(2, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA))
+                }
+
+                val migrated = GraphStore.load(migratedDir)
+                val migratedNode = migrated.node(fixture.annotationNode.id) as AnnotationNode
+                assertEquals("hello", migratedNode.values["value"])
+                assertEquals(
+                    "hello",
+                    migrated.memberAnnotations("com.example.Foo", "bar")["javax.annotation.Nullable"]!!["value"]
+                )
+            } finally {
+                migratedDir.toFile().deleteRecursively()
+            }
+        } finally {
+            fixture.dir.toFile().deleteRecursively()
         }
     }
 
@@ -1929,5 +2083,163 @@ class GraphStoreTest {
         builder.addMemberAnnotation("com.example.Foo", "bar", "javax.annotation.Nullable", emptyMap())
 
         return builder.build()
+    }
+
+    private data class LegacyV1Fixture(
+        val dir: Path,
+        val method: MethodDescriptor,
+        val annotationNode: AnnotationNode
+    )
+
+    private fun createLegacyV1GraphDir(): LegacyV1Fixture {
+        val dir = Files.createTempDirectory("legacy-v1-graph")
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Foo"),
+            "bar",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val returnNode = ReturnNode(NodeId(1), method)
+        val annotationNode = AnnotationNode(
+            NodeId(2),
+            "javax.annotation.Nullable",
+            "com.example.Foo",
+            "bar",
+            mapOf("value" to "hello")
+        )
+
+        val builder = DefaultGraph.Builder()
+        builder.addMethod(method)
+        builder.addNode(returnNode)
+        builder.addNode(annotationNode)
+        builder.addMemberAnnotation("com.example.Foo", "bar", "javax.annotation.Nullable", annotationNode.values)
+        GraphStore.save(builder.build(), dir)
+
+        val strings = StringTable.build(
+            setOf(
+                method.declaringClass.className,
+                method.name,
+                method.returnType.className,
+                annotationNode.name,
+                annotationNode.className,
+                annotationNode.memberName,
+                "com.example.Foo#bar",
+                "javax.annotation.Nullable",
+                "value",
+                "hello"
+            ),
+            dir
+        )
+        writeLegacyV1NodeData(dir, method, returnNode, annotationNode, strings)
+        writeLegacyV1Metadata(dir, method, strings)
+        writeLegacyV1NodeIndex(dir, method, returnNode, annotationNode, strings)
+        writeLegacyV1Comparisons(dir)
+
+        return LegacyV1Fixture(dir, method, annotationNode)
+    }
+
+    private fun writeLegacyV1NodeData(
+        dir: Path,
+        method: MethodDescriptor,
+        returnNode: ReturnNode,
+        annotationNode: AnnotationNode,
+        strings: StringTable
+    ) {
+        DataOutputStream(dir.resolve("graph.nodedata").toFile().outputStream()).use { dos ->
+            dos.writeInt(NodeSerializer.MAGIC_NODEDATA or 0x01)
+            dos.writeInt(2)
+            dos.write(legacyV1ReturnNodeBytes(returnNode, method, strings))
+            dos.write(legacyV1AnnotationNodeBytes(annotationNode, strings))
+        }
+    }
+
+    private fun legacyV1ReturnNodeBytes(
+        returnNode: ReturnNode,
+        method: MethodDescriptor,
+        strings: StringTable
+    ): ByteArray {
+        val baos = ByteArrayOutputStream()
+        DataOutputStream(baos).use { dos ->
+            dos.writeInt(returnNode.id.value)
+            dos.writeByte(11)
+            writeLegacyV1MethodDescriptor(dos, method, strings)
+            dos.writeBoolean(false)
+        }
+        return baos.toByteArray()
+    }
+
+    private fun legacyV1AnnotationNodeBytes(annotationNode: AnnotationNode, strings: StringTable): ByteArray {
+        val baos = ByteArrayOutputStream()
+        DataOutputStream(baos).use { dos ->
+            dos.writeInt(annotationNode.id.value)
+            dos.writeByte(13)
+            dos.writeInt(strings.indexOf(annotationNode.name))
+            dos.writeInt(strings.indexOf(annotationNode.className))
+            dos.writeInt(strings.indexOf(annotationNode.memberName))
+            dos.writeInt(annotationNode.values.size)
+            for ((k, v) in annotationNode.values) {
+                dos.writeInt(strings.indexOf(k))
+                dos.writeInt(strings.indexOf(v?.toString() ?: ""))
+            }
+        }
+        return baos.toByteArray()
+    }
+
+    private fun writeLegacyV1Metadata(dir: Path, method: MethodDescriptor, strings: StringTable) {
+        DataOutputStream(dir.resolve("graph.metadata").toFile().outputStream()).use { dos ->
+            dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x01)
+            dos.writeInt(1)
+            writeLegacyV1MethodDescriptor(dos, method, strings)
+            dos.writeInt(0)
+            dos.writeInt(0)
+            dos.writeInt(0)
+            dos.writeInt(1)
+            dos.writeInt(strings.indexOf("com.example.Foo#bar"))
+            dos.writeInt(1)
+            dos.writeInt(strings.indexOf("javax.annotation.Nullable"))
+            dos.writeInt(1)
+            dos.writeInt(strings.indexOf("value"))
+            dos.writeInt(strings.indexOf("hello"))
+            dos.writeInt(0)
+        }
+    }
+
+    private fun writeLegacyV1NodeIndex(
+        dir: Path,
+        method: MethodDescriptor,
+        returnNode: ReturnNode,
+        annotationNode: AnnotationNode,
+        strings: StringTable
+    ) {
+        val returnNodeSize = legacyV1ReturnNodeBytes(returnNode, method, strings).size.toLong()
+        DataOutputStream(dir.resolve("graph.nodeindex").toFile().outputStream()).use { dos ->
+            dos.writeInt(NodeSerializer.MAGIC_NODEINDEX or 0x01)
+            dos.writeInt(2)
+            dos.writeInt(returnNode.id.value)
+            dos.writeByte(11)
+            dos.writeLong(8L)
+            dos.writeInt(annotationNode.id.value)
+            dos.writeByte(13)
+            dos.writeLong(8L + returnNodeSize)
+        }
+    }
+
+    private fun writeLegacyV1Comparisons(dir: Path) {
+        DataOutputStream(dir.resolve("graph.comparisons").toFile().outputStream()).use { dos ->
+            dos.writeInt(NodeSerializer.MAGIC_COMPARISONS or 0x01)
+            dos.writeInt(0)
+        }
+    }
+
+    private fun writeLegacyV1MethodDescriptor(
+        dos: DataOutputStream,
+        method: MethodDescriptor,
+        strings: StringTable
+    ) {
+        dos.writeInt(strings.indexOf(method.declaringClass.className))
+        dos.writeInt(strings.indexOf(method.name))
+        dos.writeInt(method.parameterTypes.size)
+        method.parameterTypes.forEach { dos.writeInt(strings.indexOf(it.className)) }
+        dos.writeInt(strings.indexOf(method.returnType.className))
     }
 }

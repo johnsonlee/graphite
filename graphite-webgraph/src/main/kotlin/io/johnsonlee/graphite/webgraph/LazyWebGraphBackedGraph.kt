@@ -31,6 +31,7 @@ internal class LazyWebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: ImmutableGraph,
     private val nodeDataFile: File,
+    private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: LongArray,
     private val nodeTypeIndex: Map<Class<out Node>, List<Int>>,
@@ -165,7 +166,7 @@ internal class LazyWebGraphBackedGraph(
                 override fun read(): Int = raf.read()
                 override fun read(b: ByteArray, off: Int, len: Int): Int = raf.read(b, off, len)
             })
-            return NodeSerializer.readNode(dis, stringTable)
+            return NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
         }
     }
 }
