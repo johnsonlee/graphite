@@ -131,8 +131,8 @@ Use both micro and end-to-end benchmarks. A change is not accepted based on synt
 
 ### Results Summary
 
-| PR | What | Synthetic save (10M, 4g) | Production (4.1M) | |
-|----|------|--------------------------|-------------------|-|
+| Version / PR | What | Synthetic save (10M, 4g) | Production (4.1M) | |
+|--------------|------|--------------------------|-------------------|-|
 | [#53](https://github.com/johnsonlee/graphite/pull/53) | Baseline (flat arrays for load) | 84s | real 15m57s | |
 | [#55](https://github.com/johnsonlee/graphite/pull/55) | Flat single-file format | no change | — | :x: closed |
 | [#56](https://github.com/johnsonlee/graphite/pull/56) | Inline nodeindex | **16s (-81%)** | **real 8m31s (-47%)** | :white_check_mark: |
@@ -141,6 +141,15 @@ Use both micro and end-to-end benchmarks. A change is not accepted based on synt
 | [#65](https://github.com/johnsonlee/graphite/pull/65) | Buffer MmapGraphBuilder I/O | — | **real 5m43s (-33%), sys -44%** | :white_check_mark: |
 | [#66](https://github.com/johnsonlee/graphite/pull/66) | MmapGraph reads via mmap | — | **real 4m04s (-29%), sys -43%** | :white_check_mark: |
 | [#67](https://github.com/johnsonlee/graphite/pull/67) | FastArchiveAnalysisInputLocation | — | real 9m41s (+138%), user +76% | :x: reverted |
+| `1.1.0` | Current release, same production benchmark | — | **real 1m58s, user 2m18s, sys 0m48s** | :white_check_mark: |
+
+Compared with the historical best published numbers, `1.1.0` improves:
+
+| Metric | Historical best | `1.1.0` | Change |
+|--------|-----------------|---------|--------|
+| real | 4m04s ([#66](https://github.com/johnsonlee/graphite/pull/66)) | **1m58s** | **-2m06s (-51.6%)** |
+| user | 8m00s ([#65](https://github.com/johnsonlee/graphite/pull/65)) | **2m18s** | **-5m42s (-71.3%)** |
+| sys | 2m46s ([#65](https://github.com/johnsonlee/graphite/pull/65)) | **0m48s** | **-1m58s (-71.1%)** |
 
 ### How Each Bottleneck Was Found and Fixed
 
