@@ -517,6 +517,18 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `labels returns correct labels for ResourceValueNode`() {
+        val node = ResourceValueNode(NodeId.next(), "application.yml", "server.port", 8080, "yaml")
+        assertEquals(listOf("ResourceValueNode", "ResourceValue", "Resource"), CypherFunctions.call("labels", listOf(node)))
+    }
+
+    @Test
+    fun `labels returns correct labels for ResourceFileNode`() {
+        val node = ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml")
+        assertEquals(listOf("ResourceFileNode", "ResourceFile"), CypherFunctions.call("labels", listOf(node)))
+    }
+
+    @Test
     fun `labels returns empty for non-node`() {
         assertEquals(emptyList<String>(), CypherFunctions.call("labels", listOf("not a node")))
     }
@@ -529,6 +541,7 @@ class CypherFunctionsTest {
         assertEquals("CALL", CypherFunctions.call("type", listOf(CallEdge(from, to, false))))
         assertEquals("TYPE", CypherFunctions.call("type", listOf(TypeEdge(from, to, TypeRelation.EXTENDS))))
         assertEquals("CONTROL_FLOW", CypherFunctions.call("type", listOf(ControlFlowEdge(from, to, ControlFlowKind.SEQUENTIAL))))
+        assertEquals("RESOURCE_LOOKUP", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.LOOKUP))))
     }
 
     @Test

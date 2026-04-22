@@ -157,6 +157,14 @@ class MmapGraphBuilderTest {
     }
 
     @Test
+    fun `round-trip ResourceFileNode`() {
+        val id = NodeId.next()
+        val node = ResourceFileNode(id, "config/application.properties", "BOOT-INF/classes", "properties", "dev")
+        val graph = MmapGraphBuilder().addNode(node).build()
+        assertEquals(node, graph.node(id))
+    }
+
+    @Test
     fun `round-trip CallSiteNode with receiver and arguments`() {
         val id = NodeId.next()
         val receiverId = NodeId.next()
@@ -247,6 +255,15 @@ class MmapGraphBuilderTest {
         assertEquals(node, restored)
     }
 
+    @Test
+    fun `round-trip ResourceValueNode`() {
+        val id = NodeId.next()
+        val node = ResourceValueNode(id, "application.yml", "server.port", 8080, "yaml", "dev")
+        val graph = MmapGraphBuilder().addNode(node).build()
+        val restored = graph.node(id) as ResourceValueNode
+        assertEquals(node, restored)
+    }
+
     // ========================================================================
     // Round-trip: every edge type
     // ========================================================================
@@ -266,6 +283,24 @@ class MmapGraphBuilderTest {
             val edges = graph.outgoing(from).toList()
             assertEquals(1, edges.size, "Failed for kind=$kind")
             assertEquals(edge, edges[0], "Failed for kind=$kind")
+        }
+    }
+
+    @Test
+    fun `round-trip ResourceEdge for each relation`() {
+        for (relation in ResourceRelation.entries) {
+            NodeId.reset()
+            val from = NodeId.next()
+            val to = NodeId.next()
+            val edge = ResourceEdge(from, to, relation)
+            val graph = MmapGraphBuilder()
+                .addNode(ResourceFileNode(from, "application.properties", "test", "properties", null))
+                .addNode(ResourceValueNode(to, "application.properties", "feature.mode", "shadow", "properties", null))
+                .addEdge(edge)
+                .build()
+            val edges = graph.outgoing(from).toList()
+            assertEquals(1, edges.size, "Failed for relation=$relation")
+            assertEquals(edge, edges[0], "Failed for relation=$relation")
         }
     }
 

@@ -318,6 +318,7 @@ class ExpressionEvaluator {
                 "kind" -> edge.kind.name
                 else -> null
             }
+            is ResourceEdge -> if (prop == "kind") edge.kind.name else null
         }
     }
 

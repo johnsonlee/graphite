@@ -195,6 +195,15 @@ class GraphiteQuery(private val graph: Graph) {
                         is StringConstant -> types.add(TypeDescriptor("java.lang.String"))
                         is EnumConstant -> types.add(sourceNode.enumType)
                         is NullConstant -> {} // null doesn't contribute a type
+                        is ResourceValueNode -> when (sourceNode.value) {
+                            is Int -> types.add(TypeDescriptor("java.lang.Integer"))
+                            is Long -> types.add(TypeDescriptor("java.lang.Long"))
+                            is Float -> types.add(TypeDescriptor("java.lang.Float"))
+                            is Double -> types.add(TypeDescriptor("java.lang.Double"))
+                            is Boolean -> types.add(TypeDescriptor("java.lang.Boolean"))
+                            is String -> types.add(TypeDescriptor("java.lang.String"))
+                            else -> {}
+                        }
                     }
                 }
                 else -> {}

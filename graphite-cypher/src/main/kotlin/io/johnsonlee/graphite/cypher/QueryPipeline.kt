@@ -407,10 +407,13 @@ class QueryPipeline(private val graph: Graph) {
         rel: PatternElement.RelationshipPattern,
         bindings: Map<String, Any?>
     ): Boolean {
-        // Check relationship type filter (multiple types means OR)
-        if (rel.types.size > 1) {
+        if (rel.types.isNotEmpty()) {
             val edgeTypeName = CypherFunctions.type(edge)
-            if (edgeTypeName == null || rel.types.none { it.equals(edgeTypeName, ignoreCase = true) }) {
+            val typeMatches = rel.types.any { requested ->
+                requested.equals(edgeTypeName, ignoreCase = true) ||
+                    (edge is ResourceEdge && requested.equals("RESOURCE", ignoreCase = true))
+            }
+            if (!typeMatches) {
                 return false
             }
         }
@@ -427,6 +430,7 @@ class QueryPipeline(private val graph: Graph) {
                 }
                 is TypeEdge -> if (key == "kind") edge.kind.name else null
                 is ControlFlowEdge -> if (key == "kind") edge.kind.name else null
+                is ResourceEdge -> if (key == "kind") edge.kind.name else null
             }
             edgeValue == exprValue
         }

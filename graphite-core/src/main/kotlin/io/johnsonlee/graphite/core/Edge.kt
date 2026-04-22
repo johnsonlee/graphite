@@ -33,7 +33,30 @@ enum class DataFlowKind {
     ARRAY_STORE,      // Value stored to array
     ARRAY_LOAD,       // Value loaded from array
     CAST,             // Type cast
-    PHI               // SSA phi node merge
+    PHI,              // SSA phi node merge
+    RESOURCE_READ     // Legacy resource/config read edge kind retained for v2 compatibility
+}
+
+/**
+ * Resource graph relationship.
+ *
+ * These edges model resource structure and resource access separately from
+ * ordinary dataflow so Cypher can query them directly without overloading
+ * [DataFlowEdge].
+ */
+data class ResourceEdge(
+    override val from: NodeId,
+    override val to: NodeId,
+    val kind: ResourceRelation
+) : Edge
+
+enum class ResourceRelation {
+    CONTAINS,           // Legacy ResourceFileNode -> ResourceValueNode structure edge
+    OPENS,              // ResourceFileNode -> CallSiteNode
+    LOADS,              // ResourceFileNode -> CallSiteNode for parsers/loaders/bundles
+    BUNDLE_CANDIDATE,   // ResourceFileNode -> CallSiteNode for ResourceBundle candidate resolution
+    LOOKUP,             // ResourceFileNode -> CallSiteNode/FieldNode
+    ENUMERATES          // ResourceFileNode -> CallSiteNode for getKeys()/enumeration-style APIs
 }
 
 /**

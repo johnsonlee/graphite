@@ -251,6 +251,48 @@ class NodePropertyAccessorTest {
     }
 
     @Test
+    fun `ResourceValueNode properties`() {
+        val node = ResourceValueNode(NodeId(400), "application.yml", "server.port", 8080, "yaml")
+        assertEquals("application.yml", NodePropertyAccessor.getProperty(node, "path"))
+        assertEquals("server.port", NodePropertyAccessor.getProperty(node, "key"))
+        assertEquals(8080, NodePropertyAccessor.getProperty(node, "value"))
+        assertEquals("yaml", NodePropertyAccessor.getProperty(node, "format"))
+        assertNull(NodePropertyAccessor.getProperty(node, "profile"))
+    }
+
+    @Test
+    fun `ResourceFileNode properties`() {
+        val node = ResourceFileNode(NodeId(399), "application.yml", "BOOT-INF/classes", "yaml", "prod")
+        assertEquals("application.yml", NodePropertyAccessor.getProperty(node, "path"))
+        assertEquals("BOOT-INF/classes", NodePropertyAccessor.getProperty(node, "source"))
+        assertEquals("yaml", NodePropertyAccessor.getProperty(node, "format"))
+        assertEquals("prod", NodePropertyAccessor.getProperty(node, "profile"))
+    }
+
+    @Test
+    fun `getAllProperties for ResourceValueNode`() {
+        val node = ResourceValueNode(NodeId(401), "config/application.properties", "feature.x.enabled", true, "properties", "dev")
+        val props = NodePropertyAccessor.getAllProperties(node)
+        assertEquals(401, props["id"])
+        assertEquals("config/application.properties", props["path"])
+        assertEquals("feature.x.enabled", props["key"])
+        assertEquals(true, props["value"])
+        assertEquals("properties", props["format"])
+        assertEquals("dev", props["profile"])
+    }
+
+    @Test
+    fun `getAllProperties for ResourceFileNode`() {
+        val node = ResourceFileNode(NodeId(398), "config/application.properties", "nested.jar", "properties", "dev")
+        val props = NodePropertyAccessor.getAllProperties(node)
+        assertEquals(398, props["id"])
+        assertEquals("config/application.properties", props["path"])
+        assertEquals("nested.jar", props["source"])
+        assertEquals("properties", props["format"])
+        assertEquals("dev", props["profile"])
+    }
+
+    @Test
     fun `resolveNodeLabel maps standard names`() {
         assertEquals(CallSiteNode::class.java, NodePropertyAccessor.resolveNodeLabel("CallSiteNode"))
         assertEquals(CallSiteNode::class.java, NodePropertyAccessor.resolveNodeLabel("callsite"))
@@ -270,6 +312,9 @@ class NodePropertyAccessorTest {
         assertEquals(ParameterNode::class.java, NodePropertyAccessor.resolveNodeLabel("parameter"))
         assertEquals(ReturnNode::class.java, NodePropertyAccessor.resolveNodeLabel("ReturnNode"))
         assertEquals(ReturnNode::class.java, NodePropertyAccessor.resolveNodeLabel("return"))
+        assertEquals(ResourceFileNode::class.java, NodePropertyAccessor.resolveNodeLabel("ResourceFile"))
+        assertEquals(ResourceValueNode::class.java, NodePropertyAccessor.resolveNodeLabel("ResourceValueNode"))
+        assertEquals(ResourceValueNode::class.java, NodePropertyAccessor.resolveNodeLabel("resource"))
         assertEquals(LocalVariable::class.java, NodePropertyAccessor.resolveNodeLabel("LocalVariable"))
         assertEquals(LocalVariable::class.java, NodePropertyAccessor.resolveNodeLabel("local"))
         assertEquals(Node::class.java, NodePropertyAccessor.resolveNodeLabel("node"))
@@ -296,6 +341,9 @@ class NodePropertyAccessorTest {
         assertEquals(TypeEdge::class.java, NodePropertyAccessor.resolveEdgeType("TYPE"))
         assertEquals(ControlFlowEdge::class.java, NodePropertyAccessor.resolveEdgeType("CONTROL_FLOW"))
         assertEquals(ControlFlowEdge::class.java, NodePropertyAccessor.resolveEdgeType("CONTROLFLOW"))
+        assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE"))
+        assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE_LOOKUP"))
+        assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE_CONTAINS"))
     }
 
     @Test
@@ -312,6 +360,8 @@ class NodePropertyAccessorTest {
         assertEquals("FieldNode", NodePropertyAccessor.nodeTypeName(FieldNode(NodeId.next(), FieldDescriptor(type, "f", intType), false)))
         assertEquals("ParameterNode", NodePropertyAccessor.nodeTypeName(ParameterNode(NodeId.next(), 0, intType, method)))
         assertEquals("ReturnNode", NodePropertyAccessor.nodeTypeName(ReturnNode(NodeId.next(), method)))
+        assertEquals("ResourceFileNode", NodePropertyAccessor.nodeTypeName(ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml")))
+        assertEquals("ResourceValueNode", NodePropertyAccessor.nodeTypeName(ResourceValueNode(NodeId.next(), "application.yml", "k", "v", "yaml")))
         assertEquals("LocalVariable", NodePropertyAccessor.nodeTypeName(LocalVariable(NodeId.next(), "x", intType, method)))
     }
 

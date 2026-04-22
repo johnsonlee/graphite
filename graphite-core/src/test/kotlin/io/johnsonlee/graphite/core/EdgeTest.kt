@@ -32,8 +32,25 @@ class EdgeTest {
     }
 
     @Test
-    fun `DataFlowKind has 9 values`() {
-        assertEquals(9, DataFlowKind.entries.size)
+    fun `DataFlowKind has 10 values`() {
+        assertEquals(10, DataFlowKind.entries.size)
+    }
+
+    @Test
+    fun `ResourceEdge with all relation values`() {
+        val from = NodeId.next()
+        val to = NodeId.next()
+        ResourceRelation.entries.forEach { kind ->
+            val edge = ResourceEdge(from, to, kind)
+            assertEquals(from, edge.from)
+            assertEquals(to, edge.to)
+            assertEquals(kind, edge.kind)
+        }
+    }
+
+    @Test
+    fun `ResourceRelation has 6 values`() {
+        assertEquals(6, ResourceRelation.entries.size)
     }
 
     // ========================================================================

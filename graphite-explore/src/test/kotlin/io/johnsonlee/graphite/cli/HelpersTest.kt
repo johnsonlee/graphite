@@ -19,6 +19,8 @@ class HelpersTest {
         private val callSiteNode = CallSiteNode(NodeId.next(), barMethod, bazMethod, 10, null, listOf(paramNode.id))
         private val enumConstNode = EnumConstant(NodeId.next(), TypeDescriptor("com.example.Status"), "ACTIVE", listOf(1, "active"))
         private val fieldNode = FieldNode(NodeId.next(), FieldDescriptor(fooType, "name", TypeDescriptor("java.lang.String")), false)
+        private val resourceFileNode = ResourceFileNode(NodeId.next(), "application.yml", "test-fixture", "yaml", "dev")
+        private val resourceValueNode = ResourceValueNode(NodeId.next(), "application.yml", "server.port", 8080, "yaml", "dev")
     }
 
     // ========================================================================
@@ -59,6 +61,18 @@ class HelpersTest {
     fun `resolveNodeType maps LocalVariable`() {
         assertEquals(LocalVariable::class.java, resolveNodeType("local"))
         assertEquals(LocalVariable::class.java, resolveNodeType("LocalVariable"))
+    }
+
+    @Test
+    fun `resolveNodeType maps ResourceValueNode`() {
+        assertEquals(ResourceValueNode::class.java, resolveNodeType("resource"))
+        assertEquals(ResourceValueNode::class.java, resolveNodeType("ResourceValueNode"))
+    }
+
+    @Test
+    fun `resolveNodeType maps ResourceFileNode`() {
+        assertEquals(ResourceFileNode::class.java, resolveNodeType("resourcefile"))
+        assertEquals(ResourceFileNode::class.java, resolveNodeType("ResourceFileNode"))
     }
 
     @Test
@@ -174,6 +188,22 @@ class HelpersTest {
         assertTrue(result.startsWith("NullConstant["), "Should start with 'NullConstant[', got: $result")
     }
 
+    @Test
+    fun `formatNode formats ResourceValueNode`() {
+        val result = formatNode(resourceValueNode)
+        assertTrue(result.startsWith("ResourceValue["), "Should start with 'ResourceValue[', got: $result")
+        assertTrue(result.contains("server.port"), "Should contain resource key, got: $result")
+        assertTrue(result.contains("8080"), "Should contain resource value, got: $result")
+    }
+
+    @Test
+    fun `formatNode formats ResourceFileNode`() {
+        val result = formatNode(resourceFileNode)
+        assertTrue(result.startsWith("ResourceFile["), "Should start with 'ResourceFile[', got: $result")
+        assertTrue(result.contains("application.yml"), "Should contain resource path, got: $result")
+        assertTrue(result.contains("test-fixture"), "Should contain resource source, got: $result")
+    }
+
     // ========================================================================
     // nodeToMap
     // ========================================================================
@@ -212,6 +242,27 @@ class HelpersTest {
         assertEquals("EnumConstant", map["type"])
         assertEquals("com.example.Status", map["enumType"])
         assertEquals("ACTIVE", map["enumName"])
+    }
+
+    @Test
+    fun `nodeToMap for ResourceValueNode includes correct fields`() {
+        val map = nodeToMap(resourceValueNode)
+        assertEquals("ResourceValueNode", map["type"])
+        assertEquals("application.yml", map["path"])
+        assertEquals("server.port", map["key"])
+        assertEquals(8080, map["value"])
+        assertEquals("yaml", map["format"])
+        assertEquals("dev", map["profile"])
+    }
+
+    @Test
+    fun `nodeToMap for ResourceFileNode includes correct fields`() {
+        val map = nodeToMap(resourceFileNode)
+        assertEquals("ResourceFileNode", map["type"])
+        assertEquals("application.yml", map["path"])
+        assertEquals("test-fixture", map["source"])
+        assertEquals("yaml", map["format"])
+        assertEquals("dev", map["profile"])
     }
 
     @Test
@@ -401,5 +452,15 @@ class HelpersTest {
         assertEquals(n2Id.value, map["to"])
         assertEquals("ControlFlow", map["type"])
         assertEquals("BRANCH_TRUE", map["kind"])
+    }
+
+    @Test
+    fun `edgeToMap for ResourceEdge includes correct fields`() {
+        val edge = ResourceEdge(resourceFileNode.id, resourceValueNode.id, ResourceRelation.CONTAINS)
+        val map = edgeToMap(edge)
+        assertEquals(resourceFileNode.id.value, map["from"])
+        assertEquals(resourceValueNode.id.value, map["to"])
+        assertEquals("Resource", map["type"])
+        assertEquals("CONTAINS", map["kind"])
     }
 }

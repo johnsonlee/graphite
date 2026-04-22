@@ -131,6 +131,9 @@ private const val LABELS_FILE = "graph.labels"
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
         }
+
+        // 8. Save persisted text resources for loaded-graph access
+        PersistedResourceStore.save(graph, dir)
     }
 
     /**
@@ -201,7 +204,17 @@ private const val LABELS_FILE = "graph.labels"
             NodeSerializer.loadMetadata(dis, stringTable)
         }
 
-        return WebGraphBackedGraph(forward, backward, nodesById, labelBytes, cumulativeOutdeg, comparisonMap, metadata)
+        return WebGraphBackedGraph(
+            forward,
+            backward,
+            nodesById,
+            nodeDataVersion,
+            labelBytes,
+            cumulativeOutdeg,
+            comparisonMap,
+            metadata,
+            PersistedResourceStore.load(dir)
+        )
     }
 
     /**
@@ -248,7 +261,8 @@ private const val LABELS_FILE = "graph.labels"
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
-            metadata = metadata
+            metadata = metadata,
+            resources = PersistedResourceStore.load(dir)
         )
     }
 
@@ -301,7 +315,8 @@ private const val LABELS_FILE = "graph.labels"
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
-            metadata = metadata
+            metadata = metadata,
+            resources = PersistedResourceStore.load(dir)
         )
     }
 
@@ -523,7 +538,9 @@ private const val LABELS_FILE = "graph.labels"
             10 to ParameterNode::class.java,
             11 to ReturnNode::class.java,
             12 to CallSiteNode::class.java,
-            13 to AnnotationNode::class.java
+            13 to AnnotationNode::class.java,
+            14 to ResourceValueNode::class.java,
+            15 to ResourceFileNode::class.java
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue

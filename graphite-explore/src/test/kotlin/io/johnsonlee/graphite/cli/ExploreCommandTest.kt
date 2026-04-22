@@ -7,9 +7,12 @@ import io.javalin.Javalin
 import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
 import io.johnsonlee.graphite.webgraph.GraphStore
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URI
@@ -41,11 +44,33 @@ class ExploreCommandTest {
         private lateinit var callSiteNode: CallSiteNode
         private lateinit var enumConstNode: EnumConstant
         private lateinit var fieldNode: FieldNode
+        private lateinit var resourceFileNode: ResourceFileNode
+        private lateinit var propertyFileNode: ResourceFileNode
+        private val resources = mapOf(
+            "application.yml" to "server:\n  port: 8080\nfeature:\n  enabled: true\n",
+            "config/application.properties" to "feature.mode=shadow\n"
+        )
+
+        private class TestResourceAccessor(
+            private val resources: Map<String, String>
+        ) : ResourceAccessor {
+            override fun list(pattern: String): Sequence<ResourceEntry> {
+                val matcher = java.nio.file.FileSystems.getDefault().getPathMatcher("glob:$pattern")
+                return resources.keys.asSequence()
+                    .filter { matcher.matches(Path.of(it)) }
+                    .map { ResourceEntry(it, "test-fixture") }
+            }
+
+            override fun open(path: String) =
+                resources[path]?.let { ByteArrayInputStream(it.toByteArray()) }
+                    ?: throw java.io.IOException("Resource not found: $path")
+        }
 
         @BeforeClass
         @JvmStatic
         fun setUp() {
             val builder = DefaultGraph.Builder()
+                .setResources(TestResourceAccessor(resources))
 
             paramNode = ParameterNode(NodeId.next(), 0, TypeDescriptor("int"), barMethod)
             localNode = LocalVariable(NodeId.next(), "x", TypeDescriptor("int"), barMethod)
@@ -55,6 +80,18 @@ class ExploreCommandTest {
             callSiteNode = CallSiteNode(NodeId.next(), barMethod, bazMethod, 10, null, listOf(paramNode.id))
             enumConstNode = EnumConstant(NodeId.next(), TypeDescriptor("com.example.Status"), "ACTIVE", listOf(1, "active"))
             fieldNode = FieldNode(NodeId.next(), FieldDescriptor(fooType, "name", TypeDescriptor("java.lang.String")), false)
+            resourceFileNode = ResourceFileNode(
+                NodeId.next(),
+                "application.yml",
+                "test-fixture",
+                "yaml"
+            )
+            propertyFileNode = ResourceFileNode(
+                NodeId.next(),
+                "config/application.properties",
+                "test-fixture",
+                "properties"
+            )
 
             builder.addNode(paramNode)
             builder.addNode(localNode)
@@ -64,10 +101,13 @@ class ExploreCommandTest {
             builder.addNode(callSiteNode)
             builder.addNode(enumConstNode)
             builder.addNode(fieldNode)
+            builder.addNode(resourceFileNode)
+            builder.addNode(propertyFileNode)
 
             builder.addEdge(DataFlowEdge(paramNode.id, localNode.id, DataFlowKind.ASSIGN))
             builder.addEdge(DataFlowEdge(intConstNode.id, localNode.id, DataFlowKind.ASSIGN))
             builder.addEdge(DataFlowEdge(localNode.id, returnNode.id, DataFlowKind.RETURN_VALUE))
+            builder.addEdge(ResourceEdge(propertyFileNode.id, callSiteNode.id, ResourceRelation.LOOKUP))
             builder.addEdge(CallEdge(callSiteNode.id, callSiteNode.id, isVirtual = false))
 
             builder.addMethod(barMethod)
@@ -80,6 +120,10 @@ class ExploreCommandTest {
 
             builder.addMemberAnnotation("com.example.Foo", "bar", "javax.annotation.Nullable", emptyMap())
             builder.addMemberAnnotation(
+                "com.example.Foo", "<class>", "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to "/v1")
+            )
+            builder.addMemberAnnotation(
                 "com.example.Foo", "bar", "org.springframework.web.bind.annotation.GetMapping",
                 mapOf("value" to "/api/bar")
             )
@@ -87,7 +131,6 @@ class ExploreCommandTest {
             val graph = builder.build()
             graphDir = Files.createTempDirectory("explore-test")
             GraphStore.save(graph, graphDir)
-
             val loadedGraph = GraphStore.load(graphDir)
             app = Javalin.create { config ->
                 config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
@@ -154,8 +197,8 @@ class ExploreCommandTest {
         val (code, body) = get("/api/info")
         assertEquals(200, code, "Expected 200 but got $code, body: $body")
         val info: Map<String, Double> = parseJson(body)
-        assertEquals(8.0, info["nodes"])
-        assertEquals(4.0, info["edges"])
+        assertEquals(10.0, info["nodes"])
+        assertEquals(5.0, info["edges"])
         assertEquals(3.0, info["methods"])
         assertEquals(1.0, info["callSites"])
     }
@@ -169,7 +212,7 @@ class ExploreCommandTest {
         val (code, body) = get("/api/nodes?limit=100")
         assertEquals(200, code)
         val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(8, nodes.size)
+        assertEquals(10, nodes.size)
     }
 
     @Test
@@ -393,6 +436,96 @@ class ExploreCommandTest {
         assertEquals(200, code, "Expected 200, body: $body")
         val annotations: Map<String, Map<String, Any?>> = parseJson(body)
         assertEquals(0, annotations.size)
+    }
+
+    // ========================================================================
+    // /api/resources
+    // ========================================================================
+
+    @Test
+    fun `GET api resources returns matching resources`() {
+        val (code, body) = get("/api/resources?pattern=**&limit=10")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(2.0, result["count"])
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(2, resourceEntries.size)
+        assertTrue(resourceEntries.any { it["path"] == "application.yml" })
+        assertTrue(resourceEntries.all { it["source"] == "test-fixture" })
+        assertTrue(resourceEntries.all { it["derived"] == false })
+    }
+
+    @Test
+    fun `GET api resources respects glob pattern`() {
+        val (code, body) = get("/api/resources?pattern=**/*.properties")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(1, resourceEntries.size)
+        assertEquals("config/application.properties", resourceEntries.single()["path"])
+    }
+
+    @Test
+    fun `GET api resource content returns text payload`() {
+        val (code, body) = get("/api/resources/content?path=application.yml")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("application.yml", result["path"])
+        assertEquals("test-fixture", result["source"])
+        assertEquals(false, result["derived"])
+        assertTrue((result["content"] as String).contains("server:"))
+    }
+
+    @Test
+    fun `GET api resource content returns 404 for missing path`() {
+        val (code, body) = get("/api/resources/content?path=missing.yml")
+        assertEquals(404, code, "Expected 404, body: $body")
+    }
+
+    @Test
+    fun `GET api resource content returns 400 when path missing`() {
+        val (code, body) = get("/api/resources/content")
+        assertEquals(400, code, "Expected 400, body: $body")
+    }
+
+    // ========================================================================
+    // /api/api-spec
+    // ========================================================================
+
+    @Test
+    fun `GET api api-spec returns Spring endpoints`() {
+        val (code, body) = get("/api/api-spec")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("spring-web", result["framework"])
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+        val endpoint = endpoints.single()
+        assertEquals("com.example.Foo", endpoint["class"])
+        assertEquals("bar", endpoint["member"])
+        assertEquals("GET", endpoint["httpMethod"])
+        assertEquals("/v1/api/bar", endpoint["path"])
+        assertEquals(barMethod.signature, endpoint["signature"])
+    }
+
+    @Test
+    fun `GET api api-spec supports class filter`() {
+        val (code, body) = get("/api/api-spec?class=com.example.Foo")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+
+        val (missingCode, missingBody) = get("/api/api-spec?class=com.example.Baz")
+        assertEquals(200, missingCode, "Expected 200, body: $missingBody")
+        val missingResult: Map<String, Any?> = parseJson(missingBody)
+        @Suppress("UNCHECKED_CAST")
+        val missingEndpoints = missingResult["endpoints"] as List<Map<String, Any?>>
+        assertTrue(missingEndpoints.isEmpty())
     }
 
     // ========================================================================

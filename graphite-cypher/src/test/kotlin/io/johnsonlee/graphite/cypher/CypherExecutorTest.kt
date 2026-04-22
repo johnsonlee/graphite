@@ -32,6 +32,7 @@ class CypherExecutorTest {
     private var floatConst = NodeId(0)
     private var doubleConst = NodeId(0)
     private var nullConst = NodeId(0)
+    private var resourceValue = NodeId(0)
     // Intermediate node for multi-hop paths
     private var localVar2 = NodeId(0)
 
@@ -99,6 +100,9 @@ class CypherExecutorTest {
         nullConst = NodeId.next()
         builder.addNode(NullConstant(nullConst))
 
+        resourceValue = NodeId.next()
+        builder.addNode(ResourceValueNode(resourceValue, "application.yml", "server.port", 8080, "yaml"))
+
         // Annotation nodes
         builder.addNode(AnnotationNode(
             NodeId.next(),
@@ -132,6 +136,8 @@ class CypherExecutorTest {
         builder.addEdge(CallEdge(callSite1, return1, false))
         // field1 -> localVar1 (dataflow field load)
         builder.addEdge(DataFlowEdge(field1, localVar1, DataFlowKind.FIELD_LOAD))
+        // resource value -> callSite1
+        builder.addEdge(ResourceEdge(resourceValue, callSite1, ResourceRelation.LOOKUP))
 
         builder.addMethod(method)
         builder.addMethod(callee)
@@ -1529,5 +1535,26 @@ class CypherExecutorTest {
         assertEquals("com.example.UserController", map["class"])
         assertEquals("getUser", map["member"])
         assertEquals("/api/users/{id}", map["value"])
+    }
+
+    @Test
+    fun `query ResourceValueNode by label and property`() {
+        val result = executor.execute("MATCH (r:ResourceValue) WHERE r.key = 'server.port' RETURN r.path, r.value")
+        assertEquals(1, result.rows.size)
+        assertEquals("application.yml", result.rows[0]["r.path"])
+        assertEquals(8080, result.rows[0]["r.value"])
+    }
+
+    @Test
+    fun `query ResourceFileNode by label and property`() {
+        val resourceFile = NodeId.next()
+        val builder = DefaultGraph.Builder()
+        builder.addNode(ResourceFileNode(resourceFile, "application.yml", "BOOT-INF/classes", "yaml"))
+        val localExecutor = CypherExecutor(builder.build())
+
+        val result = localExecutor.execute("MATCH (r:ResourceFile) WHERE r.path = 'application.yml' RETURN r.source, r.format")
+        assertEquals(1, result.rows.size)
+        assertEquals("BOOT-INF/classes", result.rows[0]["r.source"])
+        assertEquals("yaml", result.rows[0]["r.format"])
     }
 }

@@ -3,9 +3,9 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.input.EmptyResourceAccessor
+import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
@@ -191,6 +191,42 @@ class GraphStoreTest {
             val loadedNode = loaded.node(annotationNode.id) as AnnotationNode
             assertEquals(annotationNode.values, loadedNode.values)
             assertEquals(annotationNode.values, loaded.memberAnnotations("com.example.Foo", "bar")["com.example.Http"])
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `round-trip preserves ResourceValueNode`() {
+        val builder = DefaultGraph.Builder()
+        val method = MethodDescriptor(TypeDescriptor("com.example.Foo"), "bar", emptyList(), TypeDescriptor("void"))
+        val resourceFileNode = ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml", "prod")
+        val resourceNode = ResourceValueNode(NodeId.next(), "application.yml", "server.port", 8080, "yaml", "prod")
+        val callSite = CallSiteNode(NodeId.next(), method, method, 12, null, emptyList())
+        builder.addMethod(method)
+        builder.addNode(ReturnNode(NodeId.next(), method))
+        builder.addNode(resourceFileNode)
+        builder.addNode(resourceNode)
+        builder.addNode(callSite)
+        builder.addEdge(ResourceEdge(resourceFileNode.id, resourceNode.id, ResourceRelation.CONTAINS))
+        builder.addEdge(ResourceEdge(resourceNode.id, callSite.id, ResourceRelation.LOOKUP))
+
+        val graph = builder.build()
+        val dir = Files.createTempDirectory("webgraph-resource-value-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            val loadedFile = loaded.node(resourceFileNode.id) as ResourceFileNode
+            val loadedNode = loaded.node(resourceNode.id) as ResourceValueNode
+            assertEquals(resourceFileNode, loadedFile)
+            assertEquals(resourceNode, loadedNode)
+            assertTrue(loaded.incoming(resourceNode.id, ResourceEdge::class.java).any {
+                it.from == resourceFileNode.id && it.kind == ResourceRelation.CONTAINS
+            })
+            assertTrue(loaded.incoming(callSite.id, ResourceEdge::class.java).any {
+                it.from == resourceNode.id && it.kind == ResourceRelation.LOOKUP
+            })
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -469,26 +505,26 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.load(dir)
 
-            val intConstants = loaded.nodes<IntConstant>().toList()
+            val intConstants = loaded.nodes(IntConstant::class.java).toList()
             assertEquals(1, intConstants.size)
             assertEquals(42, intConstants[0].value)
 
-            val callSites = loaded.nodes<CallSiteNode>().toList()
+            val callSites = loaded.nodes(CallSiteNode::class.java).toList()
             assertEquals(1, callSites.size)
 
-            val fields = loaded.nodes<FieldNode>().toList()
+            val fields = loaded.nodes(FieldNode::class.java).toList()
             assertEquals(1, fields.size)
 
-            val params = loaded.nodes<ParameterNode>().toList()
+            val params = loaded.nodes(ParameterNode::class.java).toList()
             assertEquals(1, params.size)
 
-            val locals = loaded.nodes<LocalVariable>().toList()
+            val locals = loaded.nodes(LocalVariable::class.java).toList()
             assertEquals(1, locals.size)
 
-            val returns = loaded.nodes<ReturnNode>().toList()
+            val returns = loaded.nodes(ReturnNode::class.java).toList()
             assertEquals(1, returns.size)
 
-            val enums = loaded.nodes<EnumConstant>().toList()
+            val enums = loaded.nodes(EnumConstant::class.java).toList()
             assertEquals(1, enums.size)
         } finally {
             dir.toFile().deleteRecursively()
@@ -500,14 +536,18 @@ class GraphStoreTest {
     // ========================================================================
 
     @Test
-    fun `loaded graph resources returns EmptyResourceAccessor`() {
+    fun `loaded graph resources preserves persisted text resources`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-resources-test")
         try {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.load(dir)
 
-            assertTrue(loaded.resources === EmptyResourceAccessor)
+            val entries = loaded.resources.list("**").toList()
+            assertEquals(1, entries.size)
+            assertEquals("application.properties", entries.single().path)
+            val content = loaded.resources.open("application.properties").bufferedReader().readText()
+            assertTrue(content.contains("feature.mode=shadow"))
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -620,7 +660,7 @@ class GraphStoreTest {
             val loaded = GraphStore.load(dir)
 
             // The local node has incoming DataFlowEdges (from param and constant)
-            val locals = loaded.nodes<LocalVariable>().toList()
+            val locals = loaded.nodes(LocalVariable::class.java).toList()
             assertEquals(1, locals.size)
             val localId = locals[0].id
 
@@ -746,6 +786,14 @@ class GraphStoreTest {
         val decoded = NodeSerializer.decodeEdge(encoded, from, to, comp)
         assertTrue(decoded is ControlFlowEdge)
         assertEquals(comp, (decoded as ControlFlowEdge).comparison)
+
+        for (relation in ResourceRelation.entries) {
+            val edge = ResourceEdge(from, to, relation)
+            val encodedResource = NodeSerializer.encodeEdge(edge)
+            val decodedResource = NodeSerializer.decodeEdge(encodedResource, from, to)
+            assertTrue(decodedResource is ResourceEdge)
+            assertEquals(relation, (decodedResource as ResourceEdge).kind)
+        }
     }
 
     @Test
@@ -1458,14 +1506,16 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy graph resources returns EmptyResourceAccessor`() {
+    fun `lazy graph resources preserves persisted text resources`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-lazy-resources-test")
         try {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadLazy(dir)
             try {
-                assertTrue(loaded.resources === EmptyResourceAccessor)
+                assertEquals(1, loaded.resources.list("**").count())
+                val content = loaded.resources.open("application.properties").bufferedReader().readText()
+                assertTrue(content.contains("feature.enabled=true"))
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1475,14 +1525,16 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped graph resources returns EmptyResourceAccessor`() {
+    fun `mapped graph resources preserves persisted text resources`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-mapped-resources-test")
         try {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir)
             try {
-                assertTrue(loaded.resources === EmptyResourceAccessor)
+                assertEquals(1, loaded.resources.list("**").count())
+                val content = loaded.resources.open("application.properties").bufferedReader().readText()
+                assertTrue(content.contains("feature.mode=shadow"))
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1609,7 +1661,10 @@ class GraphStoreTest {
         assertTrue(types.contains("com.example.Child"))
 
         // resources
-        assertTrue(loaded.resources === EmptyResourceAccessor)
+        val resourceEntries = loaded.resources.list("**").toList()
+        assertEquals(1, resourceEntries.size)
+        assertEquals("application.properties", resourceEntries.single().path)
+        assertTrue(loaded.resources.open("application.properties").bufferedReader().readText().contains("feature.mode=shadow"))
     }
 
     // ========================================================================
@@ -1704,13 +1759,13 @@ class GraphStoreTest {
     fun `readHeader with unknown version throws`() {
         val baos = ByteArrayOutputStream()
         val dos = DataOutputStream(baos)
-        dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x03)
+        dos.writeInt(NodeSerializer.MAGIC_METADATA or 0x04)
         dos.flush()
         val dis = DataInputStream(ByteArrayInputStream(baos.toByteArray()))
         val error = assertFailsWith<IllegalArgumentException> {
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA)
         }
-        assertTrue(error.message!!.contains("Unsupported GraphStore format version 3"))
+        assertTrue(error.message!!.contains("Unsupported GraphStore format version 4"))
     }
 
     // ========================================================================
@@ -1824,15 +1879,15 @@ class GraphStoreTest {
                 (mapped as Closeable).close()
             }
 
-            val migratedDir = Files.createTempDirectory("legacy-v2-migrated")
+            val migratedDir = Files.createTempDirectory("legacy-v3-migrated")
             try {
                 GraphStore.save(loaded, migratedDir)
 
                 DataInputStream(migratedDir.resolve("graph.nodedata").toFile().inputStream()).use { dis ->
-                    assertEquals(2, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA))
+                    assertEquals(NodeSerializer.FORMAT_VERSION, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEDATA))
                 }
                 DataInputStream(migratedDir.resolve("graph.metadata").toFile().inputStream()).use { dis ->
-                    assertEquals(2, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA))
+                    assertEquals(NodeSerializer.FORMAT_VERSION, NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_METADATA))
                 }
 
                 val migrated = GraphStore.load(migratedDir)
@@ -2035,7 +2090,20 @@ class GraphStoreTest {
     // ========================================================================
 
     private fun buildTestGraph(): Graph {
-        val builder = DefaultGraph.Builder()
+        val builder = DefaultGraph.Builder().setResources(
+            object : ResourceAccessor {
+                private val resources = mapOf(
+                    "application.properties" to "feature.mode=shadow\nfeature.enabled=true\n"
+                )
+
+                override fun list(pattern: String): Sequence<ResourceEntry> =
+                    resources.keys.asSequence().map { ResourceEntry(it, "test-fixture") }
+
+                override fun open(path: String) =
+                    resources[path]?.let { ByteArrayInputStream(it.toByteArray()) }
+                        ?: throw java.io.IOException("Resource not found: $path")
+            }
+        )
 
         val fooType = TypeDescriptor("com.example.Foo")
         val parentType = TypeDescriptor("com.example.Parent")
