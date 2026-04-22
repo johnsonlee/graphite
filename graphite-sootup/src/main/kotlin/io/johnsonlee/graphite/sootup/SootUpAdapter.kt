@@ -175,6 +175,13 @@ class SootUpAdapter(
     private val configurationResourcePaths = linkedSetOf<String>()
     private val runtimeIndexedBundles = mutableSetOf<String>()
     private val bundleControlSpecsByClass = mutableMapOf<String, BundleControlSpec?>()
+    private val classesByName: Map<String, SootClass> by lazy {
+        buildMap {
+            view.classes.forEach { sootClass ->
+                put(sootClass.type.fullyQualifiedName, sootClass)
+            }
+        }
+    }
 
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
@@ -1760,6 +1767,7 @@ class SootUpAdapter(
     private fun indexResourceValues() {
         resourceAccessor.list("**")
             .forEach { entry ->
+                if (entry.path.endsWith(".class", ignoreCase = true)) return@forEach
                 val format = resourceFormat(entry.path)
                 val profile = resourceProfile(entry.path)
                 val fileNode = ResourceFileNode(
@@ -1810,12 +1818,7 @@ class SootUpAdapter(
     }
 
     private fun resolveClassByName(className: String): SootClass? {
-        for (candidate in view.classes) {
-            if (candidate.type.fullyQualifiedName == className) {
-                return candidate
-            }
-        }
-        return null
+        return classesByName[className]
     }
 
     private fun extractListResourceBundleEntries(sootClass: SootClass): Map<String, Any?> {
