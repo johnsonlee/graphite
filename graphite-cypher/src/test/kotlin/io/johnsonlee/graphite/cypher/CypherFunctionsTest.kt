@@ -542,6 +542,11 @@ class CypherFunctionsTest {
         assertEquals("TYPE", CypherFunctions.call("type", listOf(TypeEdge(from, to, TypeRelation.EXTENDS))))
         assertEquals("CONTROL_FLOW", CypherFunctions.call("type", listOf(ControlFlowEdge(from, to, ControlFlowKind.SEQUENTIAL))))
         assertEquals("RESOURCE_LOOKUP", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.LOOKUP))))
+        assertEquals("RESOURCE_CONTAINS", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.CONTAINS))))
+        assertEquals("RESOURCE_OPEN", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.OPENS))))
+        assertEquals("RESOURCE_LOAD", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.LOADS))))
+        assertEquals("RESOURCE_BUNDLE_CANDIDATE", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.BUNDLE_CANDIDATE))))
+        assertEquals("RESOURCE_KEYS", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.ENUMERATES))))
     }
 
     @Test

@@ -102,8 +102,8 @@ class SootUpAdapter(
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
 ) {
-    private val trackCrossMethodFunctionalDispatch = config.buildCallGraph
-    private val extractAnnotationsEnabled = config.buildCallGraph
+    private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
+    private val extractAnnotationsEnabled = config.extractAnnotations
 
     private data class LocalKey(val method: MethodDescriptor, val name: String)
     private data class ParameterBinding(val method: MethodDescriptor, val index: Int)

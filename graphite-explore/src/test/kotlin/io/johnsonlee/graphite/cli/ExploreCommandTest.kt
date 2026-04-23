@@ -528,6 +528,111 @@ class ExploreCommandTest {
         assertTrue(missingEndpoints.isEmpty())
     }
 
+    @Test
+    fun `extractApiSpec handles RequestMapping arrays iterables and default request method`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "handle",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val fallbackMethod = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "fallback",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addMethod(method)
+            .addMethod(fallbackMethod)
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "<class>",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to arrayOf("/v2", "/v1"))
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "handle",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf(
+                    "path" to listOf("/beta", "/alpha"),
+                    "method" to arrayOf("POST", "PATCH")
+                )
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "fallback",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                emptyMap()
+            )
+            .build()
+
+        val endpoints = ExploreCommand().extractApiSpec(graph)
+
+        assertEquals(10, endpoints.size)
+        val fallbackEndpoints = endpoints.filter { it["member"] == "fallback" }
+        assertEquals(2, fallbackEndpoints.size)
+        assertTrue(fallbackEndpoints.all { it["httpMethod"] == "REQUEST" })
+        assertEquals(setOf("/v1", "/v2"), fallbackEndpoints.map { it["path"] }.toSet())
+
+        val handlePaths = endpoints.filter { it["member"] == "handle" }.map { it["path"] as String }
+        assertEquals(
+            listOf("/v1/alpha", "/v1/alpha", "/v1/beta", "/v1/beta", "/v2/alpha", "/v2/alpha", "/v2/beta", "/v2/beta"),
+            handlePaths
+        )
+        val handleMethods = endpoints.filter { it["member"] == "handle" }.map { it["httpMethod"] as String }.toSet()
+        assertEquals(setOf("PATCH", "POST"), handleMethods)
+        assertEquals("/v1", endpoints.first()["path"])
+    }
+
+    @Test
+    fun `private API spec helpers cover all HTTP mapping branches`() {
+        val explore = ExploreCommand()
+        val extractHttpMethods = ExploreCommand::class.java.getDeclaredMethod(
+            "extractHttpMethods",
+            String::class.java,
+            Map::class.java
+        ).apply { isAccessible = true }
+        val extractStringValues = ExploreCommand::class.java.getDeclaredMethod(
+            "extractStringValues",
+            Any::class.java
+        ).apply { isAccessible = true }
+        val combinePaths = ExploreCommand::class.java.getDeclaredMethod(
+            "combinePaths",
+            List::class.java,
+            List::class.java
+        ).apply { isAccessible = true }
+
+        assertEquals(listOf("GET"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.GetMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("POST"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PostMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PUT"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PutMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("DELETE"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.DeleteMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PATCH"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PatchMapping", emptyMap<String, Any?>()))
+        assertEquals(
+            listOf("HEAD"),
+            extractHttpMethods.invoke(
+                explore,
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("method" to "HEAD")
+            )
+        )
+        assertEquals(
+            listOf("REQUEST"),
+            extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.RequestMapping", mapOf("method" to 123))
+        )
+
+        assertEquals(emptyList<String>(), extractStringValues.invoke(explore, null))
+        assertEquals(listOf("one"), extractStringValues.invoke(explore, "one"))
+        assertEquals(listOf("two"), extractStringValues.invoke(explore, listOf("two", 2)))
+        assertEquals(listOf("three"), extractStringValues.invoke(explore, arrayOf("three", 3)))
+        assertEquals(emptyList<String>(), extractStringValues.invoke(explore, 42))
+
+        assertEquals(listOf("/"), combinePaths.invoke(explore, emptyList<String>(), emptyList<String>()))
+        assertEquals(listOf("/users"), combinePaths.invoke(explore, listOf("/"), listOf("/users")))
+        assertEquals(listOf("/api"), combinePaths.invoke(explore, listOf("/api"), emptyList<String>()))
+    }
+
     // ========================================================================
     // /api/overview
     // ========================================================================

@@ -623,6 +623,24 @@ class DataFlowAnalysisTest {
     }
 
     @Test
+    fun `backwardSlice formats resource value constant description`() {
+        val constId = NodeId.next()
+        val varId = NodeId.next()
+        val constant = ResourceValueNode(constId, "application.yml", "server.port", 8080, "yaml")
+        val variable = LocalVariable(varId, "x", TypeDescriptor("int"), makeMethod())
+        val graph = DefaultGraph.Builder()
+            .addNode(constant).addNode(variable)
+            .addEdge(DataFlowEdge(constId, varId, DataFlowKind.ASSIGN))
+            .build()
+        val result = DataFlowAnalysis(graph).backwardSlice(varId)
+        assertTrue(
+            result.propagationPaths.any { p ->
+                p.steps.any { it.description.contains("resource application.yml#server.port = 8080") }
+            }
+        )
+    }
+
+    @Test
     fun `backwardSlice formats enum constant description`() {
         val constId = NodeId.next()
         val varId = NodeId.next()

@@ -1,10 +1,14 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import java.io.ByteArrayInputStream
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -219,6 +223,23 @@ class DefaultGraphTest {
     fun `typeHierarchyTypes returns empty when no relations`() {
         val graph = DefaultGraph.Builder().build()
         assertTrue(graph.typeHierarchyTypes().isEmpty())
+    }
+
+    @Test
+    fun `builder setResources preserves accessor on built graph`() {
+        val accessor = object : ResourceAccessor {
+            override fun list(pattern: String): Sequence<ResourceEntry> =
+                sequenceOf(ResourceEntry("application.yml", "test"))
+
+            override fun open(path: String) = ByteArrayInputStream("server.port=8080".toByteArray())
+        }
+
+        val graph = DefaultGraph.Builder()
+            .setResources(accessor)
+            .build()
+
+        assertSame(accessor, graph.resources)
+        assertEquals(listOf("application.yml"), graph.resources.list("**").map { it.path }.toList())
     }
 
     // ========================================================================

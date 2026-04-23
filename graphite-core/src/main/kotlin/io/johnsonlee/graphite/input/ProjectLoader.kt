@@ -53,6 +53,16 @@ data class LoaderConfig(
     val buildCallGraph: Boolean = true,
 
     /**
+     * Whether to extract annotations into graph metadata/nodes.
+     */
+    val extractAnnotations: Boolean = true,
+
+    /**
+     * Whether to resolve lambda/method-reference dispatch across method boundaries.
+     */
+    val trackCrossMethodFunctionalDispatch: Boolean = true,
+
+    /**
      * Call graph algorithm
      */
     val callGraphAlgorithm: CallGraphAlgorithm = CallGraphAlgorithm.CHA,

@@ -1557,4 +1557,117 @@ class CypherExecutorTest {
         assertEquals("BOOT-INF/classes", result.rows[0]["r.source"])
         assertEquals("yaml", result.rows[0]["r.format"])
     }
+
+    @Test
+    fun `return full ResourceFileNode materializes to map`() {
+        val resourceFile = NodeId.next()
+        val builder = DefaultGraph.Builder()
+        builder.addNode(ResourceFileNode(resourceFile, "application.yml", "BOOT-INF/classes", "yaml", "prod"))
+        val localExecutor = CypherExecutor(builder.build())
+
+        val result = localExecutor.execute("MATCH (r:ResourceFile) RETURN r")
+        assertEquals(1, result.rows.size)
+        val nodeMap = result.rows[0]["r"]
+        assertTrue(nodeMap is Map<*, *>)
+        @Suppress("UNCHECKED_CAST")
+        val map = nodeMap as Map<String, Any?>
+        assertEquals("ResourceFileNode", map["type"])
+        assertEquals("application.yml", map["path"])
+        assertEquals("BOOT-INF/classes", map["source"])
+        assertEquals("yaml", map["format"])
+        assertEquals("prod", map["profile"])
+    }
+
+    @Test
+    fun `return full ReturnNode materializes actual type`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Service"),
+            "load",
+            emptyList(),
+            TypeDescriptor("java.lang.Object")
+        )
+        val builder = DefaultGraph.Builder()
+        builder.addNode(ReturnNode(NodeId.next(), method, TypeDescriptor("com.example.User")))
+        val localExecutor = CypherExecutor(builder.build())
+
+        val result = localExecutor.execute("MATCH (r:`ReturnNode`) RETURN r")
+        assertEquals(1, result.rows.size)
+        val nodeMap = result.rows[0]["r"]
+        assertTrue(nodeMap is Map<*, *>)
+        @Suppress("UNCHECKED_CAST")
+        val map = nodeMap as Map<String, Any?>
+        assertEquals("ReturnNode", map["type"])
+        assertEquals(method.signature, map["method"])
+        assertEquals("com.example.User", map["actual_type"])
+    }
+
+    @Test
+    fun `nodeToMap materializes resource value local variable field and parameter branches`() {
+        val type = TypeDescriptor("com.example.Controller")
+        val stringType = TypeDescriptor("java.lang.String")
+        val method = MethodDescriptor(type, "handle", listOf(stringType), stringType)
+        val executor = CypherExecutor(DefaultGraph.Builder().build())
+        val nodeToMap = CypherExecutor::class.java.getDeclaredMethod("nodeToMap", Node::class.java).apply {
+            isAccessible = true
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val resourceValueMap = nodeToMap.invoke(
+            executor,
+            ResourceValueNode(NodeId.next(), "application.yml", "server.port", 8080, "yaml", "dev")
+        ) as Map<String, Any?>
+        assertEquals("ResourceValueNode", resourceValueMap["type"])
+        assertEquals("application.yml", resourceValueMap["path"])
+        assertEquals("server.port", resourceValueMap["key"])
+        assertEquals(8080, resourceValueMap["value"])
+        assertEquals("yaml", resourceValueMap["format"])
+        assertEquals("dev", resourceValueMap["profile"])
+
+        @Suppress("UNCHECKED_CAST")
+        val localMap = nodeToMap.invoke(
+            executor,
+            LocalVariable(NodeId.next(), "name", stringType, method)
+        ) as Map<String, Any?>
+        assertEquals("name", localMap["name"])
+        assertEquals("java.lang.String", localMap["type"])
+
+        @Suppress("UNCHECKED_CAST")
+        val fieldMap = nodeToMap.invoke(
+            executor,
+            FieldNode(NodeId.next(), FieldDescriptor(type, "title", stringType), true)
+        ) as Map<String, Any?>
+        assertEquals("title", fieldMap["name"])
+        assertEquals("com.example.Controller", fieldMap["class"])
+        assertEquals(true, fieldMap["static"])
+
+        @Suppress("UNCHECKED_CAST")
+        val parameterMap = nodeToMap.invoke(
+            executor,
+            ParameterNode(NodeId.next(), 0, stringType, method)
+        ) as Map<String, Any?>
+        assertEquals(0, parameterMap["index"])
+        assertEquals(method.signature, parameterMap["method"])
+    }
+
+    @Test
+    fun `property filter covers string predicates and numeric coercion branches`() {
+        val field = FieldNode(
+            NodeId.next(),
+            FieldDescriptor(TypeDescriptor("com.example.Controller"), "displayName", TypeDescriptor("java.lang.String")),
+            false
+        )
+        assertTrue(
+            PropertyFilter("name", FilterOperator.STARTS_WITH, "display", emptySet(), "n").matches(field)
+        )
+        assertTrue(
+            PropertyFilter("name", FilterOperator.ENDS_WITH, "Name", emptySet(), "n").matches(field)
+        )
+        assertTrue(
+            PropertyFilter("name", FilterOperator.CONTAINS, "play", emptySet(), "n").matches(field)
+        )
+
+        val constant = IntConstant(NodeId.next(), 42)
+        assertTrue(PropertyFilter("value", FilterOperator.EQUALS, 42L, emptySet(), "n").matches(constant))
+        assertFalse(PropertyFilter("value", FilterOperator.LESS_THAN, "x", emptySet(), "n").matches(constant))
+    }
 }
