@@ -309,7 +309,8 @@ Start the Explorer first, then LLMs can query the graph:
 # Start Explorer
 graphite-explore /path/to/saved-graph
 
-# LLM can now use tools: cypher, nodes, methods, call_sites, annotations, etc.
+# LLM can now use tools: openapi, cypher, resources, resource, api_spec,
+# nodes, methods, call_sites, annotations, etc.
 ```
 
 ## License

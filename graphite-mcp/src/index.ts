@@ -35,6 +35,14 @@ async function graphitePost(path: string, body: unknown): Promise<unknown> {
   return res.json();
 }
 
+function encodeResourcePath(path: string): string {
+  return path
+    .split("/")
+    .filter((part) => part.length > 0)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
 const server = new McpServer({
   name: "graphite",
   version: "1.0.0",
@@ -45,6 +53,17 @@ server.tool("info", "Get graph statistics (node count, edge count, methods, call
   const data = await graphiteGet("/api/info");
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 });
+
+// Explore API discovery
+server.tool(
+  "openapi",
+  "Fetch the machine-readable OpenAPI document for the explore server",
+  {},
+  async () => {
+    const data = await graphiteGet("/openapi.json");
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
 
 // Cypher query
 server.tool(
@@ -155,6 +174,54 @@ server.tool(
   },
   async ({ class_name, member_name }) => {
     const data = await graphiteGet("/api/annotations", { class: class_name, member: member_name });
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
+// Extract framework API endpoints
+server.tool(
+  "api_spec",
+  "Extract framework API endpoints from the graph",
+  {
+    class_name: z.string().optional().describe("Optional controller class filter"),
+    limit: z.number().optional().default(200).describe("Max endpoints to return"),
+  },
+  async ({ class_name, limit }) => {
+    const params: Record<string, string> = {};
+    if (class_name) params.class = class_name;
+    if (limit) params.limit = String(limit);
+    const data = await graphiteGet("/api/api-spec", params);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
+// List resources
+server.tool(
+  "resources",
+  "List persisted resources available in the graph",
+  {
+    pattern: z.string().optional().describe("Glob pattern filter, defaults to **"),
+    limit: z.number().optional().default(100).describe("Max results"),
+  },
+  async ({ pattern, limit }) => {
+    const params: Record<string, string> = {};
+    if (pattern) params.pattern = pattern;
+    if (limit) params.limit = String(limit);
+    const data = await graphiteGet("/api/resources", params);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
+// Read raw resource content
+server.tool(
+  "resource",
+  "Read persisted raw resource content by path",
+  {
+    path: z.string().describe("Resource path inside the saved graph"),
+  },
+  async ({ path }) => {
+    const encodedPath = encodeResourcePath(path);
+    const data = await graphiteGet(`/api/resources/${encodedPath}`);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
