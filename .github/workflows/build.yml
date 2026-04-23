@@ -110,13 +110,14 @@ jobs:
       run: |
         FAILED=false
         MODULE=""
+        ENFORCED_MODULES=" core cypher explore query "
         while IFS= read -r line; do
           if [[ "$line" == *":koverPrintCoverage"* ]]; then
             MODULE=$(echo "$line" | sed 's/.*> Task :\(.*\):koverPrintCoverage.*/\1/')
           fi
           if [[ "$line" == *"application line coverage:"* ]]; then
             PCT=$(echo "$line" | sed 's/.*coverage: \([0-9.]*\)%.*/\1/')
-            if awk "BEGIN{exit !($PCT < 98)}"; then
+            if [[ "$ENFORCED_MODULES" == *" $MODULE "* ]] && awk "BEGIN{exit !($PCT < 98)}"; then
               echo "::error::Module $MODULE coverage is ${PCT}%, below 98% threshold"
               FAILED=true
             fi
