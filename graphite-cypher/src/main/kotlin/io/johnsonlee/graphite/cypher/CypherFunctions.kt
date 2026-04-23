@@ -198,7 +198,6 @@ object CypherFunctions {
         is TypeEdge -> "TYPE"
         is ControlFlowEdge -> "CONTROL_FLOW"
         is ResourceEdge -> when (value.kind) {
-            ResourceRelation.CONTAINS -> "RESOURCE_CONTAINS"
             ResourceRelation.OPENS -> "RESOURCE_OPEN"
             ResourceRelation.LOADS -> "RESOURCE_LOAD"
             ResourceRelation.BUNDLE_CANDIDATE -> "RESOURCE_BUNDLE_CANDIDATE"

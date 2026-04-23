@@ -32,8 +32,8 @@ class EdgeTest {
     }
 
     @Test
-    fun `DataFlowKind has 10 values`() {
-        assertEquals(10, DataFlowKind.entries.size)
+    fun `DataFlowKind has 9 values`() {
+        assertEquals(9, DataFlowKind.entries.size)
     }
 
     @Test
@@ -49,8 +49,8 @@ class EdgeTest {
     }
 
     @Test
-    fun `ResourceRelation has 6 values`() {
-        assertEquals(6, ResourceRelation.entries.size)
+    fun `ResourceRelation has 5 values`() {
+        assertEquals(5, ResourceRelation.entries.size)
     }
 
     // ========================================================================

@@ -456,11 +456,11 @@ class HelpersTest {
 
     @Test
     fun `edgeToMap for ResourceEdge includes correct fields`() {
-        val edge = ResourceEdge(resourceFileNode.id, resourceValueNode.id, ResourceRelation.CONTAINS)
+        val edge = ResourceEdge(resourceFileNode.id, resourceValueNode.id, ResourceRelation.LOOKUP)
         val map = edgeToMap(edge)
         assertEquals(resourceFileNode.id.value, map["from"])
         assertEquals(resourceValueNode.id.value, map["to"])
         assertEquals("Resource", map["type"])
-        assertEquals("CONTAINS", map["kind"])
+        assertEquals("LOOKUP", map["kind"])
     }
 }

@@ -7,12 +7,6 @@ plugins {
 }
 
 kover {
-    currentProject {
-        instrumentation {
-            disabledForTestTasks.add("test")
-        }
-    }
-
     reports {
         filters {
             excludes {

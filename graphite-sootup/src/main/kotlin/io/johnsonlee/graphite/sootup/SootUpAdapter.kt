@@ -1,9 +1,5 @@
 package io.johnsonlee.graphite.sootup
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
@@ -12,20 +8,15 @@ import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
-import java.io.ByteArrayInputStream
 import java.util.Locale
-import java.util.Properties
 import java.util.ResourceBundle
 import java.util.ServiceLoader
-import javax.xml.XMLConstants
-import javax.xml.parsers.DocumentBuilderFactory
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type as AsmType
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.FieldNode as AsmFieldNode
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.IntInsnNode
 import org.objectweb.asm.tree.LdcInsnNode
@@ -33,8 +24,6 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
 import org.objectweb.asm.tree.TypeInsnNode
 import org.objectweb.asm.tree.VarInsnNode
-import org.w3c.dom.Element
-import org.w3c.dom.Node as DomNode
 import sootup.core.frontend.BodySource
 import sootup.core.graph.StmtGraph
 import sootup.core.jimple.basic.NoPositionInformation
@@ -107,11 +96,6 @@ class SootUpAdapter(
 
     private data class LocalKey(val method: MethodDescriptor, val name: String)
     private data class ParameterBinding(val method: MethodDescriptor, val index: Int)
-    private data class PlaceholderBinding(
-        val key: String?,
-        val defaultValue: Any?,
-        val hasDefaultValue: Boolean
-    )
     private data class BundleControlSpec(
         val noFallback: Boolean = false,
         val formats: Set<String> = setOf("java.properties", "java.class"),
@@ -455,18 +439,6 @@ class SootUpAdapter(
      */
     private fun visitFieldsForClass(sootClass: SootClass) {
         val className = sootClass.type.fullyQualifiedName
-        val configurationPropertiesPrefix = extractConfigurationPropertiesPrefix(sootClass)
-        val valueAnnotationsByField = if (sootClass is JavaSootClass) {
-            val fromSoot = sootClass.fields.associate { it.signature.toString() to extractValueAnnotationBinding(it.annotations) }
-            val fromAsm = getAsmFieldNodes(sootClass)
-                ?.associate { asmField -> asmField.name to extractValueAnnotationBinding(asmField) }
-                ?: emptyMap()
-            sootClass.fields.associate { field ->
-                field.signature.toString() to (fromSoot[field.signature.toString()] ?: fromAsm[field.name])
-            }
-        } else {
-            emptyMap()
-        }
         sootClass.fields.forEach { field ->
             val fieldName = field.name
 
@@ -478,8 +450,6 @@ class SootUpAdapter(
             // Use field signature as key (same format as getOrCreateField)
             val fieldSig = field.signature.toString()
             if (fieldNodes.containsKey(fieldSig)) {
-                linkValueAnnotatedField(valueAnnotationsByField[fieldSig], fieldNodes[fieldSig]!!)
-                linkConfigurationPropertiesField(configurationPropertiesPrefix, field.name, fieldNodes[fieldSig]!!)
                 return@forEach
             }
 
@@ -500,8 +470,6 @@ class SootUpAdapter(
             )
             fieldNodes[fieldSig] = node
             graphBuilder.addNode(node)
-            linkValueAnnotatedField(valueAnnotationsByField[fieldSig], node)
-            linkConfigurationPropertiesField(configurationPropertiesPrefix, field.name, node)
         }
     }
 
@@ -1123,7 +1091,6 @@ class SootUpAdapter(
     }
 
     companion object {
-        private val NULL_CONSTANT_KEY = Any()
         private val WRAPPER_CLASSES = setOf(
             "java.lang.Integer",
             "java.lang.Long",
@@ -1500,16 +1467,16 @@ class SootUpAdapter(
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
         if (sootClass !is JavaSootClass) return null
         val methodNodes = getAsmMethodNodes(sootClass) ?: return null
-        return methodNodes.asSequence().mapNotNull { methodNode ->
-            try {
-                createStreamingMethod(sootClass, methodNode)
-            } catch (oom: OutOfMemoryError) {
-                log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution")
-                System.gc()
-                null
-            } catch (e: Exception) {
-                log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}")
-                null
+        return sequence {
+            for (methodNode in methodNodes) {
+                try {
+                    createStreamingMethod(sootClass, methodNode)?.let { yield(it) }
+                } catch (oom: OutOfMemoryError) {
+                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution")
+                    System.gc()
+                } catch (e: Exception) {
+                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}")
+                }
             }
         }
     }
@@ -1518,22 +1485,6 @@ class SootUpAdapter(
         val classNode = getAsmClassNode(sootClass) ?: return null
         @Suppress("UNCHECKED_CAST")
         return classNode.methods as? List<MethodNode>
-    }
-
-    private fun getAsmFieldNodes(sootClass: JavaSootClass): List<AsmFieldNode>? {
-        return try {
-            val resourcePath = sootClass.type.fullyQualifiedName.replace('.', '/') + ".class"
-            resourceAccessor.open(resourcePath).use { input ->
-                val classNode = ClassNode()
-                ClassReader(input).accept(classNode, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
-                @Suppress("UNCHECKED_CAST")
-                classNode.fields as? List<AsmFieldNode>
-            }
-        } catch (_: Exception) {
-            val classNode = getAsmClassNode(sootClass) ?: return null
-            @Suppress("UNCHECKED_CAST")
-            classNode.fields as? List<AsmFieldNode>
-        }
     }
 
     private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
@@ -1588,17 +1539,18 @@ class SootUpAdapter(
         )
     }
 
-    private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<out SootMethod> {
-        return try {
-            sootClass.methods
-        } catch (oom: OutOfMemoryError) {
-            log("Skipping methods for ${sootClass.type}: OOM during method resolution")
-            System.gc()
-            emptySet()
-        } catch (e: IllegalStateException) {
-            log("Skipping methods for ${sootClass.type}: ${e.message}")
-            emptySet()
+    private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<SootMethod> = try {
+        sootClass.methods
+    } catch (failure: Throwable) {
+        when (failure) {
+            is OutOfMemoryError -> {
+                log("Skipping methods for ${sootClass.type}: OOM during method resolution")
+                System.gc()
+            }
+            is IllegalStateException -> log("Skipping methods for ${sootClass.type}: ${failure.message}")
+            else -> throw failure
         }
+        emptySet()
     }
 
     private fun getOrCreateValueNode(value: Value, method: MethodDescriptor): ValueNode? {
@@ -1684,43 +1636,6 @@ class SootUpAdapter(
                         value = 0
                     )
                 }
-            }
-            graphBuilder.addNode(node)
-            node
-        }
-    }
-
-    private fun getOrCreateConstantValue(value: Any?): ConstantNode {
-        val cacheKey = value ?: NULL_CONSTANT_KEY
-        return constantNodes.getOrPut(cacheKey) {
-            val node = when (value) {
-                null -> NullConstant(
-                    id = nextNodeId("const")
-                )
-                is Int -> IntConstant(
-                    id = nextNodeId("const"),
-                    value = value
-                )
-                is Long -> LongConstant(
-                    id = nextNodeId("const"),
-                    value = value
-                )
-                is Float -> FloatConstant(
-                    id = nextNodeId("const"),
-                    value = value
-                )
-                is Double -> DoubleConstant(
-                    id = nextNodeId("const"),
-                    value = value
-                )
-                is Boolean -> BooleanConstant(
-                    id = nextNodeId("const"),
-                    value = value
-                )
-                else -> StringConstant(
-                    id = nextNodeId("const"),
-                    value = value.toString()
-                )
             }
             graphBuilder.addNode(node)
             node
@@ -1821,64 +1736,6 @@ class SootUpAdapter(
         return classesByName[className]
     }
 
-    private fun extractListResourceBundleEntries(sootClass: SootClass): Map<String, Any?> {
-        val javaSootClass = sootClass as? JavaSootClass ?: return emptyMap()
-        val methodNode = (getAsmMethodNodes(javaSootClass) ?: loadMethodNodesFromResource(javaSootClass))
-            ?.firstOrNull { it.name == "getContents" }
-            ?: return emptyMap()
-        val returned = evaluateArrayLiteral(methodNode) as? List<*> ?: return emptyMap()
-        return buildMap {
-            returned.forEach { entry ->
-                val tuple = entry as? List<*> ?: return@forEach
-                val key = tuple.getOrNull(0) as? String ?: return@forEach
-                put(key, normalizeRuntimeBundleValue(tuple.getOrNull(1)))
-            }
-        }
-    }
-
-    private fun evaluateArrayLiteral(methodNode: MethodNode): Any? {
-        val stack = ArrayDeque<Any?>()
-        val locals = mutableMapOf<Int, Any?>()
-        for (insn in methodNode.instructions) {
-            when (insn) {
-                is InsnNode -> when (insn.opcode) {
-                    Opcodes.ACONST_NULL -> stack.addLast(null)
-                    Opcodes.ICONST_M1 -> stack.addLast(-1)
-                    Opcodes.ICONST_0 -> stack.addLast(0)
-                    Opcodes.ICONST_1 -> stack.addLast(1)
-                    Opcodes.ICONST_2 -> stack.addLast(2)
-                    Opcodes.ICONST_3 -> stack.addLast(3)
-                    Opcodes.ICONST_4 -> stack.addLast(4)
-                    Opcodes.ICONST_5 -> stack.addLast(5)
-                    Opcodes.DUP -> stack.lastOrNull()?.let(stack::addLast)
-                    Opcodes.AASTORE -> {
-                        val value = stack.removeLastOrNull()
-                        val index = (stack.removeLastOrNull() as? Number)?.toInt() ?: continue
-                        val array = stack.removeLastOrNull() as? MutableList<Any?> ?: continue
-                        if (index in array.indices) array[index] = value
-                    }
-                    Opcodes.ARETURN -> return stack.removeLastOrNull()
-                    Opcodes.ALOAD, Opcodes.ILOAD -> Unit
-                    else -> Unit
-                }
-                is IntInsnNode -> when (insn.opcode) {
-                    Opcodes.BIPUSH, Opcodes.SIPUSH -> stack.addLast(insn.operand)
-                }
-                is LdcInsnNode -> stack.addLast(insn.cst)
-                is TypeInsnNode -> if (insn.opcode == Opcodes.ANEWARRAY) {
-                    val size = (stack.removeLastOrNull() as? Number)?.toInt() ?: continue
-                    stack.addLast(MutableList<Any?>(size) { null })
-                }
-                is VarInsnNode -> when (insn.opcode) {
-                    Opcodes.ASTORE, Opcodes.ISTORE -> locals[insn.`var`] = stack.removeLastOrNull()
-                    Opcodes.ALOAD, Opcodes.ILOAD -> stack.addLast(locals[insn.`var`])
-                }
-                else -> Unit
-            }
-        }
-        return null
-    }
-
     private fun extractControlFormatsFromMethod(methodNode: MethodNode): Set<String>? =
         when (val value = evaluateLiteralMethod(methodNode)) {
             is List<*> -> value.mapNotNull {
@@ -1920,25 +1777,19 @@ class SootUpAdapter(
         }
         for (insn in methodNode.instructions) {
             when (insn) {
-                is InsnNode -> when (insn.opcode) {
-                    Opcodes.ACONST_NULL -> stack.addLast(null)
-                    Opcodes.ICONST_M1 -> stack.addLast(-1)
-                    Opcodes.ICONST_0 -> stack.addLast(0)
-                    Opcodes.ICONST_1 -> stack.addLast(1)
-                    Opcodes.ICONST_2 -> stack.addLast(2)
-                    Opcodes.ICONST_3 -> stack.addLast(3)
-                    Opcodes.ICONST_4 -> stack.addLast(4)
-                    Opcodes.ICONST_5 -> stack.addLast(5)
-                    Opcodes.DUP -> stack.lastOrNull()?.let(stack::addLast)
-                    Opcodes.ARETURN -> return stack.removeLastOrNull()
+                is InsnNode -> when {
+                    insn.opcode == Opcodes.ACONST_NULL -> stack.addLast(null)
+                    insn.opcode in Opcodes.ICONST_M1..Opcodes.ICONST_5 -> stack.addLast(insn.opcode - Opcodes.ICONST_0)
+                    insn.opcode == Opcodes.DUP -> stack.lastOrNull()?.let(stack::addLast)
+                    insn.opcode == Opcodes.ARETURN -> return stack.removeLastOrNull()
                 }
-                is IntInsnNode -> when (insn.opcode) {
-                    Opcodes.BIPUSH, Opcodes.SIPUSH -> stack.addLast(insn.operand)
+                is IntInsnNode -> if (insn.opcode == Opcodes.BIPUSH || insn.opcode == Opcodes.SIPUSH) {
+                    stack.addLast(insn.operand)
                 }
                 is LdcInsnNode -> stack.addLast(insn.cst)
-                is VarInsnNode -> when (insn.opcode) {
-                    Opcodes.ASTORE, Opcodes.ISTORE -> locals[insn.`var`] = stack.removeLastOrNull()
-                    Opcodes.ALOAD, Opcodes.ILOAD -> stack.addLast(locals[insn.`var`])
+                is VarInsnNode -> when {
+                    insn.opcode == Opcodes.ASTORE || insn.opcode == Opcodes.ISTORE -> locals[insn.`var`] = stack.removeLastOrNull()
+                    insn.opcode == Opcodes.ALOAD || insn.opcode == Opcodes.ILOAD -> stack.addLast(locals[insn.`var`])
                 }
                 is FieldInsnNode -> if (insn.opcode == Opcodes.GETSTATIC) {
                     stack.addLast(resolveStaticLiteral(insn.owner.replace('/', '.'), insn.name))
@@ -1952,20 +1803,12 @@ class SootUpAdapter(
                     val owner = insn.owner.replace('/', '.')
                     val result = when {
                         insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.List" && insn.name == "of" -> args
-                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Arrays" && insn.name == "asList" -> {
-                            val first = args.singleOrNull()
-                            when (first) {
-                                is List<*> -> first
-                                else -> args
-                            }
-                        }
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Arrays" && insn.name == "asList" ->
+                            (args.singleOrNull() as? List<*>) ?: args
                         insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Collections" && insn.name == "singletonList" -> args
-                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Locale" && insn.name == "forLanguageTag" -> {
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Locale" && insn.name == "forLanguageTag" ->
                             (args.firstOrNull() as? String)?.let(::normalizeLocaleSpec)
-                        }
-                        insn.opcode == Opcodes.INVOKESPECIAL && owner == "java.util.Locale" && insn.name == "<init>" -> {
-                            null
-                        }
+                        insn.opcode == Opcodes.INVOKESPECIAL && owner == "java.util.Locale" && insn.name == "<init>" -> null
                         else -> null
                     }
                     if (AsmType.getReturnType(insn.desc).sort != AsmType.VOID) {
@@ -1979,16 +1822,10 @@ class SootUpAdapter(
     }
 
     private fun resolveStaticLiteral(owner: String, fieldName: String): Any? = when {
+        owner == "java.util.Locale" -> extractLocaleSpec(fieldName)
         fieldName == "FORMAT_CLASS" -> listOf("java.class")
         fieldName == "FORMAT_PROPERTIES" -> listOf("java.properties")
         fieldName == "FORMAT_DEFAULT" -> listOf("java.class", "java.properties")
-        owner == "java.util.ResourceBundle.Control" || owner == "java.util.ResourceBundle\$Control" -> when (fieldName) {
-            "FORMAT_CLASS" -> listOf("java.class")
-            "FORMAT_PROPERTIES" -> listOf("java.properties")
-            "FORMAT_DEFAULT" -> listOf("java.class", "java.properties")
-            else -> null
-        }
-        owner == "java.util.Locale" -> extractLocaleSpec(fieldName)
         else -> null
     }
 
@@ -2040,9 +1877,7 @@ class SootUpAdapter(
         val supported = declaringClass == "java.util.Properties" ||
             declaringClass == "java.util.PropertyResourceBundle" ||
             declaringClass == "java.util.ResourceBundle" ||
-            declaringClass == "java.lang.System" ||
-            declaringClass == "org.springframework.core.env.Environment" ||
-            declaringClass == "org.springframework.core.env.PropertyResolver"
+            declaringClass == "java.lang.System"
         if (!supported || invokeExpr.args.isEmpty()) return null
         val firstArg = invokeExpr.args[0]
         return if (firstArg is SootStringConstant) firstArg.value else null
@@ -2261,17 +2096,10 @@ class SootUpAdapter(
     private fun isStructuredResourceLoadCall(calleeSignature: MethodSignature): Boolean {
         val declaringClass = calleeSignature.declClassType.fullyQualifiedName
         val methodName = calleeSignature.name
-        if (isPropertiesLoadCall(calleeSignature) || isPropertyResourceBundleConstructor(calleeSignature)) return true
-        return when (declaringClass) {
-            "com.fasterxml.jackson.databind.ObjectMapper" -> methodName in setOf("readTree", "readValue", "readValues")
-            "com.fasterxml.jackson.dataformat.xml.XmlMapper" -> methodName in setOf("readTree", "readValue", "readValues")
-            "com.google.gson.Gson" -> methodName == "fromJson"
-            "org.yaml.snakeyaml.Yaml" -> methodName in setOf("load", "loadAll", "loadAs")
-            "javax.xml.parsers.DocumentBuilder" -> methodName == "parse"
-            "org.dom4j.io.SAXReader" -> methodName == "read"
-            "org.jdom2.input.SAXBuilder" -> methodName == "build"
-            else -> false
-        }
+        return isPropertiesLoadCall(calleeSignature) ||
+            isPropertyResourceBundleConstructor(calleeSignature) ||
+            (declaringClass == "com.google.gson.Gson" && methodName == "fromJson") ||
+            (declaringClass == "javax.xml.parsers.DocumentBuilder" && methodName == "parse")
     }
 
     private fun collectMatchingResourceBundlePaths(
@@ -2529,13 +2357,6 @@ class SootUpAdapter(
         bundleParent(bundle)?.let(::indexRuntimeBundle)
     }
 
-    private fun normalizeRuntimeBundleValue(value: Any?): Any? = when (value) {
-        is String, is Number, is Boolean -> value
-        is Array<*> -> value.map(::normalizeRuntimeBundleValue)
-        is Iterable<*> -> value.map(::normalizeRuntimeBundleValue)
-        else -> value?.toString()
-    }
-
     private fun toControl(controlSpec: BundleControlSpec): ResourceBundle.Control =
         if (controlSpec.noFallback) {
             ResourceBundle.Control.getNoFallbackControl(controlFormatsList(controlSpec))
@@ -2643,127 +2464,11 @@ class SootUpAdapter(
 
     private fun normalizeResourcePath(caller: MethodDescriptor, declaringClass: String, rawPath: String): String {
         val trimmed = rawPath.trim()
-        if (trimmed.isEmpty()) return trimmed
-        if (declaringClass == "java.lang.ClassLoader") {
+        if (trimmed.isEmpty() || declaringClass == "java.lang.ClassLoader" || trimmed.startsWith("/")) {
             return trimmed.removePrefix("/")
         }
-        if (trimmed.startsWith("/")) {
-            return trimmed.removePrefix("/")
-        }
-        val packagePath = caller.declaringClass.className.substringBeforeLast('.', "")
-            .replace('.', '/')
+        val packagePath = caller.declaringClass.className.substringBeforeLast('.', "").replace('.', '/')
         return if (packagePath.isEmpty()) trimmed else "$packagePath/$trimmed"
-    }
-
-    private fun linkValueAnnotatedField(binding: PlaceholderBinding?, fieldNode: FieldNode) {
-        if (binding == null) return
-        binding.key?.let { configKey ->
-            lookupResourceFiles(null).forEach { resourceFile ->
-                graphBuilder.addEdge(ResourceEdge(resourceFile.id, fieldNode.id, ResourceRelation.LOOKUP))
-            }
-        }
-        if (binding.hasDefaultValue) {
-            val defaultNode = getOrCreateConstantValue(binding.defaultValue)
-            graphBuilder.addEdge(
-                DataFlowEdge(
-                    from = defaultNode.id,
-                    to = fieldNode.id,
-                    kind = DataFlowKind.ASSIGN
-                )
-            )
-        }
-    }
-
-    private fun extractValueAnnotationBinding(annotations: Iterable<*>): PlaceholderBinding? {
-        val valueAnnotation = annotations.firstOrNull {
-            getAnnotationFullName(it) == "org.springframework.beans.factory.annotation.Value"
-        } ?: return null
-        val expression = normalizeAnnotationValue(getAnnotationValues(valueAnnotation)["value"]) as? String ?: return null
-        return extractPlaceholderBinding(expression)
-    }
-
-    private fun extractValueAnnotationBinding(fieldNode: AsmFieldNode): PlaceholderBinding? {
-        val annotations = (fieldNode.visibleAnnotations ?: emptyList()) + (fieldNode.invisibleAnnotations ?: emptyList())
-        val valueAnnotation = annotations.firstOrNull { it.desc == "Lorg/springframework/beans/factory/annotation/Value;" }
-            ?: return null
-        val rawValues = valueAnnotation.values ?: return null
-        var expression: String? = null
-        var index = 0
-        while (index + 1 < rawValues.size) {
-            val key = rawValues[index] as? String
-            val value = rawValues[index + 1]
-            if (key == "value") {
-                expression = value?.toString()
-                break
-            }
-            index += 2
-        }
-        return expression?.let { extractPlaceholderBinding(it) }
-    }
-
-    private fun extractPlaceholderBinding(expression: String): PlaceholderBinding {
-        val trimmed = expression.trim()
-        val match = Regex("""\$\{([^:}]+)(?::([^}]*))?}""").find(trimmed)
-        if (match != null) {
-            return PlaceholderBinding(
-                key = match.groupValues.getOrNull(1)?.takeIf { it.isNotBlank() },
-                defaultValue = match.groupValues.getOrNull(2)?.let(::parseScalar),
-                hasDefaultValue = match.groups[2] != null
-            )
-        }
-        return PlaceholderBinding(
-            key = null,
-            defaultValue = parseScalar(trimmed),
-            hasDefaultValue = true
-        )
-    }
-
-    private fun extractConfigurationPropertiesPrefix(sootClass: SootClass): String? {
-        if (sootClass is JavaSootClass) {
-            val fromSoot = extractConfigurationPropertiesPrefix(sootClass.annotations)
-            if (fromSoot != null) return fromSoot
-            val fromAsm = getAsmClassNode(sootClass)?.let { classNode ->
-                val annotations = buildList {
-                    classNode.visibleAnnotations?.let { addAll(AsmUtil.createAnnotationUsage(it).toList()) }
-                    classNode.invisibleAnnotations?.let { addAll(AsmUtil.createAnnotationUsage(it).toList()) }
-                }
-                extractConfigurationPropertiesPrefix(annotations)
-            }
-            if (fromAsm != null) return fromAsm
-        }
-        return null
-    }
-
-    private fun extractConfigurationPropertiesPrefix(annotations: Iterable<*>): String? {
-        val configAnnotation = annotations.firstOrNull {
-            getAnnotationFullName(it) == "org.springframework.boot.context.properties.ConfigurationProperties"
-        } ?: return null
-        val values = getAnnotationValues(configAnnotation)
-        return normalizeAnnotationValue(values["prefix"]) as? String
-            ?: normalizeAnnotationValue(values["value"]) as? String
-    }
-
-    private fun linkConfigurationPropertiesField(prefix: String?, fieldName: String, fieldNode: FieldNode) {
-        if (prefix.isNullOrBlank()) return
-        configurationPropertyKeys(prefix, fieldName).forEach { key ->
-            lookupResourceFiles(null).forEach { resourceFile ->
-                graphBuilder.addEdge(ResourceEdge(resourceFile.id, fieldNode.id, ResourceRelation.LOOKUP))
-            }
-        }
-    }
-
-    private fun configurationPropertyKeys(prefix: String, fieldName: String): Set<String> {
-        val kebab = fieldName
-            .replace(Regex("([a-z0-9])([A-Z])"), "$1-$2")
-            .lowercase()
-        val snake = fieldName
-            .replace(Regex("([a-z0-9])([A-Z])"), "$1_$2")
-            .lowercase()
-        return linkedSetOf(
-            "$prefix.$fieldName",
-            "$prefix.$kebab",
-            "$prefix.$snake"
-        )
     }
 
     private fun isResourceConfig(path: String): Boolean =
@@ -2785,215 +2490,6 @@ class SootUpAdapter(
         val fileName = path.substringAfterLast('/')
         val match = Regex("""application-([^.]+)\.(properties|json|xml|ya?ml)""").matchEntire(fileName)
         return match?.groupValues?.getOrNull(1)
-    }
-
-    private fun loadProperties(content: String): Map<String, Any?> {
-        val properties = Properties()
-        properties.load(content.reader())
-        return properties.stringPropertyNames().associateWith { parseScalar(properties.getProperty(it)) }
-    }
-
-    private fun loadYaml(content: String): Map<String, Any?> {
-        val result = linkedMapOf<String, Any?>()
-        val pathStack = mutableListOf<String>()
-        var previousIndent = 0
-
-        content.lineSequence().forEach { rawLine ->
-            val line = rawLine.substringBefore('#').trimEnd()
-            if (line.isBlank() || ':' !in line) return@forEach
-            val indent = rawLine.indexOfFirst { !it.isWhitespace() }.coerceAtLeast(0)
-            val level = indent / 2
-            while (pathStack.size > level) {
-                pathStack.removeAt(pathStack.lastIndex)
-            }
-            if (level < previousIndent / 2 && pathStack.size > level) {
-                while (pathStack.size > level) {
-                    pathStack.removeAt(pathStack.lastIndex)
-                }
-            }
-            previousIndent = indent
-
-            val key = line.substringBefore(':').trim()
-            val valuePart = line.substringAfter(':').trim()
-            if (valuePart.isEmpty()) {
-                if (pathStack.size == level) {
-                    pathStack.add(key)
-                } else {
-                    pathStack[level] = key
-                }
-            } else {
-                val fullKey = (pathStack + key).joinToString(".")
-                result[fullKey] = parseScalar(valuePart)
-            }
-        }
-
-        return result
-    }
-
-    private fun loadJson(content: String): Map<String, Any?> {
-        val element = JsonParser.parseString(content)
-        val result = linkedMapOf<String, Any?>()
-        flattenJson(element, emptyList(), result)
-        return result
-    }
-
-    private fun flattenJson(element: JsonElement?, path: List<String>, dest: MutableMap<String, Any?>) {
-        when {
-            element == null || element.isJsonNull -> {
-                if (path.isNotEmpty()) dest[path.joinToString(".")] = null
-            }
-            element.isJsonObject -> flattenJsonObject(element.asJsonObject, path, dest)
-            element.isJsonArray -> flattenJsonArray(element.asJsonArray, path, dest)
-            element.isJsonPrimitive -> {
-                if (path.isNotEmpty()) dest[path.joinToString(".")] = parseJsonPrimitive(element)
-            }
-        }
-    }
-
-    private fun flattenJsonObject(obj: JsonObject, path: List<String>, dest: MutableMap<String, Any?>) {
-        obj.entrySet().forEach { (key, value) ->
-            flattenJson(value, path + key, dest)
-        }
-    }
-
-    private fun flattenJsonArray(array: JsonArray, path: List<String>, dest: MutableMap<String, Any?>) {
-        array.forEachIndexed { index, element ->
-            val base = path.toMutableList()
-            if (base.isNotEmpty()) {
-                base[base.lastIndex] = "${base.last()}[$index]"
-            } else {
-                base += "[$index]"
-            }
-            flattenJson(element, base, dest)
-        }
-    }
-
-    private fun parseJsonPrimitive(element: JsonElement): Any? {
-        val primitive = element.asJsonPrimitive
-        return when {
-            primitive.isBoolean -> primitive.asBoolean
-            primitive.isNumber -> parseScalar(primitive.asString)
-            primitive.isString -> primitive.asString
-            else -> primitive.toString()
-        }
-    }
-
-    private fun loadXml(content: ByteArray): Map<String, Any?> {
-        val text = content.toString(Charsets.UTF_8)
-        val looksLikePropertiesXml = Regex("""<\s*properties(?:\s|>)""").containsMatchIn(text)
-        return if (looksLikePropertiesXml) {
-            runCatching { loadXmlProperties(content) }
-                .getOrElse { loadGenericXml(content) }
-        } else {
-            loadGenericXml(content)
-        }
-    }
-
-    private fun loadXmlProperties(content: ByteArray): Map<String, Any?> {
-        val properties = Properties()
-        ByteArrayInputStream(content).use(properties::loadFromXML)
-        return properties.stringPropertyNames().associateWith { parseScalar(properties.getProperty(it)) }
-    }
-
-    private fun loadGenericXml(content: ByteArray): Map<String, Any?> {
-        val factory = DocumentBuilderFactory.newInstance().apply {
-            isNamespaceAware = false
-            runCatching { setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true) }
-            runCatching { setFeature("http://apache.org/xml/features/disallow-doctype-decl", true) }
-            runCatching { setFeature("http://xml.org/sax/features/external-general-entities", false) }
-            runCatching { setFeature("http://xml.org/sax/features/external-parameter-entities", false) }
-        }
-        val document = ByteArrayInputStream(content).use { input ->
-            factory.newDocumentBuilder().parse(input).apply { documentElement.normalize() }
-        }
-        val result = linkedMapOf<String, Any?>()
-        val elements = document.getElementsByTagName("*")
-        for (index in 0 until elements.length) {
-            val element = elements.item(index) as? Element ?: continue
-            val elementKey = xmlElementPath(element) ?: continue
-            if (element.hasAttributes()) {
-                val attributes = element.attributes
-                for (attributeIndex in 0 until attributes.length) {
-                    val attribute = attributes.item(attributeIndex)
-                    if (attribute != null && attribute.nodeName.isNotBlank()) {
-                        result["$elementKey.@${attribute.nodeName}"] = parseScalar(attribute.nodeValue ?: "")
-                    }
-                }
-            }
-
-            val childElements = xmlChildElements(element)
-            val directTextContent = element.childNodes.toTextValue()
-            if (childElements.isEmpty()) {
-                element.textContent
-                    ?.trim()
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let { result[elementKey] = parseScalar(it) }
-            } else if (directTextContent != null) {
-                result["$elementKey.#text"] = parseScalar(directTextContent)
-            }
-        }
-        return result
-    }
-
-    private fun xmlChildElements(element: Element): List<Element> {
-        val children = mutableListOf<Element>()
-        for (index in 0 until element.childNodes.length) {
-            val node = element.childNodes.item(index)
-            if (node is Element) {
-                children += node
-            }
-        }
-        return children
-    }
-
-    private fun xmlElementPath(element: Element): String? {
-        val parts = mutableListOf<String>()
-        var current: Element? = element
-        while (current != null) {
-            val parent = current.parentNode as? Element
-            if (parent == null) {
-                if (parts.isEmpty() && xmlChildElements(current).isEmpty()) {
-                    parts += current.tagName
-                }
-                break
-            }
-            val sameNamedSiblings = xmlChildElements(parent).filter { it.tagName == current.tagName }
-            val name = if (sameNamedSiblings.size > 1) {
-                "${current.tagName}[${sameNamedSiblings.indexOf(current)}]"
-            } else {
-                current.tagName
-            }
-            parts += name
-            current = parent
-        }
-        return parts.asReversed().joinToString(".").takeIf { it.isNotBlank() }
-    }
-
-    private fun org.w3c.dom.NodeList.toTextValue(): String? {
-        val text = buildString {
-            for (index in 0 until length) {
-            val node = item(index)
-            if (node.nodeType == DomNode.TEXT_NODE || node.nodeType == DomNode.CDATA_SECTION_NODE) {
-                append(node.nodeValue)
-            }
-        }
-        }.trim()
-        return text.takeIf { it.isNotEmpty() }
-    }
-
-    private fun parseScalar(value: String): Any? {
-        val trimmed = value.trim()
-        return when {
-            trimmed.equals("true", ignoreCase = true) -> true
-            trimmed.equals("false", ignoreCase = true) -> false
-            trimmed.equals("null", ignoreCase = true) -> null
-            trimmed.toIntOrNull() != null -> trimmed.toInt()
-            trimmed.toLongOrNull() != null -> trimmed.toLong()
-            trimmed.toDoubleOrNull() != null -> trimmed.toDouble()
-            trimmed.startsWith("\"") && trimmed.endsWith("\"") -> trimmed.removeSurrounding("\"")
-            trimmed.startsWith("'") && trimmed.endsWith("'") -> trimmed.removeSurrounding("'")
-            else -> trimmed
-        }
     }
 
     /**

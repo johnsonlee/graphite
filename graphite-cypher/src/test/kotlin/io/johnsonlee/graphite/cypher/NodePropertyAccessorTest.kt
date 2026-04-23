@@ -343,7 +343,6 @@ class NodePropertyAccessorTest {
         assertEquals(ControlFlowEdge::class.java, NodePropertyAccessor.resolveEdgeType("CONTROLFLOW"))
         assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE"))
         assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE_LOOKUP"))
-        assertEquals(ResourceEdge::class.java, NodePropertyAccessor.resolveEdgeType("RESOURCE_CONTAINS"))
     }
 
     @Test

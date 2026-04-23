@@ -33,8 +33,7 @@ enum class DataFlowKind {
     ARRAY_STORE,      // Value stored to array
     ARRAY_LOAD,       // Value loaded from array
     CAST,             // Type cast
-    PHI,              // SSA phi node merge
-    RESOURCE_READ     // Legacy resource/config read edge kind retained for v2 compatibility
+    PHI               // SSA phi node merge
 }
 
 /**
@@ -51,7 +50,6 @@ data class ResourceEdge(
 ) : Edge
 
 enum class ResourceRelation {
-    CONTAINS,           // Legacy ResourceFileNode -> ResourceValueNode structure edge
     OPENS,              // ResourceFileNode -> CallSiteNode
     LOADS,              // ResourceFileNode -> CallSiteNode for parsers/loaders/bundles
     BUNDLE_CANDIDATE,   // ResourceFileNode -> CallSiteNode for ResourceBundle candidate resolution

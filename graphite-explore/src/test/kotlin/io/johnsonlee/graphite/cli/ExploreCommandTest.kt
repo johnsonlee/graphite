@@ -469,7 +469,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api resource content returns text payload`() {
-        val (code, body) = get("/api/resources/content?path=application.yml")
+        val (code, body) = get("/api/resources/application.yml")
         assertEquals(200, code, "Expected 200, body: $body")
         val result: Map<String, Any?> = parseJson(body)
         assertEquals("application.yml", result["path"])
@@ -480,14 +480,37 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api resource content returns 404 for missing path`() {
-        val (code, body) = get("/api/resources/content?path=missing.yml")
+        val (code, body) = get("/api/resources/missing.yml")
         assertEquals(404, code, "Expected 404, body: $body")
     }
 
     @Test
-    fun `GET api resource content returns 400 when path missing`() {
-        val (code, body) = get("/api/resources/content")
-        assertEquals(400, code, "Expected 400, body: $body")
+    fun `GET openapi json exposes discoverable explore API`() {
+        val (code, body) = get("/openapi.json")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("3.0.3", result["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val paths = result["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/api/cypher"))
+        assertTrue(paths.containsKey("/api/api-spec"))
+        assertTrue(paths.containsKey("/api/resources/{path}"))
+        @Suppress("UNCHECKED_CAST")
+        val cypher = paths["/api/cypher"] as Map<String, Map<String, Any?>>
+        assertTrue(cypher.containsKey("get"))
+        assertTrue(cypher.containsKey("post"))
+        @Suppress("UNCHECKED_CAST")
+        val post = cypher["post"] as Map<String, Any?>
+        assertTrue(post.containsKey("requestBody"))
+    }
+
+    @Test
+    fun `GET swagger json aliases the OpenAPI document`() {
+        val (openapiCode, openapiBody) = get("/openapi.json")
+        val (swaggerCode, swaggerBody) = get("/swagger.json")
+        assertEquals(200, openapiCode)
+        assertEquals(200, swaggerCode)
+        assertEquals(parseJson<Map<String, Any?>>(openapiBody), parseJson<Map<String, Any?>>(swaggerBody))
     }
 
     // ========================================================================
@@ -631,6 +654,23 @@ class ExploreCommandTest {
         assertEquals(listOf("/"), combinePaths.invoke(explore, emptyList<String>(), emptyList<String>()))
         assertEquals(listOf("/users"), combinePaths.invoke(explore, listOf("/"), listOf("/users")))
         assertEquals(listOf("/api"), combinePaths.invoke(explore, listOf("/api"), emptyList<String>()))
+    }
+
+    @Test
+    fun `buildOpenApiSpec describes cypher and resource endpoints`() {
+        val spec = ExploreCommand().buildOpenApiSpec()
+        assertEquals("3.0.3", spec["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val paths = spec["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/openapi.json"))
+        assertTrue(paths.containsKey("/swagger.json"))
+        @Suppress("UNCHECKED_CAST")
+        val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val get = resources["get"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val parameters = get["parameters"] as List<Map<String, Any?>>
+        assertEquals("path", parameters.single()["name"])
     }
 
     // ========================================================================

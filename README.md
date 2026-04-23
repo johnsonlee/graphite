@@ -201,8 +201,14 @@ Generic JDK resource linking currently covers:
 | Endpoint | Description |
 |----------|-------------|
 | `/api/resources` | List indexed resources |
-| `/api/resources/content?path=...` | Read persisted raw resource content |
+| `/api/resources/{path}` | Read persisted raw resource content |
 | `/api/api-spec` | Extract API specs/endpoints for agent discovery |
+| `/openapi.json` | Machine-readable OpenAPI document for the explore server |
+| `/swagger.json` | Swagger-compatible alias of the same API document |
+
+For agent-driven discovery, probe `/openapi.json` first. It describes the full
+explore REST surface, including `/api/cypher`, `/api/resources`,
+`/api/resources/{path}`, `/api/api-spec`, and the node/subgraph endpoints.
 
 ## Architecture
 

@@ -124,6 +124,20 @@ public class ResourceConfig {
         return ResourceBundle.getBundle("messages", Locale.KOREA, control).getString("hello");
     }
 
+    public String messageKoWithControlAlias() {
+        java.util.List<String> formats = Control.FORMAT_PROPERTIES;
+        Control control = Control.getNoFallbackControl(formats);
+        Control alias = control;
+        return ResourceBundle.getBundle("messages", Locale.KOREA, alias).getString("hello");
+    }
+
+    public String messageKoWithDefaultControlAlias() {
+        java.util.List<String> formats = Control.FORMAT_DEFAULT;
+        Control control = Control.getControl(formats);
+        Control alias = control;
+        return ResourceBundle.getBundle("messages", Locale.KOREA, alias).getString("hello");
+    }
+
     public String messageKoFromBuilder() {
         Locale locale = new Locale.Builder()
             .setLanguage("ko")
@@ -135,6 +149,32 @@ public class ResourceConfig {
     public String messageKoFromBuilderTag() {
         Locale.Builder builder = new Locale.Builder();
         builder.setLanguageTag("ko-KR");
+        Locale locale = builder.build();
+        return ResourceBundle.getBundle("messages", locale).getString("hello");
+    }
+
+    public String messageKoFromBuilderSetLocale() {
+        Locale.Builder builder = new Locale.Builder();
+        builder.setLocale(Locale.KOREA);
+        Locale locale = builder.build();
+        return ResourceBundle.getBundle("messages", locale).getString("hello");
+    }
+
+    public String messageKoFromBuilderReset() {
+        Locale.Builder builder = new Locale.Builder();
+        builder.setLanguage("en");
+        builder.clear();
+        builder.setLanguage("ko");
+        builder.setRegion("KR");
+        Locale locale = builder.build();
+        return ResourceBundle.getBundle("messages", locale).getString("hello");
+    }
+
+    public String messageKoFromBuilderVariant() {
+        Locale.Builder builder = new Locale.Builder();
+        builder.setLanguage("ko");
+        builder.setRegion("KR");
+        builder.setVariant("POSIX");
         Locale locale = builder.build();
         return ResourceBundle.getBundle("messages", locale).getString("hello");
     }

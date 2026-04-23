@@ -11,7 +11,9 @@ import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.OutputStream
 import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
@@ -208,7 +210,6 @@ class GraphStoreTest {
         builder.addNode(resourceFileNode)
         builder.addNode(resourceNode)
         builder.addNode(callSite)
-        builder.addEdge(ResourceEdge(resourceFileNode.id, resourceNode.id, ResourceRelation.CONTAINS))
         builder.addEdge(ResourceEdge(resourceNode.id, callSite.id, ResourceRelation.LOOKUP))
 
         val graph = builder.build()
@@ -221,9 +222,6 @@ class GraphStoreTest {
             val loadedNode = loaded.node(resourceNode.id) as ResourceValueNode
             assertEquals(resourceFileNode, loadedFile)
             assertEquals(resourceNode, loadedNode)
-            assertTrue(loaded.incoming(resourceNode.id, ResourceEdge::class.java).any {
-                it.from == resourceFileNode.id && it.kind == ResourceRelation.CONTAINS
-            })
             assertTrue(loaded.incoming(callSite.id, ResourceEdge::class.java).any {
                 it.from == resourceNode.id && it.kind == ResourceRelation.LOOKUP
             })
@@ -794,6 +792,151 @@ class GraphStoreTest {
             assertTrue(decodedResource is ResourceEdge)
             assertEquals(relation, (decodedResource as ResourceEdge).kind)
         }
+    }
+
+    @Test
+    fun `decodeEdge supports legacy v2 labels`() {
+        val from = NodeId(1)
+        val to = NodeId(2)
+        val comparison = BranchComparison(ComparisonOp.EQ, NodeId(3))
+
+        val dataFlow = NodeSerializer.decodeEdge(0 or (DataFlowKind.FIELD_LOAD.ordinal shl 2), from, to, version = 2)
+        assertEquals(DataFlowKind.FIELD_LOAD, (dataFlow as DataFlowEdge).kind)
+
+        val call = NodeSerializer.decodeEdge(1 or (1 shl 6) or (1 shl 7), from, to, version = 2)
+        assertTrue((call as CallEdge).isVirtual)
+        assertTrue(call.isDynamic)
+
+        val type = NodeSerializer.decodeEdge(2 or (TypeRelation.IMPLEMENTS.ordinal shl 2), from, to, version = 2)
+        assertEquals(TypeRelation.IMPLEMENTS, (type as TypeEdge).kind)
+
+        val control = NodeSerializer.decodeEdge(3 or (ControlFlowKind.BRANCH_FALSE.ordinal shl 2), from, to, comparison, version = 2)
+        assertEquals(ControlFlowKind.BRANCH_FALSE, (control as ControlFlowEdge).kind)
+        assertEquals(comparison, control.comparison)
+    }
+
+    @Test
+    fun `node serializer helpers cover value io and direct edge decoders`() {
+        val dir = Files.createTempDirectory("webgraph-node-helpers")
+        try {
+            val strings = StringTable.build(
+                setOf("fallback", "enum.Owner", "VALUE", "hello", "java.class"),
+                dir
+            )
+            val serializerClass = NodeSerializer::class.java
+            val collectAnyValueString = serializerClass.getDeclaredMethod("collectAnyValueString", Any::class.java, MutableSet::class.java).apply { isAccessible = true }
+            val writeAnyValue = serializerClass.getDeclaredMethod("writeAnyValue", DataOutputStream::class.java, Any::class.java, StringTable::class.java).apply { isAccessible = true }
+            val readAnyValue = serializerClass.getDeclaredMethod("readAnyValue", DataInputStream::class.java, StringTable::class.java, Int::class.javaPrimitiveType).apply { isAccessible = true }
+            val decodeEdgeV2 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV2") }.apply { isAccessible = true }
+            val decodeEdgeV3 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV3") }.apply { isAccessible = true }
+
+            val dest = linkedSetOf<String>()
+            collectAnyValueString.invoke(NodeSerializer, EnumValueReference("enum.Owner", "VALUE"), dest)
+            collectAnyValueString.invoke(NodeSerializer, listOf("hello", true), dest)
+            collectAnyValueString.invoke(NodeSerializer, object { override fun toString() = "fallback" }, dest)
+            assertTrue(dest.containsAll(listOf("enum.Owner", "VALUE", "hello")))
+            assertTrue(dest.contains("fallback"))
+
+            val baos = ByteArrayOutputStream()
+            DataOutputStream(baos).use { dos ->
+                writeAnyValue.invoke(NodeSerializer, dos, listOf("hello", 7), strings)
+                dos.writeByte(99)
+                dos.writeInt(strings.indexOf("fallback"))
+            }
+            DataInputStream(ByteArrayInputStream(baos.toByteArray())).use { dis ->
+                assertEquals(listOf("hello", 7), readAnyValue.invoke(NodeSerializer, dis, strings, NodeSerializer.FORMAT_VERSION))
+                assertEquals("fallback", readAnyValue.invoke(NodeSerializer, dis, strings, NodeSerializer.FORMAT_VERSION))
+            }
+
+            val unsupportedOut = ByteArrayOutputStream()
+            DataOutputStream(unsupportedOut).use { dos ->
+                writeAnyValue.invoke(NodeSerializer, dos, object { override fun toString() = "fallback" }, strings)
+            }
+            DataInputStream(ByteArrayInputStream(unsupportedOut.toByteArray())).use { dis ->
+                assertEquals("fallback", readAnyValue.invoke(NodeSerializer, dis, strings, NodeSerializer.FORMAT_VERSION))
+            }
+
+            val from = NodeId(11)
+            val to = NodeId(12)
+            val comparison = BranchComparison(ComparisonOp.GT, NodeId(13))
+            assertEquals(
+                DataFlowKind.PARAMETER_PASS,
+                (decodeEdgeV2.invoke(NodeSerializer, 0 or (DataFlowKind.PARAMETER_PASS.ordinal shl 2), from.value, to.value, null) as DataFlowEdge).kind
+            )
+            val legacyCall = decodeEdgeV2.invoke(NodeSerializer, 1 or (1 shl 6) or (1 shl 7), from.value, to.value, null) as CallEdge
+            assertTrue(legacyCall.isVirtual)
+            assertTrue(legacyCall.isDynamic)
+            val legacyStaticCall = decodeEdgeV2.invoke(NodeSerializer, 1, from.value, to.value, null) as CallEdge
+            assertFalse(legacyStaticCall.isVirtual)
+            assertFalse(legacyStaticCall.isDynamic)
+            assertEquals(
+                TypeRelation.EXTENDS,
+                (decodeEdgeV2.invoke(NodeSerializer, 2 or (TypeRelation.EXTENDS.ordinal shl 2), from.value, to.value, null) as TypeEdge).kind
+            )
+            assertEquals(
+                comparison,
+                (decodeEdgeV2.invoke(NodeSerializer, 3 or (ControlFlowKind.SEQUENTIAL.ordinal shl 2), from.value, to.value, comparison) as ControlFlowEdge).comparison
+            )
+            val v3Call = decodeEdgeV3.invoke(NodeSerializer, 1 or (1 shl 3) or (1 shl 4), from.value, to.value, null) as CallEdge
+            assertTrue(v3Call.isVirtual)
+            assertTrue(v3Call.isDynamic)
+            val v3StaticCall = decodeEdgeV3.invoke(NodeSerializer, 1, from.value, to.value, null) as CallEdge
+            assertFalse(v3StaticCall.isVirtual)
+            assertFalse(v3StaticCall.isDynamic)
+            assertEquals(
+                ResourceRelation.OPENS,
+                (decodeEdgeV3.invoke(NodeSerializer, 4 or (ResourceRelation.OPENS.ordinal shl 3), from.value, to.value, null) as ResourceEdge).kind
+            )
+            val decodeFailure = assertFailsWith<java.lang.reflect.InvocationTargetException> {
+                decodeEdgeV3.invoke(NodeSerializer, 5, from.value, to.value, null)
+            }
+            assertTrue(decodeFailure.targetException is IllegalArgumentException)
+
+            val boolOut = ByteArrayOutputStream()
+            DataOutputStream(boolOut).use { dos -> writeAnyValue.invoke(NodeSerializer, dos, true, strings) }
+            DataInputStream(ByteArrayInputStream(boolOut.toByteArray())).use { dis ->
+                assertEquals(true, readAnyValue.invoke(NodeSerializer, dis, strings, NodeSerializer.FORMAT_VERSION))
+            }
+
+            val legacyListOut = ByteArrayOutputStream()
+            DataOutputStream(legacyListOut).use { dos -> writeAnyValue.invoke(NodeSerializer, dos, listOf("hello"), strings) }
+            DataInputStream(ByteArrayInputStream(legacyListOut.toByteArray())).use { dis ->
+                val legacyFailure = assertFailsWith<java.lang.reflect.InvocationTargetException> {
+                    readAnyValue.invoke(NodeSerializer, dis, strings, 1)
+                }
+                assertTrue(legacyFailure.targetException is IllegalArgumentException)
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `byte buffer input stream available and counting output stream flush delegate correctly`() {
+        val byteBufferInputStreamClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferInputStream")
+        val inputCtor = byteBufferInputStreamClass.getDeclaredConstructor(ByteBuffer::class.java).apply { isAccessible = true }
+        val input = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(1, 2, 3))) as java.io.InputStream
+        assertEquals(3, input.available())
+        assertEquals(1, input.read())
+        assertEquals(2, input.available())
+        val buffer = ByteArray(4)
+        assertEquals(2, input.read(buffer, 1, 2))
+        assertEquals(byteArrayOf(0, 2, 3, 0).toList(), buffer.toList())
+        assertEquals(-1, input.read(buffer, 0, buffer.size))
+
+        val flushed = mutableListOf<Boolean>()
+        val delegate = object : OutputStream() {
+            override fun write(b: Int) = Unit
+            override fun flush() { flushed += true }
+        }
+        val countingOutputStreamClass = Class.forName("io.johnsonlee.graphite.webgraph.CountingOutputStream")
+        val outputCtor = countingOutputStreamClass.getDeclaredConstructor(OutputStream::class.java).apply { isAccessible = true }
+        val output = outputCtor.newInstance(delegate) as OutputStream
+        output.write(byteArrayOf(1, 2, 3))
+        output.flush()
+        val bytesWritten = countingOutputStreamClass.getDeclaredMethod("getBytesWritten").invoke(output) as Long
+        assertEquals(3L, bytesWritten)
+        assertEquals(listOf(true), flushed)
     }
 
     @Test

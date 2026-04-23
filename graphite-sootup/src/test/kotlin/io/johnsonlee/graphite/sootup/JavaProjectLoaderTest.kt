@@ -16,6 +16,7 @@ import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -322,6 +323,37 @@ class JavaProjectLoaderTest {
     }
 
     @Test
+    fun `should skip Spring Boot libraries that do not contain included packages`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val unrelatedLib = buildJarFromClasses(testClassesDir, "sample/generics/", "generics-lib.jar")
+        val jarPath = buildSpringBootJarWithLibs(testClassesDir, "sample/simple/", listOf(unrelatedLib))
+
+        try {
+            val logs = mutableListOf<String>()
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.simple"),
+                    includeLibraries = true,
+                    buildCallGraph = false,
+                    verbose = { logs.add(it) }
+                )
+            )
+
+            val graph = loader.load(jarPath)
+            assertNotNull(graph)
+            assertTrue(logs.none { it.contains("+ Loading JAR: generics-lib.jar") })
+        } finally {
+            Files.deleteIfExists(jarPath)
+            Files.deleteIfExists(unrelatedLib)
+            File(System.getProperty("java.io.tmpdir")).listFiles()
+                ?.filter { it.name.startsWith("graphite-springboot") }
+                ?.forEach { it.deleteRecursively() }
+        }
+    }
+
+    @Test
     fun `should load with empty includePackages and include all classes`() {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
@@ -350,6 +382,54 @@ class JavaProjectLoaderTest {
     }
 
     @Test
+    fun `should report skipped WAR libraries by package`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val unrelatedLib = buildJarFromClasses(testClassesDir, "sample/generics/", "generics-lib.jar")
+        val warPath = buildWarFileWithLibs(testClassesDir, "sample/simple/", listOf(unrelatedLib))
+
+        try {
+            val logs = mutableListOf<String>()
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.simple"),
+                    includeLibraries = true,
+                    buildCallGraph = false,
+                    verbose = { logs.add(it) }
+                )
+            )
+
+            val graph = loader.load(warPath)
+            assertNotNull(graph)
+            assertTrue(logs.any { it.contains("skipped: 0 by filter, 1 by package") })
+        } finally {
+            Files.deleteIfExists(warPath)
+            Files.deleteIfExists(unrelatedLib)
+            File(System.getProperty("java.io.tmpdir")).listFiles()
+                ?.filter { it.name.startsWith("graphite-war") }
+                ?.forEach { it.deleteRecursively() }
+        }
+    }
+
+    @Test
+    fun `jarContainsIncludedPackages returns false for unrelated jars`() {
+        val testClassesDir = findTestClassesDir()
+        val unrelatedJar = buildJarFromClasses(testClassesDir, "sample/generics/", "generics-lib.jar")
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.simple"),
+                    buildCallGraph = false
+                )
+            )
+            assertFalse(invokePrivate(loader, "jarContainsIncludedPackages", unrelatedJar))
+        } finally {
+            Files.deleteIfExists(unrelatedJar)
+        }
+    }
+
+    @Test
     fun `should handle loadSignatures failure gracefully`() {
         // Create a JAR with invalid content to trigger the catch in loadSignatures
         val tempJar = Files.createTempFile("invalid", ".jar")
@@ -371,6 +451,42 @@ class JavaProjectLoaderTest {
             assertNotNull(graph, "Should still produce a graph even with no class files")
         } finally {
             Files.deleteIfExists(tempJar)
+        }
+    }
+
+    @Test
+    fun `private helpers tolerate invalid archives`() {
+        val invalidJar = Files.createTempFile("invalid-signatures", ".jar")
+        val invalidBootJar = Files.createTempFile("invalid-boot", ".jar")
+        val invalidWar = Files.createTempFile("invalid-war", ".war")
+        try {
+            Files.writeString(invalidJar, "not-a-jar")
+            Files.writeString(invalidBootJar, "not-a-boot-jar")
+            Files.writeString(invalidWar, "not-a-war")
+
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.simple"),
+                    includeLibraries = true,
+                    buildCallGraph = false
+                )
+            )
+
+            invokePrivate<Unit>(loader, "loadSignatures", invalidJar, BytecodeSignatureReader())
+            assertTrue(
+                invokePrivate<Boolean>(loader, "jarContainsIncludedPackages", invalidJar),
+                "Invalid jars should be included on error to stay fail-open"
+            )
+            assertFailsWith<Exception> {
+                invokePrivate<List<Any>>(loader, "createSpringBootInputLocations", invalidBootJar)
+            }
+            assertFailsWith<Exception> {
+                invokePrivate<List<Any>>(loader, "createWarInputLocations", invalidWar)
+            }
+        } finally {
+            Files.deleteIfExists(invalidJar)
+            Files.deleteIfExists(invalidBootJar)
+            Files.deleteIfExists(invalidWar)
         }
     }
 
@@ -708,5 +824,19 @@ class JavaProjectLoaderTest {
         val submodulePath = projectDir.resolve("build/classes/java/test")
         val rootPath = projectDir.resolve("graphite-sootup/build/classes/java/test")
         return if (submodulePath.exists()) submodulePath else rootPath
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> invokePrivate(target: Any, name: String, vararg args: Any?): T {
+        val parameterTypes = args.map {
+            when (it) {
+                is Path -> Path::class.java
+                is BytecodeSignatureReader -> BytecodeSignatureReader::class.java
+                else -> it!!::class.java
+            }
+        }.toTypedArray()
+        val method = target.javaClass.getDeclaredMethod(name, *parameterTypes)
+        method.isAccessible = true
+        return method.invoke(target, *args) as T
     }
 }

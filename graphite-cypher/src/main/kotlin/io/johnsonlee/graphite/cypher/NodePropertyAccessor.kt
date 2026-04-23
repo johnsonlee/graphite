@@ -266,7 +266,7 @@ object NodePropertyAccessor {
         "CALL" -> CallEdge::class.java
         "TYPE" -> TypeEdge::class.java
         "CONTROL_FLOW", "CONTROLFLOW" -> ControlFlowEdge::class.java
-        "RESOURCE", "RESOURCE_EDGE", "RESOURCE_CONTAINS", "RESOURCE_OPEN", "RESOURCE_LOAD",
+        "RESOURCE", "RESOURCE_EDGE", "RESOURCE_OPEN", "RESOURCE_LOAD",
         "RESOURCE_BUNDLE_CANDIDATE", "RESOURCE_LOOKUP", "RESOURCE_KEYS" -> ResourceEdge::class.java
         else -> null
     }

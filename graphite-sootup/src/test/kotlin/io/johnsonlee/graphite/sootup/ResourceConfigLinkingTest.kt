@@ -94,8 +94,13 @@ class ResourceConfigLinkingTest {
             val messageKoFromCtorMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromCtor")).single()
             val messageKoWithClassLoaderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithClassLoader")).single()
             val messageKoWithControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithControl")).single()
+            val messageKoWithControlAliasMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithControlAlias")).single()
+            val messageKoWithDefaultControlAliasMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithDefaultControlAlias")).single()
             val messageKoFromBuilderMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilder")).single()
             val messageKoFromBuilderTagMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderTag")).single()
+            val messageKoFromBuilderSetLocaleMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderSetLocale")).single()
+            val messageKoFromBuilderResetMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderReset")).single()
+            val messageKoFromBuilderVariantMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoFromBuilderVariant")).single()
             val messageClassOnlyControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageClassOnlyControlNoCandidate")).single()
             val messageClassOnlyCustomControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageClassOnlyCustomControlNoCandidate")).single()
             val messageKoCustomCandidateControlMethod = graph.methods(MethodPattern("sample.resources.ResourceConfig", "messageKoWithCustomCandidateControl")).single()
@@ -123,8 +128,13 @@ class ResourceConfigLinkingTest {
             assertLocaleAwareBundle(graph, messageKoFromCtorMethod, bundleRoot, bundleKo, bundleKoKr)
             assertLocaleAwareBundle(graph, messageKoWithClassLoaderMethod, bundleRoot, bundleKo, bundleKoKr)
             assertLocaleAwareBundle(graph, messageKoWithControlMethod, bundleRoot, bundleKo, bundleKoKr)
+            assertLocaleAwareBundle(graph, messageKoWithControlAliasMethod, bundleRoot, bundleKo, bundleKoKr)
+            assertLocaleAwareBundle(graph, messageKoWithDefaultControlAliasMethod, bundleRoot, bundleKo, bundleKoKr)
             assertLocaleAwareBundle(graph, messageKoFromBuilderMethod, bundleRoot, bundleKo, bundleKoKr)
             assertLocaleAwareBundle(graph, messageKoFromBuilderTagMethod, bundleRoot, bundleKo, bundleKoKr)
+            assertLocaleAwareBundle(graph, messageKoFromBuilderSetLocaleMethod, bundleRoot, bundleKo, bundleKoKr)
+            assertLocaleAwareBundle(graph, messageKoFromBuilderResetMethod, bundleRoot, bundleKo, bundleKoKr)
+            assertLocaleAwareBundle(graph, messageKoFromBuilderVariantMethod, bundleRoot, bundleKo, bundleKoKr)
 
             val classOnlyControlCall = requireCallSite(graph, messageClassOnlyControlMethod, "getBundle")
             val classOnlyControlEdges = graph.incomingResourceEdges(classOnlyControlCall.id)
@@ -190,9 +200,6 @@ class ResourceConfigLinkingTest {
 
     private fun createFixtureDir(): Path {
         val compiledClass = findCompiledTestClass("sample/resources/ResourceConfig.class")
-        val compiledSpringClass = findCompiledTestClass("sample/resources/SpringResourceConfig.class")
-        val compiledConfigurationPropertiesClass =
-            findCompiledTestClass("sample/resources/ConfigurationPropertiesConfig.class")
         val compiledMessagesListBundleClass = findCompiledTestClass("sample/resources/MessagesListBundle.class")
         val compiledMessagesListBundleKoClass = findCompiledTestClass("sample/resources/MessagesListBundle_ko_KR.class")
         val compiledProviderBundleClass = findCompiledTestClass("sample/resources/ProviderMessagesBundle.class")
@@ -203,13 +210,8 @@ class ResourceConfigLinkingTest {
         val providerService = findCompiledTestResource("META-INF/services/java.util.spi.ResourceBundleProvider")
         val fixtureDir = Files.createTempDirectory("graphite-resource-config")
         val targetClass = fixtureDir.resolve("sample/resources/ResourceConfig.class")
-        val targetSpringClass = fixtureDir.resolve("sample/resources/SpringResourceConfig.class")
-        val targetConfigurationPropertiesClass =
-            fixtureDir.resolve("sample/resources/ConfigurationPropertiesConfig.class")
         Files.createDirectories(targetClass.parent)
         Files.copy(compiledClass, targetClass)
-        Files.copy(compiledSpringClass, targetSpringClass)
-        Files.copy(compiledConfigurationPropertiesClass, targetConfigurationPropertiesClass)
         Files.copy(compiledMessagesListBundleClass, fixtureDir.resolve("sample/resources/MessagesListBundle.class"))
         Files.copy(compiledMessagesListBundleKoClass, fixtureDir.resolve("sample/resources/MessagesListBundle_ko_KR.class"))
         Files.copy(compiledProviderBundleClass, fixtureDir.resolve("sample/resources/ProviderMessagesBundle.class"))
@@ -225,8 +227,6 @@ class ResourceConfigLinkingTest {
             """
             feature.mode=shadow
             feature.enabled=true
-            service.cache.enabled=true
-            service.cache.ttl-seconds=30
             """.trimIndent()
         )
         Files.writeString(
