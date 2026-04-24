@@ -8,9 +8,22 @@ import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
+import java.util.Locale
+import java.util.ResourceBundle
 import java.util.ServiceLoader
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type as AsmType
+import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.InsnNode
+import org.objectweb.asm.tree.IntInsnNode
+import org.objectweb.asm.tree.LdcInsnNode
+import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.TypeInsnNode
+import org.objectweb.asm.tree.VarInsnNode
 import sootup.core.frontend.BodySource
 import sootup.core.graph.StmtGraph
 import sootup.core.jimple.basic.NoPositionInformation
@@ -78,11 +91,28 @@ class SootUpAdapter(
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
 ) {
-    private val trackCrossMethodFunctionalDispatch = config.buildCallGraph
-    private val extractAnnotationsEnabled = config.buildCallGraph
+    private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
+    private val extractAnnotationsEnabled = config.extractAnnotations
 
     private data class LocalKey(val method: MethodDescriptor, val name: String)
     private data class ParameterBinding(val method: MethodDescriptor, val index: Int)
+    private data class BundleControlSpec(
+        val noFallback: Boolean = false,
+        val formats: Set<String> = setOf("java.properties", "java.class"),
+        val candidateLocales: List<String>? = null
+    )
+    private data class LocaleBuilderSpec(
+        val language: String? = null,
+        val country: String? = null,
+        val variant: String? = null,
+        val languageTag: String? = null
+    ) {
+        fun toLocaleSpec(): String? {
+            languageTag?.takeIf { it.isNotBlank() }?.let { return it }
+            val raw = listOfNotNull(language, country, variant).joinToString("_")
+            return raw.takeIf { it.isNotBlank() }
+        }
+    }
 
     // Maps to track created nodes for cross-referencing
     private val localNodes = mutableMapOf<LocalKey, LocalVariable>()
@@ -112,11 +142,30 @@ class SootUpAdapter(
     private val fieldDynamicTargets = mutableMapOf<String, MutableList<MethodDescriptor>>()
 
     private val arrayDynamicTargets = mutableMapOf<LocalKey, MutableList<MethodDescriptor>>()
+    private val localeSpecsByLocal = mutableMapOf<LocalKey, String>()
+    private val localeBuilderSpecsByLocal = mutableMapOf<LocalKey, LocaleBuilderSpec>()
+    private val stringValuesByLocal = mutableMapOf<LocalKey, String>()
+    private val bundleControlFormatsByLocal = mutableMapOf<LocalKey, String?>()
+    private val resourceHandlePathsByLocal = mutableMapOf<LocalKey, LinkedHashSet<String>>()
+    private val propertiesPathsByLocal = mutableMapOf<LocalKey, LinkedHashSet<String>>()
+    private val resourceBundlePaths = mutableMapOf<LocalKey, LinkedHashSet<String>>()
+    private val bundleControlSpecsByLocal = mutableMapOf<LocalKey, BundleControlSpec>()
 
     private val fieldLoadLocals = mutableMapOf<String, MutableList<LocalKey>>()
 
     private val resolvedMethodCache = mutableMapOf<MethodSignature, MethodSignature>()
     private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()
+    private val resourceFilesByPath = mutableMapOf<String, MutableList<ResourceFileNode>>()
+    private val configurationResourcePaths = linkedSetOf<String>()
+    private val runtimeIndexedBundles = mutableSetOf<String>()
+    private val bundleControlSpecsByClass = mutableMapOf<String, BundleControlSpec?>()
+    private val classesByName: Map<String, SootClass> by lazy {
+        buildMap {
+            view.classes.forEach { sootClass ->
+                put(sootClass.type.fullyQualifiedName, sootClass)
+            }
+        }
+    }
 
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
@@ -129,6 +178,8 @@ class SootUpAdapter(
      * Build the complete graph from the SootUp view
      */
     fun buildGraph(): Graph {
+        indexResourceValues()
+        indexClassBundles()
         log("Starting buildGraph pass 1")
         var pass1Count = 0
         // Pass 1: All classes — type hierarchy + enum values
@@ -515,6 +566,9 @@ class SootUpAdapter(
             val allocType = toTypeDescriptor(rightOp.type)
             val allocNode = getOrCreateLocalWithType(leftOp, method, allocType)
             allocationNodes[localKey(method, leftOp.name)] = allocNode
+            if (isLocaleBuilderClassName(allocType.className)) {
+                localeBuilderSpecsByLocal[localKey(method, leftOp.name)] = LocaleBuilderSpec()
+            }
             recordStmtNode(stmt, allocNode.id)
             return
         }
@@ -596,6 +650,29 @@ class SootUpAdapter(
             } else if (trackCrossMethodFunctionalDispatch) {
                 // Record for deferred resolution
                 fieldLoadLocals.getOrPut(fieldKey) { mutableListOf() }.add(localKey)
+            }
+        }
+
+        if (leftOp is Local) {
+            val targetKey = localKey(method, leftOp.name)
+            when (rightOp) {
+                is SootStringConstant -> stringValuesByLocal[targetKey] = rightOp.value
+                is Local -> stringValuesByLocal[localKey(method, rightOp.name)]?.let { stringValuesByLocal[targetKey] = it }
+            }
+            when (rightOp) {
+                is Local -> {
+                    localeSpecsByLocal[localKey(method, rightOp.name)]?.let { localeSpecsByLocal[targetKey] = it }
+                    localeBuilderSpecsByLocal[localKey(method, rightOp.name)]?.let { localeBuilderSpecsByLocal[targetKey] = it }
+                    bundleControlFormatsByLocal[localKey(method, rightOp.name)]?.let { bundleControlFormatsByLocal[targetKey] = it }
+                    resourceHandlePathsByLocal[localKey(method, rightOp.name)]?.let { resourceHandlePathsByLocal[targetKey] = LinkedHashSet(it) }
+                    propertiesPathsByLocal[localKey(method, rightOp.name)]?.let { propertiesPathsByLocal[targetKey] = LinkedHashSet(it) }
+                    resourceBundlePaths[localKey(method, rightOp.name)]?.let { resourceBundlePaths[targetKey] = LinkedHashSet(it) }
+                    bundleControlSpecsByLocal[localKey(method, rightOp.name)]?.let { bundleControlSpecsByLocal[targetKey] = it }
+                }
+                is JStaticFieldRef -> {
+                    extractLocaleSpec(method, rightOp)?.let { localeSpecsByLocal[targetKey] = it }
+                    extractControlFormat(method, rightOp)?.let { bundleControlFormatsByLocal[targetKey] = it }
+                }
             }
         }
 
@@ -690,6 +767,15 @@ class SootUpAdapter(
             return
         }
 
+        if (calleeSignature.declClassType.fullyQualifiedName == "java.util.Locale" && calleeSignature.name == "<init>") {
+            val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local
+            val localeSpec = extractConstructedLocaleSpec(invokeExpr)
+            if (receiverLocal != null && localeSpec != null) {
+                localeSpecsByLocal[localKey(caller, receiverLocal.name)] = localeSpec
+            }
+        }
+        updateLocaleBuilderState(caller, calleeSignature, invokeExpr, resultNode)
+
         // Extract receiver for instance method calls
         val receiverNode = if (invokeExpr is AbstractInstanceInvokeExpr) {
             getOrCreateValueNode(invokeExpr.base, caller)
@@ -710,6 +796,11 @@ class SootUpAdapter(
         if (stmt != null) {
             recordStmtNode(stmt, callSite.id)
         }
+        linkResourceReads(callSite, calleeSignature, invokeExpr)
+        linkResourceFileReads(callSite, calleeSignature, invokeExpr, caller)
+        linkResourceBundleReads(callSite, calleeSignature, invokeExpr, caller)
+        linkStructuredResourceLoads(callSite, calleeSignature, invokeExpr, caller)
+        trackResourceAssociations(callSite, calleeSignature, invokeExpr, caller, resultNode)
 
         // Resolve functional interface dispatch:
         // If the receiver was assigned from an invokedynamic, connect this
@@ -830,6 +921,10 @@ class SootUpAdapter(
         // Track call result locals for return value propagation
         if (resultNode is LocalVariable) {
             val resultKey = localKey(caller, resultNode.name)
+            extractResourceLookupPath(caller, calleeSignature, invokeExpr)?.let { resourceHandlePathsByLocal[resultKey] = linkedSetOf(it) }
+            extractResourceBundlePaths(caller, calleeSignature, invokeExpr)?.let { resourceBundlePaths[resultKey] = LinkedHashSet(it) }
+            extractLocaleFactorySpec(calleeSignature, invokeExpr)?.let { localeSpecsByLocal[resultKey] = it }
+            extractBundleControlSpec(caller, calleeSignature, invokeExpr)?.let { bundleControlSpecsByLocal[resultKey] = it }
             if (trackCrossMethodFunctionalDispatch) {
                 callResultLocals
                     .getOrPut(callee) { mutableListOf() }
@@ -1006,8 +1101,18 @@ class SootUpAdapter(
             "java.lang.Boolean",
             "java.lang.Character"
         )
+        private const val LOCALE_BUILDER_CLASS = "java.util.Locale\$Builder"
+        private const val LOCALE_BUILDER_CLASS_ALT = "java.util.Locale.Builder"
+        private const val RESOURCE_BUNDLE_CONTROL_CLASS = "java.util.ResourceBundle\$Control"
+        private const val RESOURCE_BUNDLE_CONTROL_CLASS_ALT = "java.util.ResourceBundle.Control"
         private const val MAX_CONTROL_FLOW_STATEMENTS = 2_000
     }
+
+    private fun isLocaleBuilderClassName(name: String): Boolean =
+        name == LOCALE_BUILDER_CLASS || name == LOCALE_BUILDER_CLASS_ALT
+
+    private fun isResourceBundleControlTypeName(name: String): Boolean =
+        name == RESOURCE_BUNDLE_CONTROL_CLASS || name == RESOURCE_BUNDLE_CONTROL_CLASS_ALT
 
     private fun processReturn(stmt: JReturnStmt, method: MethodDescriptor) {
         val returnValue = stmt.op
@@ -1362,21 +1467,41 @@ class SootUpAdapter(
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
         if (sootClass !is JavaSootClass) return null
         val methodNodes = getAsmMethodNodes(sootClass) ?: return null
-        return methodNodes.asSequence().mapNotNull { methodNode ->
-            try {
-                createStreamingMethod(sootClass, methodNode)
-            } catch (oom: OutOfMemoryError) {
-                log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution")
-                System.gc()
-                null
-            } catch (e: Exception) {
-                log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}")
-                null
+        return sequence {
+            for (methodNode in methodNodes) {
+                try {
+                    createStreamingMethod(sootClass, methodNode)?.let { yield(it) }
+                } catch (oom: OutOfMemoryError) {
+                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution")
+                    System.gc()
+                } catch (e: Exception) {
+                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}")
+                }
             }
         }
     }
 
     private fun getAsmMethodNodes(sootClass: JavaSootClass): List<MethodNode>? {
+        val classNode = getAsmClassNode(sootClass) ?: return null
+        @Suppress("UNCHECKED_CAST")
+        return classNode.methods as? List<MethodNode>
+    }
+
+    private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
+        return try {
+            val resourcePath = sootClass.type.fullyQualifiedName.replace('.', '/') + ".class"
+            resourceAccessor.open(resourcePath).use { input ->
+                val classNode = ClassNode()
+                ClassReader(input).accept(classNode, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+                @Suppress("UNCHECKED_CAST")
+                classNode.methods as? List<MethodNode>
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun getAsmClassNode(sootClass: JavaSootClass): ClassNode? {
         val classSource = sootClass.classSource
         if (classSource.javaClass.name != "sootup.java.bytecode.frontend.conversion.AsmClassSource") {
             return null
@@ -1385,9 +1510,7 @@ class SootUpAdapter(
         return try {
             val classNodeField = classSource.javaClass.getDeclaredField("classNode")
             classNodeField.isAccessible = true
-            val classNode = classNodeField.get(classSource) as? ClassNode ?: return null
-            @Suppress("UNCHECKED_CAST")
-            classNode.methods as? List<MethodNode>
+            classNodeField.get(classSource) as? ClassNode
         } catch (_: ReflectiveOperationException) {
             null
         }
@@ -1416,17 +1539,18 @@ class SootUpAdapter(
         )
     }
 
-    private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<out SootMethod> {
-        return try {
-            sootClass.methods
-        } catch (oom: OutOfMemoryError) {
-            log("Skipping methods for ${sootClass.type}: OOM during method resolution")
-            System.gc()
-            emptySet()
-        } catch (e: IllegalStateException) {
-            log("Skipping methods for ${sootClass.type}: ${e.message}")
-            emptySet()
+    private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<SootMethod> = try {
+        sootClass.methods
+    } catch (failure: Throwable) {
+        when (failure) {
+            is OutOfMemoryError -> {
+                log("Skipping methods for ${sootClass.type}: OOM during method resolution")
+                System.gc()
+            }
+            is IllegalStateException -> log("Skipping methods for ${sootClass.type}: ${failure.message}")
+            else -> throw failure
         }
+        emptySet()
     }
 
     private fun getOrCreateValueNode(value: Value, method: MethodDescriptor): ValueNode? {
@@ -1553,6 +1677,819 @@ class SootUpAdapter(
             is SootNullConstant -> null
             else -> null
         }
+    }
+
+    private fun indexResourceValues() {
+        resourceAccessor.list("**")
+            .forEach { entry ->
+                if (entry.path.endsWith(".class", ignoreCase = true)) return@forEach
+                val format = resourceFormat(entry.path)
+                val profile = resourceProfile(entry.path)
+                val fileNode = ResourceFileNode(
+                    id = nextNodeId("resource"),
+                    path = entry.path,
+                    source = entry.source,
+                    format = format,
+                    profile = profile
+                )
+                graphBuilder.addNode(fileNode)
+                resourceFilesByPath.getOrPut(entry.path) { mutableListOf() }.add(fileNode)
+                if (isResourceConfig(entry.path)) {
+                    configurationResourcePaths += entry.path
+                }
+            }
+    }
+
+    private fun indexClassBundles() {
+        view.classes.forEach { sootClass ->
+            if (!isListResourceBundleClass(sootClass)) return@forEach
+            indexListResourceBundle(sootClass)
+        }
+    }
+
+    private fun indexListResourceBundle(sootClass: SootClass) {
+        val path = sootClass.type.fullyQualifiedName
+        if (resourceFilesByPath.containsKey(path)) return
+        val fileNode = ResourceFileNode(
+            id = nextNodeId("resource"),
+            path = path,
+            source = "class-bundle",
+            format = "listbundle",
+            profile = null
+        )
+        graphBuilder.addNode(fileNode)
+        resourceFilesByPath.getOrPut(path) { mutableListOf() }.add(fileNode)
+    }
+
+    private fun isListResourceBundleClass(sootClass: SootClass): Boolean {
+        var current: SootClass? = sootClass
+        while (current != null) {
+            val superType = current.superclass.orElse(null) ?: return false
+            val superName = superType.fullyQualifiedName
+            if (superName == "java.util.ListResourceBundle") return true
+            current = resolveClassByName(superName)
+        }
+        return false
+    }
+
+    private fun resolveClassByName(className: String): SootClass? {
+        return classesByName[className]
+    }
+
+    private fun extractControlFormatsFromMethod(methodNode: MethodNode): Set<String>? =
+        when (val value = evaluateLiteralMethod(methodNode)) {
+            is List<*> -> value.mapNotNull {
+                when (it) {
+                    "java.class", "java.properties" -> it as String
+                    else -> null
+                }
+            }.toSet().takeIf { it.isNotEmpty() }
+            "java.class" -> setOf("java.class")
+            "java.properties" -> setOf("java.properties")
+            else -> null
+        }
+
+    private fun extractCandidateLocalesFromMethod(methodNode: MethodNode): List<String>? =
+        (evaluateLiteralMethod(methodNode) as? List<*>)
+            ?.mapNotNull { value ->
+                when (value) {
+                    is String -> normalizeLocaleSpec(value)
+                    else -> null
+                }
+            }
+            ?.takeIf { it.isNotEmpty() }
+
+    private fun returnsNullLiteral(methodNode: MethodNode): Boolean =
+        evaluateLiteralMethod(methodNode) == null
+
+    private fun evaluateLiteralMethod(methodNode: MethodNode): Any? {
+        val stack = ArrayDeque<Any?>()
+        val locals = mutableMapOf<Int, Any?>()
+        val argTypes = AsmType.getArgumentTypes(methodNode.desc)
+        var localIndex = if ((methodNode.access and Opcodes.ACC_STATIC) != 0) 0 else 1
+        argTypes.forEach { argType ->
+            locals[localIndex] = when (argType.className) {
+                "java.util.Locale" -> "arg-locale"
+                "java.lang.String" -> "arg-string"
+                else -> null
+            }
+            localIndex += argType.size
+        }
+        for (insn in methodNode.instructions) {
+            when (insn) {
+                is InsnNode -> when {
+                    insn.opcode == Opcodes.ACONST_NULL -> stack.addLast(null)
+                    insn.opcode in Opcodes.ICONST_M1..Opcodes.ICONST_5 -> stack.addLast(insn.opcode - Opcodes.ICONST_0)
+                    insn.opcode == Opcodes.DUP -> stack.lastOrNull()?.let(stack::addLast)
+                    insn.opcode == Opcodes.ARETURN -> return stack.removeLastOrNull()
+                }
+                is IntInsnNode -> if (insn.opcode == Opcodes.BIPUSH || insn.opcode == Opcodes.SIPUSH) {
+                    stack.addLast(insn.operand)
+                }
+                is LdcInsnNode -> stack.addLast(insn.cst)
+                is VarInsnNode -> when {
+                    insn.opcode == Opcodes.ASTORE || insn.opcode == Opcodes.ISTORE -> locals[insn.`var`] = stack.removeLastOrNull()
+                    insn.opcode == Opcodes.ALOAD || insn.opcode == Opcodes.ILOAD -> stack.addLast(locals[insn.`var`])
+                }
+                is FieldInsnNode -> if (insn.opcode == Opcodes.GETSTATIC) {
+                    stack.addLast(resolveStaticLiteral(insn.owner.replace('/', '.'), insn.name))
+                }
+                is MethodInsnNode -> {
+                    val args = buildList {
+                        repeat(AsmType.getArgumentTypes(insn.desc).size) {
+                            add(0, stack.removeLastOrNull())
+                        }
+                    }
+                    val owner = insn.owner.replace('/', '.')
+                    val result = when {
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.List" && insn.name == "of" -> args
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Arrays" && insn.name == "asList" ->
+                            (args.singleOrNull() as? List<*>) ?: args
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Collections" && insn.name == "singletonList" -> args
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Locale" && insn.name == "forLanguageTag" ->
+                            (args.firstOrNull() as? String)?.let(::normalizeLocaleSpec)
+                        insn.opcode == Opcodes.INVOKESPECIAL && owner == "java.util.Locale" && insn.name == "<init>" -> null
+                        else -> null
+                    }
+                    if (AsmType.getReturnType(insn.desc).sort != AsmType.VOID) {
+                        stack.addLast(result)
+                    }
+                }
+                else -> Unit
+            }
+        }
+        return null
+    }
+
+    private fun resolveStaticLiteral(owner: String, fieldName: String): Any? = when {
+        owner == "java.util.Locale" -> extractLocaleSpec(fieldName)
+        fieldName == "FORMAT_CLASS" -> listOf("java.class")
+        fieldName == "FORMAT_PROPERTIES" -> listOf("java.properties")
+        fieldName == "FORMAT_DEFAULT" -> listOf("java.class", "java.properties")
+        else -> null
+    }
+
+    private fun linkResourceReads(callSite: CallSiteNode, calleeSignature: MethodSignature, invokeExpr: AbstractInvokeExpr) {
+        val configKey = extractResourceLookupKey(calleeSignature, invokeExpr)
+        val resourcePaths = extractBoundResourcePaths(callSite.caller, calleeSignature, invokeExpr)
+        if (configKey != null) {
+            lookupResourceFiles(resourcePaths).forEach { resourceFile ->
+                graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOOKUP))
+            }
+            return
+        }
+
+        if (isResourceEnumerationCall(calleeSignature)) {
+            resourcePaths?.forEach { path ->
+                resourceFilesByPath[path]?.forEach { resourceFile ->
+                    graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.ENUMERATES))
+                }
+            }
+        }
+    }
+
+    private fun linkResourceFileReads(
+        callSite: CallSiteNode,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr,
+        caller: MethodDescriptor
+    ) {
+        val resourcePaths = extractResourceBundlePaths(caller, calleeSignature, invokeExpr)
+            ?: extractResourceLookupPath(caller, calleeSignature, invokeExpr)?.let(::listOf)
+            ?: return
+        resourcePaths.forEach { resourcePath ->
+            resourceFilesByPath[resourcePath]?.forEach { resourceFile ->
+                graphBuilder.addEdge(
+                    ResourceEdge(
+                        from = resourceFile.id,
+                        to = callSite.id,
+                        kind = if (isResourceBundleCall(calleeSignature)) ResourceRelation.BUNDLE_CANDIDATE else ResourceRelation.OPENS
+                    )
+                )
+            }
+        }
+    }
+
+    private fun extractResourceLookupKey(calleeSignature: MethodSignature, invokeExpr: AbstractInvokeExpr): String? {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        if (methodName !in setOf("getProperty", "getString", "getObject")) return null
+        val supported = declaringClass == "java.util.Properties" ||
+            declaringClass == "java.util.PropertyResourceBundle" ||
+            declaringClass == "java.util.ResourceBundle" ||
+            declaringClass == "java.lang.System"
+        if (!supported || invokeExpr.args.isEmpty()) return null
+        val firstArg = invokeExpr.args[0]
+        return if (firstArg is SootStringConstant) firstArg.value else null
+    }
+
+    private fun extractResourceLookupPath(
+        caller: MethodDescriptor,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr
+    ): String? {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        val supported = (declaringClass == "java.lang.ClassLoader" && methodName in setOf("getResource", "getResourceAsStream")) ||
+            (declaringClass == "java.lang.Class" && methodName in setOf("getResource", "getResourceAsStream"))
+        if (!supported || invokeExpr.args.isEmpty()) return null
+        val firstArg = invokeExpr.args[0] as? SootStringConstant ?: return null
+        return normalizeResourcePath(caller, declaringClass, firstArg.value)
+    }
+
+    private fun extractResourceBundlePaths(
+        caller: MethodDescriptor,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr
+    ): LinkedHashSet<String>? {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        if (declaringClass != "java.util.ResourceBundle" || methodName != "getBundle" || invokeExpr.args.isEmpty()) {
+            return null
+        }
+        val firstArg = invokeExpr.args[0] as? SootStringConstant ?: return null
+        val baseName = firstArg.value
+        val basePath = baseName.replace('.', '/')
+        val localeArg = calleeSignature.parameterTypes
+            .indexOfFirst { it.toString() == "java.util.Locale" }
+            .takeIf { it >= 0 }
+            ?.let(invokeExpr.args::getOrNull)
+        val controlArg = calleeSignature.parameterTypes
+            .indexOfFirst { isResourceBundleControlTypeName(it.toString()) }
+            .takeIf { it >= 0 }
+            ?.let(invokeExpr.args::getOrNull)
+        val localeSpec = localeArg?.let { extractLocaleSpec(caller, it) }
+        val controlSpec = controlArg?.let { extractBundleControlSpec(caller, it, baseName, localeSpec) }
+        ensureRuntimeBundleIndexed(baseName, localeSpec, controlSpec)
+        return if (localeArg == null) {
+            collectBundleCandidates(baseName, basePath, controlSpec)
+        } else if (localeSpec != null) {
+            buildResourceBundleCandidatePaths(baseName, basePath, localeSpec, controlSpec)
+        } else {
+            collectMatchingResourceBundlePaths(baseName, basePath, controlSpec)
+        }
+    }
+
+    private fun linkResourceBundleReads(
+        callSite: CallSiteNode,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr,
+        caller: MethodDescriptor
+    ) {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        if (declaringClass != "java.util.ResourceBundle" || methodName !in setOf("getString", "getObject", "getKeys")) return
+        val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local ?: return
+        val bundlePaths = resourceBundlePaths[localKey(caller, receiverLocal.name)] ?: return
+        if (methodName == "getKeys") {
+            bundlePaths.forEach { bundlePath ->
+                resourceFilesByPath[bundlePath]?.forEach { resourceFile ->
+                    graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.ENUMERATES))
+                }
+            }
+            return
+        }
+        bundlePaths.forEach { bundlePath ->
+            resourceFilesByPath[bundlePath]
+                ?.forEach { resourceFile ->
+                    graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOOKUP))
+                }
+        }
+    }
+
+    private fun linkStructuredResourceLoads(
+        callSite: CallSiteNode,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr,
+        caller: MethodDescriptor
+    ) {
+        if (!isStructuredResourceLoadCall(calleeSignature)) return
+        extractBoundResourcePaths(caller, calleeSignature, invokeExpr)?.forEach { resourcePath ->
+            resourceFilesByPath[resourcePath]?.forEach { resourceFile ->
+                graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOADS))
+            }
+        }
+    }
+
+    private fun trackResourceAssociations(
+        callSite: CallSiteNode,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr,
+        caller: MethodDescriptor,
+        resultNode: ValueNode?
+    ) {
+        val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local
+        if (calleeSignature.declClassType.fullyQualifiedName == "java.util.Locale" && calleeSignature.name == "<init>") {
+            val localeSpec = extractConstructedLocaleSpec(invokeExpr)
+            if (receiverLocal != null && localeSpec != null) {
+                localeSpecsByLocal[localKey(caller, receiverLocal.name)] = localeSpec
+            }
+        }
+
+        val boundPaths = extractBoundResourcePaths(caller, calleeSignature, invokeExpr)
+        if (boundPaths != null) {
+            when {
+                isPropertiesLoadCall(calleeSignature) && receiverLocal != null -> {
+                    propertiesPathsByLocal[localKey(caller, receiverLocal.name)] = LinkedHashSet(boundPaths)
+                    boundPaths.forEach { path ->
+                        resourceFilesByPath[path]?.forEach { resourceFile ->
+                            graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOADS))
+                        }
+                    }
+                }
+                isPropertyResourceBundleConstructor(calleeSignature) && receiverLocal != null -> {
+                    val receiverKey = localKey(caller, receiverLocal.name)
+                    resourceBundlePaths[receiverKey] = LinkedHashSet(boundPaths)
+                    boundPaths.forEach { path ->
+                        resourceFilesByPath[path]?.forEach { resourceFile ->
+                            graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOADS))
+                        }
+                    }
+                }
+                isReaderBridgeConstructor(calleeSignature) && receiverLocal != null -> {
+                    resourceHandlePathsByLocal[localKey(caller, receiverLocal.name)] = LinkedHashSet(boundPaths)
+                }
+            }
+        }
+
+        if (resultNode is LocalVariable) {
+            val resultKey = localKey(caller, resultNode.name)
+            extractResourceLookupPath(caller, calleeSignature, invokeExpr)?.let {
+                resourceHandlePathsByLocal[resultKey] = linkedSetOf(it)
+            }
+            if (isReaderFactoryCall(calleeSignature)) {
+                boundPaths?.let { resourceHandlePathsByLocal[resultKey] = LinkedHashSet(it) }
+            }
+        }
+    }
+
+    private fun extractBoundResourcePaths(
+        caller: MethodDescriptor,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr
+    ): LinkedHashSet<String>? {
+        val directPath = extractResourceLookupPath(caller, calleeSignature, invokeExpr)
+        if (directPath != null) return linkedSetOf(directPath)
+
+        val boundPaths = LinkedHashSet<String>()
+        (invokeExpr as? AbstractInstanceInvokeExpr)?.base
+            ?.let { extractBoundResourcePaths(caller, it) }
+            ?.let(boundPaths::addAll)
+        invokeExpr.args.forEach { arg ->
+            extractBoundResourcePaths(caller, arg)?.let(boundPaths::addAll)
+        }
+        return boundPaths.takeIf { it.isNotEmpty() }
+    }
+
+    private fun extractBoundResourcePaths(caller: MethodDescriptor, value: Value): LinkedHashSet<String>? = when (value) {
+        is Local -> {
+            val key = localKey(caller, value.name)
+            resourceHandlePathsByLocal[key]
+                ?: propertiesPathsByLocal[key]
+                ?: resourceBundlePaths[key]
+        }
+        else -> null
+    }?.let(::LinkedHashSet)
+
+    private fun lookupResourceFiles(resourcePaths: Collection<String>?): Sequence<ResourceFileNode> {
+        val scopedPaths = resourcePaths?.takeIf { it.isNotEmpty() } ?: configurationResourcePaths
+        return scopedPaths.asSequence()
+            .flatMap { path -> resourceFilesByPath[path].orEmpty().asSequence() }
+            .distinctBy { it.id }
+    }
+
+    private fun isResourceBundleCall(calleeSignature: MethodSignature): Boolean =
+        calleeSignature.declClassType.fullyQualifiedName == "java.util.ResourceBundle" &&
+            calleeSignature.name == "getBundle"
+
+    private fun isResourceEnumerationCall(calleeSignature: MethodSignature): Boolean {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        return (declaringClass == "java.util.ResourceBundle" || declaringClass == "java.util.PropertyResourceBundle") &&
+            calleeSignature.name == "getKeys"
+    }
+
+    private fun isPropertiesLoadCall(calleeSignature: MethodSignature): Boolean =
+        calleeSignature.declClassType.fullyQualifiedName == "java.util.Properties" &&
+            calleeSignature.name in setOf("load", "loadFromXML")
+
+    private fun isPropertyResourceBundleConstructor(calleeSignature: MethodSignature): Boolean =
+        calleeSignature.declClassType.fullyQualifiedName == "java.util.PropertyResourceBundle" &&
+            calleeSignature.name == "<init>"
+
+    private fun isReaderBridgeConstructor(calleeSignature: MethodSignature): Boolean {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        return calleeSignature.name == "<init>" && declaringClass in setOf(
+            "java.io.InputStreamReader",
+            "java.io.BufferedReader",
+            "java.io.StringReader",
+            "java.io.LineNumberReader"
+        )
+    }
+
+    private fun isReaderFactoryCall(calleeSignature: MethodSignature): Boolean {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        return (declaringClass == "java.net.URL" && methodName == "openStream") ||
+            (declaringClass == "java.nio.channels.Channels" && methodName == "newReader")
+    }
+
+    private fun isStructuredResourceLoadCall(calleeSignature: MethodSignature): Boolean {
+        val declaringClass = calleeSignature.declClassType.fullyQualifiedName
+        val methodName = calleeSignature.name
+        return isPropertiesLoadCall(calleeSignature) ||
+            isPropertyResourceBundleConstructor(calleeSignature) ||
+            (declaringClass == "com.google.gson.Gson" && methodName == "fromJson") ||
+            (declaringClass == "javax.xml.parsers.DocumentBuilder" && methodName == "parse")
+    }
+
+    private fun collectMatchingResourceBundlePaths(
+        baseName: String,
+        basePath: String,
+        controlSpec: BundleControlSpec?
+    ): LinkedHashSet<String> {
+        val candidates = resourceFilesByPath.keys
+            .filter { it == "$basePath.properties" || (it.startsWith("${basePath}_") && it.endsWith(".properties")) || matchesBundleClassPath(it, baseName) }
+            .sortedWith(compareByDescending<String> { it.count { ch -> ch == '_' } }.thenBy { it })
+        return LinkedHashSet(
+            candidates
+                .asSequence()
+                .filter { controlAllowsPath(it, controlSpec) }
+                .toList()
+                .ifEmpty { collectBundleCandidates(baseName, basePath, controlSpec) }
+        )
+    }
+
+    private fun buildResourceBundleCandidatePaths(
+        baseName: String,
+        basePath: String,
+        localeSpec: String,
+        controlSpec: BundleControlSpec?
+    ): LinkedHashSet<String> {
+        val candidates = LinkedHashSet<String>()
+        val localeCandidates = controlSpec?.candidateLocales ?: defaultBundleCandidateLocales(localeSpec)
+        for (candidateLocale in localeCandidates) {
+            if (candidateLocale.isBlank()) {
+                candidates.add("$basePath.properties")
+                candidates.add(baseName)
+            } else {
+                candidates.add("${basePath}_${candidateLocale}.properties")
+                candidates.add("${baseName}_${candidateLocale}")
+            }
+        }
+        return LinkedHashSet(
+            candidates.filter { (it in resourceFilesByPath || it == "$basePath.properties" || it == baseName) && controlAllowsPath(it, controlSpec) }
+        )
+    }
+
+    private fun defaultBundleCandidateLocales(localeSpec: String): List<String> {
+        val parts = localeSpec.split('_').filter { it.isNotBlank() }
+        return buildList {
+            for (size in parts.size downTo 1) {
+                add(parts.take(size).joinToString("_"))
+            }
+            add("")
+        }
+    }
+
+    private fun collectBundleCandidates(baseName: String, basePath: String, controlSpec: BundleControlSpec?): LinkedHashSet<String> =
+        LinkedHashSet(
+            listOf("$basePath.properties", baseName)
+                .filter { controlAllowsPath(it, controlSpec) }
+        )
+
+    private fun updateLocaleBuilderState(
+        caller: MethodDescriptor,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr,
+        resultNode: ValueNode?
+    ) {
+        if (!isLocaleBuilderClassName(calleeSignature.declClassType.fullyQualifiedName)) return
+        val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local ?: return
+        val receiverKey = localKey(caller, receiverLocal.name)
+        val current = localeBuilderSpecsByLocal[receiverKey] ?: LocaleBuilderSpec()
+        val updated = when (calleeSignature.name) {
+            "<init>" -> LocaleBuilderSpec()
+            "setLanguage" -> current.copy(language = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
+            "setRegion" -> current.copy(country = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
+            "setVariant" -> current.copy(variant = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
+            "setLanguageTag" -> current.copy(languageTag = extractStringValue(caller, invokeExpr.args.getOrNull(0))?.let(::normalizeLocaleSpec))
+            "setLocale" -> extractLocaleSpec(caller, invokeExpr.args.getOrNull(0) ?: return)
+                ?.split('_')
+                ?.let { parts ->
+                    LocaleBuilderSpec(
+                        language = parts.getOrNull(0),
+                        country = parts.getOrNull(1),
+                        variant = parts.drop(2).takeIf { it.isNotEmpty() }?.joinToString("_"),
+                        languageTag = null
+                    )
+                } ?: current
+            "clear", "clearExtensions" -> LocaleBuilderSpec()
+            else -> current
+        }
+        localeBuilderSpecsByLocal[receiverKey] = updated
+
+        if (resultNode is LocalVariable) {
+            val resultKey = localKey(caller, resultNode.name)
+            if (isLocaleBuilderClassName(toTypeDescriptor(calleeSignature.type).className)) {
+                localeBuilderSpecsByLocal[resultKey] = updated
+            }
+            if (calleeSignature.name == "build") {
+                updated.toLocaleSpec()?.let { localeSpecsByLocal[resultKey] = normalizeLocaleSpec(it) }
+            }
+        }
+    }
+
+    private fun extractBundleControlSpec(
+        caller: MethodDescriptor,
+        value: Value,
+        baseName: String,
+        localeSpec: String?
+    ): BundleControlSpec? {
+        val className = when (value) {
+            is Local -> {
+                val key = localKey(caller, value.name)
+                bundleControlSpecsByLocal[key]?.let { return it }
+                allocationNodes[key]?.type?.className ?: localNodes[key]?.type?.className
+            }
+            is JNewExpr -> toTypeDescriptor(value.type).className
+            else -> null
+        }
+        className ?: return null
+        return resolveBundleControlSpec(className)
+            ?: reflectBundleControlSpec(className, baseName, localeSpec)
+    }
+
+    private fun extractBundleControlSpec(
+        caller: MethodDescriptor,
+        calleeSignature: MethodSignature,
+        invokeExpr: AbstractInvokeExpr
+    ): BundleControlSpec? {
+        if (!isResourceBundleControlTypeName(calleeSignature.declClassType.fullyQualifiedName)) return null
+        val formatArg = extractControlFormat(caller, invokeExpr.args.firstOrNull())
+        return when (calleeSignature.name) {
+            "getControl" -> BundleControlSpec(formats = controlFormats(formatArg))
+            "getNoFallbackControl" -> BundleControlSpec(noFallback = true, formats = controlFormats(formatArg))
+            else -> null
+        }
+    }
+
+    private fun extractControlFormat(caller: MethodDescriptor?, value: Value?): String? {
+        return when (value) {
+            is SootStringConstant -> value.value
+            is Local -> caller?.let { bundleControlFormatsByLocal[localKey(it, value.name)] }
+            is JStaticFieldRef -> {
+                if (!isResourceBundleControlTypeName(value.fieldSignature.declClassType.fullyQualifiedName)) {
+                    null
+                } else {
+                    when (value.fieldSignature.name) {
+                        "FORMAT_PROPERTIES" -> "java.properties"
+                        "FORMAT_CLASS" -> "java.class"
+                        "FORMAT_DEFAULT" -> null
+                        else -> null
+                    }
+                }
+            }
+            else -> null
+        }
+    }
+
+    private fun controlFormats(raw: String?): Set<String> = when (raw) {
+        "java.class" -> setOf("java.class")
+        "java.properties" -> setOf("java.properties")
+        else -> setOf("java.properties", "java.class")
+    }
+
+    private fun resolveBundleControlSpec(className: String): BundleControlSpec? =
+        bundleControlSpecsByClass.getOrPut(className) {
+            val sootClass = resolveClassByName(className) ?: return@getOrPut null
+            if (!isResourceBundleControlClass(sootClass)) return@getOrPut null
+            val javaSootClass = sootClass as? JavaSootClass ?: return@getOrPut null
+            val methods = getAsmMethodNodes(javaSootClass) ?: loadMethodNodesFromResource(javaSootClass) ?: return@getOrPut null
+            val formats = methods.firstOrNull { it.name == "getFormats" }
+                ?.let(::extractControlFormatsFromMethod)
+                ?: setOf("java.properties", "java.class")
+            val candidateLocales = methods.firstOrNull { it.name == "getCandidateLocales" }
+                ?.let(::extractCandidateLocalesFromMethod)
+            val noFallback = methods.firstOrNull { it.name == "getFallbackLocale" }
+                ?.let(::returnsNullLiteral)
+                ?: false
+            BundleControlSpec(
+                noFallback = noFallback,
+                formats = formats,
+                candidateLocales = candidateLocales
+            )
+        }
+
+    private fun reflectBundleControlSpec(
+        className: String,
+        baseName: String,
+        localeSpec: String?
+    ): BundleControlSpec? = runCatching {
+        val controlClass = Class.forName(className)
+        if (!ResourceBundle.Control::class.java.isAssignableFrom(controlClass)) return null
+        val instance = controlClass.getDeclaredConstructor().newInstance() as ResourceBundle.Control
+        val locale = localeSpec?.toLocale() ?: Locale.ROOT
+        BundleControlSpec(
+            noFallback = instance.getFallbackLocale(baseName, locale) == null,
+            formats = instance.getFormats(baseName).toSet(),
+            candidateLocales = instance.getCandidateLocales(baseName, locale)
+                .map(::localeSpecOf)
+                .distinct()
+        )
+    }.getOrNull()
+
+    private fun isResourceBundleControlClass(sootClass: SootClass): Boolean {
+        var current: SootClass? = sootClass
+        while (current != null) {
+            val superType = current.superclass.orElse(null) ?: return false
+            val superName = superType.fullyQualifiedName
+            if (isResourceBundleControlTypeName(superName)) return true
+            current = resolveClassByName(superName)
+        }
+        return false
+    }
+
+    private fun controlAllowsPath(path: String, controlSpec: BundleControlSpec?): Boolean {
+        if (controlSpec == null) return true
+        val isProperties = path.endsWith(".properties")
+        val isClassBundle = !isProperties
+        return (isProperties && "java.properties" in controlSpec.formats) ||
+            (isClassBundle && "java.class" in controlSpec.formats)
+    }
+
+    private fun matchesBundleClassPath(path: String, baseName: String): Boolean =
+        path == baseName || path.startsWith("${baseName}_")
+
+    private fun ensureRuntimeBundleIndexed(baseName: String, localeSpec: String?, controlSpec: BundleControlSpec?) {
+        val bundleKey = listOf(baseName, localeSpec.orEmpty(), controlSpec?.formats?.sorted()?.joinToString(","), controlSpec?.noFallback)
+            .joinToString("|")
+        if (!runtimeIndexedBundles.add(bundleKey)) return
+        runCatching {
+            val locale = localeSpec?.toLocale() ?: Locale.ROOT
+            val classLoader = javaClass.classLoader
+            val bundle = when (controlSpec) {
+                null -> ResourceBundle.getBundle(baseName, locale, classLoader)
+                else -> ResourceBundle.getBundle(baseName, locale, classLoader, toControl(controlSpec))
+            }
+            indexRuntimeBundle(bundle)
+        }.onFailure {
+            log("Skipping runtime bundle resolution for $baseName: ${it.message}")
+        }
+    }
+
+    private fun indexRuntimeBundle(bundle: ResourceBundle) {
+        val path = bundle.javaClass.name
+        if (resourceFilesByPath.containsKey(path)) return
+        val format = when (bundle) {
+            is java.util.ListResourceBundle -> "listbundle"
+            is java.util.PropertyResourceBundle -> "propertybundle"
+            else -> "bundle"
+        }
+        val fileNode = ResourceFileNode(
+            id = nextNodeId("resource"),
+            path = path,
+            source = "runtime-bundle",
+            format = format,
+            profile = null
+        )
+        graphBuilder.addNode(fileNode)
+        resourceFilesByPath.getOrPut(path) { mutableListOf() }.add(fileNode)
+        bundleParent(bundle)?.let(::indexRuntimeBundle)
+    }
+
+    private fun toControl(controlSpec: BundleControlSpec): ResourceBundle.Control =
+        if (controlSpec.noFallback) {
+            ResourceBundle.Control.getNoFallbackControl(controlFormatsList(controlSpec))
+        } else {
+            ResourceBundle.Control.getControl(controlFormatsList(controlSpec))
+        }
+
+    private fun controlFormatsList(controlSpec: BundleControlSpec): List<String> = buildList {
+        if ("java.class" in controlSpec.formats) add("java.class")
+        if ("java.properties" in controlSpec.formats) add("java.properties")
+    }
+
+    private fun String.toLocale(): Locale {
+        if (isBlank()) return Locale.ROOT
+        val parts = split('_').filter { it.isNotBlank() }
+        return when (parts.size) {
+            1 -> Locale(parts[0])
+            2 -> Locale(parts[0], parts[1])
+            else -> Locale(parts[0], parts[1], parts.drop(2).joinToString("_"))
+        }
+    }
+
+    private fun localeSpecOf(locale: Locale): String =
+        normalizeLocaleSpec(
+            listOfNotNull(
+                locale.language.takeIf { it.isNotBlank() },
+                locale.country.takeIf { it.isNotBlank() },
+                locale.variant.takeIf { it.isNotBlank() }
+            ).joinToString("_")
+        )
+
+    private fun bundleParent(bundle: ResourceBundle): ResourceBundle? = runCatching {
+        val field = ResourceBundle::class.java.getDeclaredField("parent")
+        field.isAccessible = true
+        field.get(bundle) as? ResourceBundle
+    }.getOrNull()
+
+    private fun extractLocaleSpec(caller: MethodDescriptor, value: Value): String? = when (value) {
+        is Local -> localeSpecsByLocal[localKey(caller, value.name)]
+        is JStaticFieldRef -> extractLocaleSpec(value)
+        else -> null
+    }
+
+    private fun extractStringValue(caller: MethodDescriptor, value: Value?): String? = when (value) {
+        is SootStringConstant -> value.value
+        is Local -> stringValuesByLocal[localKey(caller, value.name)]
+        else -> null
+    }
+
+    private fun extractLocaleSpec(fieldRef: JStaticFieldRef): String? {
+        if (fieldRef.fieldSignature.declClassType.fullyQualifiedName != "java.util.Locale") return null
+        return extractLocaleSpec(fieldRef.fieldSignature.name)
+    }
+
+    private fun extractLocaleSpec(fieldName: String): String? {
+        return when (fieldName) {
+            "ROOT" -> ""
+            "ENGLISH" -> "en"
+            "US" -> "en_US"
+            "UK" -> "en_GB"
+            "CANADA" -> "en_CA"
+            "CANADA_FRENCH" -> "fr_CA"
+            "FRENCH" -> "fr"
+            "FRANCE" -> "fr_FR"
+            "GERMAN" -> "de"
+            "GERMANY" -> "de_DE"
+            "ITALIAN" -> "it"
+            "ITALY" -> "it_IT"
+            "JAPANESE" -> "ja"
+            "JAPAN" -> "ja_JP"
+            "KOREAN" -> "ko"
+            "KOREA" -> "ko_KR"
+            "CHINESE" -> "zh"
+            "CHINA", "SIMPLIFIED_CHINESE" -> "zh_CN"
+            "TAIWAN", "TRADITIONAL_CHINESE" -> "zh_TW"
+            else -> null
+        }?.let(::normalizeLocaleSpec)
+    }
+
+    private fun extractLocaleFactorySpec(calleeSignature: MethodSignature, invokeExpr: AbstractInvokeExpr): String? {
+        if (calleeSignature.declClassType.fullyQualifiedName != "java.util.Locale") return null
+        return when (calleeSignature.name) {
+            "forLanguageTag" -> (invokeExpr.args.firstOrNull() as? SootStringConstant)?.value
+                ?.let(::normalizeLocaleSpec)
+            else -> null
+        }
+    }
+
+    private fun extractConstructedLocaleSpec(invokeExpr: AbstractInvokeExpr): String? {
+        val language = (invokeExpr.args.getOrNull(0) as? SootStringConstant)?.value ?: return null
+        val country = (invokeExpr.args.getOrNull(1) as? SootStringConstant)?.value
+        val variant = (invokeExpr.args.getOrNull(2) as? SootStringConstant)?.value
+        return normalizeLocaleSpec(listOfNotNull(language, country, variant).joinToString("_"))
+    }
+
+    private fun normalizeLocaleSpec(spec: String): String {
+        val parts = spec.split('_', '-').filter { it.isNotBlank() }
+        if (parts.isEmpty()) return ""
+        return buildList {
+            add(parts[0].lowercase())
+            if (parts.size > 1) add(parts[1].uppercase())
+            if (parts.size > 2) addAll(parts.drop(2))
+        }.joinToString("_")
+    }
+
+    private fun normalizeResourcePath(caller: MethodDescriptor, declaringClass: String, rawPath: String): String {
+        val trimmed = rawPath.trim()
+        if (trimmed.isEmpty() || declaringClass == "java.lang.ClassLoader" || trimmed.startsWith("/")) {
+            return trimmed.removePrefix("/")
+        }
+        val packagePath = caller.declaringClass.className.substringBeforeLast('.', "").replace('.', '/')
+        return if (packagePath.isEmpty()) trimmed else "$packagePath/$trimmed"
+    }
+
+    private fun isResourceConfig(path: String): Boolean =
+        path.endsWith(".properties") ||
+            path.endsWith(".yml") ||
+            path.endsWith(".yaml") ||
+            path.endsWith(".json") ||
+            path.endsWith(".xml")
+
+    private fun resourceFormat(path: String): String = when {
+        path.endsWith(".properties") -> "properties"
+        path.endsWith(".yml") || path.endsWith(".yaml") -> "yaml"
+        path.endsWith(".json") -> "json"
+        path.endsWith(".xml") -> "xml"
+        else -> "text"
+    }
+
+    private fun resourceProfile(path: String): String? {
+        val fileName = path.substringAfterLast('/')
+        val match = Regex("""application-([^.]+)\.(properties|json|xml|ya?ml)""").matchEntire(fileName)
+        return match?.groupValues?.getOrNull(1)
     }
 
     /**
@@ -1701,6 +2638,14 @@ class SootUpAdapter(
             localToParamIndex.remove(key)
             dynamicTargets.remove(key)
             arrayDynamicTargets.remove(key)
+            localeSpecsByLocal.remove(key)
+            localeBuilderSpecsByLocal.remove(key)
+            stringValuesByLocal.remove(key)
+            bundleControlFormatsByLocal.remove(key)
+            resourceHandlePathsByLocal.remove(key)
+            propertiesPathsByLocal.remove(key)
+            resourceBundlePaths.remove(key)
+            bundleControlSpecsByLocal.remove(key)
         }
         activeMethodParameters.forEach { parameterNodes.remove(it) }
         methodReturnNodes.remove(method)

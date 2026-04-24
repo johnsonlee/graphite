@@ -13,10 +13,17 @@ import java.io.*
  * inline UTF strings. This provides significant size reduction through both
  * deduplication and front-coding compression.
  *
- * Edge type encoding fits in 8 bits:
- * - Bits 0-1: edge type (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow)
+ * Edge type encoding fits in 8 bits.
+ *
+ * v1/v2:
+ * - Bits 0-1: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow)
  * - Bits 2-5: subkind ordinal (DataFlowKind, ControlFlowKind, TypeRelation, or call flags)
  * - Bits 6-7: extra flags (isVirtual, isDynamic for CallEdge)
+ *
+ * v3:
+ * - Bits 0-2: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow, 4=Resource)
+ * - Bits 3-6: subkind ordinal or call flags
+ * - Bit 7: reserved
  *
  * [ControlFlowEdge.comparison] is stored separately since it does not fit in 8 bits.
  */
@@ -29,8 +36,9 @@ internal object NodeSerializer {
     internal const val MAGIC_COMPARISONS = 0x47524300  // "GRC"
 
     /** Current format version (occupies the low byte of the 4-byte header int). */
-    const val FORMAT_VERSION: Int = 2
+    const val FORMAT_VERSION: Int = 3
     private const val LEGACY_FORMAT_VERSION: Int = 1
+    private const val TRANSITIONAL_FORMAT_VERSION: Int = 2
 
     /** Write a 4-byte file header: 3-byte magic prefix | 1-byte version. */
     fun writeHeader(dos: DataOutputStream, magic: Int) {
@@ -62,9 +70,9 @@ internal object NodeSerializer {
     }
 
     private fun validateVersion(version: Int, expectedMagic: Int) {
-        require(version == LEGACY_FORMAT_VERSION || version == FORMAT_VERSION) {
+        require(version == LEGACY_FORMAT_VERSION || version == TRANSITIONAL_FORMAT_VERSION || version == FORMAT_VERSION) {
             "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(16)}. " +
-                "This build supports versions $LEGACY_FORMAT_VERSION and $FORMAT_VERSION."
+                "This build supports versions $LEGACY_FORMAT_VERSION, $TRANSITIONAL_FORMAT_VERSION and $FORMAT_VERSION."
         }
     }
 
@@ -83,6 +91,8 @@ internal object NodeSerializer {
     private const val TAG_RETURN_NODE = 11
     private const val TAG_CALL_SITE_NODE = 12
     private const val TAG_ANNOTATION_NODE = 13
+    private const val TAG_RESOURCE_VALUE_NODE = 14
+    private const val TAG_RESOURCE_FILE_NODE = 15
 
     // Value type tags (for heterogeneous value lists like enum constructor args)
     private const val VAL_INT = 0
@@ -102,20 +112,21 @@ internal object NodeSerializer {
     /**
      * Encode an edge type into an 8-bit label.
      *
-     * Layout:
+     * v3 layout:
      * ```
-     * bits 0-1: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow)
-     * bits 2-5: subkind ordinal
-     * bits 6-7: extra flags (Call: bit6=isVirtual, bit7=isDynamic)
+     * bits 0-2: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow, 4=Resource)
+     * bits 3-6: subkind ordinal or call flags (bit3=isVirtual, bit4=isDynamic)
+     * bit 7: reserved
      * ```
      */
     fun encodeEdge(edge: Edge): Int = when (edge) {
-        is DataFlowEdge -> 0 or (edge.kind.ordinal shl 2)
+        is DataFlowEdge -> 0 or (edge.kind.ordinal shl 3)
         is CallEdge -> 1 or
-                ((if (edge.isVirtual) 1 else 0) shl 6) or
-                ((if (edge.isDynamic) 1 else 0) shl 7)
-        is TypeEdge -> 2 or (edge.kind.ordinal shl 2)
-        is ControlFlowEdge -> 3 or (edge.kind.ordinal shl 2)
+                ((if (edge.isVirtual) 1 else 0) shl 3) or
+                ((if (edge.isDynamic) 1 else 0) shl 4)
+        is TypeEdge -> 2 or (edge.kind.ordinal shl 3)
+        is ControlFlowEdge -> 3 or (edge.kind.ordinal shl 3)
+        is ResourceEdge -> 4 or (edge.kind.ordinal shl 3)
     }
 
     /**
@@ -124,7 +135,17 @@ internal object NodeSerializer {
      * [comparison] must be supplied externally for [ControlFlowEdge] edges that
      * carried a non-null comparison at save time.
      */
-    fun decodeEdge(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison? = null): Edge {
+    fun decodeEdge(
+        label: Int,
+        from: NodeId,
+        to: NodeId,
+        comparison: BranchComparison? = null,
+        version: Int = FORMAT_VERSION
+    ): Edge {
+        return if (version >= FORMAT_VERSION) decodeEdgeV3(label, from, to, comparison) else decodeEdgeV2(label, from, to, comparison)
+    }
+
+    private fun decodeEdgeV2(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison?): Edge {
         val family = label and 0x3
         return when (family) {
             0 -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr 2) and 0xF])
@@ -135,6 +156,22 @@ internal object NodeSerializer {
             )
             2 -> TypeEdge(from, to, TypeRelation.entries[(label shr 2) and 0xF])
             3 -> ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr 2) and 0xF], comparison)
+            else -> throw IllegalArgumentException("Unknown edge family: $family")
+        }
+    }
+
+    private fun decodeEdgeV3(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison?): Edge {
+        val family = label and 0x7
+        return when (family) {
+            0 -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr 3) and 0xF])
+            1 -> CallEdge(
+                from, to,
+                isVirtual = ((label shr 3) and 1) == 1,
+                isDynamic = ((label shr 4) and 1) == 1
+            )
+            2 -> TypeEdge(from, to, TypeRelation.entries[(label shr 3) and 0xF])
+            3 -> ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr 3) and 0xF], comparison)
+            4 -> ResourceEdge(from, to, ResourceRelation.entries[(label shr 3) and 0xF])
             else -> throw IllegalArgumentException("Unknown edge family: $family")
         }
     }
@@ -172,6 +209,19 @@ internal object NodeSerializer {
                 is ReturnNode -> {
                     collectMethodDescriptorStrings(node.method, dest)
                     node.actualType?.let { dest.add(it.className) }
+                }
+                is ResourceFileNode -> {
+                    dest.add(node.path)
+                    dest.add(node.source)
+                    dest.add(node.format)
+                    node.profile?.let(dest::add)
+                }
+                is ResourceValueNode -> {
+                    dest.add(node.path)
+                    dest.add(node.key)
+                    dest.add(node.format)
+                    node.profile?.let(dest::add)
+                    collectAnyValueString(node.value, dest)
                 }
                 is CallSiteNode -> {
                     collectMethodDescriptorStrings(node.caller, dest)
@@ -281,6 +331,8 @@ internal object NodeSerializer {
             is ReturnNode -> TAG_RETURN_NODE
             is CallSiteNode -> TAG_CALL_SITE_NODE
             is AnnotationNode -> TAG_ANNOTATION_NODE
+            is ResourceFileNode -> TAG_RESOURCE_FILE_NODE
+            is ResourceValueNode -> TAG_RESOURCE_VALUE_NODE
         }
         dos.writeByte(tag)
         // Type-specific fields
@@ -318,6 +370,21 @@ internal object NodeSerializer {
                 writeMethodDescriptor(dos, node.method, strings)
                 dos.writeBoolean(node.actualType != null)
                 if (node.actualType != null) dos.writeInt(strings.indexOf(node.actualType!!.className))
+            }
+            is ResourceFileNode -> {
+                dos.writeInt(strings.indexOf(node.path))
+                dos.writeInt(strings.indexOf(node.source))
+                dos.writeInt(strings.indexOf(node.format))
+                dos.writeBoolean(node.profile != null)
+                if (node.profile != null) dos.writeInt(strings.indexOf(node.profile!!))
+            }
+            is ResourceValueNode -> {
+                dos.writeInt(strings.indexOf(node.path))
+                dos.writeInt(strings.indexOf(node.key))
+                writeAnyValue(dos, node.value, strings)
+                dos.writeInt(strings.indexOf(node.format))
+                dos.writeBoolean(node.profile != null)
+                if (node.profile != null) dos.writeInt(strings.indexOf(node.profile!!))
             }
             is CallSiteNode -> {
                 writeMethodDescriptor(dos, node.caller, strings)
@@ -382,6 +449,21 @@ internal object NodeSerializer {
                 val hasActualType = dis.readBoolean()
                 val actualType = if (hasActualType) TypeDescriptor(strings.get(dis.readInt())) else null
                 ReturnNode(id, method, actualType)
+            }
+            TAG_RESOURCE_FILE_NODE -> {
+                val path = strings.get(dis.readInt())
+                val source = strings.get(dis.readInt())
+                val format = strings.get(dis.readInt())
+                val profile = if (dis.readBoolean()) strings.get(dis.readInt()) else null
+                ResourceFileNode(id, path, source, format, profile)
+            }
+            TAG_RESOURCE_VALUE_NODE -> {
+                val path = strings.get(dis.readInt())
+                val key = strings.get(dis.readInt())
+                val value = readAnyValue(dis, strings, formatVersion)
+                val format = strings.get(dis.readInt())
+                val profile = if (dis.readBoolean()) strings.get(dis.readInt()) else null
+                ResourceValueNode(id, path, key, value, format, profile)
             }
             TAG_CALL_SITE_NODE -> {
                 val caller = readMethodDescriptor(dis, strings)
@@ -627,7 +709,7 @@ internal object NodeSerializer {
         VAL_NULL -> null
         VAL_ENUM_REF -> EnumValueReference(strings.get(dis.readInt()), strings.get(dis.readInt()))
         VAL_LIST -> {
-            require(formatVersion >= FORMAT_VERSION) {
+            require(formatVersion >= TRANSITIONAL_FORMAT_VERSION) {
                 "Encountered list value in GraphStore format version $formatVersion. Re-save the graph with a current Graphite build."
             }
             List(dis.readInt()) { readAnyValue(dis, strings, formatVersion) }

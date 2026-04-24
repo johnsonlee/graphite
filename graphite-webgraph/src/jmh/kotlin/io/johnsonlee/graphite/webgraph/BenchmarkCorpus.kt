@@ -62,7 +62,13 @@ internal object BenchmarkCorpus {
         outputDir.toFile().deleteRecursively()
         Files.createDirectories(outputDir)
 
-        val graph = JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(jarPath)
+        val graph = JavaProjectLoader(
+            LoaderConfig(
+                buildCallGraph = false,
+                extractAnnotations = false,
+                trackCrossMethodFunctionalDispatch = false
+            )
+        ).load(jarPath)
         try {
             GraphStore.save(graph, outputDir)
         } finally {

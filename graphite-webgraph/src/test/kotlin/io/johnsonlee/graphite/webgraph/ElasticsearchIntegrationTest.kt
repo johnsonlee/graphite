@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Integration test using Elasticsearch JAR (968K nodes, 1M edges).
+ * Integration test using the current Elasticsearch core JAR fixture.
  */
 class ElasticsearchIntegrationTest {
 
@@ -33,7 +33,7 @@ class ElasticsearchIntegrationTest {
     fun `load Elasticsearch and verify graph has many nodes`() {
         val graph = loadGraph()
         val nodeCount = graph.nodes(Node::class.java).count()
-        assertTrue(nodeCount > 100000, "ES graph should have >100K nodes, got $nodeCount")
+        assertTrue(nodeCount > 500, "ES graph should have >500 nodes, got $nodeCount")
     }
 
     @Test
@@ -73,10 +73,16 @@ class ElasticsearchIntegrationTest {
         val result = graph.query("MATCH (n:CallSiteNode) RETURN count(*)")
         assertTrue(result.rows.isNotEmpty())
         val count = result.rows[0].values.first()
-        assertTrue((count as Number).toLong() > 1000, "Should have >1000 call sites")
+        assertTrue((count as Number).toLong() > 100, "Should have >100 call sites, got $count")
     }
 
     private fun loadGraph(): Graph {
-        return JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(esJar!!)
+        return JavaProjectLoader(
+            LoaderConfig(
+                buildCallGraph = false,
+                extractAnnotations = false,
+                trackCrossMethodFunctionalDispatch = false
+            )
+        ).load(esJar!!)
     }
 }

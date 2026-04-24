@@ -37,6 +37,27 @@ enum class DataFlowKind {
 }
 
 /**
+ * Resource graph relationship.
+ *
+ * These edges model resource structure and resource access separately from
+ * ordinary dataflow so Cypher can query them directly without overloading
+ * [DataFlowEdge].
+ */
+data class ResourceEdge(
+    override val from: NodeId,
+    override val to: NodeId,
+    val kind: ResourceRelation
+) : Edge
+
+enum class ResourceRelation {
+    OPENS,              // ResourceFileNode -> CallSiteNode
+    LOADS,              // ResourceFileNode -> CallSiteNode for parsers/loaders/bundles
+    BUNDLE_CANDIDATE,   // ResourceFileNode -> CallSiteNode for ResourceBundle candidate resolution
+    LOOKUP,             // ResourceFileNode -> CallSiteNode/FieldNode
+    ENUMERATES          // ResourceFileNode -> CallSiteNode for getKeys()/enumeration-style APIs
+}
+
+/**
  * Method call relationship.
  * From caller method to callee method.
  */

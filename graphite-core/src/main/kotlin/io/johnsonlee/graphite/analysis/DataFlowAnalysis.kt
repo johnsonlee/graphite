@@ -182,6 +182,7 @@ class DataFlowAnalysis(
             is BooleanConstant -> "const boolean: ${node.value}"
             is EnumConstant -> "enum: ${node.enumType.simpleName}.${node.enumName}"
             is NullConstant -> "const null"
+            is ResourceValueNode -> "resource ${node.path}#${node.key} = ${node.value}"
         }
     }
 

@@ -3,7 +3,6 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
@@ -45,7 +44,8 @@ internal class MappedWebGraphBackedGraph(
     private val forwardLabels: ByteArray,
     private val cumulativeOutdeg: LongArray,
     private val comparisonMap: Map<Long, BranchComparison>,
-    private val metadata: GraphMetadata
+    private val metadata: GraphMetadata,
+    override val resources: ResourceAccessor
 ) : Graph, Closeable {
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
@@ -92,7 +92,7 @@ internal class MappedWebGraphBackedGraph(
             val label = forwardLabels[(labelStart + i).toInt()].toInt() and 0xFF
             val key = nodeIdx.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
             val comparison = comparisonMap[key]
-            NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison)
+            NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
     }
 
@@ -106,7 +106,7 @@ internal class MappedWebGraphBackedGraph(
             val label = lookupForwardLabel(from, nodeIdx)
             val key = from.toLong() shl 32 or (nodeIdx.toLong() and 0xFFFFFFFFL)
             val comparison = comparisonMap[key]
-            NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison)
+            NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
     }
 
@@ -142,8 +142,6 @@ internal class MappedWebGraphBackedGraph(
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.memberAnnotations["$className#$memberName"] ?: emptyMap()
-
-    override val resources: ResourceAccessor = EmptyResourceAccessor
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

@@ -5,6 +5,8 @@ import io.johnsonlee.graphite.core.*
 internal fun resolveNodeType(type: String?): Class<out Node> = when (type?.lowercase()) {
     "callsite", "callsitenode" -> CallSiteNode::class.java
     "constant", "constantnode" -> ConstantNode::class.java
+    "resourcefile", "resourcefilenode" -> ResourceFileNode::class.java
+    "resource", "resourcevalue", "resourcevaluenode" -> ResourceValueNode::class.java
     "field", "fieldnode" -> FieldNode::class.java
     "parameter", "parameternode" -> ParameterNode::class.java
     "return", "returnnode" -> ReturnNode::class.java
@@ -22,6 +24,8 @@ internal fun formatNode(node: Node): String = when (node) {
     is DoubleConstant -> "DoubleConstant[${node.id}] = ${node.value}"
     is BooleanConstant -> "BooleanConstant[${node.id}] = ${node.value}"
     is NullConstant -> "NullConstant[${node.id}]"
+    is ResourceFileNode -> "ResourceFile[${node.id}] ${node.path} (${node.source})"
+    is ResourceValueNode -> "ResourceValue[${node.id}] ${node.path}#${node.key} = ${node.value}"
     is FieldNode -> "Field[${node.id}] ${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}: ${node.descriptor.type.simpleName}"
     is ParameterNode -> "Parameter[${node.id}] ${node.method.name}#${node.index}: ${node.type.simpleName}"
     is ReturnNode -> "Return[${node.id}] ${node.method.name}"
@@ -39,6 +43,25 @@ internal fun nodeToMap(node: Node): Map<String, Any?> = when (node) {
     is DoubleConstant -> mapOf("type" to "DoubleConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}d")
     is BooleanConstant -> mapOf("type" to "BooleanConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}")
     is NullConstant -> mapOf("type" to "NullConstant", "id" to node.id.value, "label" to "null")
+    is ResourceFileNode -> mapOf(
+        "type" to "ResourceFileNode",
+        "id" to node.id.value,
+        "path" to node.path,
+        "source" to node.source,
+        "format" to node.format,
+        "profile" to node.profile,
+        "label" to node.path
+    )
+    is ResourceValueNode -> mapOf(
+        "type" to "ResourceValueNode",
+        "id" to node.id.value,
+        "path" to node.path,
+        "key" to node.key,
+        "value" to node.value,
+        "format" to node.format,
+        "profile" to node.profile,
+        "label" to "${node.key}=${node.value}"
+    )
     is FieldNode -> mapOf("type" to "FieldNode", "id" to node.id.value, "class" to node.descriptor.declaringClass.className, "name" to node.descriptor.name, "fieldType" to node.descriptor.type.className, "label" to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}")
     is ParameterNode -> mapOf("type" to "ParameterNode", "id" to node.id.value, "index" to node.index, "paramType" to node.type.className, "method" to node.method.signature, "label" to "param#${node.index}")
     is ReturnNode -> mapOf("type" to "ReturnNode", "id" to node.id.value, "method" to node.method.signature, "label" to "return")
@@ -51,4 +74,5 @@ internal fun edgeToMap(edge: Edge): Map<String, Any?> = when (edge) {
     is CallEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Call", "virtual" to edge.isVirtual, "dynamic" to edge.isDynamic)
     is TypeEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Type", "kind" to edge.kind.name)
     is ControlFlowEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "ControlFlow", "kind" to edge.kind.name)
+    is ResourceEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Resource", "kind" to edge.kind.name)
 }

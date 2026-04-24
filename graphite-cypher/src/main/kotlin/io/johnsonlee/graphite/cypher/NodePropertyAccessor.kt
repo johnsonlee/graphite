@@ -26,6 +26,8 @@ object NodePropertyAccessor {
             is FieldNode -> getFieldNodeProperty(node, property)
             is ParameterNode -> getParameterNodeProperty(node, property)
             is ReturnNode -> getReturnNodeProperty(node, property)
+            is ResourceFileNode -> getResourceFileNodeProperty(node, property)
+            is ResourceValueNode -> getResourceValueNodeProperty(node, property)
             is AnnotationNode -> getAnnotationNodeProperty(node, property)
         }
         if (nodeSpecific != null) return nodeSpecific
@@ -51,6 +53,8 @@ object NodePropertyAccessor {
         is FieldNode -> "FieldNode"
         is ParameterNode -> "ParameterNode"
         is ReturnNode -> "ReturnNode"
+        is ResourceFileNode -> "ResourceFileNode"
+        is ResourceValueNode -> "ResourceValueNode"
         is AnnotationNode -> "AnnotationNode"
     }
 
@@ -130,6 +134,23 @@ object NodePropertyAccessor {
         else -> null
     }
 
+    private fun getResourceFileNodeProperty(node: ResourceFileNode, prop: String) = when (prop) {
+        "path" -> node.path
+        "source" -> node.source
+        "format" -> node.format
+        "profile" -> node.profile
+        else -> null
+    }
+
+    private fun getResourceValueNodeProperty(node: ResourceValueNode, prop: String) = when (prop) {
+        "path" -> node.path
+        "key" -> node.key
+        "value" -> node.value
+        "format" -> node.format
+        "profile" -> node.profile
+        else -> null
+    }
+
     private fun getAnnotationNodeProperty(node: AnnotationNode, prop: String) = when (prop) {
         "name" -> node.name
         "class" -> node.className
@@ -189,6 +210,21 @@ object NodePropertyAccessor {
             "method" to node.method.signature,
             "actual_type" to node.actualType?.className
         )
+        is ResourceFileNode -> mapOf(
+            "id" to node.id.value,
+            "path" to node.path,
+            "source" to node.source,
+            "format" to node.format,
+            "profile" to node.profile
+        )
+        is ResourceValueNode -> mapOf(
+            "id" to node.id.value,
+            "path" to node.path,
+            "key" to node.key,
+            "value" to node.value,
+            "format" to node.format,
+            "profile" to node.profile
+        )
         is AnnotationNode -> mutableMapOf<String, Any?>(
             "id" to node.id.value,
             "name" to node.name,
@@ -214,6 +250,8 @@ object NodePropertyAccessor {
         "fieldnode", "field" -> FieldNode::class.java
         "parameternode", "parameter" -> ParameterNode::class.java
         "returnnode", "return" -> ReturnNode::class.java
+        "resourcefilenode", "resourcefile" -> ResourceFileNode::class.java
+        "resourcevaluenode", "resourcevalue", "resource" -> ResourceValueNode::class.java
         "localvariable", "local" -> LocalVariable::class.java
         "annotationnode", "annotation" -> AnnotationNode::class.java
         "node" -> Node::class.java
@@ -228,6 +266,8 @@ object NodePropertyAccessor {
         "CALL" -> CallEdge::class.java
         "TYPE" -> TypeEdge::class.java
         "CONTROL_FLOW", "CONTROLFLOW" -> ControlFlowEdge::class.java
+        "RESOURCE", "RESOURCE_EDGE", "RESOURCE_OPEN", "RESOURCE_LOAD",
+        "RESOURCE_BUNDLE_CANDIDATE", "RESOURCE_LOOKUP", "RESOURCE_KEYS" -> ResourceEdge::class.java
         else -> null
     }
 }

@@ -1475,4 +1475,61 @@ class QueryPipelineTest {
         assertEquals(2L, result.rows[0]["cnt"])
         assertEquals(99, result.rows[0]["fixed"])
     }
+
+    @Test
+    fun `match resource relationship by generic RESOURCE type and kind property`() {
+        val builder = DefaultGraph.Builder()
+        val resourceFile = ResourceFileNode(NodeId.next(), "messages.properties", "classpath", "properties")
+        val lookupMethod = MethodDescriptor(type, "lookup", emptyList(), stringType)
+        val bundleMethod = MethodDescriptor(
+            TypeDescriptor("java.util.ResourceBundle"),
+            "getString",
+            listOf(stringType),
+            stringType
+        )
+        val callSite = CallSiteNode(NodeId.next(), lookupMethod, bundleMethod, 12, null, emptyList())
+        builder.addNode(resourceFile)
+        builder.addNode(callSite)
+        builder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.LOOKUP))
+        val localPipeline = QueryPipeline(builder.build())
+
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("r", "ResourceFile", mapOf("path" to lit("messages.properties"))),
+                relPattern(type = "RESOURCE", properties = mapOf("kind" to lit("LOOKUP"))),
+                nodePattern("c", "CallSiteNode")
+            ))),
+            CypherClause.Return(listOf(returnItem(prop(variable("c"), "callee_name"), "name")))
+        )
+
+        val result = localPipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals("getString", result.rows[0]["name"])
+    }
+
+    @Test
+    fun `path variable without explicit edge variable materializes alternating node edge path`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(
+                CypherPattern(
+                    listOf(
+                        nodePattern("a", "IntConstant"),
+                        relPattern(type = "DATAFLOW"),
+                        nodePattern("b", "ParameterNode")
+                    ),
+                    pathVariable = "p"
+                )
+            )),
+            CypherClause.Return(listOf(returnItem(variable("p"), "path")))
+        )
+
+        val result = pipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        val path = result.rows[0]["path"]
+        assertTrue(path is List<*>)
+        assertEquals(3, path.size)
+        assertTrue(path[0] is IntConstant)
+        assertTrue(path[1] is DataFlowEdge)
+        assertTrue(path[2] is ParameterNode)
+    }
 }

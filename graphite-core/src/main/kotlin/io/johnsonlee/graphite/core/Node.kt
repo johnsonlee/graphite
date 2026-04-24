@@ -167,6 +167,32 @@ data class ReturnNode(
 ) : ValueNode
 
 /**
+ * A resource file within the analyzed archive or directory.
+ */
+data class ResourceFileNode(
+    override val id: NodeId,
+    val path: String,
+    val source: String,
+    val format: String,
+    val profile: String? = null
+) : Node
+
+/**
+ * A value loaded from a resource file such as application.properties or YAML.
+ *
+ * Modeled as a [ValueNode] so existing DATAFLOW-based analyses can trace
+ * configuration values back from code.
+ */
+data class ResourceValueNode(
+    override val id: NodeId,
+    val path: String,
+    val key: String,
+    override val value: Any?,
+    val format: String,
+    val profile: String? = null
+) : ValueNode, ConstantNode
+
+/**
  * A call site - where a method is invoked
  */
 data class CallSiteNode(

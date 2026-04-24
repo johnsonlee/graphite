@@ -142,6 +142,74 @@ graph.resources.list("**/*.xml").forEach { entry ->
 }
 ```
 
+### Query Resources With Cypher
+
+Resources are also indexed into the graph, so you can query them with Cypher and
+cross-reference them with call sites:
+
+```cypher
+// Structured resource values
+MATCH (r:ResourceValue {key: "feature.mode"})
+RETURN r.path, r.value
+
+// Nested JSON / XML values
+MATCH (r:ResourceValue)
+WHERE r.key IN ["feature.enabled", "service.endpoint", "service.@enabled"]
+RETURN r.path, r.key, r.value
+
+// Which call sites read a specific key
+MATCH (r:ResourceValue {key: "feature.mode"})-[:RESOURCE_LOOKUP]->(cs:CallSiteNode)
+RETURN cs.caller_signature, cs.callee_signature
+
+// Resource files opened by code
+MATCH (f:ResourceFile)-[e:RESOURCE_OPEN|RESOURCE_LOAD|RESOURCE_BUNDLE_CANDIDATE]->(cs:CallSiteNode)
+RETURN f.path, e.kind, cs.caller_signature, cs.callee_signature
+```
+
+Resource relationships are exposed as dedicated edge types:
+
+| Type | Meaning |
+|------|---------|
+| `RESOURCE_CONTAINS` | `ResourceFile -> ResourceValue` |
+| `RESOURCE_OPEN` | Resource file opened directly by code |
+| `RESOURCE_LOAD` | Resource content loaded by parsers/bundles |
+| `RESOURCE_BUNDLE_CANDIDATE` | `ResourceBundle.getBundle(...)` candidate resolution |
+| `RESOURCE_LOOKUP` | Concrete key/value lookup (`getProperty`, `getString`, `getObject`) |
+| `RESOURCE_KEYS` | Key enumeration (`getKeys`) |
+
+Resource path indexing currently covers:
+- `.properties`
+- `.yml` / `.yaml`
+- Java properties XML (`Properties.loadFromXML`)
+- `.json`
+- generic `.xml`
+- `ListResourceBundle` / provider-backed class bundles via path-level class indexing
+
+Generic JDK resource linking currently covers:
+- `ClassLoader.getResource*`
+- `Properties.load(...)`
+- `Properties.loadFromXML(...)`
+- `PropertyResourceBundle(...)`
+- `ResourceBundle.getString/getObject/getKeys`
+- `ResourceBundle.getBundle(...)` with locale-aware candidate resolution
+- common `ResourceBundle.Control` cases including `FORMAT_*`, no-fallback controls, and simple custom `getFormats/getCandidateLocales` overrides
+
+### Explore Resource APIs
+
+`graphite-explore` exposes resource-aware HTTP APIs for agents and tooling:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/resources` | List indexed resources |
+| `/api/resources/{path}` | Read persisted raw resource content |
+| `/api/api-spec` | Extract API specs/endpoints for agent discovery |
+| `/openapi.json` | Machine-readable OpenAPI document for the explore server |
+| `/swagger.json` | Swagger-compatible alias of the same API document |
+
+For agent-driven discovery, probe `/openapi.json` first. It describes the full
+explore REST surface, including `/api/cypher`, `/api/resources`,
+`/api/resources/{path}`, `/api/api-spec`, and the node/subgraph endpoints.
+
 ## Architecture
 
 ```
@@ -241,7 +309,8 @@ Start the Explorer first, then LLMs can query the graph:
 # Start Explorer
 graphite-explore /path/to/saved-graph
 
-# LLM can now use tools: cypher, nodes, methods, call_sites, annotations, etc.
+# LLM can now use tools: openapi, cypher, resources, resource, api_spec,
+# nodes, methods, call_sites, annotations, etc.
 ```
 
 ## License

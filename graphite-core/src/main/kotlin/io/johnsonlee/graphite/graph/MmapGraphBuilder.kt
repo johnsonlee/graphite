@@ -217,12 +217,15 @@ class MmapGraphBuilder(
         internal const val TAG_RETURN_NODE = 11
         internal const val TAG_CALL_SITE_NODE = 12
         internal const val TAG_ANNOTATION_NODE = 13
+        internal const val TAG_RESOURCE_VALUE_NODE = 14
+        internal const val TAG_RESOURCE_FILE_NODE = 15
 
         // Edge type tags
         internal const val TAG_EDGE_DATAFLOW = 0
         internal const val TAG_EDGE_CALL = 1
         internal const val TAG_EDGE_TYPE = 2
         internal const val TAG_EDGE_CONTROL_FLOW = 3
+        internal const val TAG_EDGE_RESOURCE = 4
 
         // Value type tags (for Any? serialization)
         internal const val VAL_INT = 0
@@ -267,6 +270,21 @@ class MmapGraphBuilder(
                     val method = readMethodDescriptor(s, nodeMethods)
                     val hasActual = s.readBoolean()
                     ReturnNode(id, method, if (hasActual) TypeDescriptor(readString(s)) else null)
+                }
+                TAG_RESOURCE_FILE_NODE -> {
+                    val path = readString(s)
+                    val source = readString(s)
+                    val format = readString(s)
+                    val profile = if (s.readBoolean()) readString(s) else null
+                    ResourceFileNode(id, path, source, format, profile)
+                }
+                TAG_RESOURCE_VALUE_NODE -> {
+                    val path = readString(s)
+                    val key = readString(s)
+                    val value = readAnyValue(s)
+                    val format = readString(s)
+                    val profile = if (s.readBoolean()) readString(s) else null
+                    ResourceValueNode(id, path, key, value, format, profile)
                 }
                 TAG_CALL_SITE_NODE -> {
                     val caller = readMethodDescriptor(s, nodeMethods)
@@ -318,6 +336,7 @@ class MmapGraphBuilder(
                     }
                     ControlFlowEdge(from, to, kind, comparison)
                 }
+                TAG_EDGE_RESOURCE -> ResourceEdge(from, to, ResourceRelation.entries[input.readByte().toInt()])
                 else -> throw IllegalStateException("Unknown edge type tag: $tag")
             }
         }
@@ -339,6 +358,7 @@ class MmapGraphBuilder(
                         raf.readInt()                 // comparandNodeId
                     }
                 }
+                TAG_EDGE_RESOURCE -> raf.readByte()   // kind
                 else -> throw IllegalStateException("Unknown edge type tag during skip")
             }
         }
@@ -439,6 +459,23 @@ class MmapGraphBuilder(
                     dos.writeBoolean(node.actualType != null)
                     if (node.actualType != null) writeString(dos, node.actualType.className)
                 }
+                is ResourceFileNode -> {
+                    dos.writeByte(TAG_RESOURCE_FILE_NODE)
+                    writeString(dos, node.path)
+                    writeString(dos, node.source)
+                    writeString(dos, node.format)
+                    dos.writeBoolean(node.profile != null)
+                    if (node.profile != null) writeString(dos, node.profile)
+                }
+                is ResourceValueNode -> {
+                    dos.writeByte(TAG_RESOURCE_VALUE_NODE)
+                    writeString(dos, node.path)
+                    writeString(dos, node.key)
+                    writeAnyValue(dos, node.value)
+                    writeString(dos, node.format)
+                    dos.writeBoolean(node.profile != null)
+                    if (node.profile != null) writeString(dos, node.profile)
+                }
                 is CallSiteNode -> {
                     dos.writeByte(TAG_CALL_SITE_NODE)
                     writeMethodDescriptor(dos, node.caller)
@@ -492,6 +529,10 @@ class MmapGraphBuilder(
                 } else {
                     out.writeByte(0)
                 }
+            }
+            is ResourceEdge -> {
+                out.writeByte(TAG_EDGE_RESOURCE)
+                out.writeByte(edge.kind.ordinal)
             }
         }
     }

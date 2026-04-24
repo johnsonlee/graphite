@@ -186,6 +186,8 @@ object CypherFunctions {
         is FieldNode -> listOf("FieldNode")
         is ParameterNode -> listOf("ParameterNode")
         is ReturnNode -> listOf("ReturnNode")
+        is ResourceFileNode -> listOf("ResourceFileNode", "ResourceFile")
+        is ResourceValueNode -> listOf("ResourceValueNode", "ResourceValue", "Resource")
         is AnnotationNode -> listOf("AnnotationNode", "Annotation")
         else -> emptyList()
     }
@@ -195,6 +197,13 @@ object CypherFunctions {
         is CallEdge -> "CALL"
         is TypeEdge -> "TYPE"
         is ControlFlowEdge -> "CONTROL_FLOW"
+        is ResourceEdge -> when (value.kind) {
+            ResourceRelation.OPENS -> "RESOURCE_OPEN"
+            ResourceRelation.LOADS -> "RESOURCE_LOAD"
+            ResourceRelation.BUNDLE_CANDIDATE -> "RESOURCE_BUNDLE_CANDIDATE"
+            ResourceRelation.LOOKUP -> "RESOURCE_LOOKUP"
+            ResourceRelation.ENUMERATES -> "RESOURCE_KEYS"
+        }
         else -> null
     }
 

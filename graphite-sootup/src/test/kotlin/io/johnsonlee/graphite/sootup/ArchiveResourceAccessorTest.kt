@@ -3,11 +3,14 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ArchiveResourceAccessorTest {
@@ -204,6 +207,31 @@ class ArchiveResourceAccessorTest {
         }
     }
 
+    @Test
+    fun `close removes extracted nested jar temp directories`() {
+        val nestedJar = createTempJar(mapOf("sample/Inner.class" to "fake"))
+        val jarFile = createTempJar(
+            mapOf(
+                "BOOT-INF/classes/" to "",
+                "BOOT-INF/classes/application.yml" to "server.port: 8080"
+            ),
+            binaryEntries = mapOf("BOOT-INF/lib/nested.jar" to nestedJar.readBytes())
+        )
+        try {
+            val accessor = ArchiveResourceAccessor.create(jarFile.toPath())
+            val tempDirs = readTempDirs(accessor)
+            assertTrue(tempDirs.isNotEmpty())
+            tempDirs.forEach { assertTrue(Files.exists(it)) }
+
+            accessor.close()
+
+            tempDirs.forEach { assertFalse(Files.exists(it)) }
+        } finally {
+            nestedJar.delete()
+            jarFile.delete()
+        }
+    }
+
     // ========================================================================
     // EmptyResourceAccessor
     // ========================================================================
@@ -222,7 +250,7 @@ class ArchiveResourceAccessorTest {
     // Helpers
     // ========================================================================
 
-    private fun createTempJar(entries: Map<String, String>): File {
+    private fun createTempJar(entries: Map<String, String>, binaryEntries: Map<String, ByteArray> = emptyMap()): File {
         val file = File.createTempFile("test", ".jar")
         JarOutputStream(file.outputStream()).use { jos ->
             entries.forEach { (name, content) ->
@@ -230,7 +258,19 @@ class ArchiveResourceAccessorTest {
                 jos.write(content.toByteArray())
                 jos.closeEntry()
             }
+            binaryEntries.forEach { (name, content) ->
+                jos.putNextEntry(JarEntry(name))
+                jos.write(content)
+                jos.closeEntry()
+            }
         }
         return file
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun readTempDirs(accessor: ArchiveResourceAccessor): List<Path> {
+        val field = accessor.javaClass.getDeclaredField("tempDirs")
+        field.isAccessible = true
+        return field.get(accessor) as List<Path>
     }
 }

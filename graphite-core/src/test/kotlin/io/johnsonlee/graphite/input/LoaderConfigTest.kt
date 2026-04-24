@@ -16,6 +16,8 @@ class LoaderConfigTest {
         assertTrue(config.excludePackages.isEmpty())
         assertTrue(config.libraryFilters.isEmpty())
         assertTrue(config.buildCallGraph)
+        assertTrue(config.extractAnnotations)
+        assertTrue(config.trackCrossMethodFunctionalDispatch)
         assertEquals(CallGraphAlgorithm.CHA, config.callGraphAlgorithm)
         assertNull(config.verbose)
     }
@@ -43,6 +45,8 @@ class LoaderConfigTest {
             excludePackages = listOf("com.example.internal"),
             libraryFilters = listOf("modular-*"),
             buildCallGraph = false,
+            extractAnnotations = false,
+            trackCrossMethodFunctionalDispatch = false,
             callGraphAlgorithm = CallGraphAlgorithm.RTA,
             verbose = { verboseCalled = true }
         )
@@ -52,6 +56,8 @@ class LoaderConfigTest {
         assertEquals(listOf("com.example.internal"), config.excludePackages)
         assertEquals(listOf("modular-*"), config.libraryFilters)
         assertFalse(config.buildCallGraph)
+        assertFalse(config.extractAnnotations)
+        assertFalse(config.trackCrossMethodFunctionalDispatch)
         assertEquals(CallGraphAlgorithm.RTA, config.callGraphAlgorithm)
 
         config.verbose?.invoke("test")

@@ -60,6 +60,12 @@ class AndroidSdkIntegrationTest {
     }
 
     private fun loadGraph(): Graph {
-        return JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(androidJar!!)
+        return JavaProjectLoader(
+            LoaderConfig(
+                buildCallGraph = false,
+                extractAnnotations = false,
+                trackCrossMethodFunctionalDispatch = false
+            )
+        ).load(androidJar!!)
     }
 }

@@ -12,6 +12,8 @@ import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.Node as GraphiteNode
@@ -153,6 +155,19 @@ class CypherExecutor(private val graph: Graph) {
             is ReturnNode -> {
                 map["method"] = node.method.signature
                 map["actual_type"] = node.actualType?.className
+            }
+            is ResourceFileNode -> {
+                map["path"] = node.path
+                map["source"] = node.source
+                map["format"] = node.format
+                map["profile"] = node.profile
+            }
+            is ResourceValueNode -> {
+                map["path"] = node.path
+                map["key"] = node.key
+                map["value"] = node.value
+                map["format"] = node.format
+                map["profile"] = node.profile
             }
             is AnnotationNode -> {
                 map["name"] = node.name

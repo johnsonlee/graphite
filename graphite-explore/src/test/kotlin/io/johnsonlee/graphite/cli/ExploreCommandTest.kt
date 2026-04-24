@@ -7,9 +7,12 @@ import io.javalin.Javalin
 import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
 import io.johnsonlee.graphite.webgraph.GraphStore
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URI
@@ -41,11 +44,33 @@ class ExploreCommandTest {
         private lateinit var callSiteNode: CallSiteNode
         private lateinit var enumConstNode: EnumConstant
         private lateinit var fieldNode: FieldNode
+        private lateinit var resourceFileNode: ResourceFileNode
+        private lateinit var propertyFileNode: ResourceFileNode
+        private val resources = mapOf(
+            "application.yml" to "server:\n  port: 8080\nfeature:\n  enabled: true\n",
+            "config/application.properties" to "feature.mode=shadow\n"
+        )
+
+        private class TestResourceAccessor(
+            private val resources: Map<String, String>
+        ) : ResourceAccessor {
+            override fun list(pattern: String): Sequence<ResourceEntry> {
+                val matcher = java.nio.file.FileSystems.getDefault().getPathMatcher("glob:$pattern")
+                return resources.keys.asSequence()
+                    .filter { matcher.matches(Path.of(it)) }
+                    .map { ResourceEntry(it, "test-fixture") }
+            }
+
+            override fun open(path: String) =
+                resources[path]?.let { ByteArrayInputStream(it.toByteArray()) }
+                    ?: throw java.io.IOException("Resource not found: $path")
+        }
 
         @BeforeClass
         @JvmStatic
         fun setUp() {
             val builder = DefaultGraph.Builder()
+                .setResources(TestResourceAccessor(resources))
 
             paramNode = ParameterNode(NodeId.next(), 0, TypeDescriptor("int"), barMethod)
             localNode = LocalVariable(NodeId.next(), "x", TypeDescriptor("int"), barMethod)
@@ -55,6 +80,18 @@ class ExploreCommandTest {
             callSiteNode = CallSiteNode(NodeId.next(), barMethod, bazMethod, 10, null, listOf(paramNode.id))
             enumConstNode = EnumConstant(NodeId.next(), TypeDescriptor("com.example.Status"), "ACTIVE", listOf(1, "active"))
             fieldNode = FieldNode(NodeId.next(), FieldDescriptor(fooType, "name", TypeDescriptor("java.lang.String")), false)
+            resourceFileNode = ResourceFileNode(
+                NodeId.next(),
+                "application.yml",
+                "test-fixture",
+                "yaml"
+            )
+            propertyFileNode = ResourceFileNode(
+                NodeId.next(),
+                "config/application.properties",
+                "test-fixture",
+                "properties"
+            )
 
             builder.addNode(paramNode)
             builder.addNode(localNode)
@@ -64,10 +101,13 @@ class ExploreCommandTest {
             builder.addNode(callSiteNode)
             builder.addNode(enumConstNode)
             builder.addNode(fieldNode)
+            builder.addNode(resourceFileNode)
+            builder.addNode(propertyFileNode)
 
             builder.addEdge(DataFlowEdge(paramNode.id, localNode.id, DataFlowKind.ASSIGN))
             builder.addEdge(DataFlowEdge(intConstNode.id, localNode.id, DataFlowKind.ASSIGN))
             builder.addEdge(DataFlowEdge(localNode.id, returnNode.id, DataFlowKind.RETURN_VALUE))
+            builder.addEdge(ResourceEdge(propertyFileNode.id, callSiteNode.id, ResourceRelation.LOOKUP))
             builder.addEdge(CallEdge(callSiteNode.id, callSiteNode.id, isVirtual = false))
 
             builder.addMethod(barMethod)
@@ -80,6 +120,10 @@ class ExploreCommandTest {
 
             builder.addMemberAnnotation("com.example.Foo", "bar", "javax.annotation.Nullable", emptyMap())
             builder.addMemberAnnotation(
+                "com.example.Foo", "<class>", "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to "/v1")
+            )
+            builder.addMemberAnnotation(
                 "com.example.Foo", "bar", "org.springframework.web.bind.annotation.GetMapping",
                 mapOf("value" to "/api/bar")
             )
@@ -87,7 +131,6 @@ class ExploreCommandTest {
             val graph = builder.build()
             graphDir = Files.createTempDirectory("explore-test")
             GraphStore.save(graph, graphDir)
-
             val loadedGraph = GraphStore.load(graphDir)
             app = Javalin.create { config ->
                 config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
@@ -154,8 +197,8 @@ class ExploreCommandTest {
         val (code, body) = get("/api/info")
         assertEquals(200, code, "Expected 200 but got $code, body: $body")
         val info: Map<String, Double> = parseJson(body)
-        assertEquals(8.0, info["nodes"])
-        assertEquals(4.0, info["edges"])
+        assertEquals(10.0, info["nodes"])
+        assertEquals(5.0, info["edges"])
         assertEquals(3.0, info["methods"])
         assertEquals(1.0, info["callSites"])
     }
@@ -169,7 +212,7 @@ class ExploreCommandTest {
         val (code, body) = get("/api/nodes?limit=100")
         assertEquals(200, code)
         val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(8, nodes.size)
+        assertEquals(10, nodes.size)
     }
 
     @Test
@@ -393,6 +436,241 @@ class ExploreCommandTest {
         assertEquals(200, code, "Expected 200, body: $body")
         val annotations: Map<String, Map<String, Any?>> = parseJson(body)
         assertEquals(0, annotations.size)
+    }
+
+    // ========================================================================
+    // /api/resources
+    // ========================================================================
+
+    @Test
+    fun `GET api resources returns matching resources`() {
+        val (code, body) = get("/api/resources?pattern=**&limit=10")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(2.0, result["count"])
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(2, resourceEntries.size)
+        assertTrue(resourceEntries.any { it["path"] == "application.yml" })
+        assertTrue(resourceEntries.all { it["source"] == "test-fixture" })
+        assertTrue(resourceEntries.all { it["derived"] == false })
+    }
+
+    @Test
+    fun `GET api resources respects glob pattern`() {
+        val (code, body) = get("/api/resources?pattern=**/*.properties")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val resourceEntries = result["resources"] as List<Map<String, Any?>>
+        assertEquals(1, resourceEntries.size)
+        assertEquals("config/application.properties", resourceEntries.single()["path"])
+    }
+
+    @Test
+    fun `GET api resource content returns text payload`() {
+        val (code, body) = get("/api/resources/application.yml")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("application.yml", result["path"])
+        assertEquals("test-fixture", result["source"])
+        assertEquals(false, result["derived"])
+        assertTrue((result["content"] as String).contains("server:"))
+    }
+
+    @Test
+    fun `GET api resource content returns 404 for missing path`() {
+        val (code, body) = get("/api/resources/missing.yml")
+        assertEquals(404, code, "Expected 404, body: $body")
+    }
+
+    @Test
+    fun `GET openapi json exposes discoverable explore API`() {
+        val (code, body) = get("/openapi.json")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("3.0.3", result["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val paths = result["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/api/cypher"))
+        assertTrue(paths.containsKey("/api/api-spec"))
+        assertTrue(paths.containsKey("/api/resources/{path}"))
+        @Suppress("UNCHECKED_CAST")
+        val cypher = paths["/api/cypher"] as Map<String, Map<String, Any?>>
+        assertTrue(cypher.containsKey("get"))
+        assertTrue(cypher.containsKey("post"))
+        @Suppress("UNCHECKED_CAST")
+        val post = cypher["post"] as Map<String, Any?>
+        assertTrue(post.containsKey("requestBody"))
+    }
+
+    @Test
+    fun `GET swagger json aliases the OpenAPI document`() {
+        val (openapiCode, openapiBody) = get("/openapi.json")
+        val (swaggerCode, swaggerBody) = get("/swagger.json")
+        assertEquals(200, openapiCode)
+        assertEquals(200, swaggerCode)
+        assertEquals(parseJson<Map<String, Any?>>(openapiBody), parseJson<Map<String, Any?>>(swaggerBody))
+    }
+
+    // ========================================================================
+    // /api/api-spec
+    // ========================================================================
+
+    @Test
+    fun `GET api api-spec returns Spring endpoints`() {
+        val (code, body) = get("/api/api-spec")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals("spring-web", result["framework"])
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+        val endpoint = endpoints.single()
+        assertEquals("com.example.Foo", endpoint["class"])
+        assertEquals("bar", endpoint["member"])
+        assertEquals("GET", endpoint["httpMethod"])
+        assertEquals("/v1/api/bar", endpoint["path"])
+        assertEquals(barMethod.signature, endpoint["signature"])
+    }
+
+    @Test
+    fun `GET api api-spec supports class filter`() {
+        val (code, body) = get("/api/api-spec?class=com.example.Foo")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val endpoints = result["endpoints"] as List<Map<String, Any?>>
+        assertEquals(1, endpoints.size)
+
+        val (missingCode, missingBody) = get("/api/api-spec?class=com.example.Baz")
+        assertEquals(200, missingCode, "Expected 200, body: $missingBody")
+        val missingResult: Map<String, Any?> = parseJson(missingBody)
+        @Suppress("UNCHECKED_CAST")
+        val missingEndpoints = missingResult["endpoints"] as List<Map<String, Any?>>
+        assertTrue(missingEndpoints.isEmpty())
+    }
+
+    @Test
+    fun `extractApiSpec handles RequestMapping arrays iterables and default request method`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "handle",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val fallbackMethod = MethodDescriptor(
+            TypeDescriptor("com.example.RequestController"),
+            "fallback",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addMethod(method)
+            .addMethod(fallbackMethod)
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "<class>",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("value" to arrayOf("/v2", "/v1"))
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "handle",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf(
+                    "path" to listOf("/beta", "/alpha"),
+                    "method" to arrayOf("POST", "PATCH")
+                )
+            )
+            .addMemberAnnotation(
+                "com.example.RequestController",
+                "fallback",
+                "org.springframework.web.bind.annotation.RequestMapping",
+                emptyMap()
+            )
+            .build()
+
+        val endpoints = ExploreCommand().extractApiSpec(graph)
+
+        assertEquals(10, endpoints.size)
+        val fallbackEndpoints = endpoints.filter { it["member"] == "fallback" }
+        assertEquals(2, fallbackEndpoints.size)
+        assertTrue(fallbackEndpoints.all { it["httpMethod"] == "REQUEST" })
+        assertEquals(setOf("/v1", "/v2"), fallbackEndpoints.map { it["path"] }.toSet())
+
+        val handlePaths = endpoints.filter { it["member"] == "handle" }.map { it["path"] as String }
+        assertEquals(
+            listOf("/v1/alpha", "/v1/alpha", "/v1/beta", "/v1/beta", "/v2/alpha", "/v2/alpha", "/v2/beta", "/v2/beta"),
+            handlePaths
+        )
+        val handleMethods = endpoints.filter { it["member"] == "handle" }.map { it["httpMethod"] as String }.toSet()
+        assertEquals(setOf("PATCH", "POST"), handleMethods)
+        assertEquals("/v1", endpoints.first()["path"])
+    }
+
+    @Test
+    fun `private API spec helpers cover all HTTP mapping branches`() {
+        val explore = ExploreCommand()
+        val extractHttpMethods = ExploreCommand::class.java.getDeclaredMethod(
+            "extractHttpMethods",
+            String::class.java,
+            Map::class.java
+        ).apply { isAccessible = true }
+        val extractStringValues = ExploreCommand::class.java.getDeclaredMethod(
+            "extractStringValues",
+            Any::class.java
+        ).apply { isAccessible = true }
+        val combinePaths = ExploreCommand::class.java.getDeclaredMethod(
+            "combinePaths",
+            List::class.java,
+            List::class.java
+        ).apply { isAccessible = true }
+
+        assertEquals(listOf("GET"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.GetMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("POST"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PostMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PUT"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PutMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("DELETE"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.DeleteMapping", emptyMap<String, Any?>()))
+        assertEquals(listOf("PATCH"), extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.PatchMapping", emptyMap<String, Any?>()))
+        assertEquals(
+            listOf("HEAD"),
+            extractHttpMethods.invoke(
+                explore,
+                "org.springframework.web.bind.annotation.RequestMapping",
+                mapOf("method" to "HEAD")
+            )
+        )
+        assertEquals(
+            listOf("REQUEST"),
+            extractHttpMethods.invoke(explore, "org.springframework.web.bind.annotation.RequestMapping", mapOf("method" to 123))
+        )
+
+        assertEquals(emptyList<String>(), extractStringValues.invoke(explore, null))
+        assertEquals(listOf("one"), extractStringValues.invoke(explore, "one"))
+        assertEquals(listOf("two"), extractStringValues.invoke(explore, listOf("two", 2)))
+        assertEquals(listOf("three"), extractStringValues.invoke(explore, arrayOf("three", 3)))
+        assertEquals(emptyList<String>(), extractStringValues.invoke(explore, 42))
+
+        assertEquals(listOf("/"), combinePaths.invoke(explore, emptyList<String>(), emptyList<String>()))
+        assertEquals(listOf("/users"), combinePaths.invoke(explore, listOf("/"), listOf("/users")))
+        assertEquals(listOf("/api"), combinePaths.invoke(explore, listOf("/api"), emptyList<String>()))
+    }
+
+    @Test
+    fun `buildOpenApiSpec describes cypher and resource endpoints`() {
+        val spec = ExploreCommand().buildOpenApiSpec()
+        assertEquals("3.0.3", spec["openapi"])
+        @Suppress("UNCHECKED_CAST")
+        val paths = spec["paths"] as Map<String, Map<String, Any?>>
+        assertTrue(paths.containsKey("/openapi.json"))
+        assertTrue(paths.containsKey("/swagger.json"))
+        @Suppress("UNCHECKED_CAST")
+        val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
+        @Suppress("UNCHECKED_CAST")
+        val get = resources["get"] as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val parameters = get["parameters"] as List<Map<String, Any?>>
+        assertEquals("path", parameters.single()["name"])
     }
 
     // ========================================================================
