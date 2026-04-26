@@ -20,9 +20,9 @@ class ResourceAccessorTest {
 
     @Test
     fun `ResourceEntry stores path and source`() {
-        val entry = ResourceEntry(path = "config/application.yml", source = "BOOT-INF/classes/")
+        val entry = ResourceEntry(path = "config/application.yml", source = JavaArchiveLayout.BOOT_INF_CLASSES)
         assertEquals("config/application.yml", entry.path)
-        assertEquals("BOOT-INF/classes/", entry.source)
+        assertEquals(JavaArchiveLayout.BOOT_INF_CLASSES, entry.source)
     }
 
     @Test

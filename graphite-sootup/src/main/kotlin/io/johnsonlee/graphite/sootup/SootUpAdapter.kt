@@ -8,10 +8,16 @@ import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
+import java.nio.file.Files
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.ServiceLoader
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.FieldVisitor
+import org.objectweb.asm.Handle
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type as AsmType
 import org.objectweb.asm.tree.AbstractInsnNode
@@ -26,6 +32,7 @@ import org.objectweb.asm.tree.TypeInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import sootup.core.frontend.BodySource
 import sootup.core.graph.StmtGraph
+import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.jimple.basic.NoPositionInformation
 import sootup.core.jimple.basic.Local
 import sootup.core.jimple.basic.Value
@@ -89,6 +96,7 @@ class SootUpAdapter(
     private val signatureReader: BytecodeSignatureReader? = null,
     private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
+    private val inputLocationSources: Map<AnalysisInputLocation, String>,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
 ) {
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
@@ -113,6 +121,7 @@ class SootUpAdapter(
             return raw.takeIf { it.isNotBlank() }
         }
     }
+    private data class IndexedClass(val sootClass: JavaSootClass, val source: String)
 
     // Maps to track created nodes for cross-referencing
     private val localNodes = mutableMapOf<LocalKey, LocalVariable>()
@@ -155,6 +164,9 @@ class SootUpAdapter(
 
     private val resolvedMethodCache = mutableMapOf<MethodSignature, MethodSignature>()
     private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()
+    private val classOriginsByName = mutableMapOf<String, String>()
+    private val classOriginSourceCounts = mutableMapOf<String, Int>()
+    private val artifactDependenciesByArtifact = mutableMapOf<String, MutableMap<String, Int>>()
     private val resourceFilesByPath = mutableMapOf<String, MutableList<ResourceFileNode>>()
     private val configurationResourcePaths = linkedSetOf<String>()
     private val runtimeIndexedBundles = mutableSetOf<String>()
@@ -173,12 +185,25 @@ class SootUpAdapter(
     private var activeMethod: MethodDescriptor? = null
     private var activeMethodLocals = mutableSetOf<LocalKey>()
     private var activeMethodParameters = mutableSetOf<ParameterBinding>()
+    private fun persistedClassOrigins(): Map<String, String> {
+        if (classOriginSourceCounts.size <= 1) {
+            return emptyMap()
+        }
+        return classOriginsByName.toMap()
+    }
 
     /**
      * Build the complete graph from the SootUp view
      */
     fun buildGraph(): Graph {
-        indexResourceValues()
+        val indexedClasses = indexSootClassOrigins()
+        val unloadedClassEntries = indexResourceValues(indexedClasses.map { it.source }.toSet())
+        if (classOriginSourceCounts.size > 1) {
+            indexedClasses.forEach { indexArtifactDependency(it.sootClass, it.source) }
+            unloadedClassEntries.forEach(::indexArtifactDependency)
+        } else {
+            log("Skipping artifact dependency extraction for single-artifact input")
+        }
         indexClassBundles()
         log("Starting buildGraph pass 1")
         var pass1Count = 0
@@ -239,6 +264,15 @@ class SootUpAdapter(
         // Build call graph if configured
         if (config.buildCallGraph) {
             processCallGraph()
+        }
+
+        persistedClassOrigins().forEach { (className, source) ->
+            graphBuilder.addClassOrigin(className, source)
+        }
+        artifactDependenciesByArtifact.forEach { (fromArtifact, dependencies) ->
+            dependencies.forEach { (toArtifact, weight) ->
+                graphBuilder.addArtifactDependency(fromArtifact, toArtifact, weight)
+            }
         }
 
         log("Starting graphBuilder.build()")
@@ -1679,25 +1713,188 @@ class SootUpAdapter(
         }
     }
 
-    private fun indexResourceValues() {
-        resourceAccessor.list("**")
-            .forEach { entry ->
-                if (entry.path.endsWith(".class", ignoreCase = true)) return@forEach
-                val format = resourceFormat(entry.path)
-                val profile = resourceProfile(entry.path)
-                val fileNode = ResourceFileNode(
-                    id = nextNodeId("resource"),
-                    path = entry.path,
-                    source = entry.source,
-                    format = format,
-                    profile = profile
-                )
-                graphBuilder.addNode(fileNode)
-                resourceFilesByPath.getOrPut(entry.path) { mutableListOf() }.add(fileNode)
-                if (isResourceConfig(entry.path)) {
-                    configurationResourcePaths += entry.path
+    private fun indexSootClassOrigins(): List<IndexedClass> {
+        if (inputLocationSources.isEmpty()) return emptyList()
+        val indexedClasses = mutableListOf<IndexedClass>()
+        view.classes.forEach { sootClass ->
+            if (sootClass is JavaSootClass) {
+                val source = sourceForClass(sootClass) ?: return@forEach
+                val className = sootClass.type.fullyQualifiedName
+                if (className.endsWith(".package-info") || className.endsWith(".module-info")) {
+                    return@forEach
+                }
+                classOriginsByName.putIfAbsent(className, source)
+                classOriginSourceCounts[source] = (classOriginSourceCounts[source] ?: 0) + 1
+                indexedClasses += IndexedClass(sootClass, source)
+            }
+        }
+        return indexedClasses
+    }
+
+    private fun sourceForClass(sootClass: JavaSootClass): String? =
+        inputLocationSources[sootClass.classSource.analysisInputLocation]
+
+    private fun indexResourceValues(loadedClassSources: Set<String>): List<ResourceEntry> {
+        val classEntries = mutableListOf<ResourceEntry>()
+        resourceAccessor.list("**").forEach { entry ->
+            if (entry.path.endsWith(".class", ignoreCase = true)) {
+                if (entry.source in loadedClassSources) {
+                    return@forEach
+                }
+                classEntries += entry
+                classResourcePathToName(entry.path)?.let { className ->
+                    classOriginsByName.putIfAbsent(className, entry.source)
+                    classOriginSourceCounts[entry.source] = (classOriginSourceCounts[entry.source] ?: 0) + 1
+                }
+                return@forEach
+            }
+            val format = resourceFormat(entry.path)
+            val profile = resourceProfile(entry.path)
+            val fileNode = ResourceFileNode(
+                id = nextNodeId("resource"),
+                path = entry.path,
+                source = entry.source,
+                format = format,
+                profile = profile
+            )
+            graphBuilder.addNode(fileNode)
+            resourceFilesByPath.getOrPut(entry.path) { mutableListOf() }.add(fileNode)
+            if (isResourceConfig(entry.path)) {
+                configurationResourcePaths += entry.path
+            }
+        }
+        return classEntries
+    }
+
+    private fun indexArtifactDependency(sootClass: JavaSootClass, source: String) {
+        val fromArtifact = artifactKey(source) ?: return
+        val referencedClasses = runCatching {
+            extractReferencedClasses(Files.readAllBytes(sootClass.classSource.sourcePath))
+        }.getOrElse {
+            log("Failed to extract artifact dependencies from $source!/${sootClass.type.fullyQualifiedName}: ${it.message}")
+            return
+        }
+        recordArtifactDependencies(fromArtifact, referencedClasses)
+    }
+
+    private fun indexArtifactDependency(entry: ResourceEntry) {
+        val fromArtifact = artifactKey(entry.source) ?: return
+        val referencedClasses = runCatching {
+            resourceAccessor.open(entry.path).use { input ->
+                extractReferencedClasses(input.readBytes())
+            }
+        }.getOrElse {
+            log("Failed to extract artifact dependencies from ${entry.source}!/${entry.path}: ${it.message}")
+            return
+        }
+        recordArtifactDependencies(fromArtifact, referencedClasses)
+    }
+
+    private fun recordArtifactDependencies(fromArtifact: String, referencedClasses: Set<String>) {
+        referencedClasses.forEach { referencedClass ->
+            val targetArtifact = classOriginsByName[referencedClass]?.let(::artifactKey) ?: return@forEach
+            if (targetArtifact == fromArtifact) return@forEach
+            artifactDependenciesByArtifact
+                .getOrPut(fromArtifact) { mutableMapOf() }
+                .merge(targetArtifact, 1, Int::plus)
+        }
+    }
+
+    private fun extractReferencedClasses(bytecode: ByteArray): Set<String> {
+        val references = linkedSetOf<String>()
+        fun addType(type: AsmType?) {
+            when (type?.sort) {
+                AsmType.ARRAY -> addType(type.elementType)
+                AsmType.OBJECT -> references += type.className
+                AsmType.METHOD -> {
+                    addType(type.returnType)
+                    type.argumentTypes.forEach(::addType)
                 }
             }
+        }
+
+        ClassReader(bytecode).accept(object : ClassVisitor(ASM_API_VERSION) {
+            override fun visit(
+                version: Int,
+                access: Int,
+                name: String?,
+                signature: String?,
+                superName: String?,
+                interfaces: Array<out String>?
+            ) {
+                superName?.replace('/', '.')?.let { references += it }
+                interfaces.orEmpty().forEach { references += it.replace('/', '.') }
+            }
+
+            override fun visitField(
+                access: Int,
+                name: String?,
+                descriptor: String?,
+                signature: String?,
+                value: Any?
+            ): FieldVisitor {
+                addType(descriptor?.let(AsmType::getType))
+                if (value is AsmType) addType(value)
+                return object : FieldVisitor(ASM_API_VERSION) {}
+            }
+
+            override fun visitMethod(
+                access: Int,
+                name: String?,
+                descriptor: String?,
+                signature: String?,
+                exceptions: Array<out String>?
+            ): MethodVisitor {
+                addType(descriptor?.let(AsmType::getMethodType))
+                exceptions.orEmpty().forEach { references += it.replace('/', '.') }
+                return object : MethodVisitor(ASM_API_VERSION) {
+                    override fun visitTypeInsn(opcode: Int, type: String) {
+                        references += type.replace('/', '.')
+                    }
+
+                    override fun visitFieldInsn(opcode: Int, owner: String, name: String, descriptor: String) {
+                        references += owner.replace('/', '.')
+                        addType(AsmType.getType(descriptor))
+                    }
+
+                    override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
+                        references += owner.replace('/', '.')
+                        addType(AsmType.getMethodType(descriptor))
+                    }
+
+                    override fun visitLdcInsn(value: Any) {
+                        if (value is AsmType) addType(value)
+                    }
+
+                    override fun visitInvokeDynamicInsn(
+                        name: String,
+                        descriptor: String,
+                        bootstrapMethodHandle: Handle,
+                        vararg bootstrapMethodArguments: Any
+                    ) {
+                        addType(AsmType.getMethodType(descriptor))
+                        references += bootstrapMethodHandle.owner.replace('/', '.')
+                        bootstrapMethodArguments.forEach { arg ->
+                            when (arg) {
+                                is AsmType -> addType(arg)
+                                is Handle -> references += arg.owner.replace('/', '.')
+                            }
+                        }
+                    }
+                }
+            }
+        }, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+
+        return references
+    }
+
+    private fun artifactKey(origin: String): String? =
+        origin.trim().trimEnd('/').substringAfterLast('/').removeSuffix(".jar").takeIf { it.isNotBlank() }
+
+    private fun classResourcePathToName(path: String): String? {
+        if (!path.endsWith(".class", ignoreCase = true)) return null
+        val className = path.removeSuffix(".class").replace('/', '.')
+        return if (className.endsWith(".package-info") || className.endsWith(".module-info")) null else className
     }
 
     private fun indexClassBundles() {

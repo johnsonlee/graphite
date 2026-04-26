@@ -242,6 +242,33 @@ class MmapGraphTest {
     }
 
     @Test
+    fun `class origins and artifact dependencies round-trip through MmapGraph`() {
+        val graph = MmapGraphBuilder()
+            .addClassOrigin("com.example.App", "app.jar")
+            .addClassOrigin("com.example.App", "ignored.jar")
+            .addClassOrigin("org.example.Lib", "lib.jar")
+            .addArtifactDependency("app.jar", "lib.jar", 4)
+            .addArtifactDependency("app.jar", "lib.jar", 6)
+            .addArtifactDependency("", "lib.jar", 1)
+            .addArtifactDependency("app.jar", "", 1)
+            .addArtifactDependency("app.jar", "app.jar", 1)
+            .addArtifactDependency("app.jar", "ignored.jar", 0)
+            .build()
+
+        assertIs<MmapGraph>(graph)
+        assertEquals("app.jar", graph.classOrigin("com.example.App"))
+        assertNull(graph.classOrigin("com.example.Missing"))
+        assertEquals(
+            mapOf(
+                "com.example.App" to "app.jar",
+                "org.example.Lib" to "lib.jar"
+            ),
+            graph.classOrigins()
+        )
+        assertEquals(mapOf("app.jar" to mapOf("lib.jar" to 10)), graph.artifactDependencies())
+    }
+
+    @Test
     fun `enumValues works`() {
         val graph = MmapGraphBuilder()
             .addEnumValues("com.example.Status", "ACTIVE", listOf(1, "active"))

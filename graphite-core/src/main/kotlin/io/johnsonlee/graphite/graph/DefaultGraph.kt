@@ -23,6 +23,8 @@ class DefaultGraph private constructor(
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValues: Map<String, List<Any?>>,
+    private val classOriginsMap: Map<String, String>,
+    private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     // Key format: "$className#$memberName" — simple concatenation is sufficient
     // for current scale. Consider two-level map if profiling shows GC pressure.
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
@@ -110,6 +112,12 @@ class DefaultGraph private constructor(
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
 
+    override fun classOrigin(className: String): String? = classOriginsMap[className]
+
+    override fun classOrigins(): Map<String, String> = classOriginsMap
+
+    override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
+
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
 
@@ -129,6 +137,8 @@ class DefaultGraph private constructor(
         private val methods = ConcurrentHashMap<String, MethodDescriptor>()
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
+        private val classOrigins = ConcurrentHashMap<String, String>()
+        private val artifactDependencies = ConcurrentHashMap<String, ConcurrentHashMap<String, Int>>()
         // Extension processing is single-threaded (sequential forEach in buildGraph),
         // so these collections don't need to be thread-safe.
         // See CLAUDE.md "Why buildGraph() Is Not Parallelized" for rationale.
@@ -164,6 +174,19 @@ class DefaultGraph private constructor(
 
         override fun addMemberAnnotation(className: String, memberName: String, annotationFqn: String, values: Map<String, Any?>): FullGraphBuilder {
             memberAnnotations.getOrPut("$className#$memberName") { mutableMapOf() }[annotationFqn] = values
+            return this
+        }
+
+        override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
+            classOrigins.putIfAbsent(className, source)
+            return this
+        }
+
+        override fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int): FullGraphBuilder {
+            if (fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight <= 0) return this
+            artifactDependencies
+                .computeIfAbsent(fromArtifact) { ConcurrentHashMap() }
+                .merge(toArtifact, weight, Int::plus)
             return this
         }
 
@@ -216,6 +239,8 @@ class DefaultGraph private constructor(
                 methodIndex = methods.toMap(),
                 typeHierarchy = typeHierarchyBuilder.build(),
                 enumValues = enumValues.toMap(),
+                classOriginsMap = classOrigins.toMap(),
+                artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray(),
                 resources = resourceAccessor,
