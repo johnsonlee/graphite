@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.ProjectLoader
 import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.model.SourceType
@@ -46,7 +47,7 @@ class JavaProjectLoader(
 
     override fun load(path: Path): Graph {
         val inputLocations = createInputLocations(path)
-        val view = JavaView(inputLocations)
+        val view = JavaView(inputLocations.locations)
 
         // Load generic signatures from bytecode
         val signatureReader = BytecodeSignatureReader()
@@ -56,6 +57,7 @@ class JavaProjectLoader(
         val adapter = SootUpAdapter(
             view, config, signatureReader,
             resourceAccessor = resourceAccessor,
+            inputLocationSources = inputLocations.sources,
             graphBuilder = graphBuilderFactory()
         )
         return adapter.buildGraph()
@@ -67,7 +69,24 @@ class JavaProjectLoader(
     private fun loadSignatures(path: Path, reader: BytecodeSignatureReader) {
         try {
             when {
-                path.isDirectory() -> reader.loadFromDirectory(path)
+                path.isDirectory() -> {
+                    reader.loadFromDirectory(path)
+                    Files.walk(path).use { stream ->
+                        stream.filter { Files.isRegularFile(it) }
+                            .filter {
+                                when (it.fileName.toString().substringAfterLast('.', "").lowercase()) {
+                                    "jar" -> true
+                                    else -> false
+                                }
+                            }
+                            .forEach { jarPath ->
+                                try {
+                                    reader.loadFromJar(jarPath)
+                                } catch (_: Exception) {
+                                }
+                            }
+                    }
+                }
                 path.extension.lowercase() == "jar" -> {
                     if (isSpringBootJar(path)) {
                         loadSpringBootSignatures(path, reader)
@@ -88,7 +107,7 @@ class JavaProjectLoader(
     private fun loadSpringBootSignatures(jarPath: Path, reader: BytecodeSignatureReader) {
         ZipFile(jarPath.toFile()).use { zip ->
             zip.entries().asSequence()
-                .filter { it.name.startsWith("BOOT-INF/classes/") && it.name.endsWith(".class") }
+                .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
                 .forEach { entry ->
                     zip.getInputStream(entry).use { inputStream ->
                         reader.loadFromStream(inputStream)
@@ -100,7 +119,7 @@ class JavaProjectLoader(
     private fun loadWarSignatures(warPath: Path, reader: BytecodeSignatureReader) {
         ZipFile(warPath.toFile()).use { zip ->
             zip.entries().asSequence()
-                .filter { it.name.startsWith("WEB-INF/classes/") && it.name.endsWith(".class") }
+                .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
                 .forEach { entry ->
                     zip.getInputStream(entry).use { inputStream ->
                         reader.loadFromStream(inputStream)
@@ -117,16 +136,67 @@ class JavaProjectLoader(
         return ext in listOf("jar", "war", "zip")
     }
 
-    private fun createInputLocations(path: Path): List<AnalysisInputLocation> {
+    private data class InputLocations(
+        val locations: List<AnalysisInputLocation>,
+        val sources: Map<AnalysisInputLocation, String>
+    )
+
+    private fun createInputLocations(path: Path): InputLocations {
         return when {
-            path.isDirectory() -> listOf(
-                PathBasedAnalysisInputLocation.create(path, SourceType.Application)
-            )
+            path.isDirectory() -> createDirectoryInputLocations(path)
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
-            else -> listOf(
-                PathBasedAnalysisInputLocation.create(path, SourceType.Application)
-            )
+            else -> {
+                val location = PathBasedAnalysisInputLocation.create(path, SourceType.Application)
+                InputLocations(
+                    locations = listOf(location),
+                    sources = mapOf(location to path.fileName.toString())
+                )
+            }
+        }
+    }
+
+    private fun createDirectoryInputLocations(path: Path): InputLocations {
+        val locations = mutableListOf<AnalysisInputLocation>()
+        val sources = mutableMapOf<AnalysisInputLocation, String>()
+        if (containsLooseClassFiles(path)) {
+            locations.addInputLocation(path.fileName.toString(), sources, path, SourceType.Application)
+        }
+
+        val jarPaths = Files.walk(path).use { stream ->
+            stream.filter { Files.isRegularFile(it) }
+                .filter { it.fileName.toString().endsWith(".jar", ignoreCase = true) }
+                .sorted()
+                .toList()
+        }
+
+        jarPaths.forEach { jarPath ->
+            val relativeJar = path.relativize(jarPath).toString().replace('\\', '/')
+            val isApplicationJar = jarContainsIncludedPackages(jarPath)
+            if (isApplicationJar) {
+                locations.addInputLocation(relativeJar, sources, jarPath, SourceType.Application)
+                log("  + Loading application JAR from directory: $relativeJar")
+            } else if (config.includeLibraries && matchesLibraryFilter(jarPath.fileName.toString())) {
+                locations.addInputLocation(relativeJar, sources, jarPath, SourceType.Library)
+                log("  + Loading library JAR from directory: $relativeJar")
+            }
+        }
+
+        if (locations.isEmpty()) {
+            locations.addInputLocation(path.fileName.toString(), sources, path, SourceType.Application)
+        }
+
+        return InputLocations(locations, sources)
+    }
+
+    private fun containsLooseClassFiles(path: Path): Boolean {
+        if (!path.isDirectory()) return false
+        return Files.walk(path).use { stream ->
+            stream.filter { Files.isRegularFile(it) }
+                .anyMatch {
+                    it.fileName.toString().endsWith(".class", ignoreCase = true) &&
+                        !it.toString().contains(".jar!")
+                }
         }
     }
 
@@ -138,7 +208,7 @@ class JavaProjectLoader(
 
         return try {
             ZipFile(path.toFile()).use { zip ->
-                zip.getEntry("BOOT-INF/classes/") != null
+                zip.getEntry(JavaArchiveLayout.BOOT_INF_CLASSES) != null
             }
         } catch (e: Exception) {
             false
@@ -153,23 +223,24 @@ class JavaProjectLoader(
      * Create input locations for Spring Boot fat JAR.
      *
      * Spring Boot layout:
-     * - BOOT-INF/classes/ - Application classes
-     * - BOOT-INF/lib/ - Dependency JARs
+     * - [JavaArchiveLayout.BOOT_INF_CLASSES] - Application classes
+     * - [JavaArchiveLayout.BOOT_INF_LIB] - Dependency JARs
      */
-    private fun createSpringBootInputLocations(path: Path): List<AnalysisInputLocation> {
+    private fun createSpringBootInputLocations(path: Path): InputLocations {
         val locations = mutableListOf<AnalysisInputLocation>()
+        val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-springboot")
 
         try {
             ZipFile(path.toFile()).use { zip ->
-                // Extract BOOT-INF/classes
+                // Extract Spring Boot application classes.
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
 
                 zip.entries().asSequence()
-                    .filter { it.name.startsWith("BOOT-INF/classes/") && !it.isDirectory }
+                    .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_CLASSES) && !it.isDirectory }
                     .forEach { entry ->
-                        val relativePath = entry.name.removePrefix("BOOT-INF/classes/")
+                        val relativePath = entry.name.removePrefix(JavaArchiveLayout.BOOT_INF_CLASSES)
                         val targetFile = classesDir.resolve(relativePath)
                         Files.createDirectories(targetFile.parent)
                         zip.getInputStream(entry).use { input ->
@@ -177,7 +248,7 @@ class JavaProjectLoader(
                         }
                     }
 
-                locations.add(PathBasedAnalysisInputLocation.create(classesDir, SourceType.Application))
+                locations.addInputLocation(JavaArchiveLayout.BOOT_INF_CLASSES, sources, classesDir, SourceType.Application)
 
                 // Optionally include libraries
                 if (config.includeLibraries) {
@@ -185,7 +256,7 @@ class JavaProjectLoader(
                     Files.createDirectories(libDir)
 
                     zip.entries().asSequence()
-                        .filter { it.name.startsWith("BOOT-INF/lib/") && it.name.endsWith(".jar") }
+                        .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
                         .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
                         .forEach { entry ->
                             val jarName = entry.name.substringAfterLast("/")
@@ -195,7 +266,7 @@ class JavaProjectLoader(
                             }
                             // Only add JAR if it contains classes from included packages
                             if (jarContainsIncludedPackages(targetFile)) {
-                                locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                                locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                             }
                         }
                 }
@@ -206,41 +277,42 @@ class JavaProjectLoader(
             throw e
         }
 
-        return locations
+        return InputLocations(locations, sources)
     }
 
     /**
      * Create input locations for WAR file.
      *
      * WAR layout:
-     * - WEB-INF/classes/ - Application classes
-     * - WEB-INF/lib/ - Dependency JARs
+     * - [JavaArchiveLayout.WEB_INF_CLASSES] - Application classes
+     * - [JavaArchiveLayout.WEB_INF_LIB] - Dependency JARs
      */
-    private fun createWarInputLocations(path: Path): List<AnalysisInputLocation> {
+    private fun createWarInputLocations(path: Path): InputLocations {
         val locations = mutableListOf<AnalysisInputLocation>()
+        val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-war")
 
         try {
             ZipFile(path.toFile()).use { zip ->
-                // Extract WEB-INF/classes
+                // Extract WAR application classes.
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
 
                 var classFileCount = 0
                 zip.entries().asSequence()
-                    .filter { it.name.startsWith("WEB-INF/classes/") && !it.isDirectory }
+                    .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_CLASSES) && !it.isDirectory }
                     .forEach { entry ->
-                        val relativePath = entry.name.removePrefix("WEB-INF/classes/")
+                        val relativePath = entry.name.removePrefix(JavaArchiveLayout.WEB_INF_CLASSES)
                         val targetFile = classesDir.resolve(relativePath)
                         Files.createDirectories(targetFile.parent)
                         zip.getInputStream(entry).use { input ->
                             Files.copy(input, targetFile)
                         }
-                        if (entry.name.endsWith(".class")) classFileCount++
-                    }
+                        if (entry.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION)) classFileCount++
+                }
 
-                log("Extracted $classFileCount class files from WEB-INF/classes")
-                locations.add(PathBasedAnalysisInputLocation.create(classesDir, SourceType.Application))
+                log("Extracted $classFileCount class files from ${JavaArchiveLayout.WEB_INF_CLASSES}")
+                locations.addInputLocation(JavaArchiveLayout.WEB_INF_CLASSES, sources, classesDir, SourceType.Application)
 
                 // Optionally include libraries
                 if (config.includeLibraries) {
@@ -248,10 +320,10 @@ class JavaProjectLoader(
                     Files.createDirectories(libDir)
 
                     val allJars = zip.entries().asSequence()
-                        .filter { it.name.startsWith("WEB-INF/lib/") && it.name.endsWith(".jar") }
+                        .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
                         .toList()
 
-                    log("Found ${allJars.size} JARs in WEB-INF/lib")
+                    log("Found ${allJars.size} JARs in ${JavaArchiveLayout.WEB_INF_LIB}")
 
                     var loadedJarCount = 0
                     var skippedByFilter = 0
@@ -272,7 +344,7 @@ class JavaProjectLoader(
 
                         // Only add JAR if it contains classes from included packages
                         if (jarContainsIncludedPackages(targetFile)) {
-                            locations.add(PathBasedAnalysisInputLocation.create(targetFile, SourceType.Library))
+                            locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                             loadedJarCount++
                             log("  + Loading JAR: $jarName")
                         } else {
@@ -290,7 +362,18 @@ class JavaProjectLoader(
             throw e
         }
 
-        return locations
+        return InputLocations(locations, sources)
+    }
+
+    private fun MutableList<AnalysisInputLocation>.addInputLocation(
+        sourceName: String,
+        sources: MutableMap<AnalysisInputLocation, String>,
+        path: Path,
+        sourceType: SourceType
+    ) {
+        val location = PathBasedAnalysisInputLocation.create(path, sourceType)
+        add(location)
+        sources[location] = sourceName
     }
 
     private fun log(message: String) {

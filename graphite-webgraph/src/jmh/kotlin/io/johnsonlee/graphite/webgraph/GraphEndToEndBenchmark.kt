@@ -26,17 +26,23 @@ open class GraphEndToEndBenchmark {
 
     @Benchmark
     fun elasticsearch_build_save_load_query(): Long {
-        return runEndToEnd(CorpusKind.ELASTICSEARCH)
+        return runEndToEnd(BenchmarkCorpusKind.ELASTICSEARCH)
     }
 
     @Benchmark
     fun android_build_save_load_query(): Long {
-        return runEndToEnd(CorpusKind.ANDROID)
+        return runEndToEnd(BenchmarkCorpusKind.ANDROID)
     }
 
-    private fun runEndToEnd(kind: CorpusKind): Long {
+    private fun runEndToEnd(kind: BenchmarkCorpusKind): Long {
         val persistedDir = Files.createTempDirectory("graphite-${kind.id}-e2e")
-        val sourceGraph = JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(BenchmarkCorpus.resolveJar(kind))
+        val sourceGraph = JavaProjectLoader(
+            LoaderConfig(
+                buildCallGraph = false,
+                extractAnnotations = false,
+                trackCrossMethodFunctionalDispatch = false
+            )
+        ).load(BenchmarkCorpus.resolveJar(kind))
 
         try {
             GraphStore.save(sourceGraph, persistedDir)

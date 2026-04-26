@@ -24,6 +24,7 @@ import java.io.*
  * - Bits 0-2: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow, 4=Resource)
  * - Bits 3-6: subkind ordinal or call flags
  * - Bit 7: reserved
+ * - Metadata includes class origins and artifact-level dependency summaries.
  *
  * [ControlFlowEdge.comparison] is stored separately since it does not fit in 8 bits.
  */
@@ -39,6 +40,7 @@ internal object NodeSerializer {
     const val FORMAT_VERSION: Int = 3
     private const val LEGACY_FORMAT_VERSION: Int = 1
     private const val TRANSITIONAL_FORMAT_VERSION: Int = 2
+    private const val ARTIFACT_METADATA_FORMAT_VERSION: Int = 3
 
     /** Write a 4-byte file header: 3-byte magic prefix | 1-byte version. */
     fun writeHeader(dos: DataOutputStream, magic: Int) {
@@ -70,7 +72,11 @@ internal object NodeSerializer {
     }
 
     private fun validateVersion(version: Int, expectedMagic: Int) {
-        require(version == LEGACY_FORMAT_VERSION || version == TRANSITIONAL_FORMAT_VERSION || version == FORMAT_VERSION) {
+        require(
+            version == LEGACY_FORMAT_VERSION ||
+                version == TRANSITIONAL_FORMAT_VERSION ||
+                version == FORMAT_VERSION
+        ) {
             "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(16)}. " +
                 "This build supports versions $LEGACY_FORMAT_VERSION, $TRANSITIONAL_FORMAT_VERSION and $FORMAT_VERSION."
         }
@@ -264,6 +270,18 @@ internal object NodeSerializer {
         for ((key, values) in metadata.enumValues) {
             dest.add(key)
             collectAnyValueStrings(values, dest)
+        }
+
+        for ((className, source) in metadata.classOrigins) {
+            dest.add(className)
+            dest.add(source)
+        }
+
+        for ((fromArtifact, dependencies) in metadata.artifactDependencies) {
+            dest.add(fromArtifact)
+            for ((toArtifact, _) in dependencies) {
+                dest.add(toArtifact)
+            }
         }
 
         // Member annotations
@@ -527,6 +545,22 @@ internal object NodeSerializer {
             for (v in values) writeAnyValue(dos, v, strings)
         }
 
+        dos.writeInt(metadata.classOrigins.size)
+        for ((className, source) in metadata.classOrigins) {
+            dos.writeInt(strings.indexOf(className))
+            dos.writeInt(strings.indexOf(source))
+        }
+
+        dos.writeInt(metadata.artifactDependencies.size)
+        for ((fromArtifact, dependencies) in metadata.artifactDependencies) {
+            dos.writeInt(strings.indexOf(fromArtifact))
+            dos.writeInt(dependencies.size)
+            for ((toArtifact, weight) in dependencies) {
+                dos.writeInt(strings.indexOf(toArtifact))
+                dos.writeInt(weight)
+            }
+        }
+
         // Member annotations
         dos.writeInt(metadata.memberAnnotations.size)
         for ((key, annotations) in metadata.memberAnnotations) {
@@ -593,6 +627,28 @@ internal object NodeSerializer {
             enumValues[key] = (0 until count).map { readAnyValue(dis, strings, formatVersion) }
         }
 
+        val classOrigins = mutableMapOf<String, String>()
+        if (formatVersion >= ARTIFACT_METADATA_FORMAT_VERSION) {
+            val classOriginCount = dis.readInt()
+            repeat(classOriginCount) {
+                classOrigins[strings.get(dis.readInt())] = strings.get(dis.readInt())
+            }
+        }
+
+        val artifactDependencies = mutableMapOf<String, Map<String, Int>>()
+        if (formatVersion >= ARTIFACT_METADATA_FORMAT_VERSION) {
+            val artifactCount = dis.readInt()
+            repeat(artifactCount) {
+                val fromArtifact = strings.get(dis.readInt())
+                val dependencyCount = dis.readInt()
+                val dependencies = mutableMapOf<String, Int>()
+                repeat(dependencyCount) {
+                    dependencies[strings.get(dis.readInt())] = dis.readInt()
+                }
+                artifactDependencies[fromArtifact] = dependencies
+            }
+        }
+
         // Member annotations
         val annCount = dis.readInt()
         val memberAnnotations = mutableMapOf<String, Map<String, Map<String, Any?>>>()
@@ -629,7 +685,7 @@ internal object NodeSerializer {
             BranchScopeData(condId, method, comparison, trueIds, falseIds)
         }
 
-        return GraphMetadata(methods, supertypes, subtypes, enumValues, memberAnnotations, branchScopes)
+        return GraphMetadata(methods, supertypes, subtypes, enumValues, classOrigins, artifactDependencies, memberAnnotations, branchScopes)
     }
 
     // ========================================================================
@@ -734,6 +790,8 @@ data class GraphMetadata(
     val supertypes: Map<String, Set<TypeDescriptor>>,
     val subtypes: Map<String, Set<TypeDescriptor>>,
     val enumValues: Map<String, List<Any?>>,
+    val classOrigins: Map<String, String>,
+    val artifactDependencies: Map<String, Map<String, Int>>,
     val memberAnnotations: Map<String, Map<String, Map<String, Any?>>>,
     val branchScopes: List<BranchScopeData>
 )

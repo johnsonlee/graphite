@@ -5,7 +5,6 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -151,7 +150,7 @@ class BytecodeSignatureReader {
     /**
      * ASM visitor that collects generic signatures.
      */
-    private class SignatureCollectingVisitor : ClassVisitor(Opcodes.ASM9) {
+    private class SignatureCollectingVisitor : ClassVisitor(ASM_API_VERSION) {
         var className: String? = null
         var classSignature: String? = null
         val fieldSignatures = mutableMapOf<String, TypeDescriptor>()

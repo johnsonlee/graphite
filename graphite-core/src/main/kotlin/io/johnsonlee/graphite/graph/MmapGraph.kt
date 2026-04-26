@@ -36,6 +36,8 @@ class MmapGraph internal constructor(
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValuesMap: Map<String, List<Any?>>,
+    private val classOriginsMap: Map<String, String>,
+    private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val branchScopeData: List<DefaultGraph.RawBranchScope>,
     override val resources: ResourceAccessor
@@ -119,6 +121,12 @@ class MmapGraph internal constructor(
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
+
+    override fun classOrigin(className: String): String? = classOriginsMap[className]
+
+    override fun classOrigins(): Map<String, String> = classOriginsMap
+
+    override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

@@ -3,7 +3,6 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.core.TypeDescriptor
 import org.objectweb.asm.signature.SignatureReader
 import org.objectweb.asm.signature.SignatureVisitor
-import org.objectweb.asm.Opcodes
 
 /**
  * Parses JVM generic signatures to extract type arguments.
@@ -98,7 +97,7 @@ object GenericSignatureParser {
     /**
      * Visitor for parsing type signatures (fields, return types, etc.)
      */
-    private class TypeSignatureVisitor : SignatureVisitor(Opcodes.ASM9) {
+    private class TypeSignatureVisitor : SignatureVisitor(ASM_API_VERSION) {
         private var className: String? = null
         private val typeArguments = mutableListOf<TypeDescriptor>()
         private var arrayDimension = 0
@@ -174,7 +173,7 @@ object GenericSignatureParser {
     /**
      * Visitor for parsing method signatures.
      */
-    private class MethodSignatureVisitor : SignatureVisitor(Opcodes.ASM9) {
+    private class MethodSignatureVisitor : SignatureVisitor(ASM_API_VERSION) {
         val parameterTypes = mutableListOf<TypeDescriptor>()
         var returnType: TypeDescriptor? = null
         private var currentVisitor: TypeSignatureVisitor? = null
@@ -208,7 +207,7 @@ object GenericSignatureParser {
     /**
      * Visitor for parsing class signatures.
      */
-    private class ClassSignatureVisitor : SignatureVisitor(Opcodes.ASM9) {
+    private class ClassSignatureVisitor : SignatureVisitor(ASM_API_VERSION) {
         val typeParameters = mutableListOf<String>()
         var superClass: TypeDescriptor? = null
         val interfaces = mutableListOf<TypeDescriptor>()

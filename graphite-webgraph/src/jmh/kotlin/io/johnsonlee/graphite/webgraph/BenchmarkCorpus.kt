@@ -12,7 +12,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
-internal enum class CorpusKind(
+internal enum class BenchmarkCorpusKind(
     val id: String,
     val jarPathProperty: String,
     val graphPathProperty: String,
@@ -35,14 +35,14 @@ internal enum class CorpusKind(
 }
 
 internal object BenchmarkCorpus {
-    private val preparedGraphs = ConcurrentHashMap<CorpusKind, Path>()
-    private val resolvedJars = ConcurrentHashMap<CorpusKind, Path>()
+    private val preparedGraphs = ConcurrentHashMap<BenchmarkCorpusKind, Path>()
+    private val resolvedJars = ConcurrentHashMap<BenchmarkCorpusKind, Path>()
 
-    fun resolveJar(kind: CorpusKind): Path = resolvedJars.computeIfAbsent(kind, ::findJar)
+    fun resolveJar(kind: BenchmarkCorpusKind): Path = resolvedJars.computeIfAbsent(kind, ::findJar)
 
-    fun persistedGraph(kind: CorpusKind): Path = preparedGraphs.computeIfAbsent(kind, ::preparePersistedGraph)
+    fun persistedGraph(kind: BenchmarkCorpusKind): Path = preparedGraphs.computeIfAbsent(kind, ::preparePersistedGraph)
 
-    private fun preparePersistedGraph(kind: CorpusKind): Path {
+    private fun preparePersistedGraph(kind: BenchmarkCorpusKind): Path {
         System.getProperty(kind.graphPathProperty)?.let { configured ->
             val graphPath = Path.of(configured)
             require(graphPath.isDirectory() && hasPersistedGraph(graphPath)) {
@@ -76,7 +76,7 @@ internal object BenchmarkCorpus {
         }
     }
 
-    private fun findJar(kind: CorpusKind): Path {
+    private fun findJar(kind: BenchmarkCorpusKind): Path {
         System.getProperty(kind.jarPathProperty)?.let { configured ->
             val jarPath = Path.of(configured)
             require(jarPath.isRegularFile()) { "Fixture JAR not found at $jarPath" }
