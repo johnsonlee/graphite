@@ -1,6 +1,12 @@
 package io.johnsonlee.graphite.cli
 
 import com.google.gson.GsonBuilder
+import io.johnsonlee.graphite.c4.C4Level
+import io.johnsonlee.graphite.c4.C4ModelBuilder
+import io.johnsonlee.graphite.c4.C4Options
+import io.johnsonlee.graphite.c4.render.JsonRenderer
+import io.johnsonlee.graphite.c4.render.MermaidRenderer
+import io.johnsonlee.graphite.c4.render.PlantUmlRenderer
 import io.johnsonlee.graphite.core.*
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.Graph
@@ -18,7 +24,8 @@ import java.util.concurrent.Callable
 @Command(
     name = "graphite-explore",
     description = ["Interactive web visualization for saved Graphite graphs"],
-    mixinStandardHelpOptions = true
+    mixinStandardHelpOptions = true,
+    subcommands = [C4Command::class]
 )
 class ExploreCommand : Callable<Int> {
 
@@ -228,6 +235,32 @@ class ExploreCommand : Callable<Int> {
             ctx.json(mapOf("nodes" to nodes, "edges" to edges))
         }
 
+        app.get("/api/c4") { ctx ->
+            val level = parseC4Level(ctx.queryParam("level")) ?: run {
+                ctx.status(400).result("Invalid 'level' (expected: context, container, component)")
+                return@get
+            }
+            val format = (ctx.queryParam("format") ?: "json").lowercase()
+            if (format !in setOf("plantuml", "mermaid", "json")) {
+                ctx.status(400).result("Invalid 'format' (expected: plantuml, mermaid, json)")
+                return@get
+            }
+            val options = C4Options(
+                systemName = ctx.queryParam("systemName") ?: "Application",
+                level = level,
+                include = splitCsv(ctx.queryParam("include")),
+                exclude = splitCsv(ctx.queryParam("exclude")),
+                groupByPackage = (ctx.queryParam("group") ?: "spring").equals("package", ignoreCase = true),
+                groupDepth = ctx.queryParam("groupDepth")?.toIntOrNull() ?: 3
+            )
+            val model = C4ModelBuilder.build(graph, options)
+            when (format) {
+                "plantuml" -> ctx.contentType("text/plain; charset=utf-8").result(PlantUmlRenderer.render(model))
+                "mermaid" -> ctx.contentType("text/plain; charset=utf-8").result(MermaidRenderer.render(model))
+                else -> ctx.contentType("application/json; charset=utf-8").result(JsonRenderer.render(model))
+            }
+        }
+
         app.get("/api/subgraph") { ctx ->
             val centerId = ctx.queryParam("center")?.toIntOrNull() ?: run { ctx.status(400).result("Missing 'center' parameter"); return@get }
             val depth = ctx.queryParam("depth")?.toIntOrNull() ?: 2
@@ -262,6 +295,16 @@ class ExploreCommand : Callable<Int> {
             }
         }
     }
+
+    internal fun parseC4Level(value: String?): C4Level? = when (value?.lowercase()) {
+        null, "", "component" -> C4Level.COMPONENT
+        "context" -> C4Level.CONTEXT
+        "container" -> C4Level.CONTAINER
+        else -> null
+    }
+
+    internal fun splitCsv(value: String?): List<String> =
+        value?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> {
         val visitedNodes = mutableSetOf<Int>()

@@ -670,7 +670,10 @@ private const val LABELS_FILE = "graph.labels"
         graph.nodes(Node::class.java).forEach { node ->
             when (node) {
                 is FieldNode -> classMembers.add(node.descriptor.declaringClass.className to node.descriptor.name)
-                is CallSiteNode -> classMembers.add(node.callee.declaringClass.className to node.callee.name)
+                is CallSiteNode -> {
+                    classMembers.add(node.callee.declaringClass.className to node.callee.name)
+                    classMembers.add(node.caller.declaringClass.className to node.caller.name)
+                }
                 is ParameterNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
                 is ReturnNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
                 is AnnotationNode -> {}

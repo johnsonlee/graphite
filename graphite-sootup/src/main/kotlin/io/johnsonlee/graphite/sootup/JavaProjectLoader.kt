@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.c4.C4TaggedGraph
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
@@ -58,7 +59,7 @@ class JavaProjectLoader(
             resourceAccessor = resourceAccessor,
             graphBuilder = graphBuilderFactory()
         )
-        return adapter.buildGraph()
+        return C4TaggedGraph(adapter.buildGraph())
     }
 
     /**
