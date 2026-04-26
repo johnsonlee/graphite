@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
+import io.johnsonlee.graphite.input.JavaArchiveLayout
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -79,6 +80,83 @@ class ArchiveResourceAccessorTest {
         }
     }
 
+    @Test
+    fun `create from directory supports recursive glob prefix`() {
+        val dir = Files.createTempDirectory("test-resources")
+        try {
+            Files.createDirectories(dir.resolve("sub"))
+            Files.write(dir.resolve("sub/b.json"), "{}".toByteArray())
+
+            val accessor = ArchiveResourceAccessor.create(dir)
+            val jsonFiles = accessor.list("**/*.json").toList()
+
+            assertEquals(listOf("sub/b.json"), jsonFiles.map { it.path })
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `create from directory includes nested jar entries with relative jar source`() {
+        val dir = Files.createTempDirectory("test-resource-layout")
+        val libDir = Files.createDirectories(dir.resolve("lib"))
+        val jarFile = createTempJar(
+            mapOf(
+                "org/example/Dependency.class" to "fake-class",
+                "META-INF/services/example" to "org.example.Dependency"
+            )
+        )
+        try {
+            Files.copy(jarFile.toPath(), libDir.resolve("dependency.jar"))
+
+            val accessor = ArchiveResourceAccessor.create(dir)
+            val entries = accessor.list("**").toList()
+
+            assertTrue(entries.any { it.path == "org/example/Dependency.class" && it.source == "lib/dependency.jar" })
+            assertFalse(entries.any { it.path == "lib/dependency.jar" }, "Archive file itself should not be exposed as a resource")
+            assertFailsWith<java.io.IOException> { accessor.open("lib/dependency.jar") }
+        } finally {
+            jarFile.delete()
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `create from directory includes nested zip entries`() {
+        val dir = Files.createTempDirectory("test-resource-layout")
+        val zipFile = createTempJar(mapOf("config/settings.json" to "{}"))
+        try {
+            Files.copy(zipFile.toPath(), dir.resolve("bundle.zip"))
+
+            val accessor = ArchiveResourceAccessor.create(dir)
+            val entries = accessor.list("config/*.json").toList()
+
+            assertEquals(1, entries.size)
+            assertEquals("config/settings.json", entries.single().path)
+            assertEquals("bundle.zip", entries.single().source)
+        } finally {
+            zipFile.delete()
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `directory jar collection tolerates missing roots`() {
+        val missing = Files.createTempDirectory("missing-root-parent").resolve("missing")
+        try {
+            val method = ArchiveResourceAccessor.Companion::class.java.getDeclaredMethod("collectDirectoryJars", Path::class.java)
+            method.isAccessible = true
+            val bundle = method.invoke(ArchiveResourceAccessor.Companion, missing)
+            val sources = bundle.javaClass.getDeclaredField("sources").also { it.isAccessible = true }.get(bundle) as List<*>
+            val closers = bundle.javaClass.getDeclaredField("closers").also { it.isAccessible = true }.get(bundle) as List<*>
+
+            assertTrue(sources.isEmpty())
+            assertTrue(closers.isEmpty())
+        } finally {
+            missing.parent.toFile().deleteRecursively()
+        }
+    }
+
     // ========================================================================
     // JAR source
     // ========================================================================
@@ -87,7 +165,7 @@ class ArchiveResourceAccessorTest {
     fun `create from JAR lists entries`() {
         val jarFile = createTempJar(
             mapOf(
-                "META-INF/MANIFEST.MF" to "Manifest-Version: 1.0",
+                JavaArchiveLayout.META_INF_MANIFEST to "Manifest-Version: 1.0",
                 "com/example/Foo.class" to "fake-class",
                 "resources/data.json" to "{\"key\":\"value\"}"
             )
@@ -159,15 +237,15 @@ class ArchiveResourceAccessorTest {
     fun `create from Spring Boot JAR lists entries under BOOT-INF classes`() {
         val jarFile = createTempJar(
             mapOf(
-                "BOOT-INF/classes/" to "",
-                "BOOT-INF/classes/application.yml" to "server.port: 8080",
-                "BOOT-INF/classes/config/app.yml" to "app.name: graphite"
+                JavaArchiveLayout.BOOT_INF_CLASSES to "",
+                JavaArchiveLayout.bootInfClassEntry("application.yml") to "server.port: 8080",
+                JavaArchiveLayout.bootInfClassEntry("config/app.yml") to "app.name: graphite"
             )
         )
         try {
             val accessor = ArchiveResourceAccessor.create(jarFile.toPath())
             val entries = accessor.list("**").toList()
-            assertTrue(entries.any { it.path == "application.yml" }, "Should strip BOOT-INF/classes/ prefix: $entries")
+            assertTrue(entries.any { it.path == "application.yml" }, "Should strip ${JavaArchiveLayout.BOOT_INF_CLASSES} prefix: $entries")
             assertTrue(entries.any { it.path == "config/app.yml" }, "Should include nested paths: $entries")
         } finally {
             jarFile.delete()
@@ -178,8 +256,8 @@ class ArchiveResourceAccessorTest {
     fun `create from Spring Boot JAR reads content from BOOT-INF classes`() {
         val jarFile = createTempJar(
             mapOf(
-                "BOOT-INF/classes/" to "",
-                "BOOT-INF/classes/application.yml" to "server.port: 8080"
+                JavaArchiveLayout.BOOT_INF_CLASSES to "",
+                JavaArchiveLayout.bootInfClassEntry("application.yml") to "server.port: 8080"
             )
         )
         try {
@@ -195,8 +273,8 @@ class ArchiveResourceAccessorTest {
     fun `create from Spring Boot JAR open throws IOException for missing resource`() {
         val jarFile = createTempJar(
             mapOf(
-                "BOOT-INF/classes/" to "",
-                "BOOT-INF/classes/application.yml" to "server.port: 8080"
+                JavaArchiveLayout.BOOT_INF_CLASSES to "",
+                JavaArchiveLayout.bootInfClassEntry("application.yml") to "server.port: 8080"
             )
         )
         try {
@@ -212,10 +290,10 @@ class ArchiveResourceAccessorTest {
         val nestedJar = createTempJar(mapOf("sample/Inner.class" to "fake"))
         val jarFile = createTempJar(
             mapOf(
-                "BOOT-INF/classes/" to "",
-                "BOOT-INF/classes/application.yml" to "server.port: 8080"
+                JavaArchiveLayout.BOOT_INF_CLASSES to "",
+                JavaArchiveLayout.bootInfClassEntry("application.yml") to "server.port: 8080"
             ),
-            binaryEntries = mapOf("BOOT-INF/lib/nested.jar" to nestedJar.readBytes())
+            binaryEntries = mapOf(JavaArchiveLayout.bootInfLibEntry("nested.jar") to nestedJar.readBytes())
         )
         try {
             val accessor = ArchiveResourceAccessor.create(jarFile.toPath())

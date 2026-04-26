@@ -310,8 +310,22 @@ Start the Explorer first, then LLMs can query the graph:
 graphite-explore /path/to/saved-graph
 
 # LLM can now use tools: openapi, cypher, resources, resource, api_spec,
-# nodes, methods, call_sites, annotations, etc.
+# c4, nodes, methods, call_sites, annotations, etc.
 ```
+
+The explore server also exposes a single C4 architecture endpoint:
+
+```text
+GET /api/architecture/c4?level=context|container|component|all
+GET /api/architecture/c4?level=context|container|component|all&format=dsl
+GET /api/architecture/c4?level=context|container|component|all&format=mermaid
+GET /api/architecture/c4?level=context|container|component|all&format=plantuml
+```
+
+Agents can use it to retrieve code graph-derived C4 architecture views without
+guessing multiple endpoints. The default response is a Structurizr workspace
+JSON document. For text rendering, use `format=dsl`, `format=mermaid`, or
+`format=plantuml`.
 
 ## License
 

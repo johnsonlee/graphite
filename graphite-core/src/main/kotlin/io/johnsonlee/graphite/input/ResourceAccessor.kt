@@ -39,7 +39,7 @@ interface ResourceAccessor {
  * A resource file entry within a project archive.
  *
  * @property path relative path within the archive (e.g., `config/application.yml`)
- * @property source origin of the resource (e.g., `BOOT-INF/classes/`, `my-lib-1.0.jar`)
+ * @property source origin of the resource (e.g., [JavaArchiveLayout.BOOT_INF_CLASSES], `my-lib-1.0.jar`)
  */
 data class ResourceEntry(
     val path: String,

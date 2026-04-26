@@ -139,6 +139,61 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `round-trip preserves class origins`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Foo"),
+            "bar",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addMethod(method)
+            .addNode(ReturnNode(NodeId(1), method))
+            .addClassOrigin("org.apache.lucene.index.IndexWriter", "BOOT-INF/lib/lucene-core-9.11.1.jar")
+            .addClassOrigin("org.apache.logging.log4j.Logger", "BOOT-INF/lib/log4j-api-2.23.1.jar")
+            .build()
+        val dir = Files.createTempDirectory("webgraph-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+            assertEquals("BOOT-INF/lib/lucene-core-9.11.1.jar", loaded.classOrigin("org.apache.lucene.index.IndexWriter"))
+            assertEquals("BOOT-INF/lib/log4j-api-2.23.1.jar", loaded.classOrigin("org.apache.logging.log4j.Logger"))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `round-trip preserves artifact dependencies`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Foo"),
+            "bar",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addMethod(method)
+            .addNode(ReturnNode(NodeId(1), method))
+            .addArtifactDependency("elasticsearch-8.17.0", "lucene-core-9.12.0", 42)
+            .addArtifactDependency("lucene-highlighter-9.12.0", "lucene-core-9.12.0", 9)
+            .build()
+        val dir = Files.createTempDirectory("webgraph-artifact-deps-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+            assertEquals(
+                mapOf(
+                    "elasticsearch-8.17.0" to mapOf("lucene-core-9.12.0" to 42),
+                    "lucene-highlighter-9.12.0" to mapOf("lucene-core-9.12.0" to 9)
+                ),
+                loaded.artifactDependencies()
+            )
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves AnnotationNode`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-test")
