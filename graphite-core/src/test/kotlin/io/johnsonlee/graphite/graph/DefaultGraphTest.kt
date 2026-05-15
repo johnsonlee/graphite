@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
@@ -240,6 +241,58 @@ class DefaultGraphTest {
 
         assertSame(accessor, graph.resources)
         assertEquals(listOf("application.yml"), graph.resources.list("**").map { it.path }.toList())
+    }
+
+    @Test
+    fun `class origins and artifact dependencies are exposed from DefaultGraph`() {
+        val graph = DefaultGraph.Builder()
+            .addClassOrigin("com.example.App", "app.jar")
+            .addClassOrigin("com.example.App", "ignored.jar")
+            .addClassOrigin("org.example.Lib", "lib.jar")
+            .addArtifactDependency("app.jar", "lib.jar", 2)
+            .addArtifactDependency("app.jar", "lib.jar", 3)
+            .addArtifactDependency("", "lib.jar", 1)
+            .addArtifactDependency("app.jar", "", 1)
+            .addArtifactDependency("app.jar", "app.jar", 1)
+            .addArtifactDependency("app.jar", "ignored.jar", 0)
+            .build()
+
+        assertEquals("app.jar", graph.classOrigin("com.example.App"))
+        assertNull(graph.classOrigin("com.example.Missing"))
+        assertEquals(
+            mapOf(
+                "com.example.App" to "app.jar",
+                "org.example.Lib" to "lib.jar"
+            ),
+            graph.classOrigins()
+        )
+        assertEquals(mapOf("app.jar" to mapOf("lib.jar" to 5)), graph.artifactDependencies())
+    }
+
+    @Test
+    fun `Graph default metadata APIs return empty values`() {
+        val graph = object : Graph {
+            override fun node(id: NodeId) = null
+            override fun <T : Node> nodes(type: Class<T>) = emptySequence<T>()
+            override fun outgoing(id: NodeId) = emptySequence<Edge>()
+            override fun incoming(id: NodeId) = emptySequence<Edge>()
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>) = emptySequence<T>()
+            override fun <T : Edge> incoming(id: NodeId, type: Class<T>) = emptySequence<T>()
+            override fun callSites(methodPattern: MethodPattern) = emptySequence<CallSiteNode>()
+            override fun supertypes(type: TypeDescriptor) = emptySequence<TypeDescriptor>()
+            override fun subtypes(type: TypeDescriptor) = emptySequence<TypeDescriptor>()
+            override fun methods(pattern: MethodPattern) = emptySequence<MethodDescriptor>()
+            override fun enumValues(enumClass: String, enumName: String) = null
+            override fun memberAnnotations(className: String, memberName: String) = emptyMap<String, Map<String, Any?>>()
+            override val resources = EmptyResourceAccessor
+            override fun branchScopes() = emptySequence<BranchScope>()
+            override fun branchScopesFor(conditionNodeId: NodeId) = emptySequence<BranchScope>()
+        }
+
+        assertTrue(graph.typeHierarchyTypes().isEmpty())
+        assertNull(graph.classOrigin("com.example.App"))
+        assertTrue(graph.classOrigins().isEmpty())
+        assertTrue(graph.artifactDependencies().isEmpty())
     }
 
     // ========================================================================

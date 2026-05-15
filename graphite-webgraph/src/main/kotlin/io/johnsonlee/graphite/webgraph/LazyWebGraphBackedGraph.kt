@@ -142,6 +142,12 @@ internal class LazyWebGraphBackedGraph(
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.memberAnnotations["$className#$memberName"] ?: emptyMap()
 
+    override fun classOrigin(className: String): String? = metadata.classOrigins[className]
+
+    override fun classOrigins(): Map<String, String> = metadata.classOrigins
+
+    override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
+
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
 

@@ -57,6 +57,8 @@ jmh {
 
 tasks.test {
     maxHeapSize = "4g"
+    // Large Android/ES fixtures must prove the 4G gate without inheriting heap from prior tests.
+    forkEvery = 1
     doFirst {
         integrationFixtures.resolve().forEach { jar ->
             when {

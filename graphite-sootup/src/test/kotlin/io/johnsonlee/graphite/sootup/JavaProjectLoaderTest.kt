@@ -2,11 +2,14 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.graph.nodes
+import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import javax.tools.StandardLocation
+import javax.tools.ToolProvider
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
@@ -161,7 +164,7 @@ class JavaProjectLoaderTest {
 
             val graph = loader.load(jarPath)
 
-            // Should find classes extracted from BOOT-INF/classes
+            // Should find classes extracted from the Spring Boot application classes layout.
             val fieldNodes = graph.nodes<FieldNode>()
                 .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
                 .toList()
@@ -201,7 +204,7 @@ class JavaProjectLoaderTest {
                 .toList()
 
             assertTrue(simpleFields.isNotEmpty(),
-                "Should find fields in SimpleService from BOOT-INF/classes")
+                "Should find fields in SimpleService from Spring Boot application classes")
         } finally {
             Files.deleteIfExists(jarPath)
             Files.deleteIfExists(innerJar)
@@ -230,7 +233,7 @@ class JavaProjectLoaderTest {
 
             val graph = loader.load(warPath)
 
-            // Should find classes from WEB-INF/classes
+            // Should find classes from the WAR application classes layout.
             val fieldNodes = graph.nodes<FieldNode>()
                 .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
                 .toList()
@@ -273,7 +276,7 @@ class JavaProjectLoaderTest {
                 .toList()
 
             assertTrue(simpleFields.isNotEmpty(),
-                "Should find fields from WAR WEB-INF/classes")
+                "Should find fields from WAR application classes")
 
             // Should log library loading
             assertTrue(logs.any { it.contains("JARs") },
@@ -369,6 +372,10 @@ class JavaProjectLoaderTest {
             ))
 
             val graph = loader.load(jarPath)
+            assertTrue(
+                invokePrivate<Boolean>(loader, "jarContainsIncludedPackages", jarPath),
+                "Empty includePackages should include every jar"
+            )
 
             val fieldNodes = graph.nodes<FieldNode>()
                 .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
@@ -378,6 +385,75 @@ class JavaProjectLoaderTest {
                 "Should find fields with empty includePackages (include all)")
         } finally {
             Files.deleteIfExists(jarPath)
+        }
+    }
+
+    @Test
+    fun `directory input locations include matching libraries`() {
+        val distDir = Files.createTempDirectory("graphite-dist")
+        val libJar = compileSourcesToJar(
+            jarName = "library.jar",
+            sources = mapOf(
+                "sample/lib/Library.java" to """
+                    package sample.lib;
+                    public class Library {
+                        public static String value() { return "lib"; }
+                    }
+                """.trimIndent()
+            )
+        )
+        try {
+            Files.copy(libJar, distDir.resolve("library.jar"))
+            val logs = mutableListOf<String>()
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.app"),
+                    includeLibraries = true,
+                    buildCallGraph = false,
+                    verbose = logs::add
+                )
+            )
+
+            val inputLocations = invokePrivate<Any>(loader, "createDirectoryInputLocations", distDir)
+            val sources = inputLocations.javaClass.getDeclaredField("sources").also { it.isAccessible = true }.get(inputLocations) as Map<*, *>
+
+            assertTrue(sources.values.contains("library.jar"))
+            assertTrue(logs.any { it.contains("+ Loading library JAR from directory: library.jar") })
+        } finally {
+            Files.deleteIfExists(libJar)
+            distDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `directory input locations fall back to empty application directory`() {
+        val distDir = Files.createTempDirectory("graphite-empty-dist")
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.app"),
+                    buildCallGraph = false
+                )
+            )
+
+            val inputLocations = invokePrivate<Any>(loader, "createDirectoryInputLocations", distDir)
+            val sources = inputLocations.javaClass.getDeclaredField("sources").also { it.isAccessible = true }.get(inputLocations) as Map<*, *>
+
+            assertTrue(sources.values.contains(distDir.fileName.toString()))
+        } finally {
+            distDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `containsLooseClassFiles returns false for non directory`() {
+        val file = Files.createTempFile("graphite-not-dir", ".jar")
+        try {
+            val loader = JavaProjectLoader(LoaderConfig(buildCallGraph = false))
+
+            assertFalse(invokePrivate<Boolean>(loader, "containsLooseClassFiles", file))
+        } finally {
+            Files.deleteIfExists(file)
         }
     }
 
@@ -436,7 +512,7 @@ class JavaProjectLoaderTest {
         try {
             // Write a minimal valid ZIP but no .class entries
             ZipOutputStream(Files.newOutputStream(tempJar)).use { zos ->
-                zos.putNextEntry(ZipEntry("META-INF/MANIFEST.MF"))
+                zos.putNextEntry(ZipEntry(JavaArchiveLayout.META_INF_MANIFEST))
                 zos.write("Manifest-Version: 1.0\n".toByteArray())
                 zos.closeEntry()
             }
@@ -507,7 +583,7 @@ class JavaProjectLoaderTest {
 
             val graph = loader.load(warPath)
 
-            // Generic field types should be loaded from WAR WEB-INF/classes
+            // Generic field types should be loaded from WAR application classes.
             val usersField = graph.nodes<FieldNode>()
                 .filter { it.descriptor.name == "users" }
                 .filter { it.descriptor.declaringClass.className.contains("GenericFieldService") }
@@ -638,6 +714,156 @@ class JavaProjectLoaderTest {
         }
     }
 
+    @Test
+    fun `should preserve class origin when loading directory layout with jars`() {
+        val testClassesDir = findTestClassesDir()
+        assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
+
+        val distDir = Files.createTempDirectory("graphite-dist")
+        val libDir = Files.createDirectories(distDir.resolve("lib"))
+        val appJar = buildJarFromClasses(testClassesDir, "sample/simple/", "app.jar")
+        val libJar = buildJarFromClasses(testClassesDir, "sample/generics/", "dep.jar")
+
+        try {
+            Files.copy(appJar, libDir.resolve("app.jar"))
+            Files.copy(libJar, libDir.resolve("dep.jar"))
+
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.simple"),
+                    includeLibraries = false,
+                    buildCallGraph = false
+                )
+            )
+
+            val graph = loader.load(distDir)
+
+            val appFields = graph.nodes<FieldNode>()
+                .filter { it.descriptor.declaringClass.className.contains("SimpleService") }
+                .toList()
+            assertTrue(appFields.isNotEmpty(), "Should load application classes from nested jar layout")
+            assertEquals("lib/app.jar", graph.classOrigin("sample.simple.SimpleService"))
+            assertEquals("lib/dep.jar", graph.classOrigin("sample.generics.GenericFieldService"))
+        } finally {
+            Files.deleteIfExists(appJar)
+            Files.deleteIfExists(libJar)
+            distDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `should extract artifact dependencies from distribution layout at build time`() {
+        val distDir = Files.createTempDirectory("graphite-artifact-deps-dist")
+        val libDir = Files.createDirectories(distDir.resolve("lib"))
+        val supportJar = compileSourcesToJar(
+            jarName = "support.jar",
+            sources = mapOf(
+                "sample/lib2/Support.java" to """
+                    package sample.lib2;
+                    public class Support {
+                        public static String value() { return "ok"; }
+                    }
+                """.trimIndent()
+            )
+        )
+        val depJar = compileSourcesToJar(
+            jarName = "dep.jar",
+            classpath = listOf(supportJar),
+            sources = mapOf(
+                "sample/lib/Dep.java" to """
+                    package sample.lib;
+                    import sample.lib2.Support;
+                    public class Dep {
+                        public static String value() { return Support.value(); }
+                    }
+                """.trimIndent()
+            )
+        )
+        val appJar = compileSourcesToJar(
+            jarName = "app.jar",
+            classpath = listOf(depJar, supportJar),
+            sources = mapOf(
+                "sample/app/Main.java" to """
+                    package sample.app;
+                    import sample.lib.Dep;
+                    public class Main {
+                        public static void main(String[] args) { Dep.value(); }
+                    }
+                """.trimIndent()
+            )
+        )
+
+        try {
+            Files.copy(appJar, libDir.resolve("app.jar"))
+            Files.copy(depJar, libDir.resolve("dep.jar"))
+            Files.copy(supportJar, libDir.resolve("support.jar"))
+
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.app"),
+                    includeLibraries = false,
+                    buildCallGraph = false
+                )
+            )
+
+            val graph = loader.load(distDir)
+            assertEquals(
+                1,
+                graph.artifactDependencies()["dep"]?.get("support"),
+                "Expected dep.jar to record a bytecode dependency on support.jar"
+            )
+            assertEquals(
+                1,
+                graph.artifactDependencies()["app"]?.get("dep"),
+                "Expected app.jar to record a bytecode dependency on dep.jar"
+            )
+        } finally {
+            Files.deleteIfExists(appJar)
+            Files.deleteIfExists(depJar)
+            Files.deleteIfExists(supportJar)
+            distDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `should skip artifact dependency extraction for single artifact input`() {
+        val appJar = compileSourcesToJar(
+            jarName = "single.jar",
+            sources = mapOf(
+                "sample/single/Helper.java" to """
+                    package sample.single;
+                    public class Helper {
+                        public static String value() { return "ok"; }
+                    }
+                """.trimIndent(),
+                "sample/single/App.java" to """
+                    package sample.single;
+                    public class App {
+                        public static void main(String[] args) { Helper.value(); }
+                    }
+                """.trimIndent()
+            )
+        )
+
+        try {
+            val loader = JavaProjectLoader(
+                LoaderConfig(
+                    includePackages = listOf("sample.single"),
+                    includeLibraries = false,
+                    buildCallGraph = false
+                )
+            )
+
+            val graph = loader.load(appJar)
+            assertTrue(
+                graph.artifactDependencies().isEmpty(),
+                "Single-jar inputs should not perform artifact-to-artifact dependency extraction"
+            )
+        } finally {
+            Files.deleteIfExists(appJar)
+        }
+    }
+
     // ========== Helper methods ==========
 
     /**
@@ -671,17 +897,17 @@ class JavaProjectLoaderTest {
     }
 
     /**
-     * Build a Spring Boot-style JAR with BOOT-INF/classes layout.
+     * Build a Spring Boot-style JAR with [JavaArchiveLayout.BOOT_INF_CLASSES] layout.
      */
     private fun buildSpringBootJar(classesDir: Path, classPathPrefix: String): Path {
         val jarPath = Files.createTempFile("springboot", ".jar")
 
         JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
             mainAttributes.putValue("Manifest-Version", "1.0")
-            mainAttributes.putValue("Spring-Boot-Classes", "BOOT-INF/classes/")
+            mainAttributes.putValue(JavaArchiveLayout.SPRING_BOOT_CLASSES_ATTRIBUTE, JavaArchiveLayout.BOOT_INF_CLASSES)
         }).use { jos ->
-            // Add BOOT-INF/classes/ directory entry
-            jos.putNextEntry(JarEntry("BOOT-INF/classes/"))
+            // Add application classes directory entry.
+            jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_CLASSES))
             jos.closeEntry()
 
             val baseDir = classesDir.toFile()
@@ -691,7 +917,7 @@ class JavaProjectLoaderTest {
                     .filter { it.isFile && it.name.endsWith(".class") }
                     .forEach { classFile ->
                         val relativePath = classFile.relativeTo(baseDir).path.replace(File.separatorChar, '/')
-                        jos.putNextEntry(JarEntry("BOOT-INF/classes/$relativePath"))
+                        jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfClassEntry(relativePath)))
                         classFile.inputStream().use { it.copyTo(jos) }
                         jos.closeEntry()
                     }
@@ -702,7 +928,7 @@ class JavaProjectLoaderTest {
     }
 
     /**
-     * Build a Spring Boot JAR with BOOT-INF/classes and BOOT-INF/lib.
+     * Build a Spring Boot JAR with application classes and nested libraries.
      */
     private fun buildSpringBootJarWithLibs(
         classesDir: Path,
@@ -713,11 +939,11 @@ class JavaProjectLoaderTest {
 
         JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
             mainAttributes.putValue("Manifest-Version", "1.0")
-            mainAttributes.putValue("Spring-Boot-Classes", "BOOT-INF/classes/")
-            mainAttributes.putValue("Spring-Boot-Lib", "BOOT-INF/lib/")
+            mainAttributes.putValue(JavaArchiveLayout.SPRING_BOOT_CLASSES_ATTRIBUTE, JavaArchiveLayout.BOOT_INF_CLASSES)
+            mainAttributes.putValue(JavaArchiveLayout.SPRING_BOOT_LIB_ATTRIBUTE, JavaArchiveLayout.BOOT_INF_LIB)
         }).use { jos ->
-            // Add BOOT-INF/classes/
-            jos.putNextEntry(JarEntry("BOOT-INF/classes/"))
+            // Add application classes.
+            jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_CLASSES))
             jos.closeEntry()
 
             val baseDir = classesDir.toFile()
@@ -727,19 +953,19 @@ class JavaProjectLoaderTest {
                     .filter { it.isFile && it.name.endsWith(".class") }
                     .forEach { classFile ->
                         val relativePath = classFile.relativeTo(baseDir).path.replace(File.separatorChar, '/')
-                        jos.putNextEntry(JarEntry("BOOT-INF/classes/$relativePath"))
+                        jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfClassEntry(relativePath)))
                         classFile.inputStream().use { it.copyTo(jos) }
                         jos.closeEntry()
                     }
             }
 
-            // Add BOOT-INF/lib/
-            jos.putNextEntry(JarEntry("BOOT-INF/lib/"))
+            // Add nested libraries.
+            jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_LIB))
             jos.closeEntry()
 
             libJars.forEach { libJar ->
                 val jarName = libJar.fileName.toString()
-                jos.putNextEntry(JarEntry("BOOT-INF/lib/$jarName"))
+                jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfLibEntry(jarName)))
                 Files.newInputStream(libJar).use { it.copyTo(jos) }
                 jos.closeEntry()
             }
@@ -749,14 +975,14 @@ class JavaProjectLoaderTest {
     }
 
     /**
-     * Build a WAR file with WEB-INF/classes layout.
+     * Build a WAR file with [JavaArchiveLayout.WEB_INF_CLASSES] layout.
      */
     private fun buildWarFile(classesDir: Path, classPathPrefix: String): Path {
         val warPath = Files.createTempFile("test", ".war")
 
         ZipOutputStream(Files.newOutputStream(warPath)).use { zos ->
-            // Add WEB-INF/classes/
-            zos.putNextEntry(ZipEntry("WEB-INF/classes/"))
+            // Add application classes.
+            zos.putNextEntry(ZipEntry(JavaArchiveLayout.WEB_INF_CLASSES))
             zos.closeEntry()
 
             val baseDir = classesDir.toFile()
@@ -766,7 +992,7 @@ class JavaProjectLoaderTest {
                     .filter { it.isFile && it.name.endsWith(".class") }
                     .forEach { classFile ->
                         val relativePath = classFile.relativeTo(baseDir).path.replace(File.separatorChar, '/')
-                        zos.putNextEntry(ZipEntry("WEB-INF/classes/$relativePath"))
+                        zos.putNextEntry(ZipEntry(JavaArchiveLayout.webInfClassEntry(relativePath)))
                         classFile.inputStream().use { it.copyTo(zos) }
                         zos.closeEntry()
                     }
@@ -777,7 +1003,7 @@ class JavaProjectLoaderTest {
     }
 
     /**
-     * Build a WAR file with WEB-INF/classes and WEB-INF/lib.
+     * Build a WAR file with application classes and nested libraries.
      */
     private fun buildWarFileWithLibs(
         classesDir: Path,
@@ -787,8 +1013,8 @@ class JavaProjectLoaderTest {
         val warPath = Files.createTempFile("test", ".war")
 
         ZipOutputStream(Files.newOutputStream(warPath)).use { zos ->
-            // Add WEB-INF/classes/
-            zos.putNextEntry(ZipEntry("WEB-INF/classes/"))
+            // Add application classes.
+            zos.putNextEntry(ZipEntry(JavaArchiveLayout.WEB_INF_CLASSES))
             zos.closeEntry()
 
             val baseDir = classesDir.toFile()
@@ -798,25 +1024,77 @@ class JavaProjectLoaderTest {
                     .filter { it.isFile && it.name.endsWith(".class") }
                     .forEach { classFile ->
                         val relativePath = classFile.relativeTo(baseDir).path.replace(File.separatorChar, '/')
-                        zos.putNextEntry(ZipEntry("WEB-INF/classes/$relativePath"))
+                        zos.putNextEntry(ZipEntry(JavaArchiveLayout.webInfClassEntry(relativePath)))
                         classFile.inputStream().use { it.copyTo(zos) }
                         zos.closeEntry()
                     }
             }
 
-            // Add WEB-INF/lib/
-            zos.putNextEntry(ZipEntry("WEB-INF/lib/"))
+            // Add nested libraries.
+            zos.putNextEntry(ZipEntry(JavaArchiveLayout.WEB_INF_LIB))
             zos.closeEntry()
 
             libJars.forEach { libJar ->
                 val jarName = libJar.fileName.toString()
-                zos.putNextEntry(ZipEntry("WEB-INF/lib/$jarName"))
+                zos.putNextEntry(ZipEntry(JavaArchiveLayout.webInfLibEntry(jarName)))
                 Files.newInputStream(libJar).use { it.copyTo(zos) }
                 zos.closeEntry()
             }
         }
 
         return warPath
+    }
+
+    private fun compileSourcesToJar(
+        jarName: String,
+        sources: Map<String, String>,
+        classpath: List<Path> = emptyList()
+    ): Path {
+        val compiler = ToolProvider.getSystemJavaCompiler()
+        assertNotNull(compiler, "System Java compiler must be available for test compilation")
+        val sourceDir = Files.createTempDirectory("graphite-java-src")
+        val classesDir = Files.createTempDirectory("graphite-java-classes")
+        val jarPath = Files.createTempFile(jarName.removeSuffix(".jar"), ".jar")
+
+        try {
+            sources.forEach { (relativePath, source) ->
+                val sourceFile = sourceDir.resolve(relativePath)
+                Files.createDirectories(sourceFile.parent)
+                Files.writeString(sourceFile, source)
+            }
+
+            compiler.getStandardFileManager(null, null, null).use { fileManager ->
+                fileManager.setLocation(StandardLocation.CLASS_OUTPUT, listOf(classesDir.toFile()))
+                if (classpath.isNotEmpty()) {
+                    fileManager.setLocation(StandardLocation.CLASS_PATH, classpath.map { it.toFile() })
+                }
+                val units = fileManager.getJavaFileObjectsFromFiles(
+                    Files.walk(sourceDir)
+                        .filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".java") }
+                        .map { it.toFile() }
+                        .toList()
+                )
+                val success = compiler.getTask(null, fileManager, null, null, null, units).call()
+                assertTrue(success, "In-memory test sources should compile successfully")
+            }
+
+            JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
+                mainAttributes.putValue("Manifest-Version", "1.0")
+            }).use { jos ->
+                Files.walk(classesDir)
+                    .filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".class") }
+                    .forEach { classFile ->
+                        val entryName = classesDir.relativize(classFile).toString().replace(File.separatorChar, '/')
+                        jos.putNextEntry(JarEntry(entryName))
+                        Files.newInputStream(classFile).use { it.copyTo(jos) }
+                        jos.closeEntry()
+                    }
+            }
+            return jarPath
+        } finally {
+            sourceDir.toFile().deleteRecursively()
+            classesDir.toFile().deleteRecursively()
+        }
     }
 
     private fun findTestClassesDir(): Path {

@@ -36,5 +36,7 @@ interface FullGraphBuilder : GraphBuilder {
         trueBranchNodeIds: IntArray,
         falseBranchNodeIds: IntArray
     ): FullGraphBuilder
+    fun addClassOrigin(className: String, source: String): FullGraphBuilder
+    fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int = 1): FullGraphBuilder
     fun setResources(resources: ResourceAccessor): FullGraphBuilder
 }

@@ -83,7 +83,10 @@ class SootUpAdapterInternalCoverageTest {
         assertEquals(setOf("java.properties", "java.class"), invokePrivate<Set<String>>(adapter, "controlFormats", arrayOf(String::class.java), null))
 
         assertEquals(Locale("ko", "KR"), invokePrivate<Locale>(adapter, "toLocale", arrayOf(String::class.java), "ko_KR"))
+        assertEquals(Locale("ko"), invokePrivate<Locale>(adapter, "toLocale", arrayOf(String::class.java), "ko"))
         assertEquals(Locale.ROOT, invokePrivate<Locale>(adapter, "toLocale", arrayOf(String::class.java), ""))
+        assertEquals("en_US_POSIX", invokePrivate<String>(adapter, "localeSpecOf", arrayOf(Locale::class.java), Locale("en", "US", "POSIX")))
+        assertEquals("", invokePrivate<String>(adapter, "localeSpecOf", arrayOf(Locale::class.java), Locale.ROOT))
 
         assertTrue(invokePrivate<Boolean>(adapter, "matchesBundleClassPath", arrayOf(String::class.java, String::class.java), "sample.resources.MessagesListBundle_ko_KR", "sample.resources.MessagesListBundle"))
         assertFalse(invokePrivate<Boolean>(adapter, "matchesBundleClassPath", arrayOf(String::class.java, String::class.java), "other.Bundle", "sample.resources.MessagesListBundle"))
@@ -92,6 +95,81 @@ class SootUpAdapterInternalCoverageTest {
         assertEquals("application.properties", invokePrivate<String>(adapter, "normalizeResourcePath", arrayOf(MethodDescriptor::class.java, String::class.java, String::class.java), caller, "java.lang.ClassLoader", "/application.properties"))
         assertEquals("application.properties", invokePrivate<String>(adapter, "normalizeResourcePath", arrayOf(MethodDescriptor::class.java, String::class.java, String::class.java), caller, "java.lang.Class", "/application.properties"))
         assertEquals("sample/resources/messages.properties", invokePrivate<String>(adapter, "normalizeResourcePath", arrayOf(MethodDescriptor::class.java, String::class.java, String::class.java), caller, "java.lang.Class", "messages.properties"))
+    }
+
+    @Test
+    fun `locale builder spec and enum fallback branches are covered`() {
+        val adapter = createAdapter(includePackages = listOf("sample.simple"))
+        val specClass = Class.forName("io.johnsonlee.graphite.sootup.SootUpAdapter\$LocaleBuilderSpec")
+        val constructor = specClass.getDeclaredConstructor(
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java
+        ).also { it.isAccessible = true }
+        val toLocaleSpec = specClass.getDeclaredMethod("toLocaleSpec").also { it.isAccessible = true }
+
+        assertEquals("en-US", toLocaleSpec.invoke(constructor.newInstance(null, null, null, "en-US")))
+        assertEquals("en_US_POSIX", toLocaleSpec.invoke(constructor.newInstance("en", "US", "POSIX", "")))
+        assertNull(toLocaleSpec.invoke(constructor.newInstance(null, null, null, "")))
+
+        invokePrivate<Unit>(
+            adapter,
+            "extractEnumValues",
+            arrayOf(sootup.core.model.SootClass::class.java),
+            resolveJavaSootClass(adapter, "sample.simple.SimpleService")
+        )
+    }
+
+    @Test
+    fun `annotation normalization helpers cover empty and collection values`() {
+        val adapter = createAdapter()
+
+        assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), null))
+        assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), "\"\""))
+        assertEquals("alpha", invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), "\"alpha\""))
+        assertEquals(listOf("a"), invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), listOf("a", "")))
+        assertEquals(listOf("b"), invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), arrayOf("b", "")))
+        assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), object {
+            override fun toString(): String = "null"
+        }))
+        assertEquals("", invokePrivate<String>(adapter, "getAnnotationFullName", arrayOf(Any::class.java), null))
+        assertTrue(invokePrivate<Map<String, Any?>>(adapter, "getAnnotationValues", arrayOf(Any::class.java), null).isEmpty())
+    }
+
+    @Test
+    fun `artifact and class resource helpers normalize boundary cases`() {
+        val adapter = createAdapter()
+
+        assertEquals("dependency", invokePrivate<String?>(adapter, "artifactKey", arrayOf(String::class.java), "/opt/app/lib/dependency.jar"))
+        assertNull(invokePrivate<String?>(adapter, "artifactKey", arrayOf(String::class.java), " / "))
+        assertEquals("sample.resources.Messages", invokePrivate<String?>(adapter, "classResourcePathToName", arrayOf(String::class.java), "sample/resources/Messages.class"))
+        assertNull(invokePrivate<String?>(adapter, "classResourcePathToName", arrayOf(String::class.java), "sample/resources/Messages.txt"))
+        assertNull(invokePrivate<String?>(adapter, "classResourcePathToName", arrayOf(String::class.java), "sample/module-info.class"))
+        assertEquals(
+            TypeDescriptor("fallback.Type"),
+            invokePrivate<TypeDescriptor>(
+                adapter,
+                "getFieldTypeWithGenerics",
+                arrayOf(String::class.java, String::class.java, TypeDescriptor::class.java),
+                "missing.Owner",
+                "field",
+                TypeDescriptor("fallback.Type")
+            )
+        )
+    }
+
+    @Test
+    fun `bytecode reference extraction includes invokedynamic bootstrap references`() {
+        val adapter = createAdapter(includePackages = listOf("sample.lambda"))
+        val references = invokePrivate<Set<String>>(
+            adapter,
+            "extractReferencedClasses",
+            arrayOf(ByteArray::class.java),
+            findCompiledClassBytes("sample/lambda/LambdaExample.class")
+        )
+
+        assertTrue(references.any { it == "java.lang.invoke.LambdaMetafactory" || it == "sample.lambda.LambdaExample" })
     }
 
     @Test
@@ -127,6 +205,36 @@ class SootUpAdapterInternalCoverageTest {
         assertNotNull(koreanOnlySpec)
         assertEquals(setOf("java.class"), readProperty<Set<String>>(classOnlySpec, "formats"))
         assertEquals(listOf("ko_KR"), readProperty<List<String>?>(koreanOnlySpec, "candidateLocales"))
+        val reflectedControl = invokePrivate<Any?>(
+            adapter,
+            "reflectBundleControlSpec",
+            arrayOf(String::class.java, String::class.java, String::class.java),
+            "sample.resources.KoreanOnlyControl",
+            "sample.resources.MessagesListBundle",
+            "ko_KR"
+        )
+        assertNotNull(reflectedControl)
+        assertEquals(listOf("ko_KR"), readProperty<List<String>?>(reflectedControl, "candidateLocales"))
+        assertNull(
+            invokePrivate<Any?>(
+                adapter,
+                "reflectBundleControlSpec",
+                arrayOf(String::class.java, String::class.java, String::class.java),
+                "java.lang.String",
+                "sample.resources.MessagesListBundle",
+                null
+            )
+        )
+        assertNull(
+            invokePrivate<Any?>(
+                adapter,
+                "reflectBundleControlSpec",
+                arrayOf(String::class.java, String::class.java, String::class.java),
+                "missing.Control",
+                "sample.resources.MessagesListBundle",
+                null
+            )
+        )
         val resourceFilesByPath = readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath")
         resourceFilesByPath["messages.properties"] = mutableListOf(ResourceFileNode(NodeId.next(), "messages.properties", "test", "properties", null))
         resourceFilesByPath["messages_ko.properties"] = mutableListOf(ResourceFileNode(NodeId.next(), "messages_ko.properties", "test", "properties", null))
@@ -392,15 +500,15 @@ class SootUpAdapterInternalCoverageTest {
     private fun createAdapter(includePackages: List<String> = listOf("sample.resources"), buildCallGraph: Boolean = false): SootUpAdapter {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
-        val inputLocations: List<AnalysisInputLocation> = listOf(
-            PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)
-        )
+        val location = PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)
+        val inputLocations: List<AnalysisInputLocation> = listOf(location)
         return SootUpAdapter(
             view = JavaView(inputLocations),
             config = LoaderConfig(includePackages = includePackages, buildCallGraph = buildCallGraph),
             signatureReader = BytecodeSignatureReader(),
             extensions = emptyList(),
             resourceAccessor = EmptyResourceAccessor,
+            inputLocationSources = mapOf(location to testClassesDir.fileName.toString()),
             graphBuilder = DefaultGraph.Builder()
         )
     }
@@ -412,9 +520,8 @@ class SootUpAdapterInternalCoverageTest {
             "sample/resources/ClassOnlyControl.class" to findCompiledClassBytes("sample/resources/ClassOnlyControl.class"),
             "sample/resources/KoreanOnlyControl.class" to findCompiledClassBytes("sample/resources/KoreanOnlyControl.class")
         )
-            val inputLocations: List<AnalysisInputLocation> = listOf(
-            PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)
-        )
+        val location = PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)
+        val inputLocations: List<AnalysisInputLocation> = listOf(location)
         val resourceAccessor = object : ResourceAccessor {
             override fun list(pattern: String): Sequence<ResourceEntry> = emptySequence()
             override fun open(path: String) = resources[path]?.inputStream() ?: error("Missing resource $path")
@@ -425,6 +532,7 @@ class SootUpAdapterInternalCoverageTest {
             signatureReader = BytecodeSignatureReader(),
             extensions = emptyList(),
             resourceAccessor = resourceAccessor,
+            inputLocationSources = mapOf(location to testClassesDir.fileName.toString()),
             graphBuilder = DefaultGraph.Builder()
         )
     }
@@ -434,13 +542,13 @@ class SootUpAdapterInternalCoverageTest {
             ?: error("Unable to resolve $className")
 
     private fun nullReturnMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "getFallbackLocale", "(Ljava/lang/String;Ljava/util/Locale;)Ljava/util/Locale;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC, "getFallbackLocale", "(Ljava/lang/String;Ljava/util/Locale;)Ljava/util/Locale;", null, null).apply {
             instructions.add(InsnNode(Opcodes.ACONST_NULL))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun listOfMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(LdcInsnNode("java.class"))
             instructions.add(LdcInsnNode("java.properties"))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/List", "of", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;", true))
@@ -448,33 +556,33 @@ class SootUpAdapterInternalCoverageTest {
         }
 
     private fun singletonListMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(LdcInsnNode("java.properties"))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Collections", "singletonList", "(Ljava/lang/Object;)Ljava/util/List;", false))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun languageTagMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "locale", "()Ljava/lang/Object;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "locale", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(LdcInsnNode("ko-KR"))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Locale", "forLanguageTag", "(Ljava/lang/String;)Ljava/util/Locale;", false))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun intPushMethod(opcode: Int, operand: Int): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "literal", "()Ljava/lang/Object;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "literal", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(org.objectweb.asm.tree.IntInsnNode(opcode, operand))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun iconstReturnMethod(opcode: Int): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "literal", "()Ljava/lang/Object;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "literal", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(InsnNode(opcode))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun localeCtorMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "locale", "()Ljava/lang/Object;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "locale", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(LdcInsnNode("ko"))
             instructions.add(LdcInsnNode("KR"))
             instructions.add(MethodInsnNode(Opcodes.INVOKESPECIAL, "java/util/Locale", "<init>", "(Ljava/lang/String;Ljava/lang/String;)V", false))
@@ -482,7 +590,7 @@ class SootUpAdapterInternalCoverageTest {
         }
 
     private fun arraysAsListMethod(): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(LdcInsnNode("java.class"))
             instructions.add(LdcInsnNode("java.properties"))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/List", "of", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;", true))
@@ -491,20 +599,20 @@ class SootUpAdapterInternalCoverageTest {
         }
 
     private fun singleFormatMethod(value: String): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/lang/Object;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(LdcInsnNode(value))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun singletonLiteralListMethod(value: String): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(LdcInsnNode(value))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Collections", "singletonList", "(Ljava/lang/Object;)Ljava/util/List;", false))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
     private fun singletonIntListMethod(value: Int): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, value))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Collections", "singletonList", "(Ljava/lang/Object;)Ljava/util/List;", false))
@@ -512,7 +620,7 @@ class SootUpAdapterInternalCoverageTest {
         }
 
     private fun singleIntListOfMethod(value: Int): MethodNode =
-        MethodNode(Opcodes.ASM9, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, value))
             instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/List", "of", "(Ljava/lang/Object;)Ljava/util/List;", true))
             instructions.add(InsnNode(Opcodes.ARETURN))

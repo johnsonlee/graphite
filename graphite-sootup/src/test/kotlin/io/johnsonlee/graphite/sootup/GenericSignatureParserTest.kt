@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.core.TypeDescriptor
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.test.Test
@@ -332,6 +333,16 @@ class GenericSignatureParserTest {
         if (result != null) {
             assertEquals("double", result.className)
         }
+    }
+
+    @Test
+    fun `should parse unknown primitive descriptor defensively`() {
+        val visitorClass = Class.forName("io.johnsonlee.graphite.sootup.GenericSignatureParser\$TypeSignatureVisitor")
+        val visitor = visitorClass.getDeclaredConstructor().apply { isAccessible = true }.newInstance()
+        visitorClass.getDeclaredMethod("visitBaseType", Char::class.javaPrimitiveType).invoke(visitor, 'X')
+        val result = visitorClass.getDeclaredMethod("toTypeDescriptor").invoke(visitor) as TypeDescriptor
+
+        assertEquals("unknown", result.className)
     }
 
     // ========== parseFieldSignature - wildcard type arguments ==========

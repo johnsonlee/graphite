@@ -99,6 +99,29 @@ interface Graph {
      */
     fun typeHierarchyTypes(): Set<String> = emptySet()
 
+    /**
+     * Get the origin artifact or source container for the given class, if known.
+     *
+     * Examples:
+     * - `my-app.jar`
+     * - a Spring Boot nested library origin
+     * - a Spring Boot application classes origin
+     */
+    fun classOrigin(className: String): String? = null
+
+    /**
+     * Get all known class origins keyed by fully qualified class name.
+     */
+    fun classOrigins(): Map<String, String> = emptyMap()
+
+    /**
+     * Get artifact-level dependency weights keyed by source artifact, then target artifact.
+     *
+     * Example:
+     * - `elasticsearch-8.17.0 -> lucene-core-9.12.0`
+     */
+    fun artifactDependencies(): Map<String, Map<String, Int>> = emptyMap()
+
 }
 
 /**

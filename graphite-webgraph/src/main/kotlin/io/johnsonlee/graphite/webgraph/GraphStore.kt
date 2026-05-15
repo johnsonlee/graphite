@@ -705,6 +705,8 @@ private const val LABELS_FILE = "graph.labels"
             supertypes = supertypes,
             subtypes = subtypes,
             enumValues = enumValues,
+            classOrigins = graph.classOrigins(),
+            artifactDependencies = graph.artifactDependencies(),
             memberAnnotations = memberAnnotations,
             branchScopes = branchScopes
         )

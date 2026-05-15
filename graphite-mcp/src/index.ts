@@ -21,6 +21,21 @@ async function graphiteGet(path: string, params?: Record<string, string>): Promi
   return res.json();
 }
 
+async function graphiteGetText(path: string, params?: Record<string, string>): Promise<string> {
+  const url = new URL(path, GRAPHITE_URL);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v) url.searchParams.set(k, v);
+    }
+  }
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status} ${res.statusText}: ${text}`);
+  }
+  return res.text();
+}
+
 async function graphitePost(path: string, body: unknown): Promise<unknown> {
   const url = new URL(path, GRAPHITE_URL);
   const res = await fetch(url.toString(), {
@@ -43,7 +58,7 @@ function encodeResourcePath(path: string): string {
     .join("/");
 }
 
-const server = new McpServer({
+    const server = new McpServer({
   name: "graphite",
   version: "1.0.0",
 });
@@ -247,6 +262,35 @@ server.tool(
   { limit: z.number().optional().default(200).describe("Max classes") },
   async ({ limit }) => {
     const data = await graphiteGet("/api/overview", { limit: String(limit) });
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
+// C4 architecture model
+server.tool(
+  "c4",
+  "Get C4 architecture views automatically derived from the code graph as Structurizr workspace JSON, Structurizr DSL, Mermaid, or PlantUML",
+  {
+    level: z.enum(["context", "container", "component", "all"]).optional().default("all")
+      .describe("C4 view level"),
+    format: z.enum(["json", "dsl", "mermaid", "plantuml"]).optional().default("json")
+      .describe("Output format"),
+    limit: z.number().optional().default(200).describe("Max containers or components"),
+  },
+  async ({ level, format, limit }) => {
+    if (format === "mermaid" || format === "plantuml" || format === "dsl") {
+      const text = await graphiteGetText("/api/architecture/c4", {
+        level,
+        format,
+        limit: String(limit),
+      });
+      return { content: [{ type: "text", text }] };
+    }
+    const data = await graphiteGet("/api/architecture/c4", {
+      level,
+      format,
+      limit: String(limit),
+    });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );

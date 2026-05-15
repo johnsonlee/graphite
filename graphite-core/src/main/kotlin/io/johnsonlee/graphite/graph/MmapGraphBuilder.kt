@@ -44,6 +44,8 @@ class MmapGraphBuilder(
     private val nodeMethods = mutableListOf<MethodDescriptor>()
     private val typeHierarchyBuilder = TypeHierarchy.Builder()
     private val enumValues = mutableMapOf<String, List<Any?>>()
+    private val classOrigins = mutableMapOf<String, String>()
+    private val artifactDependencies = mutableMapOf<String, MutableMap<String, Int>>()
     private val memberAnnotations = mutableMapOf<String, MutableMap<String, Map<String, Any?>>>()
     private val branchScopes = mutableListOf<DefaultGraph.RawBranchScope>()
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
@@ -86,6 +88,19 @@ class MmapGraphBuilder(
         values: Map<String, Any?>
     ): FullGraphBuilder {
         memberAnnotations.getOrPut("$className#$memberName") { mutableMapOf() }[annotationFqn] = values
+        return this
+    }
+
+    override fun addClassOrigin(className: String, source: String): FullGraphBuilder {
+        classOrigins.putIfAbsent(className, source)
+        return this
+    }
+
+    override fun addArtifactDependency(fromArtifact: String, toArtifact: String, weight: Int): FullGraphBuilder {
+        if (fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight <= 0) return this
+        artifactDependencies
+            .getOrPut(fromArtifact) { mutableMapOf() }
+            .merge(toArtifact, weight, Int::plus)
         return this
     }
 
@@ -195,6 +210,8 @@ class MmapGraphBuilder(
             methodIndex = methodIndex,
             typeHierarchy = typeHierarchyBuilder.build(),
             enumValuesMap = enumValues.toMap(),
+            classOriginsMap = classOrigins.toMap(),
+            artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
             memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
             branchScopeData = branchScopes.toList(),
             resources = resourceAccessor

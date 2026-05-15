@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.input.JavaArchiveLayout
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -159,7 +160,13 @@ class MmapGraphBuilderTest {
     @Test
     fun `round-trip ResourceFileNode`() {
         val id = NodeId.next()
-        val node = ResourceFileNode(id, "config/application.properties", "BOOT-INF/classes", "properties", "dev")
+        val node = ResourceFileNode(
+            id,
+            "config/application.properties",
+            JavaArchiveLayout.BOOT_INF_CLASSES.removeSuffix("/"),
+            "properties",
+            "dev"
+        )
         val graph = MmapGraphBuilder().addNode(node).build()
         assertEquals(node, graph.node(id))
     }

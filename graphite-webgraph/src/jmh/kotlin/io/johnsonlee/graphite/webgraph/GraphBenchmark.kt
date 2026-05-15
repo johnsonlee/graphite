@@ -27,7 +27,7 @@ open class EsLoadBenchmark {
 
     @Setup(Level.Trial)
     fun setup() {
-        graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ELASTICSEARCH)
+        graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ELASTICSEARCH)
     }
 
     @Benchmark
@@ -64,7 +64,7 @@ open class AndroidLoadBenchmark {
 
     @Setup(Level.Trial)
     fun setup() {
-        graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ANDROID)
+        graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
     }
 
     @Benchmark
@@ -110,7 +110,7 @@ open class EsQueryBenchmark {
 
     @Setup
     fun setup() {
-        val graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ELASTICSEARCH)
+        val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ELASTICSEARCH)
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)
@@ -240,7 +240,7 @@ open class AndroidQueryBenchmark {
 
     @Setup
     fun setup() {
-        val graphPath = BenchmarkCorpus.persistedGraph(CorpusKind.ANDROID)
+        val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
         eagerGraph = GraphStore.load(graphPath)
         lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)
