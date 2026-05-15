@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:C4ModelInferer.kt$C4ModelInferer$private fun buildContextView( graph: Graph, classCount: Int, methodCount: Int, endpointCount: Int, callSites: List&lt;CallSiteNode>, systemBoundary: String, subject: SubjectDescriptor, containerCount: Int, limit: Int ): C4View</ID>
+    <ID>CyclomaticComplexMethod:C4StructurizrMapper.kt$C4StructurizrMapper$internal fun toWorkspaceModel(graphiteModel: C4ViewModel): C4StructurizrWorkspace</ID>
+    <ID>CyclomaticComplexMethod:C4Support.kt$internal fun &lt;T : C4DirectedEdge> reduceTransitiveEdges( edges: List&lt;T>, preserveRuntimeEdges: Boolean ): List&lt;T></ID>
+    <ID>CyclomaticComplexMethod:ComponentSelector.kt$ComponentSelector$fun buildView( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int, subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary), capabilityLayout: ContainerLayout = inferContainerLayout( graph = graph, methods = methods, callSites = callSites, apiEndpoints = apiEndpoints, systemBoundary = systemBoundary, limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES) ) ): C4View</ID>
+    <ID>CyclomaticComplexMethod:ComponentSelector.kt$ComponentSelector$fun selectReadableRelationships(relationships: List&lt;C4Relationship>): List&lt;C4Relationship></ID>
+    <ID>CyclomaticComplexMethod:ContainerClusterer.kt$ContainerClusterer$fun clusterInternalPackageUnits( units: List&lt;String>, undirectedTraffic: Map&lt;Pair&lt;String, String>, Int> ): List&lt;Set&lt;String>></ID>
+    <ID>CyclomaticComplexMethod:ContainerClusterer.kt$ContainerClusterer$fun inferLayout( graph: Graph?, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int ): ContainerLayout</ID>
+    <ID>CyclomaticComplexMethod:ExploreRoutes.kt$ExploreRoutes$internal fun register(app: Javalin, graph: Graph)</ID>
+    <ID>CyclomaticComplexMethod:Helpers.kt$internal fun nodeToMap(node: Node): Map&lt;String, Any?></ID>
+    <ID>CyclomaticComplexMethod:SubjectDetector.kt$SubjectDetector$fun infer( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, endpointCount: Int, systemBoundary: String ): SubjectDescriptor</ID>
+    <ID>CyclomaticComplexMethod:SystemBoundaryDetector.kt$SystemBoundaryDetector$fun derive(methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>): String</ID>
+    <ID>LargeClass:ExploreCommandTest.kt$ExploreCommandTest</ID>
+    <ID>LongMethod:C4ModelInferer.kt$C4ModelInferer$private fun buildContextView( graph: Graph, classCount: Int, methodCount: Int, endpointCount: Int, callSites: List&lt;CallSiteNode>, systemBoundary: String, subject: SubjectDescriptor, containerCount: Int, limit: Int ): C4View</ID>
+    <ID>LongMethod:C4StructurizrMapper.kt$C4StructurizrMapper$internal fun toWorkspaceModel(graphiteModel: C4ViewModel): C4StructurizrWorkspace</ID>
+    <ID>LongMethod:ComponentSelector.kt$ComponentSelector$fun buildView( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int, subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary), capabilityLayout: ContainerLayout = inferContainerLayout( graph = graph, methods = methods, callSites = callSites, apiEndpoints = apiEndpoints, systemBoundary = systemBoundary, limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES) ) ): C4View</ID>
+    <ID>LongMethod:ContainerClusterer.kt$ContainerClusterer$fun inferLayout( graph: Graph?, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int ): ContainerLayout</ID>
+    <ID>LongMethod:ExploreCommandTest.kt$ExploreCommandTest$@Test fun `C4 classifier helpers cover runtime namespace and responsibility branches`()</ID>
+    <ID>LongMethod:ExploreCommandTest.kt$ExploreCommandTest$@Test fun `C4 renderers cover truncation and component fallback plans`()</ID>
+    <ID>LongMethod:ExploreRoutes.kt$ExploreRoutes$internal fun register(app: Javalin, graph: Graph)</ID>
+    <ID>LongMethod:OpenApiSpecBuilder.kt$OpenApiSpecBuilder$internal fun build(): Map&lt;String, Any?></ID>
+    <ID>LongParameterList:C4ModelInferer.kt$C4ModelInferer$( graph: Graph, classCount: Int, methodCount: Int, endpointCount: Int, callSites: List&lt;CallSiteNode>, systemBoundary: String, subject: SubjectDescriptor, containerCount: Int, limit: Int )</ID>
+    <ID>LongParameterList:ComponentSelector.kt$ComponentSelector$( className: String, systemBoundary: String, methodCount: Int, callCount: Int, endpointCount: Int, incomingCrossContainer: Int, outgoingCrossContainer: Int, capabilityClassCount: Int = 1 )</ID>
+    <ID>LongParameterList:ComponentSelector.kt$ComponentSelector$( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int, subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary), capabilityLayout: ContainerLayout = inferContainerLayout( graph = graph, methods = methods, callSites = callSites, apiEndpoints = apiEndpoints, systemBoundary = systemBoundary, limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES) ) )</ID>
+    <ID>LoopWithTooManyJumpStatements:SubjectDetector.kt$SubjectDetector$while</ID>
+    <ID>LoopWithTooManyJumpStatements:SystemBoundaryDetector.kt$SystemBoundaryDetector$while</ID>
+    <ID>MagicNumber:ExploreCommand.kt$ExploreCommand$8080</ID>
+    <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals("Runtime", diagramElementLabel(mapOf("name" to "Runtime", "properties" to mapOf("graphite.architectureType" to "runtime-platform"))))</ID>
+    <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals("runtime-platform", mapOf("graphite.architectureType" to "runtime-platform").asStructurizrProperty("graphite.architectureType"))</ID>
+    <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals(C4RelationshipKind.ORCHESTRATES, plannedEdge(mapOf("from" to "a", "to" to "b", "description" to "orchestrates", "kind" to "orchestrates")).kind)</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$"plantuml" -> assertTrue(body.contains("@startuml") &amp;&amp; body.contains("@enduml"), "Expected PlantUML document for $level")</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$.</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("Api collaborates with Service", invokeExplorePrivate&lt;String>(inferer, "describeArchitecturalDependency", threeStringTypes, "collaborates-with", "Api", "Service"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("Api orchestrates Service", invokeExplorePrivate&lt;String>(inferer, "describeArchitecturalDependency", threeStringTypes, "orchestrates", "Api", "Service"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("Api routes work to Service", invokeExplorePrivate&lt;String>(inferer, "describeArchitecturalDependency", threeStringTypes, "routes-to", "Api", "Service"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("Api uses Service", invokeExplorePrivate&lt;String>(inferer, "describeArchitecturalDependency", threeStringTypes, "uses", "Api", "Service"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("application-component", invokeExplorePrivate&lt;String>(inferer, "inferComponentArchitectureType", stringType, "domain-component"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("application-component", invokeExplorePrivate&lt;String>(inferer, "inferContainerArchitectureType", stringType, "capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("application-service", invokeExplorePrivate&lt;String>(inferer, "inferComponentArchitectureType", stringType, "coordination"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("application-service", invokeExplorePrivate&lt;String>(inferer, "inferContainerArchitectureType", stringType, "application-runtime"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("application-service", invokeExplorePrivate&lt;String>(inferer, "inferContainerArchitectureType", stringType, "interface"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("collaborates with", diagramRelationshipLabel(mapOf("properties" to mapOf("graphite.relationshipKind" to "collaborates-with"))))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("collaborates-with", invokeExplorePrivate&lt;String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("com.example.api", invokeExplorePrivate&lt;String>(inferer, "internalPackageUnit", twoStringTypes, "com.example.api.Controller", "com.example"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("external-library", invokeDiagramPrivate&lt;String>("diagramArchitectureTypeOf", mapType, mapOf("id" to "dependency:raw")))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("orchestrates", invokeExplorePrivate&lt;String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "orchestrator", "capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("org.apache", invokeExplorePrivate&lt;String>(inferer, "internalPackageUnit", twoStringTypes, "org.apache.lucene.IndexWriter", "com.example"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("routes-to", invokeExplorePrivate&lt;String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "interface", "capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("uses", invokeExplorePrivate&lt;String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "integration"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals("uses", invokeExplorePrivate&lt;String>(inferer, "inferArchitecturalDependencyKind", twoStringTypes, "capability", "shared-capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals(listOf("DELETE"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.DeleteMapping", emptyMap&lt;String, Any?>()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals(listOf("GET"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.GetMapping", emptyMap&lt;String, Any?>()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals(listOf("PATCH"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PatchMapping", emptyMap&lt;String, Any?>()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals(listOf("POST"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PostMapping", emptyMap&lt;String, Any?>()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertEquals(listOf("PUT"), extractHttpMethods.invoke(extractor, "org.springframework.web.bind.annotation.PutMapping", emptyMap&lt;String, Any?>()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(annotations.containsKey("org.springframework.web.bind.annotation.GetMapping"), "Should contain GetMapping, got keys: ${annotations.keys}")</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 0, 0).contains("structurally central"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 0, 3).contains("external collaborators"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 0, 3, 0).contains("Coordinates work"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 2, 2, 0).contains("coordination path"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 0, 3, 0, 0).contains("shared internal capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferComponentResponsibility", componentResponsibilityTypes, "Search", 1, 0, 0, 0).contains("external requests"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 0, 0, 0, 0).contains("cohesive internal capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 1, 1, 4).contains("outward-facing capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 1, 4, 0).contains("orchestration boundary"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 2, 2, 0).contains("balanced internal collaboration"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 0, 10, 4, 1, 0).contains("shared internal capability"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$assertTrue(invokeExplorePrivate&lt;String>(inferer, "inferContainerResponsibility", fiveIntTypes, 1, 0, 0, 0, 0).contains("inbound system interface"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(logType, "info", listOf(TypeDescriptor("java.lang.String")), TypeDescriptor("void")), 12, null, emptyList()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(luceneReaderType, "open", emptyList(), luceneReaderType), 11, null, emptyList()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(luceneWriterType, "commit", emptyList(), TypeDescriptor("void")), 10, null, emptyList()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$builder.addNode(CallSiteNode(NodeId.next(), internalMethod, MethodDescriptor(runtimeType, "size", emptyList(), TypeDescriptor("int")), 13, null, emptyList()))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$invokeDiagramPrivate&lt;String>("applicationContainerLayerOf", mapType, mapOf("properties" to mapOf("graphite.kind" to "interface")))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$invokeDiagramPrivate&lt;String>("diagramLayerOf", mapType, mapOf("properties" to mapOf("graphite.architectureType" to "external-system")))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$mapOf("id" to "dependency:raw", "type" to "softwareSystem", "name" to "Raw", "kind" to "library", "architectureType" to "external-library")</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$mapOf("id" to "system:a", "type" to "softwareSystem", "name" to "A", "kind" to "application", "architectureType" to "software-system")</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$mapOf("id" to "system:b", "type" to "softwareSystem", "name" to "B", "kind" to "external-system", "architectureType" to "external-system")</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$val luceneCore = MethodDescriptor(TypeDescriptor("org.apache.lucene.index.IndexWriter"), "commit", emptyList(), TypeDescriptor("void"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$val luceneHighlighter = MethodDescriptor(TypeDescriptor("org.apache.lucene.search.uhighlight.UnifiedHighlighter"), "highlight", emptyList(), TypeDescriptor("void"))</ID>
+    <ID>MaxLineLength:ExploreCommandTest.kt$ExploreCommandTest$val luceneQueries = MethodDescriptor(TypeDescriptor("org.apache.lucene.queries.CustomScoreQuery"), "rewrite", emptyList(), TypeDescriptor("void"))</ID>
+    <ID>MaxLineLength:ExploreRoutes.kt$ExploreRoutes$accepted.any { it == "text/vnd.structurizr.dsl" || it == "text/x-structurizr" || it == "application/vnd.structurizr.dsl" } -> "dsl"</ID>
+    <ID>MaxLineLength:ExploreRoutes.kt$ExploreRoutes$val centerId = ctx.queryParam("center")?.toIntOrNull() ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'center' parameter"); return@get }</ID>
+    <ID>MaxLineLength:ExploreRoutes.kt$ExploreRoutes$val memberName = ctx.queryParam("member") ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'member' parameter"); return@get }</ID>
+    <ID>MaxLineLength:Helpers.kt$is AnnotationNode -> "Annotation[${node.id}] @${node.name.substringAfterLast('.')} on ${node.className.substringAfterLast('.')}.${node.memberName}"</ID>
+    <ID>MaxLineLength:Helpers.kt$is AnnotationNode -> mutableMapOf&lt;String, Any?>("type" to "AnnotationNode", "id" to node.id.value, "name" to node.name, "class" to node.className, "member" to node.memberName, "label" to "@${node.name.substringAfterLast('.')}").also { map -> node.values.forEach { (k, v) -> map[k] = v } }</ID>
+    <ID>MaxLineLength:Helpers.kt$is CallEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Call", "virtual" to edge.isVirtual, "dynamic" to edge.isDynamic)</ID>
+    <ID>MaxLineLength:Helpers.kt$is CallSiteNode -> "CallSite[${node.id}] ${node.caller.declaringClass.simpleName}.${node.caller.name} -> ${node.callee.declaringClass.simpleName}.${node.callee.name}"</ID>
+    <ID>MaxLineLength:Helpers.kt$is CallSiteNode -> mapOf("type" to "CallSiteNode", "id" to node.id.value, "caller" to node.caller.signature, "callee" to node.callee.signature, "label" to "${node.callee.declaringClass.simpleName}.${node.callee.name}")</ID>
+    <ID>MaxLineLength:Helpers.kt$is EnumConstant -> mapOf("type" to "EnumConstant", "id" to node.id.value, "enumType" to node.enumType.className, "enumName" to node.enumName, "label" to "${node.enumType.simpleName}.${node.enumName}")</ID>
+    <ID>MaxLineLength:Helpers.kt$is FieldNode -> "Field[${node.id}] ${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}: ${node.descriptor.type.simpleName}"</ID>
+    <ID>MaxLineLength:Helpers.kt$is FieldNode -> mapOf("type" to "FieldNode", "id" to node.id.value, "class" to node.descriptor.declaringClass.className, "name" to node.descriptor.name, "fieldType" to node.descriptor.type.className, "label" to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}")</ID>
+    <ID>MaxLineLength:Helpers.kt$is LocalVariable -> mapOf("type" to "LocalVariable", "id" to node.id.value, "name" to node.name, "varType" to node.type.className, "method" to node.method.signature, "label" to node.name)</ID>
+    <ID>MaxLineLength:Helpers.kt$is ParameterNode -> mapOf("type" to "ParameterNode", "id" to node.id.value, "index" to node.index, "paramType" to node.type.className, "method" to node.method.signature, "label" to "param#${node.index}")</ID>
+    <ID>MaxLineLength:OpenApiSpecBuilder.kt$OpenApiSpecBuilder$"Build C4 architecture views automatically derived from the code graph as Structurizr workspace JSON, Structurizr DSL, Mermaid, or PlantUML"</ID>
+    <ID>NestedBlockDepth:ComponentSelector.kt$ComponentSelector$fun buildView( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int, subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary), capabilityLayout: ContainerLayout = inferContainerLayout( graph = graph, methods = methods, callSites = callSites, apiEndpoints = apiEndpoints, systemBoundary = systemBoundary, limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES) ) ): C4View</ID>
+    <ID>NestedBlockDepth:ContainerClusterer.kt$ContainerClusterer$fun inferLayout( graph: Graph?, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int ): ContainerLayout</ID>
+    <ID>ReturnCount:C4RenderingPlan.kt$private fun selectVisibleDiagramSlice( elements: List&lt;DiagramElement>, edges: List&lt;PlannedEdge>, maxElements: Int ): VisibleDiagramSelection</ID>
+    <ID>ReturnCount:ComponentSelector.kt$ComponentSelector$fun tryAdd(edge: C4Relationship, enforceCaps: Boolean): Boolean</ID>
+    <ID>ReturnCount:SubjectDetector.kt$SubjectDetector$fun inferName(systemBoundary: String, startClassOrigin: String? = null, startClass: String? = null): String</ID>
+    <ID>ReturnCount:SystemBoundaryDetector.kt$SystemBoundaryDetector$fun derive(methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>): String</ID>
+    <ID>ReturnCount:SystemBoundaryDetector.kt$SystemBoundaryDetector$fun internalPackageUnit(className: String, systemBoundary: String): String</ID>
+    <ID>SpreadOperator:Main.kt$(*args)</ID>
+    <ID>SwallowedException:ExploreRoutes.kt$ExploreRoutes$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ExploreRoutes.kt$ExploreRoutes$e: Exception</ID>
+    <ID>TooManyFunctions:C4WireCodec.kt$C4WireCodec</ID>
+    <ID>UnusedPrivateProperty:HelpersTest.kt$HelpersTest.Companion$private val childType = TypeDescriptor("com.example.Child")</ID>
+    <ID>WildcardImport:ExploreCommand.kt$import picocli.CommandLine.*</ID>
+    <ID>WildcardImport:ExploreCommandTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:ExploreCommandTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:ExploreRoutes.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:Helpers.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:HelpersTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:HelpersTest.kt$import kotlin.test.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

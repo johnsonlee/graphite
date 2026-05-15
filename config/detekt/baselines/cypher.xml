@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:ExpressionEvaluator.kt$ExpressionEvaluator$left is Int &amp;&amp; right is Int || left is Long &amp;&amp; right is Long</ID>
+    <ID>CyclomaticComplexMethod:CypherDslAdapter.kt$CypherAstVisitor$private fun visitRelationshipPattern(ctx: CypherParser.RelationshipPatternContext): PatternElement.RelationshipPattern</ID>
+    <ID>CyclomaticComplexMethod:CypherExecutor.kt$CypherExecutor$private fun nodeToMap(node: GraphiteNode): Map&lt;String, Any?></ID>
+    <ID>CyclomaticComplexMethod:CypherFunctions.kt$CypherFunctions$fun call(name: String, args: List&lt;Any?>): Any?</ID>
+    <ID>CyclomaticComplexMethod:CypherFunctions.kt$CypherFunctions$internal fun labels(value: Any?): List&lt;String></ID>
+    <ID>CyclomaticComplexMethod:ExpressionEvaluator.kt$ExpressionEvaluator$fun evaluate(expr: CypherExpr, bindings: Map&lt;String, Any?>): Any?</ID>
+    <ID>CyclomaticComplexMethod:ExpressionEvaluator.kt$fun CypherExpr.toCypherString(): String</ID>
+    <ID>CyclomaticComplexMethod:NodePropertyAccessor.kt$NodePropertyAccessor$fun getAllProperties(node: Node): Map&lt;String, Any?></ID>
+    <ID>CyclomaticComplexMethod:NodePropertyAccessor.kt$NodePropertyAccessor$fun getProperty(node: Node, property: String): Any?</ID>
+    <ID>CyclomaticComplexMethod:NodePropertyAccessor.kt$NodePropertyAccessor$fun resolveNodeLabel(label: String): Class&lt;out Node></ID>
+    <ID>CyclomaticComplexMethod:PathFinder.kt$PathFinder$private fun bfs( graph: Graph, startNode: Node, targets: Set&lt;NodeId>?, edgeType: Class&lt;out Edge>?, minDepth: Int, maxDepth: Int, direction: Direction, results: MutableList&lt;Path> )</ID>
+    <ID>CyclomaticComplexMethod:QueryPipeline.kt$QueryPipeline$fun execute(clauses: List&lt;CypherClause>): CypherResult</ID>
+    <ID>LargeClass:CypherCompatibilityTest.kt$CypherCompatibilityTest</ID>
+    <ID>LargeClass:CypherDslAdapter.kt$CypherAstVisitor</ID>
+    <ID>LargeClass:CypherDslAdapterTest.kt$CypherDslAdapterTest</ID>
+    <ID>LargeClass:CypherExecutorTest.kt$CypherExecutorTest</ID>
+    <ID>LargeClass:CypherFunctionsTest.kt$CypherFunctionsTest</ID>
+    <ID>LargeClass:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest</ID>
+    <ID>LargeClass:QueryPipelineTest.kt$QueryPipelineTest</ID>
+    <ID>LongParameterList:PathFinder.kt$PathFinder$( graph: Graph, startNode: Node, targets: Set&lt;NodeId>?, edgeType: Class&lt;out Edge>?, minDepth: Int, maxDepth: Int, direction: Direction, results: MutableList&lt;Path> )</ID>
+    <ID>LoopWithTooManyJumpStatements:PathFinder.kt$PathFinder$while</ID>
+    <ID>LoopWithTooManyJumpStatements:QueryPipeline.kt$QueryPipeline$for</ID>
+    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$16</ID>
+    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$3</ID>
+    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$4</ID>
+    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$5</ID>
+    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$8</ID>
+    <ID>MagicNumber:CypherFunctions.kt$CypherFunctions$0.5</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$10</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$3</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$4</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$5</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$6</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$7</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$8</ID>
+    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$9</ID>
+    <ID>MaxLineLength:CypherCompatibilityTest.kt$CypherCompatibilityTest$val result = executor.execute("MATCH (n:CallSiteNode) RETURN n.callee_class, n.callee_name ORDER BY n.callee_class ASC, n.callee_name DESC LIMIT 5")</ID>
+    <ID>MaxLineLength:CypherFunctionsTest.kt$CypherFunctionsTest$assertEquals("RESOURCE_BUNDLE_CANDIDATE", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.BUNDLE_CANDIDATE))))</ID>
+    <ID>MaxLineLength:CypherFunctionsTest.kt$CypherFunctionsTest$assertEquals(listOf("FieldNode"), CypherFunctions.call("labels", listOf(FieldNode(NodeId.next(), FieldDescriptor(type, "f", intType), false))))</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$assertEquals("[1, 2, 3]", CypherExpr.ListLiteral(listOf(CypherExpr.Literal(1), CypherExpr.Literal(2), CypherExpr.Literal(3))).toCypherString())</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$assertEquals("count(DISTINCT n)", CypherExpr.FunctionCall("count", listOf(CypherExpr.Variable("n")), distinct = true).toCypherString())</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$assertEquals("list[1..3]", CypherExpr.Slice(CypherExpr.Variable("list"), CypherExpr.Literal(1), CypherExpr.Literal(3)).toCypherString())</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$assertEquals("x IN [1, 2]", CypherExpr.ListOp("IN", CypherExpr.Variable("x"), CypherExpr.ListLiteral(listOf(CypherExpr.Literal(1), CypherExpr.Literal(2)))).toCypherString())</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$assertEquals("x STARTS WITH 'a'", CypherExpr.StringOp("STARTS WITH", CypherExpr.Variable("x"), CypherExpr.Literal("a")).toCypherString())</ID>
+    <ID>MaxLineLength:ExpressionEvaluatorTest.kt$ExpressionEvaluatorTest$whenClauses = listOf(CypherExpr.Comparison(">", CypherExpr.Variable("x"), CypherExpr.Literal(0)) to CypherExpr.Literal("positive"))</ID>
+    <ID>MaxLineLength:NodePropertyAccessorTest.kt$NodePropertyAccessorTest$assertEquals("ResourceFileNode", NodePropertyAccessor.nodeTypeName(ResourceFileNode(NodeId.next(), "application.yml", "BOOT-INF/classes", "yaml")))</ID>
+    <ID>MaxLineLength:NodePropertyAccessorTest.kt$NodePropertyAccessorTest$assertEquals("ResourceValueNode", NodePropertyAccessor.nodeTypeName(ResourceValueNode(NodeId.next(), "application.yml", "k", "v", "yaml")))</ID>
+    <ID>MayBeConst:ParsedQuery.kt$ParsedQuery.Companion$// Label can be a simple word or backtick-escaped: `ReturnNode` private val LABEL = """(?:`([^`]+)`|(\w+))"""</ID>
+    <ID>NestedBlockDepth:CypherDslAdapter.kt$CypherAstVisitor$private fun findAddSubOp(ctx: CypherParser.AddSubExpressionContext, index: Int): String</ID>
+    <ID>NestedBlockDepth:CypherDslAdapter.kt$CypherAstVisitor$private fun findMultDivOp(ctx: CypherParser.MultDivExpressionContext, index: Int): String</ID>
+    <ID>NestedBlockDepth:CypherDslAdapter.kt$CypherAstVisitor$private fun parseStringLiteral(text: String): String</ID>
+    <ID>NestedBlockDepth:CypherDslAdapter.kt$CypherAstVisitor$private fun visitLiteral(ctx: CypherParser.LiteralContext): CypherExpr</ID>
+    <ID>NestedBlockDepth:CypherDslAdapter.kt$CypherAstVisitor$private fun visitRelationshipPattern(ctx: CypherParser.RelationshipPatternContext): PatternElement.RelationshipPattern</ID>
+    <ID>NestedBlockDepth:PathFinder.kt$PathFinder$private fun bfs( graph: Graph, startNode: Node, targets: Set&lt;NodeId>?, edgeType: Class&lt;out Edge>?, minDepth: Int, maxDepth: Int, direction: Direction, results: MutableList&lt;Path> )</ID>
+    <ID>NestedBlockDepth:QueryPipeline.kt$QueryPipeline$private fun buildPathRepresentation( pattern: CypherPattern, bindings: Map&lt;String, Any?> ): List&lt;Any></ID>
+    <ID>NestedBlockDepth:QueryPipeline.kt$QueryPipeline$private fun projectAndAggregate( items: List&lt;ReturnItem>, rows: List&lt;Map&lt;String, Any?>>, distinct: Boolean ): Pair&lt;List&lt;Map&lt;String, Any?>>, List&lt;String>></ID>
+    <ID>ReturnCount:CypherDslAdapter.kt$CypherAstVisitor$private fun findMultDivOp(ctx: CypherParser.MultDivExpressionContext, index: Int): String</ID>
+    <ID>ReturnCount:CypherDslAdapter.kt$CypherDslAdapter$fun parse(cypher: String): List&lt;CypherClause></ID>
+    <ID>ReturnCount:CypherExecutor.kt$PropertyFilter$fun matches(node: GraphiteNode): Boolean</ID>
+    <ID>ReturnCount:CypherExecutor.kt$PropertyFilter$private fun compareEquals(a: Any?, b: Any?): Boolean</ID>
+    <ID>ReturnCount:CypherExecutor.kt$PropertyFilter$private fun compareNumeric(a: Any?, b: Any?, op: (Double, Double) -> Boolean): Boolean</ID>
+    <ID>ReturnCount:ExpressionEvaluator.kt$ExpressionEvaluator$private fun evaluateCase(expr: CypherExpr.CaseExpr, bindings: Map&lt;String, Any?>): Any?</ID>
+    <ID>ReturnCount:ExpressionEvaluator.kt$ExpressionEvaluator$private fun evaluateRegex(expr: CypherExpr.RegexMatch, bindings: Map&lt;String, Any?>): Any?</ID>
+    <ID>ReturnCount:ExpressionEvaluator.kt$ExpressionEvaluator$private fun evaluateStringOp(expr: CypherExpr.StringOp, bindings: Map&lt;String, Any?>): Any?</ID>
+    <ID>ReturnCount:NodePropertyAccessor.kt$NodePropertyAccessor$fun getProperty(node: Node, property: String): Any?</ID>
+    <ID>ReturnCount:QueryPipeline.kt$QueryPipeline$private fun computeEarlyLimit(clauses: List&lt;CypherClause>): Int?</ID>
+    <ID>ReturnCount:QueryPipeline.kt$QueryPipeline$private fun matchPattern( pattern: CypherPattern, existingBindings: Map&lt;String, Any?>, limit: Int? = null ): List&lt;Map&lt;String, Any?>></ID>
+    <ID>ReturnCount:QueryPipeline.kt$QueryPipeline$private fun matchTargetNode( targetPattern: PatternElement.NodePattern, node: Node, bindings: Map&lt;String, Any?> ): Map&lt;String, Any?>?</ID>
+    <ID>TooManyFunctions:CypherDslAdapter.kt$CypherAstVisitor</ID>
+    <ID>TooManyFunctions:CypherFunctions.kt$CypherFunctions</ID>
+    <ID>TooManyFunctions:NodePropertyAccessor.kt$NodePropertyAccessor</ID>
+    <ID>TooManyFunctions:QueryPipeline.kt$QueryPipeline</ID>
+    <ID>UnusedParameter:CypherExecutor.kt$CypherExecutor$cypher: String</ID>
+    <ID>UnusedPrivateProperty:CypherCompatibilityTest.kt$CypherCompatibilityTest$val boolType = TypeDescriptor("boolean")</ID>
+    <ID>UnusedPrivateProperty:CypherExecutorTest.kt$CypherExecutorTest$val boolType = TypeDescriptor("boolean")</ID>
+    <ID>UnusedPrivateProperty:ParsedQuery.kt$ParsedQuery.Companion$val sourceLabel = extractLabel(match.groupValues[2], match.groupValues[3])</ID>
+    <ID>UnusedPrivateProperty:ParsedQuery.kt$ParsedQuery.Companion$val targetLabel = extractLabel(match.groupValues[9], match.groupValues[10])</ID>
+    <ID>UnusedPrivateProperty:QueryPipelineTest.kt$QueryPipelineTest$private val boolType = TypeDescriptor("boolean")</ID>
+    <ID>WildcardImport:CypherCompatibilityTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:CypherExecutorTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:CypherFunctions.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:CypherFunctions.kt$import kotlin.math.*</ID>
+    <ID>WildcardImport:CypherFunctionsTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:CypherFunctionsTest.kt$import kotlin.math.*</ID>
+    <ID>WildcardImport:ExpressionEvaluator.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:ExpressionEvaluatorTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:NodePropertyAccessor.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:NodePropertyAccessorTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:PathFinder.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:PathFinderTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:PropertyFilterTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:QueryPipeline.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:QueryPipelineTest.kt$import io.johnsonlee.graphite.core.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

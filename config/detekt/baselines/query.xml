@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>MagicNumber:QueryCommand.kt$QueryCommand$4</ID>
+    <ID>NestedBlockDepth:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>PrintStackTrace:BuildCommand.kt$BuildCommand$e</ID>
+    <ID>PrintStackTrace:QueryCommand.kt$QueryCommand$e</ID>
+    <ID>ReturnCount:BuildCommand.kt$BuildCommand$override fun call(): Int</ID>
+    <ID>ReturnCount:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>SpreadOperator:Main.kt$(*args)</ID>
+    <ID>TooGenericExceptionCaught:BuildCommand.kt$BuildCommand$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:QueryCommand.kt$QueryCommand$e: Exception</ID>
+    <ID>WildcardImport:BuildCommand.kt$import picocli.CommandLine.*</ID>
+    <ID>WildcardImport:GraphiteCommand.kt$import picocli.CommandLine.*</ID>
+    <ID>WildcardImport:GraphiteCommandTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:QueryCommand.kt$import picocli.CommandLine.*</ID>
+    <ID>WildcardImport:QueryCommandTest.kt$import io.johnsonlee.graphite.core.*</ID>
+    <ID>WildcardImport:QueryCommandTest.kt$import kotlin.test.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
