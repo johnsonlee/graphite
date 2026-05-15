@@ -1,12 +1,23 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
-import java.io.*
+import java.io.Closeable
+import java.io.DataInputStream
+import java.io.File
+import java.io.InputStream
+import java.io.RandomAccessFile
 
 /**
  * A [Graph] backed by WebGraph compression for edges and lazy disk reads for nodes.
@@ -88,8 +99,8 @@ internal class LazyWebGraphBackedGraph(
         val labelStart = cumulativeOutdeg[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = forwardLabels[(labelStart + i).toInt()].toInt() and 0xFF
-            val key = nodeIdx.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
+            val label = forwardLabels[(labelStart + i).toInt()].toInt() and BYTE_MASK
+            val key = nodeIdx.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
@@ -103,7 +114,7 @@ internal class LazyWebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
-            val key = from.toLong() shl 32 or (nodeIdx.toLong() and 0xFFFFFFFFL)
+            val key = from.toLong() shl INT_BITS or (nodeIdx.toLong() and UNSIGNED_INT_MASK)
             val comparison = comparisonMap[key]
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
@@ -113,7 +124,7 @@ internal class LazyWebGraphBackedGraph(
         val succs = forward.successorArray(from)
         val outdeg = forward.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
-        return if (pos >= 0) forwardLabels[(cumulativeOutdeg[from] + pos).toInt()].toInt() and 0xFF else 0
+        return if (pos >= 0) forwardLabels[(cumulativeOutdeg[from] + pos).toInt()].toInt() and BYTE_MASK else 0
     }
 
     @Suppress("UNCHECKED_CAST")

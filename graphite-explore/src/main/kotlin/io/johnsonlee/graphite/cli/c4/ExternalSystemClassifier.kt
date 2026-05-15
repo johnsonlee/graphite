@@ -10,17 +10,17 @@ internal object ExternalSystemClassifier {
     ): List<ExternalDependency> {
         val grouped = externalWeights.entries.groupBy { key(graph, it.key) }
         val namespaceFamilies = grouped.keys
-            .filter { it.startsWith("namespace:") }
+            .filter { it.startsWith(NAMESPACE_ID_PREFIX) }
             .groupBy { namespaceFamily(it) }
         val merged = linkedMapOf<String, List<Map.Entry<String, Int>>>()
         grouped.forEach { (key, entries) ->
-            if (!key.startsWith("namespace:")) {
+            if (!key.startsWith(NAMESPACE_ID_PREFIX)) {
                 merged[key] = merged[key].orEmpty() + entries
                 return@forEach
             }
             val family = namespaceFamily(key)
             val familyKeys = namespaceFamilies[family].orEmpty()
-            val mergedKey = if (familyKeys.size > 1) "namespace:$family" else key
+            val mergedKey = if (familyKeys.size > 1) "$NAMESPACE_ID_PREFIX$family" else key
             merged[mergedKey] = merged[mergedKey].orEmpty() + entries
         }
         return merged
@@ -28,7 +28,7 @@ internal object ExternalSystemClassifier {
                 val weight = entries.sumOf { it.value }
                 val kind = dependencyKind(key)
                 ExternalDependency(
-                    id = "dependency:$key",
+                    id = "$DEPENDENCY_ID_PREFIX$key",
                     name = name(graph, key, entries.map { it.key }),
                     weight = weight,
                     source = source(key),
@@ -43,24 +43,24 @@ internal object ExternalSystemClassifier {
 
     fun key(graph: Graph?, className: String): String {
         graph?.classOrigin(className)?.let { origin ->
-            artifactKey(origin)?.let { return "artifact:$it" }
+            artifactKey(origin)?.let { return "$ARTIFACT_ID_PREFIX$it" }
         }
         return when {
-            isJavaRuntimeArchitectureClass(className) -> "runtime:java"
-            className.startsWith("kotlin.") -> "runtime:kotlin"
-            className.startsWith("scala.") -> "runtime:scala"
-            else -> "namespace:${namespaceGroup(className)}"
+            isJavaRuntimeArchitectureClass(className) -> "${RUNTIME_ID_PREFIX}java"
+            className.startsWith("kotlin.") -> "${RUNTIME_ID_PREFIX}kotlin"
+            className.startsWith("scala.") -> "${RUNTIME_ID_PREFIX}scala"
+            else -> "$NAMESPACE_ID_PREFIX${namespaceGroup(className)}"
         }
     }
 
     fun name(graph: Graph?, key: String, classNames: List<String>): String {
         return when (key) {
-            "runtime:java" -> "Java Runtime"
-            "runtime:kotlin" -> "Kotlin Runtime"
-            "runtime:scala" -> "Scala Runtime"
+            "${RUNTIME_ID_PREFIX}java" -> "Java Runtime"
+            "${RUNTIME_ID_PREFIX}kotlin" -> "Kotlin Runtime"
+            "${RUNTIME_ID_PREFIX}scala" -> "Scala Runtime"
             else -> when {
-                key.startsWith("artifact:") -> key.removePrefix("artifact:")
-                key.startsWith("namespace:") -> key.removePrefix("namespace:")
+                key.startsWith(ARTIFACT_ID_PREFIX) -> key.removePrefix(ARTIFACT_ID_PREFIX)
+                key.startsWith(NAMESPACE_ID_PREFIX) -> key.removePrefix(NAMESPACE_ID_PREFIX)
                 else -> classNames.firstNotNullOfOrNull { graph?.classOrigin(it) } ?: key
             }
         }
@@ -68,8 +68,8 @@ internal object ExternalSystemClassifier {
 
     fun source(key: String): String =
         when {
-            key.startsWith("artifact:") -> "artifact"
-            key.startsWith("runtime:") -> "runtime"
+            key.startsWith(ARTIFACT_ID_PREFIX) -> "artifact"
+            key.startsWith(RUNTIME_ID_PREFIX) -> "runtime"
             else -> "namespace"
         }
 
@@ -78,15 +78,15 @@ internal object ExternalSystemClassifier {
 
     fun dependencyKind(key: String): ExternalDependencyKind =
         when {
-            key.startsWith("runtime:") -> ExternalDependencyKind.RUNTIME
-            key.startsWith("artifact:") -> ExternalDependencyKind.LIBRARY
+            key.startsWith(RUNTIME_ID_PREFIX) -> ExternalDependencyKind.RUNTIME
+            key.startsWith(ARTIFACT_ID_PREFIX) -> ExternalDependencyKind.LIBRARY
             else -> ExternalDependencyKind.EXTERNAL_SYSTEM
         }
 
     fun confidence(key: String): String =
         when {
-            key.startsWith("artifact:") -> "high"
-            key.startsWith("runtime:") -> "high"
+            key.startsWith(ARTIFACT_ID_PREFIX) -> "high"
+            key.startsWith(RUNTIME_ID_PREFIX) -> "high"
             else -> "medium"
         }
 
@@ -120,8 +120,8 @@ internal object ExternalSystemClassifier {
     }
 
     fun artifactNameFromDependencyId(id: String): String? =
-        id.removePrefix("dependency:").takeIf { it.startsWith("artifact:") }
-            ?.removePrefix("artifact:")
+        id.removePrefix(DEPENDENCY_ID_PREFIX).takeIf { it.startsWith(ARTIFACT_ID_PREFIX) }
+            ?.removePrefix(ARTIFACT_ID_PREFIX)
             ?.takeIf { it.isNotBlank() }
 
     fun artifactBaseName(name: String): String =
@@ -144,7 +144,7 @@ internal object ExternalSystemClassifier {
     }
 
     private fun namespaceFamily(key: String): String =
-        key.removePrefix("namespace:")
+        key.removePrefix(NAMESPACE_ID_PREFIX)
             .split('.')
             .filter { it.isNotBlank() }
             .take(C4NamespaceHeuristics.FAMILY_SEGMENTS)

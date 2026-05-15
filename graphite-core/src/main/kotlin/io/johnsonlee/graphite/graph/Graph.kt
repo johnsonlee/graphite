@@ -1,6 +1,12 @@
 package io.johnsonlee.graphite.graph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
 
 /**

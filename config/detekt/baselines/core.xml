@@ -21,15 +21,6 @@
     <ID>LongParameterList:MmapGraph.kt$MmapGraph$( private val dataDir: Path, private val nodeIndex: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, IntArray>, private val outgoingIndex: EdgeOffsetIndex, private val incomingIndex: EdgeOffsetIndex, private val nodeMethods: List&lt;MethodDescriptor>, private val methodIndex: Map&lt;String, MethodDescriptor>, private val typeHierarchy: TypeHierarchy, private val enumValuesMap: Map&lt;String, List&lt;Any?>>, private val classOriginsMap: Map&lt;String, String>, private val artifactDependenciesMap: Map&lt;String, Map&lt;String, Int>>, private val memberAnnotationsMap: Map&lt;String, Map&lt;String, Map&lt;String, Any?>>>, private val branchScopeData: List&lt;DefaultGraph.RawBranchScope>, override val resources: ResourceAccessor )</ID>
     <ID>LoopWithTooManyJumpStatements:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$for</ID>
     <ID>LoopWithTooManyJumpStatements:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$while</ID>
-    <ID>MagicNumber:BranchReachabilityAnalysis.kt$3</ID>
-    <ID>MagicNumber:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$10</ID>
-    <ID>MagicNumber:DataFlowAnalysis.kt$DataFlowAnalysis$50</ID>
-    <ID>MagicNumber:MmapGraph.kt$MmapGraph.ByteBufferInputStream$0xFF</ID>
-    <ID>MagicNumber:MmapGraphBuilder.kt$MmapGraphBuilder$128</ID>
-    <ID>MagicNumber:MmapGraphBuilder.kt$MmapGraphBuilder$16</ID>
-    <ID>MagicNumber:MmapGraphBuilder.kt$MmapGraphBuilder$4</ID>
-    <ID>MagicNumber:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$3</ID>
-    <ID>MagicNumber:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$5</ID>
     <ID>MaxLineLength:BranchReachabilityAnalysisTest.kt$BranchReachabilityAnalysisTest$// Branch: if (result == 0) → true branch is dead (because true != 0 evaluates to true → JVM condition is false → BRANCH_TRUE is dead... wait)</ID>
     <ID>MaxLineLength:DefaultGraph.kt$DefaultGraph.Builder$override</ID>
     <ID>MaxLineLength:MmapGraphBuilderTest.kt$MmapGraphBuilderTest$builder.addEdge(ControlFlowEdge(id("bool1"), id("call1"), ControlFlowKind.BRANCH_TRUE, BranchComparison(ComparisonOp.EQ, id("int2"))))</ID>
@@ -61,26 +52,5 @@
     <ID>ReturnCount:TypeStructure.kt$TypeStructure$fun formatTypeName(): String</ID>
     <ID>TooManyFunctions:MmapGraph.kt$MmapGraph : GraphCloseable</ID>
     <ID>TooManyFunctions:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis</ID>
-    <ID>UnusedParameter:DefaultGraph.kt$TypeHierarchy.Builder$relation: TypeRelation</ID>
-    <ID>UnusedPrivateProperty:QueryDslTest.kt$QueryDslTest$val m = makeMethod()</ID>
-    <ID>UseCheckOrError:MmapGraphBuilder.kt$MmapGraphBuilder.Companion$throw IllegalStateException("Unknown edge type tag during skip")</ID>
-    <ID>UseCheckOrError:MmapGraphBuilder.kt$MmapGraphBuilder.Companion$throw IllegalStateException("Unknown edge type tag: $tag")</ID>
-    <ID>UseCheckOrError:MmapGraphBuilder.kt$MmapGraphBuilder.Companion$throw IllegalStateException("Unknown node type tag: $tag")</ID>
-    <ID>WildcardImport:BranchReachabilityAnalysis.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:BranchReachabilityAnalysisTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:DataFlowAnalysis.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:DataFlowAnalysisTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:DefaultGraph.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:DefaultGraphTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:Graph.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MmapGraph.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MmapGraphBuilder.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MmapGraphBuilder.kt$import java.io.*</ID>
-    <ID>WildcardImport:MmapGraphBuilderTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MmapGraphTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:QueryDsl.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:QueryDslTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:TypeHierarchyAnalysis.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:TypeHierarchyAnalysisTest.kt$import io.johnsonlee.graphite.core.*</ID>
   </CurrentIssues>
 </SmellBaseline>

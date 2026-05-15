@@ -1,6 +1,21 @@
 package io.johnsonlee.graphite.analysis
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeHierarchyConfig
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.core.TypeStructure
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
 import kotlin.test.BeforeTest

@@ -1,7 +1,14 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.Graphite
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.TypeStructure
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes

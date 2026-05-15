@@ -19,6 +19,11 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.Node as GraphiteNode
 import io.johnsonlee.graphite.graph.Graph
 
+private const val PROPERTY_ID = "id"
+private const val PROPERTY_TYPE = "type"
+private const val PROPERTY_VALUE = "value"
+private const val PROPERTY_NAME = "name"
+
 /**
  * Executes Cypher queries against a Graphite [Graph].
  *
@@ -49,7 +54,7 @@ class CypherExecutor(private val graph: Graph) {
         // 2. Handle UNION by splitting into sub-queries
         val unionIndex = clauses.indexOfFirst { it is CypherClause.Union }
         if (unionIndex >= 0) {
-            return executeUnion(clauses, cypher)
+            return executeUnion(clauses)
         }
 
         // 3. Execute via pipeline
@@ -63,7 +68,7 @@ class CypherExecutor(private val graph: Graph) {
      * Execute a UNION query by splitting into sub-queries, executing each,
      * and combining results.
      */
-    private fun executeUnion(clauses: List<CypherClause>, cypher: String): CypherResult {
+    private fun executeUnion(clauses: List<CypherClause>): CypherResult {
         val segments = mutableListOf<List<CypherClause>>()
         var current = mutableListOf<CypherClause>()
         var unionAll = false
@@ -114,8 +119,8 @@ class CypherExecutor(private val graph: Graph) {
 
     private fun nodeToMap(node: GraphiteNode): Map<String, Any?> {
         val map = mutableMapOf<String, Any?>(
-            "id" to node.id.value,
-            "type" to NodePropertyAccessor.nodeTypeName(node)
+            PROPERTY_ID to node.id.value,
+            PROPERTY_TYPE to NodePropertyAccessor.nodeTypeName(node)
         )
         when (node) {
             is CallSiteNode -> {
@@ -125,31 +130,31 @@ class CypherExecutor(private val graph: Graph) {
                 map["caller_name"] = node.caller.name
                 map["line"] = node.lineNumber
             }
-            is IntConstant -> map["value"] = node.value
-            is StringConstant -> map["value"] = node.value
-            is LongConstant -> map["value"] = node.value
-            is FloatConstant -> map["value"] = node.value
-            is DoubleConstant -> map["value"] = node.value
-            is BooleanConstant -> map["value"] = node.value
-            is NullConstant -> map["value"] = null
+            is IntConstant -> map[PROPERTY_VALUE] = node.value
+            is StringConstant -> map[PROPERTY_VALUE] = node.value
+            is LongConstant -> map[PROPERTY_VALUE] = node.value
+            is FloatConstant -> map[PROPERTY_VALUE] = node.value
+            is DoubleConstant -> map[PROPERTY_VALUE] = node.value
+            is BooleanConstant -> map[PROPERTY_VALUE] = node.value
+            is NullConstant -> map[PROPERTY_VALUE] = null
             is EnumConstant -> {
                 map["enum_type"] = node.enumType.className
-                map["name"] = node.enumName
-                map["value"] = node.value
+                map[PROPERTY_NAME] = node.enumName
+                map[PROPERTY_VALUE] = node.value
             }
             is LocalVariable -> {
-                map["name"] = node.name
-                map["type"] = node.type.className
+                map[PROPERTY_NAME] = node.name
+                map[PROPERTY_TYPE] = node.type.className
             }
             is FieldNode -> {
-                map["name"] = node.descriptor.name
-                map["type"] = node.descriptor.type.className
+                map[PROPERTY_NAME] = node.descriptor.name
+                map[PROPERTY_TYPE] = node.descriptor.type.className
                 map["class"] = node.descriptor.declaringClass.className
                 map["static"] = node.isStatic
             }
             is ParameterNode -> {
                 map["index"] = node.index
-                map["type"] = node.type.className
+                map[PROPERTY_TYPE] = node.type.className
                 map["method"] = node.method.signature
             }
             is ReturnNode -> {
@@ -165,12 +170,12 @@ class CypherExecutor(private val graph: Graph) {
             is ResourceValueNode -> {
                 map["path"] = node.path
                 map["key"] = node.key
-                map["value"] = node.value
+                map[PROPERTY_VALUE] = node.value
                 map["format"] = node.format
                 map["profile"] = node.profile
             }
             is AnnotationNode -> {
-                map["name"] = node.name
+                map[PROPERTY_NAME] = node.name
                 map["class"] = node.className
                 map["member"] = node.memberName
                 for ((k, v) in node.values) {

@@ -4,7 +4,9 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import io.johnsonlee.graphite.webgraph.GraphStore
-import picocli.CommandLine.*
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Callable

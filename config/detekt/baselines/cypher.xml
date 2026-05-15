@@ -24,20 +24,6 @@
     <ID>LongParameterList:PathFinder.kt$PathFinder$( graph: Graph, startNode: Node, targets: Set&lt;NodeId>?, edgeType: Class&lt;out Edge>?, minDepth: Int, maxDepth: Int, direction: Direction, results: MutableList&lt;Path> )</ID>
     <ID>LoopWithTooManyJumpStatements:PathFinder.kt$PathFinder$while</ID>
     <ID>LoopWithTooManyJumpStatements:QueryPipeline.kt$QueryPipeline$for</ID>
-    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$16</ID>
-    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$3</ID>
-    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$4</ID>
-    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$5</ID>
-    <ID>MagicNumber:CypherDslAdapter.kt$CypherAstVisitor$8</ID>
-    <ID>MagicNumber:CypherFunctions.kt$CypherFunctions$0.5</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$10</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$3</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$4</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$5</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$6</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$7</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$8</ID>
-    <ID>MagicNumber:ParsedQuery.kt$ParsedQuery.Companion$9</ID>
     <ID>MaxLineLength:CypherCompatibilityTest.kt$CypherCompatibilityTest$val result = executor.execute("MATCH (n:CallSiteNode) RETURN n.callee_class, n.callee_name ORDER BY n.callee_class ASC, n.callee_name DESC LIMIT 5")</ID>
     <ID>MaxLineLength:CypherFunctionsTest.kt$CypherFunctionsTest$assertEquals("RESOURCE_BUNDLE_CANDIDATE", CypherFunctions.call("type", listOf(ResourceEdge(from, to, ResourceRelation.BUNDLE_CANDIDATE))))</ID>
     <ID>MaxLineLength:CypherFunctionsTest.kt$CypherFunctionsTest$assertEquals(listOf("FieldNode"), CypherFunctions.call("labels", listOf(FieldNode(NodeId.next(), FieldDescriptor(type, "f", intType), false))))</ID>
@@ -74,26 +60,5 @@
     <ID>TooManyFunctions:CypherFunctions.kt$CypherFunctions</ID>
     <ID>TooManyFunctions:NodePropertyAccessor.kt$NodePropertyAccessor</ID>
     <ID>TooManyFunctions:QueryPipeline.kt$QueryPipeline</ID>
-    <ID>UnusedParameter:CypherExecutor.kt$CypherExecutor$cypher: String</ID>
-    <ID>UnusedPrivateProperty:CypherCompatibilityTest.kt$CypherCompatibilityTest$val boolType = TypeDescriptor("boolean")</ID>
-    <ID>UnusedPrivateProperty:CypherExecutorTest.kt$CypherExecutorTest$val boolType = TypeDescriptor("boolean")</ID>
-    <ID>UnusedPrivateProperty:ParsedQuery.kt$ParsedQuery.Companion$val sourceLabel = extractLabel(match.groupValues[2], match.groupValues[3])</ID>
-    <ID>UnusedPrivateProperty:ParsedQuery.kt$ParsedQuery.Companion$val targetLabel = extractLabel(match.groupValues[9], match.groupValues[10])</ID>
-    <ID>UnusedPrivateProperty:QueryPipelineTest.kt$QueryPipelineTest$private val boolType = TypeDescriptor("boolean")</ID>
-    <ID>WildcardImport:CypherCompatibilityTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:CypherExecutorTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:CypherFunctions.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:CypherFunctions.kt$import kotlin.math.*</ID>
-    <ID>WildcardImport:CypherFunctionsTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:CypherFunctionsTest.kt$import kotlin.math.*</ID>
-    <ID>WildcardImport:ExpressionEvaluator.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:ExpressionEvaluatorTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:NodePropertyAccessor.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:NodePropertyAccessorTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:PathFinder.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:PathFinderTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:PropertyFilterTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:QueryPipeline.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:QueryPipelineTest.kt$import io.johnsonlee.graphite.core.*</ID>
   </CurrentIssues>
 </SmellBaseline>

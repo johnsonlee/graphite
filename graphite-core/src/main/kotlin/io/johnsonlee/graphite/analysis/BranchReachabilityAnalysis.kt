@@ -1,9 +1,26 @@
 package io.johnsonlee.graphite.analysis
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+
+private const val FORWARD_TRACE_DEPTH_MULTIPLIER = 10
+private const val GETTER_PREFIX_LENGTH = 3
+private const val BOOLEAN_GETTER_PREFIX_LENGTH = 2
 
 /**
  * An assumption declares that a specific expression always evaluates to a known constant.
@@ -223,7 +240,7 @@ class BranchReachabilityAnalysis(
         while (queue.isNotEmpty()) {
             val current = queue.removeFirst()
             if (current in visited) continue
-            if (visited.size > config.maxDepth * 10) break // safety limit
+            if (visited.size > config.maxDepth * FORWARD_TRACE_DEPTH_MULTIPLIER) break // safety limit
             visited.add(current)
 
             // Follow outgoing DataFlowEdges
@@ -399,9 +416,9 @@ class BranchReachabilityAnalysis(
  */
 internal fun extractFieldNameFromAccessor(methodName: String): String? {
     val prefix = when {
-        methodName.startsWith("get") && methodName.length > 3 -> "get"
-        methodName.startsWith("set") && methodName.length > 3 -> "set"
-        methodName.startsWith("is") && methodName.length > 2 -> "is"
+        methodName.startsWith("get") && methodName.length > GETTER_PREFIX_LENGTH -> "get"
+        methodName.startsWith("set") && methodName.length > GETTER_PREFIX_LENGTH -> "set"
+        methodName.startsWith("is") && methodName.length > BOOLEAN_GETTER_PREFIX_LENGTH -> "is"
         else -> return null
     }
     val rest = methodName.removePrefix(prefix)

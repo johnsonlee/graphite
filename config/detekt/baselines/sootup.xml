@@ -30,9 +30,6 @@
     <ID>LongMethod:SootUpAdapter.kt$SootUpAdapter$private fun processInvokeExpr( invokeExpr: AbstractInvokeExpr, caller: MethodDescriptor, resultNode: ValueNode?, stmt: Stmt? = null )</ID>
     <ID>LoopWithTooManyJumpStatements:SootUpAdapter.kt$SootUpAdapter$for</ID>
     <ID>LoopWithTooManyJumpStatements:SootUpAdapter.kt$SootUpAdapter$while</ID>
-    <ID>MagicNumber:ArchiveResourceAccessor.kt$ArchiveResourceAccessor$3</ID>
-    <ID>MagicNumber:SootUpAdapter.kt$SootUpAdapter$100</ID>
-    <ID>MagicNumber:SootUpAdapter.kt$SootUpAdapter$500</ID>
     <ID>MaxLineLength:AdvancedBytecodeTest.kt$AdvancedBytecodeTest$"Source of RETURN_VALUE to syncMethod return should be a LocalVariable (computed value), got ${sourceNode?.javaClass?.simpleName}"</ID>
     <ID>MaxLineLength:AdvancedBytecodeTest.kt$AdvancedBytecodeTest$"returnOnly should have IntConstant(42) flowing to ReturnNode, found sources: ${sourceNodes.map { it?.javaClass?.simpleName to (it as? ConstantNode)?.value }}"</ID>
     <ID>MaxLineLength:AdvancedBytecodeTest.kt$AdvancedBytecodeTest$assertNotNull(arrayParam, "sum() parameter should have type int[] (varargs compiles to array), found types: ${params.map { it.type.className }}")</ID>
@@ -223,23 +220,5 @@
     <ID>TooGenericExceptionCaught:SootUpAdapter.kt$SootUpAdapter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SootUpAdapter.kt$SootUpAdapter$failure: Throwable</ID>
     <ID>TooManyFunctions:SootUpAdapter.kt$SootUpAdapter</ID>
-    <ID>UnusedParameter:SootUpAdapter.kt$SootUpAdapter$className: String</ID>
-    <ID>UnusedParameter:SootUpAdapter.kt$SootUpAdapter$stmtGraph: StmtGraph&lt;*></ID>
-    <ID>UnusedPrivateMember:SootUpAdapterInternalCoverageTest.kt$SootUpAdapterInternalCoverageTest$private fun singletonLiteralListMethod(value: String): MethodNode</ID>
-    <ID>UnusedPrivateProperty:MemoryBenchmarkTest.kt$MemoryBenchmarkTest$val stringIds = Array(count) { i -> "node-$i" }</ID>
-    <ID>UnusedPrivateProperty:SootUpAdapter.kt$SootUpAdapter$val callGraph = buildCallGraph()</ID>
-    <ID>WildcardImport:AdvancedBytecodeTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:AdvancedBytecodeTest.kt$import kotlin.test.*</ID>
-    <ID>WildcardImport:CollectionConstantTrackingTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:FeatureFlagAnalysisTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:ListConstructionPatternsTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MemoryBenchmarkTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MethodResolutionTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MethodResolutionTest.kt$import kotlin.test.*</ID>
-    <ID>WildcardImport:NestedTypeAnalysisTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:PropagationPathTrackingTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:SootUpAdapter.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:SootUpAdapterTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:StaticFieldIndirectReferenceTest.kt$import io.johnsonlee.graphite.core.*</ID>
   </CurrentIssues>
 </SmellBaseline>

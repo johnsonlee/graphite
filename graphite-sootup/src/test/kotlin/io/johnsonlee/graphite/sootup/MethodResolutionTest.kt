@@ -1,12 +1,19 @@
 package io.johnsonlee.graphite.sootup
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Tests for method resolution hierarchy, static method calls, constructor calls,

@@ -8,9 +8,14 @@ import io.johnsonlee.graphite.cli.c4.C4ViewLimits
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.webgraph.GraphStore
-import picocli.CommandLine.*
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import java.nio.file.Path
 import java.util.concurrent.Callable
+
+private const val DEFAULT_PORT = 8080
+private const val DEFAULT_PORT_TEXT = "8080"
 
 @Command(
     name = "graphite-explore",
@@ -22,8 +27,8 @@ class ExploreCommand : Callable<Int> {
     @Parameters(index = "0", description = ["Path to saved graph directory"])
     lateinit var graphDir: Path
 
-    @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = "8080")
-    var port: Int = 8080
+    @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = DEFAULT_PORT_TEXT)
+    var port: Int = DEFAULT_PORT
 
     private val gson = GsonBuilder().setPrettyPrinting().create()
 

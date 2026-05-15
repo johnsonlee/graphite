@@ -38,13 +38,13 @@ internal class C4StructurizrMapper {
             .orEmpty()
             .firstOrNull { it.type == C4ElementType.SOFTWARE_SYSTEM && it.id.startsWith("system:") }
             ?.id
-            ?: "system:subject"
+            ?: SUBJECT_FALLBACK_ID
 
         val primarySystem = StructurizrElementBuilder(
             id = primarySystemId,
-            name = "Subject",
+            name = SUBJECT_FALLBACK_NAME,
             description = "Derived from the Graphite code graph",
-            tags = structurizrTags("Software System", "Graphite", "Application"),
+            tags = structurizrTags(SOFTWARE_SYSTEM_TAG, GRAPHITE_TAG, "Application"),
             properties = emptyMap()
         )
         softwareSystems[primarySystemId] = primarySystem
@@ -56,9 +56,9 @@ internal class C4StructurizrMapper {
                     val target = if (element.id == primarySystemId) {
                         primarySystem
                     } else {
-                        softwareSystems.getOrPut(element.id) { structurizrElement(element, "Software System") }
+                        softwareSystems.getOrPut(element.id) { structurizrElement(element, SOFTWARE_SYSTEM_TAG) }
                     }
-                    target.replaceWith(structurizrElement(element, "Software System"))
+                    target.replaceWith(structurizrElement(element, SOFTWARE_SYSTEM_TAG))
                 }
                 else -> Unit
             }
@@ -70,56 +70,56 @@ internal class C4StructurizrMapper {
                     id = dependency.id,
                     name = dependency.name,
                     description = "External dependency inferred from code graph evidence",
-                    tags = structurizrTags("Software System", "Graphite", "External Dependency"),
+                    tags = structurizrTags(SOFTWARE_SYSTEM_TAG, GRAPHITE_TAG, "External Dependency"),
                     properties = emptyMap()
                 )
             }
             system.properties = mergeStructurizrProperties(
                 system.properties,
                 structProperties(
-                    "graphite.kind" to dependency.kind,
-                    "graphite.architectureType" to externalArchitectureType(dependency.kind),
-                    "graphite.source" to dependency.source,
-                    "graphite.confidence" to dependency.confidence,
-                    "graphite.responsibility" to dependency.responsibility
+                    GRAPHITE_KIND_PROPERTY to dependency.kind,
+                    GRAPHITE_ARCHITECTURE_TYPE_PROPERTY to externalArchitectureType(dependency.kind),
+                    GRAPHITE_SOURCE_PROPERTY to dependency.source,
+                    GRAPHITE_CONFIDENCE_PROPERTY to dependency.confidence,
+                    GRAPHITE_RESPONSIBILITY_PROPERTY to dependency.responsibility
                 )
             )
         }
         containerView?.elements.orEmpty().forEach { element ->
-            containers[element.id] = structurizrElement(element, "Container")
+            containers[element.id] = structurizrElement(element, CONTAINER_TAG)
         }
         containerView?.systemBoundary?.let { boundary ->
             primarySystem.properties = mergeStructurizrProperties(
                 primarySystem.properties,
-                structProperties("graphite.systemBoundary" to boundary)
+                structProperties(GRAPHITE_SYSTEM_BOUNDARY_PROPERTY to boundary)
             )
         }
 
         componentView?.elements.orEmpty().forEach { element ->
-            val component = structurizrElement(element, "Component")
+            val component = structurizrElement(element, COMPONENT_TAG)
             components[element.id] = component
-            val containerId = element.containerId() ?: "container:${element.containerName()}"
+            val containerId = element.containerId() ?: "$CONTAINER_ID_PREFIX${element.containerName()}"
             if (containerId !in containers) {
                 containers[containerId] = StructurizrElementBuilder(
                     id = containerId,
                     name = element.containerName(),
                     description = "Inferred runtime container synthesized for component view",
                     technology = "JVM bytecode",
-                    tags = structurizrTags("Container", "Graphite", "Internal Container"),
+                    tags = structurizrTags(CONTAINER_TAG, GRAPHITE_TAG, "Internal Container"),
                     properties = emptyMap()
                 )
             }
         }
 
-        registerRelationships(contextView, "context", people, softwareSystems, containers, components, relationshipIds)
-        registerRelationships(containerView, "container", people, softwareSystems, containers, components, relationshipIds)
-        registerRelationships(componentView, "component", people, softwareSystems, containers, components, relationshipIds)
+        registerRelationships(contextView, C4Level.CONTEXT.wireName, people, softwareSystems, containers, components, relationshipIds)
+        registerRelationships(containerView, C4Level.CONTAINER.wireName, people, softwareSystems, containers, components, relationshipIds)
+        registerRelationships(componentView, C4Level.COMPONENT.wireName, people, softwareSystems, containers, components, relationshipIds)
 
         containers.values.forEach { container ->
             val nested = components.values
                 .filter { component ->
-                    component.properties["graphite.containerId"] == container.id ||
-                        "container:${component.properties["graphite.container"]}" == container.id
+                    component.properties[GRAPHITE_CONTAINER_ID_PROPERTY] == container.id ||
+                        "$CONTAINER_ID_PREFIX${component.properties[GRAPHITE_CONTAINER_PROPERTY]}" == container.id
                 }
                 .map { it.toElement() }
             if (nested.isNotEmpty()) container.components = nested
@@ -138,10 +138,10 @@ internal class C4StructurizrMapper {
                     key = "graphite-context",
                     description = "Graphite-derived C4 system context view",
                     scopeId = primarySystemId,
-                    scopeKey = "softwareSystemId",
+                    scopeKey = SOFTWARE_SYSTEM_SCOPE_KEY,
                     elements = view.elements.map { it.id },
                     relationships = relationshipIdsForView(view),
-                    properties = structProperties("graphite.level" to level)
+                    properties = structProperties(GRAPHITE_LEVEL_PROPERTY to level)
                 )
             )
         } ?: emptyList()
@@ -155,12 +155,12 @@ internal class C4StructurizrMapper {
                     key = "graphite-container",
                     description = "Graphite-derived C4 container view",
                     scopeId = primarySystemId,
-                    scopeKey = "softwareSystemId",
+                    scopeKey = SOFTWARE_SYSTEM_SCOPE_KEY,
                     elements = elementIds.distinct(),
                     relationships = relationshipIdsForView(view),
                     properties = structProperties(
-                        "graphite.level" to level,
-                        "graphite.systemBoundary" to view.systemBoundary
+                        GRAPHITE_LEVEL_PROPERTY to level,
+                        GRAPHITE_SYSTEM_BOUNDARY_PROPERTY to view.systemBoundary
                     )
                 )
             )
@@ -173,7 +173,12 @@ internal class C4StructurizrMapper {
                 }
                 .toMap()
             view.elements
-                .groupBy { it.containerId() ?: it.containerName().takeIf(String::isNotBlank)?.let { name -> "container:$name" } ?: "" }
+                .groupBy {
+                    it.containerId() ?: it.containerName()
+                        .takeIf(String::isNotBlank)
+                        ?.let { name -> "$CONTAINER_ID_PREFIX$name" }
+                        ?: ""
+                }
                 .filterKeys { it.isNotBlank() }
                 .map { (containerId, elements) ->
                     val containerName = elements.firstOrNull()?.containerName().orEmpty()
@@ -185,13 +190,13 @@ internal class C4StructurizrMapper {
                         key = "graphite-component-${slugify(containerId)}",
                         description = "Graphite-derived C4 component view for $containerName",
                         scopeId = containerId,
-                        scopeKey = "containerId",
+                        scopeKey = CONTAINER_SCOPE_KEY,
                         elements = ids,
                         relationships = relIds,
                         properties = structProperties(
-                            "graphite.level" to level,
-                            "graphite.containerId" to containerId,
-                            "graphite.container" to containerName
+                            GRAPHITE_LEVEL_PROPERTY to level,
+                            GRAPHITE_CONTAINER_ID_PROPERTY to containerId,
+                            GRAPHITE_CONTAINER_PROPERTY to containerName
                         )
                     )
                 }
@@ -201,8 +206,8 @@ internal class C4StructurizrMapper {
             name = "Graphite C4 Workspace",
             description = "Structurizr workspace derived from the Graphite code graph",
             properties = structProperties(
-                "graphite.level" to level,
-                "graphite.availableLevels" to graphiteModel.availableLevels,
+                GRAPHITE_LEVEL_PROPERTY to level,
+                GRAPHITE_AVAILABLE_LEVELS_PROPERTY to graphiteModel.availableLevels,
                 "graphite.format" to "structurizr-workspace"
             ),
             model = C4StructurizrModel(
@@ -245,9 +250,9 @@ internal class C4StructurizrMapper {
                 tags = structurizrTags("Relationship", "Graphite", relationshipKind),
                 properties = structProperties(
                     "graphite.view" to sourceView,
-                    "graphite.relationshipKind" to relationshipKind,
-                    "graphite.evidence" to relationship.evidence,
-                    "graphite.weight" to relationship.weight
+                    GRAPHITE_RELATIONSHIP_KIND_PROPERTY to relationshipKind,
+                    GRAPHITE_EVIDENCE_PROPERTY to relationship.evidence,
+                    GRAPHITE_WEIGHT_PROPERTY to relationship.weight
                 )
             )
         }
@@ -259,15 +264,15 @@ internal class C4StructurizrMapper {
             name = element.name,
             description = element.description ?: element.responsibility.orEmpty(),
             technology = element.properties["technology"]?.toString(),
-            tags = structurizrTags(baseTag, "Graphite", element.kind),
+            tags = structurizrTags(baseTag, GRAPHITE_TAG, element.kind),
             properties = structProperties(
                 "graphite.type" to element.type,
-                "graphite.kind" to element.kind,
-                "graphite.architectureType" to element.architectureType,
-                "graphite.responsibility" to element.responsibility,
+                GRAPHITE_KIND_PROPERTY to element.kind,
+                GRAPHITE_ARCHITECTURE_TYPE_PROPERTY to element.architectureType,
+                GRAPHITE_RESPONSIBILITY_PROPERTY to element.responsibility,
                 "graphite.whySelected" to element.properties["whySelected"],
-                "graphite.container" to element.properties["container"],
-                "graphite.containerId" to element.properties["containerId"],
+                GRAPHITE_CONTAINER_PROPERTY to element.properties["container"],
+                GRAPHITE_CONTAINER_ID_PROPERTY to element.properties["containerId"],
                 "graphite.fullName" to element.properties["fullName"],
                 "graphite.methods" to element.properties["methods"],
                 "graphite.callSites" to element.properties["callSites"],
@@ -277,7 +282,7 @@ internal class C4StructurizrMapper {
                 "graphite.packageUnits" to element.properties["packageUnits"],
                 "graphite.primaryClasses" to element.properties["primaryClasses"],
                 "graphite.internalCapabilities" to element.properties["internalCapabilities"],
-                "graphite.evidence" to element.properties["evidence"],
+                GRAPHITE_EVIDENCE_PROPERTY to element.properties["evidence"],
                 "graphite.selectors" to element.properties["selectors"],
                 "graphite.owners" to element.properties["owners"],
                 "graphite.links" to element.properties["links"],
@@ -298,8 +303,8 @@ internal class C4StructurizrMapper {
         C4StructurizrView(
             key = key,
             description = description,
-            softwareSystemId = scopeId.takeIf { scopeKey == "softwareSystemId" },
-            containerId = scopeId.takeIf { scopeKey == "containerId" },
+            softwareSystemId = scopeId.takeIf { scopeKey == SOFTWARE_SYSTEM_SCOPE_KEY },
+            containerId = scopeId.takeIf { scopeKey == CONTAINER_SCOPE_KEY },
             elements = elements.distinct(),
             relationships = relationships.distinct(),
             properties = properties
@@ -369,8 +374,8 @@ internal class C4StructurizrMapper {
             linkedMapOf(
                 "scope" to "softwareSystem",
                 "properties" to structProperties(
-                    "graphite.level" to level,
-                    "graphite.availableLevels" to availableLevels
+                GRAPHITE_LEVEL_PROPERTY to level,
+                GRAPHITE_AVAILABLE_LEVELS_PROPERTY to availableLevels
                 )
             )
 

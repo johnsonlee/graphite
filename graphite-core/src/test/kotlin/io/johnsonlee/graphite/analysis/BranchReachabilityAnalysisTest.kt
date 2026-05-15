@@ -1,6 +1,24 @@
 package io.johnsonlee.graphite.analysis
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet

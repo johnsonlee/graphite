@@ -9,40 +9,6 @@
     <ID>LargeClass:NodeSerializer.kt$NodeSerializer</ID>
     <ID>LongParameterList:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$( private val forward: ImmutableGraph, private val backward: ImmutableGraph, private val nodeDataFile: File, private val nodeDataVersion: Int, private val stringTable: StringTable, private val nodeOffsets: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, List&lt;Int>>, private val forwardLabels: ByteArray, private val cumulativeOutdeg: LongArray, private val comparisonMap: Map&lt;Long, BranchComparison>, private val metadata: GraphMetadata, override val resources: ResourceAccessor )</ID>
     <ID>LongParameterList:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$( private val forward: ImmutableGraph, private val backward: ImmutableGraph, private val mappedNodeData: MappedByteBuffer, private val nodeDataVersion: Int, private val stringTable: StringTable, private val nodeOffsets: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, List&lt;Int>>, private val forwardLabels: ByteArray, private val cumulativeOutdeg: LongArray, private val comparisonMap: Map&lt;Long, BranchComparison>, private val metadata: GraphMetadata, override val resources: ResourceAccessor )</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$0xFFFFFFFFL</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$10</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$11</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$12</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$13</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$14</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$15</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$3</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$32</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$4</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$5</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$6</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$7</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$8</ID>
-    <ID>MagicNumber:GraphStore.kt$GraphStore$9</ID>
-    <ID>MagicNumber:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$0xFF</ID>
-    <ID>MagicNumber:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$0xFFFFFFFFL</ID>
-    <ID>MagicNumber:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$32</ID>
-    <ID>MagicNumber:MappedWebGraphBackedGraph.kt$ByteBufferInputStream$0xFF</ID>
-    <ID>MagicNumber:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$0xFF</ID>
-    <ID>MagicNumber:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$0xFFFFFFFFL</ID>
-    <ID>MagicNumber:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$32</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$0x3</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$0x7</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$0xFF</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$16</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$3</ID>
-    <ID>MagicNumber:NodeSerializer.kt$NodeSerializer$4</ID>
-    <ID>MagicNumber:PersistedResourceAccessor.kt$PersistedResourceStore$0xFF</ID>
-    <ID>MagicNumber:PersistedResourceAccessor.kt$PersistedResourceStore$16</ID>
-    <ID>MagicNumber:StringTable.kt$StringTable.Companion$8</ID>
-    <ID>MagicNumber:WebGraphBackedGraph.kt$WebGraphBackedGraph$0xFF</ID>
-    <ID>MagicNumber:WebGraphBackedGraph.kt$WebGraphBackedGraph$0xFFFFFFFFL</ID>
-    <ID>MagicNumber:WebGraphBackedGraph.kt$WebGraphBackedGraph$32</ID>
     <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 0 or (DataFlowKind.PARAMETER_PASS.ordinal shl 2), from.value, to.value, null) as DataFlowEdge).kind</ID>
     <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 2 or (TypeRelation.EXTENDS.ordinal shl 2), from.value, to.value, null) as TypeEdge).kind</ID>
     <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 3 or (ControlFlowKind.SEQUENTIAL.ordinal shl 2), from.value, to.value, comparison) as ControlFlowEdge).comparison</ID>
@@ -57,17 +23,5 @@
     <ID>TooManyFunctions:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph : GraphCloseable</ID>
     <ID>TooManyFunctions:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph : GraphCloseable</ID>
     <ID>TooManyFunctions:NodeSerializer.kt$NodeSerializer</ID>
-    <ID>WildcardImport:AndroidSdkIntegrationTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:ElasticsearchIntegrationTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:GraphStore.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:GraphStore.kt$import java.io.*</ID>
-    <ID>WildcardImport:GraphStoreTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:LazyWebGraphBackedGraph.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:LazyWebGraphBackedGraph.kt$import java.io.*</ID>
-    <ID>WildcardImport:MappedWebGraphBackedGraph.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:MappedWebGraphBackedGraph.kt$import java.io.*</ID>
-    <ID>WildcardImport:NodeSerializer.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:NodeSerializer.kt$import java.io.*</ID>
-    <ID>WildcardImport:WebGraphBackedGraph.kt$import io.johnsonlee.graphite.core.*</ID>
   </CurrentIssues>
 </SmellBaseline>

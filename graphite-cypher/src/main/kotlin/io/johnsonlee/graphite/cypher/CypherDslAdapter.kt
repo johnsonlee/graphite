@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.RecognitionException
 import org.antlr.v4.runtime.Recognizer
 
+private const val OCTAL_PREFIX_LENGTH = 2
+private const val OCTAL_RADIX = 8
+private const val LIST_COMPREHENSION_PREDICATE_INDEX = 1
+private const val LIST_COMPREHENSION_MAP_INDEX = 2
+private const val LIST_COMPREHENSION_PARTIAL_FORM_SIZE = 2
+private const val LIST_COMPREHENSION_FULL_FORM_SIZE = 3
+private const val UNICODE_ESCAPE_DIGITS = 4
+private const val UNICODE_ESCAPE_END_OFFSET = 5
+private const val HEX_RADIX = 16
+
 /**
  * Parses a Cypher query string into a list of [CypherClause] AST nodes.
  *
@@ -399,7 +409,7 @@ private class CypherAstVisitor {
         val text = ctx.text
         return when {
             text.startsWith("0x", true) -> java.lang.Long.decode(text).toInt()
-            text.startsWith("0o", true) -> text.substring(2).toInt(8)
+            text.startsWith("0o", true) -> text.substring(OCTAL_PREFIX_LENGTH).toInt(OCTAL_RADIX)
             else -> text.toInt()
         }
     }
@@ -661,7 +671,7 @@ private class CypherAstVisitor {
                 val text = ctx.integerLiteral().text
                 val v: Number = when {
                     text.startsWith("0x", true) -> java.lang.Long.decode(text)
-                    text.startsWith("0o", true) -> text.substring(2).toLong(8)
+                    text.startsWith("0o", true) -> text.substring(OCTAL_PREFIX_LENGTH).toLong(OCTAL_RADIX)
                     else -> text.toLong().let { if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it }
                 }
                 CypherExpr.Literal(v)
@@ -722,15 +732,15 @@ private class CypherAstVisitor {
         var mapExpr: CypherExpr? = null
 
         when {
-            hasWhere && hasStick && expressions.size >= 3 -> {
-                predicate = visitExpr(expressions[1])
-                mapExpr = visitExpr(expressions[2])
+            hasWhere && hasStick && expressions.size >= LIST_COMPREHENSION_FULL_FORM_SIZE -> {
+                predicate = visitExpr(expressions[LIST_COMPREHENSION_PREDICATE_INDEX])
+                mapExpr = visitExpr(expressions[LIST_COMPREHENSION_MAP_INDEX])
             }
-            hasWhere && !hasStick && expressions.size >= 2 -> {
-                predicate = visitExpr(expressions[1])
+            hasWhere && !hasStick && expressions.size >= LIST_COMPREHENSION_PARTIAL_FORM_SIZE -> {
+                predicate = visitExpr(expressions[LIST_COMPREHENSION_PREDICATE_INDEX])
             }
-            !hasWhere && hasStick && expressions.size >= 2 -> {
-                mapExpr = visitExpr(expressions[1])
+            !hasWhere && hasStick && expressions.size >= LIST_COMPREHENSION_PARTIAL_FORM_SIZE -> {
+                mapExpr = visitExpr(expressions[LIST_COMPREHENSION_PREDICATE_INDEX])
             }
         }
 
@@ -770,9 +780,9 @@ private class CypherAstVisitor {
                     't' -> sb.append('\t')
                     'b' -> sb.append('\b')
                     'u' -> {
-                        if (i + 4 < content.length) {
-                            sb.append(content.substring(i + 1, i + 5).toInt(16).toChar())
-                            i += 4
+                        if (i + UNICODE_ESCAPE_DIGITS < content.length) {
+                            sb.append(content.substring(i + 1, i + UNICODE_ESCAPE_END_OFFSET).toInt(HEX_RADIX).toChar())
+                            i += UNICODE_ESCAPE_DIGITS
                         }
                     }
                     else -> { sb.append('\\'); sb.append(content[i]) }

@@ -1,7 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.Graphite
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.nio.file.Path
 import kotlin.io.path.exists

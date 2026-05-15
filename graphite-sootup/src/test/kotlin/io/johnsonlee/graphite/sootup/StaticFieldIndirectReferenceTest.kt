@@ -1,7 +1,12 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.Graphite
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.nio.file.Path

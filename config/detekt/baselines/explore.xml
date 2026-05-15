@@ -27,7 +27,6 @@
     <ID>LongParameterList:ComponentSelector.kt$ComponentSelector$( graph: Graph, methods: List&lt;MethodDescriptor>, callSites: List&lt;CallSiteNode>, apiEndpoints: List&lt;ApiEndpointEvidence>, systemBoundary: String, limit: Int, subject: SubjectDescriptor = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary), capabilityLayout: ContainerLayout = inferContainerLayout( graph = graph, methods = methods, callSites = callSites, apiEndpoints = apiEndpoints, systemBoundary = systemBoundary, limit = maxOf(limit, C4ComponentLimits.MIN_CAPABILITY_LAYOUT_CANDIDATES) ) )</ID>
     <ID>LoopWithTooManyJumpStatements:SubjectDetector.kt$SubjectDetector$while</ID>
     <ID>LoopWithTooManyJumpStatements:SystemBoundaryDetector.kt$SystemBoundaryDetector$while</ID>
-    <ID>MagicNumber:ExploreCommand.kt$ExploreCommand$8080</ID>
     <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals("Runtime", diagramElementLabel(mapOf("name" to "Runtime", "properties" to mapOf("graphite.architectureType" to "runtime-platform"))))</ID>
     <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals("runtime-platform", mapOf("graphite.architectureType" to "runtime-platform").asStructurizrProperty("graphite.architectureType"))</ID>
     <ID>MaxLineLength:C4InferenceTest.kt$C4InferenceTest$assertEquals(C4RelationshipKind.ORCHESTRATES, plannedEdge(mapOf("from" to "a", "to" to "b", "description" to "orchestrates", "kind" to "orchestrates")).kind)</ID>
@@ -106,13 +105,5 @@
     <ID>SwallowedException:ExploreRoutes.kt$ExploreRoutes$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ExploreRoutes.kt$ExploreRoutes$e: Exception</ID>
     <ID>TooManyFunctions:C4WireCodec.kt$C4WireCodec</ID>
-    <ID>UnusedPrivateProperty:HelpersTest.kt$HelpersTest.Companion$private val childType = TypeDescriptor("com.example.Child")</ID>
-    <ID>WildcardImport:ExploreCommand.kt$import picocli.CommandLine.*</ID>
-    <ID>WildcardImport:ExploreCommandTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:ExploreCommandTest.kt$import kotlin.test.*</ID>
-    <ID>WildcardImport:ExploreRoutes.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:Helpers.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:HelpersTest.kt$import io.johnsonlee.graphite.core.*</ID>
-    <ID>WildcardImport:HelpersTest.kt$import kotlin.test.*</ID>
   </CurrentIssues>
 </SmellBaseline>

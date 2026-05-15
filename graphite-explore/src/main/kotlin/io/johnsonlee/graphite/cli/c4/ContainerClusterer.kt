@@ -112,7 +112,7 @@ internal object ContainerClusterer {
             val endpointCount = packageUnitSet.sumOf { endpointCountsByUnit[it] ?: 0 }
             val callSiteCount = packageUnitSet.sumOf { unit -> trafficByUnit[unit] ?: 0 }
             val name = inferName(packageUnitSet, unitScores, tokenDocumentFrequency, systemBoundary)
-            val id = "container:${slugify(name.ifBlank { representativeUnit })}"
+            val id = "$CONTAINER_ID_PREFIX${slugify(name.ifBlank { representativeUnit })}"
             ContainerDescriptor(
                 id = id,
                 name = name.ifBlank { representativeUnit },
@@ -175,7 +175,7 @@ internal object ContainerClusterer {
     }
 
     fun inferOperationalLayout(subject: SubjectDescriptor, capabilityLayout: ContainerLayout): ContainerLayout {
-        if (subject.role != "application") {
+        if (subject.role != WIRE_APPLICATION) {
             return ContainerLayout(
                 systemBoundary = capabilityLayout.systemBoundary,
                 containers = emptyList(),
@@ -183,12 +183,12 @@ internal object ContainerClusterer {
                 externalDependencies = capabilityLayout.externalDependencies
             )
         }
-        val runtimeId = "container:application-runtime"
+        val runtimeId = "$CONTAINER_ID_PREFIX$WIRE_APPLICATION_RUNTIME"
         val runtimeName = "${subject.name} Runtime"
         val runtimeKind = if (capabilityLayout.containers.any { it.endpointCount > 0 }) {
-            "application-service"
+            WIRE_APPLICATION_SERVICE
         } else {
-            "application-runtime"
+            WIRE_APPLICATION_RUNTIME
         }
         val runtimeContainer = ContainerDescriptor(
             id = runtimeId,
@@ -239,7 +239,7 @@ internal object ContainerClusterer {
             ) {
                 return@forEach
             }
-            val dependencyId = "dependency:${ExternalSystemClassifier.key(graph, calleeClass)}"
+            val dependencyId = "$DEPENDENCY_ID_PREFIX${ExternalSystemClassifier.key(graph, calleeClass)}"
             if (dependencyId !in externalDependenciesById) return@forEach
             dependencyWeights[dependencyId] = (dependencyWeights[dependencyId] ?: 0) + 1
         }
@@ -466,11 +466,11 @@ internal object ContainerClusterer {
     fun inferKind(endpointCount: Int, inboundCrossContainer: Int, outboundCrossContainer: Int, externalCalls: Int): String {
         val dominantInteraction = maxOf(inboundCrossContainer, outboundCrossContainer, externalCalls)
         return when {
-            endpointCount > 0 -> "interface"
-            externalCalls > 0 && externalCalls == dominantInteraction -> "integration"
-            outboundCrossContainer > inboundCrossContainer -> "orchestrator"
-            inboundCrossContainer > outboundCrossContainer -> "shared-capability"
-            else -> "capability"
+            endpointCount > 0 -> WIRE_INTERFACE
+            externalCalls > 0 && externalCalls == dominantInteraction -> WIRE_INTEGRATION
+            outboundCrossContainer > inboundCrossContainer -> WIRE_ORCHESTRATOR
+            inboundCrossContainer > outboundCrossContainer -> WIRE_SHARED_CAPABILITY
+            else -> WIRE_CAPABILITY
         }
     }
 
@@ -484,7 +484,7 @@ internal object ContainerClusterer {
 
     fun description(kind: String): String =
         when (kind) {
-            "application-runtime", "application-service" ->
+            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE ->
                 "Executable/deployable runtime container inferred from entrypoint, endpoint, and archive evidence"
             else ->
                 "Internal capability evidence derived from code graph structure"
@@ -492,7 +492,7 @@ internal object ContainerClusterer {
 
     fun operationalResponsibility(kind: String): String? =
         when (kind) {
-            "application-runtime", "application-service" ->
+            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE ->
                 "Runs the subject software system and owns the deployable JVM execution boundary"
             else -> null
         }
@@ -505,17 +505,17 @@ internal object ContainerClusterer {
 
     fun dependencyLayerRank(kind: String): Int =
         when (kind) {
-            "interface", "entrypoint" -> C4ContainerLayerRanks.INTERFACE
-            "orchestrator", "integration" -> C4ContainerLayerRanks.ORCHESTRATION
-            "capability", "coordination" -> C4ContainerLayerRanks.CAPABILITY
-            "shared-capability" -> C4ContainerLayerRanks.SHARED_CAPABILITY
+            WIRE_INTERFACE, WIRE_ENTRYPOINT -> C4ContainerLayerRanks.INTERFACE
+            WIRE_ORCHESTRATOR, WIRE_INTEGRATION -> C4ContainerLayerRanks.ORCHESTRATION
+            WIRE_CAPABILITY, WIRE_COORDINATION -> C4ContainerLayerRanks.CAPABILITY
+            WIRE_SHARED_CAPABILITY -> C4ContainerLayerRanks.SHARED_CAPABILITY
             else -> C4ContainerLayerRanks.CAPABILITY
         }
 
     fun architectureType(kind: String): C4ArchitectureType =
         when (kind) {
-            "application-runtime", "application-service" -> C4ArchitectureType.APPLICATION_SERVICE
-            "interface", "orchestrator", "integration" -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_APPLICATION_RUNTIME, WIRE_APPLICATION_SERVICE -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_INTERFACE, WIRE_ORCHESTRATOR, WIRE_INTEGRATION -> C4ArchitectureType.APPLICATION_SERVICE
             else -> C4ArchitectureType.APPLICATION_COMPONENT
         }
 }

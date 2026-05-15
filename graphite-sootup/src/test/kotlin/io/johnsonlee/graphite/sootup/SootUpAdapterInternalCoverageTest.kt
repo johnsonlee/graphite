@@ -604,13 +604,6 @@ class SootUpAdapterInternalCoverageTest {
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
-    private fun singletonLiteralListMethod(value: String): MethodNode =
-        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
-            instructions.add(LdcInsnNode(value))
-            instructions.add(MethodInsnNode(Opcodes.INVOKESTATIC, "java/util/Collections", "singletonList", "(Ljava/lang/Object;)Ljava/util/List;", false))
-            instructions.add(InsnNode(Opcodes.ARETURN))
-        }
-
     private fun singletonIntListMethod(value: Int): MethodNode =
         MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
             instructions.add(org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, value))

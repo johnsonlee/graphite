@@ -12,7 +12,7 @@ internal object SystemBoundaryDetector {
             .filterNot(::isSyntheticClass)
             .map { it.substringBeforeLast('.', "") }
             .filter { it.isNotBlank() }
-        if (packages.isEmpty()) return "(default)"
+        if (packages.isEmpty()) return DEFAULT_SYSTEM_BOUNDARY
 
         val packageWeights = packages.groupingBy { it }.eachCount()
         val prefixWeights = mutableMapOf<String, Int>()
@@ -29,8 +29,8 @@ internal object SystemBoundaryDetector {
             .eachCount()
             .maxByOrNull { it.value }
             ?.key
-            ?: "(default)"
-        if (root == "(default)") return root
+            ?: DEFAULT_SYSTEM_BOUNDARY
+        if (root == DEFAULT_SYSTEM_BOUNDARY) return root
 
         var boundary = root
         while (true) {
@@ -68,7 +68,7 @@ internal object SystemBoundaryDetector {
 
     fun internalPackageUnit(className: String, systemBoundary: String): String {
         val packageName = className.substringBeforeLast('.', "")
-        if (packageName.isBlank()) return "(default)"
+        if (packageName.isBlank()) return DEFAULT_SYSTEM_BOUNDARY
         val segments = packageName.split('.')
         if (!isInternalClass(className, systemBoundary)) {
             return segments.take(namespaceRootSegmentCount(segments)).joinToString(".")

@@ -3,10 +3,43 @@ package io.johnsonlee.graphite.query
 import io.johnsonlee.graphite.analysis.AnalysisConfig
 import io.johnsonlee.graphite.analysis.DataFlowAnalysis
 import io.johnsonlee.graphite.analysis.TypeHierarchyAnalysis
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeHierarchyConfig
+import io.johnsonlee.graphite.core.TypeHierarchyResult
+import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes
+
+private const val JAVA_LANG_OBJECT = "java.lang.Object"
+private const val UNKNOWN_TYPE = "unknown"
+private const val VOID_TYPE = "void"
+private const val JAVA_LANG_INTEGER = "java.lang.Integer"
+private const val JAVA_LANG_LONG = "java.lang.Long"
+private const val JAVA_LANG_FLOAT = "java.lang.Float"
+private const val JAVA_LANG_DOUBLE = "java.lang.Double"
+private const val JAVA_LANG_BOOLEAN = "java.lang.Boolean"
+private const val JAVA_LANG_STRING = "java.lang.String"
 
 /**
  * High-level Query DSL for common analysis patterns.
@@ -149,7 +182,7 @@ class GraphiteQuery(private val graph: Graph) {
             when (sourceNode) {
                 is LocalVariable -> {
                     val typeName = sourceNode.type.className
-                    if (typeName != "java.lang.Object" && typeName != "unknown") {
+                    if (typeName != JAVA_LANG_OBJECT && typeName != UNKNOWN_TYPE) {
                         types.add(sourceNode.type)
                     } else {
                         // Continue tracing back if type is unknown/Object
@@ -162,7 +195,7 @@ class GraphiteQuery(private val graph: Graph) {
                     val calleeSignature = sourceNode.callee.signature
 
                     // If return type is concrete (not Object/void), use it
-                    if (returnType.className != "java.lang.Object" && returnType.className != "void") {
+                    if (returnType.className != JAVA_LANG_OBJECT && returnType.className != VOID_TYPE) {
                         types.add(returnType)
                     } else {
                         // Interprocedural: trace into the called method to find actual return types
@@ -187,21 +220,21 @@ class GraphiteQuery(private val graph: Graph) {
                 }
                 is ConstantNode -> {
                     when (sourceNode) {
-                        is IntConstant -> types.add(TypeDescriptor("java.lang.Integer"))
-                        is LongConstant -> types.add(TypeDescriptor("java.lang.Long"))
-                        is FloatConstant -> types.add(TypeDescriptor("java.lang.Float"))
-                        is DoubleConstant -> types.add(TypeDescriptor("java.lang.Double"))
-                        is BooleanConstant -> types.add(TypeDescriptor("java.lang.Boolean"))
-                        is StringConstant -> types.add(TypeDescriptor("java.lang.String"))
+                        is IntConstant -> types.add(TypeDescriptor(JAVA_LANG_INTEGER))
+                        is LongConstant -> types.add(TypeDescriptor(JAVA_LANG_LONG))
+                        is FloatConstant -> types.add(TypeDescriptor(JAVA_LANG_FLOAT))
+                        is DoubleConstant -> types.add(TypeDescriptor(JAVA_LANG_DOUBLE))
+                        is BooleanConstant -> types.add(TypeDescriptor(JAVA_LANG_BOOLEAN))
+                        is StringConstant -> types.add(TypeDescriptor(JAVA_LANG_STRING))
                         is EnumConstant -> types.add(sourceNode.enumType)
                         is NullConstant -> {} // null doesn't contribute a type
                         is ResourceValueNode -> when (sourceNode.value) {
-                            is Int -> types.add(TypeDescriptor("java.lang.Integer"))
-                            is Long -> types.add(TypeDescriptor("java.lang.Long"))
-                            is Float -> types.add(TypeDescriptor("java.lang.Float"))
-                            is Double -> types.add(TypeDescriptor("java.lang.Double"))
-                            is Boolean -> types.add(TypeDescriptor("java.lang.Boolean"))
-                            is String -> types.add(TypeDescriptor("java.lang.String"))
+                            is Int -> types.add(TypeDescriptor(JAVA_LANG_INTEGER))
+                            is Long -> types.add(TypeDescriptor(JAVA_LANG_LONG))
+                            is Float -> types.add(TypeDescriptor(JAVA_LANG_FLOAT))
+                            is Double -> types.add(TypeDescriptor(JAVA_LANG_DOUBLE))
+                            is Boolean -> types.add(TypeDescriptor(JAVA_LANG_BOOLEAN))
+                            is String -> types.add(TypeDescriptor(JAVA_LANG_STRING))
                             else -> {}
                         }
                     }
@@ -395,7 +428,7 @@ data class ReturnTypeResult(
     val actualTypes: List<TypeDescriptor>
 ) {
     val hasGenericReturn: Boolean get() =
-        declaredType.className == "java.lang.Object" ||
+        declaredType.className == JAVA_LANG_OBJECT ||
                 declaredType.typeArguments.any { it.className == "?" }
 
     val typesMismatch: Boolean get() =

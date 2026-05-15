@@ -1,6 +1,12 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import org.openjdk.jmh.annotations.*

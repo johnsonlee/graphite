@@ -1,7 +1,47 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.*
-import java.io.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.EnumValueReference
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.core.ValueNode
+import java.io.DataInputStream
+import java.io.DataOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.RandomAccessFile
 
 /**
  * Serializes and deserializes graph nodes and metadata to/from binary files
@@ -50,11 +90,11 @@ internal object NodeSerializer {
     /** Read and validate the 4-byte file header. Returns the format version. */
     fun readHeader(dis: DataInputStream, expectedMagic: Int): Int {
         val h = dis.readInt()
-        val prefix = h and 0xFFFFFF00.toInt()
+        val prefix = h and HEADER_MAGIC_MASK
         require(prefix == expectedMagic) {
-            "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
+            "Invalid file magic: expected 0x${expectedMagic.toString(HEX_RADIX)}, got 0x${prefix.toString(HEX_RADIX)}"
         }
-        val version = h and 0xFF
+        val version = h and BYTE_MASK
         validateVersion(version, expectedMagic)
         return version
     }
@@ -62,11 +102,11 @@ internal object NodeSerializer {
     /** Overload for [RandomAccessFile]. */
     fun readHeader(raf: RandomAccessFile, expectedMagic: Int): Int {
         val h = raf.readInt()
-        val prefix = h and 0xFFFFFF00.toInt()
+        val prefix = h and HEADER_MAGIC_MASK
         require(prefix == expectedMagic) {
-            "Invalid file magic: expected 0x${expectedMagic.toString(16)}, got 0x${prefix.toString(16)}"
+            "Invalid file magic: expected 0x${expectedMagic.toString(HEX_RADIX)}, got 0x${prefix.toString(HEX_RADIX)}"
         }
-        val version = h and 0xFF
+        val version = h and BYTE_MASK
         validateVersion(version, expectedMagic)
         return version
     }
@@ -77,28 +117,28 @@ internal object NodeSerializer {
                 version == TRANSITIONAL_FORMAT_VERSION ||
                 version == FORMAT_VERSION
         ) {
-            "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(16)}. " +
+            "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(HEX_RADIX)}. " +
                 "This build supports versions $LEGACY_FORMAT_VERSION, $TRANSITIONAL_FORMAT_VERSION and $FORMAT_VERSION."
         }
     }
 
     // Node type tags
-    private const val TAG_INT_CONSTANT = 0
-    private const val TAG_STRING_CONSTANT = 1
-    private const val TAG_LONG_CONSTANT = 2
-    private const val TAG_FLOAT_CONSTANT = 3
-    private const val TAG_DOUBLE_CONSTANT = 4
-    private const val TAG_BOOLEAN_CONSTANT = 5
-    private const val TAG_NULL_CONSTANT = 6
-    private const val TAG_ENUM_CONSTANT = 7
-    private const val TAG_LOCAL_VARIABLE = 8
-    private const val TAG_FIELD_NODE = 9
-    private const val TAG_PARAMETER_NODE = 10
-    private const val TAG_RETURN_NODE = 11
-    private const val TAG_CALL_SITE_NODE = 12
-    private const val TAG_ANNOTATION_NODE = 13
-    private const val TAG_RESOURCE_VALUE_NODE = 14
-    private const val TAG_RESOURCE_FILE_NODE = 15
+    internal const val TAG_INT_CONSTANT = 0
+    internal const val TAG_STRING_CONSTANT = 1
+    internal const val TAG_LONG_CONSTANT = 2
+    internal const val TAG_FLOAT_CONSTANT = 3
+    internal const val TAG_DOUBLE_CONSTANT = 4
+    internal const val TAG_BOOLEAN_CONSTANT = 5
+    internal const val TAG_NULL_CONSTANT = 6
+    internal const val TAG_ENUM_CONSTANT = 7
+    internal const val TAG_LOCAL_VARIABLE = 8
+    internal const val TAG_FIELD_NODE = 9
+    internal const val TAG_PARAMETER_NODE = 10
+    internal const val TAG_RETURN_NODE = 11
+    internal const val TAG_CALL_SITE_NODE = 12
+    internal const val TAG_ANNOTATION_NODE = 13
+    internal const val TAG_RESOURCE_VALUE_NODE = 14
+    internal const val TAG_RESOURCE_FILE_NODE = 15
 
     // Value type tags (for heterogeneous value lists like enum constructor args)
     private const val VAL_INT = 0
@@ -126,13 +166,13 @@ internal object NodeSerializer {
      * ```
      */
     fun encodeEdge(edge: Edge): Int = when (edge) {
-        is DataFlowEdge -> 0 or (edge.kind.ordinal shl 3)
-        is CallEdge -> 1 or
-                ((if (edge.isVirtual) 1 else 0) shl 3) or
-                ((if (edge.isDynamic) 1 else 0) shl 4)
-        is TypeEdge -> 2 or (edge.kind.ordinal shl 3)
-        is ControlFlowEdge -> 3 or (edge.kind.ordinal shl 3)
-        is ResourceEdge -> 4 or (edge.kind.ordinal shl 3)
+        is DataFlowEdge -> EDGE_FAMILY_DATAFLOW or (edge.kind.ordinal shl V3_EDGE_KIND_SHIFT)
+        is CallEdge -> EDGE_FAMILY_CALL or
+                ((if (edge.isVirtual) 1 else 0) shl V3_EDGE_KIND_SHIFT) or
+                ((if (edge.isDynamic) 1 else 0) shl CALL_EDGE_DYNAMIC_SHIFT)
+        is TypeEdge -> EDGE_FAMILY_TYPE or (edge.kind.ordinal shl V3_EDGE_KIND_SHIFT)
+        is ControlFlowEdge -> EDGE_FAMILY_CONTROL_FLOW or (edge.kind.ordinal shl V3_EDGE_KIND_SHIFT)
+        is ResourceEdge -> EDGE_FAMILY_RESOURCE or (edge.kind.ordinal shl V3_EDGE_KIND_SHIFT)
     }
 
     /**
@@ -152,32 +192,42 @@ internal object NodeSerializer {
     }
 
     private fun decodeEdgeV2(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison?): Edge {
-        val family = label and 0x3
+        val family = label and V2_EDGE_FAMILY_MASK
         return when (family) {
-            0 -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr 2) and 0xF])
-            1 -> CallEdge(
+            EDGE_FAMILY_DATAFLOW -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
+            EDGE_FAMILY_CALL -> CallEdge(
                 from, to,
-                isVirtual = ((label shr 6) and 1) == 1,
-                isDynamic = ((label shr 7) and 1) == 1
+                isVirtual = ((label shr CALL_EDGE_VIRTUAL_SHIFT_V2) and 1) == 1,
+                isDynamic = ((label shr CALL_EDGE_DYNAMIC_SHIFT_V2) and 1) == 1
             )
-            2 -> TypeEdge(from, to, TypeRelation.entries[(label shr 2) and 0xF])
-            3 -> ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr 2) and 0xF], comparison)
+            EDGE_FAMILY_TYPE -> TypeEdge(from, to, TypeRelation.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
+            EDGE_FAMILY_CONTROL_FLOW -> ControlFlowEdge(
+                from,
+                to,
+                ControlFlowKind.entries[(label shr V2_EDGE_KIND_SHIFT) and EDGE_KIND_MASK],
+                comparison
+            )
             else -> throw IllegalArgumentException("Unknown edge family: $family")
         }
     }
 
     private fun decodeEdgeV3(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison?): Edge {
-        val family = label and 0x7
+        val family = label and V3_EDGE_FAMILY_MASK
         return when (family) {
-            0 -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr 3) and 0xF])
-            1 -> CallEdge(
+            EDGE_FAMILY_DATAFLOW -> DataFlowEdge(from, to, DataFlowKind.entries[(label shr V3_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
+            EDGE_FAMILY_CALL -> CallEdge(
                 from, to,
-                isVirtual = ((label shr 3) and 1) == 1,
-                isDynamic = ((label shr 4) and 1) == 1
+                isVirtual = ((label shr V3_EDGE_KIND_SHIFT) and 1) == 1,
+                isDynamic = ((label shr CALL_EDGE_DYNAMIC_SHIFT) and 1) == 1
             )
-            2 -> TypeEdge(from, to, TypeRelation.entries[(label shr 3) and 0xF])
-            3 -> ControlFlowEdge(from, to, ControlFlowKind.entries[(label shr 3) and 0xF], comparison)
-            4 -> ResourceEdge(from, to, ResourceRelation.entries[(label shr 3) and 0xF])
+            EDGE_FAMILY_TYPE -> TypeEdge(from, to, TypeRelation.entries[(label shr V3_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
+            EDGE_FAMILY_CONTROL_FLOW -> ControlFlowEdge(
+                from,
+                to,
+                ControlFlowKind.entries[(label shr V3_EDGE_KIND_SHIFT) and EDGE_KIND_MASK],
+                comparison
+            )
+            EDGE_FAMILY_RESOURCE -> ResourceEdge(from, to, ResourceRelation.entries[(label shr V3_EDGE_KIND_SHIFT) and EDGE_KIND_MASK])
             else -> throw IllegalArgumentException("Unknown edge family: $family")
         }
     }

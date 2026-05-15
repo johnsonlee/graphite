@@ -1,13 +1,47 @@
 package io.johnsonlee.graphite.cli
 
-import io.johnsonlee.graphite.core.*
-import kotlin.test.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.core.ValueNode
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class HelpersTest {
 
     companion object {
         private val fooType = TypeDescriptor("com.example.Foo")
-        private val childType = TypeDescriptor("com.example.Child")
         private val barMethod = MethodDescriptor(fooType, "bar", listOf(TypeDescriptor("int")), TypeDescriptor("void"))
         private val bazMethod = MethodDescriptor(fooType, "baz", emptyList(), TypeDescriptor("void"))
 

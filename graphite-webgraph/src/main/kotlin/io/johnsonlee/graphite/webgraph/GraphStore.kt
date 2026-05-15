@@ -1,6 +1,29 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
@@ -8,7 +31,14 @@ import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
 import it.unimi.dsi.webgraph.LazyIntIterators
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.DataInputStream
+import java.io.DataOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.RandomAccessFile
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
@@ -55,11 +85,14 @@ object GraphStore {
     private const val MAPPED_THRESHOLD = 1_000_000
 
     private const val FORWARD_GRAPH = "forward"
-private const val LABELS_FILE = "graph.labels"
+    private const val LABELS_FILE = "graph.labels"
     private const val COMPARISONS_FILE = "graph.comparisons"
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val NODE_INDEX_FILE = "graph.nodeindex"
     private const val METADATA_FILE = "graph.metadata"
+    private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
+
+    private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
 
     /**
      * Save a graph to disk in WebGraph + native LAW format.
@@ -143,7 +176,7 @@ private const val LABELS_FILE = "graph.labels"
      *   based on graph size (< 1M nodes → eager, >= 1M → mapped).
      */
     fun load(dir: Path, mode: LoadMode = LoadMode.AUTO): Graph {
-        require(Files.isDirectory(dir)) { "Not a directory: $dir" }
+        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
         return when (mode) {
             LoadMode.EAGER -> loadEager(dir)
             LoadMode.MAPPED -> { ensureNodeIndex(dir); loadMapped(dir) }
@@ -226,7 +259,7 @@ private const val LABELS_FILE = "graph.labels"
      * for on-demand node deserialization.
      */
     fun loadLazy(dir: Path): Graph {
-        require(Files.isDirectory(dir)) { "Not a directory: $dir" }
+        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
@@ -275,7 +308,7 @@ private const val LABELS_FILE = "graph.labels"
      * (unlike [loadLazy] which uses [RandomAccessFile.seek]).
      */
     fun loadMapped(dir: Path): Graph {
-        require(Files.isDirectory(dir)) { "Not a directory: $dir" }
+        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
@@ -363,7 +396,7 @@ private const val LABELS_FILE = "graph.labels"
                 val edge = edgesByTarget[to]!!
                 labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
                 if (edge is ControlFlowEdge && edge.comparison != null) {
-                    val key = node.toLong() shl 32 or (to.toLong() and 0xFFFFFFFFL)
+                    val key = node.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
                     comparisonMap[key] = edge.comparison!!
                 }
             }
@@ -525,22 +558,22 @@ private const val LABELS_FILE = "graph.labels"
         // Map tags to concrete Node classes
         val nodeTypeIndex = HashMap<Class<out Node>, List<Int>>()
         val tagToClass = mapOf(
-            0 to IntConstant::class.java,
-            1 to StringConstant::class.java,
-            2 to LongConstant::class.java,
-            3 to FloatConstant::class.java,
-            4 to DoubleConstant::class.java,
-            5 to BooleanConstant::class.java,
-            6 to NullConstant::class.java,
-            7 to EnumConstant::class.java,
-            8 to LocalVariable::class.java,
-            9 to FieldNode::class.java,
-            10 to ParameterNode::class.java,
-            11 to ReturnNode::class.java,
-            12 to CallSiteNode::class.java,
-            13 to AnnotationNode::class.java,
-            14 to ResourceValueNode::class.java,
-            15 to ResourceFileNode::class.java
+            NodeSerializer.TAG_INT_CONSTANT to IntConstant::class.java,
+            NodeSerializer.TAG_STRING_CONSTANT to StringConstant::class.java,
+            NodeSerializer.TAG_LONG_CONSTANT to LongConstant::class.java,
+            NodeSerializer.TAG_FLOAT_CONSTANT to FloatConstant::class.java,
+            NodeSerializer.TAG_DOUBLE_CONSTANT to DoubleConstant::class.java,
+            NodeSerializer.TAG_BOOLEAN_CONSTANT to BooleanConstant::class.java,
+            NodeSerializer.TAG_NULL_CONSTANT to NullConstant::class.java,
+            NodeSerializer.TAG_ENUM_CONSTANT to EnumConstant::class.java,
+            NodeSerializer.TAG_LOCAL_VARIABLE to LocalVariable::class.java,
+            NodeSerializer.TAG_FIELD_NODE to FieldNode::class.java,
+            NodeSerializer.TAG_PARAMETER_NODE to ParameterNode::class.java,
+            NodeSerializer.TAG_RETURN_NODE to ReturnNode::class.java,
+            NodeSerializer.TAG_CALL_SITE_NODE to CallSiteNode::class.java,
+            NodeSerializer.TAG_ANNOTATION_NODE to AnnotationNode::class.java,
+            NodeSerializer.TAG_RESOURCE_VALUE_NODE to ResourceValueNode::class.java,
+            NodeSerializer.TAG_RESOURCE_FILE_NODE to ResourceFileNode::class.java
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue

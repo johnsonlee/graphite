@@ -13,6 +13,9 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
+private const val GLOBSTAR_SLASH_LENGTH = 3
+private const val GLOBSTAR_LENGTH = 2
+
 /**
  * [ResourceAccessor] that supports directories, JARs, Spring Boot fat JARs, and WAR files.
  *
@@ -48,8 +51,8 @@ class ArchiveResourceAccessor private constructor(
             val p = pattern
             while (i < p.length) {
                 when {
-                    p.startsWith("**/", i) -> { append("(.+/)?"); i += 3 }
-                    p.startsWith("**", i) -> { append(".*"); i += 2 }
+                    p.startsWith("**/", i) -> { append("(.+/)?"); i += GLOBSTAR_SLASH_LENGTH }
+                    p.startsWith("**", i) -> { append(".*"); i += GLOBSTAR_LENGTH }
                     p[i] == '*' -> { append("[^/]*"); i++ }
                     p[i] == '.' -> { append("\\."); i++ }
                     else -> { append(p[i]); i++ }

@@ -5,7 +5,26 @@ import io.johnsonlee.graphite.analysis.PropagationNodeType
 import io.johnsonlee.graphite.analysis.PropagationPath
 import io.johnsonlee.graphite.analysis.PropagationSourceType
 import io.johnsonlee.graphite.analysis.PropagationStep
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
 import kotlin.test.BeforeTest
@@ -308,7 +327,6 @@ class QueryDslTest {
 
     @Test
     fun `ReturnTypeResult hasGenericReturn true for Object`() {
-        val m = makeMethod()
         val result = ReturnTypeResult(
             method = MethodDescriptor(TypeDescriptor("Foo"), "get", emptyList(), TypeDescriptor("java.lang.Object")),
             declaredType = TypeDescriptor("java.lang.Object"),

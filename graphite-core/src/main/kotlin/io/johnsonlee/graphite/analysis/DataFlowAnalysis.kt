@@ -1,7 +1,30 @@
 package io.johnsonlee.graphite.analysis
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
+
+private const val CONSTANT_PREVIEW_LENGTH = 50
 
 /**
  * Dataflow analysis engine.
@@ -122,7 +145,7 @@ class DataFlowAnalysis(
                 nodeId = node.id,
                 nodeType = PropagationNodeType.LOCAL_VARIABLE,
                 description = "var ${node.name}: ${node.type.simpleName}",
-                location = "${node.method.declaringClass.simpleName}.${node.method.name}()",
+                location = methodLocation(node.method),
                 edgeKind = edgeKind,
                 depth = depth
             )
@@ -169,6 +192,9 @@ class DataFlowAnalysis(
         }
     }
 
+    private fun methodLocation(method: MethodDescriptor): String =
+        "${method.declaringClass.simpleName}.${method.name}()"
+
     /**
      * Format a constant node for display.
      */
@@ -178,7 +204,10 @@ class DataFlowAnalysis(
             is LongConstant -> "const long: ${node.value}L"
             is FloatConstant -> "const float: ${node.value}f"
             is DoubleConstant -> "const double: ${node.value}"
-            is StringConstant -> "const string: \"${node.value.take(50)}${if (node.value.length > 50) "..." else ""}\""
+            is StringConstant -> {
+                val suffix = if (node.value.length > CONSTANT_PREVIEW_LENGTH) "..." else ""
+                "const string: \"${node.value.take(CONSTANT_PREVIEW_LENGTH)}$suffix\""
+            }
             is BooleanConstant -> "const boolean: ${node.value}"
             is EnumConstant -> "enum: ${node.enumType.simpleName}.${node.enumName}"
             is NullConstant -> "const null"
