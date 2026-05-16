@@ -595,6 +595,48 @@ class CypherDslAdapterTest {
     }
 
     @Test
+    fun `predicate function ANY`() {
+        val clauses = CypherDslAdapter.parse(
+            "MATCH (n) WHERE ANY(label IN labels(n) WHERE label = 'CallSiteNode') RETURN n"
+        )
+        val predicate = assertIs<CypherExpr.PredicateFunction>(
+            assertIs<CypherClause.Where>(clauses[1]).condition
+        )
+
+        assertEquals("any", predicate.name)
+        assertEquals("label", predicate.variable)
+        val labelsCall = assertIs<CypherExpr.FunctionCall>(predicate.listExpr)
+        assertEquals("labels", labelsCall.name)
+        assertEquals(listOf(CypherExpr.Variable("n")), labelsCall.args)
+
+        val condition = assertIs<CypherExpr.Comparison>(predicate.predicate)
+        assertEquals("=", condition.op)
+        assertEquals(CypherExpr.Variable("label"), condition.left)
+        assertEquals(CypherExpr.Literal("CallSiteNode"), condition.right)
+    }
+
+    @Test
+    fun `predicate function ALL`() {
+        val clauses = CypherDslAdapter.parse(
+            "MATCH (n) WHERE ALL(label IN labels(n) WHERE label CONTAINS 'Constant') RETURN n"
+        )
+        val predicate = assertIs<CypherExpr.PredicateFunction>(
+            assertIs<CypherClause.Where>(clauses[1]).condition
+        )
+
+        assertEquals("all", predicate.name)
+        assertEquals("label", predicate.variable)
+        val labelsCall = assertIs<CypherExpr.FunctionCall>(predicate.listExpr)
+        assertEquals("labels", labelsCall.name)
+        assertEquals(listOf(CypherExpr.Variable("n")), labelsCall.args)
+
+        val condition = assertIs<CypherExpr.StringOp>(predicate.predicate)
+        assertEquals("CONTAINS", condition.op)
+        assertEquals(CypherExpr.Variable("label"), condition.left)
+        assertEquals(CypherExpr.Literal("Constant"), condition.right)
+    }
+
+    @Test
     fun `60 - CountStar`() {
         val clauses = CypherDslAdapter.parse("RETURN count(*)")
         assertIs<CypherExpr.CountStar>(assertIs<CypherClause.Return>(clauses[0]).items[0].expression)

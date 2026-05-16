@@ -331,6 +331,15 @@ class CypherCompatibilityTest {
     }
 
     @Test
+    fun `WHERE - untyped node equality with double quoted string`() {
+        val result = executor.execute(
+            "MATCH (n) WHERE n.callee_class = \"com.example.Repository\" RETURN n.callee_name"
+        )
+        assertEquals(1, result.rows.size)
+        assertEquals("save", result.rows[0]["n.callee_name"])
+    }
+
+    @Test
     fun `WHERE - inequality`() {
         val result = executor.execute("MATCH (n:IntConstant) WHERE n.value <> 42 RETURN n.value")
         assertEquals(1, result.rows.size)
@@ -396,6 +405,51 @@ class CypherCompatibilityTest {
             "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS 'example' RETURN n.callee_name"
         )
         assertEquals(2, result.rows.size)
+    }
+
+    @Test
+    fun `WHERE - labels function with IN`() {
+        val result = executor.execute(
+            "MATCH (n) WHERE 'CallSiteNode' IN labels(n) RETURN n.callee_name"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(setOf("save", "log"), result.rows.map { it["n.callee_name"] }.toSet())
+    }
+
+    @Test
+    fun `WHERE - ANY over labels function`() {
+        val result = executor.execute(
+            "MATCH (n) WHERE ANY(label IN labels(n) WHERE label = 'CallSiteNode') RETURN n.callee_name"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(setOf("save", "log"), result.rows.map { it["n.callee_name"] }.toSet())
+    }
+
+    @Test
+    fun `RETURN - ANY over labels function projects boolean values`() {
+        val result = executor.execute(
+            "MATCH (n:CallSiteNode) RETURN ANY(label IN labels(n) WHERE label = 'CallSiteNode') AS isCallSite"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(setOf(true), result.rows.map { it["isCallSite"] }.toSet())
+    }
+
+    @Test
+    fun `WHERE - ALL over labels function`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) WHERE ALL(label IN labels(n) WHERE label CONTAINS 'Constant') RETURN n.value"
+        )
+        assertEquals(2, result.rows.size)
+        assertEquals(setOf(42, 7), result.rows.map { it["n.value"] }.toSet())
+    }
+
+    @Test
+    fun `WITH - inline WHERE filters projected rows`() {
+        val result = executor.execute(
+            "MATCH (n:CallSiteNode) WITH n WHERE n.callee_class CONTAINS 'Repository' RETURN n.callee_name"
+        )
+        assertEquals(1, result.rows.size)
+        assertEquals("save", result.rows[0]["n.callee_name"])
     }
 
     @Test

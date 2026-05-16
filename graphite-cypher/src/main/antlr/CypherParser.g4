@@ -263,6 +263,7 @@ atomExpression
     | caseExpression                                                       # CaseAtom
     | COUNT LPAREN MULT RPAREN                                             # CountStarAtom
     | listComprehension                                                    # ListComprehensionAtom
+    | predicateFunction                                                    # PredicateFunctionAtom
     | EXISTS LPAREN expression RPAREN                                      # ExistsAtom
     | functionInvocation                                                   # FunctionAtom
     | LPAREN expression RPAREN                                             # ParenAtom
@@ -293,6 +294,10 @@ caseElse
 
 listComprehension
     : LBRACK variable IN expression (WHERE expression)? (STICK expression)? RBRACK
+    ;
+
+predicateFunction
+    : (ANY | ALL | NONE | SINGLE) LPAREN variable IN expression (WHERE expression)? RPAREN
     ;
 
 parameter
