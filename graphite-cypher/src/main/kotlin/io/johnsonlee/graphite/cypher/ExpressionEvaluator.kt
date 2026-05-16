@@ -8,6 +8,12 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 
+private const val PREDICATE_ANY = "any"
+private const val PREDICATE_ALL = "all"
+private const val PREDICATE_NONE = "none"
+private const val PREDICATE_SINGLE = "single"
+private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
+
 /**
  * Evaluates Cypher expressions against a variable binding context.
  * Supports all openCypher expression types: arithmetic, boolean, comparison,
@@ -45,6 +51,9 @@ class ExpressionEvaluator {
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
         is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
+        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(expr, bindings) { expression, row ->
+            evaluate(expression, row)
+        }
         is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
         is CypherExpr.Slice -> evaluateSlice(expr, bindings)
         is CypherExpr.Not -> {
@@ -351,6 +360,54 @@ class ExpressionEvaluator {
     }
 }
 
+private fun evaluatePredicateFunction(
+    expr: CypherExpr.PredicateFunction,
+    bindings: Map<String, Any?>,
+    evaluate: (CypherExpr, Map<String, Any?>) -> Any?
+): Any? {
+    val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
+    val results = list.map { element ->
+        val innerBindings = bindings + (expr.variable to element)
+        val value = expr.predicate?.let { evaluate(it, innerBindings) } ?: element
+        value as? Boolean
+    }
+    return evaluatePredicateResults(expr.name, results)
+}
+
+private fun evaluatePredicateResults(name: String, results: List<Boolean?>): Any? {
+    return when (name.lowercase()) {
+        PREDICATE_ANY -> evaluateAnyPredicate(results)
+        PREDICATE_ALL -> evaluateAllPredicate(results)
+        PREDICATE_NONE -> evaluateNonePredicate(results)
+        PREDICATE_SINGLE -> evaluateSinglePredicate(results)
+        else -> throw CypherException("$UNKNOWN_PREDICATE_FUNCTION: $name")
+    }
+}
+
+private fun evaluateAnyPredicate(results: List<Boolean?>): Boolean? = when {
+    results.any { it == true } -> true
+    results.any { it == null } -> null
+    else -> false
+}
+
+private fun evaluateAllPredicate(results: List<Boolean?>): Boolean? = when {
+    results.any { it == false } -> false
+    results.any { it == null } -> null
+    else -> true
+}
+
+private fun evaluateNonePredicate(results: List<Boolean?>): Boolean? = when {
+    results.any { it == true } -> false
+    results.any { it == null } -> null
+    else -> true
+}
+
+private fun evaluateSinglePredicate(results: List<Boolean?>): Boolean? = when {
+    results.count { it == true } > 1 -> false
+    results.any { it == null } -> null
+    else -> results.count { it == true } == 1
+}
+
 /**
  * AST for Cypher expressions.
  * Produced by the ANTLR-based Cypher parser adapter.
@@ -389,6 +446,12 @@ sealed class CypherExpr {
         val listExpr: CypherExpr,
         val predicate: CypherExpr?,
         val mapExpr: CypherExpr?
+    ) : CypherExpr()
+    data class PredicateFunction(
+        val name: String,
+        val variable: String,
+        val listExpr: CypherExpr,
+        val predicate: CypherExpr?
     ) : CypherExpr()
     data class Subscript(val expression: CypherExpr, val index: CypherExpr) : CypherExpr()
     data class Slice(val expression: CypherExpr, val from: CypherExpr?, val to: CypherExpr?) : CypherExpr()
@@ -444,6 +507,11 @@ fun CypherExpr.toCypherString(): String = when (this) {
         if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
         if (mapExpr != null) append(" | ${mapExpr.toCypherString()}")
         append("]")
+    }
+    is CypherExpr.PredicateFunction -> buildString {
+        append("${name.lowercase()}($variable IN ${listExpr.toCypherString()}")
+        if (predicate != null) append(" WHERE ${predicate.toCypherString()}")
+        append(")")
     }
     is CypherExpr.Subscript -> "${expression.toCypherString()}[${index.toCypherString()}]"
     is CypherExpr.Slice -> buildString {

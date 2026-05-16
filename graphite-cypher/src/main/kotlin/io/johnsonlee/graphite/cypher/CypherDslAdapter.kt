@@ -650,6 +650,7 @@ private class CypherAstVisitor {
             is CypherParser.CaseAtomContext -> visitCaseExpr(ctx.caseExpression())
             is CypherParser.CountStarAtomContext -> CypherExpr.CountStar
             is CypherParser.ListComprehensionAtomContext -> visitListComprehensionExpr(ctx.listComprehension())
+            is CypherParser.PredicateFunctionAtomContext -> visitPredicateFunctionExpr(ctx.predicateFunction())
             is CypherParser.ExistsAtomContext -> {
                 val expr = visitExpr(ctx.expression())
                 CypherExpr.FunctionCall("exists", listOf(expr))
@@ -699,6 +700,20 @@ private class CypherAstVisitor {
         val distinct = ctx.DISTINCT() != null
         val args = ctx.expressionList()?.expression()?.map { visitExpr(it) } ?: emptyList()
         return CypherExpr.FunctionCall(name, args, distinct)
+    }
+
+    private fun visitPredicateFunctionExpr(ctx: CypherParser.PredicateFunctionContext): CypherExpr {
+        val name = when {
+            ctx.ANY() != null -> "any"
+            ctx.ALL() != null -> "all"
+            ctx.NONE() != null -> "none"
+            ctx.SINGLE() != null -> "single"
+            else -> throw CypherParseException("Unknown predicate function")
+        }
+        val expressions = ctx.expression()
+        val listExpr = visitExpr(expressions[0])
+        val predicate = expressions.getOrNull(1)?.let { visitExpr(it) }
+        return CypherExpr.PredicateFunction(name, getSymbolicName(ctx.variable()), listExpr, predicate)
     }
 
     private fun visitCaseExpr(ctx: CypherParser.CaseExpressionContext): CypherExpr {

@@ -572,6 +572,8 @@ class QueryPipeline(private val graph: Graph) {
             CypherFunctions.isAggregation(expr.name) || expr.args.any { containsAggregation(it) }
         is CypherExpr.CountStar -> true
         is CypherExpr.Property -> containsAggregation(expr.expression)
+        is CypherExpr.PredicateFunction -> containsAggregation(expr.listExpr) ||
+            expr.predicate?.let { containsAggregation(it) } == true
         is CypherExpr.BinaryOp -> containsAggregation(expr.left) || containsAggregation(expr.right)
         is CypherExpr.Comparison -> containsAggregation(expr.left) || containsAggregation(expr.right)
         is CypherExpr.Distinct -> containsAggregation(expr.expression)

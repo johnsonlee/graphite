@@ -532,6 +532,45 @@ class ExpressionEvaluatorTest {
         assertNull(eval(expr))
     }
 
+    @Test
+    fun `predicate function ANY`() {
+        val listExpr = CypherExpr.ListLiteral(listOf(lit("A"), lit("B")))
+        val matching = CypherExpr.Comparison("=", variable("x"), lit("B"))
+        val missing = CypherExpr.Comparison("=", variable("x"), lit("C"))
+
+        assertEquals(true, eval(CypherExpr.PredicateFunction("any", "x", listExpr, matching)))
+        assertEquals(false, eval(CypherExpr.PredicateFunction("any", "x", listExpr, missing)))
+    }
+
+    @Test
+    fun `predicate function ALL`() {
+        val listExpr = CypherExpr.ListLiteral(listOf(lit("AX"), lit("BX")))
+        val matching = CypherExpr.StringOp("CONTAINS", variable("x"), lit("X"))
+        val partial = CypherExpr.StringOp("CONTAINS", variable("x"), lit("A"))
+
+        assertEquals(true, eval(CypherExpr.PredicateFunction("all", "x", listExpr, matching)))
+        assertEquals(false, eval(CypherExpr.PredicateFunction("all", "x", listExpr, partial)))
+    }
+
+    @Test
+    fun `predicate function NONE and SINGLE`() {
+        val listExpr = CypherExpr.ListLiteral(listOf(lit("A"), lit("B")))
+        val isA = CypherExpr.Comparison("=", variable("x"), lit("A"))
+        val isC = CypherExpr.Comparison("=", variable("x"), lit("C"))
+
+        assertEquals(true, eval(CypherExpr.PredicateFunction("none", "x", listExpr, isC)))
+        assertEquals(false, eval(CypherExpr.PredicateFunction("none", "x", listExpr, isA)))
+        assertEquals(true, eval(CypherExpr.PredicateFunction("single", "x", listExpr, isA)))
+        assertEquals(false, eval(CypherExpr.PredicateFunction("single", "x", listExpr, CypherExpr.Literal(true))))
+    }
+
+    @Test
+    fun `predicate function on null list returns null`() {
+        val expr = CypherExpr.PredicateFunction("any", "x", lit(null), CypherExpr.Literal(true))
+
+        assertNull(eval(expr))
+    }
+
     // ========================================================================
     // 18. Subscript
     // ========================================================================
@@ -1087,6 +1126,17 @@ class ExpressionEvaluatorTest {
     fun `toCypherString - ListComprehension without filter or map`() {
         val expr = CypherExpr.ListComprehension("x", CypherExpr.Variable("list"), null, null)
         assertEquals("[x IN list]", expr.toCypherString())
+    }
+
+    @Test
+    fun `toCypherString - PredicateFunction`() {
+        val expr = CypherExpr.PredicateFunction(
+            "any",
+            "x",
+            CypherExpr.Variable("list"),
+            CypherExpr.Comparison("=", CypherExpr.Variable("x"), CypherExpr.Literal("A"))
+        )
+        assertEquals("any(x IN list WHERE x = 'A')", expr.toCypherString())
     }
 
     @Test
