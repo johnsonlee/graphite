@@ -1,15 +1,47 @@
 package io.johnsonlee.graphite.cypher
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.ValueNode
 
 /**
  * Resolves Cypher property names to actual values on Graphite nodes.
  */
 object NodePropertyAccessor {
+    private const val PROPERTY_ID = "id"
+    private const val PROPERTY_TYPE = "type"
+    private const val PROPERTY_VALUE = "value"
+    private const val PROPERTY_NAME = "name"
+    private const val PROPERTY_METHOD = "method"
+    private const val PROPERTY_CLASS = "class"
+    private const val PROPERTY_FORMAT = "format"
+    private const val PROPERTY_PROFILE = "profile"
 
     fun getProperty(node: Node, property: String): Any? {
-        // Check global properties first (except "type" which is ambiguous)
-        if (property == "id") return node.id.value
+        // Check global properties first (except PROPERTY_TYPE which is ambiguous)
+        if (property == PROPERTY_ID) return node.id.value
 
         // Try node-specific properties first (they take precedence)
         val nodeSpecific = when (node) {
@@ -34,7 +66,7 @@ object NodePropertyAccessor {
 
         // Fall back to global properties
         return when (property) {
-            "type" -> nodeTypeName(node)
+            PROPERTY_TYPE -> nodeTypeName(node)
             else -> null
         }
     }
@@ -70,66 +102,66 @@ object NodePropertyAccessor {
     }
 
     private fun getIntConstantProperty(node: IntConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getStringConstantProperty(node: StringConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getLongConstantProperty(node: LongConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getFloatConstantProperty(node: FloatConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getDoubleConstantProperty(node: DoubleConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getBooleanConstantProperty(node: BooleanConstant, prop: String) = when (prop) {
-        "value" -> node.value
+        PROPERTY_VALUE -> node.value
         else -> null
     }
 
     private fun getEnumConstantProperty(node: EnumConstant, prop: String) = when (prop) {
-        "value" -> node.value
-        "name" -> node.enumName
+        PROPERTY_VALUE -> node.value
+        PROPERTY_NAME -> node.enumName
         "enum_type" -> node.enumType.className
         else -> null
     }
 
     private fun getLocalVariableProperty(node: LocalVariable, prop: String) = when (prop) {
-        "name" -> node.name
-        "type" -> node.type.className
-        "method" -> node.method.signature
+        PROPERTY_NAME -> node.name
+        PROPERTY_TYPE -> node.type.className
+        PROPERTY_METHOD -> node.method.signature
         else -> null
     }
 
     private fun getFieldNodeProperty(node: FieldNode, prop: String) = when (prop) {
-        "name" -> node.descriptor.name
-        "type" -> node.descriptor.type.className
-        "class" -> node.descriptor.declaringClass.className
+        PROPERTY_NAME -> node.descriptor.name
+        PROPERTY_TYPE -> node.descriptor.type.className
+        PROPERTY_CLASS -> node.descriptor.declaringClass.className
         "static" -> node.isStatic
         else -> null
     }
 
     private fun getParameterNodeProperty(node: ParameterNode, prop: String) = when (prop) {
         "index" -> node.index
-        "type" -> node.type.className
-        "method" -> node.method.signature
+        PROPERTY_TYPE -> node.type.className
+        PROPERTY_METHOD -> node.method.signature
         else -> null
     }
 
     private fun getReturnNodeProperty(node: ReturnNode, prop: String) = when (prop) {
-        "method" -> node.method.signature
+        PROPERTY_METHOD -> node.method.signature
         "actual_type" -> node.actualType?.className
         else -> null
     }
@@ -137,23 +169,23 @@ object NodePropertyAccessor {
     private fun getResourceFileNodeProperty(node: ResourceFileNode, prop: String) = when (prop) {
         "path" -> node.path
         "source" -> node.source
-        "format" -> node.format
-        "profile" -> node.profile
+        PROPERTY_FORMAT -> node.format
+        PROPERTY_PROFILE -> node.profile
         else -> null
     }
 
     private fun getResourceValueNodeProperty(node: ResourceValueNode, prop: String) = when (prop) {
         "path" -> node.path
         "key" -> node.key
-        "value" -> node.value
-        "format" -> node.format
-        "profile" -> node.profile
+        PROPERTY_VALUE -> node.value
+        PROPERTY_FORMAT -> node.format
+        PROPERTY_PROFILE -> node.profile
         else -> null
     }
 
     private fun getAnnotationNodeProperty(node: AnnotationNode, prop: String) = when (prop) {
-        "name" -> node.name
-        "class" -> node.className
+        PROPERTY_NAME -> node.name
+        PROPERTY_CLASS -> node.className
         "member" -> node.memberName
         "values" -> node.values.toString()
         else -> node.values[prop]
@@ -164,7 +196,7 @@ object NodePropertyAccessor {
      */
     fun getAllProperties(node: Node): Map<String, Any?> = when (node) {
         is CallSiteNode -> mapOf(
-            "id" to node.id.value,
+            PROPERTY_ID to node.id.value,
             "callee_class" to node.callee.declaringClass.className,
             "callee_name" to node.callee.name,
             "callee_signature" to node.callee.signature,
@@ -173,62 +205,62 @@ object NodePropertyAccessor {
             "caller_signature" to node.caller.signature,
             "line" to node.lineNumber
         )
-        is IntConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is StringConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is LongConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is FloatConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is DoubleConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is BooleanConstant -> mapOf("id" to node.id.value, "value" to node.value)
-        is NullConstant -> mapOf("id" to node.id.value, "value" to null)
+        is IntConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is StringConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is LongConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is FloatConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is DoubleConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is BooleanConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to node.value)
+        is NullConstant -> mapOf(PROPERTY_ID to node.id.value, PROPERTY_VALUE to null)
         is EnumConstant -> mapOf(
-            "id" to node.id.value,
-            "value" to node.value,
-            "name" to node.enumName,
+            PROPERTY_ID to node.id.value,
+            PROPERTY_VALUE to node.value,
+            PROPERTY_NAME to node.enumName,
             "enum_type" to node.enumType.className
         )
         is LocalVariable -> mapOf(
-            "id" to node.id.value,
-            "name" to node.name,
-            "type" to node.type.className,
-            "method" to node.method.signature
+            PROPERTY_ID to node.id.value,
+            PROPERTY_NAME to node.name,
+            PROPERTY_TYPE to node.type.className,
+            PROPERTY_METHOD to node.method.signature
         )
         is FieldNode -> mapOf(
-            "id" to node.id.value,
-            "name" to node.descriptor.name,
-            "type" to node.descriptor.type.className,
-            "class" to node.descriptor.declaringClass.className,
+            PROPERTY_ID to node.id.value,
+            PROPERTY_NAME to node.descriptor.name,
+            PROPERTY_TYPE to node.descriptor.type.className,
+            PROPERTY_CLASS to node.descriptor.declaringClass.className,
             "static" to node.isStatic
         )
         is ParameterNode -> mapOf(
-            "id" to node.id.value,
+            PROPERTY_ID to node.id.value,
             "index" to node.index,
-            "type" to node.type.className,
-            "method" to node.method.signature
+            PROPERTY_TYPE to node.type.className,
+            PROPERTY_METHOD to node.method.signature
         )
         is ReturnNode -> mapOf(
-            "id" to node.id.value,
-            "method" to node.method.signature,
+            PROPERTY_ID to node.id.value,
+            PROPERTY_METHOD to node.method.signature,
             "actual_type" to node.actualType?.className
         )
         is ResourceFileNode -> mapOf(
-            "id" to node.id.value,
+            PROPERTY_ID to node.id.value,
             "path" to node.path,
             "source" to node.source,
-            "format" to node.format,
-            "profile" to node.profile
+            PROPERTY_FORMAT to node.format,
+            PROPERTY_PROFILE to node.profile
         )
         is ResourceValueNode -> mapOf(
-            "id" to node.id.value,
+            PROPERTY_ID to node.id.value,
             "path" to node.path,
             "key" to node.key,
-            "value" to node.value,
-            "format" to node.format,
-            "profile" to node.profile
+            PROPERTY_VALUE to node.value,
+            PROPERTY_FORMAT to node.format,
+            PROPERTY_PROFILE to node.profile
         )
         is AnnotationNode -> mutableMapOf<String, Any?>(
-            "id" to node.id.value,
-            "name" to node.name,
-            "class" to node.className,
+            PROPERTY_ID to node.id.value,
+            PROPERTY_NAME to node.name,
+            PROPERTY_CLASS to node.className,
             "member" to node.memberName
         ).also { map -> node.values.forEach { (k, v) -> map[k] = v } }
     }

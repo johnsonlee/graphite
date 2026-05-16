@@ -2,7 +2,7 @@ package io.johnsonlee.graphite.cli.c4
 
 internal fun diagramElementLabel(element: Map<String, Any?>): String {
     val rawName = element["name"]?.toString() ?: element["id"]?.toString() ?: "Unknown"
-    val architectureType = element["properties"].asStructurizrProperty("graphite.architectureType")
+    val architectureType = element["properties"].asStructurizrProperty(GRAPHITE_ARCHITECTURE_TYPE_PROPERTY)
     return when (architectureType) {
         "external-library", "library" -> humanizeArtifactLabel(rawName)
         "runtime-platform" -> rawName
@@ -34,7 +34,7 @@ internal fun humanizeSubjectArtifactLabel(name: String): String =
 internal fun diagramRelationshipLabel(relationship: Map<String, Any?>): String {
     val properties = relationship["properties"] as? Map<*, *>
     val kind = C4RelationshipKind.fromWire(
-        properties?.get("graphite.relationshipKind") as? String ?: relationship["kind"]?.toString()
+            properties?.get(GRAPHITE_RELATIONSHIP_KIND_PROPERTY) as? String ?: relationship["kind"]?.toString()
     )
     return diagramRelationshipLabel(kind)
 }
@@ -141,8 +141,8 @@ internal fun reduceSharedLibraryFanIn(edges: List<Map<String, Any?>>): List<Map<
 internal fun <T : C4DirectedEdge> reduceSharedLibraryFanInTyped(edges: List<T>): List<T> {
     val sharedLibraryTargets = edges
         .filter { edge ->
-            edge.from.startsWith("container:") &&
-                edge.to.startsWith("dependency:") &&
+            edge.from.startsWith(CONTAINER_ID_PREFIX) &&
+                edge.to.startsWith(DEPENDENCY_ID_PREFIX) &&
                 edge.kind != C4RelationshipKind.RUNS_ON
         }
         .groupBy { it.to }
@@ -172,8 +172,8 @@ internal fun reduceSharedInternalFanIn(edges: List<Map<String, Any?>>): List<Map
 internal fun <T : C4DirectedEdge> reduceSharedInternalFanInTyped(edges: List<T>): List<T> {
     val sharedContainerTargets = edges
         .filter { edge ->
-            edge.from.startsWith("container:") &&
-                edge.to.startsWith("container:")
+            edge.from.startsWith(CONTAINER_ID_PREFIX) &&
+                edge.to.startsWith(CONTAINER_ID_PREFIX)
         }
         .groupBy { it.to }
         .filterValues { candidates -> candidates.size > C4ReductionLimits.MAX_ENTRYPOINTS_PER_SHARED_CONTAINER }

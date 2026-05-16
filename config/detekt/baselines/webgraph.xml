@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:GraphStore.kt$GraphStore$internal fun collectMetadata(graph: Graph): GraphMetadata</ID>
+    <ID>CyclomaticComplexMethod:NodeSerializer.kt$NodeSerializer$fun readNode(dis: DataInputStream, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node</ID>
+    <ID>CyclomaticComplexMethod:NodeSerializer.kt$NodeSerializer$fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable): Int</ID>
+    <ID>LargeClass:GraphStoreTest.kt$GraphStoreTest</ID>
+    <ID>LargeClass:NodeSerializer.kt$NodeSerializer</ID>
+    <ID>LongParameterList:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$( private val forward: ImmutableGraph, private val backward: ImmutableGraph, private val nodeDataFile: File, private val nodeDataVersion: Int, private val stringTable: StringTable, private val nodeOffsets: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, List&lt;Int>>, private val forwardLabels: ByteArray, private val cumulativeOutdeg: LongArray, private val comparisonMap: Map&lt;Long, BranchComparison>, private val metadata: GraphMetadata, override val resources: ResourceAccessor )</ID>
+    <ID>LongParameterList:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$( private val forward: ImmutableGraph, private val backward: ImmutableGraph, private val mappedNodeData: MappedByteBuffer, private val nodeDataVersion: Int, private val stringTable: StringTable, private val nodeOffsets: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, List&lt;Int>>, private val forwardLabels: ByteArray, private val cumulativeOutdeg: LongArray, private val comparisonMap: Map&lt;Long, BranchComparison>, private val metadata: GraphMetadata, override val resources: ResourceAccessor )</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 0 or (DataFlowKind.PARAMETER_PASS.ordinal shl 2), from.value, to.value, null) as DataFlowEdge).kind</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 2 or (TypeRelation.EXTENDS.ordinal shl 2), from.value, to.value, null) as TypeEdge).kind</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV2.invoke(NodeSerializer, 3 or (ControlFlowKind.SEQUENTIAL.ordinal shl 2), from.value, to.value, comparison) as ControlFlowEdge).comparison</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$(decodeEdgeV3.invoke(NodeSerializer, 4 or (ResourceRelation.OPENS.ordinal shl 3), from.value, to.value, null) as ResourceEdge).kind</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$val collectAnyValueString = serializerClass.getDeclaredMethod("collectAnyValueString", Any::class.java, MutableSet::class.java).apply { isAccessible = true }</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$val readAnyValue = serializerClass.getDeclaredMethod("readAnyValue", DataInputStream::class.java, StringTable::class.java, Int::class.javaPrimitiveType).apply { isAccessible = true }</ID>
+    <ID>MaxLineLength:GraphStoreTest.kt$GraphStoreTest$val writeAnyValue = serializerClass.getDeclaredMethod("writeAnyValue", DataOutputStream::class.java, Any::class.java, StringTable::class.java).apply { isAccessible = true }</ID>
+    <ID>MaxLineLength:NodeSerializer.kt$NodeSerializer$is EnumValueReference -> { dos.writeByte(VAL_ENUM_REF); dos.writeInt(strings.indexOf(value.enumClass)); dos.writeInt(strings.indexOf(value.enumName)) }</ID>
+    <ID>ReturnCount:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph$override fun node(id: NodeId): Node?</ID>
+    <ID>ReturnCount:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph$override fun node(id: NodeId): Node?</ID>
+    <ID>SwallowedException:GraphStoreTest.kt$GraphStoreTest$e: IllegalArgumentException</ID>
+    <ID>TooManyFunctions:LazyWebGraphBackedGraph.kt$LazyWebGraphBackedGraph : GraphCloseable</ID>
+    <ID>TooManyFunctions:MappedWebGraphBackedGraph.kt$MappedWebGraphBackedGraph : GraphCloseable</ID>
+    <ID>TooManyFunctions:NodeSerializer.kt$NodeSerializer</ID>
+  </CurrentIssues>
+</SmellBaseline>

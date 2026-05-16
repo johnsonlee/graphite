@@ -3,7 +3,10 @@ package io.johnsonlee.graphite.cli
 import com.google.gson.JsonParser
 import io.javalin.Javalin
 import io.johnsonlee.graphite.cli.c4.C4ArchitectureService
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
@@ -23,78 +26,96 @@ internal class ExploreRoutes {
             val nodeCount = graph.nodes(Node::class.java).count()
             val edgeCount = graph.nodes(Node::class.java).sumOf { graph.outgoing(it.id).count().toLong() }
             ctx.json(mapOf(
-                "nodes" to nodeCount,
-                "edges" to edgeCount,
-                "methods" to graph.methods(MethodPattern()).count(),
-                "callSites" to graph.nodes(CallSiteNode::class.java).count()
+                API_FIELD_NODES to nodeCount,
+                API_FIELD_EDGES to edgeCount,
+                API_FIELD_METHODS to graph.methods(MethodPattern()).count(),
+                API_FIELD_CALL_SITES to graph.nodes(CallSiteNode::class.java).count()
             ))
         }
 
         app.get("/api/nodes") { ctx ->
-            val type = ctx.queryParam("type")
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val type = ctx.queryParam(API_PARAM_TYPE)
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
             val nodeClass = resolveNodeType(type)
             val nodes = graph.nodes(nodeClass).take(limit).toList()
             ctx.json(nodes.map { nodeToMap(it) })
         }
 
         app.get("/api/node/{id}") { ctx ->
-            val id = ctx.pathParam("id").toIntOrNull() ?: run { ctx.status(HTTP_BAD_REQUEST).result("Invalid node ID"); return@get }
-            val node = graph.node(NodeId(id)) ?: run { ctx.status(HTTP_NOT_FOUND).result("Node not found"); return@get }
+            val id = ctx.pathParam(API_FIELD_ID).toIntOrNull() ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result(API_ERROR_INVALID_NODE_ID)
+                return@get
+            }
+            val node = graph.node(NodeId(id)) ?: run {
+                ctx.status(HTTP_NOT_FOUND).result(API_ERROR_NODE_NOT_FOUND)
+                return@get
+            }
             ctx.json(nodeToMap(node))
         }
 
         app.get("/api/node/{id}/outgoing") { ctx ->
-            val id = ctx.pathParam("id").toIntOrNull() ?: run { ctx.status(HTTP_BAD_REQUEST).result("Invalid node ID"); return@get }
+            val id = ctx.pathParam(API_FIELD_ID).toIntOrNull() ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result(API_ERROR_INVALID_NODE_ID)
+                return@get
+            }
             val edges = graph.outgoing(NodeId(id)).toList()
             ctx.json(edges.map { edgeToMap(it) })
         }
 
         app.get("/api/node/{id}/incoming") { ctx ->
-            val id = ctx.pathParam("id").toIntOrNull() ?: run { ctx.status(HTTP_BAD_REQUEST).result("Invalid node ID"); return@get }
+            val id = ctx.pathParam(API_FIELD_ID).toIntOrNull() ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result(API_ERROR_INVALID_NODE_ID)
+                return@get
+            }
             val edges = graph.incoming(NodeId(id)).toList()
             ctx.json(edges.map { edgeToMap(it) })
         }
 
         app.get("/api/call-sites") { ctx ->
-            val classPattern = ctx.queryParam("class")
-            val methodPattern = ctx.queryParam("method")
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val classPattern = ctx.queryParam(API_PARAM_CLASS)
+            val methodPattern = ctx.queryParam(API_PARAM_METHOD)
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
             val pattern = MethodPattern(declaringClass = classPattern, name = methodPattern)
             val callSites = graph.callSites(pattern).take(limit).toList()
             ctx.json(callSites.map { nodeToMap(it) })
         }
 
         app.get("/api/methods") { ctx ->
-            val classPattern = ctx.queryParam("class")
-            val namePattern = ctx.queryParam("name")
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val classPattern = ctx.queryParam(API_PARAM_CLASS)
+            val namePattern = ctx.queryParam(API_PARAM_NAME)
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
             val pattern = MethodPattern(declaringClass = classPattern, name = namePattern)
             val methods = graph.methods(pattern).take(limit).toList()
             ctx.json(methods.map { mapOf(
                 "signature" to it.signature,
-                "class" to it.declaringClass.className,
-                "name" to it.name,
+                API_FIELD_CLASS to it.declaringClass.className,
+                API_FIELD_NAME to it.name,
                 "returnType" to it.returnType.className
             ) })
         }
 
         app.get("/api/annotations") { ctx ->
-            val className = ctx.queryParam("class") ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'class' parameter"); return@get }
-            val memberName = ctx.queryParam("member") ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'member' parameter"); return@get }
+            val className = ctx.queryParam(API_PARAM_CLASS) ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result("Missing 'class' parameter")
+                return@get
+            }
+            val memberName = ctx.queryParam(API_PARAM_MEMBER) ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result("Missing 'member' parameter")
+                return@get
+            }
             ctx.json(graph.memberAnnotations(className, memberName))
         }
 
         app.get("/api/resources") { ctx ->
-            val pattern = ctx.queryParam("pattern") ?: "**"
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_RESOURCE_LIMIT
+            val pattern = ctx.queryParam(API_PARAM_PATTERN) ?: "**"
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_RESOURCE_LIMIT
             val resources = listResources(graph, pattern, limit)
             ctx.json(
                 mapOf(
-                    "pattern" to pattern,
-                    "limit" to limit,
-                    "count" to resources.size,
-                    "resources" to resources
+                    API_FIELD_PATTERN to pattern,
+                    API_PARAM_LIMIT to limit,
+                    API_FIELD_COUNT to resources.size,
+                    API_FIELD_RESOURCES to resources
                 )
             )
         }
@@ -102,7 +123,7 @@ internal class ExploreRoutes {
         app.get("/api/resources/<path>") { ctx ->
             val path = ctx.pathParam("path").trimStart('/')
             if (path.isBlank()) {
-                ctx.status(HTTP_NOT_FOUND).result("Resource not found")
+                ctx.status(HTTP_NOT_FOUND).result(API_ERROR_RESOURCE_NOT_FOUND)
                 return@get
             }
             try {
@@ -110,30 +131,30 @@ internal class ExploreRoutes {
                 val bytes = graph.resources.open(path).use { it.readBytes() }
                 ctx.json(
                     mapOf(
-                        "path" to path,
-                        "source" to entry?.source,
-                        "derived" to false,
-                        "size" to bytes.size,
-                        "content" to bytes.toString(Charsets.UTF_8)
+                        API_FIELD_PATH to path,
+                        API_FIELD_SOURCE to entry?.source,
+                        API_FIELD_DERIVED to false,
+                        API_FIELD_SIZE to bytes.size,
+                        API_FIELD_CONTENT to bytes.toString(Charsets.UTF_8)
                     )
                 )
             } catch (_: IOException) {
-                ctx.status(HTTP_NOT_FOUND).result("Resource not found: $path")
+                ctx.status(HTTP_NOT_FOUND).result("$API_ERROR_RESOURCE_NOT_FOUND: $path")
             }
         }
 
         app.get("/api/api-spec") { ctx ->
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_API_SPEC_LIMIT
-            val classPattern = ctx.queryParam("class")
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_API_SPEC_LIMIT
+            val classPattern = ctx.queryParam(API_PARAM_CLASS)
             val endpoints = apiSpecExtractor.extract(graph)
                 .asSequence()
-                .filter { classPattern == null || it["class"] == classPattern }
+                .filter { classPattern == null || it[API_FIELD_CLASS] == classPattern }
                 .take(limit)
                 .toList()
             ctx.json(
                 mapOf(
                     "framework" to "spring-web",
-                    "count" to endpoints.size,
+                    API_FIELD_COUNT to endpoints.size,
                     "endpoints" to endpoints
                 )
             )
@@ -148,12 +169,12 @@ internal class ExploreRoutes {
         }
 
         app.get("/api/architecture/c4") { ctx ->
-            val level = ctx.queryParam("level") ?: "all"
-            val format = resolveC4ResponseFormat(ctx.header("Accept"), ctx.queryParam("format"))
+            val level = ctx.queryParam(API_PARAM_LEVEL) ?: "all"
+            val format = resolveC4ResponseFormat(ctx.header("Accept"), ctx.queryParam(API_PARAM_FORMAT))
             if (level !in C4ArchitectureService.LEVELS) {
                 ctx.status(HTTP_BAD_REQUEST).json(
                     mapOf(
-                        "error" to "Invalid 'level' parameter",
+                        API_FIELD_ERROR to "Invalid 'level' parameter",
                         "allowed" to C4ArchitectureService.LEVELS
                     )
                 )
@@ -162,7 +183,7 @@ internal class ExploreRoutes {
             if (format !in C4ArchitectureService.FORMATS) {
                 ctx.status(HTTP_BAD_REQUEST).json(
                     mapOf(
-                        "error" to "Invalid 'format' parameter",
+                        API_FIELD_ERROR to "Invalid 'format' parameter",
                         "allowed" to C4ArchitectureService.FORMATS
                     )
                 )
@@ -178,7 +199,7 @@ internal class ExploreRoutes {
         }
 
         app.get("/api/overview") { ctx ->
-            val limit = ctx.queryParam("limit")?.toIntOrNull() ?: DEFAULT_OVERVIEW_LIMIT
+            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_OVERVIEW_LIMIT
             // Build class-level dependency graph from call sites
             val classEdges = mutableMapOf<Pair<String, String>, Int>() // (callerClass, calleeClass) -> count
             val classCounts = mutableMapOf<String, Int>() // class -> number of call sites
@@ -205,10 +226,10 @@ internal class ExploreRoutes {
                 val shortName = cls.substringAfterLast('.')
                 mapOf(
                     "id" to cls,
-                    "type" to "Class",
-                    "label" to shortName,
+                    API_FIELD_TYPE to "Class",
+                    API_FIELD_LABEL to shortName,
                     "fullName" to cls,
-                    "callSites" to (classCounts[cls] ?: 0)
+                    API_FIELD_CALL_SITES to (classCounts[cls] ?: 0)
                 )
             }
 
@@ -218,17 +239,20 @@ internal class ExploreRoutes {
                     mapOf(
                         "from" to key.first,
                         "to" to key.second,
-                        "type" to "Call",
+                        API_FIELD_TYPE to "Call",
                         "weight" to count
                     )
                 }
 
-            ctx.json(mapOf("nodes" to nodes, "edges" to edges))
+            ctx.json(mapOf(API_FIELD_NODES to nodes, API_FIELD_EDGES to edges))
         }
 
         app.get("/api/subgraph") { ctx ->
-            val centerId = ctx.queryParam("center")?.toIntOrNull() ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'center' parameter"); return@get }
-            val depth = ctx.queryParam("depth")?.toIntOrNull() ?: DEFAULT_SUBGRAPH_DEPTH
+            val centerId = ctx.queryParam(API_PARAM_CENTER)?.toIntOrNull() ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result("Missing 'center' parameter")
+                return@get
+            }
+            val depth = ctx.queryParam(API_PARAM_DEPTH)?.toIntOrNull() ?: DEFAULT_SUBGRAPH_DEPTH
             val subgraph = buildSubgraph(graph, NodeId(centerId), depth)
             ctx.json(subgraph)
         }
@@ -236,25 +260,39 @@ internal class ExploreRoutes {
         app.post("/api/cypher") { ctx ->
             val body = ctx.body()
             val query = try {
-                JsonParser.parseString(body).asJsonObject.get("query").asString
+                JsonParser.parseString(body).asJsonObject.get(API_PARAM_QUERY).asString
             } catch (e: Exception) {
-                ctx.queryParam("query") ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'query' parameter"); return@post }
+                ctx.queryParam(API_PARAM_QUERY) ?: run {
+                    ctx.status(HTTP_BAD_REQUEST).result("Missing 'query' parameter")
+                    return@post
+                }
             }
             try {
                 val result = cypherExecutor.execute(query)
-                ctx.json(mapOf("columns" to result.columns, "rows" to result.rows, "rowCount" to result.rows.size))
+                ctx.json(mapOf(
+                    API_FIELD_COLUMNS to result.columns,
+                    API_FIELD_ROWS to result.rows,
+                    API_FIELD_ROW_COUNT to result.rows.size
+                ))
             } catch (e: Exception) {
-                ctx.status(HTTP_BAD_REQUEST).json(mapOf("error" to (e.message ?: "Query execution failed")))
+                ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to (e.message ?: "Query execution failed")))
             }
         }
 
         app.get("/api/cypher") { ctx ->
-            val query = ctx.queryParam("query") ?: run { ctx.status(HTTP_BAD_REQUEST).result("Missing 'query' parameter"); return@get }
+            val query = ctx.queryParam(API_PARAM_QUERY) ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result("Missing 'query' parameter")
+                return@get
+            }
             try {
                 val result = cypherExecutor.execute(query)
-                ctx.json(mapOf("columns" to result.columns, "rows" to result.rows, "rowCount" to result.rows.size))
+                ctx.json(mapOf(
+                    API_FIELD_COLUMNS to result.columns,
+                    API_FIELD_ROWS to result.rows,
+                    API_FIELD_ROW_COUNT to result.rows.size
+                ))
             } catch (e: Exception) {
-                ctx.status(HTTP_BAD_REQUEST).json(mapOf("error" to (e.message ?: "Query execution failed")))
+                ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to (e.message ?: "Query execution failed")))
             }
         }
     }
@@ -282,7 +320,7 @@ internal class ExploreRoutes {
         }
 
         visit(center, depth)
-        return mapOf("nodes" to nodes, "edges" to edges)
+        return mapOf(API_FIELD_NODES to nodes, API_FIELD_EDGES to edges)
     }
 
     private fun resolveResourceEntry(graph: Graph, path: String): ResourceEntry? =
@@ -291,7 +329,7 @@ internal class ExploreRoutes {
     private fun listResources(graph: Graph, pattern: String, limit: Int): List<Map<String, Any?>> {
         return graph.resources.list(pattern)
             .map { entry ->
-                mapOf("path" to entry.path, "source" to entry.source, "derived" to false)
+                mapOf(API_FIELD_PATH to entry.path, API_FIELD_SOURCE to entry.source, API_FIELD_DERIVED to false)
             }
             .take(limit)
             .toList()

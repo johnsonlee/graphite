@@ -166,21 +166,21 @@ internal enum class C4ElementType(override val wireName: String) : C4WireEnum {
 }
 
 internal enum class C4ElementKind(override val wireName: String) : C4WireEnum {
-    ACTOR("actor"),
-    APPLICATION("application"),
-    LIBRARY("library"),
-    RUNTIME("runtime"),
-    EXTERNAL_SYSTEM("external-system"),
-    APPLICATION_RUNTIME("application-runtime"),
-    APPLICATION_SERVICE("application-service"),
-    INTERFACE("interface"),
-    INTEGRATION("integration"),
-    ORCHESTRATOR("orchestrator"),
-    SHARED_CAPABILITY("shared-capability"),
-    CAPABILITY("capability"),
-    ENTRYPOINT("entrypoint"),
-    COORDINATION("coordination"),
-    DOMAIN_COMPONENT("domain-component");
+    ACTOR(WIRE_ACTOR),
+    APPLICATION(WIRE_APPLICATION),
+    LIBRARY(WIRE_LIBRARY),
+    RUNTIME(WIRE_RUNTIME),
+    EXTERNAL_SYSTEM(WIRE_EXTERNAL_SYSTEM),
+    APPLICATION_RUNTIME(WIRE_APPLICATION_RUNTIME),
+    APPLICATION_SERVICE(WIRE_APPLICATION_SERVICE),
+    INTERFACE(WIRE_INTERFACE),
+    INTEGRATION(WIRE_INTEGRATION),
+    ORCHESTRATOR(WIRE_ORCHESTRATOR),
+    SHARED_CAPABILITY(WIRE_SHARED_CAPABILITY),
+    CAPABILITY(WIRE_CAPABILITY),
+    ENTRYPOINT(WIRE_ENTRYPOINT),
+    COORDINATION(WIRE_COORDINATION),
+    DOMAIN_COMPONENT(WIRE_DOMAIN_COMPONENT);
 
     companion object {
         fun fromWire(value: String?): C4ElementKind? =
@@ -189,15 +189,15 @@ internal enum class C4ElementKind(override val wireName: String) : C4WireEnum {
 }
 
 internal enum class C4ArchitectureType(override val wireName: String) : C4WireEnum {
-    ACTOR("actor"),
+    ACTOR(WIRE_ACTOR),
     SOFTWARE_SYSTEM("software-system"),
-    LIBRARY("library"),
-    APPLICATION_RUNTIME("application-runtime"),
-    APPLICATION_SERVICE("application-service"),
+    LIBRARY(WIRE_LIBRARY),
+    APPLICATION_RUNTIME(WIRE_APPLICATION_RUNTIME),
+    APPLICATION_SERVICE(WIRE_APPLICATION_SERVICE),
     APPLICATION_COMPONENT("application-component"),
     RUNTIME_PLATFORM("runtime-platform"),
     EXTERNAL_LIBRARY("external-library"),
-    EXTERNAL_SYSTEM("external-system");
+    EXTERNAL_SYSTEM(WIRE_EXTERNAL_SYSTEM);
 
     companion object {
         fun fromWire(value: String?): C4ArchitectureType? =
@@ -206,9 +206,9 @@ internal enum class C4ArchitectureType(override val wireName: String) : C4WireEn
 }
 
 internal enum class ExternalDependencyKind(override val wireName: String) : C4WireEnum {
-    RUNTIME("runtime"),
-    LIBRARY("library"),
-    EXTERNAL_SYSTEM("external-system");
+    RUNTIME(WIRE_RUNTIME),
+    LIBRARY(WIRE_LIBRARY),
+    EXTERNAL_SYSTEM(WIRE_EXTERNAL_SYSTEM);
 
     companion object {
         fun fromWire(value: String?): ExternalDependencyKind =

@@ -1,9 +1,53 @@
 package io.johnsonlee.graphite.graph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.EnumValueReference
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.DataInput
+import java.io.DataInputStream
+import java.io.DataOutput
+import java.io.DataOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -32,8 +76,8 @@ class MmapGraphBuilder(
     internal val workDir: Path = Files.createTempDirectory("graphite-mmap")
 ) : FullGraphBuilder {
 
-    private val nodeStream = workDir.resolve("nodes.dat").toFile().outputStream().buffered()
-    private val edgeStream = workDir.resolve("edges.dat").toFile().outputStream().buffered()
+    private val nodeStream = workDir.resolve(NODES_FILE).toFile().outputStream().buffered()
+    private val edgeStream = workDir.resolve(EDGES_FILE).toFile().outputStream().buffered()
 
     private var nodeCount = 0
     private var edgeCount = 0L
@@ -135,13 +179,13 @@ class MmapGraphBuilder(
         edgeStream.close()
 
         // Build indexes by scanning files sequentially
-        var nodeOffsets = LongArray(16) { -1L }
+        var nodeOffsets = LongArray(INITIAL_NODE_INDEX_CAPACITY) { -1L }
         var maxNodeId = -1
         val nodeTypeIndexBuilder = HashMap<Class<out Node>, MutableList<Int>>()
 
         var offset = 0L
-        DataInputStream(workDir.resolve("nodes.dat").toFile().inputStream().buffered()).use { dis ->
-            val fileLen = workDir.resolve("nodes.dat").toFile().length()
+        DataInputStream(workDir.resolve(NODES_FILE).toFile().inputStream().buffered()).use { dis ->
+            val fileLen = workDir.resolve(NODES_FILE).toFile().length()
             while (offset < fileLen) {
                 val len = dis.readInt()
                 val bytes = ByteArray(len)
@@ -154,7 +198,7 @@ class MmapGraphBuilder(
                 nodeOffsets[nodeId] = offset
                 maxNodeId = maxOf(maxNodeId, nodeId)
                 nodeTypeIndexBuilder.getOrPut(node::class.java) { mutableListOf() }.add(nodeId)
-                offset += 4 + len // 4 bytes for length prefix + payload
+                offset += LENGTH_PREFIX_BYTES + len
             }
         }
 
@@ -169,7 +213,7 @@ class MmapGraphBuilder(
         val incomingCounts = IntArray(nodeCapacity)
 
         offset = 0L
-        RandomAccessFile(workDir.resolve("edges.dat").toFile(), "r").use { edgeRaf ->
+        RandomAccessFile(workDir.resolve(EDGES_FILE).toFile(), "r").use { edgeRaf ->
             while (edgeRaf.filePointer < edgeRaf.length()) {
                 val from = edgeRaf.readInt()
                 val to = edgeRaf.readInt()
@@ -186,7 +230,7 @@ class MmapGraphBuilder(
         val outgoingCursor = outgoingStarts.copyOf(outgoingStarts.size - 1)
         val incomingCursor = incomingStarts.copyOf(incomingStarts.size - 1)
 
-        RandomAccessFile(workDir.resolve("edges.dat").toFile(), "r").use { edgeRaf ->
+        RandomAccessFile(workDir.resolve(EDGES_FILE).toFile(), "r").use { edgeRaf ->
             while (edgeRaf.filePointer < edgeRaf.length()) {
                 offset = edgeRaf.filePointer
                 val from = edgeRaf.readInt()
@@ -219,6 +263,12 @@ class MmapGraphBuilder(
     }
 
     companion object {
+        private const val NODES_FILE = "nodes.dat"
+        private const val EDGES_FILE = "edges.dat"
+        private const val INITIAL_NODE_INDEX_CAPACITY = 16
+        private const val LENGTH_PREFIX_BYTES = 4
+        private const val NODE_SERIALIZATION_BUFFER_BYTES = 128
+
         // Node type tags
         internal const val TAG_INT_CONSTANT = 0
         internal const val TAG_STRING_CONSTANT = 1
@@ -325,7 +375,7 @@ class MmapGraphBuilder(
                     }
                     AnnotationNode(id, name, className, memberName, values)
                 }
-                else -> throw IllegalStateException("Unknown node type tag: $tag")
+                else -> error("Unknown node type tag: $tag")
             }
         }
 
@@ -354,7 +404,7 @@ class MmapGraphBuilder(
                     ControlFlowEdge(from, to, kind, comparison)
                 }
                 TAG_EDGE_RESOURCE -> ResourceEdge(from, to, ResourceRelation.entries[input.readByte().toInt()])
-                else -> throw IllegalStateException("Unknown edge type tag: $tag")
+                else -> error("Unknown edge type tag: $tag")
             }
         }
 
@@ -376,7 +426,7 @@ class MmapGraphBuilder(
                     }
                 }
                 TAG_EDGE_RESOURCE -> raf.readByte()   // kind
-                else -> throw IllegalStateException("Unknown edge type tag during skip")
+                else -> error("Unknown edge type tag during skip")
             }
         }
 
@@ -433,7 +483,7 @@ class MmapGraphBuilder(
     // ========================================================================
 
     private fun writeNode(out: DataOutputStream, node: Node) {
-        val baos = ByteArrayOutputStream(128)
+        val baos = ByteArrayOutputStream(NODE_SERIALIZATION_BUFFER_BYTES)
             val dos = DataOutputStream(baos)
             dos.writeInt(node.id.value)
             when (node) {

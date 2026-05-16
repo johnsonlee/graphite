@@ -35,22 +35,22 @@ internal object SubjectDetector {
                 mainReachability.reachableInternalMethodCount > 1 &&
                 mainReachability.reachableInternalClassCount > 1
         val role = when {
-            hasBootLayout && hasBootLauncherMain && bootAppOrigin && bootReachabilityLooksComplete -> "application"
-            hasMainClass && !startClass.isNullOrBlank() && mainReachability.mainMethodCount > 0 -> "application"
+            hasBootLayout && hasBootLauncherMain && bootAppOrigin && bootReachabilityLooksComplete -> WIRE_APPLICATION
+            hasMainClass && !startClass.isNullOrBlank() && mainReachability.mainMethodCount > 0 -> WIRE_APPLICATION
             hasMainMethod &&
                 endpointCount > 0 &&
-                mainReachability.reachableInternalMethodCount > 1 -> "application"
+                mainReachability.reachableInternalMethodCount > 1 -> WIRE_APPLICATION
             hasMainMethod &&
                 mainReachability.reachableInternalMethodCount >= mainReachability.reachableExternalTargetCount &&
-                mainReachability.reachableInternalClassCount > 1 -> "application"
-            else -> "library"
+                mainReachability.reachableInternalClassCount > 1 -> WIRE_APPLICATION
+            else -> WIRE_LIBRARY
         }
         val displayName = inferName(systemBoundary, startClassOrigin, startClass)
         return when (role) {
-            "application" -> SubjectDescriptor(
-                id = "system:application",
+            WIRE_APPLICATION -> SubjectDescriptor(
+                id = SUBJECT_APPLICATION_ID,
                 name = displayName.ifBlank { "Application" },
-                role = "application",
+                role = WIRE_APPLICATION,
                 description = "Executable software system inferred from the Graphite code graph",
                 responsibility = "Owns the internal runtime containers and orchestrates the primary execution flows",
                 actorId = if (endpointCount > 0) "person:http-clients" else "person:operators",
@@ -67,9 +67,9 @@ internal object SubjectDetector {
                 }
             )
             else -> SubjectDescriptor(
-                id = "system:library",
+                id = SUBJECT_LIBRARY_ID,
                 name = "$displayName Library",
-                role = "library",
+                role = WIRE_LIBRARY,
                 description = "A reusable library artifact inferred from the analyzed code graph",
                 responsibility = "Provides reusable capabilities that are linked and invoked by host applications",
                 actorId = "person:host-applications",

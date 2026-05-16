@@ -20,8 +20,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "List graph nodes",
                     parameters = listOf(
-                        queryParameter("type", "string", false, "Optional node label/type filter"),
-                        queryParameter("limit", "integer", false, "Maximum number of nodes to return")
+                        queryParameter(API_PARAM_TYPE, TYPE_STRING, false, "Optional node label/type filter"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of nodes to return")
                     ),
                     responses = mapOf("200" to response("Node list"))
                 )
@@ -30,32 +30,32 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Fetch a single node by id",
                     parameters = listOf(
-                        pathParameter("id", "integer", "Node identifier")
+                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)
                     ),
                     responses = mapOf(
                         "200" to response("Node payload"),
-                        "400" to response("Invalid node id"),
-                        "404" to response("Node not found")
+                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI),
+                        "404" to response(API_ERROR_NODE_NOT_FOUND)
                     )
                 )
             ),
             "/api/node/{id}/outgoing" to mapOf(
                 "get" to operation(
                     "List outgoing edges for a node",
-                    parameters = listOf(pathParameter("id", "integer", "Node identifier")),
+                    parameters = listOf(pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)),
                     responses = mapOf(
                         "200" to response("Outgoing edges"),
-                        "400" to response("Invalid node id")
+                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
                     )
                 )
             ),
             "/api/node/{id}/incoming" to mapOf(
                 "get" to operation(
                     "List incoming edges for a node",
-                    parameters = listOf(pathParameter("id", "integer", "Node identifier")),
+                    parameters = listOf(pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)),
                     responses = mapOf(
                         "200" to response("Incoming edges"),
-                        "400" to response("Invalid node id")
+                        "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
                     )
                 )
             ),
@@ -63,9 +63,9 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "List call sites",
                     parameters = listOf(
-                        queryParameter("class", "string", false, "Optional caller/callee class filter"),
-                        queryParameter("method", "string", false, "Optional method name filter"),
-                        queryParameter("limit", "integer", false, "Maximum number of results")
+                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional caller/callee class filter"),
+                        queryParameter(API_PARAM_METHOD, TYPE_STRING, false, "Optional method name filter"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
                     ),
                     responses = mapOf("200" to response("Call site list"))
                 )
@@ -74,9 +74,9 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "List methods",
                     parameters = listOf(
-                        queryParameter("class", "string", false, "Optional declaring class filter"),
-                        queryParameter("name", "string", false, "Optional method name filter"),
-                        queryParameter("limit", "integer", false, "Maximum number of results")
+                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional declaring class filter"),
+                        queryParameter(API_PARAM_NAME, TYPE_STRING, false, "Optional method name filter"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
                     ),
                     responses = mapOf("200" to response("Method list"))
                 )
@@ -85,8 +85,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Fetch member annotations",
                     parameters = listOf(
-                        queryParameter("class", "string", true, "Declaring class name"),
-                        queryParameter("member", "string", true, "Member name")
+                        queryParameter(API_PARAM_CLASS, TYPE_STRING, true, "Declaring class name"),
+                        queryParameter(API_PARAM_MEMBER, TYPE_STRING, true, "Member name")
                     ),
                     responses = mapOf(
                         "200" to response("Annotation map"),
@@ -98,8 +98,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "List persisted resources",
                     parameters = listOf(
-                        queryParameter("pattern", "string", false, "Glob pattern, defaults to **"),
-                        queryParameter("limit", "integer", false, "Maximum number of results")
+                        queryParameter(API_PARAM_PATTERN, TYPE_STRING, false, "Glob pattern, defaults to **"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
                     ),
                     responses = mapOf("200" to response("Resource listing"))
                 )
@@ -108,11 +108,11 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Read persisted raw resource content",
                     parameters = listOf(
-                        pathParameter("path", "string", "Resource path inside the graph payload; may include nested segments")
+                        pathParameter(API_FIELD_PATH, TYPE_STRING, "Resource path inside the graph payload; may include nested segments")
                     ),
                     responses = mapOf(
                         "200" to response("Raw resource content"),
-                        "404" to response("Resource not found")
+                        "404" to response(API_ERROR_RESOURCE_NOT_FOUND)
                     )
                 )
             ),
@@ -120,8 +120,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Extract framework API endpoints from the graph",
                     parameters = listOf(
-                        queryParameter("limit", "integer", false, "Maximum number of endpoints"),
-                        queryParameter("class", "string", false, "Optional controller class filter")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of endpoints"),
+                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional controller class filter")
                     ),
                     responses = mapOf("200" to response("Extracted framework API specification"))
                 )
@@ -130,8 +130,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Build C4 architecture views automatically derived from the code graph as Structurizr workspace JSON, Structurizr DSL, Mermaid, or PlantUML",
                     parameters = listOf(
-                        queryParameter("level", "string", false, "context, container, component, or all"),
-                        queryParameter("format", "string", false, "json, dsl, mermaid, or plantuml")
+                        queryParameter(API_PARAM_LEVEL, TYPE_STRING, false, "context, container, component, or all"),
+                        queryParameter(API_PARAM_FORMAT, TYPE_STRING, false, "json, dsl, mermaid, or plantuml")
                     ),
                     responses = mapOf(
                         "200" to response("Structurizr workspace JSON, Structurizr DSL, Mermaid text, or PlantUML text"),
@@ -143,7 +143,7 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Build a class-level overview graph",
                     parameters = listOf(
-                        queryParameter("limit", "integer", false, "Maximum number of classes")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of classes")
                     ),
                     responses = mapOf("200" to response("Overview graph"))
                 )
@@ -152,8 +152,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Build a local subgraph around a node",
                     parameters = listOf(
-                        queryParameter("center", "integer", true, "Center node id"),
-                        queryParameter("depth", "integer", false, "Traversal depth")
+                        queryParameter(API_PARAM_CENTER, TYPE_INTEGER, true, "Center node id"),
+                        queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth")
                     ),
                     responses = mapOf(
                         "200" to response("Subgraph"),
@@ -165,7 +165,7 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Execute a Cypher query via query string",
                     parameters = listOf(
-                        queryParameter("query", "string", true, "Cypher query text")
+                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text")
                     ),
                     responses = mapOf(
                         "200" to response("Cypher result"),
@@ -176,18 +176,18 @@ internal class OpenApiSpecBuilder {
                     "Execute a Cypher query via JSON body",
                     parameters = emptyList(),
                     requestBody = mapOf(
-                        "required" to true,
+                        FIELD_REQUIRED to true,
                         "content" to mapOf(
                             "application/json" to mapOf(
                                 "schema" to mapOf(
-                                    "type" to "object",
+                                    API_FIELD_TYPE to TYPE_OBJECT,
                                     "properties" to mapOf(
-                                        "query" to mapOf(
-                                            "type" to "string",
-                                            "description" to "Cypher query text"
+                                        API_PARAM_QUERY to mapOf(
+                                            API_FIELD_TYPE to TYPE_STRING,
+                                            FIELD_DESCRIPTION to "Cypher query text"
                                         )
                                     ),
-                                    "required" to listOf("query")
+                                    FIELD_REQUIRED to listOf(API_PARAM_QUERY)
                                 )
                             )
                         )
@@ -236,13 +236,21 @@ internal class OpenApiSpecBuilder {
     private fun parameter(location: String, name: String, type: String, required: Boolean, description: String): Map<String, Any?> =
         mapOf(
             "in" to location,
-            "name" to name,
-            "required" to required,
-            "description" to description,
-            "schema" to mapOf("type" to type)
+            API_FIELD_NAME to name,
+            FIELD_REQUIRED to required,
+            FIELD_DESCRIPTION to description,
+            "schema" to mapOf(API_FIELD_TYPE to type)
         )
 
     private fun response(description: String): Map<String, Any?> =
-        mapOf("description" to description)
+        mapOf(FIELD_DESCRIPTION to description)
+
+    companion object {
+        private const val FIELD_DESCRIPTION = "description"
+        private const val FIELD_REQUIRED = "required"
+        private const val TYPE_INTEGER = "integer"
+        private const val TYPE_OBJECT = "object"
+        private const val TYPE_STRING = "string"
+    }
 
 }

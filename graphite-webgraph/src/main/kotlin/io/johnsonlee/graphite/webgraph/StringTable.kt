@@ -43,12 +43,12 @@ internal class StringTable private constructor(
          * Build a [StringTable] from a collection of strings and persist it to disk.
          *
          * Strings are sorted and deduplicated before building the front-coded list.
-         * The ratio parameter (8) controls the trade-off between compression and
+         * The ratio parameter controls the trade-off between compression and
          * random access speed.
          */
         fun build(strings: Collection<String>, dir: Path): StringTable {
             val sorted = strings.toSortedSet().toList()
-            val fcl = FrontCodedStringList(sorted.iterator(), 8, false)
+            val fcl = FrontCodedStringList(sorted.iterator(), FRONT_CODED_STRING_RATIO, false)
             BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
             val indexMap = HashMap<String, Int>(sorted.size)
             for (i in sorted.indices) {

@@ -1,6 +1,13 @@
 package io.johnsonlee.graphite.cypher
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertFalse

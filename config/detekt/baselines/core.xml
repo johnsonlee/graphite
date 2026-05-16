@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:DefaultGraph.kt$DefaultGraph.Builder$fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight &lt;= 0</ID>
+    <ID>ComplexCondition:MmapGraphBuilder.kt$MmapGraphBuilder$fromArtifact.isBlank() || toArtifact.isBlank() || fromArtifact == toArtifact || weight &lt;= 0</ID>
+    <ID>ComplexCondition:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$!shouldAnalyzeType(fieldType.className) &amp;&amp; fieldType.className != "java.lang.Object" &amp;&amp; !isPrimitiveOrWrapper(fieldType.className) &amp;&amp; !isCollectionType(fieldType.className)</ID>
+    <ID>CyclomaticComplexMethod:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$fun findUnreferencedFields(): Set&lt;FieldDescriptor></ID>
+    <ID>CyclomaticComplexMethod:DataFlowAnalysis.kt$DataFlowAnalysis$private fun traverseBackward( current: NodeId, path: List&lt;NodeId>, propSteps: List&lt;PropagationStep>, lastEdgeKind: DataFlowKind?, depth: Int, state: BackwardSliceState )</ID>
+    <ID>CyclomaticComplexMethod:MmapGraphBuilder.kt$MmapGraphBuilder$private fun writeNode(out: DataOutputStream, node: Node)</ID>
+    <ID>CyclomaticComplexMethod:MmapGraphBuilder.kt$MmapGraphBuilder.Companion$internal fun deserializeNode(bytes: ByteArray, nodeMethods: List&lt;MethodDescriptor>): Node</ID>
+    <ID>CyclomaticComplexMethod:QueryDsl.kt$GraphiteQuery$private fun findActualTypesFromNode( nodeId: NodeId, types: MutableSet&lt;TypeDescriptor>, visited: MutableSet&lt;NodeId>, context: InterproceduralContext )</ID>
+    <ID>CyclomaticComplexMethod:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun traceTypeFromNode( nodeId: NodeId, contextMethod: MethodDescriptor, structures: MutableSet&lt;TypeStructure>, visited: MutableSet&lt;NodeId>, depth: Int )</ID>
+    <ID>LargeClass:BranchReachabilityAnalysisTest.kt$BranchReachabilityAnalysisTest</ID>
+    <ID>LargeClass:DataFlowAnalysisTest.kt$DataFlowAnalysisTest</ID>
+    <ID>LargeClass:MmapGraphBuilderTest.kt$MmapGraphBuilderTest</ID>
+    <ID>LargeClass:QueryDslTest.kt$QueryDslTest</ID>
+    <ID>LargeClass:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis</ID>
+    <ID>LargeClass:TypeHierarchyAnalysisTest.kt$TypeHierarchyAnalysisTest</ID>
+    <ID>LongParameterList:DefaultGraph.kt$DefaultGraph$( private val nodesById: Int2ObjectOpenHashMap&lt;Node>, private val outgoingEdges: Int2ObjectOpenHashMap&lt;List&lt;Edge>>, private val incomingEdges: Int2ObjectOpenHashMap&lt;List&lt;Edge>>, private val methodIndex: Map&lt;String, MethodDescriptor>, private val typeHierarchy: TypeHierarchy, private val enumValues: Map&lt;String, List&lt;Any?>>, private val classOriginsMap: Map&lt;String, String>, private val artifactDependenciesMap: Map&lt;String, Map&lt;String, Int>>, // Key format: "$className#$memberName" — simple concatenation is sufficient // for current scale. Consider two-level map if profiling shows GC pressure. private val memberAnnotationsMap: Map&lt;String, Map&lt;String, Map&lt;String, Any?>>>, private val rawBranchScopes: Array&lt;RawBranchScope>, override val resources: ResourceAccessor, /** Pre-computed index: concrete node class -> list of nodes of that class. */ private val nodesByType: Map&lt;Class&lt;out Node>, List&lt;Node>> )</ID>
+    <ID>LongParameterList:MmapGraph.kt$MmapGraph$( private val dataDir: Path, private val nodeIndex: LongArray, private val nodeTypeIndex: Map&lt;Class&lt;out Node>, IntArray>, private val outgoingIndex: EdgeOffsetIndex, private val incomingIndex: EdgeOffsetIndex, private val nodeMethods: List&lt;MethodDescriptor>, private val methodIndex: Map&lt;String, MethodDescriptor>, private val typeHierarchy: TypeHierarchy, private val enumValuesMap: Map&lt;String, List&lt;Any?>>, private val classOriginsMap: Map&lt;String, String>, private val artifactDependenciesMap: Map&lt;String, Map&lt;String, Int>>, private val memberAnnotationsMap: Map&lt;String, Map&lt;String, Map&lt;String, Any?>>>, private val branchScopeData: List&lt;DefaultGraph.RawBranchScope>, override val resources: ResourceAccessor )</ID>
+    <ID>LoopWithTooManyJumpStatements:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$for</ID>
+    <ID>LoopWithTooManyJumpStatements:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$while</ID>
+    <ID>MaxLineLength:BranchReachabilityAnalysisTest.kt$BranchReachabilityAnalysisTest$// Branch: if (result == 0) → true branch is dead (because true != 0 evaluates to true → JVM condition is false → BRANCH_TRUE is dead... wait)</ID>
+    <ID>MaxLineLength:DefaultGraph.kt$DefaultGraph.Builder$override</ID>
+    <ID>MaxLineLength:MmapGraphBuilderTest.kt$MmapGraphBuilderTest$builder.addEdge(ControlFlowEdge(id("bool1"), id("call1"), ControlFlowKind.BRANCH_TRUE, BranchComparison(ComparisonOp.EQ, id("int2"))))</ID>
+    <ID>MaxLineLength:MmapGraphBuilderTest.kt$MmapGraphBuilderTest$builder.addNode(FieldNode(id("field1"), FieldDescriptor(TypeDescriptor("com.example.Service"), "count", TypeDescriptor("int")), false))</ID>
+    <ID>MaxLineLength:TypeHierarchyAnalysisTest.kt$TypeHierarchyAnalysisTest$assertTrue(result.returnStructures.isEmpty() || result.returnStructures.any { it.className == "org.springframework.internal.Proxy" })</ID>
+    <ID>NestedBlockDepth:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$fun findUnreferencedFields(): Set&lt;FieldDescriptor></ID>
+    <ID>NestedBlockDepth:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun analyzeAssumption(assumption: Assumption): List&lt;DeadBranch></ID>
+    <ID>NestedBlockDepth:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun findTransitivelyDeadMethods(deadCallSites: Set&lt;CallSiteNode>): Set&lt;MethodDescriptor></ID>
+    <ID>NestedBlockDepth:QueryDsl.kt$GraphiteQuery$fun findArgumentConstants(block: ArgumentConstantQuery.() -> Unit): List&lt;ArgumentConstantResult></ID>
+    <ID>NestedBlockDepth:QueryDsl.kt$GraphiteQuery$private fun findActualTypesFromNode( nodeId: NodeId, types: MutableSet&lt;TypeDescriptor>, visited: MutableSet&lt;NodeId>, context: InterproceduralContext )</ID>
+    <ID>NestedBlockDepth:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun addGetterBasedFields( type: TypeDescriptor, fields: MutableMap&lt;String, FieldStructure>, depth: Int )</ID>
+    <ID>NestedBlockDepth:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun buildGlobalFieldAssignments(): Map&lt;String, Set&lt;String>></ID>
+    <ID>NestedBlockDepth:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun findAllSetterCallsForType( type: TypeDescriptor, contextMethod: MethodDescriptor ): Map&lt;String, CallSiteNode></ID>
+    <ID>NestedBlockDepth:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun traceTypeFromNode( nodeId: NodeId, contextMethod: MethodDescriptor, structures: MutableSet&lt;TypeStructure>, visited: MutableSet&lt;NodeId>, depth: Int )</ID>
+    <ID>ReturnCount:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun constantEquals(a: Any?, b: Any?): Boolean</ID>
+    <ID>ReturnCount:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun evaluateBranch(scope: BranchScope, assumedValue: Any?): DeadBranch?</ID>
+    <ID>ReturnCount:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun evaluateComparison(left: Any?, op: ComparisonOp, right: Any?): Boolean?</ID>
+    <ID>ReturnCount:BranchReachabilityAnalysis.kt$BranchReachabilityAnalysis$private fun matchesArgumentConstraint(callSite: CallSiteNode, assumption: Assumption): Boolean</ID>
+    <ID>ReturnCount:DataFlowAnalysis.kt$DataFlowAnalysis$fun traverse( current: NodeId, path: List&lt;NodeId>, propSteps: List&lt;PropagationStep>, lastEdgeKind: DataFlowKind?, depth: Int )</ID>
+    <ID>ReturnCount:DataFlowAnalysis.kt$DataFlowAnalysis$private fun traverseBackward( current: NodeId, path: List&lt;NodeId>, propSteps: List&lt;PropagationStep>, lastEdgeKind: DataFlowKind?, depth: Int, state: BackwardSliceState )</ID>
+    <ID>ReturnCount:Graph.kt$MethodPattern$fun matches(method: MethodDescriptor): Boolean</ID>
+    <ID>ReturnCount:MmapGraph.kt$MmapGraph$override fun node(id: NodeId): Node?</ID>
+    <ID>ReturnCount:MmapGraph.kt$MmapGraph$private fun edgeOffsets(index: EdgeOffsetIndex, id: NodeId): Sequence&lt;Long></ID>
+    <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun analyzeGenericTypeArguments( type: TypeDescriptor, contextMethod: MethodDescriptor, depth: Int ): Map&lt;String, TypeStructure></ID>
+    <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun buildTypeStructure( type: TypeDescriptor, contextMethod: MethodDescriptor, depth: Int ): TypeStructure</ID>
+    <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun findArgumentType(nodeId: NodeId): TypeDescriptor?</ID>
+    <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun shouldAnalyzeType(className: String): Boolean</ID>
+    <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun traceTypeFromNode( nodeId: NodeId, contextMethod: MethodDescriptor, structures: MutableSet&lt;TypeStructure>, visited: MutableSet&lt;NodeId>, depth: Int )</ID>
+    <ID>ReturnCount:TypeStructure.kt$TypeStructure$fun formatTypeName(): String</ID>
+    <ID>TooManyFunctions:MmapGraph.kt$MmapGraph : GraphCloseable</ID>
+    <ID>TooManyFunctions:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -84,8 +84,8 @@ internal object ComponentSelector {
                 return@forEach
             }
             if (callerCapability != null && calleeCapability != null && callerCapability != calleeCapability) {
-                val callerKind = capabilityById[callerCapability]?.let(::containerKind) ?: "capability"
-                val calleeKind = capabilityById[calleeCapability]?.let(::containerKind) ?: "capability"
+                val callerKind = capabilityById[callerCapability]?.let(::containerKind) ?: WIRE_CAPABILITY
+                val calleeKind = capabilityById[calleeCapability]?.let(::containerKind) ?: WIRE_CAPABILITY
                 val pair = canonicalRelationshipPair(
                     componentId(callerCapability),
                     componentId(calleeCapability),
@@ -167,14 +167,14 @@ internal object ComponentSelector {
             )
         }
         val relationships = selectReadableRelationships(relationshipWeights.entries
-            .filter { it.key.first.removePrefix("component:").let { id -> "container:$id" in selectedCapabilityIds } }
-            .filter { it.key.second.removePrefix("component:").let { id -> "container:$id" in selectedCapabilityIds } }
+            .filter { it.key.first.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds } }
+            .filter { it.key.second.removePrefix(COMPONENT_ID_PREFIX).let { id -> "$CONTAINER_ID_PREFIX$id" in selectedCapabilityIds } }
             .sortedByDescending { it.value }
             .map { (pair, weight) ->
-                val sourceCapabilityId = pair.first.replaceFirst("component:", "container:")
-                val targetCapabilityId = pair.second.replaceFirst("component:", "container:")
-                val sourceKind = componentKindById[sourceCapabilityId] ?: "domain-component"
-                val targetKind = componentKindById[targetCapabilityId] ?: "domain-component"
+                val sourceCapabilityId = pair.first.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
+                val targetCapabilityId = pair.second.replaceFirst(COMPONENT_ID_PREFIX, CONTAINER_ID_PREFIX)
+                val sourceKind = componentKindById[sourceCapabilityId] ?: WIRE_DOMAIN_COMPONENT
+                val targetKind = componentKindById[targetCapabilityId] ?: WIRE_DOMAIN_COMPONENT
                 val relationshipKind = inferDependencyKind(sourceKind, targetKind)
                 val relationshipKindType = relationshipKind.toC4RelationshipKind()
                 C4Relationship(
@@ -184,8 +184,8 @@ internal object ComponentSelector {
                     kind = relationshipKindType,
                     description = describeDependency(
                         relationshipKind = relationshipKind,
-                        sourceName = capabilityById[sourceCapabilityId]?.name ?: pair.first.removePrefix("component:"),
-                        targetName = capabilityById[targetCapabilityId]?.name ?: pair.second.removePrefix("component:")
+                        sourceName = capabilityById[sourceCapabilityId]?.name ?: pair.first.removePrefix(COMPONENT_ID_PREFIX),
+                        targetName = capabilityById[targetCapabilityId]?.name ?: pair.second.removePrefix(COMPONENT_ID_PREFIX)
                     ),
                     weight = weight,
                     evidence = C4Metadata.componentCallEvidence(weight)
@@ -241,7 +241,7 @@ internal object ComponentSelector {
             capability.methodCount * C4ComponentScoring.METHOD_WEIGHT
 
     fun componentId(capabilityContainerId: String): String =
-        "component:${capabilityContainerId.removePrefix("container:")}"
+        "$COMPONENT_ID_PREFIX${capabilityContainerId.removePrefix(CONTAINER_ID_PREFIX)}"
 
     fun isUtilityLikeClass(
         className: String,
@@ -343,37 +343,37 @@ internal object ComponentSelector {
     }
 
     fun inferKind(endpointCount: Int, inboundCrossContainer: Int, outboundCrossContainer: Int, externalCalls: Int): String {
-        if (endpointCount > 0) return "entrypoint"
+        if (endpointCount > 0) return WIRE_ENTRYPOINT
         return when {
-            externalCalls > maxOf(inboundCrossContainer, outboundCrossContainer) -> "integration"
-            outboundCrossContainer > inboundCrossContainer -> "orchestrator"
-            inboundCrossContainer > outboundCrossContainer -> "shared-capability"
-            inboundCrossContainer > 0 || outboundCrossContainer > 0 -> "coordination"
-            else -> "domain-component"
+            externalCalls > maxOf(inboundCrossContainer, outboundCrossContainer) -> WIRE_INTEGRATION
+            outboundCrossContainer > inboundCrossContainer -> WIRE_ORCHESTRATOR
+            inboundCrossContainer > outboundCrossContainer -> WIRE_SHARED_CAPABILITY
+            inboundCrossContainer > 0 || outboundCrossContainer > 0 -> WIRE_COORDINATION
+            else -> WIRE_DOMAIN_COMPONENT
         }
     }
 
     fun architectureType(kind: String): C4ArchitectureType =
         when (kind) {
-            "entrypoint", "orchestrator", "integration", "coordination" -> C4ArchitectureType.APPLICATION_SERVICE
+            WIRE_ENTRYPOINT, WIRE_ORCHESTRATOR, WIRE_INTEGRATION, WIRE_COORDINATION -> C4ArchitectureType.APPLICATION_SERVICE
             else -> C4ArchitectureType.APPLICATION_COMPONENT
         }
 
     fun inferDependencyKind(sourceKind: String, targetKind: String): String {
         return when {
-            sourceKind == "interface" || sourceKind == "entrypoint" -> "routes-to"
-            sourceKind == "orchestrator" -> "orchestrates"
-            targetKind == "shared-capability" -> "uses"
-            targetKind == "integration" -> "uses"
-            else -> "collaborates-with"
+            sourceKind == WIRE_INTERFACE || sourceKind == WIRE_ENTRYPOINT -> C4RelationshipKind.ROUTES_TO.wireName
+            sourceKind == WIRE_ORCHESTRATOR -> C4RelationshipKind.ORCHESTRATES.wireName
+            targetKind == WIRE_SHARED_CAPABILITY -> C4RelationshipKind.USES.wireName
+            targetKind == WIRE_INTEGRATION -> C4RelationshipKind.USES.wireName
+            else -> C4RelationshipKind.COLLABORATES_WITH.wireName
         }
     }
 
     fun describeDependency(relationshipKind: String, sourceName: String, targetName: String): String {
         return when (relationshipKind) {
-            "routes-to" -> "$sourceName routes work to $targetName"
-            "orchestrates" -> "$sourceName orchestrates $targetName"
-            "uses" -> "$sourceName uses $targetName"
+            C4RelationshipKind.ROUTES_TO.wireName -> "$sourceName routes work to $targetName"
+            C4RelationshipKind.ORCHESTRATES.wireName -> "$sourceName orchestrates $targetName"
+            C4RelationshipKind.USES.wireName -> "$sourceName uses $targetName"
             else -> "$sourceName collaborates with $targetName"
         }
     }

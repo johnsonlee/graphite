@@ -47,6 +47,15 @@ data class ParsedQuery(
         )
         private val RETURN_PATTERN = Regex("""(?i)\bRETURN\b\s+(.+?)(?:\s+LIMIT\s+\d+)?$""")
         private val LIMIT_PATTERN = Regex("""(?i)\bLIMIT\s+(\d+)""")
+        private const val NODE_VARIABLE_GROUP = 1
+        private const val NODE_BACKTICK_LABEL_GROUP = 2
+        private const val NODE_PLAIN_LABEL_GROUP = 3
+        private const val REL_SOURCE_VARIABLE_GROUP = 1
+        private const val REL_TYPE_GROUP = 4
+        private const val REL_VARIABLE_LENGTH_GROUP = 5
+        private const val REL_MIN_HOPS_GROUP = 6
+        private const val REL_MAX_HOPS_GROUP = 7
+        private const val REL_TARGET_VARIABLE_GROUP = 8
 
         /**
          * Extract a label from two capturing groups: one for backtick-escaped, one for plain word.
@@ -63,8 +72,11 @@ data class ParsedQuery(
             val matchClause = extractMatchClause(cypher)
 
             for (match in NODE_PATTERN.findAll(matchClause)) {
-                val variable = match.groupValues[1]
-                val label = extractLabel(match.groupValues[2], match.groupValues[3])
+                val variable = match.groupValues[NODE_VARIABLE_GROUP]
+                val label = extractLabel(
+                    match.groupValues[NODE_BACKTICK_LABEL_GROUP],
+                    match.groupValues[NODE_PLAIN_LABEL_GROUP]
+                )
                 bindings[variable] = NodeBinding(variable, label)
             }
 
@@ -78,14 +90,12 @@ data class ParsedQuery(
             // Groups: 1=sourceVar, 2=srcBacktick, 3=srcPlain,
             //         4=relType, 5=varLengthMarker, 6=minHops, 7=maxHops,
             //         8=targetVar, 9=tgtBacktick, 10=tgtPlain
-            val sourceVar = match.groupValues[1]
-            val sourceLabel = extractLabel(match.groupValues[2], match.groupValues[3])
-            val relType = match.groupValues[4].ifEmpty { null }
-            val varLengthMarker = match.groupValues[5]
-            val minHops = match.groupValues[6].ifEmpty { null }?.toIntOrNull()
-            val maxHops = match.groupValues[7].ifEmpty { null }?.toIntOrNull()
-            val targetVar = match.groupValues[8]
-            val targetLabel = extractLabel(match.groupValues[9], match.groupValues[10])
+            val sourceVar = match.groupValues[REL_SOURCE_VARIABLE_GROUP]
+            val relType = match.groupValues[REL_TYPE_GROUP].ifEmpty { null }
+            val varLengthMarker = match.groupValues[REL_VARIABLE_LENGTH_GROUP]
+            val minHops = match.groupValues[REL_MIN_HOPS_GROUP].ifEmpty { null }?.toIntOrNull()
+            val maxHops = match.groupValues[REL_MAX_HOPS_GROUP].ifEmpty { null }?.toIntOrNull()
+            val targetVar = match.groupValues[REL_TARGET_VARIABLE_GROUP]
 
             return RelationshipPattern(
                 sourceVar = sourceVar,
@@ -124,7 +134,7 @@ data class ParsedQuery(
             val matchIdx = cypher.indexOfFirst("MATCH")
             if (matchIdx < 0) return cypher
 
-            val afterMatch = cypher.substring(matchIdx + 5)
+            val afterMatch = cypher.substring(matchIdx + "MATCH".length)
             val whereIdx = afterMatch.indexOfKeyword("WHERE")
             val returnIdx = afterMatch.indexOfKeyword("RETURN")
 

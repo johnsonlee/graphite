@@ -107,8 +107,8 @@ internal object PersistedResourceStore {
 
     private fun readHeader(dis: DataInputStream) {
         val header = dis.readInt()
-        require(header and 0xFFFFFF00.toInt() == MAGIC) { "Invalid resource file magic: 0x${header.toUInt().toString(16)}" }
-        val version = header and 0xFF
+        require(header and HEADER_MAGIC_MASK == MAGIC) { "Invalid resource file magic: 0x${header.toUInt().toString(HEX_RADIX)}" }
+        val version = header and BYTE_MASK
         require(version == VERSION) { "Unsupported resource file version: $version" }
     }
 

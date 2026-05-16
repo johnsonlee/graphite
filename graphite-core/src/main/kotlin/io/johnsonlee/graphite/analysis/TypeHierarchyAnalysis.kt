@@ -1,9 +1,36 @@
 package io.johnsonlee.graphite.analysis
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FieldStructure
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeHierarchyConfig
+import io.johnsonlee.graphite.core.TypeHierarchyResult
+import io.johnsonlee.graphite.core.TypeStructure
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.nodes
+
+private const val JAVA_LANG_OBJECT = "java.lang.Object"
+private const val UNKNOWN_TYPE = "unknown"
+private const val VOID_TYPE = "void"
+private const val BOOLEAN_PRIMITIVE = "boolean"
+private const val JAVA_LANG_BOOLEAN = "java.lang.Boolean"
+private const val SETTER_PREFIX = "set"
+private const val GETTER_PREFIX = "get"
+private const val BOOLEAN_GETTER_PREFIX = "is"
+private const val LOCAL_TYPE_TRACE_MAX_DEPTH = 5
+private const val GETTER_PREFIX_LENGTH = 3
+private const val BOOLEAN_GETTER_PREFIX_LENGTH = 2
+
+private fun fieldKey(declaringClass: String, fieldName: String): String = "$declaringClass#$fieldName"
 
 /**
  * Analyzes type hierarchies to build complete type structure information.
@@ -48,11 +75,11 @@ class TypeHierarchyAnalysis(
 
         // Find all setter calls across all methods
         graph.nodes<CallSiteNode>()
-            .filter { it.callee.name.startsWith("set") && it.callee.parameterTypes.size == 1 }
+            .filter { it.callee.name.startsWith(SETTER_PREFIX) && it.callee.parameterTypes.size == 1 }
             .forEach { callSite ->
                 val declaringClass = callSite.callee.declaringClass.className
-                val fieldName = callSite.callee.name.removePrefix("set").replaceFirstChar { it.lowercase() }
-                val fieldKey = "$declaringClass#$fieldName"
+                val fieldName = callSite.callee.name.removePrefix(SETTER_PREFIX).replaceFirstChar { it.lowercase() }
+                val fieldKey = fieldKey(declaringClass, fieldName)
 
                 if (callSite.arguments.isNotEmpty()) {
                     val argNodeId = callSite.arguments[0]
@@ -63,13 +90,13 @@ class TypeHierarchyAnalysis(
 
         // Find all direct field assignments
         graph.nodes<FieldNode>().forEach { fieldNode ->
-            val fieldKey = "${fieldNode.descriptor.declaringClass.className}#${fieldNode.descriptor.name}"
+            val fieldKey = fieldKey(fieldNode.descriptor.declaringClass.className, fieldNode.descriptor.name)
 
             graph.incoming(fieldNode.id, DataFlowEdge::class.java).forEach { edge ->
                 val sourceNode = graph.node(edge.from)
                 if (sourceNode is LocalVariable) {
                     val typeName = sourceNode.type.className
-                    if (typeName != "java.lang.Object" && typeName != "unknown") {
+                    if (typeName != JAVA_LANG_OBJECT && typeName != UNKNOWN_TYPE) {
                         assignments.getOrPut(fieldKey) { mutableSetOf() }.add(typeName)
                     }
                 }
@@ -90,14 +117,14 @@ class TypeHierarchyAnalysis(
     }
 
     private fun findTypesRecursive(nodeId: NodeId, types: MutableSet<String>, visited: MutableSet<NodeId>, depth: Int) {
-        if (nodeId in visited || depth > 5) return
+        if (nodeId in visited || depth > LOCAL_TYPE_TRACE_MAX_DEPTH) return
         visited.add(nodeId)
 
         val node = graph.node(nodeId)
         when (node) {
             is LocalVariable -> {
                 val typeName = node.type.className
-                if (typeName != "java.lang.Object" && typeName != "unknown") {
+                if (typeName != JAVA_LANG_OBJECT && typeName != UNKNOWN_TYPE) {
                     types.add(typeName)
                 } else {
                     // Continue tracing
@@ -108,7 +135,7 @@ class TypeHierarchyAnalysis(
             }
             is CallSiteNode -> {
                 val returnType = node.callee.returnType.className
-                if (returnType != "java.lang.Object" && returnType != "void") {
+                if (returnType != JAVA_LANG_OBJECT && returnType != VOID_TYPE) {
                     types.add(returnType)
                 }
             }
@@ -221,7 +248,7 @@ class TypeHierarchyAnalysis(
             }
             is CallSiteNode -> {
                 val returnType = node.callee.returnType
-                if (shouldAnalyzeType(returnType.className) && returnType.className != "java.lang.Object") {
+                if (shouldAnalyzeType(returnType.className) && returnType.className != JAVA_LANG_OBJECT) {
                     val structure = buildTypeStructure(returnType, contextMethod, depth + 1)
                     structures.add(structure)
                     return
@@ -240,14 +267,14 @@ class TypeHierarchyAnalysis(
                         // Build type structure for this local variable
                         val structure = buildTypeStructure(sourceNode.type, contextMethod, depth + 1)
                         structures.add(structure)
-                    } else if (typeName == "java.lang.Object" || typeName == "unknown") {
+                    } else if (typeName == JAVA_LANG_OBJECT || typeName == UNKNOWN_TYPE) {
                         // Continue tracing back
                         traceTypeFromNode(edge.from, contextMethod, structures, visited, depth + 1)
                     }
                 }
                 is CallSiteNode -> {
                     val returnType = sourceNode.callee.returnType
-                    if (shouldAnalyzeType(returnType.className) && returnType.className != "java.lang.Object") {
+                    if (shouldAnalyzeType(returnType.className) && returnType.className != JAVA_LANG_OBJECT) {
                         // Build structure from the return type
                         val structure = buildTypeStructure(returnType, contextMethod, depth + 1)
                         structures.add(structure)
@@ -261,7 +288,7 @@ class TypeHierarchyAnalysis(
                     val fieldType = sourceNode.descriptor.type
                     val declaringClass = sourceNode.descriptor.declaringClass.className
                     val fieldName = sourceNode.descriptor.name
-                    val fieldKey = "$declaringClass#$fieldName"
+                    val fieldKey = fieldKey(declaringClass, fieldName)
 
                     // Use global field assignments to find actual types
                     val actualTypes = globalFieldAssignments[fieldKey]
@@ -387,13 +414,13 @@ class TypeHierarchyAnalysis(
         when (node) {
             is LocalVariable -> {
                 val typeName = node.type.className
-                if (typeName != "java.lang.Object" && typeName != "unknown") {
+                if (typeName != JAVA_LANG_OBJECT && typeName != UNKNOWN_TYPE) {
                     return node.type
                 }
             }
             is CallSiteNode -> {
                 val returnType = node.callee.returnType
-                if (returnType.className != "java.lang.Object" && returnType.className != "void") {
+                if (returnType.className != JAVA_LANG_OBJECT && returnType.className != VOID_TYPE) {
                     return returnType
                 }
             }
@@ -538,7 +565,7 @@ class TypeHierarchyAnalysis(
         typeFields.forEach { fieldNode ->
             val fieldName = fieldNode.descriptor.name
             val declaringClass = fieldNode.descriptor.declaringClass.className
-            val fieldKey = "$declaringClass#$fieldName"
+            val fieldKey = fieldKey(declaringClass, fieldName)
 
             // Get globally tracked assignments for this field
             val globalTypes = globalFieldAssignments[fieldKey] ?: emptySet()
@@ -552,7 +579,7 @@ class TypeHierarchyAnalysis(
                                 declaringClass = type,
                                 name = "",
                                 parameterTypes = emptyList(),
-                                returnType = TypeDescriptor("void")
+                                returnType = TypeDescriptor(VOID_TYPE)
                             ), depth + 1)
                         } else {
                             TypeStructure.simple(className)
@@ -637,7 +664,7 @@ class TypeHierarchyAnalysis(
                         val fieldType = fieldNode.descriptor.type.className
                         argTypes.any { argType ->
                             argType.type.className == fieldType ||
-                            fieldType == "java.lang.Object" ||
+                            fieldType == JAVA_LANG_OBJECT ||
                             isCompatibleType(argType.type.className, fieldType)
                         }
                     }
@@ -690,17 +717,17 @@ class TypeHierarchyAnalysis(
                     // Match getter patterns: getXxx() or isXxx() with no parameters
                     val name = method.name
                     method.parameterTypes.isEmpty() &&
-                    method.returnType.className != "void" &&
-                    ((name.startsWith("get") && name.length > 3) ||
-                     (name.startsWith("is") && name.length > 2 &&
-                      method.returnType.className in listOf("boolean", "java.lang.Boolean")))
+                    method.returnType.className != VOID_TYPE &&
+                    ((name.startsWith(GETTER_PREFIX) && name.length > GETTER_PREFIX_LENGTH) ||
+                     (name.startsWith(BOOLEAN_GETTER_PREFIX) && name.length > BOOLEAN_GETTER_PREFIX_LENGTH &&
+                      method.returnType.className in listOf(BOOLEAN_PRIMITIVE, JAVA_LANG_BOOLEAN)))
                 }
                 .forEach { getter ->
                     // Extract field name from getter
-                    val fieldName = if (getter.name.startsWith("get")) {
-                        getter.name.removePrefix("get").replaceFirstChar { it.lowercase() }
+                    val fieldName = if (getter.name.startsWith(GETTER_PREFIX)) {
+                        getter.name.removePrefix(GETTER_PREFIX).replaceFirstChar { it.lowercase() }
                     } else {
-                        getter.name.removePrefix("is").replaceFirstChar { it.lowercase() }
+                        getter.name.removePrefix(BOOLEAN_GETTER_PREFIX).replaceFirstChar { it.lowercase() }
                     }
 
                     // Skip if we already have this field from setter/field analysis
@@ -764,10 +791,7 @@ class TypeHierarchyAnalysis(
 
                 // Skip if field type should not be analyzed
                 // But allow collection types (List, Set, Map, etc.) as their element types may be relevant
-                if (!shouldAnalyzeType(fieldType.className) &&
-                    fieldType.className != "java.lang.Object" &&
-                    !isPrimitiveOrWrapper(fieldType.className) &&
-                    !isCollectionType(fieldType.className)) {
+                if (!shouldTraceFieldType(fieldType)) {
                     return@forEach
                 }
 
@@ -777,7 +801,7 @@ class TypeHierarchyAnalysis(
                         declaringClass = type,
                         name = "",
                         parameterTypes = emptyList(),
-                        returnType = TypeDescriptor("void")
+                        returnType = TypeDescriptor(VOID_TYPE)
                     ), depth + 1))
                 } else {
                     emptySet()
@@ -792,14 +816,20 @@ class TypeHierarchyAnalysis(
             }
     }
 
+    private fun shouldTraceFieldType(fieldType: TypeDescriptor): Boolean =
+        shouldAnalyzeType(fieldType.className) ||
+            fieldType.className == JAVA_LANG_OBJECT ||
+            isPrimitiveOrWrapper(fieldType.className) ||
+            isCollectionType(fieldType.className)
+
     /**
      * Check if a type is a primitive or wrapper type.
      */
     private fun isPrimitiveOrWrapper(className: String): Boolean {
         return className in setOf(
-            "int", "long", "short", "byte", "float", "double", "boolean", "char",
+            "int", "long", "short", "byte", "float", "double", BOOLEAN_PRIMITIVE, "char",
             "java.lang.Integer", "java.lang.Long", "java.lang.Short", "java.lang.Byte",
-            "java.lang.Float", "java.lang.Double", "java.lang.Boolean", "java.lang.Character",
+            "java.lang.Float", "java.lang.Double", JAVA_LANG_BOOLEAN, "java.lang.Character",
             "java.lang.String", "java.math.BigDecimal", "java.math.BigInteger",
             "java.util.Date", "java.time.LocalDate", "java.time.LocalDateTime",
             "java.time.ZonedDateTime", "java.time.Instant"
@@ -828,7 +858,7 @@ class TypeHierarchyAnalysis(
     private fun isCompatibleType(actualType: String, declaredType: String): Boolean {
         // Simple compatibility check
         return actualType == declaredType ||
-               declaredType == "java.lang.Object" ||
+               declaredType == JAVA_LANG_OBJECT ||
                (actualType.startsWith("java.") && declaredType.startsWith("java."))
     }
 
@@ -844,7 +874,7 @@ class TypeHierarchyAnalysis(
 
         graph.nodes<CallSiteNode>()
             .filter { it.caller.signature == contextMethod.signature }
-            .filter { it.callee.name.startsWith("set") && it.callee.parameterTypes.size == 1 }
+            .filter { it.callee.name.startsWith(SETTER_PREFIX) && it.callee.parameterTypes.size == 1 }
             .forEach { callSite ->
                 // Check if the receiver is of the target type
                 val receiverId = callSite.receiver
@@ -857,7 +887,7 @@ class TypeHierarchyAnalysis(
                         if (receiverType == type.className ||
                             callSite.callee.declaringClass.className == type.className) {
 
-                            val fieldName = callSite.callee.name.removePrefix("set")
+                            val fieldName = callSite.callee.name.removePrefix(SETTER_PREFIX)
                                 .replaceFirstChar { it.lowercase() }
                             setters[fieldName] = callSite
                         }
@@ -883,13 +913,13 @@ class TypeHierarchyAnalysis(
         // 2. Method name starts with "set"
         graph.nodes<CallSiteNode>()
             .filter { it.caller.signature == contextMethod.signature }
-            .filter { it.callee.name.startsWith("set") && it.callee.parameterTypes.size == 1 }
+            .filter { it.callee.name.startsWith(SETTER_PREFIX) && it.callee.parameterTypes.size == 1 }
             .filter { callSite ->
                 // Strict match: declaring class must match type exactly
                 callSite.callee.declaringClass.className == type.className
             }
             .forEach { callSite ->
-                val fieldName = callSite.callee.name.removePrefix("set").replaceFirstChar { it.lowercase() }
+                val fieldName = callSite.callee.name.removePrefix(SETTER_PREFIX).replaceFirstChar { it.lowercase() }
                 setters[fieldName] = callSite
             }
 
@@ -920,7 +950,7 @@ class TypeHierarchyAnalysis(
      * falls back to setter parameter type if field not found.
      */
     private fun inferDeclaredTypeFromSetter(setterCall: CallSiteNode): TypeDescriptor {
-        val fieldName = setterCall.callee.name.removePrefix("set").replaceFirstChar { it.lowercase() }
+        val fieldName = setterCall.callee.name.removePrefix(SETTER_PREFIX).replaceFirstChar { it.lowercase() }
         val declaringClass = setterCall.callee.declaringClass.className
 
         // Try to find the field to get its generic type
@@ -938,7 +968,7 @@ class TypeHierarchyAnalysis(
         return if (setterCall.callee.parameterTypes.isNotEmpty()) {
             setterCall.callee.parameterTypes[0]
         } else {
-            TypeDescriptor("java.lang.Object")
+            TypeDescriptor(JAVA_LANG_OBJECT)
         }
     }
 
@@ -982,7 +1012,7 @@ class TypeHierarchyAnalysis(
      * Check if a type should be analyzed (not excluded by config).
      */
     private fun shouldAnalyzeType(className: String): Boolean {
-        if (className == "java.lang.Object" || className == "void" || className == "unknown") {
+        if (className == JAVA_LANG_OBJECT || className == VOID_TYPE || className == UNKNOWN_TYPE) {
             return false
         }
 

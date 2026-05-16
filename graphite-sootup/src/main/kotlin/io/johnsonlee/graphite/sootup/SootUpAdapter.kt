@@ -1,6 +1,39 @@
 package io.johnsonlee.graphite.sootup
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumValueReference
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeRelation
+import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
@@ -84,6 +117,21 @@ import sootup.callgraph.RapidTypeAnalysisAlgorithm
 import sootup.java.bytecode.frontend.conversion.AsmMethodSource
 import sootup.java.bytecode.frontend.conversion.AsmUtil
 
+private const val RESOURCE_BUNDLE_FORMAT_PROPERTIES = "java.properties"
+private const val RESOURCE_BUNDLE_FORMAT_CLASS = "java.class"
+private const val PROPERTY_RESOURCE_BUNDLE_CLASS = "java.util.PropertyResourceBundle"
+private const val RESOURCE_BUNDLE_CLASS = "java.util.ResourceBundle"
+private const val LOCALE_CLASS = "java.util.Locale"
+private const val INIT_METHOD = "<init>"
+private const val VALUE_OF_METHOD = "valueOf"
+private const val CLASS_FILE_SUFFIX = ".class"
+private const val PROPERTIES_FILE_SUFFIX = ".properties"
+private const val CONST_NODE_PREFIX = "const"
+private const val RESOURCE_SOURCE = "resource"
+private const val GET_KEYS_METHOD = "getKeys"
+private const val PASS1_PROGRESS_INTERVAL = 500
+private const val PASS2_PROGRESS_INTERVAL = 100
+
 /**
  * Adapter that converts SootUp's IR to Graphite's graph model.
  *
@@ -106,7 +154,7 @@ class SootUpAdapter(
     private data class ParameterBinding(val method: MethodDescriptor, val index: Int)
     private data class BundleControlSpec(
         val noFallback: Boolean = false,
-        val formats: Set<String> = setOf("java.properties", "java.class"),
+        val formats: Set<String> = setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES, RESOURCE_BUNDLE_FORMAT_CLASS),
         val candidateLocales: List<String>? = null
     )
     private data class LocaleBuilderSpec(
@@ -212,7 +260,7 @@ class SootUpAdapter(
         // (a method in class A may reference an enum from class B)
         view.classes.forEach { sootClass ->
             pass1Count++
-            if (pass1Count % 500 == 0) {
+            if (pass1Count % PASS1_PROGRESS_INTERVAL == 0) {
                 log("Pass 1 processed $pass1Count classes; current=${sootClass.type}")
             }
             processTypeHierarchyForClass(sootClass)
@@ -234,7 +282,7 @@ class SootUpAdapter(
             .filter { shouldIncludeClass(it) }
             .forEach { sootClass ->
                 pass2Count++
-                if (pass2Count % 100 == 0) {
+                if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
                     log("Pass 2 processed $pass2Count classes; current=${sootClass.type}")
                 }
                 if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
@@ -372,7 +420,7 @@ class SootUpAdapter(
                             // Resolve alias to find the original local that was used with new/init
                             val originalLocal = localAliases[right.name] ?: right.name
                             log("  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)")
-                            val initValues = findEnumInitValues(originalLocal, stmtGraph, localValues, className)
+                            val initValues = findEnumInitValues(originalLocal, stmtGraph, localValues)
                             if (initValues.isNotEmpty()) {
                                 graphBuilder.addEnumValues(className, fieldName, initValues)
                                 log("  Extracted enum value: $className.$fieldName = $initValues")
@@ -390,7 +438,7 @@ class SootUpAdapter(
      *
      * @return list of user-defined constructor arguments (excluding name and ordinal)
      */
-    private fun findEnumInitValues(localName: String, stmtGraph: StmtGraph<*>, localValues: Map<String, Any?>, className: String): List<Any?> {
+    private fun findEnumInitValues(localName: String, stmtGraph: StmtGraph<*>, localValues: Map<String, Any?>): List<Any?> {
         for (stmt in stmtGraph) {
             if (stmt !is JInvokeStmt) continue
 
@@ -401,7 +449,7 @@ class SootUpAdapter(
                 log("    Skipping: not AbstractInstanceInvokeExpr")
                 continue
             }
-            if (invokeExpr.methodSignature.name != "<init>") {
+            if (invokeExpr.methodSignature.name != INIT_METHOD) {
                 log("    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'")
                 continue
             }
@@ -538,7 +586,7 @@ class SootUpAdapter(
                 // Process each statement (pass 1: data flow)
                 var stmtCount = 0
                 for (stmt in stmtGraph) {
-                    processStatement(stmt, methodDescriptor, stmtGraph)
+                    processStatement(stmt, methodDescriptor)
                     stmtCount++
                 }
 
@@ -580,7 +628,7 @@ class SootUpAdapter(
         }
     }
 
-    private fun processStatement(stmt: Stmt, method: MethodDescriptor, stmtGraph: StmtGraph<*>) {
+    private fun processStatement(stmt: Stmt, method: MethodDescriptor) {
         when (stmt) {
             is JAssignStmt -> processAssignment(stmt, method)
             is JIdentityStmt -> processIdentity(stmt, method)
@@ -801,7 +849,7 @@ class SootUpAdapter(
             return
         }
 
-        if (calleeSignature.declClassType.fullyQualifiedName == "java.util.Locale" && calleeSignature.name == "<init>") {
+        if (calleeSignature.declClassType.fullyQualifiedName == LOCALE_CLASS && calleeSignature.name == INIT_METHOD) {
             val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local
             val localeSpec = extractConstructedLocaleSpec(invokeExpr)
             if (receiverLocal != null && localeSpec != null) {
@@ -1109,7 +1157,7 @@ class SootUpAdapter(
     private fun isBoxingMethod(signature: MethodSignature): Boolean {
         val className = signature.declClassType.fullyQualifiedName
         val methodName = signature.name
-        return methodName == "valueOf" && className in WRAPPER_CLASSES
+        return methodName == VALUE_OF_METHOD && className in WRAPPER_CLASSES
     }
 
     /**
@@ -1450,7 +1498,7 @@ class SootUpAdapter(
 
     private fun processCallGraph() {
         try {
-            val callGraph = buildCallGraph()
+            buildCallGraph()
             // Call graph edges are already processed via call site nodes
             // This method could be extended to add additional interprocedural edges
         } catch (e: Exception) {
@@ -1523,7 +1571,7 @@ class SootUpAdapter(
 
     private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
         return try {
-            val resourcePath = sootClass.type.fullyQualifiedName.replace('.', '/') + ".class"
+            val resourcePath = sootClass.type.fullyQualifiedName.replace('.', '/') + CLASS_FILE_SUFFIX
             resourceAccessor.open(resourcePath).use { input ->
                 val classNode = ClassNode()
                 ClassReader(input).accept(classNode, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
@@ -1639,34 +1687,34 @@ class SootUpAdapter(
         return constantNodes.getOrPut(value ?: constant) {
             val node = when (constant) {
                 is SootIntConstant -> IntConstant(
-                    id = nextNodeId("const"),
+                    id = nextNodeId(CONST_NODE_PREFIX),
                     value = constant.value
                 )
                 is SootLongConstant -> LongConstant(
-                    id = nextNodeId("const"),
+                    id = nextNodeId(CONST_NODE_PREFIX),
                     value = constant.value
                 )
                 is SootFloatConstant -> FloatConstant(
-                    id = nextNodeId("const"),
+                    id = nextNodeId(CONST_NODE_PREFIX),
                     value = constant.value
                 )
                 is SootDoubleConstant -> DoubleConstant(
-                    id = nextNodeId("const"),
+                    id = nextNodeId(CONST_NODE_PREFIX),
                     value = constant.value
                 )
                 // Note: JVM bytecode represents boolean true/false as int constants (1/0),
                 // so SootUp produces IntConstant, not BooleanConstant, for boolean values.
                 is SootStringConstant -> StringConstant(
-                    id = nextNodeId("const"),
+                    id = nextNodeId(CONST_NODE_PREFIX),
                     value = constant.value
                 )
                 is SootNullConstant -> NullConstant(
-                    id = nextNodeId("const")
+                    id = nextNodeId(CONST_NODE_PREFIX)
                 )
                 else -> {
                     log("Unsupported constant type: ${constant.javaClass.simpleName} = $constant")
                     IntConstant(
-                        id = nextNodeId("const"),
+                        id = nextNodeId(CONST_NODE_PREFIX),
                         value = 0
                     )
                 }
@@ -1737,7 +1785,7 @@ class SootUpAdapter(
     private fun indexResourceValues(loadedClassSources: Set<String>): List<ResourceEntry> {
         val classEntries = mutableListOf<ResourceEntry>()
         resourceAccessor.list("**").forEach { entry ->
-            if (entry.path.endsWith(".class", ignoreCase = true)) {
+            if (entry.path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) {
                 if (entry.source in loadedClassSources) {
                     return@forEach
                 }
@@ -1751,7 +1799,7 @@ class SootUpAdapter(
             val format = resourceFormat(entry.path)
             val profile = resourceProfile(entry.path)
             val fileNode = ResourceFileNode(
-                id = nextNodeId("resource"),
+                id = nextNodeId(RESOURCE_SOURCE),
                 path = entry.path,
                 source = entry.source,
                 format = format,
@@ -1892,8 +1940,8 @@ class SootUpAdapter(
         origin.trim().trimEnd('/').substringAfterLast('/').removeSuffix(".jar").takeIf { it.isNotBlank() }
 
     private fun classResourcePathToName(path: String): String? {
-        if (!path.endsWith(".class", ignoreCase = true)) return null
-        val className = path.removeSuffix(".class").replace('/', '.')
+        if (!path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) return null
+        val className = path.removeSuffix(CLASS_FILE_SUFFIX).replace('/', '.')
         return if (className.endsWith(".package-info") || className.endsWith(".module-info")) null else className
     }
 
@@ -1908,7 +1956,7 @@ class SootUpAdapter(
         val path = sootClass.type.fullyQualifiedName
         if (resourceFilesByPath.containsKey(path)) return
         val fileNode = ResourceFileNode(
-            id = nextNodeId("resource"),
+            id = nextNodeId(RESOURCE_SOURCE),
             path = path,
             source = "class-bundle",
             format = "listbundle",
@@ -1937,12 +1985,12 @@ class SootUpAdapter(
         when (val value = evaluateLiteralMethod(methodNode)) {
             is List<*> -> value.mapNotNull {
                 when (it) {
-                    "java.class", "java.properties" -> it as String
+                    RESOURCE_BUNDLE_FORMAT_CLASS, RESOURCE_BUNDLE_FORMAT_PROPERTIES -> it as String
                     else -> null
                 }
             }.toSet().takeIf { it.isNotEmpty() }
-            "java.class" -> setOf("java.class")
-            "java.properties" -> setOf("java.properties")
+            RESOURCE_BUNDLE_FORMAT_CLASS -> setOf(RESOURCE_BUNDLE_FORMAT_CLASS)
+            RESOURCE_BUNDLE_FORMAT_PROPERTIES -> setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES)
             else -> null
         }
 
@@ -1966,7 +2014,7 @@ class SootUpAdapter(
         var localIndex = if ((methodNode.access and Opcodes.ACC_STATIC) != 0) 0 else 1
         argTypes.forEach { argType ->
             locals[localIndex] = when (argType.className) {
-                "java.util.Locale" -> "arg-locale"
+                LOCALE_CLASS -> "arg-locale"
                 "java.lang.String" -> "arg-string"
                 else -> null
             }
@@ -2003,9 +2051,9 @@ class SootUpAdapter(
                         insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Arrays" && insn.name == "asList" ->
                             (args.singleOrNull() as? List<*>) ?: args
                         insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Collections" && insn.name == "singletonList" -> args
-                        insn.opcode == Opcodes.INVOKESTATIC && owner == "java.util.Locale" && insn.name == "forLanguageTag" ->
+                        insn.opcode == Opcodes.INVOKESTATIC && owner == LOCALE_CLASS && insn.name == "forLanguageTag" ->
                             (args.firstOrNull() as? String)?.let(::normalizeLocaleSpec)
-                        insn.opcode == Opcodes.INVOKESPECIAL && owner == "java.util.Locale" && insn.name == "<init>" -> null
+                        insn.opcode == Opcodes.INVOKESPECIAL && owner == LOCALE_CLASS && insn.name == INIT_METHOD -> null
                         else -> null
                     }
                     if (AsmType.getReturnType(insn.desc).sort != AsmType.VOID) {
@@ -2019,10 +2067,10 @@ class SootUpAdapter(
     }
 
     private fun resolveStaticLiteral(owner: String, fieldName: String): Any? = when {
-        owner == "java.util.Locale" -> extractLocaleSpec(fieldName)
-        fieldName == "FORMAT_CLASS" -> listOf("java.class")
-        fieldName == "FORMAT_PROPERTIES" -> listOf("java.properties")
-        fieldName == "FORMAT_DEFAULT" -> listOf("java.class", "java.properties")
+        owner == LOCALE_CLASS -> extractLocaleSpec(fieldName)
+        fieldName == "FORMAT_CLASS" -> listOf(RESOURCE_BUNDLE_FORMAT_CLASS)
+        fieldName == "FORMAT_PROPERTIES" -> listOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES)
+        fieldName == "FORMAT_DEFAULT" -> listOf(RESOURCE_BUNDLE_FORMAT_CLASS, RESOURCE_BUNDLE_FORMAT_PROPERTIES)
         else -> null
     }
 
@@ -2072,8 +2120,8 @@ class SootUpAdapter(
         val methodName = calleeSignature.name
         if (methodName !in setOf("getProperty", "getString", "getObject")) return null
         val supported = declaringClass == "java.util.Properties" ||
-            declaringClass == "java.util.PropertyResourceBundle" ||
-            declaringClass == "java.util.ResourceBundle" ||
+            declaringClass == PROPERTY_RESOURCE_BUNDLE_CLASS ||
+            declaringClass == RESOURCE_BUNDLE_CLASS ||
             declaringClass == "java.lang.System"
         if (!supported || invokeExpr.args.isEmpty()) return null
         val firstArg = invokeExpr.args[0]
@@ -2101,14 +2149,14 @@ class SootUpAdapter(
     ): LinkedHashSet<String>? {
         val declaringClass = calleeSignature.declClassType.fullyQualifiedName
         val methodName = calleeSignature.name
-        if (declaringClass != "java.util.ResourceBundle" || methodName != "getBundle" || invokeExpr.args.isEmpty()) {
+        if (declaringClass != RESOURCE_BUNDLE_CLASS || methodName != "getBundle" || invokeExpr.args.isEmpty()) {
             return null
         }
         val firstArg = invokeExpr.args[0] as? SootStringConstant ?: return null
         val baseName = firstArg.value
         val basePath = baseName.replace('.', '/')
         val localeArg = calleeSignature.parameterTypes
-            .indexOfFirst { it.toString() == "java.util.Locale" }
+            .indexOfFirst { it.toString() == LOCALE_CLASS }
             .takeIf { it >= 0 }
             ?.let(invokeExpr.args::getOrNull)
         val controlArg = calleeSignature.parameterTypes
@@ -2135,10 +2183,10 @@ class SootUpAdapter(
     ) {
         val declaringClass = calleeSignature.declClassType.fullyQualifiedName
         val methodName = calleeSignature.name
-        if (declaringClass != "java.util.ResourceBundle" || methodName !in setOf("getString", "getObject", "getKeys")) return
+        if (declaringClass != RESOURCE_BUNDLE_CLASS || methodName !in setOf("getString", "getObject", GET_KEYS_METHOD)) return
         val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local ?: return
         val bundlePaths = resourceBundlePaths[localKey(caller, receiverLocal.name)] ?: return
-        if (methodName == "getKeys") {
+        if (methodName == GET_KEYS_METHOD) {
             bundlePaths.forEach { bundlePath ->
                 resourceFilesByPath[bundlePath]?.forEach { resourceFile ->
                     graphBuilder.addEdge(ResourceEdge(resourceFile.id, callSite.id, ResourceRelation.ENUMERATES))
@@ -2176,7 +2224,7 @@ class SootUpAdapter(
         resultNode: ValueNode?
     ) {
         val receiverLocal = (invokeExpr as? AbstractInstanceInvokeExpr)?.base as? Local
-        if (calleeSignature.declClassType.fullyQualifiedName == "java.util.Locale" && calleeSignature.name == "<init>") {
+        if (calleeSignature.declClassType.fullyQualifiedName == LOCALE_CLASS && calleeSignature.name == INIT_METHOD) {
             val localeSpec = extractConstructedLocaleSpec(invokeExpr)
             if (receiverLocal != null && localeSpec != null) {
                 localeSpecsByLocal[localKey(caller, receiverLocal.name)] = localeSpec
@@ -2256,13 +2304,13 @@ class SootUpAdapter(
     }
 
     private fun isResourceBundleCall(calleeSignature: MethodSignature): Boolean =
-        calleeSignature.declClassType.fullyQualifiedName == "java.util.ResourceBundle" &&
+        calleeSignature.declClassType.fullyQualifiedName == RESOURCE_BUNDLE_CLASS &&
             calleeSignature.name == "getBundle"
 
     private fun isResourceEnumerationCall(calleeSignature: MethodSignature): Boolean {
         val declaringClass = calleeSignature.declClassType.fullyQualifiedName
-        return (declaringClass == "java.util.ResourceBundle" || declaringClass == "java.util.PropertyResourceBundle") &&
-            calleeSignature.name == "getKeys"
+        return (declaringClass == RESOURCE_BUNDLE_CLASS || declaringClass == PROPERTY_RESOURCE_BUNDLE_CLASS) &&
+            calleeSignature.name == GET_KEYS_METHOD
     }
 
     private fun isPropertiesLoadCall(calleeSignature: MethodSignature): Boolean =
@@ -2270,12 +2318,12 @@ class SootUpAdapter(
             calleeSignature.name in setOf("load", "loadFromXML")
 
     private fun isPropertyResourceBundleConstructor(calleeSignature: MethodSignature): Boolean =
-        calleeSignature.declClassType.fullyQualifiedName == "java.util.PropertyResourceBundle" &&
-            calleeSignature.name == "<init>"
+        calleeSignature.declClassType.fullyQualifiedName == PROPERTY_RESOURCE_BUNDLE_CLASS &&
+            calleeSignature.name == INIT_METHOD
 
     private fun isReaderBridgeConstructor(calleeSignature: MethodSignature): Boolean {
         val declaringClass = calleeSignature.declClassType.fullyQualifiedName
-        return calleeSignature.name == "<init>" && declaringClass in setOf(
+        return calleeSignature.name == INIT_METHOD && declaringClass in setOf(
             "java.io.InputStreamReader",
             "java.io.BufferedReader",
             "java.io.StringReader",
@@ -2305,7 +2353,11 @@ class SootUpAdapter(
         controlSpec: BundleControlSpec?
     ): LinkedHashSet<String> {
         val candidates = resourceFilesByPath.keys
-            .filter { it == "$basePath.properties" || (it.startsWith("${basePath}_") && it.endsWith(".properties")) || matchesBundleClassPath(it, baseName) }
+            .filter {
+                it == defaultBundlePropertiesPath(basePath) ||
+                    (it.startsWith("${basePath}_") && it.endsWith(PROPERTIES_FILE_SUFFIX)) ||
+                    matchesBundleClassPath(it, baseName)
+            }
             .sortedWith(compareByDescending<String> { it.count { ch -> ch == '_' } }.thenBy { it })
         return LinkedHashSet(
             candidates
@@ -2326,15 +2378,18 @@ class SootUpAdapter(
         val localeCandidates = controlSpec?.candidateLocales ?: defaultBundleCandidateLocales(localeSpec)
         for (candidateLocale in localeCandidates) {
             if (candidateLocale.isBlank()) {
-                candidates.add("$basePath.properties")
+                candidates.add(defaultBundlePropertiesPath(basePath))
                 candidates.add(baseName)
             } else {
-                candidates.add("${basePath}_${candidateLocale}.properties")
+                candidates.add("${basePath}_$candidateLocale$PROPERTIES_FILE_SUFFIX")
                 candidates.add("${baseName}_${candidateLocale}")
             }
         }
         return LinkedHashSet(
-            candidates.filter { (it in resourceFilesByPath || it == "$basePath.properties" || it == baseName) && controlAllowsPath(it, controlSpec) }
+            candidates.filter {
+                (it in resourceFilesByPath || it == defaultBundlePropertiesPath(basePath) || it == baseName) &&
+                    controlAllowsPath(it, controlSpec)
+            }
         )
     }
 
@@ -2350,9 +2405,11 @@ class SootUpAdapter(
 
     private fun collectBundleCandidates(baseName: String, basePath: String, controlSpec: BundleControlSpec?): LinkedHashSet<String> =
         LinkedHashSet(
-            listOf("$basePath.properties", baseName)
+            listOf(defaultBundlePropertiesPath(basePath), baseName)
                 .filter { controlAllowsPath(it, controlSpec) }
         )
+
+    private fun defaultBundlePropertiesPath(basePath: String): String = "$basePath$PROPERTIES_FILE_SUFFIX"
 
     private fun updateLocaleBuilderState(
         caller: MethodDescriptor,
@@ -2365,7 +2422,7 @@ class SootUpAdapter(
         val receiverKey = localKey(caller, receiverLocal.name)
         val current = localeBuilderSpecsByLocal[receiverKey] ?: LocaleBuilderSpec()
         val updated = when (calleeSignature.name) {
-            "<init>" -> LocaleBuilderSpec()
+            INIT_METHOD -> LocaleBuilderSpec()
             "setLanguage" -> current.copy(language = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
             "setRegion" -> current.copy(country = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
             "setVariant" -> current.copy(variant = extractStringValue(caller, invokeExpr.args.getOrNull(0)))
@@ -2439,8 +2496,8 @@ class SootUpAdapter(
                     null
                 } else {
                     when (value.fieldSignature.name) {
-                        "FORMAT_PROPERTIES" -> "java.properties"
-                        "FORMAT_CLASS" -> "java.class"
+                        "FORMAT_PROPERTIES" -> RESOURCE_BUNDLE_FORMAT_PROPERTIES
+                        "FORMAT_CLASS" -> RESOURCE_BUNDLE_FORMAT_CLASS
                         "FORMAT_DEFAULT" -> null
                         else -> null
                     }
@@ -2451,9 +2508,9 @@ class SootUpAdapter(
     }
 
     private fun controlFormats(raw: String?): Set<String> = when (raw) {
-        "java.class" -> setOf("java.class")
-        "java.properties" -> setOf("java.properties")
-        else -> setOf("java.properties", "java.class")
+        RESOURCE_BUNDLE_FORMAT_CLASS -> setOf(RESOURCE_BUNDLE_FORMAT_CLASS)
+        RESOURCE_BUNDLE_FORMAT_PROPERTIES -> setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES)
+        else -> setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES, RESOURCE_BUNDLE_FORMAT_CLASS)
     }
 
     private fun resolveBundleControlSpec(className: String): BundleControlSpec? =
@@ -2464,7 +2521,7 @@ class SootUpAdapter(
             val methods = getAsmMethodNodes(javaSootClass) ?: loadMethodNodesFromResource(javaSootClass) ?: return@getOrPut null
             val formats = methods.firstOrNull { it.name == "getFormats" }
                 ?.let(::extractControlFormatsFromMethod)
-                ?: setOf("java.properties", "java.class")
+                ?: setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES, RESOURCE_BUNDLE_FORMAT_CLASS)
             val candidateLocales = methods.firstOrNull { it.name == "getCandidateLocales" }
                 ?.let(::extractCandidateLocalesFromMethod)
             val noFallback = methods.firstOrNull { it.name == "getFallbackLocale" }
@@ -2508,10 +2565,10 @@ class SootUpAdapter(
 
     private fun controlAllowsPath(path: String, controlSpec: BundleControlSpec?): Boolean {
         if (controlSpec == null) return true
-        val isProperties = path.endsWith(".properties")
+        val isProperties = path.endsWith(PROPERTIES_FILE_SUFFIX)
         val isClassBundle = !isProperties
-        return (isProperties && "java.properties" in controlSpec.formats) ||
-            (isClassBundle && "java.class" in controlSpec.formats)
+        return (isProperties && RESOURCE_BUNDLE_FORMAT_PROPERTIES in controlSpec.formats) ||
+            (isClassBundle && RESOURCE_BUNDLE_FORMAT_CLASS in controlSpec.formats)
     }
 
     private fun matchesBundleClassPath(path: String, baseName: String): Boolean =
@@ -2543,7 +2600,7 @@ class SootUpAdapter(
             else -> "bundle"
         }
         val fileNode = ResourceFileNode(
-            id = nextNodeId("resource"),
+            id = nextNodeId(RESOURCE_SOURCE),
             path = path,
             source = "runtime-bundle",
             format = format,
@@ -2562,8 +2619,8 @@ class SootUpAdapter(
         }
 
     private fun controlFormatsList(controlSpec: BundleControlSpec): List<String> = buildList {
-        if ("java.class" in controlSpec.formats) add("java.class")
-        if ("java.properties" in controlSpec.formats) add("java.properties")
+        if (RESOURCE_BUNDLE_FORMAT_CLASS in controlSpec.formats) add(RESOURCE_BUNDLE_FORMAT_CLASS)
+        if (RESOURCE_BUNDLE_FORMAT_PROPERTIES in controlSpec.formats) add(RESOURCE_BUNDLE_FORMAT_PROPERTIES)
     }
 
     private fun String.toLocale(): Locale {
@@ -2604,7 +2661,7 @@ class SootUpAdapter(
     }
 
     private fun extractLocaleSpec(fieldRef: JStaticFieldRef): String? {
-        if (fieldRef.fieldSignature.declClassType.fullyQualifiedName != "java.util.Locale") return null
+        if (fieldRef.fieldSignature.declClassType.fullyQualifiedName != LOCALE_CLASS) return null
         return extractLocaleSpec(fieldRef.fieldSignature.name)
     }
 
@@ -2634,7 +2691,7 @@ class SootUpAdapter(
     }
 
     private fun extractLocaleFactorySpec(calleeSignature: MethodSignature, invokeExpr: AbstractInvokeExpr): String? {
-        if (calleeSignature.declClassType.fullyQualifiedName != "java.util.Locale") return null
+        if (calleeSignature.declClassType.fullyQualifiedName != LOCALE_CLASS) return null
         return when (calleeSignature.name) {
             "forLanguageTag" -> (invokeExpr.args.firstOrNull() as? SootStringConstant)?.value
                 ?.let(::normalizeLocaleSpec)
@@ -2669,14 +2726,14 @@ class SootUpAdapter(
     }
 
     private fun isResourceConfig(path: String): Boolean =
-        path.endsWith(".properties") ||
+        path.endsWith(PROPERTIES_FILE_SUFFIX) ||
             path.endsWith(".yml") ||
             path.endsWith(".yaml") ||
             path.endsWith(".json") ||
             path.endsWith(".xml")
 
     private fun resourceFormat(path: String): String = when {
-        path.endsWith(".properties") -> "properties"
+        path.endsWith(PROPERTIES_FILE_SUFFIX) -> "properties"
         path.endsWith(".yml") || path.endsWith(".yaml") -> "yaml"
         path.endsWith(".json") -> "json"
         path.endsWith(".xml") -> "xml"
@@ -2703,14 +2760,14 @@ class SootUpAdapter(
 
         // Check for boxing methods: Integer.valueOf, Long.valueOf, etc.
         val isBoxingMethod = when (className) {
-            "java.lang.Integer" -> methodName == "valueOf"
-            "java.lang.Long" -> methodName == "valueOf"
-            "java.lang.Short" -> methodName == "valueOf"
-            "java.lang.Byte" -> methodName == "valueOf"
-            "java.lang.Float" -> methodName == "valueOf"
-            "java.lang.Double" -> methodName == "valueOf"
-            "java.lang.Boolean" -> methodName == "valueOf"
-            "java.lang.Character" -> methodName == "valueOf"
+            "java.lang.Integer" -> methodName == VALUE_OF_METHOD
+            "java.lang.Long" -> methodName == VALUE_OF_METHOD
+            "java.lang.Short" -> methodName == VALUE_OF_METHOD
+            "java.lang.Byte" -> methodName == VALUE_OF_METHOD
+            "java.lang.Float" -> methodName == VALUE_OF_METHOD
+            "java.lang.Double" -> methodName == VALUE_OF_METHOD
+            "java.lang.Boolean" -> methodName == VALUE_OF_METHOD
+            "java.lang.Character" -> methodName == VALUE_OF_METHOD
             else -> false
         }
 

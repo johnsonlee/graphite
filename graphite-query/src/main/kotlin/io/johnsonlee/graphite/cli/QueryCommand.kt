@@ -3,9 +3,13 @@ package io.johnsonlee.graphite.cli
 import com.google.gson.GsonBuilder
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.webgraph.GraphStore
-import picocli.CommandLine.*
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import java.nio.file.Path
 import java.util.concurrent.Callable
+
+private const val MIN_COLUMN_WIDTH = 4
 
 @Command(name = "query", description = ["Execute a Cypher query against a saved graph"])
 class QueryCommand : Callable<Int> {
@@ -67,7 +71,7 @@ class QueryCommand : Callable<Int> {
                     // Calculate column widths
                     val widths = result.columns.map { col ->
                         val dataWidth = result.rows.maxOfOrNull { row -> (row[col]?.toString() ?: "null").length } ?: 0
-                        maxOf(col.length, dataWidth, 4)
+                        maxOf(col.length, dataWidth, MIN_COLUMN_WIDTH)
                     }
 
                     // Header

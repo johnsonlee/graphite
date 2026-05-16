@@ -18,6 +18,10 @@ import java.util.zip.ZipFile
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
+private const val JAR_EXTENSION_NAME = "jar"
+private const val WAR_EXTENSION_NAME = "war"
+private const val ZIP_EXTENSION_NAME = "zip"
+
 /**
  * SootUp-based loader for Java projects.
  *
@@ -75,7 +79,7 @@ class JavaProjectLoader(
                         stream.filter { Files.isRegularFile(it) }
                             .filter {
                                 when (it.fileName.toString().substringAfterLast('.', "").lowercase()) {
-                                    "jar" -> true
+                                    JAR_EXTENSION_NAME -> true
                                     else -> false
                                 }
                             }
@@ -87,14 +91,14 @@ class JavaProjectLoader(
                             }
                     }
                 }
-                path.extension.lowercase() == "jar" -> {
+                path.extension.lowercase() == JAR_EXTENSION_NAME -> {
                     if (isSpringBootJar(path)) {
                         loadSpringBootSignatures(path, reader)
                     } else {
                         reader.loadFromJar(path)
                     }
                 }
-                path.extension.lowercase() == "war" -> {
+                path.extension.lowercase() == WAR_EXTENSION_NAME -> {
                     loadWarSignatures(path, reader)
                 }
             }
@@ -133,7 +137,7 @@ class JavaProjectLoader(
             return true
         }
         val ext = path.extension.lowercase()
-        return ext in listOf("jar", "war", "zip")
+        return ext in listOf(JAR_EXTENSION_NAME, WAR_EXTENSION_NAME, ZIP_EXTENSION_NAME)
     }
 
     private data class InputLocations(
@@ -194,7 +198,7 @@ class JavaProjectLoader(
         return Files.walk(path).use { stream ->
             stream.filter { Files.isRegularFile(it) }
                 .anyMatch {
-                    it.fileName.toString().endsWith(".class", ignoreCase = true) &&
+                    it.fileName.toString().endsWith(JavaArchiveLayout.CLASS_EXTENSION, ignoreCase = true) &&
                         !it.toString().contains(".jar!")
                 }
         }
@@ -204,7 +208,7 @@ class JavaProjectLoader(
      * Check if this is a Spring Boot fat JAR by looking for BOOT-INF directory
      */
     private fun isSpringBootJar(path: Path): Boolean {
-        if (path.extension.lowercase() != "jar") return false
+        if (path.extension.lowercase() != JAR_EXTENSION_NAME) return false
 
         return try {
             ZipFile(path.toFile()).use { zip ->
@@ -216,7 +220,7 @@ class JavaProjectLoader(
     }
 
     private fun isWarFile(path: Path): Boolean {
-        return path.extension.lowercase() == "war"
+        return path.extension.lowercase() == WAR_EXTENSION_NAME
     }
 
     /**
@@ -411,10 +415,10 @@ class JavaProjectLoader(
         return try {
             ZipFile(jarPath.toFile()).use { jar ->
                 jar.entries().asSequence()
-                    .filter { it.name.endsWith(".class") }
+                    .filter { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
                     .any { entry ->
                         val className = entry.name
-                            .removeSuffix(".class")
+                            .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
                             .replace('/', '.')
                         config.includePackages.any { pkg ->
                             className.startsWith(pkg)

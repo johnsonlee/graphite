@@ -1,7 +1,65 @@
 package io.johnsonlee.graphite.cypher
 
-import io.johnsonlee.graphite.core.*
-import kotlin.math.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.ValueNode
+import kotlin.math.E
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.asin
+import kotlin.math.atan
+import kotlin.math.atan2
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.exp
+import kotlin.math.floor
+import kotlin.math.ln
+import kotlin.math.log
+import kotlin.math.log10
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.sign
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tan
+
+private const val FUNCTION_COUNT = "count"
+private const val FUNCTION_SUM = "sum"
+private const val FUNCTION_AVG = "avg"
+private const val FUNCTION_MIN = "min"
+private const val FUNCTION_MAX = "max"
+private const val FUNCTION_COLLECT = "collect"
+private const val FUNCTION_PERCENTILE_CONT = "percentilecont"
+private const val FUNCTION_PERCENTILE_DISC = "percentiledisc"
+private const val FUNCTION_STDEV = "stdev"
+private const val FUNCTION_STDEVP = "stdevp"
+private const val DEFAULT_PERCENTILE = 0.5
+private const val CONSTANT_LABEL = "Constant"
 
 /**
  * Complete openCypher function library.
@@ -13,16 +71,16 @@ object CypherFunctions {
 
     fun call(name: String, args: List<Any?>): Any? = when (name.lowercase()) {
         // Aggregation (must be handled in aggregation pipeline, not inline)
-        "count" -> throw CypherAggregationException(name)
-        "sum" -> throw CypherAggregationException(name)
-        "avg" -> throw CypherAggregationException(name)
-        "min" -> throw CypherAggregationException(name)
-        "max" -> throw CypherAggregationException(name)
-        "collect" -> throw CypherAggregationException(name)
-        "percentilecont" -> throw CypherAggregationException(name)
-        "percentiledisc" -> throw CypherAggregationException(name)
-        "stdev" -> throw CypherAggregationException(name)
-        "stdevp" -> throw CypherAggregationException(name)
+        FUNCTION_COUNT -> throw CypherAggregationException(name)
+        FUNCTION_SUM -> throw CypherAggregationException(name)
+        FUNCTION_AVG -> throw CypherAggregationException(name)
+        FUNCTION_MIN -> throw CypherAggregationException(name)
+        FUNCTION_MAX -> throw CypherAggregationException(name)
+        FUNCTION_COLLECT -> throw CypherAggregationException(name)
+        FUNCTION_PERCENTILE_CONT -> throw CypherAggregationException(name)
+        FUNCTION_PERCENTILE_DISC -> throw CypherAggregationException(name)
+        FUNCTION_STDEV -> throw CypherAggregationException(name)
+        FUNCTION_STDEVP -> throw CypherAggregationException(name)
 
         // Scalar
         "id" -> id(args[0])
@@ -99,16 +157,16 @@ object CypherFunctions {
     // ========================================================================
 
     fun aggregate(name: String, values: List<Any?>): Any? = when (name.lowercase()) {
-        "count" -> values.size.toLong()
-        "sum" -> values.filterNotNull().sumOf { toDouble(it) }
-        "avg" -> values.filterNotNull().let { if (it.isEmpty()) null else it.sumOf { v -> toDouble(v) } / it.size }
-        "min" -> values.filterNotNull().minByOrNull { toDouble(it) }
-        "max" -> values.filterNotNull().maxByOrNull { toDouble(it) }
-        "collect" -> values.toList()
-        "percentilecont" -> percentileCont(values, 0.5)
-        "percentiledisc" -> percentileDisc(values, 0.5)
-        "stdev" -> stdev(values, sample = true)
-        "stdevp" -> stdev(values, sample = false)
+        FUNCTION_COUNT -> values.size.toLong()
+        FUNCTION_SUM -> values.filterNotNull().sumOf { toDouble(it) }
+        FUNCTION_AVG -> values.filterNotNull().let { if (it.isEmpty()) null else it.sumOf { v -> toDouble(v) } / it.size }
+        FUNCTION_MIN -> values.filterNotNull().minByOrNull { toDouble(it) }
+        FUNCTION_MAX -> values.filterNotNull().maxByOrNull { toDouble(it) }
+        FUNCTION_COLLECT -> values.toList()
+        FUNCTION_PERCENTILE_CONT -> percentileCont(values, DEFAULT_PERCENTILE)
+        FUNCTION_PERCENTILE_DISC -> percentileDisc(values, DEFAULT_PERCENTILE)
+        FUNCTION_STDEV -> stdev(values, sample = true)
+        FUNCTION_STDEVP -> stdev(values, sample = false)
         else -> throw CypherException("Unknown aggregation: $name")
     }
 
@@ -116,8 +174,8 @@ object CypherFunctions {
      * Aggregation with an explicit percentile parameter.
      */
     fun aggregate(name: String, values: List<Any?>, percentile: Double): Any? = when (name.lowercase()) {
-        "percentilecont" -> percentileCont(values, percentile)
-        "percentiledisc" -> percentileDisc(values, percentile)
+        FUNCTION_PERCENTILE_CONT -> percentileCont(values, percentile)
+        FUNCTION_PERCENTILE_DISC -> percentileDisc(values, percentile)
         else -> aggregate(name, values)
     }
 
@@ -128,8 +186,8 @@ object CypherFunctions {
     // ========================================================================
 
     private val AGGREGATION_NAMES = setOf(
-        "count", "sum", "avg", "min", "max", "collect",
-        "percentilecont", "percentiledisc", "stdev", "stdevp"
+        FUNCTION_COUNT, FUNCTION_SUM, FUNCTION_AVG, FUNCTION_MIN, FUNCTION_MAX, FUNCTION_COLLECT,
+        FUNCTION_PERCENTILE_CONT, FUNCTION_PERCENTILE_DISC, FUNCTION_STDEV, FUNCTION_STDEVP
     )
 
     private fun id(value: Any?): Any? = when (value) {
@@ -174,14 +232,14 @@ object CypherFunctions {
 
     internal fun labels(value: Any?): List<String> = when (value) {
         is CallSiteNode -> listOf("CallSiteNode")
-        is IntConstant -> listOf("IntConstant", "Constant")
-        is StringConstant -> listOf("StringConstant", "Constant")
-        is LongConstant -> listOf("LongConstant", "Constant")
-        is FloatConstant -> listOf("FloatConstant", "Constant")
-        is DoubleConstant -> listOf("DoubleConstant", "Constant")
-        is BooleanConstant -> listOf("BooleanConstant", "Constant")
-        is NullConstant -> listOf("NullConstant", "Constant")
-        is EnumConstant -> listOf("EnumConstant", "Constant")
+        is IntConstant -> listOf("IntConstant", CONSTANT_LABEL)
+        is StringConstant -> listOf("StringConstant", CONSTANT_LABEL)
+        is LongConstant -> listOf("LongConstant", CONSTANT_LABEL)
+        is FloatConstant -> listOf("FloatConstant", CONSTANT_LABEL)
+        is DoubleConstant -> listOf("DoubleConstant", CONSTANT_LABEL)
+        is BooleanConstant -> listOf("BooleanConstant", CONSTANT_LABEL)
+        is NullConstant -> listOf("NullConstant", CONSTANT_LABEL)
+        is EnumConstant -> listOf("EnumConstant", CONSTANT_LABEL)
         is LocalVariable -> listOf("LocalVariable")
         is FieldNode -> listOf("FieldNode")
         is ParameterNode -> listOf("ParameterNode")
@@ -262,7 +320,7 @@ object CypherFunctions {
     /**
      * openCypher round uses half-up rounding (2.5 -> 3), not banker's rounding.
      */
-    private fun roundHalfUp(value: Double): Double = floor(value + 0.5)
+    private fun roundHalfUp(value: Double): Double = floor(value + DEFAULT_PERCENTILE)
 
     private fun sign(value: Any?): Int {
         val d = toDouble(value)

@@ -1,6 +1,30 @@
 package io.johnsonlee.graphite.cli
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.AnnotationNode
+import io.johnsonlee.graphite.core.BooleanConstant
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DoubleConstant
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.FloatConstant
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.LongConstant
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceValueNode
+import io.johnsonlee.graphite.core.ReturnNode
+import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.ValueNode
 
 internal fun resolveNodeType(type: String?): Class<out Node> = when (type?.lowercase()) {
     "callsite", "callsitenode" -> CallSiteNode::class.java
@@ -34,45 +58,146 @@ internal fun formatNode(node: Node): String = when (node) {
 }
 
 internal fun nodeToMap(node: Node): Map<String, Any?> = when (node) {
-    is CallSiteNode -> mapOf("type" to "CallSiteNode", "id" to node.id.value, "caller" to node.caller.signature, "callee" to node.callee.signature, "label" to "${node.callee.declaringClass.simpleName}.${node.callee.name}")
-    is IntConstant -> mapOf("type" to "IntConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}")
-    is StringConstant -> mapOf("type" to "StringConstant", "id" to node.id.value, "value" to node.value, "label" to "\"${node.value}\"")
-    is EnumConstant -> mapOf("type" to "EnumConstant", "id" to node.id.value, "enumType" to node.enumType.className, "enumName" to node.enumName, "label" to "${node.enumType.simpleName}.${node.enumName}")
-    is LongConstant -> mapOf("type" to "LongConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}L")
-    is FloatConstant -> mapOf("type" to "FloatConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}f")
-    is DoubleConstant -> mapOf("type" to "DoubleConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}d")
-    is BooleanConstant -> mapOf("type" to "BooleanConstant", "id" to node.id.value, "value" to node.value, "label" to "${node.value}")
-    is NullConstant -> mapOf("type" to "NullConstant", "id" to node.id.value, "label" to "null")
+    is CallSiteNode -> mapOf(
+        API_FIELD_TYPE to "CallSiteNode",
+        API_FIELD_ID to node.id.value,
+        "caller" to node.caller.signature,
+        "callee" to node.callee.signature,
+        API_FIELD_LABEL to "${node.callee.declaringClass.simpleName}.${node.callee.name}"
+    )
+    is IntConstant -> mapOf(
+        API_FIELD_TYPE to "IntConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "${node.value}"
+    )
+    is StringConstant -> mapOf(
+        API_FIELD_TYPE to "StringConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "\"${node.value}\""
+    )
+    is EnumConstant -> mapOf(
+        API_FIELD_TYPE to "EnumConstant",
+        API_FIELD_ID to node.id.value,
+        "enumType" to node.enumType.className,
+        "enumName" to node.enumName,
+        API_FIELD_LABEL to "${node.enumType.simpleName}.${node.enumName}"
+    )
+    is LongConstant -> mapOf(
+        API_FIELD_TYPE to "LongConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "${node.value}L"
+    )
+    is FloatConstant -> mapOf(
+        API_FIELD_TYPE to "FloatConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "${node.value}f"
+    )
+    is DoubleConstant -> mapOf(
+        API_FIELD_TYPE to "DoubleConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "${node.value}d"
+    )
+    is BooleanConstant -> mapOf(
+        API_FIELD_TYPE to "BooleanConstant",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_VALUE to node.value,
+        API_FIELD_LABEL to "${node.value}"
+    )
+    is NullConstant -> mapOf(API_FIELD_TYPE to "NullConstant", API_FIELD_ID to node.id.value, API_FIELD_LABEL to "null")
     is ResourceFileNode -> mapOf(
-        "type" to "ResourceFileNode",
-        "id" to node.id.value,
-        "path" to node.path,
-        "source" to node.source,
-        "format" to node.format,
-        "profile" to node.profile,
-        "label" to node.path
+        API_FIELD_TYPE to "ResourceFileNode",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_PATH to node.path,
+        API_FIELD_SOURCE to node.source,
+        API_FIELD_FORMAT to node.format,
+        API_FIELD_PROFILE to node.profile,
+        API_FIELD_LABEL to node.path
     )
     is ResourceValueNode -> mapOf(
-        "type" to "ResourceValueNode",
-        "id" to node.id.value,
-        "path" to node.path,
+        API_FIELD_TYPE to "ResourceValueNode",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_PATH to node.path,
         "key" to node.key,
-        "value" to node.value,
-        "format" to node.format,
-        "profile" to node.profile,
-        "label" to "${node.key}=${node.value}"
+        API_FIELD_VALUE to node.value,
+        API_FIELD_FORMAT to node.format,
+        API_FIELD_PROFILE to node.profile,
+        API_FIELD_LABEL to "${node.key}=${node.value}"
     )
-    is FieldNode -> mapOf("type" to "FieldNode", "id" to node.id.value, "class" to node.descriptor.declaringClass.className, "name" to node.descriptor.name, "fieldType" to node.descriptor.type.className, "label" to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}")
-    is ParameterNode -> mapOf("type" to "ParameterNode", "id" to node.id.value, "index" to node.index, "paramType" to node.type.className, "method" to node.method.signature, "label" to "param#${node.index}")
-    is ReturnNode -> mapOf("type" to "ReturnNode", "id" to node.id.value, "method" to node.method.signature, "label" to "return")
-    is LocalVariable -> mapOf("type" to "LocalVariable", "id" to node.id.value, "name" to node.name, "varType" to node.type.className, "method" to node.method.signature, "label" to node.name)
-    is AnnotationNode -> mutableMapOf<String, Any?>("type" to "AnnotationNode", "id" to node.id.value, "name" to node.name, "class" to node.className, "member" to node.memberName, "label" to "@${node.name.substringAfterLast('.')}").also { map -> node.values.forEach { (k, v) -> map[k] = v } }
+    is FieldNode -> mapOf(
+        API_FIELD_TYPE to "FieldNode",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_CLASS to node.descriptor.declaringClass.className,
+        API_FIELD_NAME to node.descriptor.name,
+        "fieldType" to node.descriptor.type.className,
+        API_FIELD_LABEL to "${node.descriptor.declaringClass.simpleName}.${node.descriptor.name}"
+    )
+    is ParameterNode -> mapOf(
+        API_FIELD_TYPE to "ParameterNode",
+        API_FIELD_ID to node.id.value,
+        "index" to node.index,
+        "paramType" to node.type.className,
+        API_FIELD_METHOD to node.method.signature,
+        API_FIELD_LABEL to "param#${node.index}"
+    )
+    is ReturnNode -> mapOf(
+        API_FIELD_TYPE to "ReturnNode",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_METHOD to node.method.signature,
+        API_FIELD_LABEL to "return"
+    )
+    is LocalVariable -> mapOf(
+        API_FIELD_TYPE to "LocalVariable",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_NAME to node.name,
+        "varType" to node.type.className,
+        API_FIELD_METHOD to node.method.signature,
+        API_FIELD_LABEL to node.name
+    )
+    is AnnotationNode -> mutableMapOf<String, Any?>(
+        API_FIELD_TYPE to "AnnotationNode",
+        API_FIELD_ID to node.id.value,
+        API_FIELD_NAME to node.name,
+        API_FIELD_CLASS to node.className,
+        "member" to node.memberName,
+        API_FIELD_LABEL to "@${node.name.substringAfterLast('.')}"
+    ).also { map -> node.values.forEach { (k, v) -> map[k] = v } }
 }
 
 internal fun edgeToMap(edge: Edge): Map<String, Any?> = when (edge) {
-    is DataFlowEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "DataFlow", "kind" to edge.kind.name)
-    is CallEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Call", "virtual" to edge.isVirtual, "dynamic" to edge.isDynamic)
-    is TypeEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Type", "kind" to edge.kind.name)
-    is ControlFlowEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "ControlFlow", "kind" to edge.kind.name)
-    is ResourceEdge -> mapOf("from" to edge.from.value, "to" to edge.to.value, "type" to "Resource", "kind" to edge.kind.name)
+    is DataFlowEdge -> mapOf(
+        "from" to edge.from.value,
+        "to" to edge.to.value,
+        API_FIELD_TYPE to "DataFlow",
+        API_FIELD_KIND to edge.kind.name
+    )
+    is CallEdge -> mapOf(
+        "from" to edge.from.value,
+        "to" to edge.to.value,
+        API_FIELD_TYPE to "Call",
+        API_FIELD_VIRTUAL to edge.isVirtual,
+        API_FIELD_DYNAMIC to edge.isDynamic
+    )
+    is TypeEdge -> mapOf(
+        "from" to edge.from.value,
+        "to" to edge.to.value,
+        API_FIELD_TYPE to "Type",
+        API_FIELD_KIND to edge.kind.name
+    )
+    is ControlFlowEdge -> mapOf(
+        "from" to edge.from.value,
+        "to" to edge.to.value,
+        API_FIELD_TYPE to "ControlFlow",
+        API_FIELD_KIND to edge.kind.name
+    )
+    is ResourceEdge -> mapOf(
+        "from" to edge.from.value,
+        "to" to edge.to.value,
+        API_FIELD_TYPE to "Resource",
+        API_FIELD_KIND to edge.kind.name
+    )
 }

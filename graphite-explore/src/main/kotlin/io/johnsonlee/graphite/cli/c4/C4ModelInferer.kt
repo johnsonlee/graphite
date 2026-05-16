@@ -76,7 +76,7 @@ internal class C4ModelInferer(
             val view = when (level) {
                 C4Level.CONTEXT -> {
                     val subject = subject()
-                    val containerCount = if (subject.role == "application") 1 else 0
+                    val containerCount = if (subject.role == WIRE_APPLICATION) 1 else 0
                     buildContextView(
                         graph = graph,
                         classCount = classes.size,
@@ -94,7 +94,7 @@ internal class C4ModelInferer(
                 C4Level.ALL -> error("C4 all level is handled before single-view selection")
                 else -> {
                     val subject = subject()
-                    val containerCount = if (subject.role == "application") 1 else 0
+                    val containerCount = if (subject.role == WIRE_APPLICATION) 1 else 0
                     buildContextView(
                         graph = graph,
                         classCount = classes.size,
@@ -201,7 +201,7 @@ internal class C4ModelInferer(
                     name = subject.name,
                     description = subject.description,
                     kind = C4ElementKind.fromWire(subject.role) ?: C4ElementKind.APPLICATION,
-                    architectureType = if (subject.role == "application") {
+                    architectureType = if (subject.role == WIRE_APPLICATION) {
                         C4ArchitectureType.SOFTWARE_SYSTEM
                     } else {
                         C4ArchitectureType.LIBRARY
@@ -301,7 +301,7 @@ internal class C4ModelInferer(
             val artifact = ExternalSystemClassifier.artifactNameFromDependencyId(dependency.id) ?: return dependency.id
             val base = ExternalSystemClassifier.artifactBaseName(artifact)
             val prefix = base.split('-').firstOrNull().orEmpty()
-            return if (prefix in sharedPrefixes) "dependency:library:$prefix" else dependency.id
+            return if (prefix in sharedPrefixes) "$DEPENDENCY_LIBRARY_ID_PREFIX$prefix" else dependency.id
         }
 
         val dependencyIdToContextId = dependencies.associate { dependency ->
@@ -318,7 +318,7 @@ internal class C4ModelInferer(
                 if (members.size == 1 && familyId == members.single().id) {
                     members.single().copy(artifacts = listOf(members.single().name))
                 } else {
-                    val familyName = familyId.removePrefix("dependency:library:")
+                    val familyName = familyId.removePrefix(DEPENDENCY_LIBRARY_ID_PREFIX)
                     val artifactNames = members.map { it.name }.sorted()
                     ExternalDependency(
                         id = familyId,

@@ -1,6 +1,12 @@
 package io.johnsonlee.graphite.graph
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
@@ -10,6 +16,8 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+
+private const val BYTE_MASK = 0xFF
 
 /**
  * A [Graph] implementation backed by disk files.
@@ -166,7 +174,7 @@ class MmapGraph internal constructor(
     }
 
     internal class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {
-        override fun read(): Int = if (buf.hasRemaining()) buf.get().toInt() and 0xFF else -1
+        override fun read(): Int = if (buf.hasRemaining()) buf.get().toInt() and BYTE_MASK else -1
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             if (!buf.hasRemaining()) return -1
             val n = minOf(len, buf.remaining())

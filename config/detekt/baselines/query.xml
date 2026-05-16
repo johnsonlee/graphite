@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>NestedBlockDepth:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>PrintStackTrace:BuildCommand.kt$BuildCommand$e</ID>
+    <ID>PrintStackTrace:QueryCommand.kt$QueryCommand$e</ID>
+    <ID>ReturnCount:BuildCommand.kt$BuildCommand$override fun call(): Int</ID>
+    <ID>ReturnCount:QueryCommand.kt$QueryCommand$override fun call(): Int</ID>
+    <ID>SpreadOperator:Main.kt$(*args)</ID>
+    <ID>TooGenericExceptionCaught:BuildCommand.kt$BuildCommand$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:QueryCommand.kt$QueryCommand$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

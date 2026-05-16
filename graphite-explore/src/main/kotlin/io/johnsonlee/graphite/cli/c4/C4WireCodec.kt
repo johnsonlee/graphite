@@ -10,32 +10,32 @@ internal object C4WireCodec {
     private val mapType = object : TypeToken<Map<String, Any?>>() {}.type
 
     private val elementCoreFields = setOf(
-        "id",
-        "type",
-        "name",
-        "description",
-        "kind",
+        WIRE_ID,
+        WIRE_TYPE,
+        WIRE_NAME,
+        WIRE_DESCRIPTION,
+        WIRE_KIND,
         "architectureType",
-        "responsibility"
+        WIRE_RESPONSIBILITY
     )
 
     private val relationshipCoreFields = setOf(
         "from",
         "to",
-        "type",
-        "kind",
-        "description",
-        "weight",
+        WIRE_TYPE,
+        WIRE_KIND,
+        WIRE_DESCRIPTION,
+        WIRE_WEIGHT,
         "evidence"
     )
 
     private val viewCoreFields = setOf(
-        "type",
-        "elements",
-        "relationships",
-        "externalDependencies",
-        "systemBoundary",
-        "skippedReason"
+        WIRE_TYPE,
+        WIRE_ELEMENTS,
+        WIRE_RELATIONSHIPS,
+        WIRE_EXTERNAL_DEPENDENCIES,
+        WIRE_SYSTEM_BOUNDARY,
+        WIRE_SKIPPED_REASON
     )
 
     fun encode(model: C4ViewModel): Map<String, Any?> =
@@ -101,9 +101,9 @@ internal object C4WireCodec {
     fun decodeModel(raw: Map<String, Any?>): C4ViewModel {
         val json = raw.toJsonObject()
         return C4ViewModel(
-            level = C4Level.fromWire(json.string("level")),
-            availableLevels = json.stringList("availableLevels").map(C4Level::fromWire),
-            context = json.obj("context")?.let { decodeView(it.toWireMap()) },
+            level = C4Level.fromWire(json.string(WIRE_LEVEL)),
+            availableLevels = json.stringList(WIRE_AVAILABLE_LEVELS).map(C4Level::fromWire),
+            context = json.obj(WIRE_CONTEXT)?.let { decodeView(it.toWireMap()) },
             container = json.obj("container")?.let { decodeView(it.toWireMap()) },
             component = json.obj("component")?.let { decodeView(it.toWireMap()) },
             view = json.obj("view")?.let { decodeView(it.toWireMap()) }
@@ -113,12 +113,12 @@ internal object C4WireCodec {
     fun decodeView(raw: Map<String, Any?>): C4View {
         val json = raw.toJsonObject()
         return C4View(
-            type = C4Level.fromWire(json.string("type")),
-            elements = json.objectList("elements").map { decodeElement(it.toWireMap()) },
-            relationships = json.objectList("relationships").map { decodeRelationship(it.toWireMap()) },
-            externalDependencies = json.objectList("externalDependencies").map { decodeDependency(it.toWireMap()) },
-            systemBoundary = json.string("systemBoundary"),
-            skippedReason = json.string("skippedReason"),
+            type = C4Level.fromWire(json.string(WIRE_TYPE)),
+            elements = json.objectList(WIRE_ELEMENTS).map { decodeElement(it.toWireMap()) },
+            relationships = json.objectList(WIRE_RELATIONSHIPS).map { decodeRelationship(it.toWireMap()) },
+            externalDependencies = json.objectList(WIRE_EXTERNAL_DEPENDENCIES).map { decodeDependency(it.toWireMap()) },
+            systemBoundary = json.string(WIRE_SYSTEM_BOUNDARY),
+            skippedReason = json.string(WIRE_SKIPPED_REASON),
             properties = json.without(viewCoreFields)
         )
     }
@@ -126,13 +126,13 @@ internal object C4WireCodec {
     fun decodeElement(raw: Map<String, Any?>): C4Element {
         val json = raw.toJsonObject()
         return C4Element(
-            id = json.string("id").orEmpty(),
-            type = C4ElementType.fromWire(json.string("type")),
-            name = json.string("name").orEmpty(),
-            description = json.string("description"),
-            kind = C4ElementKind.fromWire(json.string("kind")),
+            id = json.string(WIRE_ID).orEmpty(),
+            type = C4ElementType.fromWire(json.string(WIRE_TYPE)),
+            name = json.string(WIRE_NAME).orEmpty(),
+            description = json.string(WIRE_DESCRIPTION),
+            kind = C4ElementKind.fromWire(json.string(WIRE_KIND)),
             architectureType = C4ArchitectureType.fromWire(json.string("architectureType")),
-            responsibility = json.string("responsibility"),
+            responsibility = json.string(WIRE_RESPONSIBILITY),
             extensionProperties = json.without(elementCoreFields)
         )
     }
@@ -142,10 +142,10 @@ internal object C4WireCodec {
         return C4Relationship(
             from = json.string("from").orEmpty(),
             to = json.string("to").orEmpty(),
-            type = C4RelationshipType.fromWire(json.string("type")),
-            kind = C4RelationshipKind.fromWire(json.string("kind")),
-            description = json.string("description"),
-            weight = json.int("weight"),
+            type = C4RelationshipType.fromWire(json.string(WIRE_TYPE)),
+            kind = C4RelationshipKind.fromWire(json.string(WIRE_KIND)),
+            description = json.string(WIRE_DESCRIPTION),
+            weight = json.int(WIRE_WEIGHT),
             evidence = json.obj("evidence")?.toWireMap(),
             properties = json.without(relationshipCoreFields)
         )
@@ -154,11 +154,11 @@ internal object C4WireCodec {
     fun decodeDependency(raw: Map<String, Any?>): ExternalDependency {
         val json = raw.toJsonObject()
         return ExternalDependency(
-            id = json.string("id").orEmpty(),
-            name = json.string("name").orEmpty(),
-            weight = json.int("weight") ?: 0,
+            id = json.string(WIRE_ID).orEmpty(),
+            name = json.string(WIRE_NAME).orEmpty(),
+            weight = json.int(WIRE_WEIGHT) ?: 0,
             source = json.string("source").orEmpty(),
-            kind = ExternalDependencyKind.fromWire(json.string("kind")),
+            kind = ExternalDependencyKind.fromWire(json.string(WIRE_KIND)),
             confidence = json.string("confidence").orEmpty(),
             responsibility = json.string("responsibility").orEmpty(),
             artifacts = json.stringList("artifacts")

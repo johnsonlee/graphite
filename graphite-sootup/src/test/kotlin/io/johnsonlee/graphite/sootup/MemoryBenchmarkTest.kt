@@ -1,6 +1,15 @@
 package io.johnsonlee.graphite.sootup
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.LocalVariable
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.input.LoaderConfig
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
@@ -52,6 +61,7 @@ class MemoryBenchmarkTest {
         forceGc()
         val beforeStringIds = getUsedMemory()
 
+        @Suppress("UNUSED_VARIABLE")
         val stringIds = Array(count) { i -> "node-$i" }
         forceGc()
         val afterStringIds = getUsedMemory()

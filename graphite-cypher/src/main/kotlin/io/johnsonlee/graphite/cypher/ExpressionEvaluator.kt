@@ -1,6 +1,12 @@
 package io.johnsonlee.graphite.cypher
 
-import io.johnsonlee.graphite.core.*
+import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.TypeEdge
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
@@ -410,11 +416,11 @@ fun CypherExpr.toCypherString(): String = when (this) {
         val distinctStr = if (distinct) "DISTINCT " else ""
         "$name($distinctStr${args.joinToString(", ") { it.toCypherString() }})"
     }
-    is CypherExpr.BinaryOp -> "${left.toCypherString()} $op ${right.toCypherString()}"
+    is CypherExpr.BinaryOp -> renderInfix(left, op, right)
     is CypherExpr.UnaryOp -> "$op${expression.toCypherString()}"
-    is CypherExpr.Comparison -> "${left.toCypherString()} $op ${right.toCypherString()}"
-    is CypherExpr.StringOp -> "${left.toCypherString()} $op ${right.toCypherString()}"
-    is CypherExpr.ListOp -> "${left.toCypherString()} $op ${right.toCypherString()}"
+    is CypherExpr.Comparison -> renderInfix(left, op, right)
+    is CypherExpr.StringOp -> renderInfix(left, op, right)
+    is CypherExpr.ListOp -> renderInfix(left, op, right)
     is CypherExpr.RegexMatch -> "${left.toCypherString()} =~ ${right.toCypherString()}"
     is CypherExpr.IsNull -> "${expression.toCypherString()} IS NULL"
     is CypherExpr.IsNotNull -> "${expression.toCypherString()} IS NOT NULL"
@@ -450,3 +456,6 @@ fun CypherExpr.toCypherString(): String = when (this) {
     is CypherExpr.Distinct -> "DISTINCT ${expression.toCypherString()}"
     is CypherExpr.CountStar -> "count(*)"
 }
+
+private fun renderInfix(left: CypherExpr, op: String, right: CypherExpr): String =
+    "${left.toCypherString()} $op ${right.toCypherString()}"
