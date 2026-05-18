@@ -157,8 +157,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:1.1.0")
-    implementation("io.johnsonlee.graphite:graphite-sootup:1.1.0")
+    implementation("io.johnsonlee.graphite:graphite-core:1.2.0-beta.1")
+    implementation("io.johnsonlee.graphite:graphite-sootup:1.2.0-beta.1")
 }
 ```
 

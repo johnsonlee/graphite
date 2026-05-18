@@ -272,12 +272,12 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:core:1.1.0")
-    implementation("io.johnsonlee.graphite:sootup:1.1.0")
+    implementation("io.johnsonlee.graphite:core:1.2.0-beta.1")
+    implementation("io.johnsonlee.graphite:sootup:1.2.0-beta.1")
     // Optional: Cypher query support (graph.query("MATCH ..."))
-    implementation("io.johnsonlee.graphite:cypher:1.1.0")
+    implementation("io.johnsonlee.graphite:cypher:1.2.0-beta.1")
     // Optional: disk persistence (WebGraph format)
-    implementation("io.johnsonlee.graphite:webgraph:1.1.0")
+    implementation("io.johnsonlee.graphite:webgraph:1.2.0-beta.1")
 }
 ```
 
