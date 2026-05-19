@@ -128,7 +128,7 @@ Specify the version via command line property:
 ./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.1.1-alpha.1
 
 # Publish release version
-./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.1.0
+./gradlew clean publishAllPublicationsToGitHubPackagesRepository -Pversion=1.2.0
 ```
 
 ### Automated Publishing (GitHub Actions)
@@ -137,8 +137,8 @@ Publishing is triggered by creating a git tag. GitHub Actions automatically deri
 
 ```bash
 # Create and push a tag to trigger release
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
 ### Using Published Artifacts
@@ -157,8 +157,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.johnsonlee.graphite:graphite-core:1.2.0-beta.1")
-    implementation("io.johnsonlee.graphite:graphite-sootup:1.2.0-beta.1")
+    implementation("io.johnsonlee.graphite:graphite-core:1.2.0")
+    implementation("io.johnsonlee.graphite:graphite-sootup:1.2.0")
 }
 ```
 
