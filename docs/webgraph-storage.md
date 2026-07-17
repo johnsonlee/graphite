@@ -570,3 +570,65 @@ This is a verification summary of the current mapped Android-scale state after A
 **Build/save impact:** no optimization in Attempts 001-008 changes the graph save format or adds build-time indexes. The load-side wins come from deferring runtime structures; the query-side wins come from execution control flow and existing type indexes.
 
 **Operational note for multi-graph serving:** opening many mapped graphs now keeps edge structures, metadata, and resources unloaded until first use. The first edge or metadata query for a graph pays that lazy initialization cost once; services that need predictable first-edge latency can explicitly prewarm edge APIs for selected graphs, while node-only query workloads avoid the cost entirely.
+
+### 2026-07-18 — Attempt 009: SootUp Android build JMH harness repair
+
+**Goal:** verify that the load/query work did not compromise the build side. The relevant Android-scale build benchmark is `GraphBuildBenchmark.buildAndroidSdkGraph`, but the `:sootup:jmh` harness had to produce a real JMH score before it could be used as evidence.
+
+**Initial failure:**
+
+```
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph' --rerun-tasks
+```
+
+The Gradle task reported `BUILD SUCCESSFUL`, but JMH produced no benchmark score. The fork failed immediately with:
+
+```
+java.lang.NoSuchMethodError: 'int org.objectweb.asm.Type.getArgumentCount(java.lang.String)'
+    at org.objectweb.asm.tree.MethodNode.visitParameterAnnotation(MethodNode.java:304)
+```
+
+**Control check:** running the generated JMH fat jar directly with an explicit Android fixture path completed successfully:
+
+```
+java -Dandroid.jar.path=<android-all.jar> \
+  -jar graphite-sootup/build/libs/sootup-1.0.0-SNAPSHOT-jmh.jar \
+  '.*GraphBuildBenchmark.buildAndroidSdkGraph.*' -wi 0 -i 1 -f 1 -r 1s -w 1s
+```
+
+Result: `100524.865 ms/op`.
+
+**Root cause:** the `sootup` JMH Gradle harness was weaker than the already-repaired `webgraph` harness. It relied on fallback fixture discovery, did not pass exact `android-all` / Elasticsearch fixture paths into the forked JVM, did not explicitly force a consistent ASM family on all JMH configurations, and did not fail the Gradle task when JMH failed internally.
+
+**Accepted fix:** align `graphite-sootup/build.gradle.kts` with `graphite-webgraph/build.gradle.kts`:
+
+- keep large fixture jars out of the JMH fat jar
+- pass fixture paths as `-Dandroid.jar.path` / `-Delasticsearch.jar.path`
+- force `asm`, `asm-tree`, `asm-util`, `asm-commons`, and `asm-analysis` to the configured ASM version
+- set `failOnError = true` so failed JMH forks fail the Gradle task instead of creating false-success builds
+
+**Validation command:**
+
+```
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph' --rerun-tasks
+```
+
+**Result:**
+
+| Benchmark | Mode | Count | Score | Units |
+|-----------|------|-------|-------|-------|
+| `GraphBuildBenchmark.buildAndroidSdkGraph` | ss | 1 | `101647.075` | ms/op |
+
+**End-to-end guardrail:**
+
+```
+./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query' --rerun-tasks
+```
+
+| Benchmark | Mode | Count | Score | Units |
+|-----------|------|-------|-------|-------|
+| `GraphEndToEndBenchmark.android_build_save_load_query` | ss | 1 | `115782.725` | ms/op |
+
+This covers `build -> save -> loadMapped -> query` with `-Xmx4g`.
+
+**Conclusion:** effective as a benchmark harness repair. It proves the current Android build benchmark remains runnable after the load/query changes, and the Gradle-run result is in the same range as the direct JMH control run. The end-to-end guardrail also passes under the 4 GB heap constraint. This attempt does not change product build, save, load, or query behavior.

@@ -17,6 +17,7 @@ kover {
 }
 
 val integrationFixtures: Configuration by configurations.creating
+val asmVersion = libs.versions.asm.get()
 
 dependencies {
     api(project(":core"))
@@ -42,8 +43,34 @@ dependencies {
     // JMH benchmark dependencies
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)
+    jmh("org.ow2.asm:asm:$asmVersion")
+    jmh("org.ow2.asm:asm-tree:$asmVersion")
+    jmh("org.ow2.asm:asm-util:$asmVersion")
+    jmh("org.ow2.asm:asm-commons:$asmVersion")
+    jmh("org.ow2.asm:asm-analysis:$asmVersion")
     add(integrationFixtures.name, libs.elasticsearch)
     add(integrationFixtures.name, libs.android.all)
+}
+
+configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configureEach {
+    resolutionStrategy.force(
+        "org.ow2.asm:asm:$asmVersion",
+        "org.ow2.asm:asm-tree:$asmVersion",
+        "org.ow2.asm:asm-util:$asmVersion",
+        "org.ow2.asm:asm-commons:$asmVersion",
+        "org.ow2.asm:asm-analysis:$asmVersion"
+    )
+}
+
+val integrationFixtureJvmArgs = providers.provider {
+    val elasticsearchJar = Regex("""elasticsearch-\d+\.\d+\.\d+\.jar""")
+    integrationFixtures.resolve().mapNotNull { jar ->
+        when {
+            elasticsearchJar.matches(jar.name) -> "-Delasticsearch.jar.path=${jar.absolutePath}"
+            jar.name.startsWith("android-all-") && jar.name.endsWith(".jar") -> "-Dandroid.jar.path=${jar.absolutePath}"
+            else -> null
+        }
+    }
 }
 
 jmh {
@@ -51,4 +78,6 @@ jmh {
     if (filter != null) {
         includes.set(listOf(filter))
     }
+    failOnError.set(true)
+    jvmArgsAppend.addAll(integrationFixtureJvmArgs)
 }
