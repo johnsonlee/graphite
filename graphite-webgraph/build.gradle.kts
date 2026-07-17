@@ -48,11 +48,24 @@ configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configu
     )
 }
 
+val integrationFixtureJvmArgs = providers.provider {
+    val elasticsearchJar = Regex("""elasticsearch-\d+\.\d+\.\d+\.jar""")
+    integrationFixtures.resolve().mapNotNull { jar ->
+        when {
+            elasticsearchJar.matches(jar.name) -> "-Delasticsearch.jar.path=${jar.absolutePath}"
+            jar.name.startsWith("android-all-") && jar.name.endsWith(".jar") -> "-Dandroid.jar.path=${jar.absolutePath}"
+            else -> null
+        }
+    }
+}
+
 jmh {
     val filter = project.findProperty("jmh.filter") as String?
     if (filter != null) {
         includes.set(listOf(filter))
     }
+    failOnError.set(true)
+    jvmArgsAppend.addAll(integrationFixtureJvmArgs)
 }
 
 tasks.test {

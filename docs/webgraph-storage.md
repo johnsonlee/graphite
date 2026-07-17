@@ -245,3 +245,40 @@ Synthetic benchmarks (IntConstant) understate steps 1/2/6 because production use
 ### Key Lesson
 
 Adding precomputed caches to reduce time tends to increase memory — violating the constraint. The path that works: **eliminate redundant work** (fewer passes, no re-scans). Both metrics improve simultaneously. Parallelism that shows gains in synthetic benchmarks can regress in production due to thread management overhead.
+
+## Ongoing Load/Query Optimization Log
+
+### 2026-07-18 — Attempt 000: Android-scale JMH harness repair
+
+**Goal:** establish a reliable Android-scale baseline before changing load/query code. The objective requires JMH results on a graph at Android jar scale; demo jars or sub-100K-node graphs are not representative.
+
+**Initial failure:** `./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'` compiled and the Gradle task reported success, but JMH produced no score because the forked JVM could not locate `android-all`.
+
+```
+java.lang.IllegalStateException: Unable to locate android fixture JAR.
+Set -Dandroid.jar.path=<path> or resolve integration fixtures first.
+```
+
+**Rejected fix:** adding `libs.android.all` and `libs.elasticsearch` to the `jmh` dependency configuration made the fixture visible, but it also placed the Android jar in the JMH fat jar. `:webgraph:jmhJar` then failed with:
+
+```
+Archive contains more than 65535 entries.
+```
+
+**Root cause:** large integration fixture jars must not be packaged into the benchmark jar. They should be resolved by Gradle and passed to the forked JMH JVM as `-Dandroid.jar.path` / `-Delasticsearch.jar.path`.
+
+**Accepted fix:** keep fixtures in `integrationFixtures`; lazily resolve that configuration only for the `jmh` task and append exact fixture paths to JMH fork JVM args. `BenchmarkCorpus` also checks `java.class.path` before falling back to the Gradle cache, which keeps explicit `-D...path` overrides, JMH classpath execution, and cache scanning all valid.
+
+**Validation command:**
+
+```
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'
+```
+
+**Result:**
+
+| Benchmark | Mode | Count | Score | Units |
+|-----------|------|-------|-------|-------|
+| `AndroidLoadBenchmark.mapped_load` | avgt | 2 | `2292.892` | ms/op |
+
+**Conclusion:** effective as a benchmark harness repair, not a load/query optimization. The Android-scale baseline path is now usable for subsequent attempts.
