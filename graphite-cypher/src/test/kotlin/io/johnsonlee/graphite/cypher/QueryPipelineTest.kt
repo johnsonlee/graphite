@@ -407,6 +407,29 @@ class QueryPipelineTest {
         assertEquals(7, result.rows[0]["value"])
     }
 
+    @Test
+    fun `filtered node limit counts rows after where`() {
+        NodeId.reset()
+        val builder = DefaultGraph.Builder()
+
+        val first = NodeId.next()
+        builder.addNode(IntConstant(first, 7))
+
+        val second = NodeId.next()
+        builder.addNode(IntConstant(second, 42))
+
+        val localPipeline = QueryPipeline(builder.build())
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "IntConstant")))),
+            CypherClause.Where(CypherExpr.Comparison("=", prop(variable("n"), "value"), lit(42))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "value"), "value"))),
+            CypherClause.Limit(lit(1))
+        )
+        val result = localPipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows[0]["value"])
+    }
+
     // ========================================================================
     // RETURN - 13. Property projection
     // ========================================================================

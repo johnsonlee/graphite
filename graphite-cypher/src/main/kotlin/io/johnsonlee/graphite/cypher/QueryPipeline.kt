@@ -35,6 +35,7 @@ class QueryPipeline(private val graph: Graph) {
     fun execute(clauses: List<CypherClause>): CypherResult {
         tryFastNodeCount(clauses)?.let { return it }
         tryFastDistinctPropertyLimit(clauses)?.let { return it }
+        tryFastFilteredNodeLimit(clauses)?.let { return it }
         tryFastSingleHopRelationshipLimit(clauses)?.let { return it }
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
@@ -169,7 +170,7 @@ class QueryPipeline(private val graph: Graph) {
 
         val returnItem = ret.items.single()
         val propertyName = propertyProjection(returnItem.expression, nodePattern.variable) ?: return null
-        val limitCount = evaluateToInt(limit.count, emptyMap())
+        val limitCount = literalLimitCount(limit.count) ?: return null
         if (limitCount <= 0) {
             val column = returnItem.alias ?: returnItem.expression.toCypherString()
             return CypherResult(listOf(column), emptyList())
@@ -194,6 +195,51 @@ class QueryPipeline(private val graph: Graph) {
         val property = expr as? CypherExpr.Property ?: return null
         val owner = property.expression as? CypherExpr.Variable ?: return null
         return if (owner.name == variable) property.propertyName else null
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (n:Label) WHERE ... RETURN ... LIMIT k
+     *
+     * This keeps LIMIT semantics on filtered/projected rows while avoiding
+     * materializing every node match before WHERE is evaluated.
+     */
+    private fun tryFastFilteredNodeLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 4) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val where = clauses[1] as? CypherClause.Where ?: return null
+        val ret = clauses[2] as? CypherClause.Return ?: return null
+        val limit = clauses[3] as? CypherClause.Limit ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
+            return null
+        }
+        if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        val variable = nodePattern.variable ?: return null
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (node in graph.nodes(nodeClass)) {
+            if (!matchesNodeConstraints(node, nodePattern, emptyMap())) continue
+
+            val bindings = mapOf<String, Any?>(variable to node)
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+
+            rows.add(projectRow(ret.items, columns, bindings))
+            if (rows.size >= limitCount) return CypherResult(columns, rows)
+        }
+
+        return CypherResult(columns, rows)
     }
 
     /**
@@ -224,7 +270,7 @@ class QueryPipeline(private val graph: Graph) {
         val targetPattern = pattern.elements[2] as? PatternElement.NodePattern ?: return null
         if (sourcePattern.variable == null || rel.variableLength) return null
 
-        val limitCount = evaluateToInt(limit.count, emptyMap())
+        val limitCount = literalLimitCount(limit.count) ?: return null
         val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
@@ -265,6 +311,11 @@ class QueryPipeline(private val graph: Graph) {
             projected[columns[i]] = evaluator.evaluate(items[i].expression, bindings)
         }
         return projected
+    }
+
+    private fun literalLimitCount(expr: CypherExpr): Int? {
+        if (expr !is CypherExpr.Literal) return null
+        return evaluateToInt(expr, emptyMap())
     }
 
     // ========================================================================
