@@ -45,7 +45,7 @@ internal class LazyWebGraphBackedGraph(
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: LongArray,
-    private val nodeTypeIndex: Map<Class<out Node>, List<Int>>,
+    private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
     private val forwardLabels: ByteArray,
     private val cumulativeOutdeg: LongArray,
     private val comparisonMap: Map<Long, BranchComparison>,

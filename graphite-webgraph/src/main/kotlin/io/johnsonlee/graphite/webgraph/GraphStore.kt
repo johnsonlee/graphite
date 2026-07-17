@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
@@ -514,7 +515,7 @@ object GraphStore {
      */
     private class NodeIndexData(
         val nodeOffsets: LongArray,
-        val nodeTypeIndex: HashMap<Class<out Node>, List<Int>>
+        val nodeTypeIndex: HashMap<Class<out Node>, IntArray>
     )
 
     /**
@@ -526,37 +527,28 @@ object GraphStore {
             "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
         }
 
-        // Pass 1: find maxNodeId and collect type info
-        var maxNodeId = 0
-        val nodeTypeByTag = HashMap<Int, MutableList<Int>>()
-        var nodeCount = 0
+        val nodeTypeByTag = HashMap<Int, IntArrayList>()
+        lateinit var nodeOffsets: LongArray
         DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
-            nodeCount = dis.readInt()
+            val nodeCount = dis.readInt()
+            nodeOffsets = LongArray(nodeCount) { -1L }
             repeat(nodeCount) {
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
-                dis.readLong() // skip offset
-                if (nodeId > maxNodeId) maxNodeId = nodeId
-                nodeTypeByTag.getOrPut(tag) { mutableListOf() }.add(nodeId)
-            }
-        }
-
-        // Pass 2: fill nodeOffsets directly
-        val nodeOffsets = LongArray(maxNodeId + 1) { -1L }
-        DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
-            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
-            dis.readInt() // skip count
-            repeat(nodeCount) {
-                val nodeId = dis.readInt()
-                dis.readByte() // skip tag
                 val offset = dis.readLong()
+                if (nodeId >= nodeOffsets.size) {
+                    val oldSize = nodeOffsets.size
+                    nodeOffsets = nodeOffsets.copyOf(nodeId + 1)
+                    java.util.Arrays.fill(nodeOffsets, oldSize, nodeOffsets.size, -1L)
+                }
                 nodeOffsets[nodeId] = offset
+                nodeTypeByTag.getOrPut(tag) { IntArrayList() }.add(nodeId)
             }
         }
 
         // Map tags to concrete Node classes
-        val nodeTypeIndex = HashMap<Class<out Node>, List<Int>>()
+        val nodeTypeIndex = HashMap<Class<out Node>, IntArray>()
         val tagToClass = mapOf(
             NodeSerializer.TAG_INT_CONSTANT to IntConstant::class.java,
             NodeSerializer.TAG_STRING_CONSTANT to StringConstant::class.java,
@@ -577,7 +569,7 @@ object GraphStore {
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue
-            nodeTypeIndex[cls] = ids
+            nodeTypeIndex[cls] = ids.toIntArray()
         }
 
         return NodeIndexData(nodeOffsets, nodeTypeIndex)
