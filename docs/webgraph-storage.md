@@ -490,3 +490,44 @@ The fast path scans candidate nodes, evaluates node constraints and `WHERE`, pro
 **Conclusion:** effective but not enough for the load-side order-of-magnitude goal. It removes measurable node-index parsing overhead and reduces boxed integer allocation, but the remaining mapped-load path is still dominated by other eager structures.
 
 **Root cause:** node-index parsing is a real cost, but not the dominant remaining load cost after lazy backward adjacency. `loadMapped` still eagerly loads forward BVGraph adjacency, edge labels, cumulative outdegree, comparison metadata, graph metadata, resources, string table, and node offsets before a graph is considered open. For node-only touch/query paths, much of that work is still paid upfront.
+
+### 2026-07-18 — Attempt 008: Lazy edge, metadata, and resource loading
+
+**Hypothesis:** `loadMapped` should not eagerly load edge traversal structures or metadata when a graph is opened for node-only queries. The Android load benchmark only touches one node, so eager forward BVGraph load, edge labels, cumulative outdegree, comparison metadata, graph metadata, and resources are all upfront work that can be deferred without changing build/save.
+
+**Change:** make `loadLazy` and `loadMapped` pass lazy handles for:
+
+```
+forward BVGraph
+backward transpose
+edge labels
+cumulative outdegree
+comparison map
+graph metadata
+persisted resources
+```
+
+Node offset/type indexes and the string table still load at graph open because node lookup and node deserialization need them. Edge traversal and metadata APIs pay their load cost on first use.
+
+**Build/save impact:** none. Persisted files and the save path are unchanged.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidQueryBenchmark.mapped_singleHopRelationship'
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 008 | Change |
+|-----------|----------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `1284.409 ms/op` | `176.097 ms/op` | `-1108.312 ms` / `~7.3x faster` |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `0.658 ms/op` | `0.667 ms/op` | roughly unchanged after JMH warmup |
+
+Compared with the original Android mapped-load baseline (`2292.892 ms/op`), `176.097 ms/op` is `~13.0x faster`.
+
+**Conclusion:** effective for the load-side order-of-magnitude goal when measured against the original Android-scale mapped-load baseline. It also materially reduces open-time heap for multi-graph serving because edge labels and BVGraph structures are no longer resident until an edge query needs them.
+
+**Root cause:** after lazy backward adjacency and primitive node-index loading, the dominant remaining mapped-load costs were unrelated to opening a node-readable graph: forward BVGraph, edge labels, cumulative outdegree, comparisons, metadata, and resources. Deferring those structures moves their cost to the APIs that actually need them, while node-only load/query paths avoid the work entirely.

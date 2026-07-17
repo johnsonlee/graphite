@@ -22,36 +22,39 @@ import java.io.RandomAccessFile
 /**
  * A [Graph] backed by WebGraph compression for edges and lazy disk reads for nodes.
  *
- * BVGraph adjacency (compressed, ~30 MB for 5.9M nodes) and edge label maps
- * stay in memory for fast edge traversal.  Node data is read on demand from
- * `graph.nodedata` via [RandomAccessFile.seek], using a pre-built index
- * (nodeId -> file offset).
+ * Node data is read on demand from `graph.nodedata` via [RandomAccessFile.seek],
+ * using a pre-built index (nodeId -> file offset). Edge structures, metadata,
+ * and resources are loaded on first use.
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
- * - BVGraph forward: loaded at graph open
+ * - BVGraph forward: loaded lazily on first edge traversal
  * - BVGraph backward: built lazily on first incoming query
- * - Edge label map: ~364 MB
+ * - Edge label map: loaded lazily on first edge traversal
  * - Node index: ~47 MB (nodeId -> offset)
  * - Node type index: ~24 MB (type -> nodeId list)
  * - StringTable: ~21 MB
- * - **Total: ~486 MB** vs ~4 GB for eager [WebGraphBackedGraph]
+ * - **Open heap before edge traversal: ~92 MB plus object overhead** vs ~4 GB
+ *   for eager [WebGraphBackedGraph]
  *
  * Created by [GraphStore.loadLazy].
  */
 internal class LazyWebGraphBackedGraph(
-    private val forward: ImmutableGraph,
+    private val forward: Lazy<ImmutableGraph>,
     private val backward: Lazy<ImmutableGraph>,
     private val nodeDataFile: File,
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: LongArray,
     private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
-    private val forwardLabels: ByteArray,
-    private val cumulativeOutdeg: LongArray,
-    private val comparisonMap: Map<Long, BranchComparison>,
-    private val metadata: GraphMetadata,
-    override val resources: ResourceAccessor
+    private val forwardLabels: Lazy<ByteArray>,
+    private val cumulativeOutdeg: Lazy<LongArray>,
+    private val comparisonMap: Lazy<Map<Long, BranchComparison>>,
+    private val metadata: Lazy<GraphMetadata>,
+    private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph, Closeable {
+
+    override val resources: ResourceAccessor
+        get() = resourceAccessor.value
 
     private val openRafs = java.util.Collections.synchronizedList(mutableListOf<RandomAccessFile>())
 
@@ -60,7 +63,7 @@ internal class LazyWebGraphBackedGraph(
     }
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
-        metadata.branchScopes.map { raw ->
+        metadata.value.branchScopes.map { raw ->
             BranchScope(
                 conditionNodeId = NodeId(raw.conditionNodeId),
                 method = raw.method,
@@ -100,15 +103,17 @@ internal class LazyWebGraphBackedGraph(
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        if (nodeIdx >= forward.numNodes()) return emptySequence()
-        val succs = forward.successorArray(nodeIdx)
-        val outdeg = forward.outdegree(nodeIdx)
-        val labelStart = cumulativeOutdeg[nodeIdx]
+        val forwardGraph = forward.value
+        if (nodeIdx >= forwardGraph.numNodes()) return emptySequence()
+        val succs = forwardGraph.successorArray(nodeIdx)
+        val outdeg = forwardGraph.outdegree(nodeIdx)
+        val labels = forwardLabels.value
+        val labelStart = cumulativeOutdeg.value[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = forwardLabels[(labelStart + i).toInt()].toInt() and BYTE_MASK
+            val label = labels[(labelStart + i).toInt()].toInt() and BYTE_MASK
             val key = nodeIdx.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val comparison = comparisonMap.value[key]
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
     }
@@ -123,16 +128,21 @@ internal class LazyWebGraphBackedGraph(
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
             val key = from.toLong() shl INT_BITS or (nodeIdx.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val comparison = comparisonMap.value[key]
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
     }
 
     private fun lookupForwardLabel(from: Int, to: Int): Int {
-        val succs = forward.successorArray(from)
-        val outdeg = forward.outdegree(from)
+        val forwardGraph = forward.value
+        val succs = forwardGraph.successorArray(from)
+        val outdeg = forwardGraph.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
-        return if (pos >= 0) forwardLabels[(cumulativeOutdeg[from] + pos).toInt()].toInt() and BYTE_MASK else 0
+        return if (pos >= 0) {
+            forwardLabels.value[(cumulativeOutdeg.value[from] + pos).toInt()].toInt() and BYTE_MASK
+        } else {
+            0
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -147,25 +157,25 @@ internal class LazyWebGraphBackedGraph(
         nodes(CallSiteNode::class.java).filter { methodPattern.matches(it.callee) }
 
     override fun supertypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        metadata.supertypes[type.className]?.asSequence() ?: emptySequence()
+        metadata.value.supertypes[type.className]?.asSequence() ?: emptySequence()
 
     override fun subtypes(type: TypeDescriptor): Sequence<TypeDescriptor> =
-        metadata.subtypes[type.className]?.asSequence() ?: emptySequence()
+        metadata.value.subtypes[type.className]?.asSequence() ?: emptySequence()
 
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
-        metadata.methods.values.asSequence().filter { pattern.matches(it) }
+        metadata.value.methods.values.asSequence().filter { pattern.matches(it) }
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
-        metadata.enumValues["$enumClass#$enumName"]
+        metadata.value.enumValues["$enumClass#$enumName"]
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
-        metadata.memberAnnotations["$className#$memberName"] ?: emptyMap()
+        metadata.value.memberAnnotations["$className#$memberName"] ?: emptyMap()
 
-    override fun classOrigin(className: String): String? = metadata.classOrigins[className]
+    override fun classOrigin(className: String): String? = metadata.value.classOrigins[className]
 
-    override fun classOrigins(): Map<String, String> = metadata.classOrigins
+    override fun classOrigins(): Map<String, String> = metadata.value.classOrigins
 
-    override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
+    override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.value.artifactDependencies
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
@@ -174,7 +184,7 @@ internal class LazyWebGraphBackedGraph(
         branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
     override fun typeHierarchyTypes(): Set<String> =
-        metadata.supertypes.keys + metadata.subtypes.keys
+        metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
         openRafs.forEach { runCatching { it.close() } }

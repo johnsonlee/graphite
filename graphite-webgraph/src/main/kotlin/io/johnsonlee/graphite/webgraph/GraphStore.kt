@@ -252,8 +252,8 @@ object GraphStore {
     }
 
     /**
-     * Load a graph lazily -- BVGraph adjacency and edge labels are loaded into
-     * memory, but node data stays on disk and is read on demand.
+     * Load a graph lazily -- node data stays on disk and is read on demand.
+     * Edge structures, metadata, and resources are also loaded on first use.
      *
      * Memory savings for Android SDK (5.9M nodes): ~500 MB vs ~4 GB eager.
      * Query speed for LIMIT queries is similar; full-scan queries pay ~5-10x
@@ -264,24 +264,20 @@ object GraphStore {
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
-
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-
-        val forward = forwardFuture.join()
-        val stringTable = stringTableFuture.join()
-        val labelBytes = labelsFuture.join()
-
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = lazy { loadBackward(forward) }
-
-        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
+        val stringTable = StringTable.load(dir)
+        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
+        val backward = lazy { loadBackward(forward.value) }
+        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
+        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
+        val comparisonMap = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.readComparisons(dis)
+            }
         }
-
-        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.loadMetadata(dis, stringTable)
+        val metadata = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.loadMetadata(dis, stringTable)
+            }
         }
 
         return LazyWebGraphBackedGraph(
@@ -296,13 +292,13 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
             metadata = metadata,
-            resources = PersistedResourceStore.load(dir)
+            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }
 
     /**
-     * Load a graph with memory-mapped node data — BVGraph adjacency and edge
-     * labels are loaded into JVM heap, but node data is memory-mapped (mmap).
+     * Load a graph with memory-mapped node data. Edge structures, metadata,
+     * and resources are loaded on first use, while node data is memory-mapped.
      *
      * The OS page cache manages which node pages are in physical RAM.
      * No JVM heap allocation for node data, and no system calls per node access
@@ -314,28 +310,25 @@ object GraphStore {
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
 
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-
-        val forward = forwardFuture.join()
-        val stringTable = stringTableFuture.join()
-        val labelBytes = labelsFuture.join()
-
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = lazy { loadBackward(forward) }
-
-        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
-        }
-
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
         val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
         val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
         channel.close()
 
-        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.loadMetadata(dis, stringTable)
+        val stringTable = StringTable.load(dir)
+        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
+        val backward = lazy { loadBackward(forward.value) }
+        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
+        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
+        val comparisonMap = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.readComparisons(dis)
+            }
+        }
+        val metadata = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.loadMetadata(dis, stringTable)
+            }
         }
 
         return MappedWebGraphBackedGraph(
@@ -350,7 +343,7 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
             metadata = metadata,
-            resources = PersistedResourceStore.load(dir)
+            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }
 
