@@ -347,6 +347,7 @@ MATCH (n:Label) RETURN count(n)
 ```
 
 Queries with relationships, `WHERE`, properties, `DISTINCT`, grouping, `WITH`, `ORDER BY`, or multiple clauses still use the normal execution path.
+The fast path is limited to 0/1-label node patterns; multi-label node patterns still use the normal matcher.
 
 **Build/save impact:** none. This uses existing in-memory type indexes and persisted node indexes; no new build-time or save-time structure is written.
 
@@ -367,3 +368,36 @@ Queries with relationships, `WHERE`, properties, `DISTINCT`, grouping, `WITH`, `
 **Conclusion:** effective for the targeted count query. This is a narrow query optimization, not a general Cypher accelerator.
 
 **Root cause:** the previous pipeline executed `MATCH` before aggregation, so `count(*)` forced a full scan and deserialization of every matching node. For unfiltered single-node counts, the result is exactly the size of the node type index, so scanning was unnecessary work.
+
+### 2026-07-18 — Attempt 004: Early-stop simple `DISTINCT property LIMIT`
+
+**Hypothesis:** `MATCH (n:Label) RETURN DISTINCT n.property LIMIT k` should not scan all matching nodes when there is no `WHERE`, relationship, grouping, or `ORDER BY`. The existing implementation preserves first-seen order with `List.distinct()`, so it is equivalent to stop after the first `k` distinct property values.
+
+**Change:** add a narrow `QueryPipeline` fast path for:
+
+```
+MATCH (n:Label) RETURN DISTINCT n.property LIMIT k
+```
+
+The fast path scans matching nodes only until `k` distinct values have been seen. Queries with `WHERE`, relationships, inline node properties, missing `LIMIT`, multiple return items, grouping, `WITH`, or `ORDER BY` still use the normal pipeline.
+Like the count fast path, it is limited to 0/1-label node patterns so multi-label matching semantics remain in the existing matcher.
+
+**Build/save impact:** none. This is purely query execution control flow and adds no persisted index or build-time work.
+
+**Validation commands:**
+
+```
+./gradlew :cypher:test
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidQueryBenchmark.mapped_returnDistinct'
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 004 | Change |
+|-----------|----------|-------------|--------|
+| `AndroidQueryBenchmark.mapped_returnDistinct` | `2738.060 ms/op` | `0.214 ms/op` | effectively eliminates the full scan for this shape |
+
+**Conclusion:** effective for the targeted distinct-property query. It is not a general replacement for property indexes, but it removes a common unnecessary full scan when `LIMIT` is present and no ordering constraints exist.
+
+**Root cause:** `DISTINCT` disabled early limit pushdown, so the old pipeline materialized every `CallSiteNode`, projected `callee_class`, deduplicated the full list, and then applied `LIMIT 20`. For unordered distinct queries, scanning after the first 20 distinct values is unnecessary.

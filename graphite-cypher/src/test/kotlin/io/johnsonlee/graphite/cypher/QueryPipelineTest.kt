@@ -426,6 +426,22 @@ class QueryPipelineTest {
         assertEquals(1, result.rows.size)
     }
 
+    @Test
+    fun `return distinct property with limit`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "CallSiteNode")))),
+            CypherClause.Return(
+                listOf(returnItem(prop(variable("n"), "callee_class"), "cls")),
+                distinct = true
+            ),
+            CypherClause.Limit(lit(1))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(listOf("cls"), result.columns)
+        assertEquals(1, result.rows.size)
+        assertEquals("com.example.Repository", result.rows[0]["cls"])
+    }
+
     // ========================================================================
     // RETURN - 16. Aggregation count(*)
     // ========================================================================

@@ -34,6 +34,7 @@ class QueryPipeline(private val graph: Graph) {
      */
     fun execute(clauses: List<CypherClause>): CypherResult {
         tryFastNodeCount(clauses)?.let { return it }
+        tryFastDistinctPropertyLimit(clauses)?.let { return it }
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
@@ -113,7 +114,7 @@ class QueryPipeline(private val graph: Graph) {
         if (pattern.pathVariable != null || pattern.elements.size != 1) return null
 
         val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
-        if (nodePattern.properties.isNotEmpty()) return null
+        if (nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
 
         val returnItem = ret.items.single()
         val countedVariable = countedVariable(returnItem.expression) ?: return null
@@ -140,6 +141,58 @@ class QueryPipeline(private val graph: Graph) {
             }
         }
         else -> null
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (n:Label) RETURN DISTINCT n.property LIMIT k
+     *
+     * Without ORDER BY, Cypher does not require a globally sorted result. The
+     * existing implementation preserves first-seen order via List.distinct(),
+     * so we can stop after the first k distinct property values instead of
+     * materializing every matching node first.
+     */
+    private fun tryFastDistinctPropertyLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 3) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        val limit = clauses[2] as? CypherClause.Limit ?: return null
+        if (match.optional || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        if (nodePattern.variable == null || nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+
+        val returnItem = ret.items.single()
+        val propertyName = propertyProjection(returnItem.expression, nodePattern.variable) ?: return null
+        val limitCount = evaluateToInt(limit.count, emptyMap())
+        if (limitCount <= 0) {
+            val column = returnItem.alias ?: returnItem.expression.toCypherString()
+            return CypherResult(listOf(column), emptyList())
+        }
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val column = returnItem.alias ?: returnItem.expression.toCypherString()
+        val seen = LinkedHashSet<Any?>()
+        for (node in graph.nodes(nodeClass)) {
+            seen.add(NodePropertyAccessor.getProperty(node, propertyName))
+            if (seen.size >= limitCount) break
+        }
+        return CypherResult(
+            columns = listOf(column),
+            rows = seen.map { value -> mapOf(column to value) }
+        )
+    }
+
+    private fun propertyProjection(expr: CypherExpr, variable: String): String? {
+        val property = expr as? CypherExpr.Property ?: return null
+        val owner = property.expression as? CypherExpr.Variable ?: return null
+        return if (owner.name == variable) property.propertyName else null
     }
 
     // ========================================================================
