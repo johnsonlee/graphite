@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import org.junit.Assume.assumeTrue
+import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
@@ -29,20 +30,34 @@ class AndroidSdkIntegrationTest {
         assumeTrue("Android JAR not available", androidJar != null && Files.exists(androidJar!!))
     }
 
+    @org.junit.After
+    fun releaseLargeGraphMemory() {
+        System.gc()
+        System.runFinalization()
+    }
+
     @Test
     fun `load Android SDK and verify millions of nodes`() {
         val graph = loadGraph()
-        val nodeCount = graph.nodes(Node::class.java).count()
-        assertTrue(nodeCount > 1000000, "Android graph should have >1M nodes, got $nodeCount")
+        try {
+            val nodeCount = graph.nodes(Node::class.java).count()
+            assertTrue(nodeCount > 1000000, "Android graph should have >1M nodes, got $nodeCount")
+        } finally {
+            closeQuietly(graph)
+        }
     }
 
     @Test
     fun `Cypher query works on Android graph`() {
         val graph = loadGraph()
-        val result = graph.query("MATCH (n:CallSiteNode) RETURN count(*)")
-        assertTrue(result.rows.isNotEmpty())
-        val count = result.rows[0].values.first()
-        assertTrue((count as Number).toLong() > 10000, "Should have >10K call sites")
+        try {
+            val result = graph.query("MATCH (n:CallSiteNode) RETURN count(*)")
+            assertTrue(result.rows.isNotEmpty())
+            val count = result.rows[0].values.first()
+            assertTrue((count as Number).toLong() > 10000, "Should have >10K call sites")
+        } finally {
+            closeQuietly(graph)
+        }
     }
 
     @Test
@@ -52,10 +67,15 @@ class AndroidSdkIntegrationTest {
         try {
             GraphStore.save(original, dir)
             val loaded = GraphStore.load(dir)
-            val originalCount = original.nodes(Node::class.java).count()
-            val loadedCount = loaded.nodes(Node::class.java).count()
-            assertTrue(loadedCount == originalCount, "Node count should match: $originalCount vs $loadedCount")
+            try {
+                val originalCount = original.nodes(Node::class.java).count()
+                val loadedCount = loaded.nodes(Node::class.java).count()
+                assertTrue(loadedCount == originalCount, "Node count should match: $originalCount vs $loadedCount")
+            } finally {
+                closeQuietly(loaded)
+            }
         } finally {
+            closeQuietly(original)
             dir.toFile().deleteRecursively()
         }
     }
@@ -68,5 +88,9 @@ class AndroidSdkIntegrationTest {
                 trackCrossMethodFunctionalDispatch = false
             )
         ).load(androidJar!!)
+    }
+
+    private fun closeQuietly(graph: Graph) {
+        runCatching { (graph as? Closeable)?.close() }
     }
 }
