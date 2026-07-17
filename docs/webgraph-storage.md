@@ -282,3 +282,26 @@ Archive contains more than 65535 entries.
 | `AndroidLoadBenchmark.mapped_load` | avgt | 2 | `2292.892` | ms/op |
 
 **Conclusion:** effective as a benchmark harness repair, not a load/query optimization. The Android-scale baseline path is now usable for subsequent attempts.
+
+### 2026-07-18 — Attempt 001: Skip reverse StringTable index on load
+
+**Hypothesis:** `StringTable.load` reconstructs a `HashMap<String, Int>` for every persisted graph even though eager/lazy/mapped graph loading only needs `StringTable.get(index)` while deserializing nodes and metadata. Avoiding this reverse index should reduce load time and heap without affecting build/save.
+
+**Change:** keep the reverse index for `StringTable.build` (save path) but make `StringTable.load` return a read-only table with no `indexMap`.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 001 | Change |
+|-----------|----------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `2292.892 ms/op` | `2341.167 ms/op` | `+48.275 ms` / `+2.1%` |
+
+**Conclusion:** not effective for load-time improvement. The result is within short JMH-run noise but does not prove a win.
+
+**Root cause:** on Android-scale mapped load, reverse string-index construction is not the dominant cost. Remaining costs such as BVGraph load, backward graph construction, node index parsing, labels, and metadata dominate the measured path. This may still reduce heap modestly, but it does not move the required load/query performance target by a meaningful amount.
