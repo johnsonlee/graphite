@@ -23,6 +23,7 @@ import it.unimi.dsi.webgraph.ImmutableGraph
  * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
  * `(from << 32 | to)`.
  */
+@Suppress("TooManyFunctions")
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,

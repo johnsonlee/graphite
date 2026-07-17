@@ -31,6 +31,7 @@ class AndroidSdkIntegrationTest {
     }
 
     @org.junit.After
+    @Suppress("ExplicitGarbageCollectionCall")
     fun releaseLargeGraphMemory() {
         System.gc()
         System.runFinalization()

@@ -10,6 +10,12 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 
+private const val COUNT_QUERY_CLAUSES = 2
+private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
+private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
+private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
+private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
+
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
  * maintaining a result set (list of binding maps) that flows through each clause.
@@ -25,6 +31,7 @@ import io.johnsonlee.graphite.graph.Graph
  * Write clauses (`CREATE`, `DELETE`, `SET`, `REMOVE`) are not executed
  * because Graphite graphs are immutable; they are silently ignored.
  */
+@Suppress("LargeClass")
 class QueryPipeline(private val graph: Graph) {
 
     private val evaluator = ExpressionEvaluator()
@@ -33,10 +40,11 @@ class QueryPipeline(private val graph: Graph) {
      * Execute a list of clauses and return the final result.
      */
     fun execute(clauses: List<CypherClause>): CypherResult {
-        tryFastNodeCount(clauses)?.let { return it }
-        tryFastDistinctPropertyLimit(clauses)?.let { return it }
-        tryFastFilteredNodeLimit(clauses)?.let { return it }
-        tryFastSingleHopRelationshipLimit(clauses)?.let { return it }
+        val fastResult = tryFastNodeCount(clauses)
+            ?: tryFastDistinctPropertyLimit(clauses)
+            ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryFastSingleHopRelationshipLimit(clauses)
+        if (fastResult != null) return fastResult
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
@@ -106,8 +114,9 @@ class QueryPipeline(private val graph: Graph) {
      * This avoids scanning and materializing every node when the graph backend
      * already has a type index count.
      */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
     private fun tryFastNodeCount(clauses: List<CypherClause>): CypherResult? {
-        if (clauses.size != 2) return null
+        if (clauses.size != COUNT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
         val ret = clauses[1] as? CypherClause.Return ?: return null
         if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
@@ -155,8 +164,9 @@ class QueryPipeline(private val graph: Graph) {
      * so we can stop after the first k distinct property values instead of
      * materializing every matching node first.
      */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
     private fun tryFastDistinctPropertyLimit(clauses: List<CypherClause>): CypherResult? {
-        if (clauses.size != 3) return null
+        if (clauses.size != DISTINCT_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
         val ret = clauses[1] as? CypherClause.Return ?: return null
         val limit = clauses[2] as? CypherClause.Limit ?: return null
@@ -192,9 +202,9 @@ class QueryPipeline(private val graph: Graph) {
     }
 
     private fun propertyProjection(expr: CypherExpr, variable: String): String? {
-        val property = expr as? CypherExpr.Property ?: return null
-        val owner = property.expression as? CypherExpr.Variable ?: return null
-        return if (owner.name == variable) property.propertyName else null
+        val property = expr as? CypherExpr.Property
+        val owner = property?.expression as? CypherExpr.Variable
+        return property?.propertyName?.takeIf { owner?.name == variable }
     }
 
     /**
@@ -205,8 +215,9 @@ class QueryPipeline(private val graph: Graph) {
      * This keeps LIMIT semantics on filtered/projected rows while avoiding
      * materializing every node match before WHERE is evaluated.
      */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "MagicNumber", "ReturnCount")
     private fun tryFastFilteredNodeLimit(clauses: List<CypherClause>): CypherResult? {
-        if (clauses.size != 4) return null
+        if (clauses.size != FILTERED_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
         val where = clauses[1] as? CypherClause.Where ?: return null
         val ret = clauses[2] as? CypherClause.Return ?: return null
@@ -252,8 +263,9 @@ class QueryPipeline(private val graph: Graph) {
      * we can stream complete relationship matches and stop once LIMIT rows have
      * been projected.
      */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
     private fun tryFastSingleHopRelationshipLimit(clauses: List<CypherClause>): CypherResult? {
-        if (clauses.size != 3) return null
+        if (clauses.size != SINGLE_HOP_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
         val ret = clauses[1] as? CypherClause.Return ?: return null
         val limit = clauses[2] as? CypherClause.Limit ?: return null
@@ -263,7 +275,7 @@ class QueryPipeline(private val graph: Graph) {
         if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
 
         val pattern = match.patterns.single()
-        if (pattern.pathVariable != null || pattern.elements.size != 3) return null
+        if (pattern.pathVariable != null || pattern.elements.size != SINGLE_HOP_PATTERN_ELEMENTS) return null
 
         val sourcePattern = pattern.elements[0] as? PatternElement.NodePattern ?: return null
         val rel = pattern.elements[1] as? PatternElement.RelationshipPattern ?: return null

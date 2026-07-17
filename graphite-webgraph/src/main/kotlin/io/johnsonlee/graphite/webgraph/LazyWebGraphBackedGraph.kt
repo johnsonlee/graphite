@@ -38,6 +38,7 @@ import java.io.RandomAccessFile
  *
  * Created by [GraphStore.loadLazy].
  */
+@Suppress("LongParameterList")
 internal class LazyWebGraphBackedGraph(
     private val forward: Lazy<ImmutableGraph>,
     private val backward: Lazy<ImmutableGraph>,

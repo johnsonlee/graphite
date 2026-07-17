@@ -102,9 +102,9 @@ internal object BenchmarkCorpus {
         }
     }
 
-    private fun findJarOnClasspath(kind: CorpusKind): Path? {
+    private fun findJarOnClasspath(kind: BenchmarkCorpusKind): Path? {
         return System.getProperty("java.class.path")
-            .split(System.getProperty("path.separator"))
+            .split(System.getProperty("path.separator").toRegex())
             .asSequence()
             .mapNotNull { entry -> entry.takeIf { it.isNotBlank() }?.let(Path::of) }
             .filter { it.isRegularFile() && kind.matches(it.fileName.toString()) }

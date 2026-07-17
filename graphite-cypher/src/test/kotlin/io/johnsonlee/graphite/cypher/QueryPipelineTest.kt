@@ -242,6 +242,56 @@ class QueryPipelineTest {
         assertEquals(42, result.rows[0]["value"])
     }
 
+    @Test
+    fun `single hop relationship limit supports unlabeled source scans`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a"),
+                relPattern(type = "DATAFLOW"),
+                nodePattern("b")
+            ))),
+            CypherClause.Return(listOf(returnItem(prop(variable("a"), "id"), "id"))),
+            CypherClause.Limit(lit(1))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals(intConst42.value, result.rows[0]["id"])
+    }
+
+    @Test
+    fun `single hop relationship zero limit returns no rows`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a", "IntConstant"),
+                relPattern(type = "DATAFLOW"),
+                nodePattern("b", "ParameterNode")
+            ))),
+            CypherClause.Return(listOf(returnItem(prop(variable("a"), "value"), "value"))),
+            CypherClause.Limit(lit(0))
+        )
+        val result = pipeline.execute(clauses)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `single hop relationship distinct return falls back to generic pipeline`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a", "StringConstant"),
+                relPattern(type = "DATAFLOW"),
+                nodePattern("b", "CallSiteNode")
+            ))),
+            CypherClause.Return(
+                listOf(returnItem(prop(variable("a"), "value"), "value")),
+                distinct = true
+            ),
+            CypherClause.Limit(lit(1))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals("hello", result.rows[0]["value"])
+    }
+
     // ========================================================================
     // MATCH - 5. Variable-length path
     // ========================================================================
@@ -430,6 +480,31 @@ class QueryPipelineTest {
         assertEquals(42, result.rows[0]["value"])
     }
 
+    @Test
+    fun `filtered node zero limit returns no rows`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "IntConstant")))),
+            CypherClause.Where(CypherExpr.Comparison(">", prop(variable("n"), "value"), lit(0))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "value"), "value"))),
+            CypherClause.Limit(lit(0))
+        )
+        val result = pipeline.execute(clauses)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `filtered node limit supports unlabeled node scans`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n")))),
+            CypherClause.Where(CypherExpr.Comparison("=", prop(variable("n"), "id"), lit(strConstHello.value))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "id"), "id"))),
+            CypherClause.Limit(lit(1))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals(strConstHello.value, result.rows[0]["id"])
+    }
+
     // ========================================================================
     // RETURN - 13. Property projection
     // ========================================================================
@@ -494,6 +569,37 @@ class QueryPipelineTest {
         assertEquals(listOf("cls"), result.columns)
         assertEquals(1, result.rows.size)
         assertEquals("com.example.Repository", result.rows[0]["cls"])
+    }
+
+    @Test
+    fun `return distinct property zero limit returns no rows`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "CallSiteNode")))),
+            CypherClause.Return(
+                listOf(returnItem(prop(variable("n"), "callee_class"), "cls")),
+                distinct = true
+            ),
+            CypherClause.Limit(lit(0))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(listOf("cls"), result.columns)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `return distinct property with limit supports unlabeled node scans`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n")))),
+            CypherClause.Return(
+                listOf(returnItem(prop(variable("n"), "id"), "id")),
+                distinct = true
+            ),
+            CypherClause.Limit(lit(1))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(listOf("id"), result.columns)
+        assertEquals(1, result.rows.size)
+        assertEquals(intConst42.value, result.rows[0]["id"])
     }
 
     // ========================================================================

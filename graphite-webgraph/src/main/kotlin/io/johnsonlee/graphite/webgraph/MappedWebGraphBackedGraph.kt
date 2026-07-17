@@ -45,6 +45,7 @@ import java.nio.MappedByteBuffer
  *
  * Created by [GraphStore.loadMapped].
  */
+@Suppress("LongParameterList")
 internal class MappedWebGraphBackedGraph(
     private val forward: Lazy<ImmutableGraph>,
     private val backward: Lazy<ImmutableGraph>,

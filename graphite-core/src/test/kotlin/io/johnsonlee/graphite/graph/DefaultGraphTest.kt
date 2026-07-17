@@ -75,6 +75,18 @@ class DefaultGraphTest {
         assertEquals(1, stringConstants.size)
     }
 
+    @Test
+    fun `nodeCount returns exact and assignable type counts`() {
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId.next(), 1))
+            .addNode(StringConstant(NodeId.next(), "hello"))
+            .addNode(IntConstant(NodeId.next(), 2))
+            .build()
+
+        assertEquals(2L, graph.nodeCount(IntConstant::class.java))
+        assertEquals(3L, graph.nodeCount(Node::class.java))
+    }
+
     // ========================================================================
     // Edge operations
     // ========================================================================
@@ -304,6 +316,7 @@ class DefaultGraphTest {
         }
 
         assertTrue(graph.typeHierarchyTypes().isEmpty())
+        assertNull(graph.nodeCount(Node::class.java))
         assertNull(graph.classOrigin("com.example.App"))
         assertTrue(graph.classOrigins().isEmpty())
         assertTrue(graph.artifactDependencies().isEmpty())
