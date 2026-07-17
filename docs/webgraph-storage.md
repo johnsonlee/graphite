@@ -13,7 +13,9 @@ graph-dir/
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
-Backward adjacency is rebuilt from `forward.*` at load time — not stored on disk.
+Backward adjacency is not stored on disk. It is rebuilt lazily from `forward.*`
+on the first `incoming()` query for a loaded graph, so forward-only queries do
+not pay transpose construction during load.
 
 ## Binary Format
 
@@ -46,7 +48,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
   → DefaultGraph                 1. String collection              1. BVGraph.load       ┐
                                  2. Metadata + StringTable         2. StringTable.load    ├ parallel
                                  3. Forward adjacency + labels     3. Labels + comparisons┘
-                                                                   4. Build backward from forward
+                                                                   4. Prepare lazy backward builder
                                  4. BVGraph.store                  5. Read nodes + metadata
                                  5. Labels + comparisons write
                                  6. Nodedata + nodeindex write
@@ -79,15 +81,15 @@ graph TD
     B --> B2[StringTable.load]
     B --> B3[Labels + comparisons]
     B1 --> C[Build cumulative outdegree]
-    B1 --> D[Build backward from forward]
-    D --> D1[Pass 1: Count indegree]
-    D1 --> D2[Pass 2: Fill predecessor arrays + sort]
+    B1 --> D[Prepare lazy backward builder]
+    D --> D1[First incoming query: count indegree]
+    D1 --> D2[Fill predecessor arrays + sort]
     B2 --> E[Read nodes]
     E -->|Eager| E1[Deserialize all to heap]
     E -->|Mapped| E2[mmap nodedata file]
     E -->|Lazy| E3[RandomAccessFile on demand]
     B2 --> F[Read metadata]
-    C & D2 & B3 & E & F --> G[Construct Graph]
+C & D & B3 & E & F --> G[Construct Graph]
 ```
 
 ### Load Modes
@@ -305,3 +307,30 @@ Archive contains more than 65535 entries.
 **Conclusion:** not effective for load-time improvement. The result is within short JMH-run noise but does not prove a win.
 
 **Root cause:** on Android-scale mapped load, reverse string-index construction is not the dominant cost. Remaining costs such as BVGraph load, backward graph construction, node index parsing, labels, and metadata dominate the measured path. This may still reduce heap modestly, but it does not move the required load/query performance target by a meaningful amount.
+
+### 2026-07-18 — Attempt 002: Lazy backward adjacency construction
+
+**Hypothesis:** `loadEager`, `loadLazy`, and `loadMapped` all rebuild the full backward adjacency from `forward.*` during load, even when the query path only needs forward traversal or node scans. Android-scale `mapped_load` should improve if transpose construction is deferred until the first `incoming()` call.
+
+**Change:** replace eagerly constructed `ImmutableGraph backward` constructor parameters with `Lazy<ImmutableGraph>`. `GraphStore.load*` now creates a lazy handle, and each graph implementation calls `backward.value` only inside `incoming()`.
+
+**Build/save impact:** none. The persisted format and `GraphStore.save` path are unchanged.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 002 | Change |
+|-----------|----------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `2292.892 ms/op` | `1425.196 ms/op` | `-867.696 ms` / `-37.8%` |
+
+Compared with Attempt 001's immediate pre-change result (`2341.167 ms/op`), this is `-915.971 ms` / `-39.1%`.
+
+**Conclusion:** effective for load time. This does not yet provide a full order-of-magnitude improvement, but it removes a large eager-load cost without increasing build/save time or memory.
+
+**Root cause:** backward transpose construction is a major Android-scale mapped-load cost. Most common load and forward-query paths do not need incoming edges, so doing this work unconditionally was wasted. Queries that call `incoming()` still pay the same transpose cost once, but they pay it at first use rather than at graph open.

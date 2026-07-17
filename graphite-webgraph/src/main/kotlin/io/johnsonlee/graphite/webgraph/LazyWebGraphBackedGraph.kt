@@ -28,7 +28,8 @@ import java.io.RandomAccessFile
  * (nodeId -> file offset).
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
- * - BVGraph forward + backward: ~30 MB
+ * - BVGraph forward: loaded at graph open
+ * - BVGraph backward: built lazily on first incoming query
  * - Edge label map: ~364 MB
  * - Node index: ~47 MB (nodeId -> offset)
  * - Node type index: ~24 MB (type -> nodeId list)
@@ -39,7 +40,7 @@ import java.io.RandomAccessFile
  */
 internal class LazyWebGraphBackedGraph(
     private val forward: ImmutableGraph,
-    private val backward: ImmutableGraph,
+    private val backward: Lazy<ImmutableGraph>,
     private val nodeDataFile: File,
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
@@ -108,9 +109,10 @@ internal class LazyWebGraphBackedGraph(
 
     override fun incoming(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        if (nodeIdx >= backward.numNodes()) return emptySequence()
-        val preds = backward.successorArray(nodeIdx)
-        val indeg = backward.outdegree(nodeIdx)
+        val backwardGraph = backward.value
+        if (nodeIdx >= backwardGraph.numNodes()) return emptySequence()
+        val preds = backwardGraph.successorArray(nodeIdx)
+        val indeg = backwardGraph.outdegree(nodeIdx)
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)

@@ -69,7 +69,7 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
  * ecosystem tools (dsiutils + sux4j + fastutil).
  *
  * Storage layout:
- * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt at load time)
+ * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt lazily on incoming queries)
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -217,7 +217,7 @@ object GraphStore {
         val labelBytes = labelsFuture.join()
 
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
+        val backward = lazy { loadBackward(forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)
@@ -273,7 +273,7 @@ object GraphStore {
         val labelBytes = labelsFuture.join()
 
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
+        val backward = lazy { loadBackward(forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)
@@ -322,7 +322,7 @@ object GraphStore {
         val labelBytes = labelsFuture.join()
 
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
+        val backward = lazy { loadBackward(forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)

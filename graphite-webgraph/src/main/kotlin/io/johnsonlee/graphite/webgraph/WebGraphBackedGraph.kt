@@ -25,7 +25,7 @@ import it.unimi.dsi.webgraph.ImmutableGraph
  */
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
-    private val backward: ImmutableGraph,
+    private val backward: Lazy<ImmutableGraph>,
     private val nodesById: Map<Int, Node>,
     private val nodeDataVersion: Int,
     private val forwardLabels: ByteArray,
@@ -80,9 +80,10 @@ internal class WebGraphBackedGraph(
 
     override fun incoming(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        if (nodeIdx >= backward.numNodes()) return emptySequence()
-        val preds = backward.successorArray(nodeIdx)
-        val indeg = backward.outdegree(nodeIdx)
+        val backwardGraph = backward.value
+        if (nodeIdx >= backwardGraph.numNodes()) return emptySequence()
+        val preds = backwardGraph.successorArray(nodeIdx)
+        val indeg = backwardGraph.outdegree(nodeIdx)
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)

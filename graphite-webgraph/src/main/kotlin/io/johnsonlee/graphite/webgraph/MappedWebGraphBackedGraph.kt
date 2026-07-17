@@ -33,7 +33,8 @@ import java.nio.MappedByteBuffer
  * to direct memory reads — no system calls after the initial page fault.
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
- * - BVGraph forward + backward: ~30 MB (heap)
+ * - BVGraph forward: loaded at graph open
+ * - BVGraph backward: built lazily on first incoming query
  * - Edge label map: ~364 MB (heap)
  * - Node index: ~47 MB (heap, nodeId → offset)
  * - Node type index: ~24 MB (heap, type → nodeId list)
@@ -45,7 +46,7 @@ import java.nio.MappedByteBuffer
  */
 internal class MappedWebGraphBackedGraph(
     private val forward: ImmutableGraph,
-    private val backward: ImmutableGraph,
+    private val backward: Lazy<ImmutableGraph>,
     private val mappedNodeData: MappedByteBuffer,
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
@@ -108,9 +109,10 @@ internal class MappedWebGraphBackedGraph(
 
     override fun incoming(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        if (nodeIdx >= backward.numNodes()) return emptySequence()
-        val preds = backward.successorArray(nodeIdx)
-        val indeg = backward.outdegree(nodeIdx)
+        val backwardGraph = backward.value
+        if (nodeIdx >= backwardGraph.numNodes()) return emptySequence()
+        val preds = backwardGraph.successorArray(nodeIdx)
+        val indeg = backwardGraph.outdegree(nodeIdx)
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
