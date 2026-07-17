@@ -63,6 +63,12 @@ internal class WebGraphBackedGraph(
             .flatMap { it.value.asSequence() } as Sequence<T>
     }
 
+    override fun nodeCount(type: Class<out Node>): Long =
+        nodesByType[type]?.size?.toLong()
+            ?: nodesByType.entries.asSequence()
+                .filter { type.isAssignableFrom(it.key) }
+                .sumOf { it.value.size.toLong() }
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         if (nodeIdx >= forward.numNodes()) return emptySequence()

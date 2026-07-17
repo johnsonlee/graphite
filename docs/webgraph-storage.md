@@ -334,3 +334,36 @@ Compared with Attempt 001's immediate pre-change result (`2341.167 ms/op`), this
 **Conclusion:** effective for load time. This does not yet provide a full order-of-magnitude improvement, but it removes a large eager-load cost without increasing build/save time or memory.
 
 **Root cause:** backward transpose construction is a major Android-scale mapped-load cost. Most common load and forward-query paths do not need incoming edges, so doing this work unconditionally was wasted. Queries that call `incoming()` still pay the same transpose cost once, but they pay it at first use rather than at graph open.
+
+### 2026-07-18 — Attempt 003: Fast path for simple node `count`
+
+**Hypothesis:** `MATCH (n:Label) RETURN count(*)` should not materialize every node. The graph already has type indexes for `nodes(Label)`, so Cypher can answer simple unfiltered count queries from a precomputed node count.
+
+**Change:** add optional `Graph.nodeCount(type)` with implementations in `DefaultGraph` and WebGraph-backed graphs. `QueryPipeline` now short-circuits only simple single-node count queries:
+
+```
+MATCH (n:Label) RETURN count(*)
+MATCH (n:Label) RETURN count(n)
+```
+
+Queries with relationships, `WHERE`, properties, `DISTINCT`, grouping, `WITH`, `ORDER BY`, or multiple clauses still use the normal execution path.
+
+**Build/save impact:** none. This uses existing in-memory type indexes and persisted node indexes; no new build-time or save-time structure is written.
+
+**Validation commands:**
+
+```
+./gradlew :cypher:test
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidQueryBenchmark.mapped_countStar'
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 003 | Change |
+|-----------|----------|-------------|--------|
+| `AndroidQueryBenchmark.mapped_countStar` | `1816.130 ms/op` | `0.003 ms/op` | effectively eliminates the scan |
+
+**Conclusion:** effective for the targeted count query. This is a narrow query optimization, not a general Cypher accelerator.
+
+**Root cause:** the previous pipeline executed `MATCH` before aggregation, so `count(*)` forced a full scan and deserialization of every matching node. For unfiltered single-node counts, the result is exactly the size of the node type index, so scanning was unnecessary work.

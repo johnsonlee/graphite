@@ -33,6 +33,8 @@ class QueryPipeline(private val graph: Graph) {
      * Execute a list of clauses and return the final result.
      */
     fun execute(clauses: List<CypherClause>): CypherResult {
+        tryFastNodeCount(clauses)?.let { return it }
+
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
 
@@ -90,6 +92,54 @@ class QueryPipeline(private val graph: Graph) {
         }
 
         return CypherResult(columns, rows)
+    }
+
+    /**
+     * Fast path for simple count queries:
+     *
+     *   MATCH (n:Label) RETURN count(*)
+     *   MATCH (n:Label) RETURN count(n)
+     *
+     * This avoids scanning and materializing every node when the graph backend
+     * already has a type index count.
+     */
+    private fun tryFastNodeCount(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 2) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        if (nodePattern.properties.isNotEmpty()) return null
+
+        val returnItem = ret.items.single()
+        val countedVariable = countedVariable(returnItem.expression) ?: return null
+        if (countedVariable != "*" && countedVariable != nodePattern.variable) return null
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val count = graph.nodeCount(nodeClass) ?: return null
+        val column = returnItem.alias ?: returnItem.expression.toCypherString()
+        return CypherResult(
+            columns = listOf(column),
+            rows = listOf(mapOf(column to count))
+        )
+    }
+
+    private fun countedVariable(expr: CypherExpr): String? = when (expr) {
+        is CypherExpr.CountStar -> "*"
+        is CypherExpr.FunctionCall -> {
+            if (!expr.name.equals("count", ignoreCase = true) || expr.distinct || expr.args.size != 1) {
+                null
+            } else {
+                (expr.args.single() as? CypherExpr.Variable)?.name
+            }
+        }
+        else -> null
     }
 
     // ========================================================================

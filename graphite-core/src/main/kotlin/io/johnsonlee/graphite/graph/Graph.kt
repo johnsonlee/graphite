@@ -30,6 +30,13 @@ interface Graph {
     fun <T : Node> nodes(type: Class<T>): Sequence<T>
 
     /**
+     * Return a precomputed node count for [type] when the graph can answer
+     * without scanning/deserializing nodes. Implementations may return null
+     * to indicate callers should fall back to [nodes].
+     */
+    fun nodeCount(type: Class<out Node>): Long? = null
+
+    /**
      * Get all outgoing edges from a node
      */
     fun outgoing(id: NodeId): Sequence<Edge>

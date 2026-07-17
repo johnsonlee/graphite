@@ -92,6 +92,12 @@ internal class LazyWebGraphBackedGraph(
             .mapNotNull { node(NodeId(it)) as? T }
     }
 
+    override fun nodeCount(type: Class<out Node>): Long =
+        nodeTypeIndex[type]?.size?.toLong()
+            ?: nodeTypeIndex.entries.asSequence()
+                .filter { type.isAssignableFrom(it.key) }
+                .sumOf { it.value.size.toLong() }
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         if (nodeIdx >= forward.numNodes()) return emptySequence()
