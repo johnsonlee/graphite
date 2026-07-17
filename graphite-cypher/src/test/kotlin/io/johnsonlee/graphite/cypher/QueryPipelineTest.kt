@@ -211,6 +211,37 @@ class QueryPipelineTest {
         assertEquals(0, result.rows[0]["pidx"])
     }
 
+    @Test
+    fun `single hop relationship limit counts complete matches`() {
+        NodeId.reset()
+        val builder = DefaultGraph.Builder()
+        val method = MethodDescriptor(type, "limited", emptyList(), TypeDescriptor("void"))
+
+        val first = NodeId.next()
+        builder.addNode(IntConstant(first, 7))
+
+        val second = NodeId.next()
+        builder.addNode(IntConstant(second, 42))
+
+        val param = NodeId.next()
+        builder.addNode(ParameterNode(param, 0, intType, method))
+        builder.addEdge(DataFlowEdge(second, param, DataFlowKind.PARAMETER_PASS))
+
+        val localPipeline = QueryPipeline(builder.build())
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("c", "IntConstant"),
+                relPattern(type = "DATAFLOW"),
+                nodePattern("p", "ParameterNode")
+            ))),
+            CypherClause.Return(listOf(returnItem(prop(variable("c"), "value"), "value"))),
+            CypherClause.Limit(lit(1))
+        )
+        val result = localPipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows[0]["value"])
+    }
+
     // ========================================================================
     // MATCH - 5. Variable-length path
     // ========================================================================

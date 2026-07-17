@@ -35,6 +35,7 @@ class QueryPipeline(private val graph: Graph) {
     fun execute(clauses: List<CypherClause>): CypherResult {
         tryFastNodeCount(clauses)?.let { return it }
         tryFastDistinctPropertyLimit(clauses)?.let { return it }
+        tryFastSingleHopRelationshipLimit(clauses)?.let { return it }
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
@@ -193,6 +194,77 @@ class QueryPipeline(private val graph: Graph) {
         val property = expr as? CypherExpr.Property ?: return null
         val owner = property.expression as? CypherExpr.Variable ?: return null
         return if (owner.name == variable) property.propertyName else null
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (a:Source)-[:TYPE]->(b:Target) RETURN ... LIMIT k
+     *
+     * The generic pipeline materializes node and relationship intermediates.
+     * For a single non-variable-length hop without filtering/reordering clauses,
+     * we can stream complete relationship matches and stop once LIMIT rows have
+     * been projected.
+     */
+    private fun tryFastSingleHopRelationshipLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 3) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        val limit = clauses[2] as? CypherClause.Limit ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
+            return null
+        }
+        if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 3) return null
+
+        val sourcePattern = pattern.elements[0] as? PatternElement.NodePattern ?: return null
+        val rel = pattern.elements[1] as? PatternElement.RelationshipPattern ?: return null
+        val targetPattern = pattern.elements[2] as? PatternElement.NodePattern ?: return null
+        if (sourcePattern.variable == null || rel.variableLength) return null
+
+        val limitCount = evaluateToInt(limit.count, emptyMap())
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+
+        val sourceClass = sourcePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
+
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (source in graph.nodes(sourceClass)) {
+            if (!matchesNodeConstraints(source, sourcePattern, emptyMap())) continue
+
+            val sourceBindings = mutableMapOf<String, Any?>(sourcePattern.variable to source)
+            for (edge in edgesForDirection(source.id, rel.direction, edgeClass)) {
+                if (!matchesRelConstraints(edge, rel, sourceBindings)) continue
+
+                val targetId = resolveTargetId(edge, source.id, rel.direction)
+                val target = graph.node(targetId) ?: continue
+                val targetBindings = matchTargetNode(targetPattern, target, sourceBindings) ?: continue
+
+                val bindings = targetBindings.toMutableMap()
+                if (rel.variable != null) bindings[rel.variable] = edge
+                rows.add(projectRow(ret.items, columns, bindings))
+                if (rows.size >= limitCount) return CypherResult(columns, rows)
+            }
+        }
+
+        return CypherResult(columns, rows)
+    }
+
+    private fun projectRow(
+        items: List<ReturnItem>,
+        columns: List<String>,
+        bindings: Map<String, Any?>
+    ): Map<String, Any?> {
+        val projected = mutableMapOf<String, Any?>()
+        for (i in items.indices) {
+            projected[columns[i]] = evaluator.evaluate(items[i].expression, bindings)
+        }
+        return projected
     }
 
     // ========================================================================
