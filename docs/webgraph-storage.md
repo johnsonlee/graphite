@@ -531,3 +531,42 @@ Compared with the original Android mapped-load baseline (`2292.892 ms/op`), `176
 **Conclusion:** effective for the load-side order-of-magnitude goal when measured against the original Android-scale mapped-load baseline. It also materially reduces open-time heap for multi-graph serving because edge labels and BVGraph structures are no longer resident until an edge query needs them.
 
 **Root cause:** after lazy backward adjacency and primitive node-index loading, the dominant remaining mapped-load costs were unrelated to opening a node-readable graph: forward BVGraph, edge labels, cumulative outdegree, comparisons, metadata, and resources. Deferring those structures moves their cost to the APIs that actually need them, while node-only load/query paths avoid the work entirely.
+
+### 2026-07-18 — Current Android mapped benchmark sweep
+
+This is a verification summary of the current mapped Android-scale state after Attempts 001-008. It is not a separate optimization attempt.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidLoadBenchmark.mapped_load'
+./gradlew :webgraph:jmh -Pjmh.filter='AndroidQueryBenchmark.mapped_.*'
+```
+
+**Current results:**
+
+| Benchmark | Current score |
+|-----------|---------------|
+| `AndroidLoadBenchmark.mapped_load` | `176.097 ms/op` |
+| `AndroidQueryBenchmark.mapped_countStar` | `0.003 ms/op` |
+| `AndroidQueryBenchmark.mapped_intConstantFilter` | `0.056 ms/op` |
+| `AndroidQueryBenchmark.mapped_returnDistinct` | `0.197 ms/op` |
+| `AndroidQueryBenchmark.mapped_simpleNodeMatch` | `0.085 ms/op` |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `0.701 ms/op` |
+
+**Baseline comparison:**
+
+| Benchmark | Recorded baseline | Current score | Change |
+|-----------|-------------------|---------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `2292.892 ms/op` | `176.097 ms/op` | `~13.0x faster` |
+| `AndroidQueryBenchmark.mapped_countStar` | `1816.130 ms/op` | `0.003 ms/op` | scan eliminated |
+| `AndroidQueryBenchmark.mapped_intConstantFilter` | `2.545 ms/op` | `0.056 ms/op` | `~45.4x faster` |
+| `AndroidQueryBenchmark.mapped_returnDistinct` | `2738.060 ms/op` | `0.197 ms/op` | full scan eliminated for this shape |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `75.802 ms/op` | `0.701 ms/op` | `~108.1x faster` |
+
+`mapped_simpleNodeMatch` was already low after existing early `LIMIT` pushdown; the current sweep records it at `0.085 ms/op`.
+
+**Build/save impact:** no optimization in Attempts 001-008 changes the graph save format or adds build-time indexes. The load-side wins come from deferring runtime structures; the query-side wins come from execution control flow and existing type indexes.
+
+**Operational note for multi-graph serving:** opening many mapped graphs now keeps edge structures, metadata, and resources unloaded until first use. The first edge or metadata query for a graph pays that lazy initialization cost once; services that need predictable first-edge latency can explicitly prewarm edge APIs for selected graphs, while node-only query workloads avoid the cost entirely.
