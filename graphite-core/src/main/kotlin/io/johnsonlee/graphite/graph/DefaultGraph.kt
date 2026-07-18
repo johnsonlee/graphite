@@ -86,6 +86,12 @@ class DefaultGraph private constructor(
             .flatMap { it.value.asSequence() } as Sequence<T>
     }
 
+    override fun nodeCount(type: Class<out Node>): Long =
+        nodesByType[type]?.size?.toLong()
+            ?: nodesByType.entries.asSequence()
+                .filter { type.isAssignableFrom(it.key) }
+                .sumOf { it.value.size.toLong() }
+
     override fun outgoing(id: NodeId): Sequence<Edge> =
         outgoingEdges.get(id.value)?.asSequence() ?: emptySequence()
 

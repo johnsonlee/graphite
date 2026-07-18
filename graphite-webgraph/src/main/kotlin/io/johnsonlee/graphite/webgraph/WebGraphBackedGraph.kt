@@ -23,9 +23,10 @@ import it.unimi.dsi.webgraph.ImmutableGraph
  * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
  * `(from << 32 | to)`.
  */
+@Suppress("TooManyFunctions")
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
-    private val backward: ImmutableGraph,
+    private val backward: Lazy<ImmutableGraph>,
     private val nodesById: Map<Int, Node>,
     private val nodeDataVersion: Int,
     private val forwardLabels: ByteArray,
@@ -63,6 +64,12 @@ internal class WebGraphBackedGraph(
             .flatMap { it.value.asSequence() } as Sequence<T>
     }
 
+    override fun nodeCount(type: Class<out Node>): Long =
+        nodesByType[type]?.size?.toLong()
+            ?: nodesByType.entries.asSequence()
+                .filter { type.isAssignableFrom(it.key) }
+                .sumOf { it.value.size.toLong() }
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         if (nodeIdx >= forward.numNodes()) return emptySequence()
@@ -80,9 +87,10 @@ internal class WebGraphBackedGraph(
 
     override fun incoming(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        if (nodeIdx >= backward.numNodes()) return emptySequence()
-        val preds = backward.successorArray(nodeIdx)
-        val indeg = backward.outdegree(nodeIdx)
+        val backwardGraph = backward.value
+        if (nodeIdx >= backwardGraph.numNodes()) return emptySequence()
+        val preds = backwardGraph.successorArray(nodeIdx)
+        val indeg = backwardGraph.outdegree(nodeIdx)
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)

@@ -83,6 +83,8 @@ internal object BenchmarkCorpus {
             return jarPath
         }
 
+        findJarOnClasspath(kind)?.let { return it }
+
         val cacheDir = Path.of(System.getProperty("user.home"), ".gradle", "caches")
         require(cacheDir.isDirectory()) { "Gradle cache not found at $cacheDir" }
 
@@ -98,6 +100,15 @@ internal object BenchmarkCorpus {
                     )
                 }
         }
+    }
+
+    private fun findJarOnClasspath(kind: BenchmarkCorpusKind): Path? {
+        return System.getProperty("java.class.path")
+            .split(System.getProperty("path.separator").toRegex())
+            .asSequence()
+            .mapNotNull { entry -> entry.takeIf { it.isNotBlank() }?.let(Path::of) }
+            .filter { it.isRegularFile() && kind.matches(it.fileName.toString()) }
+            .firstOrNull()
     }
 
     private fun hasPersistedGraph(dir: Path): Boolean {

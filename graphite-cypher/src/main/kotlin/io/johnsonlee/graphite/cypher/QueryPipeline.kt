@@ -10,6 +10,12 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 
+private const val COUNT_QUERY_CLAUSES = 2
+private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
+private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
+private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
+private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
+
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
  * maintaining a result set (list of binding maps) that flows through each clause.
@@ -25,6 +31,7 @@ import io.johnsonlee.graphite.graph.Graph
  * Write clauses (`CREATE`, `DELETE`, `SET`, `REMOVE`) are not executed
  * because Graphite graphs are immutable; they are silently ignored.
  */
+@Suppress("LargeClass")
 class QueryPipeline(private val graph: Graph) {
 
     private val evaluator = ExpressionEvaluator()
@@ -33,6 +40,12 @@ class QueryPipeline(private val graph: Graph) {
      * Execute a list of clauses and return the final result.
      */
     fun execute(clauses: List<CypherClause>): CypherResult {
+        val fastResult = tryFastNodeCount(clauses)
+            ?: tryFastDistinctPropertyLimit(clauses)
+            ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryFastSingleHopRelationshipLimit(clauses)
+        if (fastResult != null) return fastResult
+
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
 
@@ -90,6 +103,231 @@ class QueryPipeline(private val graph: Graph) {
         }
 
         return CypherResult(columns, rows)
+    }
+
+    /**
+     * Fast path for simple count queries:
+     *
+     *   MATCH (n:Label) RETURN count(*)
+     *   MATCH (n:Label) RETURN count(n)
+     *
+     * This avoids scanning and materializing every node when the graph backend
+     * already has a type index count.
+     */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
+    private fun tryFastNodeCount(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != COUNT_QUERY_CLAUSES) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        if (nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+
+        val returnItem = ret.items.single()
+        val countedVariable = countedVariable(returnItem.expression) ?: return null
+        if (countedVariable != "*" && countedVariable != nodePattern.variable) return null
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val count = graph.nodeCount(nodeClass) ?: return null
+        val column = returnItem.alias ?: returnItem.expression.toCypherString()
+        return CypherResult(
+            columns = listOf(column),
+            rows = listOf(mapOf(column to count))
+        )
+    }
+
+    private fun countedVariable(expr: CypherExpr): String? = when (expr) {
+        is CypherExpr.CountStar -> "*"
+        is CypherExpr.FunctionCall -> {
+            if (!expr.name.equals("count", ignoreCase = true) || expr.distinct || expr.args.size != 1) {
+                null
+            } else {
+                (expr.args.single() as? CypherExpr.Variable)?.name
+            }
+        }
+        else -> null
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (n:Label) RETURN DISTINCT n.property LIMIT k
+     *
+     * Without ORDER BY, Cypher does not require a globally sorted result. The
+     * existing implementation preserves first-seen order via List.distinct(),
+     * so we can stop after the first k distinct property values instead of
+     * materializing every matching node first.
+     */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
+    private fun tryFastDistinctPropertyLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != DISTINCT_LIMIT_QUERY_CLAUSES) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        val limit = clauses[2] as? CypherClause.Limit ?: return null
+        if (match.optional || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        if (nodePattern.variable == null || nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+
+        val returnItem = ret.items.single()
+        val propertyName = propertyProjection(returnItem.expression, nodePattern.variable) ?: return null
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        if (limitCount <= 0) {
+            val column = returnItem.alias ?: returnItem.expression.toCypherString()
+            return CypherResult(listOf(column), emptyList())
+        }
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val column = returnItem.alias ?: returnItem.expression.toCypherString()
+        val seen = LinkedHashSet<Any?>()
+        for (node in graph.nodes(nodeClass)) {
+            seen.add(NodePropertyAccessor.getProperty(node, propertyName))
+            if (seen.size >= limitCount) break
+        }
+        return CypherResult(
+            columns = listOf(column),
+            rows = seen.map { value -> mapOf(column to value) }
+        )
+    }
+
+    private fun propertyProjection(expr: CypherExpr, variable: String): String? {
+        val property = expr as? CypherExpr.Property
+        val owner = property?.expression as? CypherExpr.Variable
+        return property?.propertyName?.takeIf { owner?.name == variable }
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (n:Label) WHERE ... RETURN ... LIMIT k
+     *
+     * This keeps LIMIT semantics on filtered/projected rows while avoiding
+     * materializing every node match before WHERE is evaluated.
+     */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "MagicNumber", "ReturnCount")
+    private fun tryFastFilteredNodeLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != FILTERED_LIMIT_QUERY_CLAUSES) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val where = clauses[1] as? CypherClause.Where ?: return null
+        val ret = clauses[2] as? CypherClause.Return ?: return null
+        val limit = clauses[3] as? CypherClause.Limit ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
+            return null
+        }
+        if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        val variable = nodePattern.variable ?: return null
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (node in graph.nodes(nodeClass)) {
+            if (!matchesNodeConstraints(node, nodePattern, emptyMap())) continue
+
+            val bindings = mapOf<String, Any?>(variable to node)
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+
+            rows.add(projectRow(ret.items, columns, bindings))
+            if (rows.size >= limitCount) return CypherResult(columns, rows)
+        }
+
+        return CypherResult(columns, rows)
+    }
+
+    /**
+     * Fast path for:
+     *
+     *   MATCH (a:Source)-[:TYPE]->(b:Target) RETURN ... LIMIT k
+     *
+     * The generic pipeline materializes node and relationship intermediates.
+     * For a single non-variable-length hop without filtering/reordering clauses,
+     * we can stream complete relationship matches and stop once LIMIT rows have
+     * been projected.
+     */
+    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
+    private fun tryFastSingleHopRelationshipLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != SINGLE_HOP_LIMIT_QUERY_CLAUSES) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        val limit = clauses[2] as? CypherClause.Limit ?: return null
+        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
+            return null
+        }
+        if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != SINGLE_HOP_PATTERN_ELEMENTS) return null
+
+        val sourcePattern = pattern.elements[0] as? PatternElement.NodePattern ?: return null
+        val rel = pattern.elements[1] as? PatternElement.RelationshipPattern ?: return null
+        val targetPattern = pattern.elements[2] as? PatternElement.NodePattern ?: return null
+        if (sourcePattern.variable == null || rel.variableLength) return null
+
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+
+        val sourceClass = sourcePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
+
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (source in graph.nodes(sourceClass)) {
+            if (!matchesNodeConstraints(source, sourcePattern, emptyMap())) continue
+
+            val sourceBindings = mutableMapOf<String, Any?>(sourcePattern.variable to source)
+            for (edge in edgesForDirection(source.id, rel.direction, edgeClass)) {
+                if (!matchesRelConstraints(edge, rel, sourceBindings)) continue
+
+                val targetId = resolveTargetId(edge, source.id, rel.direction)
+                val target = graph.node(targetId) ?: continue
+                val targetBindings = matchTargetNode(targetPattern, target, sourceBindings) ?: continue
+
+                val bindings = targetBindings.toMutableMap()
+                if (rel.variable != null) bindings[rel.variable] = edge
+                rows.add(projectRow(ret.items, columns, bindings))
+                if (rows.size >= limitCount) return CypherResult(columns, rows)
+            }
+        }
+
+        return CypherResult(columns, rows)
+    }
+
+    private fun projectRow(
+        items: List<ReturnItem>,
+        columns: List<String>,
+        bindings: Map<String, Any?>
+    ): Map<String, Any?> {
+        val projected = mutableMapOf<String, Any?>()
+        for (i in items.indices) {
+            projected[columns[i]] = evaluator.evaluate(items[i].expression, bindings)
+        }
+        return projected
+    }
+
+    private fun literalLimitCount(expr: CypherExpr): Int? {
+        if (expr !is CypherExpr.Literal) return null
+        return evaluateToInt(expr, emptyMap())
     }
 
     // ========================================================================

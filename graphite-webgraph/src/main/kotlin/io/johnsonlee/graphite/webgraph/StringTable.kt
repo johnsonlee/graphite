@@ -17,13 +17,13 @@ import java.nio.file.Path
  */
 internal class StringTable private constructor(
     private val list: FrontCodedStringList,
-    private val indexMap: Map<String, Int>
+    private val indexMap: Map<String, Int>?
 ) {
 
     /**
      * Returns the index of [s] in the string table, or -1 if not found.
      */
-    fun indexOf(s: String): Int = indexMap[s] ?: -1
+    fun indexOf(s: String): Int = indexMap?.get(s) ?: -1
 
     /**
      * Returns the string at the given [index].
@@ -63,12 +63,7 @@ internal class StringTable private constructor(
         fun load(dir: Path): StringTable {
             @Suppress("UNCHECKED_CAST")
             val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
-            val sz = fcl.size
-            val indexMap = HashMap<String, Int>(sz)
-            for (i in 0 until sz) {
-                indexMap[fcl.get(i).toString()] = i
-            }
-            return StringTable(fcl, indexMap)
+            return StringTable(fcl, null)
         }
     }
 }

@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
@@ -69,7 +70,7 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
  * ecosystem tools (dsiutils + sux4j + fastutil).
  *
  * Storage layout:
- * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt at load time)
+ * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt lazily on incoming queries)
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -217,7 +218,7 @@ object GraphStore {
         val labelBytes = labelsFuture.join()
 
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
+        val backward = lazy { loadBackward(forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)
@@ -251,8 +252,8 @@ object GraphStore {
     }
 
     /**
-     * Load a graph lazily -- BVGraph adjacency and edge labels are loaded into
-     * memory, but node data stays on disk and is read on demand.
+     * Load a graph lazily -- node data stays on disk and is read on demand.
+     * Edge structures, metadata, and resources are also loaded on first use.
      *
      * Memory savings for Android SDK (5.9M nodes): ~500 MB vs ~4 GB eager.
      * Query speed for LIMIT queries is similar; full-scan queries pay ~5-10x
@@ -263,24 +264,20 @@ object GraphStore {
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
-
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-
-        val forward = forwardFuture.join()
-        val stringTable = stringTableFuture.join()
-        val labelBytes = labelsFuture.join()
-
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
-
-        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
+        val stringTable = StringTable.load(dir)
+        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
+        val backward = lazy { loadBackward(forward.value) }
+        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
+        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
+        val comparisonMap = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.readComparisons(dis)
+            }
         }
-
-        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.loadMetadata(dis, stringTable)
+        val metadata = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.loadMetadata(dis, stringTable)
+            }
         }
 
         return LazyWebGraphBackedGraph(
@@ -295,13 +292,13 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
             metadata = metadata,
-            resources = PersistedResourceStore.load(dir)
+            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }
 
     /**
-     * Load a graph with memory-mapped node data — BVGraph adjacency and edge
-     * labels are loaded into JVM heap, but node data is memory-mapped (mmap).
+     * Load a graph with memory-mapped node data. Edge structures, metadata,
+     * and resources are loaded on first use, while node data is memory-mapped.
      *
      * The OS page cache manages which node pages are in physical RAM.
      * No JVM heap allocation for node data, and no system calls per node access
@@ -313,28 +310,25 @@ object GraphStore {
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
 
-        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
-        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-
-        val forward = forwardFuture.join()
-        val stringTable = stringTableFuture.join()
-        val labelBytes = labelsFuture.join()
-
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = loadBackward(forward)
-
-        val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.readComparisons(dis)
-        }
-
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
         val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
         val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
         channel.close()
 
-        val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-            NodeSerializer.loadMetadata(dis, stringTable)
+        val stringTable = StringTable.load(dir)
+        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
+        val backward = lazy { loadBackward(forward.value) }
+        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
+        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
+        val comparisonMap = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.readComparisons(dis)
+            }
+        }
+        val metadata = lazy {
+            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
+                NodeSerializer.loadMetadata(dis, stringTable)
+            }
         }
 
         return MappedWebGraphBackedGraph(
@@ -349,7 +343,7 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             comparisonMap = comparisonMap,
             metadata = metadata,
-            resources = PersistedResourceStore.load(dir)
+            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }
 
@@ -514,7 +508,7 @@ object GraphStore {
      */
     private class NodeIndexData(
         val nodeOffsets: LongArray,
-        val nodeTypeIndex: HashMap<Class<out Node>, List<Int>>
+        val nodeTypeIndex: HashMap<Class<out Node>, IntArray>
     )
 
     /**
@@ -526,37 +520,28 @@ object GraphStore {
             "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
         }
 
-        // Pass 1: find maxNodeId and collect type info
-        var maxNodeId = 0
-        val nodeTypeByTag = HashMap<Int, MutableList<Int>>()
-        var nodeCount = 0
+        val nodeTypeByTag = HashMap<Int, IntArrayList>()
+        lateinit var nodeOffsets: LongArray
         DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
-            nodeCount = dis.readInt()
+            val nodeCount = dis.readInt()
+            nodeOffsets = LongArray(nodeCount) { -1L }
             repeat(nodeCount) {
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
-                dis.readLong() // skip offset
-                if (nodeId > maxNodeId) maxNodeId = nodeId
-                nodeTypeByTag.getOrPut(tag) { mutableListOf() }.add(nodeId)
-            }
-        }
-
-        // Pass 2: fill nodeOffsets directly
-        val nodeOffsets = LongArray(maxNodeId + 1) { -1L }
-        DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
-            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
-            dis.readInt() // skip count
-            repeat(nodeCount) {
-                val nodeId = dis.readInt()
-                dis.readByte() // skip tag
                 val offset = dis.readLong()
+                if (nodeId >= nodeOffsets.size) {
+                    val oldSize = nodeOffsets.size
+                    nodeOffsets = nodeOffsets.copyOf(nodeId + 1)
+                    java.util.Arrays.fill(nodeOffsets, oldSize, nodeOffsets.size, -1L)
+                }
                 nodeOffsets[nodeId] = offset
+                nodeTypeByTag.getOrPut(tag) { IntArrayList() }.add(nodeId)
             }
         }
 
         // Map tags to concrete Node classes
-        val nodeTypeIndex = HashMap<Class<out Node>, List<Int>>()
+        val nodeTypeIndex = HashMap<Class<out Node>, IntArray>()
         val tagToClass = mapOf(
             NodeSerializer.TAG_INT_CONSTANT to IntConstant::class.java,
             NodeSerializer.TAG_STRING_CONSTANT to StringConstant::class.java,
@@ -577,7 +562,7 @@ object GraphStore {
         )
         for ((tag, ids) in nodeTypeByTag) {
             val cls = tagToClass[tag] ?: continue
-            nodeTypeIndex[cls] = ids
+            nodeTypeIndex[cls] = ids.toIntArray()
         }
 
         return NodeIndexData(nodeOffsets, nodeTypeIndex)
