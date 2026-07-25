@@ -234,6 +234,8 @@ class MmapGraphTest {
         val found = graph.methods(MethodPattern(declaringClass = "com.example.Foo")).toList()
         assertEquals(1, found.size)
         assertEquals(method, found[0])
+        assertEquals(1L, graph.methodCount())
+        assertEquals(listOf(method), assertNotNull(graph.methodSlice(MethodPattern(name = "doWork"), 10)))
     }
 
     @Test

@@ -74,7 +74,13 @@ tasks.shadowJar {
 kover {
     reports {
         filters {
-            excludes { classes("io.johnsonlee.graphite.cli.MainKt") }
+            excludes {
+                classes(
+                    "*Benchmark*",
+                    "io.johnsonlee.graphite.cli.ExplorerMemoryCounters",
+                    "io.johnsonlee.graphite.cli.MainKt"
+                )
+            }
         }
     }
 }

@@ -739,6 +739,9 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.load(dir)
 
+            assertEquals(8L, loaded.nodeCount(Node::class.java))
+            assertEquals(1L, loaded.nodeCount(CallSiteNode::class.java))
+
             val barMethods = loaded.methods(MethodPattern(name = "bar")).toList()
             assertEquals(1, barMethods.size)
             assertEquals("bar", barMethods[0].name)
@@ -761,6 +764,9 @@ class GraphStoreTest {
             loadedGraphs += GraphStore.loadMapped(dir)
 
             for (loaded in loadedGraphs) {
+                assertEquals(8L, loaded.nodeCount(Node::class.java))
+                assertEquals(1L, loaded.nodeCount(CallSiteNode::class.java))
+                assertEquals(graph.edgeCount(), loaded.edgeCount())
                 assertEquals(2L, loaded.methodCount())
 
                 val firstMethod = assertNotNull(loaded.methodSlice(MethodPattern(), 1))

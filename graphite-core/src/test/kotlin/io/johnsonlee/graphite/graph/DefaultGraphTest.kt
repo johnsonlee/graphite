@@ -218,6 +218,17 @@ class DefaultGraphTest {
         assertEquals(1, fooMethods.size)
     }
 
+    @Test
+    fun `methodCount and methodSlice use precomputed method index`() {
+        val m1 = makeMethod("com.example.Foo", "doWork")
+        val m2 = makeMethod("com.example.Bar", "process")
+        val graph = DefaultGraph.Builder().addMethod(m1).addMethod(m2).build()
+
+        assertEquals(2L, graph.methodCount())
+        assertEquals(listOf(m1), graph.methodSlice(MethodPattern(declaringClass = "com.example.Foo"), 10))
+        assertTrue(assertNotNull(graph.methodSlice(MethodPattern(), 0)).isEmpty())
+    }
+
     // ========================================================================
     // Type hierarchy
     // ========================================================================
@@ -333,6 +344,9 @@ class DefaultGraphTest {
 
         assertTrue(graph.typeHierarchyTypes().isEmpty())
         assertNull(graph.nodeCount(Node::class.java))
+        assertNull(graph.edgeCount())
+        assertNull(graph.methodCount())
+        assertNull(graph.methodSlice(MethodPattern(), 10))
         assertNull(graph.classOrigin("com.example.App"))
         assertTrue(graph.classOrigins().isEmpty())
         assertTrue(graph.artifactDependencies().isEmpty())
