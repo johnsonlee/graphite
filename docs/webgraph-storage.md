@@ -632,3 +632,35 @@ Result: `100524.865 ms/op`.
 This covers `build -> save -> loadMapped -> query` with `-Xmx4g`.
 
 **Conclusion:** effective as a benchmark harness repair. It proves the current Android build benchmark remains runnable after the load/query changes, and the Gradle-run result is in the same range as the direct JMH control run. The end-to-end guardrail also passes under the 4 GB heap constraint. This attempt does not change product build, save, load, or query behavior.
+
+### 2026-07-25 — Attempt 010: Explorer Android memory JMH baseline
+
+**Goal:** establish a reproducible JMH baseline for long-running `graphite-explore` memory retention before changing explorer behavior. The benchmark uses the Android-scale mapped graph and keeps a Javalin explorer process alive while issuing HTTP requests against the real route handlers.
+
+**Benchmark design:** add `ExplorerMemoryBenchmark` in the `explore` module with retained-heap aux counters. Each benchmark forces GC before and after the request sequence and reports:
+
+- `usedHeapBeforeBytes`
+- `usedHeapAfterBytes`
+- `retainedHeapBytes`
+
+The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as the existing large-corpus JMH harnesses. Persisted graphs can be supplied via `-Dandroid.graph.path`; otherwise the Android fixture is built and saved once per JMH fork.
+
+**Baseline scenarios:**
+
+- `android_initialExplorerSession`: `/api/info`, `/api/overview?limit=200`, `/api/methods?limit=200`
+- `android_browserForwardExploration`: repeated node detail/outgoing/subgraph requests, passing `direction=outgoing` to the subgraph endpoint. Current main ignores that parameter, so this captures the pre-optimization behavior where subgraph expansion still traverses incoming edges.
+
+**Validation command:**
+
+```
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_.*' --no-daemon
+```
+
+**Result:**
+
+| Benchmark | Mode | Count | Score | Retained heap | Used heap before | Used heap after |
+|-----------|------|-------|-------|---------------|------------------|-----------------|
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` | ss | 1 | `2190.773 ms/op` | `215089672 B` | `122481864 B` | `337571536 B` |
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` | ss | 1 | `14451.838 ms/op` | `713390624 B` | `122877128 B` | `836267752 B` |
+
+**Conclusion:** baseline established. The initial explorer session retains ~713 MB after forced GC because current `/api/info` scans every node's outgoing edges and forces edge traversal structures resident. Forward browser exploration retains ~215 MB because current subgraph expansion ignores `direction=outgoing` and still traverses incoming edges, which initializes the backward adjacency path. This commit is a benchmark harness and documentation baseline only; it does not change explorer runtime behavior.
