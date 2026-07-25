@@ -11,11 +11,13 @@ import io.johnsonlee.graphite.webgraph.GraphStore
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
+import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.Callable
 
 private const val DEFAULT_PORT = 8080
 private const val DEFAULT_PORT_TEXT = "8080"
+private const val DEFAULT_LOAD_MODE_TEXT = "LAZY"
 
 @Command(
     name = "graphite-explore",
@@ -30,24 +32,39 @@ class ExploreCommand : Callable<Int> {
     @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = DEFAULT_PORT_TEXT)
     var port: Int = DEFAULT_PORT
 
+    @Option(
+        names = ["--load-mode"],
+        description = [
+            "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to LAZY to keep long-running explorer RSS stable."
+        ],
+        defaultValue = DEFAULT_LOAD_MODE_TEXT
+    )
+    var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.LAZY
+
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     override fun call(): Int {
-        val graph = GraphStore.load(graphDir)
-        System.err.println("Loaded graph from $graphDir")
+        val graph = GraphStore.load(graphDir, loadMode)
+        System.err.println("Loaded graph from $graphDir using $loadMode mode")
 
-        val app = Javalin.create { config ->
-            config.jsonMapper(JavalinGson(gson))
-            config.staticFiles.add("/web")
-        }.start(port)
+        var app: Javalin? = null
+        try {
+            app = Javalin.create { config ->
+                config.jsonMapper(JavalinGson(gson))
+                config.staticFiles.add("/web")
+            }.start(port)
 
-        registerApiRoutes(app, graph)
+            registerApiRoutes(app, graph)
 
-        System.err.println("Web UI: http://localhost:$port")
-        System.err.println("Press Ctrl+C to stop")
+            System.err.println("Web UI: http://localhost:${app.port()}")
+            System.err.println("Press Ctrl+C to stop")
 
-        Thread.currentThread().join()
-        return 0
+            Thread.currentThread().join()
+            return 0
+        } finally {
+            app?.stop()
+            (graph as? Closeable)?.close()
+        }
     }
 
     internal fun registerApiRoutes(app: Javalin, graph: Graph) {

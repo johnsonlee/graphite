@@ -42,6 +42,9 @@ open class ExplorerMemoryBenchmark {
     @Param("3")
     var repeats: Int = 0
 
+    @Param("LAZY")
+    lateinit var loadMode: String
+
     private lateinit var graph: Graph
     private lateinit var app: Javalin
     private var port: Int = 0
@@ -49,7 +52,10 @@ open class ExplorerMemoryBenchmark {
 
     @Setup
     fun setup() {
-        graph = GraphStore.loadMapped(ExplorerBenchmarkCorpus.persistedAndroidGraph())
+        graph = GraphStore.load(
+            ExplorerBenchmarkCorpus.persistedAndroidGraph(),
+            GraphStore.LoadMode.valueOf(loadMode)
+        )
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
         }.start(0)

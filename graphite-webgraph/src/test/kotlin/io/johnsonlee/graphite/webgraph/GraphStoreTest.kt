@@ -1444,6 +1444,23 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `load with LAZY mode preserves all graph operations`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-lazy-mode-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir, GraphStore.LoadMode.LAZY)
+            try {
+                assertGraphOperations(graph, loaded)
+            } finally {
+                (loaded as? Closeable)?.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `loadLazy preserves all graph operations`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-lazy-test")

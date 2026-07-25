@@ -770,3 +770,46 @@ Compared with the Attempt 010 baseline, the current initial session is `~93.9%` 
 | `GraphEndToEndBenchmark.android_build_save_load_query` | `115782.725 ms/op` | `107538.184 ms/op` | no regression |
 
 **Conclusion:** effective. The long-running explorer memory growth was not a JVM leak in this scenario; it was full method metadata being pinned by seemingly bounded explorer routes. Bounded method count/slice APIs keep initial explorer startup effectively flat on heap while preserving full metadata behavior for routes that explicitly need it.
+
+### 2026-07-26 — Attempt 014: Stable explorer resident memory defaults
+
+**Root cause:** after the bounded route fixes, the remaining long-run symptom is not only heap pressure. `graphite-explore` opens graphs through `GraphStore.load()`, whose `AUTO` mode picks `MAPPED` for large graphs. A memory-mapped `graph.nodedata` file does not allocate JVM heap, but every node page touched over time can become resident and show up in process RSS. For a 500 MB graph this looks like a service that only grows even after GC, especially when multiple microservice graphs are queried over a long session.
+
+Two smaller long-lived retention paths were also present:
+
+- `LazyWebGraphBackedGraph` kept every per-thread `RandomAccessFile` in a strong list, so retired Jetty worker threads could leave handles reachable until graph close.
+- `ExpressionEvaluator` kept an unbounded regex cache inside long-lived query execution objects.
+
+**Change:**
+
+- add `GraphStore.LoadMode.LAZY` as an explicit load mode
+- make `graphite-explore` default to `--load-mode LAZY` so long-running explorer processes use on-demand disk reads instead of mmap residency
+- keep `--load-mode MAPPED` available for short-lived local exploration where faster node reads matter more than stable RSS
+- close the Javalin app and graph in `ExploreCommand.call()` when the service is interrupted or startup fails
+- store lazy graph `RandomAccessFile` handles in a weak set so dead worker threads are not strongly retained by the graph
+- bound the Cypher regex cache to a synchronized 256-entry LRU
+- update `ExplorerMemoryBenchmark` to measure the explorer default load mode, with a `loadMode` JMH parameter for explicit comparisons
+
+**Build/save impact:** none. The persisted format is unchanged. `GraphStore.load(dir)` keeps its existing `AUTO` behavior for library callers; the stable-memory default is scoped to the long-running explorer CLI.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test :cypher:test :explore:test --no-daemon
+./gradlew :explore:compileJmhKotlin --no-daemon
+./gradlew koverLog --no-daemon
+./gradlew check -S --no-daemon
+```
+
+**Result:** all validations passed. Coverage remains above the project gate:
+
+| Module | Line coverage |
+|--------|---------------|
+| `core` | `98.1016%` |
+| `cypher` | `98.0652%` |
+| `explore` | `98.5823%` |
+| `query` | `100%` |
+| `sootup` | `98.2783%` |
+| `webgraph` | `98.9037%` |
+
+**Conclusion:** this addresses the long-running service waterline directly. The explorer no longer defaults to a load mode whose RSS naturally increases as more mapped pages are touched, and the remaining process-level caches introduced by queries/worker threads are bounded or weakly held.

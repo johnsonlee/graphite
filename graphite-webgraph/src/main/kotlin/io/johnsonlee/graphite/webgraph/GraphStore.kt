@@ -185,6 +185,7 @@ object GraphStore {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
         return when (mode) {
             LoadMode.EAGER -> loadEager(dir)
+            LoadMode.LAZY -> { ensureNodeIndex(dir); loadLazy(dir) }
             LoadMode.MAPPED -> { ensureNodeIndex(dir); loadMapped(dir) }
             LoadMode.AUTO -> {
                 val (_, nodeCount) = readNodeDataHeader(dir)
@@ -203,6 +204,8 @@ object GraphStore {
     enum class LoadMode {
         /** All nodes deserialized into JVM heap. Fastest queries, highest memory. */
         EAGER,
+        /** Node data read from disk on demand. Stable RSS for long-running services. */
+        LAZY,
         /** Node data memory-mapped via OS page cache. 75% less heap, slightly slower queries. */
         MAPPED,
         /** Auto-select based on graph size (< 1M nodes → [EAGER], >= 1M → [MAPPED]). */

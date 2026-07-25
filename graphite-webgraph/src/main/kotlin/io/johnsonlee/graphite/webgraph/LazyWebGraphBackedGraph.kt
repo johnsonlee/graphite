@@ -19,6 +19,8 @@ import java.io.DataInputStream
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
+import java.util.Collections
+import java.util.WeakHashMap
 
 /**
  * A [Graph] backed by WebGraph compression for edges and lazy disk reads for nodes.
@@ -61,7 +63,8 @@ internal class LazyWebGraphBackedGraph(
     override val resources: ResourceAccessor
         get() = resourceAccessor.value
 
-    private val openRafs = java.util.Collections.synchronizedList(mutableListOf<RandomAccessFile>())
+    private val openRafs: MutableSet<RandomAccessFile> =
+        Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
 
     private val rafLocal = ThreadLocal.withInitial {
         RandomAccessFile(nodeDataFile, "r").also { openRafs.add(it) }
@@ -201,8 +204,11 @@ internal class LazyWebGraphBackedGraph(
         metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
-        openRafs.forEach { runCatching { it.close() } }
-        openRafs.clear()
+        val rafs = synchronized(openRafs) {
+            openRafs.toList().also { openRafs.clear() }
+        }
+        rafs.forEach { runCatching { it.close() } }
+        rafLocal.remove()
     }
 
     private fun readNodeAt(offset: Long): Node {

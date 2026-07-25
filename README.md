@@ -79,6 +79,9 @@ graphite query --format json /data/app-graph \
 
 # Launch the web UI
 graphite-explore /data/app-graph --port 8080
+
+# Use mmap explicitly for short-lived local exploration when peak RSS is acceptable
+graphite-explore /data/app-graph --load-mode MAPPED
 ```
 
 ## Kotlin API
@@ -131,6 +134,7 @@ val graph = GraphStore.load(Path.of("/data/app-graph"))
 
 // Or force a specific strategy
 val graph = GraphStore.load(dir, GraphStore.LoadMode.EAGER)   // always in-heap
+val graph = GraphStore.load(dir, GraphStore.LoadMode.LAZY)    // on-demand disk reads, stable RSS
 val graph = GraphStore.load(dir, GraphStore.LoadMode.MAPPED)  // always mmap
 ```
 
@@ -308,6 +312,9 @@ Start the Explorer first, then LLMs can query the graph:
 ```bash
 # Start Explorer
 graphite-explore /path/to/saved-graph
+
+# Explorer defaults to --load-mode LAZY so long-running servers keep RSS stable.
+# Use --load-mode MAPPED only when faster node reads matter more than RSS growth.
 
 # LLM can now use tools: openapi, cypher, resources, resource, api_spec,
 # c4, nodes, methods, call_sites, annotations, etc.
