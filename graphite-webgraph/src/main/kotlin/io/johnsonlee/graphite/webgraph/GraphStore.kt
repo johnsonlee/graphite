@@ -445,6 +445,7 @@ object GraphStore {
         private val adj: PrecomputedAdjacency
     ) : ImmutableGraph() {
         override fun numNodes(): Int = adj.numNodes
+        override fun numArcs(): Long = adj.offsets[adj.numNodes]
         override fun randomAccess(): Boolean = true
         override fun outdegree(x: Int): Int = adj.outdegree(x)
         override fun successorArray(x: Int): IntArray = adj.successorArray(x)

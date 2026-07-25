@@ -70,6 +70,8 @@ internal class WebGraphBackedGraph(
                 .filter { type.isAssignableFrom(it.key) }
                 .sumOf { it.value.size.toLong() }
 
+    override fun edgeCount(): Long = cumulativeOutdeg.last()
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         if (nodeIdx >= forward.numNodes()) return emptySequence()

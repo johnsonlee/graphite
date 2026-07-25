@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
  * - Int2ObjectOpenHashMap: ~40% less memory than HashMap<NodeId, V>
  * - ObjectArrayList: ~20% less memory than ArrayList with better cache locality
  */
+@Suppress("LongParameterList", "TooManyFunctions")
 class DefaultGraph private constructor(
     private val nodesById: Int2ObjectOpenHashMap<Node>,
     private val outgoingEdges: Int2ObjectOpenHashMap<List<Edge>>,
@@ -39,7 +40,8 @@ class DefaultGraph private constructor(
     private val rawBranchScopes: Array<RawBranchScope>,
     override val resources: ResourceAccessor,
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
-    private val nodesByType: Map<Class<out Node>, List<Node>>
+    private val nodesByType: Map<Class<out Node>, List<Node>>,
+    private val edgeCount: Long
 ) : Graph {
 
     /**
@@ -91,6 +93,8 @@ class DefaultGraph private constructor(
             ?: nodesByType.entries.asSequence()
                 .filter { type.isAssignableFrom(it.key) }
                 .sumOf { it.value.size.toLong() }
+
+    override fun edgeCount(): Long = edgeCount
 
     override fun outgoing(id: NodeId): Sequence<Edge> =
         outgoingEdges.get(id.value)?.asSequence() ?: emptySequence()
@@ -245,6 +249,7 @@ class DefaultGraph private constructor(
 
             // Pre-compute node type index: concrete class -> list of nodes
             val nodesByType = nodes.values.groupBy { it::class.java }
+            val edgeCount = compactOutgoing.values.sumOf { it.size.toLong() }
 
             return DefaultGraph(
                 nodesById = nodes,
@@ -258,7 +263,8 @@ class DefaultGraph private constructor(
                 memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
                 rawBranchScopes = branchScopes.toTypedArray(),
                 resources = resourceAccessor,
-                nodesByType = nodesByType
+                nodesByType = nodesByType,
+                edgeCount = edgeCount
             )
         }
     }

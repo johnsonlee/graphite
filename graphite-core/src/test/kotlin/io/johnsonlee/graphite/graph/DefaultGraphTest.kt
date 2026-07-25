@@ -165,6 +165,22 @@ class DefaultGraphTest {
     }
 
     @Test
+    fun `edgeCount returns precomputed edge total`() {
+        val from = NodeId.next()
+        val to1 = NodeId.next()
+        val to2 = NodeId.next()
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(from, 1))
+            .addNode(IntConstant(to1, 2))
+            .addNode(IntConstant(to2, 3))
+            .addEdge(DataFlowEdge(from, to1, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(from, to2, isVirtual = false))
+            .build()
+
+        assertEquals(2L, graph.edgeCount())
+    }
+
+    @Test
     fun `outgoing returns empty for node without edges`() {
         val id = NodeId.next()
         val graph = DefaultGraph.Builder().addNode(IntConstant(id, 1)).build()

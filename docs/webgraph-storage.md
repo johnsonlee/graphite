@@ -664,3 +664,37 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 | `ExplorerMemoryBenchmark.android_initialExplorerSession` | ss | 1 | `14451.838 ms/op` | `713390624 B` | `122877128 B` | `836267752 B` |
 
 **Conclusion:** baseline established. The initial explorer session retains ~713 MB after forced GC because current `/api/info` scans every node's outgoing edges and forces edge traversal structures resident. Forward browser exploration retains ~215 MB because current subgraph expansion ignores `direction=outgoing` and still traverses incoming edges, which initializes the backward adjacency path. This commit is a benchmark harness and documentation baseline only; it does not change explorer runtime behavior.
+
+### 2026-07-25 — Attempt 011: Explorer route memory guardrails
+
+**Hypothesis:** long-running explorer memory growth is amplified by route handlers that force expensive lazy graph structures resident or materialize unbounded responses. The first optimization should avoid accidental heavy initialization in default browser workflows and cap request fan-out before objects are allocated.
+
+**Change:**
+
+- add optional `Graph.edgeCount()` so `/api/info` can report edge totals from precomputed graph state instead of scanning every node's outgoing edges
+- clamp list-style request limits for nodes, edges, resources, API spec, overview, and Cypher rows
+- reject resource content responses larger than 1 MiB before converting them to UTF-8 strings
+- cap subgraph traversal by depth, node count, and edge count
+- add `direction=outgoing|incoming|both` for `/api/subgraph`; the Web UI uses outgoing-only exploration by default so clicking nodes does not initialize backward adjacency
+- make incoming edge details explicit in the Web UI behind a "Load incoming" action
+- apply a Cypher endpoint row limit before execution by inserting/capping a `LIMIT` clause in the parsed query
+
+**Build/save impact:** no new persisted graph files are written and no build-time analysis index is added. `DefaultGraph` computes an edge total from its already-built outgoing edge lists; WebGraph-backed graphs answer from existing adjacency metadata.
+
+**Validation commands:**
+
+```
+./gradlew :core:check :webgraph:check :cypher:check :explore:check --no-daemon
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_.*' --no-daemon
+```
+
+**Result:**
+
+| Benchmark | Baseline | Attempt 011 | Change |
+|-----------|----------|-------------|--------|
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` time | `2190.773 ms/op` | `1082.164 ms/op` | `-1108.609 ms` / `-50.6%` |
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` retained heap | `215089672 B` | `72174632 B` | `-142915040 B` / `-66.4%` |
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` time | `14451.838 ms/op` | `2075.391 ms/op` | `-12376.447 ms` / `-85.6%` |
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` retained heap | `713390624 B` | `587591208 B` | `-125799416 B` / `-17.6%` |
+
+**Conclusion:** effective for default explorer interaction latency and materially effective for browser-style forward exploration retained heap. The initial session still retains ~588 MB after forced GC, so this does not fully solve long-running multi-service memory pressure. The remaining retained heap is dominated by routes that still deserialize or summarize broad graph slices, especially overview/API-style inspection paths; follow-up attempts should target streaming or cached bounded summaries rather than merely clamping response sizes.

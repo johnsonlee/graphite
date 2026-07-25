@@ -103,6 +103,11 @@ internal class MappedWebGraphBackedGraph(
                 .filter { type.isAssignableFrom(it.key) }
                 .sumOf { it.value.size.toLong() }
 
+    override fun edgeCount(): Long {
+        val arcs = forward.value.numArcs()
+        return if (arcs >= 0) arcs else cumulativeOutdeg.value.last()
+    }
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         val forwardGraph = forward.value

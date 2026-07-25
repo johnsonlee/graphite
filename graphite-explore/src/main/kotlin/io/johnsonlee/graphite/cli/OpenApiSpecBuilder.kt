@@ -42,7 +42,10 @@ internal class OpenApiSpecBuilder {
             "/api/node/{id}/outgoing" to mapOf(
                 "get" to operation(
                     "List outgoing edges for a node",
-                    parameters = listOf(pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)),
+                    parameters = listOf(
+                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
+                    ),
                     responses = mapOf(
                         "200" to response("Outgoing edges"),
                         "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
@@ -52,7 +55,10 @@ internal class OpenApiSpecBuilder {
             "/api/node/{id}/incoming" to mapOf(
                 "get" to operation(
                     "List incoming edges for a node",
-                    parameters = listOf(pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)),
+                    parameters = listOf(
+                        pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
+                    ),
                     responses = mapOf(
                         "200" to response("Incoming edges"),
                         "400" to response(API_ERROR_INVALID_NODE_ID_OPENAPI)
@@ -112,6 +118,7 @@ internal class OpenApiSpecBuilder {
                     ),
                     responses = mapOf(
                         "200" to response("Raw resource content"),
+                        "413" to response("Resource exceeds maximum response size"),
                         "404" to response(API_ERROR_RESOURCE_NOT_FOUND)
                     )
                 )
@@ -153,7 +160,8 @@ internal class OpenApiSpecBuilder {
                     "Build a local subgraph around a node",
                     parameters = listOf(
                         queryParameter(API_PARAM_CENTER, TYPE_INTEGER, true, "Center node id"),
-                        queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth")
+                        queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth"),
+                        queryParameter(API_PARAM_DIRECTION, TYPE_STRING, false, "outgoing, incoming, or both")
                     ),
                     responses = mapOf(
                         "200" to response("Subgraph"),
@@ -165,7 +173,8 @@ internal class OpenApiSpecBuilder {
                 "get" to operation(
                     "Execute a Cypher query via query string",
                     parameters = listOf(
-                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text")
+                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
                     ),
                     responses = mapOf(
                         "200" to response("Cypher result"),
@@ -174,7 +183,9 @@ internal class OpenApiSpecBuilder {
                 ),
                 "post" to operation(
                     "Execute a Cypher query via JSON body",
-                    parameters = emptyList(),
+                    parameters = listOf(
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
+                    ),
                     requestBody = mapOf(
                         FIELD_REQUIRED to true,
                         "content" to mapOf(

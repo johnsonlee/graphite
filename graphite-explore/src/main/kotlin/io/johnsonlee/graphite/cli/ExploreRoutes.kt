@@ -23,19 +23,23 @@ internal class ExploreRoutes {
         val cypherExecutor = CypherExecutor(graph)
 
         app.get("/api/info") { ctx ->
-            val nodeCount = graph.nodes(Node::class.java).count()
-            val edgeCount = graph.nodes(Node::class.java).sumOf { graph.outgoing(it.id).count().toLong() }
+            val nodeCount = graph.nodeCount(Node::class.java) ?: graph.nodes(Node::class.java).count().toLong()
+            val edgeCount = graph.edgeCount()
+                ?: graph.nodes(Node::class.java).sumOf { graph.outgoing(it.id).count().toLong() }
             ctx.json(mapOf(
                 API_FIELD_NODES to nodeCount,
                 API_FIELD_EDGES to edgeCount,
-                API_FIELD_METHODS to graph.methods(MethodPattern()).count(),
-                API_FIELD_CALL_SITES to graph.nodes(CallSiteNode::class.java).count()
+                API_FIELD_METHODS to graph.methods(MethodPattern()).count().toLong(),
+                API_FIELD_CALL_SITES to (
+                    graph.nodeCount(CallSiteNode::class.java)
+                        ?: graph.nodes(CallSiteNode::class.java).count().toLong()
+                    )
             ))
         }
 
         app.get("/api/nodes") { ctx ->
             val type = ctx.queryParam(API_PARAM_TYPE)
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
             val nodeClass = resolveNodeType(type)
             val nodes = graph.nodes(nodeClass).take(limit).toList()
             ctx.json(nodes.map { nodeToMap(it) })
@@ -58,7 +62,8 @@ internal class ExploreRoutes {
                 ctx.status(HTTP_BAD_REQUEST).result(API_ERROR_INVALID_NODE_ID)
                 return@get
             }
-            val edges = graph.outgoing(NodeId(id)).toList()
+            val limit = boundedLimit(ctx, DEFAULT_EDGE_LIMIT, MAX_EDGE_LIMIT)
+            val edges = graph.outgoing(NodeId(id)).take(limit).toList()
             ctx.json(edges.map { edgeToMap(it) })
         }
 
@@ -67,14 +72,15 @@ internal class ExploreRoutes {
                 ctx.status(HTTP_BAD_REQUEST).result(API_ERROR_INVALID_NODE_ID)
                 return@get
             }
-            val edges = graph.incoming(NodeId(id)).toList()
+            val limit = boundedLimit(ctx, DEFAULT_EDGE_LIMIT, MAX_EDGE_LIMIT)
+            val edges = graph.incoming(NodeId(id)).take(limit).toList()
             ctx.json(edges.map { edgeToMap(it) })
         }
 
         app.get("/api/call-sites") { ctx ->
             val classPattern = ctx.queryParam(API_PARAM_CLASS)
             val methodPattern = ctx.queryParam(API_PARAM_METHOD)
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
             val pattern = MethodPattern(declaringClass = classPattern, name = methodPattern)
             val callSites = graph.callSites(pattern).take(limit).toList()
             ctx.json(callSites.map { nodeToMap(it) })
@@ -83,7 +89,7 @@ internal class ExploreRoutes {
         app.get("/api/methods") { ctx ->
             val classPattern = ctx.queryParam(API_PARAM_CLASS)
             val namePattern = ctx.queryParam(API_PARAM_NAME)
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_ENTITY_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
             val pattern = MethodPattern(declaringClass = classPattern, name = namePattern)
             val methods = graph.methods(pattern).take(limit).toList()
             ctx.json(methods.map { mapOf(
@@ -108,7 +114,7 @@ internal class ExploreRoutes {
 
         app.get("/api/resources") { ctx ->
             val pattern = ctx.queryParam(API_PARAM_PATTERN) ?: "**"
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_RESOURCE_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_RESOURCE_LIMIT, MAX_RESOURCE_LIMIT)
             val resources = listResources(graph, pattern, limit)
             ctx.json(
                 mapOf(
@@ -128,7 +134,7 @@ internal class ExploreRoutes {
             }
             try {
                 val entry = resolveResourceEntry(graph, path)
-                val bytes = graph.resources.open(path).use { it.readBytes() }
+                val bytes = readBoundedResource(graph, path)
                 ctx.json(
                     mapOf(
                         API_FIELD_PATH to path,
@@ -138,13 +144,15 @@ internal class ExploreRoutes {
                         API_FIELD_CONTENT to bytes.toString(Charsets.UTF_8)
                     )
                 )
+            } catch (_: ResourceTooLargeException) {
+                ctx.status(HTTP_PAYLOAD_TOO_LARGE).result("$API_ERROR_RESOURCE_TOO_LARGE: $path")
             } catch (_: IOException) {
                 ctx.status(HTTP_NOT_FOUND).result("$API_ERROR_RESOURCE_NOT_FOUND: $path")
             }
         }
 
         app.get("/api/api-spec") { ctx ->
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_API_SPEC_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_API_SPEC_LIMIT, MAX_API_SPEC_LIMIT)
             val classPattern = ctx.queryParam(API_PARAM_CLASS)
             val endpoints = apiSpecExtractor.extract(graph)
                 .asSequence()
@@ -199,20 +207,23 @@ internal class ExploreRoutes {
         }
 
         app.get("/api/overview") { ctx ->
-            val limit = ctx.queryParam(API_PARAM_LIMIT)?.toIntOrNull() ?: DEFAULT_OVERVIEW_LIMIT
+            val limit = boundedLimit(ctx, DEFAULT_OVERVIEW_LIMIT, MAX_OVERVIEW_LIMIT)
             // Build class-level dependency graph from call sites
             val classEdges = mutableMapOf<Pair<String, String>, Int>() // (callerClass, calleeClass) -> count
             val classCounts = mutableMapOf<String, Int>() // class -> number of call sites
 
-            graph.nodes(CallSiteNode::class.java).forEach { cs ->
+            var scanned = 0
+            for (cs in graph.nodes(CallSiteNode::class.java)) {
+                if (scanned >= MAX_OVERVIEW_CALL_SITES) break
+                scanned++
                 val callerClass = cs.caller.declaringClass.className
                 val calleeClass = cs.callee.declaringClass.className
                 if (callerClass != calleeClass) {
                     val key = callerClass to calleeClass
-                    classEdges[key] = (classEdges[key] ?: 0) + 1
+                    incrementBounded(classEdges, key, MAX_OVERVIEW_EDGES)
                 }
-                classCounts[callerClass] = (classCounts[callerClass] ?: 0) + 1
-                classCounts[calleeClass] = (classCounts[calleeClass] ?: 0) + 1
+                incrementBounded(classCounts, callerClass, MAX_OVERVIEW_CLASSES)
+                incrementBounded(classCounts, calleeClass, MAX_OVERVIEW_CLASSES)
             }
 
             // Take top classes by call site involvement
@@ -252,8 +263,12 @@ internal class ExploreRoutes {
                 ctx.status(HTTP_BAD_REQUEST).result("Missing 'center' parameter")
                 return@get
             }
-            val depth = ctx.queryParam(API_PARAM_DEPTH)?.toIntOrNull() ?: DEFAULT_SUBGRAPH_DEPTH
-            val subgraph = buildSubgraph(graph, NodeId(centerId), depth)
+            val depth = boundedDepth(ctx.queryParam(API_PARAM_DEPTH))
+            val direction = resolveSubgraphDirection(ctx.queryParam(API_PARAM_DIRECTION)) ?: run {
+                ctx.status(HTTP_BAD_REQUEST).result("Invalid 'direction' parameter")
+                return@get
+            }
+            val subgraph = buildSubgraph(graph, NodeId(centerId), depth, direction)
             ctx.json(subgraph)
         }
 
@@ -268,7 +283,7 @@ internal class ExploreRoutes {
                 }
             }
             try {
-                val result = cypherExecutor.execute(query)
+                val result = cypherExecutor.execute(query, boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT))
                 ctx.json(mapOf(
                     API_FIELD_COLUMNS to result.columns,
                     API_FIELD_ROWS to result.rows,
@@ -285,7 +300,7 @@ internal class ExploreRoutes {
                 return@get
             }
             try {
-                val result = cypherExecutor.execute(query)
+                val result = cypherExecutor.execute(query, boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT))
                 ctx.json(mapOf(
                     API_FIELD_COLUMNS to result.columns,
                     API_FIELD_ROWS to result.rows,
@@ -297,24 +312,37 @@ internal class ExploreRoutes {
         }
     }
 
-    internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> {
+    internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =
+        buildSubgraph(graph, center, depth, SubgraphDirection.BOTH)
+
+    @Suppress("NestedBlockDepth")
+    private fun buildSubgraph(
+        graph: Graph,
+        center: NodeId,
+        depth: Int,
+        direction: SubgraphDirection
+    ): Map<String, Any> {
         val visitedNodes = mutableSetOf<Int>()
         val nodes = mutableListOf<Map<String, Any?>>()
         val edges = mutableListOf<Map<String, Any?>>()
 
         fun visit(nodeId: NodeId, remaining: Int) {
-            if (!visitedNodes.add(nodeId.value) || remaining < 0) return
-            val node = graph.node(nodeId) ?: return
-            nodes.add(nodeToMap(node))
-
-            if (remaining > 0) {
-                for (edge in graph.outgoing(nodeId)) {
+            fun traverse(candidates: Sequence<Edge>, nextNode: (Edge) -> NodeId) {
+                for (edge in candidates) {
+                    if (edges.size >= MAX_SUBGRAPH_EDGES) break
                     edges.add(edgeToMap(edge))
-                    visit(edge.to, remaining - 1)
+                    visit(nextNode(edge), remaining - 1)
                 }
-                for (edge in graph.incoming(nodeId)) {
-                    edges.add(edgeToMap(edge))
-                    visit(edge.from, remaining - 1)
+            }
+
+            if (nodes.size < MAX_SUBGRAPH_NODES && visitedNodes.add(nodeId.value) && remaining >= 0) {
+                val node = graph.node(nodeId)
+                if (node != null) {
+                    nodes.add(nodeToMap(node))
+                    if (remaining > 0) {
+                        if (direction.includeOutgoing) traverse(graph.outgoing(nodeId)) { it.to }
+                        if (direction.includeIncoming) traverse(graph.incoming(nodeId)) { it.from }
+                    }
                 }
             }
         }
@@ -335,6 +363,36 @@ internal class ExploreRoutes {
             .toList()
     }
 
+    private fun readBoundedResource(graph: Graph, path: String): ByteArray =
+        graph.resources.open(path).use { input ->
+            val bytes = input.readNBytes(MAX_RESOURCE_BYTES + 1)
+            if (bytes.size > MAX_RESOURCE_BYTES) throw ResourceTooLargeException()
+            bytes
+        }
+
+    private fun boundedLimit(ctx: io.javalin.http.Context, default: Int, max: Int): Int =
+        boundedLimit(ctx.queryParam(API_PARAM_LIMIT), default, max)
+
+    private fun boundedLimit(raw: String?, default: Int, max: Int): Int =
+        (raw?.toIntOrNull() ?: default).coerceIn(0, max)
+
+    private fun boundedDepth(raw: String?): Int =
+        (raw?.toIntOrNull() ?: DEFAULT_SUBGRAPH_DEPTH).coerceAtMost(MAX_SUBGRAPH_DEPTH)
+
+    private fun resolveSubgraphDirection(raw: String?): SubgraphDirection? =
+        when (raw?.lowercase()) {
+            null, "both" -> SubgraphDirection.BOTH
+            "outgoing" -> SubgraphDirection.OUTGOING
+            "incoming" -> SubgraphDirection.INCOMING
+            else -> null
+        }
+
+    private fun <K> incrementBounded(counts: MutableMap<K, Int>, key: K, maxKeys: Int) {
+        if (key in counts || counts.size < maxKeys) {
+            counts[key] = (counts[key] ?: 0) + 1
+        }
+    }
+
 
     private fun resolveC4ResponseFormat(accept: String?, queryFormat: String?): String {
         val accepted = accept.orEmpty().split(',')
@@ -353,12 +411,40 @@ internal class ExploreRoutes {
     companion object {
         private const val HTTP_BAD_REQUEST = 400
         private const val HTTP_NOT_FOUND = 404
+        private const val HTTP_PAYLOAD_TOO_LARGE = 413
 
         private const val DEFAULT_ENTITY_LIMIT = 50
+        private const val DEFAULT_EDGE_LIMIT = 200
         private const val DEFAULT_RESOURCE_LIMIT = 100
         private const val DEFAULT_API_SPEC_LIMIT = 200
         private const val DEFAULT_OVERVIEW_LIMIT = 200
+        private const val DEFAULT_CYPHER_ROW_LIMIT = 1_000
         private const val DEFAULT_SUBGRAPH_DEPTH = 2
+        private const val MAX_ENTITY_LIMIT = 5_000
+        private const val MAX_EDGE_LIMIT = 2_000
+        private const val MAX_RESOURCE_LIMIT = 1_000
+        private const val MAX_API_SPEC_LIMIT = 2_000
+        private const val MAX_OVERVIEW_LIMIT = 1_000
+        private const val MAX_OVERVIEW_CALL_SITES = 100_000
+        private const val MAX_OVERVIEW_CLASSES = 20_000
+        private const val MAX_OVERVIEW_EDGES = 50_000
+        private const val MAX_CYPHER_ROW_LIMIT = 5_000
+        private const val MAX_SUBGRAPH_DEPTH = 4
+        private const val MAX_SUBGRAPH_NODES = 2_000
+        private const val MAX_SUBGRAPH_EDGES = 5_000
+        private const val MAX_RESOURCE_BYTES = 1_048_576
+        private const val API_ERROR_RESOURCE_TOO_LARGE = "Resource exceeds maximum response size"
+    }
+
+    private class ResourceTooLargeException : RuntimeException()
+
+    private enum class SubgraphDirection(
+        val includeOutgoing: Boolean,
+        val includeIncoming: Boolean
+    ) {
+        OUTGOING(includeOutgoing = true, includeIncoming = false),
+        INCOMING(includeOutgoing = false, includeIncoming = true),
+        BOTH(includeOutgoing = true, includeIncoming = true)
     }
 
 }

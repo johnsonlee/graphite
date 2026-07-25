@@ -18,6 +18,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
  * 2. Queryable - supports efficient traversal and pattern matching
  * 3. Composable - can be built incrementally from different sources
  */
+@Suppress("TooManyFunctions")
 interface Graph {
     /**
      * Get a node by its ID
@@ -35,6 +36,12 @@ interface Graph {
      * to indicate callers should fall back to [nodes].
      */
     fun nodeCount(type: Class<out Node>): Long? = null
+
+    /**
+     * Return a precomputed edge count when the graph can answer without
+     * scanning every node's adjacency list.
+     */
+    fun edgeCount(): Long? = null
 
     /**
      * Get all outgoing edges from a node

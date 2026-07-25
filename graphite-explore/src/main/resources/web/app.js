@@ -93,12 +93,11 @@ async function loadInitialGraph() {
 }
 
 async function showNodeDetail(nodeId) {
-    const [nodeRes, outRes, inRes] = await Promise.all([
-        fetch('/api/node/' + nodeId), fetch('/api/node/' + nodeId + '/outgoing'), fetch('/api/node/' + nodeId + '/incoming')
+    const [nodeRes, outRes] = await Promise.all([
+        fetch('/api/node/' + nodeId), fetch('/api/node/' + nodeId + '/outgoing?limit=200')
     ]);
     const node = await nodeRes.json();
     const outgoing = await outRes.json();
-    const incoming = await inRes.json();
 
     // Highlight in graph
     cy.elements().removeClass('highlighted');
@@ -117,20 +116,30 @@ async function showNodeDetail(nodeId) {
         html += '</div>';
     }
 
-    if (incoming.length > 0) {
-        html += '<div class="detail-block"><h4>Incoming (' + incoming.length + ')</h4>';
-        incoming.slice(0, 20).forEach(e => {
-            html += '<div class="detail-edge" onclick="loadSubgraph(' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
-        });
-        if (incoming.length > 20) html += '<div class="hint">...and ' + (incoming.length - 20) + ' more</div>';
-        html += '</div>';
-    }
+    html += '<div class="detail-block" id="incoming-block"><button onclick="loadIncomingEdges(' + nodeId + ')">Load incoming</button></div>';
 
     panel.innerHTML = html;
 }
 
+async function loadIncomingEdges(nodeId) {
+    const block = document.getElementById('incoming-block');
+    block.innerHTML = '<h4>Incoming</h4><div class="hint">Loading...</div>';
+    const res = await fetch('/api/node/' + nodeId + '/incoming?limit=200');
+    const incoming = await res.json();
+    let html = '<h4>Incoming (' + incoming.length + ')</h4>';
+    if (incoming.length > 0) {
+        incoming.slice(0, 20).forEach(e => {
+            html += '<div class="detail-edge" onclick="loadSubgraph(' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
+        });
+        if (incoming.length > 20) html += '<div class="hint">...and ' + (incoming.length - 20) + ' more</div>';
+    } else {
+        html += '<div class="hint">None</div>';
+    }
+    block.innerHTML = html;
+}
+
 async function loadSubgraph(centerId, depth) {
-    const res = await fetch('/api/subgraph?center=' + centerId + '&depth=' + depth);
+    const res = await fetch('/api/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
     const data = await res.json();
     renderGraph(data, centerId);
     document.getElementById('graph-info').textContent = data.nodes.length + ' nodes, ' + data.edges.length + ' edges';
@@ -256,7 +265,7 @@ async function loadCypherResults(nodeIds) {
 
     for (var i = 0; i < ids.length; i++) {
         try {
-            var res = await fetch('/api/subgraph?center=' + ids[i] + '&depth=1');
+            var res = await fetch('/api/subgraph?center=' + ids[i] + '&depth=1&direction=outgoing');
             var data = await res.json();
             data.nodes.forEach(function(n) { if (!allNodes.has(n.id)) allNodes.set(n.id, n); });
             data.edges.forEach(function(e) { allEdges.push(e); });

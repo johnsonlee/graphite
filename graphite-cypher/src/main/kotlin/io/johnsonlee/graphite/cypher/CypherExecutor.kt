@@ -50,25 +50,81 @@ class CypherExecutor(private val graph: Graph) {
     fun execute(cypher: String): CypherResult {
         // 1. Parse Cypher text into internal AST clauses
         val clauses = CypherDslAdapter.parse(cypher)
+        return executeClauses(clauses, maxRows = null)
+    }
 
-        // 2. Handle UNION by splitting into sub-queries
+    fun execute(cypher: String, maxRows: Int): CypherResult {
+        require(maxRows >= 0) { "maxRows must be non-negative" }
+        val clauses = CypherDslAdapter.parse(cypher)
+        return executeClauses(applyMaxRows(clauses, maxRows), maxRows)
+    }
+
+    private fun executeClauses(clauses: List<CypherClause>, maxRows: Int?): CypherResult {
+        // Handle UNION by splitting into sub-queries
         val unionIndex = clauses.indexOfFirst { it is CypherClause.Union }
         if (unionIndex >= 0) {
-            return executeUnion(clauses)
+            return executeUnion(clauses, maxRows)
         }
 
-        // 3. Execute via pipeline
+        // Execute via pipeline
         val raw = pipeline.execute(clauses)
 
-        // 4. Post-process: convert Node values to property maps
+        // Post-process: convert Node values to property maps
         return materializeResult(raw)
+    }
+
+    private fun applyMaxRows(clauses: List<CypherClause>, maxRows: Int): List<CypherClause> {
+        val bounded = mutableListOf<CypherClause>()
+        val segment = mutableListOf<CypherClause>()
+
+        fun flushSegment() {
+            bounded.addAll(applyMaxRowsToSegment(segment, maxRows))
+            segment.clear()
+        }
+
+        clauses.forEach { clause ->
+            if (clause is CypherClause.Union) {
+                flushSegment()
+                bounded.add(clause)
+            } else {
+                segment.add(clause)
+            }
+        }
+        flushSegment()
+        return bounded
+    }
+
+    private fun applyMaxRowsToSegment(segment: List<CypherClause>, maxRows: Int): List<CypherClause> {
+        val limitIndex = segment.indexOfLast { it is CypherClause.Limit }
+        return if (limitIndex < 0) {
+            segment + CypherClause.Limit(CypherExpr.Literal(maxRows))
+        } else {
+            val limit = segment[limitIndex] as CypherClause.Limit
+            val literalLimit = literalLimitCount(limit.count)
+            if (literalLimit != null && literalLimit > maxRows) {
+                segment.toMutableList().apply {
+                    this[limitIndex] = CypherClause.Limit(CypherExpr.Literal(maxRows))
+                }
+            } else {
+                segment
+            }
+        }
+    }
+
+    private fun literalLimitCount(expr: CypherExpr): Int? {
+        val literal = expr as? CypherExpr.Literal ?: return null
+        return when (val value = literal.value) {
+            is Number -> value.toInt()
+            is String -> value.toIntOrNull()
+            else -> null
+        }
     }
 
     /**
      * Execute a UNION query by splitting into sub-queries, executing each,
      * and combining results.
      */
-    private fun executeUnion(clauses: List<CypherClause>): CypherResult {
+    private fun executeUnion(clauses: List<CypherClause>, maxRows: Int?): CypherResult {
         val segments = mutableListOf<List<CypherClause>>()
         var current = mutableListOf<CypherClause>()
         var unionAll = false
@@ -93,8 +149,9 @@ class CypherExecutor(private val graph: Graph) {
         val columns = results.first().columns
         val combinedRows = results.flatMap { it.rows }
         val finalRows = if (unionAll) combinedRows else combinedRows.distinct()
+        val limitedRows = maxRows?.let { finalRows.take(it) } ?: finalRows
 
-        return CypherResult(columns, finalRows)
+        return CypherResult(columns, limitedRows)
     }
 
     /**

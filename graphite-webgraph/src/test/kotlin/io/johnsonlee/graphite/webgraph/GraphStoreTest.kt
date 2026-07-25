@@ -124,6 +124,20 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `round-trip exposes precomputed edge count`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            assertEquals(graph.edgeCount(), loaded.edgeCount())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves typed edge queries`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-test")
