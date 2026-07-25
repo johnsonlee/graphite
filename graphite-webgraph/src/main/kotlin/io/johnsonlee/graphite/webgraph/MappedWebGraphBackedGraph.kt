@@ -56,6 +56,7 @@ internal class MappedWebGraphBackedGraph(
     private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
     private val forwardLabels: Lazy<ByteArray>,
     private val cumulativeOutdeg: Lazy<LongArray>,
+    private val edgeCount: Long,
     private val comparisonMap: Lazy<Map<Long, BranchComparison>>,
     private val metadata: Lazy<GraphMetadata>,
     private val resourceAccessor: Lazy<ResourceAccessor>
@@ -103,10 +104,7 @@ internal class MappedWebGraphBackedGraph(
                 .filter { type.isAssignableFrom(it.key) }
                 .sumOf { it.value.size.toLong() }
 
-    override fun edgeCount(): Long {
-        val arcs = forward.value.numArcs()
-        return if (arcs >= 0) arcs else cumulativeOutdeg.value.last()
-    }
+    override fun edgeCount(): Long = edgeCount
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value

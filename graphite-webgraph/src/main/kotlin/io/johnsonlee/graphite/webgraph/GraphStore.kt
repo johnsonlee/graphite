@@ -264,6 +264,7 @@ object GraphStore {
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
+        val edgeCount = Files.size(dir.resolve(LABELS_FILE))
         val stringTable = StringTable.load(dir)
         val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val backward = lazy { loadBackward(forward.value) }
@@ -290,6 +291,7 @@ object GraphStore {
             nodeTypeIndex = nodeIndex.nodeTypeIndex,
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
+            edgeCount = edgeCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
@@ -309,6 +311,7 @@ object GraphStore {
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
+        val edgeCount = Files.size(dir.resolve(LABELS_FILE))
 
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
         val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
@@ -341,6 +344,7 @@ object GraphStore {
             nodeTypeIndex = nodeIndex.nodeTypeIndex,
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
+            edgeCount = edgeCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
