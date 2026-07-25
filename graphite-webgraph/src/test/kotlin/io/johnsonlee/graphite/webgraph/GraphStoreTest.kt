@@ -750,6 +750,38 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `lazy and mapped graphs expose method count and limited method slices`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-method-slice-test")
+        val loadedGraphs = mutableListOf<Graph>()
+        try {
+            GraphStore.save(graph, dir)
+            loadedGraphs += GraphStore.loadLazy(dir)
+            loadedGraphs += GraphStore.loadMapped(dir)
+
+            for (loaded in loadedGraphs) {
+                assertEquals(2L, loaded.methodCount())
+
+                val firstMethod = assertNotNull(loaded.methodSlice(MethodPattern(), 1))
+                assertEquals(1, firstMethod.size)
+
+                val barMethods = assertNotNull(loaded.methodSlice(MethodPattern(name = "bar"), 10))
+                assertEquals(1, barMethods.size)
+                assertEquals("bar", barMethods[0].name)
+
+                val missingMethods = assertNotNull(loaded.methodSlice(MethodPattern(name = "missing"), 10))
+                assertTrue(missingMethods.isEmpty())
+
+                val zeroLimit = assertNotNull(loaded.methodSlice(MethodPattern(), 0))
+                assertTrue(zeroLimit.isEmpty())
+            }
+        } finally {
+            loadedGraphs.forEach { (it as? Closeable)?.close() }
+            dir.toFile().deleteRecursively()
+        }
+    }
+
     // ========================================================================
     // Incoming edges on loaded graph
     // ========================================================================

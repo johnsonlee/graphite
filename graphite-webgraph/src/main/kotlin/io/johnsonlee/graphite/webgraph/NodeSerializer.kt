@@ -36,6 +36,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.MethodPattern
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -736,6 +737,34 @@ internal object NodeSerializer {
         }
 
         return GraphMetadata(methods, supertypes, subtypes, enumValues, classOrigins, artifactDependencies, memberAnnotations, branchScopes)
+    }
+
+    fun readMetadataMethodCount(dis: DataInputStream): Int {
+        readHeader(dis, MAGIC_METADATA)
+        return dis.readInt()
+    }
+
+    fun readMetadataMethodSlice(
+        dis: DataInputStream,
+        strings: StringTable,
+        pattern: MethodPattern,
+        limit: Int
+    ): List<MethodDescriptor> {
+        readHeader(dis, MAGIC_METADATA)
+        val methodCount = dis.readInt()
+        val boundedLimit = limit.coerceAtLeast(0)
+        if (boundedLimit == 0) return emptyList()
+
+        val result = ArrayList<MethodDescriptor>(minOf(methodCount, boundedLimit))
+        var remaining = methodCount
+        while (remaining > 0 && result.size < boundedLimit) {
+            val method = readMethodDescriptor(dis, strings)
+            if (pattern.matches(method)) {
+                result.add(method)
+            }
+            remaining--
+        }
+        return result
     }
 
     // ========================================================================

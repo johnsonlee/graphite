@@ -13,6 +13,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
+import java.io.BufferedInputStream
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.File
@@ -57,6 +58,8 @@ internal class MappedWebGraphBackedGraph(
     private val forwardLabels: Lazy<ByteArray>,
     private val cumulativeOutdeg: Lazy<LongArray>,
     private val edgeCount: Long,
+    private val metadataFile: File,
+    private val methodCount: Long,
     private val comparisonMap: Lazy<Map<Long, BranchComparison>>,
     private val metadata: Lazy<GraphMetadata>,
     private val resourceAccessor: Lazy<ResourceAccessor>
@@ -169,6 +172,13 @@ internal class MappedWebGraphBackedGraph(
 
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
         metadata.value.methods.values.asSequence().filter { pattern.matches(it) }
+
+    override fun methodCount(): Long = methodCount
+
+    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        DataInputStream(BufferedInputStream(metadataFile.inputStream())).use { dis ->
+            NodeSerializer.readMetadataMethodSlice(dis, stringTable, pattern, limit)
+        }
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]

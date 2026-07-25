@@ -29,7 +29,7 @@ internal class ExploreRoutes {
             ctx.json(mapOf(
                 API_FIELD_NODES to nodeCount,
                 API_FIELD_EDGES to edgeCount,
-                API_FIELD_METHODS to graph.methods(MethodPattern()).count().toLong(),
+                API_FIELD_METHODS to (graph.methodCount() ?: graph.methods(MethodPattern()).count().toLong()),
                 API_FIELD_CALL_SITES to (
                     graph.nodeCount(CallSiteNode::class.java)
                         ?: graph.nodes(CallSiteNode::class.java).count().toLong()
@@ -91,7 +91,7 @@ internal class ExploreRoutes {
             val namePattern = ctx.queryParam(API_PARAM_NAME)
             val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
             val pattern = MethodPattern(declaringClass = classPattern, name = namePattern)
-            val methods = graph.methods(pattern).take(limit).toList()
+            val methods = graph.methodSlice(pattern, limit) ?: graph.methods(pattern).take(limit).toList()
             ctx.json(methods.map { mapOf(
                 "signature" to it.signature,
                 API_FIELD_CLASS to it.declaringClass.className,

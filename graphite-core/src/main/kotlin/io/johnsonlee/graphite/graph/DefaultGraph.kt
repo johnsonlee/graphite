@@ -124,6 +124,11 @@ class DefaultGraph private constructor(
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
         methodIndex.values.asSequence().filter { pattern.matches(it) }
 
+    override fun methodCount(): Long = methodIndex.size.toLong()
+
+    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        methods(pattern).take(limit.coerceAtLeast(0)).toList()
+
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValues["$enumClass#$enumName"]
 

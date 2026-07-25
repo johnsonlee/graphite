@@ -129,6 +129,11 @@ internal class WebGraphBackedGraph(
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
         metadata.methods.values.asSequence().filter { pattern.matches(it) }
 
+    override fun methodCount(): Long = metadata.methods.size.toLong()
+
+    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        methods(pattern).take(limit.coerceAtLeast(0)).toList()
+
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.enumValues["$enumClass#$enumName"]
 

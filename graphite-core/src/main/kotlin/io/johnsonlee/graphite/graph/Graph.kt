@@ -80,6 +80,18 @@ interface Graph {
     fun methods(pattern: MethodPattern): Sequence<MethodDescriptor>
 
     /**
+     * Return a precomputed method count when the graph can answer without
+     * materializing every method descriptor.
+     */
+    fun methodCount(): Long? = null
+
+    /**
+     * Return up to [limit] methods matching [pattern] when the graph can do so
+     * without materializing the full method index.
+     */
+    fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
+
+    /**
      * Get the underlying values for an enum constant.
      * Enum constructors can have multiple user-defined arguments.
      *

@@ -95,6 +95,11 @@ object GraphStore {
 
     private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
 
+    private fun readMetadataMethodCount(metadataFile: Path): Long =
+        DataInputStream(BufferedInputStream(metadataFile.toFile().inputStream())).use { dis ->
+            NodeSerializer.readMetadataMethodCount(dis).toLong()
+        }
+
     /**
      * Save a graph to disk in WebGraph + native LAW format.
      *
@@ -265,6 +270,8 @@ object GraphStore {
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
         val edgeCount = Files.size(dir.resolve(LABELS_FILE))
+        val metadataFile = dir.resolve(METADATA_FILE)
+        val methodCount = readMetadataMethodCount(metadataFile)
         val stringTable = StringTable.load(dir)
         val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val backward = lazy { loadBackward(forward.value) }
@@ -292,6 +299,8 @@ object GraphStore {
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
             edgeCount = edgeCount,
+            metadataFile = metadataFile.toFile(),
+            methodCount = methodCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
@@ -312,6 +321,8 @@ object GraphStore {
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
         val nodeIndex = readNodeIndex(dir)
         val edgeCount = Files.size(dir.resolve(LABELS_FILE))
+        val metadataFile = dir.resolve(METADATA_FILE)
+        val methodCount = readMetadataMethodCount(metadataFile)
 
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
         val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
@@ -345,6 +356,8 @@ object GraphStore {
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
             edgeCount = edgeCount,
+            metadataFile = metadataFile.toFile(),
+            methodCount = methodCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
