@@ -813,3 +813,42 @@ Two smaller long-lived retention paths were also present:
 | `webgraph` | `98.9037%` |
 
 **Conclusion:** this addresses the long-running service waterline directly. The explorer no longer defaults to a load mode whose RSS naturally increases as more mapped pages are touched, and the remaining process-level caches introduced by queries/worker threads are bounded or weakly held.
+
+### 2026-07-26 — Attempt 015: Long-running explorer RSS waterline benchmark
+
+**Hypothesis:** the previous explorer memory benchmarks measured retained JVM heap after a small request sequence, but they did not prove the product requirement: a long-running explorer process should keep total process memory below 4 GiB and settle at a stable RSS waterline. The benchmark should fail when this contract is violated, not just report heap counters.
+
+**Change:**
+
+- add `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline`
+- sample process RSS through `/proc/self/status` on Linux and `ps` as a local fallback
+- keep existing heap counters and add committed heap, max heap, RSS before/after, max RSS, post-warmup RSS growth, and explicit limit counters
+- run a warmup phase followed by 256 measured cycles over 512 sampled graph nodes
+- include representative explorer traffic: `/api/info`, `/api/overview`, `/api/methods`, node detail, outgoing edges, outgoing subgraph expansion, and bounded Cypher
+- fail the benchmark when max RSS exceeds `4 GiB` or post-warmup RSS growth exceeds `512 MiB`
+
+**Build/save impact:** none. This is a JMH guardrail only; graph build, save, load, query, and HTTP behavior are unchanged.
+
+**Validation command:**
+
+```
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_longRunningExplorerWaterline' --no-daemon
+```
+
+**Result:**
+
+| Metric | Result |
+|--------|--------|
+| Score | `5929.583 ms/op` |
+| Max RSS | `845824000 B` |
+| RSS before | `801996800 B` |
+| RSS after | `845824000 B` |
+| Steady RSS before measured phase | `810778624 B` |
+| Post-warmup RSS growth | `35045376 B` |
+| RSS limit | `4294967296 B` |
+| Stable growth limit | `536870912 B` |
+| Max committed heap | `465567744 B` |
+| Max used heap | `366639840 B` |
+| RSS measurement available | `1` |
+
+**Conclusion:** effective as a verification guardrail. The long-running explorer benchmark now proves the current default `LAZY` explorer session stays well below 4 GiB total process RSS on the Android-scale graph and does not continue climbing after warmup. The measured max RSS is ~0.79 GiB, and post-warmup RSS growth is ~33.4 MiB.

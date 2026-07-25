@@ -24,6 +24,8 @@ import org.openjdk.jmh.annotations.TearDown
 import java.io.Closeable
 import java.net.HttpURLConnection
 import java.net.URI
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Comparator
@@ -45,8 +47,24 @@ open class ExplorerMemoryBenchmark {
     @Param("LAZY")
     lateinit var loadMode: String
 
+    @Param("512")
+    var sampledNodeCount: Int = 0
+
+    @Param("32")
+    var waterlineWarmupCycles: Int = 0
+
+    @Param("256")
+    var waterlineMeasuredCycles: Int = 0
+
+    @Param("4294967296")
+    var memoryLimitBytes: Long = 0
+
+    @Param("536870912")
+    var stableGrowthLimitBytes: Long = 0
+
     private lateinit var graph: Graph
     private lateinit var app: Javalin
+    private lateinit var sampledNodeIds: IntArray
     private var port: Int = 0
     private var centerNodeId: Int = 0
 
@@ -63,6 +81,7 @@ open class ExplorerMemoryBenchmark {
         port = app.port()
         centerNodeId = graph.nodes(CallSiteNode::class.java).firstOrNull()?.id?.value
             ?: graph.nodes(Node::class.java).first().id.value
+        sampledNodeIds = selectNodeSamples()
     }
 
     @TearDown
@@ -91,6 +110,105 @@ open class ExplorerMemoryBenchmark {
             bytes
         }
 
+    @Benchmark
+    fun android_longRunningExplorerWaterline(counters: ExplorerMemoryCounters): Long {
+        var bytes = 0L
+        var maxUsedHeapBytes = 0L
+        var maxCommittedHeapBytes = 0L
+        var maxResidentSetBytes = 0L
+
+        fun record(): MemorySample {
+            val sample = currentMemorySample()
+            maxUsedHeapBytes = maxOf(maxUsedHeapBytes, sample.usedHeapBytes)
+            maxCommittedHeapBytes = maxOf(maxCommittedHeapBytes, sample.committedHeapBytes)
+            maxResidentSetBytes = maxOf(maxResidentSetBytes, sample.residentSetBytes)
+            return sample
+        }
+
+        fun issue(path: String) {
+            bytes += request(path)
+            record()
+        }
+
+        fun issueCycle(cycle: Int) {
+            val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
+            issue("/api/node/$nodeId")
+            issue("/api/node/$nodeId/outgoing?limit=200")
+            if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
+                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
+            }
+            if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
+                issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
+            }
+        }
+
+        forceGc()
+        val before = record()
+        issue("/api/info")
+        issue("/api/overview?limit=200")
+        issue("/api/methods?limit=200")
+
+        repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle) }
+        forceGc()
+        val steadyBefore = record()
+
+        repeat(waterlineMeasuredCycles) { cycle ->
+            issueCycle(cycle + waterlineWarmupCycles)
+        }
+
+        forceGc()
+        val after = record()
+        val postWarmupResidentGrowthBytes = maxOf(0L, after.residentSetBytes - steadyBefore.residentSetBytes)
+
+        counters.usedHeapBeforeBytes = before.usedHeapBytes
+        counters.usedHeapAfterBytes = after.usedHeapBytes
+        counters.retainedHeapBytes = after.usedHeapBytes - before.usedHeapBytes
+        counters.committedHeapBeforeBytes = before.committedHeapBytes
+        counters.committedHeapAfterBytes = after.committedHeapBytes
+        counters.maxUsedHeapBytes = maxUsedHeapBytes
+        counters.maxCommittedHeapBytes = maxCommittedHeapBytes
+        counters.residentSetBeforeBytes = before.residentSetBytes
+        counters.residentSetAfterBytes = after.residentSetBytes
+        counters.steadyResidentSetBeforeBytes = steadyBefore.residentSetBytes
+        counters.maxResidentSetBytes = maxResidentSetBytes
+        counters.postWarmupResidentGrowthBytes = postWarmupResidentGrowthBytes
+        counters.memoryLimitBytes = memoryLimitBytes
+        counters.stableGrowthLimitBytes = stableGrowthLimitBytes
+        counters.residentSetMeasured = if (residentSetBytes() != null) 1 else 0
+
+        check(maxResidentSetBytes <= memoryLimitBytes) {
+            "Explorer RSS waterline exceeded limit: max=$maxResidentSetBytes limit=$memoryLimitBytes"
+        }
+        check(postWarmupResidentGrowthBytes <= stableGrowthLimitBytes) {
+            "Explorer RSS kept growing after warmup: growth=$postWarmupResidentGrowthBytes " +
+                "limit=$stableGrowthLimitBytes"
+        }
+
+        return bytes
+    }
+
+    private fun selectNodeSamples(): IntArray {
+        val target = sampledNodeCount.coerceAtLeast(1)
+        val nodeCount = graph.nodeCount(Node::class.java) ?: 0L
+        val sampled = linkedSetOf<Int>()
+        if (nodeCount > 0L) {
+            val stride = maxOf(1L, nodeCount / target)
+            repeat(target * CANDIDATE_MULTIPLIER) { index ->
+                val candidate = 1L + (index.toLong() * stride % nodeCount)
+                if (candidate <= Int.MAX_VALUE) {
+                    graph.node(io.johnsonlee.graphite.core.NodeId(candidate.toInt()))?.let { sampled += it.id.value }
+                }
+            }
+        }
+        if (sampled.isEmpty()) {
+            graph.nodes(Node::class.java).take(target).forEach { sampled += it.id.value }
+        }
+        return sampled.toIntArray().takeIf { it.isNotEmpty() } ?: intArrayOf(centerNodeId)
+    }
+
+    private fun cypherPath(query: String): String =
+        "/api/cypher?limit=10&query=${URLEncoder.encode(query, StandardCharsets.UTF_8)}"
+
     private fun request(path: String): Long {
         val connection = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
@@ -109,19 +227,33 @@ open class ExplorerMemoryBenchmark {
 
     private fun measureRetainedHeap(counters: ExplorerMemoryCounters, action: () -> Long): Long {
         forceGc()
-        val before = usedHeap()
+        val before = currentMemorySample()
         val bytes = action()
         forceGc()
-        val after = usedHeap()
-        counters.usedHeapBeforeBytes = before
-        counters.usedHeapAfterBytes = after
-        counters.retainedHeapBytes = after - before
+        val after = currentMemorySample()
+        counters.usedHeapBeforeBytes = before.usedHeapBytes
+        counters.usedHeapAfterBytes = after.usedHeapBytes
+        counters.retainedHeapBytes = after.usedHeapBytes - before.usedHeapBytes
+        counters.committedHeapBeforeBytes = before.committedHeapBytes
+        counters.committedHeapAfterBytes = after.committedHeapBytes
+        counters.maxUsedHeapBytes = maxOf(before.usedHeapBytes, after.usedHeapBytes)
+        counters.maxCommittedHeapBytes = maxOf(before.committedHeapBytes, after.committedHeapBytes)
+        counters.residentSetBeforeBytes = before.residentSetBytes
+        counters.residentSetAfterBytes = after.residentSetBytes
+        counters.maxResidentSetBytes = maxOf(before.residentSetBytes, after.residentSetBytes)
+        counters.residentSetMeasured = if (residentSetBytes() != null) 1 else 0
         return bytes
     }
 
-    private fun usedHeap(): Long {
+    private fun currentMemorySample(): MemorySample {
         val runtime = Runtime.getRuntime()
-        return runtime.totalMemory() - runtime.freeMemory()
+        val committedHeapBytes = runtime.totalMemory()
+        val usedHeapBytes = committedHeapBytes - runtime.freeMemory()
+        return MemorySample(
+            usedHeapBytes = usedHeapBytes,
+            committedHeapBytes = committedHeapBytes,
+            residentSetBytes = residentSetBytes() ?: committedHeapBytes
+        )
     }
 
     private fun forceGc() {
@@ -132,13 +264,56 @@ open class ExplorerMemoryBenchmark {
         }
     }
 
+    private fun residentSetBytes(): Long? =
+        residentSetBytesFromProcStatus() ?: residentSetBytesFromPs()
+
+    private fun residentSetBytesFromProcStatus(): Long? {
+        val status = Path.of("/proc/self/status")
+        if (!Files.isRegularFile(status)) return null
+        val line = Files.readAllLines(status).firstOrNull { it.startsWith("VmRSS:") } ?: return null
+        val kilobytes = line.split(WHITESPACE).firstNotNullOfOrNull { it.toLongOrNull() } ?: return null
+        return kilobytes * BYTES_PER_KIB
+    }
+
+    private fun residentSetBytesFromPs(): Long? {
+        val process = ProcessBuilder(
+            "ps",
+            "-o",
+            "rss=",
+            "-p",
+            ProcessHandle.current().pid().toString()
+        ).redirectErrorStream(true).start()
+        if (!process.waitFor(PS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            return null
+        }
+        if (process.exitValue() != 0) return null
+        return process.inputStream.bufferedReader().use { it.readText() }
+            .lineSequence()
+            .mapNotNull { it.trim().toLongOrNull() }
+            .firstOrNull()
+            ?.times(BYTES_PER_KIB)
+    }
+
     private companion object {
         private const val HTTP_TIMEOUT_MS = 120_000
         private const val GC_ATTEMPTS = 3
         private const val GC_PAUSE_MS = 100L
+        private const val SUBGRAPH_SAMPLE_INTERVAL = 8
+        private const val CYPHER_SAMPLE_INTERVAL = 16
+        private const val CANDIDATE_MULTIPLIER = 2
+        private const val BYTES_PER_KIB = 1024L
+        private const val PS_TIMEOUT_SECONDS = 2L
+        private val WHITESPACE = Regex("\\s+")
         private val HTTP_SUCCESS_RANGE = 200..299
     }
 }
+
+private data class MemorySample(
+    val usedHeapBytes: Long,
+    val committedHeapBytes: Long,
+    val residentSetBytes: Long
+)
 
 @State(Scope.Thread)
 @AuxCounters(AuxCounters.Type.EVENTS)
@@ -151,6 +326,42 @@ open class ExplorerMemoryCounters {
 
     @JvmField
     var retainedHeapBytes: Long = 0
+
+    @JvmField
+    var committedHeapBeforeBytes: Long = 0
+
+    @JvmField
+    var committedHeapAfterBytes: Long = 0
+
+    @JvmField
+    var maxUsedHeapBytes: Long = 0
+
+    @JvmField
+    var maxCommittedHeapBytes: Long = 0
+
+    @JvmField
+    var residentSetBeforeBytes: Long = 0
+
+    @JvmField
+    var residentSetAfterBytes: Long = 0
+
+    @JvmField
+    var steadyResidentSetBeforeBytes: Long = 0
+
+    @JvmField
+    var maxResidentSetBytes: Long = 0
+
+    @JvmField
+    var postWarmupResidentGrowthBytes: Long = 0
+
+    @JvmField
+    var memoryLimitBytes: Long = 0
+
+    @JvmField
+    var stableGrowthLimitBytes: Long = 0
+
+    @JvmField
+    var residentSetMeasured: Long = 0
 }
 
 private object ExplorerBenchmarkCorpus {
