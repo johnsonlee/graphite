@@ -504,6 +504,97 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `comparison lookup is skipped for non-control-flow edge labels`() {
+        val label = NodeSerializer.encodeEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+        val lookup = BranchComparisonLookup {
+            error("comparison lookup should not run for non-control-flow edges")
+        }
+
+        assertNull(comparisonForEdge(label, 1, 2, NodeSerializer.FORMAT_VERSION, lookup))
+    }
+
+    @Test
+    fun `mapped comparison lookup reads persisted comparisons by edge key`() {
+        val builder = DefaultGraph.Builder()
+        val n1 = IntConstant(NodeId.next(), 1)
+        val n2 = IntConstant(NodeId.next(), 2)
+        val n3 = IntConstant(NodeId.next(), 3)
+        val n4 = IntConstant(NodeId.next(), 4)
+        builder.addNode(n1)
+        builder.addNode(n2)
+        builder.addNode(n3)
+        builder.addNode(n4)
+
+        val first = BranchComparison(ComparisonOp.EQ, n3.id)
+        val second = BranchComparison(ComparisonOp.NE, n4.id)
+        builder.addEdge(ControlFlowEdge(n1.id, n2.id, ControlFlowKind.BRANCH_TRUE, first))
+        builder.addEdge(ControlFlowEdge(n2.id, n4.id, ControlFlowKind.BRANCH_FALSE, second))
+
+        val dir = Files.createTempDirectory("webgraph-mapped-comparison-test")
+        try {
+            GraphStore.save(builder.build(), dir)
+            val lookup = MappedBranchComparisonLookup.load(dir.resolve("graph.comparisons"))
+            val lazyLookup = LazyMappedBranchComparisonLookup(dir.resolve("graph.comparisons"))
+
+            assertEquals(first, lookup.find(edgeKey(n1.id, n2.id)))
+            assertEquals(second, lookup.find(edgeKey(n2.id, n4.id)))
+            assertNull(lookup.find(edgeKey(n3.id, n4.id)))
+            assertEquals(first, lazyLookup.find(edgeKey(n1.id, n2.id)))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun edgeKey(from: NodeId, to: NodeId): Long =
+        from.value.toLong() shl INT_BITS or (to.value.toLong() and UNSIGNED_INT_MASK)
+
+    @Test
+    fun `mapped comparison lookup handles empty and corrupt comparison files`() {
+        val emptyFile = Files.createTempFile("webgraph-empty-comparisons", ".bin")
+        val corruptFile = Files.createTempFile("webgraph-corrupt-comparisons", ".bin")
+        try {
+            DataOutputStream(emptyFile.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_COMPARISONS)
+                dos.writeInt(0)
+            }
+            DataOutputStream(corruptFile.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_COMPARISONS)
+                dos.writeInt(-1)
+            }
+
+            assertNull(MappedBranchComparisonLookup.load(emptyFile).find(1L))
+            assertFailsWith<IllegalArgumentException> {
+                MappedBranchComparisonLookup.load(corruptFile)
+            }
+        } finally {
+            Files.deleteIfExists(emptyFile)
+            Files.deleteIfExists(corruptFile)
+        }
+    }
+
+    @Test
+    fun `node offset indexes preserve missing sentinel grow and wide offsets`() {
+        val compact = IntNodeOffsetIndex(1)
+        assertEquals(-1L, compact.offset(0))
+        compact.ensureSize(3)
+        compact.set(2, 42L)
+
+        assertEquals(-1L, compact.offset(1))
+        assertEquals(42L, compact.offset(2))
+        assertFailsWith<IllegalArgumentException> {
+            compact.set(0, Int.MAX_VALUE.toLong() + 1L)
+        }
+
+        val wide = LongNodeOffsetIndex(1)
+        val wideOffset = Int.MAX_VALUE.toLong() + 1L
+        wide.ensureSize(2)
+        wide.set(1, wideOffset)
+
+        assertEquals(-1L, wide.offset(0))
+        assertEquals(wideOffset, wide.offset(1))
+    }
+
+    @Test
     fun `round-trip preserves TypeEdge`() {
         val builder = DefaultGraph.Builder()
         val n1 = IntConstant(NodeId.next(), 1)

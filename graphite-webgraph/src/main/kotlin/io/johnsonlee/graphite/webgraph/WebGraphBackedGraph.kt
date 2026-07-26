@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
@@ -31,8 +30,8 @@ internal class WebGraphBackedGraph(
     private val nodesById: Map<Int, Node>,
     private val nodeDataVersion: Int,
     private val forwardLabels: ByteArray,
-    private val cumulativeOutdeg: LongArray,
-    private val comparisonMap: Map<Long, BranchComparison>,
+    private val cumulativeOutdeg: IntArray,
+    private val comparisonLookup: BranchComparisonLookup,
     private val metadata: GraphMetadata,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor
@@ -82,9 +81,8 @@ internal class WebGraphBackedGraph(
         val labelStart = cumulativeOutdeg[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = forwardLabels[(labelStart + i).toInt()].toInt() and BYTE_MASK
-            val key = nodeIdx.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val label = forwardLabels[labelStart + i].toInt() and BYTE_MASK
+            val comparison = comparisonForEdge(label, nodeIdx, to, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
     }
@@ -98,8 +96,7 @@ internal class WebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
-            val key = from.toLong() shl INT_BITS or (nodeIdx.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val comparison = comparisonForEdge(label, from, nodeIdx, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
     }
@@ -108,7 +105,7 @@ internal class WebGraphBackedGraph(
         val succs = forward.successorArray(from)
         val outdeg = forward.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
-        return if (pos >= 0) forwardLabels[(cumulativeOutdeg[from] + pos).toInt()].toInt() and BYTE_MASK else 0
+        return if (pos >= 0) forwardLabels[cumulativeOutdeg[from] + pos].toInt() and BYTE_MASK else 0
     }
 
     @Suppress("UNCHECKED_CAST")

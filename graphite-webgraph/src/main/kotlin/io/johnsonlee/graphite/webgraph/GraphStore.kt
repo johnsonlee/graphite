@@ -279,6 +279,7 @@ object GraphStore {
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)
         }
+        val comparisonLookup = MapBranchComparisonLookup(comparisonMap)
 
         val nodesById = mutableMapOf<Int, Node>()
         DataInputStream(BufferedInputStream(dir.resolve(NODE_DATA_FILE).toFile().inputStream())).use { dis ->
@@ -302,7 +303,7 @@ object GraphStore {
             nodeDataVersion,
             labelBytes,
             cumulativeOutdeg,
-            comparisonMap,
+            comparisonLookup,
             metadata,
             classOverview,
             PersistedResourceStore.load(dir)
@@ -330,11 +331,7 @@ object GraphStore {
         val backward = lazy { loadBackward(forward.value) }
         val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
-        val comparisonMap = lazy {
-            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-                NodeSerializer.readComparisons(dis)
-            }
-        }
+        val comparisonLookup = LazyMappedBranchComparisonLookup(dir.resolve(COMPARISONS_FILE))
         val metadata = lazy {
             DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
                 NodeSerializer.loadMetadata(dis, stringTable)
@@ -355,7 +352,7 @@ object GraphStore {
             edgeCount = edgeCount,
             metadataFile = metadataFile.toFile(),
             methodCount = methodCount,
-            comparisonMap = comparisonMap,
+            comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
@@ -389,11 +386,7 @@ object GraphStore {
         val backward = lazy { loadBackward(forward.value) }
         val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
-        val comparisonMap = lazy {
-            DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
-                NodeSerializer.readComparisons(dis)
-            }
-        }
+        val comparisonLookup = LazyMappedBranchComparisonLookup(dir.resolve(COMPARISONS_FILE))
         val metadata = lazy {
             DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
                 NodeSerializer.loadMetadata(dis, stringTable)
@@ -414,7 +407,7 @@ object GraphStore {
             edgeCount = edgeCount,
             metadataFile = metadataFile.toFile(),
             methodCount = methodCount,
-            comparisonMap = comparisonMap,
+            comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
@@ -485,11 +478,15 @@ object GraphStore {
      * `cumulativeOutdeg[i]` = sum of outdegree(0..i-1), so the labels for
      * node `i` start at `forwardLabels[cumulativeOutdeg[i]]`.
      */
-    private fun buildCumulativeOutdeg(forward: ImmutableGraph): LongArray {
+    private fun buildCumulativeOutdeg(forward: ImmutableGraph): IntArray {
         val numNodes = forward.numNodes()
-        val cumOutdeg = LongArray(numNodes + 1)
+        val cumOutdeg = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
-            cumOutdeg[i + 1] = cumOutdeg[i] + forward.outdegree(i)
+            val next = cumOutdeg[i].toLong() + forward.outdegree(i).toLong()
+            require(next <= Int.MAX_VALUE) {
+                "Graph has too many edges for byte-addressed labels: $next"
+            }
+            cumOutdeg[i + 1] = next.toInt()
         }
         return cumOutdeg
     }
@@ -582,7 +579,7 @@ object GraphStore {
      * Result of reading and parsing the node index file.
      */
     private class NodeIndexData(
-        val nodeOffsets: LongArray,
+        val nodeOffsets: NodeOffsetIndex,
         val nodeTypeIndex: HashMap<Class<out Node>, IntArray>
     )
 
@@ -596,21 +593,20 @@ object GraphStore {
         }
 
         val nodeTypeByTag = HashMap<Int, IntArrayList>()
-        lateinit var nodeOffsets: LongArray
+        val compactOffsets = Files.size(dir.resolve(NODE_DATA_FILE)) <= Int.MAX_VALUE
+        lateinit var nodeOffsets: MutableNodeOffsetIndex
         DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
             NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
             val nodeCount = dis.readInt()
-            nodeOffsets = LongArray(nodeCount) { -1L }
+            nodeOffsets = if (compactOffsets) IntNodeOffsetIndex(nodeCount) else LongNodeOffsetIndex(nodeCount)
             repeat(nodeCount) {
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
                 val offset = dis.readLong()
                 if (nodeId >= nodeOffsets.size) {
-                    val oldSize = nodeOffsets.size
-                    nodeOffsets = nodeOffsets.copyOf(nodeId + 1)
-                    java.util.Arrays.fill(nodeOffsets, oldSize, nodeOffsets.size, -1L)
+                    nodeOffsets.ensureSize(nodeId + 1)
                 }
-                nodeOffsets[nodeId] = offset
+                nodeOffsets.set(nodeId, offset)
                 nodeTypeByTag.getOrPut(tag) { IntArrayList() }.add(nodeId)
             }
         }

@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Edge
@@ -54,14 +53,14 @@ internal class MappedWebGraphBackedGraph(
     private val mappedNodeData: MappedByteBuffer,
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
-    private val nodeOffsets: LongArray,
+    private val nodeOffsets: NodeOffsetIndex,
     private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
     private val forwardLabels: Lazy<ByteArray>,
-    private val cumulativeOutdeg: Lazy<LongArray>,
+    private val cumulativeOutdeg: Lazy<IntArray>,
     private val edgeCount: Long,
     private val metadataFile: File,
     private val methodCount: Long,
-    private val comparisonMap: Lazy<Map<Long, BranchComparison>>,
+    private val comparisonLookup: BranchComparisonLookup,
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
@@ -85,7 +84,7 @@ internal class MappedWebGraphBackedGraph(
     override fun node(id: NodeId): Node? {
         val nodeId = id.value
         if (nodeId < 0 || nodeId >= nodeOffsets.size) return null
-        val offset = nodeOffsets[nodeId]
+        val offset = nodeOffsets.offset(nodeId)
         if (offset == -1L) return null
         return readNodeAt(offset)
     }
@@ -121,9 +120,8 @@ internal class MappedWebGraphBackedGraph(
         val labelStart = cumulativeOutdeg.value[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = labels[(labelStart + i).toInt()].toInt() and BYTE_MASK
-            val key = nodeIdx.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap.value[key]
+            val label = labels[labelStart + i].toInt() and BYTE_MASK
+            val comparison = comparisonForEdge(label, nodeIdx, to, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
     }
@@ -137,8 +135,7 @@ internal class MappedWebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
-            val key = from.toLong() shl INT_BITS or (nodeIdx.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap.value[key]
+            val comparison = comparisonForEdge(label, from, nodeIdx, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
     }
@@ -149,7 +146,7 @@ internal class MappedWebGraphBackedGraph(
         val outdeg = forwardGraph.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
         return if (pos >= 0) {
-            forwardLabels.value[(cumulativeOutdeg.value[from] + pos).toInt()].toInt() and BYTE_MASK
+            forwardLabels.value[cumulativeOutdeg.value[from] + pos].toInt() and BYTE_MASK
         } else {
             0
         }
