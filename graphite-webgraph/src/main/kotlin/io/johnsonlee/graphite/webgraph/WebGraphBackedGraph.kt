@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -23,7 +24,7 @@ import it.unimi.dsi.webgraph.ImmutableGraph
  * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
  * `(from << 32 | to)`.
  */
-@Suppress("TooManyFunctions")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,
@@ -33,6 +34,7 @@ internal class WebGraphBackedGraph(
     private val cumulativeOutdeg: LongArray,
     private val comparisonMap: Map<Long, BranchComparison>,
     private val metadata: GraphMetadata,
+    private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor
 ) : Graph {
 
@@ -145,6 +147,8 @@ internal class WebGraphBackedGraph(
     override fun classOrigins(): Map<String, String> = metadata.classOrigins
 
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
+
+    override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

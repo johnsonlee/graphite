@@ -350,6 +350,30 @@ class DefaultGraphTest {
         assertNull(graph.classOrigin("com.example.App"))
         assertTrue(graph.classOrigins().isEmpty())
         assertTrue(graph.artifactDependencies().isEmpty())
+        assertNull(graph.classOverview(10))
+    }
+
+    @Test
+    fun `class overview value objects expose dependency data`() {
+        val dependency = ClassDependency("com.example.Caller", "com.example.Callee")
+        val overview = ClassOverview(
+            classCounts = mapOf("com.example.Caller" to 2, "com.example.Callee" to 1),
+            classEdges = mapOf(dependency to 1),
+            callSiteCount = 1
+        )
+
+        assertEquals("com.example.Caller", dependency.component1())
+        assertEquals("com.example.Callee", dependency.component2())
+        assertEquals(ClassDependency("com.example.Caller", "com.example.Other"), dependency.copy(calleeClass = "com.example.Other"))
+        assertTrue(dependency.toString().contains("Caller"))
+
+        val (classCounts, classEdges, callSiteCount) = overview
+        assertEquals(2, classCounts["com.example.Caller"])
+        assertEquals(1, classEdges[dependency])
+        assertEquals(1, callSiteCount)
+        assertEquals(overview, overview.copy())
+        assertEquals(overview.hashCode(), overview.copy().hashCode())
+        assertTrue(overview.toString().contains("classCounts"))
     }
 
     // ========================================================================

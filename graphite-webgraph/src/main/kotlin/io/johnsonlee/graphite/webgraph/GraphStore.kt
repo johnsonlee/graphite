@@ -24,6 +24,7 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
@@ -76,6 +77,7 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
  * - `graph.nodedata`           -- sequential binary node data with string table indices
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
+ * - `graph.classoverview`      -- class-level call counts and dependency weights
  */
 object GraphStore {
 
@@ -116,15 +118,29 @@ object GraphStore {
         var maxNodeId = 0
         var nodeCount = 0
         val allStrings = mutableSetOf<String>()
+        val classOverviewBuilder = ClassOverviewBuilder()
         for (node in graph.nodes(Node::class.java)) {
             if (node.id.value > maxNodeId) maxNodeId = node.id.value
             nodeCount++
             collectSingleNodeStrings(node, allStrings)
+            if (node is CallSiteNode) {
+                classOverviewBuilder.add(node)
+            }
         }
+        val classOverviewCounts = classOverviewBuilder.topClassCounts(ClassOverviewStore.MAX_PERSISTED_CLASSES)
+        val classOverviewEdges = ClassOverviewEdgeBuilder(classOverviewCounts.keys)
 
         // 2. Collect metadata
         val metadata = collectMetadata(graph)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
+        ClassOverviewStore.collectStrings(
+            ClassOverview(
+                classCounts = classOverviewCounts,
+                classEdges = emptyMap(),
+                callSiteCount = classOverviewBuilder.callSiteCount()
+            ),
+            allStrings
+        )
         val stringTable = StringTable.build(allStrings, dir)
         allStrings.clear()
 
@@ -149,6 +165,35 @@ object GraphStore {
         }
 
         // 6. Write nodedata + nodeindex simultaneously
+        writeNodeDataAndIndex(graph, dir, nodeCount, stringTable, classOverviewEdges)
+
+        // 7. Save metadata
+        DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
+            NodeSerializer.saveMetadata(metadata, dos, stringTable)
+        }
+
+        // 8. Save class-level overview summary for explorer routes
+        ClassOverviewStore.save(
+            ClassOverview(
+                classCounts = classOverviewCounts,
+                classEdges = classOverviewEdges.build(),
+                callSiteCount = classOverviewBuilder.callSiteCount()
+            ),
+            dir,
+            stringTable
+        )
+
+        // 9. Save persisted text resources for loaded-graph access
+        PersistedResourceStore.save(graph, dir)
+    }
+
+    private fun writeNodeDataAndIndex(
+        graph: Graph,
+        dir: Path,
+        nodeCount: Int,
+        stringTable: StringTable,
+        classOverviewEdges: ClassOverviewEdgeBuilder
+    ) {
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
             val dataDos = DataOutputStream(cos)
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
@@ -156,23 +201,29 @@ object GraphStore {
                 dataDos.writeInt(nodeCount)
                 NodeSerializer.writeHeader(idxDos, NodeSerializer.MAGIC_NODEINDEX)
                 idxDos.writeInt(nodeCount)
-                for (node in graph.nodes(Node::class.java)) {
-                    val offset = cos.bytesWritten
-                    val tag = NodeSerializer.writeNode(dataDos, node, stringTable)
-                    idxDos.writeInt(node.id.value)
-                    idxDos.writeByte(tag)
-                    idxDos.writeLong(offset)
-                }
+                writeNodes(graph, dataDos, idxDos, cos, stringTable, classOverviewEdges)
             }
         }
+    }
 
-        // 7. Save metadata
-        DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
-            NodeSerializer.saveMetadata(metadata, dos, stringTable)
+    private fun writeNodes(
+        graph: Graph,
+        dataDos: DataOutputStream,
+        idxDos: DataOutputStream,
+        cos: CountingOutputStream,
+        stringTable: StringTable,
+        classOverviewEdges: ClassOverviewEdgeBuilder
+    ) {
+        for (node in graph.nodes(Node::class.java)) {
+            val offset = cos.bytesWritten
+            val tag = NodeSerializer.writeNode(dataDos, node, stringTable)
+            idxDos.writeInt(node.id.value)
+            idxDos.writeByte(tag)
+            idxDos.writeLong(offset)
+            if (node is CallSiteNode) {
+                classOverviewEdges.add(node)
+            }
         }
-
-        // 8. Save persisted text resources for loaded-graph access
-        PersistedResourceStore.save(graph, dir)
     }
 
     /**
@@ -242,6 +293,7 @@ object GraphStore {
         val metadata = DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.loadMetadata(dis, stringTable)
         }
+        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
         return WebGraphBackedGraph(
             forward,
@@ -252,6 +304,7 @@ object GraphStore {
             cumulativeOutdeg,
             comparisonMap,
             metadata,
+            classOverview,
             PersistedResourceStore.load(dir)
         )
     }
@@ -287,6 +340,7 @@ object GraphStore {
                 NodeSerializer.loadMetadata(dis, stringTable)
             }
         }
+        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
         return LazyWebGraphBackedGraph(
             forward = forward,
@@ -303,6 +357,7 @@ object GraphStore {
             methodCount = methodCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
+            classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }
@@ -344,6 +399,7 @@ object GraphStore {
                 NodeSerializer.loadMetadata(dis, stringTable)
             }
         }
+        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
         return MappedWebGraphBackedGraph(
             forward = forward,
@@ -360,6 +416,7 @@ object GraphStore {
             methodCount = methodCount,
             comparisonMap = comparisonMap,
             metadata = metadata,
+            classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
     }

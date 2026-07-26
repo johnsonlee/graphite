@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -57,6 +58,7 @@ internal class LazyWebGraphBackedGraph(
     private val methodCount: Long,
     private val comparisonMap: Lazy<Map<Long, BranchComparison>>,
     private val metadata: Lazy<GraphMetadata>,
+    private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph, Closeable {
 
@@ -193,6 +195,8 @@ internal class LazyWebGraphBackedGraph(
     override fun classOrigins(): Map<String, String> = metadata.value.classOrigins
 
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.value.artifactDependencies
+
+    override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }

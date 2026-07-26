@@ -9,6 +9,17 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
 
+data class ClassDependency(
+    val callerClass: String,
+    val calleeClass: String
+)
+
+data class ClassOverview(
+    val classCounts: Map<String, Int>,
+    val classEdges: Map<ClassDependency, Int>,
+    val callSiteCount: Int
+)
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -153,6 +164,12 @@ interface Graph {
      * - `elasticsearch-8.17.0 -> lucene-core-9.12.0`
      */
     fun artifactDependencies(): Map<String, Map<String, Int>> = emptyMap()
+
+    /**
+     * Return a precomputed class-level call overview when the graph can answer
+     * without scanning/deserializing call-site nodes.
+     */
+    fun classOverview(limit: Int): ClassOverview? = null
 
 }
 

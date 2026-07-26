@@ -8,6 +8,8 @@ import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.cypher.CypherExecutor
+import io.johnsonlee.graphite.graph.ClassDependency
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceEntry
@@ -208,54 +210,7 @@ internal class ExploreRoutes {
 
         app.get("/api/overview") { ctx ->
             val limit = boundedLimit(ctx, DEFAULT_OVERVIEW_LIMIT, MAX_OVERVIEW_LIMIT)
-            // Build class-level dependency graph from call sites
-            val classEdges = mutableMapOf<Pair<String, String>, Int>() // (callerClass, calleeClass) -> count
-            val classCounts = mutableMapOf<String, Int>() // class -> number of call sites
-
-            var scanned = 0
-            for (cs in graph.nodes(CallSiteNode::class.java)) {
-                if (scanned >= MAX_OVERVIEW_CALL_SITES) break
-                scanned++
-                val callerClass = cs.caller.declaringClass.className
-                val calleeClass = cs.callee.declaringClass.className
-                if (callerClass != calleeClass) {
-                    val key = callerClass to calleeClass
-                    incrementBounded(classEdges, key, MAX_OVERVIEW_EDGES)
-                }
-                incrementBounded(classCounts, callerClass, MAX_OVERVIEW_CLASSES)
-                incrementBounded(classCounts, calleeClass, MAX_OVERVIEW_CLASSES)
-            }
-
-            // Take top classes by call site involvement
-            val topClasses = classCounts.entries
-                .sortedByDescending { it.value }
-                .take(limit)
-                .map { it.key }
-                .toSet()
-
-            val nodes = topClasses.map { cls ->
-                val shortName = cls.substringAfterLast('.')
-                mapOf(
-                    "id" to cls,
-                    API_FIELD_TYPE to "Class",
-                    API_FIELD_LABEL to shortName,
-                    "fullName" to cls,
-                    API_FIELD_CALL_SITES to (classCounts[cls] ?: 0)
-                )
-            }
-
-            val edges = classEdges.entries
-                .filter { it.key.first in topClasses && it.key.second in topClasses }
-                .map { (key, count) ->
-                    mapOf(
-                        "from" to key.first,
-                        "to" to key.second,
-                        API_FIELD_TYPE to "Call",
-                        "weight" to count
-                    )
-                }
-
-            ctx.json(mapOf(API_FIELD_NODES to nodes, API_FIELD_EDGES to edges))
+            ctx.json(buildClassOverview(graph, limit))
         }
 
         app.get("/api/subgraph") { ctx ->
@@ -369,6 +324,70 @@ internal class ExploreRoutes {
             if (bytes.size > MAX_RESOURCE_BYTES) throw ResourceTooLargeException()
             bytes
         }
+
+    private fun buildClassOverview(graph: Graph, limit: Int): Map<String, List<Map<String, Any?>>> =
+        runCatching { graph.classOverview(limit) }.getOrNull()
+            ?.let { buildClassOverview(it, limit) }
+            ?: buildClassOverviewFromCallSites(graph, limit)
+
+    private fun buildClassOverview(overview: ClassOverview, limit: Int): Map<String, List<Map<String, Any?>>> =
+        buildClassOverview(overview.classCounts, overview.classEdges, limit)
+
+    private fun buildClassOverviewFromCallSites(graph: Graph, limit: Int): Map<String, List<Map<String, Any?>>> {
+        val classEdges = mutableMapOf<ClassDependency, Int>()
+        val classCounts = mutableMapOf<String, Int>()
+
+        var scanned = 0
+        for (cs in graph.nodes(CallSiteNode::class.java)) {
+            if (scanned >= MAX_OVERVIEW_CALL_SITES) break
+            scanned++
+            val callerClass = cs.caller.declaringClass.className
+            val calleeClass = cs.callee.declaringClass.className
+            if (callerClass != calleeClass) {
+                incrementBounded(classEdges, ClassDependency(callerClass, calleeClass), MAX_OVERVIEW_EDGES)
+            }
+            incrementBounded(classCounts, callerClass, MAX_OVERVIEW_CLASSES)
+            incrementBounded(classCounts, calleeClass, MAX_OVERVIEW_CLASSES)
+        }
+
+        return buildClassOverview(classCounts, classEdges, limit)
+    }
+
+    private fun buildClassOverview(
+        classCounts: Map<String, Int>,
+        classEdges: Map<ClassDependency, Int>,
+        limit: Int
+    ): Map<String, List<Map<String, Any?>>> {
+        val topClasses = classCounts.entries
+            .sortedByDescending { it.value }
+            .take(limit)
+            .map { it.key }
+            .toSet()
+
+        val nodes = topClasses.map { cls ->
+            val shortName = cls.substringAfterLast('.')
+            mapOf(
+                "id" to cls,
+                API_FIELD_TYPE to "Class",
+                API_FIELD_LABEL to shortName,
+                "fullName" to cls,
+                API_FIELD_CALL_SITES to (classCounts[cls] ?: 0)
+            )
+        }
+
+        val edges = classEdges.entries
+            .filter { it.key.callerClass in topClasses && it.key.calleeClass in topClasses }
+            .map { (key, count) ->
+                mapOf(
+                    "from" to key.callerClass,
+                    "to" to key.calleeClass,
+                    API_FIELD_TYPE to "Call",
+                    "weight" to count
+                )
+            }
+
+        return mapOf(API_FIELD_NODES to nodes, API_FIELD_EDGES to edges)
+    }
 
     private fun boundedLimit(ctx: io.javalin.http.Context, default: Int, max: Int): Int =
         boundedLimit(ctx.queryParam(API_PARAM_LIMIT), default, max)
