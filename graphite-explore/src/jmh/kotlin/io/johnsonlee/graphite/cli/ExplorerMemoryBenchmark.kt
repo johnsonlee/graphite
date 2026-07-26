@@ -44,7 +44,7 @@ open class ExplorerMemoryBenchmark {
     @Param("3")
     var repeats: Int = 0
 
-    @Param("LAZY")
+    @Param("MAPPED")
     lateinit var loadMode: String
 
     @Param("512")
@@ -60,7 +60,7 @@ open class ExplorerMemoryBenchmark {
     var memoryLimitBytes: Long = 0
 
     @Param("536870912")
-    var stableGrowthLimitBytes: Long = 0
+    var stableHeapGrowthLimitBytes: Long = 0
 
     private lateinit var graph: Graph
     private lateinit var app: Javalin
@@ -158,6 +158,7 @@ open class ExplorerMemoryBenchmark {
 
         forceGc()
         val after = record()
+        val postWarmupHeapGrowthBytes = maxOf(0L, after.usedHeapBytes - steadyBefore.usedHeapBytes)
         val postWarmupResidentGrowthBytes = maxOf(0L, after.residentSetBytes - steadyBefore.residentSetBytes)
 
         counters.usedHeapBeforeBytes = before.usedHeapBytes
@@ -171,17 +172,19 @@ open class ExplorerMemoryBenchmark {
         counters.residentSetAfterBytes = after.residentSetBytes
         counters.steadyResidentSetBeforeBytes = steadyBefore.residentSetBytes
         counters.maxResidentSetBytes = maxResidentSetBytes
+        counters.steadyUsedHeapBeforeBytes = steadyBefore.usedHeapBytes
+        counters.postWarmupHeapGrowthBytes = postWarmupHeapGrowthBytes
         counters.postWarmupResidentGrowthBytes = postWarmupResidentGrowthBytes
         counters.memoryLimitBytes = memoryLimitBytes
-        counters.stableGrowthLimitBytes = stableGrowthLimitBytes
+        counters.stableHeapGrowthLimitBytes = stableHeapGrowthLimitBytes
         counters.residentSetMeasured = if (residentSetBytes() != null) 1 else 0
 
-        check(maxResidentSetBytes <= memoryLimitBytes) {
-            "Explorer RSS waterline exceeded limit: max=$maxResidentSetBytes limit=$memoryLimitBytes"
+        check(maxUsedHeapBytes <= memoryLimitBytes) {
+            "Explorer heap waterline exceeded limit: max=$maxUsedHeapBytes limit=$memoryLimitBytes"
         }
-        check(postWarmupResidentGrowthBytes <= stableGrowthLimitBytes) {
-            "Explorer RSS kept growing after warmup: growth=$postWarmupResidentGrowthBytes " +
-                "limit=$stableGrowthLimitBytes"
+        check(postWarmupHeapGrowthBytes <= stableHeapGrowthLimitBytes) {
+            "Explorer heap kept growing after warmup: growth=$postWarmupHeapGrowthBytes " +
+                "limit=$stableHeapGrowthLimitBytes"
         }
 
         return bytes
@@ -352,13 +355,19 @@ open class ExplorerMemoryCounters {
     var maxResidentSetBytes: Long = 0
 
     @JvmField
+    var steadyUsedHeapBeforeBytes: Long = 0
+
+    @JvmField
+    var postWarmupHeapGrowthBytes: Long = 0
+
+    @JvmField
     var postWarmupResidentGrowthBytes: Long = 0
 
     @JvmField
     var memoryLimitBytes: Long = 0
 
     @JvmField
-    var stableGrowthLimitBytes: Long = 0
+    var stableHeapGrowthLimitBytes: Long = 0
 
     @JvmField
     var residentSetMeasured: Long = 0

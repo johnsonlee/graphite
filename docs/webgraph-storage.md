@@ -852,3 +852,44 @@ Two smaller long-lived retention paths were also present:
 | RSS measurement available | `1` |
 
 **Conclusion:** effective as a verification guardrail. The long-running explorer benchmark now proves the current default `LAZY` explorer session stays well below 4 GiB total process RSS on the Android-scale graph and does not continue climbing after warmup. The measured max RSS is ~0.79 GiB, and post-warmup RSS growth is ~33.4 MiB.
+
+### 2026-07-26 — Attempt 016: Retire lazy explorer default
+
+**Root cause:** `LAZY` kept the explorer process heap small, but it did not reduce the real system cost of repeatedly touching `graph.nodedata`; it moved the pressure from mmap-backed RSS accounting to on-demand file reads and OS page cache behavior. That is not a real optimization for multi-service graph exploration.
+
+**Change:**
+
+- remove `GraphStore.LoadMode.LAZY` from the public load-mode enum
+- restore `graphite-explore` default load mode to `AUTO`, which uses eager loading for small graphs and mmap for large graphs
+- keep the pre-existing `GraphStore.loadLazy()` method and its tests for compatibility, but stop using it as the explorer solution
+- change `ExplorerMemoryBenchmark` default load mode from `LAZY` to `MAPPED`
+- change the long-running waterline guardrail to fail on max used heap and post-warmup used-heap growth, while keeping RSS as an observation counter for mmap/page-cache behavior
+- update README examples so explorer documents `AUTO`/`MAPPED`, not `LAZY`
+
+**Build/save impact:** none. This removes the rejected explorer load-mode path and benchmark default without changing persisted graph files or build-time graph generation.
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test :explore:test :explore:compileJmhKotlin --no-daemon
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_longRunningExplorerWaterline' --no-daemon
+```
+
+**Result:**
+
+| Metric | Result |
+|--------|--------|
+| Load mode | `MAPPED` |
+| Score | `3441.344 ms/op` |
+| Max used heap | `368439008 B` |
+| Max committed heap | `465567744 B` |
+| Used heap before | `122491504 B` |
+| Used heap after | `262582088 B` |
+| Steady used heap before measured phase | `262569448 B` |
+| Post-warmup heap growth | `12640 B` |
+| Heap limit | `4294967296 B` |
+| Stable heap growth limit | `536870912 B` |
+| Max RSS observation | `2089435136 B` |
+| Post-warmup RSS observation | `25296896 B` |
+
+**Conclusion:** direction corrected. The explorer is back on the eager/mmap path, and the long-running JMH guardrail now validates the stated heap target directly: max used heap remains ~351 MiB under `-Xmx4g`, and post-warmup heap growth is effectively flat. Follow-up optimization should reduce work done by mmap/eager query paths, starting with explorer routes such as `/api/overview` that still deserialize large numbers of call-site nodes only to compute class-level summaries.

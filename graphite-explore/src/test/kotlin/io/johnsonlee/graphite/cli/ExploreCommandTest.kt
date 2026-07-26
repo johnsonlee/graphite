@@ -1159,10 +1159,10 @@ class ExploreCommandTest {
     // ========================================================================
 
     @Test
-    fun `explorer defaults to lazy load mode for stable long-running memory`() {
+    fun `explorer defaults to auto load mode`() {
         val explore = ExploreCommand()
 
-        assertEquals(GraphStore.LoadMode.LAZY, explore.loadMode)
+        assertEquals(GraphStore.LoadMode.AUTO, explore.loadMode)
     }
 
     @Test

@@ -17,7 +17,7 @@ import java.util.concurrent.Callable
 
 private const val DEFAULT_PORT = 8080
 private const val DEFAULT_PORT_TEXT = "8080"
-private const val DEFAULT_LOAD_MODE_TEXT = "LAZY"
+private const val DEFAULT_LOAD_MODE_TEXT = "AUTO"
 
 @Command(
     name = "graphite-explore",
@@ -35,11 +35,11 @@ class ExploreCommand : Callable<Int> {
     @Option(
         names = ["--load-mode"],
         description = [
-            "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to LAZY to keep long-running explorer RSS stable."
+            "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to AUTO (<1M nodes eager, larger graphs mapped)."
         ],
         defaultValue = DEFAULT_LOAD_MODE_TEXT
     )
-    var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.LAZY
+    var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.AUTO
 
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
