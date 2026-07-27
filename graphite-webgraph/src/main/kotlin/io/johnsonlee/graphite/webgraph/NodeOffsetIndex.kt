@@ -1,5 +1,11 @@
 package io.johnsonlee.graphite.webgraph
 
+import java.io.BufferedInputStream
+import java.io.DataInputStream
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.Arrays
 
 internal interface NodeOffsetIndex {
@@ -58,5 +64,38 @@ internal class LongNodeOffsetIndex(initialSize: Int) : MutableNodeOffsetIndex {
 
     private companion object {
         const val MISSING_OFFSET_LONG = -1L
+    }
+}
+
+internal class MappedNodeOffsetIndex private constructor(
+    private val buffer: MappedByteBuffer,
+    override val size: Int
+) : NodeOffsetIndex {
+
+    override fun offset(nodeId: Int): Long {
+        val stored = buffer.getLong(DATA_START + nodeId * Long.SIZE_BYTES)
+        return if (stored == MISSING_OFFSET_STORED) MISSING_OFFSET else stored - 1L
+    }
+
+    companion object {
+        private const val DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
+        private const val MISSING_OFFSET_STORED = 0L
+        private const val MISSING_OFFSET = -1L
+
+        fun load(path: Path): MappedNodeOffsetIndex {
+            val count = DataInputStream(BufferedInputStream(path.toFile().inputStream())).use { dis ->
+                NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEOFFSETS)
+                dis.readInt()
+            }
+            require(count >= 0) { "Invalid mapped node offset count: $count" }
+
+            val channel = FileChannel.open(path, StandardOpenOption.READ)
+            val mapped = try {
+                channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
+            } finally {
+                channel.close()
+            }
+            return MappedNodeOffsetIndex(mapped, count)
+        }
     }
 }

@@ -37,8 +37,8 @@ import java.nio.MappedByteBuffer
  * - BVGraph forward: loaded during graph open
  * - BVGraph backward: built lazily on first incoming query
  * - Edge label map: loaded during graph open
- * - Node index: ~47 MB (heap, nodeId → offset)
- * - Node type index: ~24 MB (heap, type → nodeId list)
+ * - Node offset index: mmap-backed, nodeId -> offset
+ * - Node type index: mmap-backed, type -> nodeId list
  * - StringTable: ~21 MB (heap)
  * - Node data: ~252 MB (mmap, NOT heap — managed by OS page cache)
  * - **Open heap before edge traversal: ~92 MB plus object overhead** vs ~4 GB
@@ -54,7 +54,7 @@ internal class MappedWebGraphBackedGraph(
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: NodeOffsetIndex,
-    private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
+    private val nodeTypeIndex: NodeTypeIndex,
     private val forwardLabels: ByteArray,
     private val cumulativeOutdeg: IntArray,
     private val edgeCount: Long,
@@ -81,10 +81,6 @@ internal class MappedWebGraphBackedGraph(
         }.groupBy { it.conditionNodeId.value }
     }
 
-    private val nodeInputLocal = ThreadLocal.withInitial {
-        ByteBufferDataInput(mappedNodeData.asReadOnlyBuffer())
-    }
-
     override fun node(id: NodeId): Node? {
         val nodeId = id.value
         if (nodeId < 0 || nodeId >= nodeOffsets.size) return null
@@ -95,22 +91,11 @@ internal class MappedWebGraphBackedGraph(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
-        // Fast path: exact type
-        nodeTypeIndex[type]?.let { ids ->
-            return ids.asSequence().mapNotNull { node(NodeId(it)) as? T }
-        }
-        // Slow path: supertype
-        return nodeTypeIndex.entries.asSequence()
-            .filter { type.isAssignableFrom(it.key) }
-            .flatMap { it.value.asSequence() }
-            .mapNotNull { node(NodeId(it)) as? T }
+        return nodeTypeIndex.ids(type).mapNotNull { node(NodeId(it)) as? T }
     }
 
     override fun nodeCount(type: Class<out Node>): Long =
-        nodeTypeIndex[type]?.size?.toLong()
-            ?: nodeTypeIndex.entries.asSequence()
-                .filter { type.isAssignableFrom(it.key) }
-                .sumOf { it.value.size.toLong() }
+        nodeTypeIndex.count(type)
 
     override fun edgeCount(): Long = edgeCount
 
@@ -204,13 +189,11 @@ internal class MappedWebGraphBackedGraph(
         metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
-        nodeInputLocal.remove()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
 
     private fun readNodeAt(offset: Long): Node {
-        val input = nodeInputLocal.get()
-        input.position(offset.toInt())
+        val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
         return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
     }
 }
@@ -219,10 +202,7 @@ internal class MappedWebGraphBackedGraph(
  * Adapts a [ByteBuffer] as [DataInput] for node deserialization.
  * No system calls -- reads directly from mapped memory.
  */
-private class ByteBufferDataInput(private val buf: ByteBuffer) : DataInput {
-    fun position(position: Int) {
-        buf.position(position)
-    }
+private class ByteBufferDataInput(private val buf: ByteBuffer, private var position: Int) : DataInput {
 
     override fun readFully(bytes: ByteArray) {
         readFully(bytes, 0, bytes.size)
@@ -230,12 +210,16 @@ private class ByteBufferDataInput(private val buf: ByteBuffer) : DataInput {
 
     override fun readFully(bytes: ByteArray, off: Int, len: Int) {
         requireRemaining(len)
-        buf.get(bytes, off, len)
+        for (i in 0 until len) {
+            bytes[off + i] = buf.get(position + i)
+        }
+        position += len
     }
 
     override fun skipBytes(n: Int): Int {
-        val skipped = minOf(n, buf.remaining())
-        buf.position(buf.position() + skipped)
+        if (n <= 0) return 0
+        val skipped = minOf(n, buf.limit() - position)
+        position += skipped
         return skipped
     }
 
@@ -243,41 +227,53 @@ private class ByteBufferDataInput(private val buf: ByteBuffer) : DataInput {
 
     override fun readByte(): Byte {
         requireRemaining(Byte.SIZE_BYTES)
-        return buf.get()
+        return buf.get(position++)
     }
 
     override fun readUnsignedByte(): Int = readByte().toInt() and BYTE_MASK
 
     override fun readShort(): Short {
         requireRemaining(Short.SIZE_BYTES)
-        return buf.short
+        val value = buf.getShort(position)
+        position += Short.SIZE_BYTES
+        return value
     }
 
     override fun readUnsignedShort(): Int = readShort().toInt() and USHORT_MASK
 
     override fun readChar(): Char {
         requireRemaining(Char.SIZE_BYTES)
-        return buf.char
+        val value = buf.getChar(position)
+        position += Char.SIZE_BYTES
+        return value
     }
 
     override fun readInt(): Int {
         requireRemaining(Int.SIZE_BYTES)
-        return buf.int
+        val value = buf.getInt(position)
+        position += Int.SIZE_BYTES
+        return value
     }
 
     override fun readLong(): Long {
         requireRemaining(Long.SIZE_BYTES)
-        return buf.long
+        val value = buf.getLong(position)
+        position += Long.SIZE_BYTES
+        return value
     }
 
     override fun readFloat(): Float {
         requireRemaining(Float.SIZE_BYTES)
-        return buf.float
+        val value = buf.getFloat(position)
+        position += Float.SIZE_BYTES
+        return value
     }
 
     override fun readDouble(): Double {
         requireRemaining(Double.SIZE_BYTES)
-        return buf.double
+        val value = buf.getDouble(position)
+        position += Double.SIZE_BYTES
+        return value
     }
 
     override fun readLine(): String =
@@ -286,7 +282,7 @@ private class ByteBufferDataInput(private val buf: ByteBuffer) : DataInput {
     override fun readUTF(): String = DataInputStream.readUTF(this)
 
     private fun requireRemaining(bytes: Int) {
-        if (buf.remaining() < bytes) throw EOFException()
+        if (position < 0 || position > buf.limit() - bytes) throw EOFException()
     }
 
     private companion object {

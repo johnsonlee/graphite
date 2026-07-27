@@ -77,6 +77,8 @@ internal object NodeSerializer {
     internal const val MAGIC_NODEDATA    = 0x47524E00  // "GRN"
     internal const val MAGIC_NODEINDEX   = 0x47524900  // "GRI"
     internal const val MAGIC_COMPARISONS = 0x47524300  // "GRC"
+    internal const val MAGIC_NODEOFFSETS = 0x47524C00  // "GRL"
+    internal const val MAGIC_TYPEINDEX   = 0x47525400  // "GRT"
 
     /** Current format version (occupies the low byte of the 4-byte header int). */
     const val FORMAT_VERSION: Int = 3
@@ -384,26 +386,28 @@ internal object NodeSerializer {
     // Node writing / reading (string-table-aware)
     // ========================================================================
 
+    fun tagOf(node: Node): Int = when (node) {
+        is IntConstant -> TAG_INT_CONSTANT
+        is StringConstant -> TAG_STRING_CONSTANT
+        is LongConstant -> TAG_LONG_CONSTANT
+        is FloatConstant -> TAG_FLOAT_CONSTANT
+        is DoubleConstant -> TAG_DOUBLE_CONSTANT
+        is BooleanConstant -> TAG_BOOLEAN_CONSTANT
+        is NullConstant -> TAG_NULL_CONSTANT
+        is EnumConstant -> TAG_ENUM_CONSTANT
+        is LocalVariable -> TAG_LOCAL_VARIABLE
+        is FieldNode -> TAG_FIELD_NODE
+        is ParameterNode -> TAG_PARAMETER_NODE
+        is ReturnNode -> TAG_RETURN_NODE
+        is CallSiteNode -> TAG_CALL_SITE_NODE
+        is AnnotationNode -> TAG_ANNOTATION_NODE
+        is ResourceFileNode -> TAG_RESOURCE_FILE_NODE
+        is ResourceValueNode -> TAG_RESOURCE_VALUE_NODE
+    }
+
     fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable): Int {
         dos.writeInt(node.id.value)
-        val tag = when (node) {
-            is IntConstant -> TAG_INT_CONSTANT
-            is StringConstant -> TAG_STRING_CONSTANT
-            is LongConstant -> TAG_LONG_CONSTANT
-            is FloatConstant -> TAG_FLOAT_CONSTANT
-            is DoubleConstant -> TAG_DOUBLE_CONSTANT
-            is BooleanConstant -> TAG_BOOLEAN_CONSTANT
-            is NullConstant -> TAG_NULL_CONSTANT
-            is EnumConstant -> TAG_ENUM_CONSTANT
-            is LocalVariable -> TAG_LOCAL_VARIABLE
-            is FieldNode -> TAG_FIELD_NODE
-            is ParameterNode -> TAG_PARAMETER_NODE
-            is ReturnNode -> TAG_RETURN_NODE
-            is CallSiteNode -> TAG_CALL_SITE_NODE
-            is AnnotationNode -> TAG_ANNOTATION_NODE
-            is ResourceFileNode -> TAG_RESOURCE_FILE_NODE
-            is ResourceValueNode -> TAG_RESOURCE_VALUE_NODE
-        }
+        val tag = tagOf(node)
         dos.writeByte(tag)
         // Type-specific fields
         when (node) {

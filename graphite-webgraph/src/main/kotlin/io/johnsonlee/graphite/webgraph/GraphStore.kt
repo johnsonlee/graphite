@@ -28,25 +28,33 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.io.BinIO
-import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
 import it.unimi.dsi.webgraph.LazyIntIterator
 import it.unimi.dsi.webgraph.LazyIntIterators
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
+import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+
+private const val NODE_OFFSETS_FILE = "graph.nodeoffsets"
+private const val NODE_INDEX_FILE = "graph.nodeindex"
+private const val TYPE_INDEX_FILE = "graph.typeindex"
+private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
+private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
 
 /** OutputStream wrapper that tracks total bytes written. */
 private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
@@ -66,6 +74,193 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
     override fun flush() = delegate.flush()
     override fun close() = delegate.close()
 }
+
+private class NodeOffsetIndexWriter(path: Path, private val size: Int) : Closeable {
+    private val channel: FileChannel
+    private val buffer: java.nio.MappedByteBuffer
+
+    init {
+        require(size >= 0) { "Invalid node offset index size: $size" }
+        val totalBytes = NODE_OFFSET_DATA_START.toLong() + size.toLong() * Long.SIZE_BYTES
+        require(totalBytes <= Int.MAX_VALUE) {
+            "Mapped node offset index is too large to map as a single buffer: $totalBytes bytes"
+        }
+        channel = FileChannel.open(
+            path,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING,
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE
+        )
+        if (totalBytes > 0) {
+            channel.write(ByteBuffer.wrap(byteArrayOf(0)), totalBytes - 1)
+        }
+        buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, totalBytes)
+        buffer.putInt(0, NodeSerializer.MAGIC_NODEOFFSETS or NodeSerializer.FORMAT_VERSION)
+        buffer.putInt(Int.SIZE_BYTES, size)
+    }
+
+    fun write(nodeId: Int, offset: Long) {
+        require(nodeId in 0 until size) { "Node id $nodeId outside mapped offset index size $size" }
+        require(offset < Long.MAX_VALUE) { "Node data offset is too large: $offset" }
+        buffer.putLong(NODE_OFFSET_DATA_START + nodeId * Long.SIZE_BYTES, offset + 1L)
+    }
+
+    override fun close() {
+        buffer.force()
+        channel.close()
+    }
+}
+
+private class TypeIndexWriter(path: Path, private val counts: IntArray) : Closeable {
+    private val tags = nodeTagEntries()
+    private val offsets = IntArray(UByte.MAX_VALUE.toInt() + 1) { -1 }
+    private val fillPositions = IntArray(UByte.MAX_VALUE.toInt() + 1)
+    private val channel: FileChannel
+    private val buffer: java.nio.MappedByteBuffer
+
+    init {
+        var totalBytesLong = (Int.SIZE_BYTES + Int.SIZE_BYTES + tags.size * TYPE_INDEX_TABLE_ENTRY_BYTES).toLong()
+        for (tag in tags) {
+            require(totalBytesLong <= Int.MAX_VALUE) {
+                "Mapped node type index is too large to map as a single buffer: $totalBytesLong bytes"
+            }
+            offsets[tag] = totalBytesLong.toInt()
+            totalBytesLong += counts[tag].toLong() * Int.SIZE_BYTES
+        }
+        require(totalBytesLong <= Int.MAX_VALUE) {
+            "Mapped node type index is too large to map as a single buffer: $totalBytesLong bytes"
+        }
+        val totalBytes = totalBytesLong.toInt()
+
+        channel = FileChannel.open(
+            path,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING,
+            StandardOpenOption.READ,
+            StandardOpenOption.WRITE
+        )
+        if (totalBytes > 0) {
+            channel.write(ByteBuffer.wrap(byteArrayOf(0)), totalBytesLong - 1L)
+        }
+        buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, totalBytesLong)
+        buffer.putInt(0, NodeSerializer.MAGIC_TYPEINDEX or NodeSerializer.FORMAT_VERSION)
+        buffer.putInt(Int.SIZE_BYTES, tags.size)
+
+        var tableOffset = Int.SIZE_BYTES + Int.SIZE_BYTES
+        for (tag in tags) {
+            buffer.put(tableOffset, tag.toByte())
+            buffer.putInt(tableOffset + Byte.SIZE_BYTES, counts[tag])
+            buffer.putLong(tableOffset + Byte.SIZE_BYTES + Int.SIZE_BYTES, offsets[tag].toLong())
+            tableOffset += TYPE_INDEX_TABLE_ENTRY_BYTES
+        }
+    }
+
+    fun write(tag: Int, nodeId: Int) {
+        val offset = offsets[tag]
+        require(offset >= 0) { "Unknown node tag for mapped type index: $tag" }
+        val index = fillPositions[tag]++
+        require(index < counts[tag]) { "Too many nodes for tag $tag: ${index + 1} > ${counts[tag]}" }
+        buffer.putInt(offset + index * Int.SIZE_BYTES, nodeId)
+    }
+
+    override fun close() {
+        buffer.force()
+        channel.close()
+    }
+}
+
+private fun readMappedNodeIndex(dir: Path): NodeIndexData {
+    val nodeIndexFile = dir.resolve(NODE_INDEX_FILE).toFile()
+    require(nodeIndexFile.exists()) {
+        "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
+    }
+    ensureMappedNodeIndexes(dir)
+    return NodeIndexData(
+        nodeOffsets = MappedNodeOffsetIndex.load(dir.resolve(NODE_OFFSETS_FILE)),
+        nodeTypeIndex = MappedNodeTypeIndex.load(dir.resolve(TYPE_INDEX_FILE))
+    )
+}
+
+private fun ensureMappedNodeIndexes(dir: Path) {
+    val offsetsFile = dir.resolve(NODE_OFFSETS_FILE)
+    val typeIndexFile = dir.resolve(TYPE_INDEX_FILE)
+    if (Files.exists(offsetsFile) && Files.exists(typeIndexFile)) return
+    buildMappedNodeIndexesFromNodeIndex(dir.resolve(NODE_INDEX_FILE), offsetsFile, dir)
+}
+
+private fun buildMappedNodeIndexesFromNodeIndex(nodeIndexPath: Path, nodeOffsetsPath: Path, dir: Path) {
+    val indexStats = readLegacyNodeIndexStats(nodeIndexPath)
+    val offsetsTemp = Files.createTempFile(dir, "$NODE_OFFSETS_FILE.", ".tmp")
+    val typeIndexTemp = Files.createTempFile(dir, "$TYPE_INDEX_FILE.", ".tmp")
+    try {
+        NodeOffsetIndexWriter(offsetsTemp, indexStats.maxNodeId + 1).use { offsetWriter ->
+            TypeIndexWriter(typeIndexTemp, indexStats.typeCounts).use { typeIndexWriter ->
+                copyLegacyNodeIndexEntries(nodeIndexPath, offsetWriter, typeIndexWriter)
+            }
+        }
+        Files.move(typeIndexTemp, dir.resolve(TYPE_INDEX_FILE), StandardCopyOption.REPLACE_EXISTING)
+        Files.move(offsetsTemp, nodeOffsetsPath, StandardCopyOption.REPLACE_EXISTING)
+    } finally {
+        Files.deleteIfExists(offsetsTemp)
+        Files.deleteIfExists(typeIndexTemp)
+    }
+}
+
+private fun readLegacyNodeIndexStats(nodeIndexPath: Path): LegacyNodeIndexStats {
+    var maxNodeId = -1
+    val nodeTypeCounts = IntArray(UByte.MAX_VALUE.toInt() + 1)
+    DataInputStream(BufferedInputStream(nodeIndexPath.toFile().inputStream())).use { dis ->
+        NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
+        val nodeCount = dis.readInt()
+        repeat(nodeCount) {
+            val nodeId = dis.readInt()
+            val tag = dis.readByte().toInt()
+            dis.readLong()
+            if (nodeId > maxNodeId) maxNodeId = nodeId
+            nodeTypeCounts[tag]++
+        }
+    }
+    return LegacyNodeIndexStats(maxNodeId, nodeTypeCounts)
+}
+
+private fun copyLegacyNodeIndexEntries(
+    nodeIndexPath: Path,
+    offsetWriter: NodeOffsetIndexWriter,
+    typeIndexWriter: TypeIndexWriter
+) {
+    DataInputStream(BufferedInputStream(nodeIndexPath.toFile().inputStream())).use { dis ->
+        NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
+        val nodeCount = dis.readInt()
+        repeat(nodeCount) {
+            val nodeId = dis.readInt()
+            val tag = dis.readByte().toInt()
+            val offset = dis.readLong()
+            offsetWriter.write(nodeId, offset)
+            typeIndexWriter.write(tag, nodeId)
+        }
+    }
+}
+
+private data class LegacyNodeIndexStats(
+    val maxNodeId: Int,
+    val typeCounts: IntArray
+)
+
+private class NodeDataWriteContext(
+    val dataDos: DataOutputStream,
+    val idxDos: DataOutputStream,
+    val offsetWriter: NodeOffsetIndexWriter,
+    val typeIndexWriter: TypeIndexWriter,
+    val countingOutput: CountingOutputStream,
+    val stringTable: StringTable,
+    val classOverviewEdges: ClassOverviewEdgeBuilder
+)
+
+internal data class NodeIndexData(
+    val nodeOffsets: NodeOffsetIndex,
+    val nodeTypeIndex: NodeTypeIndex
+)
 
 /**
  * Save and load [Graph] instances using WebGraph compression with native LAW
@@ -92,7 +287,6 @@ object GraphStore {
     private const val LABELS_FILE = "graph.labels"
     private const val COMPARISONS_FILE = "graph.comparisons"
     private const val NODE_DATA_FILE = "graph.nodedata"
-    private const val NODE_INDEX_FILE = "graph.nodeindex"
     private const val METADATA_FILE = "graph.metadata"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
 
@@ -126,10 +320,12 @@ object GraphStore {
         var maxNodeId = 0
         var nodeCount = 0
         val allStrings = mutableSetOf<String>()
+        val nodeTypeCounts = IntArray(UByte.MAX_VALUE.toInt() + 1)
         val classOverviewBuilder = ClassOverviewBuilder()
         for (node in graph.nodes(Node::class.java)) {
             if (node.id.value > maxNodeId) maxNodeId = node.id.value
             nodeCount++
+            nodeTypeCounts[NodeSerializer.tagOf(node)]++
             collectSingleNodeStrings(node, allStrings)
             if (node is CallSiteNode) {
                 classOverviewBuilder.add(node)
@@ -173,7 +369,7 @@ object GraphStore {
         }
 
         // 6. Write nodedata + nodeindex simultaneously
-        writeNodeDataAndIndex(graph, dir, nodeCount, stringTable, classOverviewEdges)
+        writeNodeDataAndIndex(graph, dir, nodeCount, maxNodeId, nodeTypeCounts, stringTable, classOverviewEdges)
 
         // 7. Save metadata
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
@@ -199,37 +395,68 @@ object GraphStore {
         graph: Graph,
         dir: Path,
         nodeCount: Int,
+        maxNodeId: Int,
+        nodeTypeCounts: IntArray,
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder
     ) {
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
             val dataDos = DataOutputStream(cos)
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
-                NodeSerializer.writeHeader(dataDos, NodeSerializer.MAGIC_NODEDATA)
-                dataDos.writeInt(nodeCount)
-                NodeSerializer.writeHeader(idxDos, NodeSerializer.MAGIC_NODEINDEX)
-                idxDos.writeInt(nodeCount)
-                writeNodes(graph, dataDos, idxDos, cos, stringTable, classOverviewEdges)
+                writeNodeDataAndIndex(
+                    graph,
+                    dir,
+                    nodeCount,
+                    maxNodeId,
+                    nodeTypeCounts,
+                    dataDos,
+                    idxDos,
+                    cos,
+                    stringTable,
+                    classOverviewEdges
+                )
             }
         }
     }
 
-    private fun writeNodes(
+    @Suppress("LongParameterList")
+    private fun writeNodeDataAndIndex(
         graph: Graph,
+        dir: Path,
+        nodeCount: Int,
+        maxNodeId: Int,
+        nodeTypeCounts: IntArray,
         dataDos: DataOutputStream,
         idxDos: DataOutputStream,
         cos: CountingOutputStream,
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder
     ) {
+        NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
+            TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
+                NodeSerializer.writeHeader(dataDos, NodeSerializer.MAGIC_NODEDATA)
+                dataDos.writeInt(nodeCount)
+                NodeSerializer.writeHeader(idxDos, NodeSerializer.MAGIC_NODEINDEX)
+                idxDos.writeInt(nodeCount)
+                writeNodes(
+                    graph,
+                    NodeDataWriteContext(dataDos, idxDos, offsetWriter, typeIndexWriter, cos, stringTable, classOverviewEdges)
+                )
+            }
+        }
+    }
+
+    private fun writeNodes(graph: Graph, context: NodeDataWriteContext) {
         for (node in graph.nodes(Node::class.java)) {
-            val offset = cos.bytesWritten
-            val tag = NodeSerializer.writeNode(dataDos, node, stringTable)
-            idxDos.writeInt(node.id.value)
-            idxDos.writeByte(tag)
-            idxDos.writeLong(offset)
+            val offset = context.countingOutput.bytesWritten
+            val tag = NodeSerializer.writeNode(context.dataDos, node, context.stringTable)
+            context.idxDos.writeInt(node.id.value)
+            context.idxDos.writeByte(tag)
+            context.idxDos.writeLong(offset)
+            context.offsetWriter.write(node.id.value, offset)
+            context.typeIndexWriter.write(tag, node.id.value)
             if (node is CallSiteNode) {
-                classOverviewEdges.add(node)
+                context.classOverviewEdges.add(node)
             }
         }
     }
@@ -334,7 +561,7 @@ object GraphStore {
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
-        val nodeIndexFuture = CompletableFuture.supplyAsync { readNodeIndex(dir) }
+        val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
         val comparisonFuture = CompletableFuture.supplyAsync {
@@ -540,70 +767,6 @@ object GraphStore {
         }
 
         return PrecomputedImmutableGraph(PrecomputedAdjacency(numNodes, targets, offsets))
-    }
-
-    /**
-     * Result of reading and parsing the node index file.
-     */
-    private class NodeIndexData(
-        val nodeOffsets: NodeOffsetIndex,
-        val nodeTypeIndex: HashMap<Class<out Node>, IntArray>
-    )
-
-    /**
-     * Read the node index file and return parsed offsets and type index.
-     */
-    private fun readNodeIndex(dir: Path): NodeIndexData {
-        val nodeIndexFile = dir.resolve(NODE_INDEX_FILE).toFile()
-        require(nodeIndexFile.exists()) {
-            "Node index file not found: $nodeIndexFile. Re-save the graph to generate it."
-        }
-
-        val nodeTypeByTag = HashMap<Int, IntArrayList>()
-        val compactOffsets = Files.size(dir.resolve(NODE_DATA_FILE)) <= Int.MAX_VALUE
-        lateinit var nodeOffsets: MutableNodeOffsetIndex
-        DataInputStream(BufferedInputStream(nodeIndexFile.inputStream())).use { dis ->
-            NodeSerializer.readHeader(dis, NodeSerializer.MAGIC_NODEINDEX)
-            val nodeCount = dis.readInt()
-            nodeOffsets = if (compactOffsets) IntNodeOffsetIndex(nodeCount) else LongNodeOffsetIndex(nodeCount)
-            repeat(nodeCount) {
-                val nodeId = dis.readInt()
-                val tag = dis.readByte().toInt()
-                val offset = dis.readLong()
-                if (nodeId >= nodeOffsets.size) {
-                    nodeOffsets.ensureSize(nodeId + 1)
-                }
-                nodeOffsets.set(nodeId, offset)
-                nodeTypeByTag.getOrPut(tag) { IntArrayList() }.add(nodeId)
-            }
-        }
-
-        // Map tags to concrete Node classes
-        val nodeTypeIndex = HashMap<Class<out Node>, IntArray>()
-        val tagToClass = mapOf(
-            NodeSerializer.TAG_INT_CONSTANT to IntConstant::class.java,
-            NodeSerializer.TAG_STRING_CONSTANT to StringConstant::class.java,
-            NodeSerializer.TAG_LONG_CONSTANT to LongConstant::class.java,
-            NodeSerializer.TAG_FLOAT_CONSTANT to FloatConstant::class.java,
-            NodeSerializer.TAG_DOUBLE_CONSTANT to DoubleConstant::class.java,
-            NodeSerializer.TAG_BOOLEAN_CONSTANT to BooleanConstant::class.java,
-            NodeSerializer.TAG_NULL_CONSTANT to NullConstant::class.java,
-            NodeSerializer.TAG_ENUM_CONSTANT to EnumConstant::class.java,
-            NodeSerializer.TAG_LOCAL_VARIABLE to LocalVariable::class.java,
-            NodeSerializer.TAG_FIELD_NODE to FieldNode::class.java,
-            NodeSerializer.TAG_PARAMETER_NODE to ParameterNode::class.java,
-            NodeSerializer.TAG_RETURN_NODE to ReturnNode::class.java,
-            NodeSerializer.TAG_CALL_SITE_NODE to CallSiteNode::class.java,
-            NodeSerializer.TAG_ANNOTATION_NODE to AnnotationNode::class.java,
-            NodeSerializer.TAG_RESOURCE_VALUE_NODE to ResourceValueNode::class.java,
-            NodeSerializer.TAG_RESOURCE_FILE_NODE to ResourceFileNode::class.java
-        )
-        for ((tag, ids) in nodeTypeByTag) {
-            val cls = tagToClass[tag] ?: continue
-            nodeTypeIndex[cls] = ids.toIntArray()
-        }
-
-        return NodeIndexData(nodeOffsets, nodeTypeIndex)
     }
 
     /**

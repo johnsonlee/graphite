@@ -594,6 +594,55 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `save writes mmap node offset and type indexes`() {
+        val builder = DefaultGraph.Builder()
+        val first = IntConstant(NodeId(0), 1)
+        val second = IntConstant(NodeId(2), 2)
+        builder.addNode(first)
+        builder.addNode(second)
+
+        val dir = Files.createTempDirectory("webgraph-mapped-index-test")
+        try {
+            GraphStore.save(builder.build(), dir)
+
+            val offsets = MappedNodeOffsetIndex.load(dir.resolve("graph.nodeoffsets"))
+            assertEquals(3, offsets.size)
+            assertTrue(offsets.offset(first.id.value) >= 0L)
+            assertEquals(-1L, offsets.offset(1))
+            assertTrue(offsets.offset(second.id.value) > offsets.offset(first.id.value))
+
+            val typeIndex = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
+            assertEquals(2L, typeIndex.count(IntConstant::class.java))
+            assertEquals(listOf(0, 2), typeIndex.ids(IntConstant::class.java).toList().sorted())
+            assertEquals(2L, typeIndex.count(Node::class.java))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped load rebuilds mmap indexes from legacy node index`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-rebuild-mapped-index-test")
+        try {
+            GraphStore.save(graph, dir)
+            Files.delete(dir.resolve("graph.nodeoffsets"))
+            Files.delete(dir.resolve("graph.typeindex"))
+
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertTrue(Files.exists(dir.resolve("graph.nodeoffsets")))
+                assertTrue(Files.exists(dir.resolve("graph.typeindex")))
+                assertGraphOperations(graph, loaded)
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `round-trip preserves TypeEdge`() {
         val builder = DefaultGraph.Builder()
         val n1 = IntConstant(NodeId.next(), 1)
@@ -1256,8 +1305,11 @@ class GraphStoreTest {
     @Test
     fun `byte buffer data input reads primitives and counting output stream flush delegate correctly`() {
         val byteBufferDataInputClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferDataInput")
-        val inputCtor = byteBufferDataInputClass.getDeclaredConstructor(ByteBuffer::class.java).apply { isAccessible = true }
-        val input = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(0, 0, 0, 7, 1, 2, 3))) as DataInput
+        val inputCtor = byteBufferDataInputClass
+            .getDeclaredConstructor(ByteBuffer::class.java, Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+        val source = ByteBuffer.wrap(byteArrayOf(0, 0, 0, 7, 1, 2, 3))
+        val input = inputCtor.newInstance(source, 0) as DataInput
 
         assertEquals(7, input.readInt())
         assertTrue(input.readBoolean())
@@ -1268,10 +1320,11 @@ class GraphStoreTest {
         assertFailsWith<java.io.EOFException> {
             input.readByte()
         }
+        assertEquals(0, source.position())
 
-        val position = byteBufferDataInputClass.getDeclaredMethod("position", Int::class.javaPrimitiveType).apply { isAccessible = true }
-        position.invoke(input, 4)
-        assertTrue(input.readBoolean())
+        val offsetInput = inputCtor.newInstance(source, 4) as DataInput
+        assertTrue(offsetInput.readBoolean())
+        assertEquals(0, offsetInput.skipBytes(-1))
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {

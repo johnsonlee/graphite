@@ -28,6 +28,7 @@ class AndroidSdkIntegrationTest {
     @org.junit.Before
     fun checkFixture() {
         assumeTrue("Android JAR not available", androidJar != null && Files.exists(androidJar!!))
+        releaseLargeGraphMemory()
     }
 
     @org.junit.After
