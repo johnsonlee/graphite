@@ -9,11 +9,11 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 // ============================================================================
-//  Load benchmarks: eager vs lazy on ES and Android graphs
+//  Load benchmarks: eager vs mapped on ES and Android graphs
 // ============================================================================
 
 /**
- * Benchmarks [GraphStore.load] vs [GraphStore.loadLazy] on the ES graph (968K nodes).
+ * Benchmarks eager and mapped loading on the ES graph (968K nodes).
  * The persisted graph is auto-prepared from the fixture JAR if needed.
  */
 @State(Scope.Benchmark)
@@ -34,9 +34,6 @@ open class EsLoadBenchmark {
     fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
 
     @Benchmark
-    fun lazy_load(): Long = loadAndTouch { GraphStore.loadLazy(graphPath) }
-
-    @Benchmark
     fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
 
     private fun loadAndTouch(loader: () -> Graph): Long {
@@ -50,7 +47,7 @@ open class EsLoadBenchmark {
 }
 
 /**
- * Benchmarks [GraphStore.load] vs [GraphStore.loadLazy] on Android SDK graph (5.9M nodes).
+ * Benchmarks eager and mapped loading on Android SDK graph (5.9M nodes).
  * The persisted graph is auto-prepared from the fixture JAR if needed.
  */
 @State(Scope.Benchmark)
@@ -71,9 +68,6 @@ open class AndroidLoadBenchmark {
     fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
 
     @Benchmark
-    fun lazy_load(): Long = loadAndTouch { GraphStore.loadLazy(graphPath) }
-
-    @Benchmark
     fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
 
     private fun loadAndTouch(loader: () -> Graph): Long {
@@ -87,12 +81,12 @@ open class AndroidLoadBenchmark {
 }
 
 // ============================================================================
-//  Query benchmarks: eager vs lazy on ES graph (968K nodes)
+//  Query benchmarks: eager vs mapped on ES graph (968K nodes)
 // ============================================================================
 
 /**
  * Compares query performance between eager-loaded (all nodes in memory) and
- * lazy-loaded (nodes read from disk on demand) graphs.
+ * memory-mapped graphs.
  *
  * ES graph: 968K nodes, ~1M edges.
  */
@@ -105,20 +99,17 @@ open class AndroidLoadBenchmark {
 open class EsQueryBenchmark {
 
     private lateinit var eagerGraph: Graph
-    private lateinit var lazyGraph: Graph
     private lateinit var mappedGraph: Graph
 
     @Setup
     fun setup() {
         val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ELASTICSEARCH)
         eagerGraph = GraphStore.load(graphPath)
-        lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)
     }
 
     @TearDown
     fun tearDown() {
-        (lazyGraph as? Closeable)?.close()
         (mappedGraph as? Closeable)?.close()
     }
 
@@ -151,38 +142,6 @@ open class EsQueryBenchmark {
 
     @Benchmark
     fun eager_regexFilter() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
-    )
-
-    // --- Lazy ---
-
-    @Benchmark
-    fun lazy_simpleNodeMatch() = lazyGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
-
-    @Benchmark
-    fun lazy_intConstantFilter() = lazyGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id"
-    )
-
-    @Benchmark
-    fun lazy_countStar() = lazyGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
-
-    @Benchmark
-    fun lazy_singleHopRelationship() = lazyGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
-
-    @Benchmark
-    fun lazy_returnDistinct() = lazyGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
-
-    @Benchmark
-    fun lazy_regexFilter() = lazyGraph.query(
         "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
     )
 
@@ -220,7 +179,7 @@ open class EsQueryBenchmark {
 }
 
 // ============================================================================
-//  Query benchmarks: eager vs lazy on Android SDK graph (5.9M nodes)
+//  Query benchmarks: eager vs mapped on Android SDK graph (5.9M nodes)
 // ============================================================================
 
 /**
@@ -235,20 +194,17 @@ open class EsQueryBenchmark {
 open class AndroidQueryBenchmark {
 
     private lateinit var eagerGraph: Graph
-    private lateinit var lazyGraph: Graph
     private lateinit var mappedGraph: Graph
 
     @Setup
     fun setup() {
         val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
         eagerGraph = GraphStore.load(graphPath)
-        lazyGraph = GraphStore.loadLazy(graphPath)
         mappedGraph = GraphStore.loadMapped(graphPath)
     }
 
     @TearDown
     fun tearDown() {
-        (lazyGraph as? Closeable)?.close()
         (mappedGraph as? Closeable)?.close()
     }
 
@@ -276,33 +232,6 @@ open class AndroidQueryBenchmark {
 
     @Benchmark
     fun eager_returnDistinct() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
-
-    // --- Lazy ---
-
-    @Benchmark
-    fun lazy_simpleNodeMatch() = lazyGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
-
-    @Benchmark
-    fun lazy_intConstantFilter() = lazyGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
-    )
-
-    @Benchmark
-    fun lazy_countStar() = lazyGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
-
-    @Benchmark
-    fun lazy_singleHopRelationship() = lazyGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
-
-    @Benchmark
-    fun lazy_returnDistinct() = lazyGraph.query(
         "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
     )
 

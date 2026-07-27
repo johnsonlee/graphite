@@ -47,6 +47,7 @@ import io.johnsonlee.graphite.input.ResourceEntry
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
+import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.OutputStream
@@ -534,12 +535,10 @@ class GraphStoreTest {
         try {
             GraphStore.save(builder.build(), dir)
             val lookup = MappedBranchComparisonLookup.load(dir.resolve("graph.comparisons"))
-            val lazyLookup = LazyMappedBranchComparisonLookup(dir.resolve("graph.comparisons"))
 
             assertEquals(first, lookup.find(edgeKey(n1.id, n2.id)))
             assertEquals(second, lookup.find(edgeKey(n2.id, n4.id)))
             assertNull(lookup.find(edgeKey(n3.id, n4.id)))
-            assertEquals(first, lazyLookup.find(edgeKey(n1.id, n2.id)))
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -847,13 +846,12 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy and mapped graphs expose method count and limited method slices`() {
+    fun `mapped graph exposes method count and limited method slices`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-method-slice-test")
         val loadedGraphs = mutableListOf<Graph>()
         try {
             GraphStore.save(graph, dir)
-            loadedGraphs += GraphStore.loadLazy(dir)
             loadedGraphs += GraphStore.loadMapped(dir)
 
             for (loaded in loadedGraphs) {
@@ -1165,7 +1163,12 @@ class GraphStoreTest {
             val serializerClass = NodeSerializer::class.java
             val collectAnyValueString = serializerClass.getDeclaredMethod("collectAnyValueString", Any::class.java, MutableSet::class.java).apply { isAccessible = true }
             val writeAnyValue = serializerClass.getDeclaredMethod("writeAnyValue", DataOutputStream::class.java, Any::class.java, StringTable::class.java).apply { isAccessible = true }
-            val readAnyValue = serializerClass.getDeclaredMethod("readAnyValue", DataInputStream::class.java, StringTable::class.java, Int::class.javaPrimitiveType).apply { isAccessible = true }
+            val readAnyValue = serializerClass.getDeclaredMethod(
+                "readAnyValue",
+                DataInput::class.java,
+                StringTable::class.java,
+                Int::class.javaPrimitiveType
+            ).apply { isAccessible = true }
             val decodeEdgeV2 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV2") }.apply { isAccessible = true }
             val decodeEdgeV3 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV3") }.apply { isAccessible = true }
 
@@ -1251,17 +1254,24 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `byte buffer input stream available and counting output stream flush delegate correctly`() {
-        val byteBufferInputStreamClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferInputStream")
-        val inputCtor = byteBufferInputStreamClass.getDeclaredConstructor(ByteBuffer::class.java).apply { isAccessible = true }
-        val input = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(1, 2, 3))) as java.io.InputStream
-        assertEquals(3, input.available())
-        assertEquals(1, input.read())
-        assertEquals(2, input.available())
-        val buffer = ByteArray(4)
-        assertEquals(2, input.read(buffer, 1, 2))
-        assertEquals(byteArrayOf(0, 2, 3, 0).toList(), buffer.toList())
-        assertEquals(-1, input.read(buffer, 0, buffer.size))
+    fun `byte buffer data input reads primitives and counting output stream flush delegate correctly`() {
+        val byteBufferDataInputClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferDataInput")
+        val inputCtor = byteBufferDataInputClass.getDeclaredConstructor(ByteBuffer::class.java).apply { isAccessible = true }
+        val input = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(0, 0, 0, 7, 1, 2, 3))) as DataInput
+
+        assertEquals(7, input.readInt())
+        assertTrue(input.readBoolean())
+        assertEquals(2, input.readUnsignedByte())
+        val buffer = ByteArray(1)
+        input.readFully(buffer)
+        assertEquals(byteArrayOf(3).toList(), buffer.toList())
+        assertFailsWith<java.io.EOFException> {
+            input.readByte()
+        }
+
+        val position = byteBufferDataInputClass.getDeclaredMethod("position", Int::class.javaPrimitiveType).apply { isAccessible = true }
+        position.invoke(input, 4)
+        assertTrue(input.readBoolean())
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {
@@ -1588,7 +1598,7 @@ class GraphStoreTest {
     }
 
     // ========================================================================
-    // Load mode variants and lazy/mapped loading
+    // Load mode variants and mapped loading
     // ========================================================================
 
     @Test
@@ -1640,24 +1650,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `loadLazy preserves all graph operations`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-test")
-        try {
-            GraphStore.save(graph, dir)
-            // save() already builds the node index
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertGraphOperations(graph, loaded)
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `loadMapped preserves all graph operations`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-loadmapped-test")
@@ -1702,29 +1694,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `LazyWebGraphBackedGraph close releases resources`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-close-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir) as Closeable
-
-            // Access a node to trigger RAF creation
-            val lazyGraph = loaded as Graph
-            val firstNode = lazyGraph.nodes(Node::class.java).first()
-            assertNotNull(lazyGraph.node(firstNode.id))
-
-            // Close should not throw
-            loaded.close()
-
-            // Calling close again should also be safe (idempotent)
-            loaded.close()
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `MappedWebGraphBackedGraph close is safe`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-mapped-close-test")
@@ -1748,32 +1717,9 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `loadLazy from nonexistent directory throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            GraphStore.loadLazy(Files.createTempFile("not", "dir"))
-        }
-    }
-
-    @Test
     fun `loadMapped from nonexistent directory throws`() {
         assertFailsWith<IllegalArgumentException> {
             GraphStore.loadMapped(Files.createTempFile("not", "dir"))
-        }
-    }
-
-    @Test
-    fun `loadLazy without node index throws`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-no-index-test")
-        try {
-            GraphStore.save(graph, dir)
-            // Delete node index
-            Files.delete(dir.resolve("graph.nodeindex"))
-            assertFailsWith<IllegalArgumentException> {
-                GraphStore.loadLazy(dir)
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
         }
     }
 
@@ -1787,40 +1733,6 @@ class GraphStoreTest {
             Files.delete(dir.resolve("graph.nodeindex"))
             assertFailsWith<IllegalArgumentException> {
                 GraphStore.loadMapped(dir)
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph typed outgoing and incoming edges`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-typed-edges-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                val callSites = loaded.nodes(CallSiteNode::class.java).toList()
-                assertEquals(1, callSites.size)
-                val cs = callSites[0]
-
-                // Typed outgoing
-                val callEdges = loaded.outgoing(cs.id, CallEdge::class.java).toList()
-                assertEquals(1, callEdges.size)
-
-                val dataFlowEdges = loaded.outgoing(cs.id, DataFlowEdge::class.java).toList()
-                assertEquals(0, dataFlowEdges.size)
-
-                // Typed incoming
-                val locals = loaded.nodes(LocalVariable::class.java).toList()
-                assertEquals(1, locals.size)
-                val incomingDf = loaded.incoming(locals[0].id, DataFlowEdge::class.java).toList()
-                assertEquals(2, incomingDf.size)
-                val incomingCall = loaded.incoming(locals[0].id, CallEdge::class.java).toList()
-                assertEquals(0, incomingCall.size)
-            } finally {
-                (loaded as Closeable).close()
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -1862,30 +1774,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy graph out-of-bounds NodeId returns empty`() {
-        val builder = DefaultGraph.Builder()
-        val node = IntConstant(NodeId(0), 1)
-        builder.addNode(node)
-        val graph = builder.build()
-
-        val dir = Files.createTempDirectory("webgraph-lazy-oob-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                val bigId = NodeId(999999)
-                assertEquals(0, loaded.outgoing(bigId).count())
-                assertEquals(0, loaded.incoming(bigId).count())
-                assertNull(loaded.node(bigId))
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `mapped graph out-of-bounds NodeId returns empty`() {
         val builder = DefaultGraph.Builder()
         val node = IntConstant(NodeId(0), 1)
@@ -1901,29 +1789,6 @@ class GraphStoreTest {
                 assertEquals(0, loaded.outgoing(bigId).count())
                 assertEquals(0, loaded.incoming(bigId).count())
                 assertNull(loaded.node(bigId))
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph nodes with supertype returns all subtypes`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-supertype-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                // ConstantNode is a supertype of IntConstant, EnumConstant
-                val constants = loaded.nodes(ConstantNode::class.java).toList()
-                assertTrue(constants.size >= 2, "Should find at least IntConstant and EnumConstant")
-
-                // Node is the ultimate supertype
-                val allNodes = loaded.nodes(Node::class.java).toList()
-                assertEquals(8, allNodes.size)
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1954,23 +1819,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy graph branch scopes round-trip`() {
-        val graph = buildBranchScopeGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-branch-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertBranchScopeOperations(loaded)
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `mapped graph branch scopes round-trip`() {
         val graph = buildBranchScopeGraph()
         val dir = Files.createTempDirectory("webgraph-mapped-branch-test")
@@ -1979,25 +1827,6 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir)
             try {
                 assertBranchScopeOperations(loaded)
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph resources preserves persisted text resources`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-resources-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertEquals(1, loaded.resources.list("**").count())
-                val content = loaded.resources.open("application.properties").bufferedReader().readText()
-                assertTrue(content.contains("feature.enabled=true"))
             } finally {
                 (loaded as Closeable).close()
             }
@@ -2449,29 +2278,8 @@ class GraphStoreTest {
     }
 
     // ========================================================================
-    // Lazy and mapped load with parallel IO
+    // Mapped load with parallel IO
     // ========================================================================
-
-    @Test
-    fun `lazy load with parallel IO preserves graph`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("lazy-parallel-test")
-        try {
-            GraphStore.save(graph, dir)
-            GraphStore.ensureNodeIndex(dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertEquals(
-                    graph.nodes(Node::class.java).count(),
-                    loaded.nodes(Node::class.java).count()
-                )
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
 
     @Test
     fun `mapped load with parallel IO preserves graph`() {

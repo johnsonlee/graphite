@@ -46,6 +46,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 
 /** OutputStream wrapper that tracks total bytes written. */
 private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
@@ -71,7 +72,7 @@ private class CountingOutputStream(private val delegate: OutputStream) : OutputS
  * ecosystem tools (dsiutils + sux4j + fastutil).
  *
  * Storage layout:
- * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt lazily on incoming queries)
+ * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt on incoming queries)
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -100,6 +101,13 @@ object GraphStore {
     private fun readMetadataMethodCount(metadataFile: Path): Long =
         DataInputStream(BufferedInputStream(metadataFile.toFile().inputStream())).use { dis ->
             NodeSerializer.readMetadataMethodCount(dis).toLong()
+        }
+
+    private fun <T> joinLoad(future: CompletableFuture<T>): T =
+        try {
+            future.join()
+        } catch (e: CompletionException) {
+            throw e.cause ?: e
         }
 
     /**
@@ -311,82 +319,41 @@ object GraphStore {
     }
 
     /**
-     * Load a graph lazily -- node data stays on disk and is read on demand.
-     * Edge structures, metadata, and resources are also loaded on first use.
-     *
-     * Memory savings for Android SDK (5.9M nodes): ~500 MB vs ~4 GB eager.
-     * Query speed for LIMIT queries is similar; full-scan queries pay ~5-10x
-     * for on-demand node deserialization.
-     */
-    fun loadLazy(dir: Path): Graph {
-        require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
-
-        val (nodeDataVersion, _) = readNodeDataHeader(dir)
-        val nodeIndex = readNodeIndex(dir)
-        val edgeCount = Files.size(dir.resolve(LABELS_FILE))
-        val metadataFile = dir.resolve(METADATA_FILE)
-        val methodCount = readMetadataMethodCount(metadataFile)
-        val stringTable = StringTable.load(dir)
-        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val backward = lazy { loadBackward(forward.value) }
-        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
-        val comparisonLookup = LazyMappedBranchComparisonLookup(dir.resolve(COMPARISONS_FILE))
-        val metadata = lazy {
-            DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
-                NodeSerializer.loadMetadata(dis, stringTable)
-            }
-        }
-        val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
-
-        return LazyWebGraphBackedGraph(
-            forward = forward,
-            backward = backward,
-            nodeDataFile = dir.resolve(NODE_DATA_FILE).toFile(),
-            nodeDataVersion = nodeDataVersion,
-            stringTable = stringTable,
-            nodeOffsets = nodeIndex.nodeOffsets,
-            nodeTypeIndex = nodeIndex.nodeTypeIndex,
-            forwardLabels = labelBytes,
-            cumulativeOutdeg = cumulativeOutdeg,
-            edgeCount = edgeCount,
-            metadataFile = metadataFile.toFile(),
-            methodCount = methodCount,
-            comparisonLookup = comparisonLookup,
-            metadata = metadata,
-            classOverviewProvider = classOverview,
-            resourceAccessor = lazy { PersistedResourceStore.load(dir) }
-        )
-    }
-
-    /**
-     * Load a graph with memory-mapped node data. Edge structures, metadata,
-     * and resources are loaded on first use, while node data is memory-mapped.
+     * Load a graph with memory-mapped node data. Forward edge structures and
+     * edge labels are opened during load so the returned graph is ready for
+     * forward traversal without hidden first-query initialization.
      *
      * The OS page cache manages which node pages are in physical RAM.
      * No JVM heap allocation for node data, and no system calls per node access
-     * (unlike [loadLazy] which uses [RandomAccessFile.seek]).
+     * after the initial page fault.
      */
     fun loadMapped(dir: Path): Graph {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
-        val nodeIndex = readNodeIndex(dir)
-        val edgeCount = Files.size(dir.resolve(LABELS_FILE))
         val metadataFile = dir.resolve(METADATA_FILE)
-        val methodCount = readMetadataMethodCount(metadataFile)
+        val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
+        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        val nodeIndexFuture = CompletableFuture.supplyAsync { readNodeIndex(dir) }
+        val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
+        val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
+        val comparisonFuture = CompletableFuture.supplyAsync {
+            MappedBranchComparisonLookup.load(dir.resolve(COMPARISONS_FILE))
+        }
 
         val nodeDataPath = dir.resolve(NODE_DATA_FILE)
         val channel = FileChannel.open(nodeDataPath, StandardOpenOption.READ)
         val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
         channel.close()
 
-        val stringTable = StringTable.load(dir)
-        val forward = lazy { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val backward = lazy { loadBackward(forward.value) }
-        val labelBytes = lazy { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
-        val cumulativeOutdeg = lazy { buildCumulativeOutdeg(forward.value) }
-        val comparisonLookup = LazyMappedBranchComparisonLookup(dir.resolve(COMPARISONS_FILE))
+        val forward = joinLoad(forwardFuture)
+        val labelBytes = joinLoad(labelsFuture)
+        val stringTable = joinLoad(stringTableFuture)
+        val nodeIndex = joinLoad(nodeIndexFuture)
+        val methodCount = joinLoad(methodCountFuture)
+        val comparisonLookup = joinLoad(comparisonFuture)
+        val backward = lazy { loadBackward(forward) }
+        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
         val metadata = lazy {
             DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
                 NodeSerializer.loadMetadata(dis, stringTable)
@@ -404,7 +371,7 @@ object GraphStore {
             nodeTypeIndex = nodeIndex.nodeTypeIndex,
             forwardLabels = labelBytes,
             cumulativeOutdeg = cumulativeOutdeg,
-            edgeCount = edgeCount,
+            edgeCount = labelBytes.size.toLong(),
             metadataFile = metadataFile.toFile(),
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,

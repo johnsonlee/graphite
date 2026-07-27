@@ -8,12 +8,12 @@ graph-dir/
 ├── graph.strings      FrontCodedStringList (deduplicated string dictionary)
 ├── graph.labels       byte[] edge type labels (1 byte per arc)
 ├── graph.nodedata     Sequential node records
-├── graph.nodeindex    Node ID → offset index for lazy/mapped loading
+├── graph.nodeindex    Node ID → offset index for mapped loading
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
-Backward adjacency is not stored on disk. It is rebuilt lazily from `forward.*`
+Backward adjacency is not stored on disk. It is rebuilt on demand from `forward.*`
 on the first `incoming()` query for a loaded graph, so forward-only queries do
 not pay transpose construction during load.
 
@@ -25,19 +25,19 @@ not pay transpose construction during load.
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D02` |
-| graph.nodedata | `GRN` | `0x47524E02` |
-| graph.nodeindex | `GRI` | `0x47524902` |
-| graph.comparisons | `GRC` | `0x47524302` |
+| graph.metadata | `GRM` | `0x47524D03` |
+| graph.nodedata | `GRN` | `0x47524E03` |
+| graph.nodeindex | `GRI` | `0x47524903` |
+| graph.comparisons | `GRC` | `0x47524303` |
 
-Current writers emit version `2`. Readers accept legacy version `1` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current build is upgraded to version `2`.
+Current writers emit version `3`. Readers accept legacy version `1` and transitional version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current build is upgraded to version `3`.
 
 ### Edge Label Encoding (8-bit)
 
 ```
-bits 0-1: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow)
-bits 2-5: subkind ordinal
-bits 6-7: extra flags (Call: bit6=isVirtual, bit7=isDynamic)
+bits 0-2: edge family (0=DataFlow, 1=Call, 2=Type, 3=ControlFlow, 4=Resource)
+bits 3-6: subkind ordinal or call flags
+bit 7: reserved
 ```
 
 ## Pipeline
@@ -47,8 +47,9 @@ BUILD                          SAVE                              LOAD
 SootUpAdapter                  GraphStore.save()                 GraphStore.load()
   → DefaultGraph                 1. String collection              1. BVGraph.load       ┐
                                  2. Metadata + StringTable         2. StringTable.load    ├ parallel
-                                 3. Forward adjacency + labels     3. Labels + comparisons┘
-                                                                   4. Prepare lazy backward builder
+                                 3. Forward adjacency + labels     3. Labels + comparisons mmap
+                                                                   4. Mapped node index + nodedata
+                                                                   5. Prepare backward builder
                                  4. BVGraph.store                  5. Read nodes + metadata
                                  5. Labels + comparisons write
                                  6. Nodedata + nodeindex write
@@ -79,17 +80,17 @@ graph TD
     A[Graph directory] --> B[Parallel I/O]
     B --> B1["BVGraph.load(forward)"]
     B --> B2[StringTable.load]
-    B --> B3[Labels + comparisons]
+    B --> B3[Labels + comparisons mmap]
+    B --> B4[Node index]
     B1 --> C[Build cumulative outdegree]
-    B1 --> D[Prepare lazy backward builder]
+    B1 --> D[Prepare backward builder]
     D --> D1[First incoming query: count indegree]
     D1 --> D2[Fill predecessor arrays + sort]
     B2 --> E[Read nodes]
     E -->|Eager| E1[Deserialize all to heap]
     E -->|Mapped| E2[mmap nodedata file]
-    E -->|Lazy| E3[RandomAccessFile on demand]
     B2 --> F[Read metadata]
-C & D & B3 & E & F --> G[Construct Graph]
+C & D & B3 & B4 & E & F --> G[Construct Graph]
 ```
 
 ### Load Modes
@@ -98,7 +99,6 @@ C & D & B3 & E & F --> G[Construct Graph]
 |------|----------|-----------|------|
 | EAGER | All nodes deserialized to heap | < 1M nodes | Highest |
 | MAPPED | Node data memory-mapped (OS page cache) | >= 1M nodes | Off-heap |
-| LAZY | Nodes read from disk on demand | Manual | Lowest |
 
 ## Performance
 
@@ -1004,3 +1004,61 @@ Intermediate full-materialization versions were rejected before commit. A full q
 `git diff --check`, `koverLog`, `:webgraph:koverLog`, `:webgraph:check -S`, and `check -S` passed. Coverage remained above the CI gate: `core` `98.0592%`, `cypher` `98.0652%`, `explore` `98.0691%`, `sootup` `98.2783%`, `webgraph` `98.6422%`, and `query` `100%`.
 
 **Conclusion:** this is a real eager/mmap residency reduction, not a lazy-mode relocation. Under the long-running explorer workload, warmed-up heap stays flat around `150 MiB`, max used heap drops by roughly one third from Attempt 017, and query/build-save-load guardrails stay effectively unchanged. The remaining large residents are the forward BVGraph, label bytes, string table, node type index, and the compact node offset index; those are inherent to serving forward graph queries without eager node materialization.
+
+### 2026-07-27 — Attempt 019: Remove lazy load mode and make mmap query-ready
+
+**Hypothesis:** keeping `GraphStore.loadLazy()` and the seek-based `LazyWebGraphBackedGraph` leaves a second load strategy that can hide memory and latency in the first query instead of improving the eager/mmap path. `MAPPED` should open the forward graph structures it needs for normal forward traversal during load, while still keeping node records off heap with mmap.
+
+**Change:**
+
+- remove `GraphStore.loadLazy()`, `LazyWebGraphBackedGraph`, lazy JMH cases, lazy-specific tests, and stale detekt baseline entries
+- remove `LazyMappedBranchComparisonLookup`; mapped graphs now establish the mmap comparison lookup during load
+- change `MappedWebGraphBackedGraph` to hold direct `ImmutableGraph`, label bytes, and cumulative outdegree values instead of `Lazy<T>` wrappers
+- parallelize mapped load across forward BVGraph, string table, node index, labels, method count, and comparison mmap setup
+- change node deserialization from `DataInputStream`-only to `DataInput`, and use a thread-local `ByteBufferDataInput` for mapped node reads to avoid per-node `ByteBufferInputStream` and `DataInputStream` allocations
+
+**Build/save impact:** no persisted format change and no extra save pass. This changes loaded-graph behavior only: mapped graphs are ready for forward edge traversal after load, and node data remains mmap-backed rather than heap-resident.
+
+**Validation commands:**
+
+```
+git diff --check
+./gradlew :webgraph:test --tests io.johnsonlee.graphite.webgraph.GraphStoreTest --no-daemon
+./gradlew :webgraph:jmhClasses --no-daemon
+./gradlew :webgraph:koverLog --no-daemon
+./gradlew :webgraph:check -S --no-daemon
+./gradlew check -S --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='(AndroidLoadBenchmark.mapped_load|AndroidQueryBenchmark.mapped_(simpleNodeMatch|singleHopRelationship|returnDistinct)|GraphEndToEndBenchmark.android_build_save_load_query)' --no-daemon
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_(initialExplorerSession|browserForwardExploration|longRunningExplorerWaterline)' --no-daemon
+```
+
+**Explorer result:**
+
+| Benchmark / metric | Attempt 018 | Attempt 019 | Change |
+|--------------------|-------------|-------------|--------|
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` time | `800.622 ms/op` | `793.486 ms/op` | `-7.136 ms` / `-0.9%` |
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` retained heap | `1502984 B` | `1512656 B` | effectively unchanged |
+| `ExplorerMemoryBenchmark.android_initialExplorerSession` max used heap | `100948440 B` | `149452392 B` | edge structures are now accounted for before the first request; still far below 4 GiB |
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` time | `1107.741 ms/op` | `795.411 ms/op` | `-312.330 ms` / `-28.2%` |
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` retained heap | `49119328 B` | `584600 B` | `-48534728 B` / `-98.8%` |
+| `ExplorerMemoryBenchmark.android_browserForwardExploration` max used heap | `149020856 B` | `148523312 B` | effectively unchanged |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` time | `3000.117 ms/op` | `2809.244 ms/op` | `-190.873 ms` / `-6.4%` |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` max used heap | `219431008 B` | `220201920 B` | effectively unchanged and far below 4 GiB |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` max committed heap | `364904448 B` | `532676608 B` | forward structures now initialized during load; still far below 4 GiB |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` steady used heap before/after | `150224992 B` -> `150239384 B` | `150089976 B` -> `149957784 B` | stable waterline |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` retained heap | `50380376 B` | `1918784 B` | `-48461592 B` / `-96.2%` |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` RSS growth | `10534912 B` | `8241152 B` | observation only; mmap/page-cache dependent |
+
+**Build/load/query guardrail result:**
+
+| Benchmark | Attempt 018 | Attempt 019 | Change |
+|-----------|-------------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `155.265 ms/op` | `269.822 ms/op` | not directly comparable: Attempt 019 includes forward graph and labels in load instead of deferring them to first query |
+| `AndroidQueryBenchmark.mapped_returnDistinct` | `0.190 ms/op` | `0.176 ms/op` | no regression |
+| `AndroidQueryBenchmark.mapped_simpleNodeMatch` | `0.085 ms/op` | `0.074 ms/op` | no regression |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `0.635 ms/op` | `0.632 ms/op` | no regression |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `107200.646 ms/op` | `105662.095 ms/op` | `-1538.551 ms` / `-1.4%`, no regression |
+
+`GraphStoreTest`, `jmhClasses`, `git diff --check`, `:webgraph:koverLog`, `:webgraph:check -S`, and `check -S` passed. `webgraph` line coverage remained above the CI gate at `98.3038%`.
+
+**Conclusion:** the explicit lazy mode is gone. The mapped path is now an eager+mmap path for forward graph serving: node records stay off heap, comparison metadata is mmap-backed, and forward graph/labels are initialized during load instead of being moved to the first query. This is progress toward the target, but it does not complete the broader goal: mapped load still needs another round of real optimization because the old `mapped_load` number was partly achieved by deferred initialization.

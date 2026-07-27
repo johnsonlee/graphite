@@ -24,17 +24,6 @@ internal class MapBranchComparisonLookup(
     override fun find(key: Long): BranchComparison? = comparisons[key]
 }
 
-internal class LazyMappedBranchComparisonLookup(
-    private val path: Path
-) : BranchComparisonLookup {
-
-    private val delegate: BranchComparisonLookup by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        MappedBranchComparisonLookup.load(path)
-    }
-
-    override fun find(key: Long): BranchComparison? = delegate.find(key)
-}
-
 internal class MappedBranchComparisonLookup private constructor(
     private val buffer: MappedByteBuffer,
     private val count: Int

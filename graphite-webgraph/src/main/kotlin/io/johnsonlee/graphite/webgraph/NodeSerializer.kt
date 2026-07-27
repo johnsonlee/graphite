@@ -37,6 +37,7 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.MethodPattern
+import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -89,7 +90,7 @@ internal object NodeSerializer {
     }
 
     /** Read and validate the 4-byte file header. Returns the format version. */
-    fun readHeader(dis: DataInputStream, expectedMagic: Int): Int {
+    fun readHeader(dis: DataInput, expectedMagic: Int): Int {
         val h = dis.readInt()
         val prefix = h and HEADER_MAGIC_MASK
         require(prefix == expectedMagic) {
@@ -477,7 +478,7 @@ internal object NodeSerializer {
         return tag
     }
 
-    fun readNode(dis: DataInputStream, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
+    fun readNode(dis: DataInput, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
         val id = NodeId(dis.readInt())
         return when (val tag = dis.readByte().toInt()) {
             TAG_INT_CONSTANT -> IntConstant(id, dis.readInt())
@@ -641,7 +642,7 @@ internal object NodeSerializer {
         }
     }
 
-    fun loadMetadata(dis: DataInputStream, strings: StringTable): GraphMetadata {
+    fun loadMetadata(dis: DataInput, strings: StringTable): GraphMetadata {
         val formatVersion = readHeader(dis, MAGIC_METADATA)
         // Methods
         val methodCount = dis.readInt()
@@ -739,13 +740,13 @@ internal object NodeSerializer {
         return GraphMetadata(methods, supertypes, subtypes, enumValues, classOrigins, artifactDependencies, memberAnnotations, branchScopes)
     }
 
-    fun readMetadataMethodCount(dis: DataInputStream): Int {
+    fun readMetadataMethodCount(dis: DataInput): Int {
         readHeader(dis, MAGIC_METADATA)
         return dis.readInt()
     }
 
     fun readMetadataMethodSlice(
-        dis: DataInputStream,
+        dis: DataInput,
         strings: StringTable,
         pattern: MethodPattern,
         limit: Int
@@ -781,7 +782,7 @@ internal object NodeSerializer {
         }
     }
 
-    fun readComparisons(dis: DataInputStream): Map<Long, BranchComparison> {
+    fun readComparisons(dis: DataInput): Map<Long, BranchComparison> {
         readHeader(dis, MAGIC_COMPARISONS)
         val count = dis.readInt()
         val result = HashMap<Long, BranchComparison>(count)
@@ -806,7 +807,7 @@ internal object NodeSerializer {
         dos.writeInt(strings.indexOf(md.returnType.className))
     }
 
-    private fun readMethodDescriptor(dis: DataInputStream, strings: StringTable): MethodDescriptor {
+    private fun readMethodDescriptor(dis: DataInput, strings: StringTable): MethodDescriptor {
         val className = TypeDescriptor(strings.get(dis.readInt()))
         val name = strings.get(dis.readInt())
         val paramCount = dis.readInt()
@@ -834,7 +835,7 @@ internal object NodeSerializer {
         }
     }
 
-    private fun readAnyValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? = when (dis.readByte().toInt()) {
+    private fun readAnyValue(dis: DataInput, strings: StringTable, formatVersion: Int): Any? = when (dis.readByte().toInt()) {
         VAL_INT -> dis.readInt()
         VAL_LONG -> dis.readLong()
         VAL_STRING -> strings.get(dis.readInt())
@@ -852,7 +853,7 @@ internal object NodeSerializer {
         else -> strings.get(dis.readInt()) // fallback
     }
 
-    private fun readAnnotationValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? {
+    private fun readAnnotationValue(dis: DataInput, strings: StringTable, formatVersion: Int): Any? {
         return if (formatVersion == LEGACY_FORMAT_VERSION) {
             strings.get(dis.readInt()).let { it.ifEmpty { null } }
         } else {

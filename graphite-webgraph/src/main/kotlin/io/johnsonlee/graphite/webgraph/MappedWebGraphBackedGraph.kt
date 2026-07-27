@@ -15,9 +15,10 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
 import java.io.BufferedInputStream
 import java.io.Closeable
+import java.io.DataInput
 import java.io.DataInputStream
+import java.io.EOFException
 import java.io.File
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 
@@ -29,14 +30,13 @@ import java.nio.MappedByteBuffer
  * accessed nodes are cached in physical RAM via the page cache, unused nodes
  * stay on disk. No JVM heap is used for node storage.
  *
- * Unlike [LazyWebGraphBackedGraph] which uses [RandomAccessFile.seek] (one
- * system call per node access), this uses [MappedByteBuffer] which translates
- * to direct memory reads — no system calls after the initial page fault.
+ * Unlike a seek-based node reader, this uses [MappedByteBuffer] which translates
+ * to direct memory reads -- no system calls after the initial page fault.
  *
  * **Memory profile (5.9M nodes, 6.5M edges):**
- * - BVGraph forward: loaded lazily on first edge traversal
+ * - BVGraph forward: loaded during graph open
  * - BVGraph backward: built lazily on first incoming query
- * - Edge label map: loaded lazily on first edge traversal
+ * - Edge label map: loaded during graph open
  * - Node index: ~47 MB (heap, nodeId → offset)
  * - Node type index: ~24 MB (heap, type → nodeId list)
  * - StringTable: ~21 MB (heap)
@@ -48,15 +48,15 @@ import java.nio.MappedByteBuffer
  */
 @Suppress("LongParameterList")
 internal class MappedWebGraphBackedGraph(
-    private val forward: Lazy<ImmutableGraph>,
+    private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,
     private val mappedNodeData: MappedByteBuffer,
     private val nodeDataVersion: Int,
     private val stringTable: StringTable,
     private val nodeOffsets: NodeOffsetIndex,
     private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
-    private val forwardLabels: Lazy<ByteArray>,
-    private val cumulativeOutdeg: Lazy<IntArray>,
+    private val forwardLabels: ByteArray,
+    private val cumulativeOutdeg: IntArray,
     private val edgeCount: Long,
     private val metadataFile: File,
     private val methodCount: Long,
@@ -79,6 +79,10 @@ internal class MappedWebGraphBackedGraph(
                 falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
             )
         }.groupBy { it.conditionNodeId.value }
+    }
+
+    private val nodeInputLocal = ThreadLocal.withInitial {
+        ByteBufferDataInput(mappedNodeData.asReadOnlyBuffer())
     }
 
     override fun node(id: NodeId): Node? {
@@ -112,15 +116,13 @@ internal class MappedWebGraphBackedGraph(
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
-        val forwardGraph = forward.value
-        if (nodeIdx >= forwardGraph.numNodes()) return emptySequence()
-        val succs = forwardGraph.successorArray(nodeIdx)
-        val outdeg = forwardGraph.outdegree(nodeIdx)
-        val labels = forwardLabels.value
-        val labelStart = cumulativeOutdeg.value[nodeIdx]
+        if (nodeIdx >= forward.numNodes()) return emptySequence()
+        val succs = forward.successorArray(nodeIdx)
+        val outdeg = forward.outdegree(nodeIdx)
+        val labelStart = cumulativeOutdeg[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = labels[labelStart + i].toInt() and BYTE_MASK
+            val label = forwardLabels[labelStart + i].toInt() and BYTE_MASK
             val comparison = comparisonForEdge(label, nodeIdx, to, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
@@ -141,12 +143,11 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private fun lookupForwardLabel(from: Int, to: Int): Int {
-        val forwardGraph = forward.value
-        val succs = forwardGraph.successorArray(from)
-        val outdeg = forwardGraph.outdegree(from)
+        val succs = forward.successorArray(from)
+        val outdeg = forward.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
         return if (pos >= 0) {
-            forwardLabels.value[cumulativeOutdeg.value[from] + pos].toInt() and BYTE_MASK
+            forwardLabels[cumulativeOutdeg[from] + pos].toInt() and BYTE_MASK
         } else {
             0
         }
@@ -203,33 +204,92 @@ internal class MappedWebGraphBackedGraph(
         metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
+        nodeInputLocal.remove()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
 
     private fun readNodeAt(offset: Long): Node {
-        // Create a duplicate to avoid position conflicts across threads
-        val buf = mappedNodeData.duplicate()
-        buf.position(offset.toInt())
-        val dis = DataInputStream(ByteBufferInputStream(buf))
-        return NodeSerializer.readNode(dis, stringTable, nodeDataVersion)
+        val input = nodeInputLocal.get()
+        input.position(offset.toInt())
+        return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
     }
 }
 
 /**
- * Adapts a [ByteBuffer] as an [InputStream] for use with [DataInputStream].
- * No system calls — reads directly from mapped memory.
+ * Adapts a [ByteBuffer] as [DataInput] for node deserialization.
+ * No system calls -- reads directly from mapped memory.
  */
-private class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {
-    override fun read(): Int {
-        return if (buf.hasRemaining()) buf.get().toInt() and BYTE_MASK else -1
+private class ByteBufferDataInput(private val buf: ByteBuffer) : DataInput {
+    fun position(position: Int) {
+        buf.position(position)
     }
 
-    override fun read(b: ByteArray, off: Int, len: Int): Int {
-        if (!buf.hasRemaining()) return -1
-        val toRead = minOf(len, buf.remaining())
-        buf.get(b, off, toRead)
-        return toRead
+    override fun readFully(bytes: ByteArray) {
+        readFully(bytes, 0, bytes.size)
     }
 
-    override fun available(): Int = buf.remaining()
+    override fun readFully(bytes: ByteArray, off: Int, len: Int) {
+        requireRemaining(len)
+        buf.get(bytes, off, len)
+    }
+
+    override fun skipBytes(n: Int): Int {
+        val skipped = minOf(n, buf.remaining())
+        buf.position(buf.position() + skipped)
+        return skipped
+    }
+
+    override fun readBoolean(): Boolean = readUnsignedByte() != 0
+
+    override fun readByte(): Byte {
+        requireRemaining(Byte.SIZE_BYTES)
+        return buf.get()
+    }
+
+    override fun readUnsignedByte(): Int = readByte().toInt() and BYTE_MASK
+
+    override fun readShort(): Short {
+        requireRemaining(Short.SIZE_BYTES)
+        return buf.short
+    }
+
+    override fun readUnsignedShort(): Int = readShort().toInt() and USHORT_MASK
+
+    override fun readChar(): Char {
+        requireRemaining(Char.SIZE_BYTES)
+        return buf.char
+    }
+
+    override fun readInt(): Int {
+        requireRemaining(Int.SIZE_BYTES)
+        return buf.int
+    }
+
+    override fun readLong(): Long {
+        requireRemaining(Long.SIZE_BYTES)
+        return buf.long
+    }
+
+    override fun readFloat(): Float {
+        requireRemaining(Float.SIZE_BYTES)
+        return buf.float
+    }
+
+    override fun readDouble(): Double {
+        requireRemaining(Double.SIZE_BYTES)
+        return buf.double
+    }
+
+    override fun readLine(): String =
+        throw UnsupportedOperationException("ByteBufferDataInput does not support readLine")
+
+    override fun readUTF(): String = DataInputStream.readUTF(this)
+
+    private fun requireRemaining(bytes: Int) {
+        if (buf.remaining() < bytes) throw EOFException()
+    }
+
+    private companion object {
+        private const val USHORT_MASK = 0xFFFF
+    }
 }
