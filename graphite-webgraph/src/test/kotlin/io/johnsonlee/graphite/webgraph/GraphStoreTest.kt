@@ -643,6 +643,64 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped node indexes reject invalid headers and ranges`() {
+        val dir = Files.createTempDirectory("webgraph-invalid-mapped-index-test")
+        try {
+            val offsetIndex = dir.resolve("graph.nodeoffsets")
+            DataOutputStream(offsetIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEOFFSETS)
+                dos.writeInt(-1)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeOffsetIndex.load(offsetIndex)
+            }
+
+            val typeIndex = dir.resolve("graph.typeindex")
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(-1)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(1)
+                dos.writeByte(NodeSerializer.TAG_INT_CONSTANT)
+                dos.writeInt(-1)
+                dos.writeLong(0L)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(1)
+                dos.writeByte(NodeSerializer.TAG_INT_CONSTANT)
+                dos.writeInt(0)
+                dos.writeLong(Int.MAX_VALUE.toLong() + 1L)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `node tag helpers expose stable defensive mappings`() {
+        val tags = nodeTagEntries()
+        tags[0] = 99
+
+        assertEquals(NodeSerializer.TAG_INT_CONSTANT, nodeTagEntries()[0])
+        assertEquals(IntConstant::class.java, nodeClassForTag(NodeSerializer.TAG_INT_CONSTANT))
+        assertNull(nodeClassForTag(255))
+    }
+
+    @Test
     fun `round-trip preserves TypeEdge`() {
         val builder = DefaultGraph.Builder()
         val n1 = IntConstant(NodeId.next(), 1)
@@ -1325,6 +1383,32 @@ class GraphStoreTest {
         val offsetInput = inputCtor.newInstance(source, 4) as DataInput
         assertTrue(offsetInput.readBoolean())
         assertEquals(0, offsetInput.skipBytes(-1))
+
+        val skipInput = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(1, 2, 3)), 0) as DataInput
+        assertEquals(2, skipInput.skipBytes(2))
+        assertEquals(3, skipInput.readUnsignedByte())
+        assertEquals(0, skipInput.skipBytes(1))
+
+        val primitives = ByteBuffer.allocate(
+            Short.SIZE_BYTES + Char.SIZE_BYTES + Long.SIZE_BYTES + Float.SIZE_BYTES + Double.SIZE_BYTES
+        )
+        primitives.putShort(7)
+        primitives.putChar('g')
+        primitives.putLong(11L)
+        primitives.putFloat(1.25f)
+        primitives.putDouble(2.5)
+        primitives.flip()
+        val primitiveInput = inputCtor.newInstance(primitives, 0) as DataInput
+        assertEquals(7, primitiveInput.readShort().toInt())
+        assertEquals('g', primitiveInput.readChar())
+        assertEquals(11L, primitiveInput.readLong())
+        assertEquals(1.25f, primitiveInput.readFloat())
+        assertEquals(2.5, primitiveInput.readDouble())
+
+        val utfOut = ByteArrayOutputStream()
+        DataOutputStream(utfOut).use { it.writeUTF("ok") }
+        val utfInput = inputCtor.newInstance(ByteBuffer.wrap(utfOut.toByteArray()), 0) as DataInput
+        assertEquals("ok", utfInput.readUTF())
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {
