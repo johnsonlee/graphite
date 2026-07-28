@@ -9,6 +9,17 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
 
+data class ClassDependency(
+    val callerClass: String,
+    val calleeClass: String
+)
+
+data class ClassOverview(
+    val classCounts: Map<String, Int>,
+    val classEdges: Map<ClassDependency, Int>,
+    val callSiteCount: Int
+)
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -18,6 +29,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
  * 2. Queryable - supports efficient traversal and pattern matching
  * 3. Composable - can be built incrementally from different sources
  */
+@Suppress("TooManyFunctions")
 interface Graph {
     /**
      * Get a node by its ID
@@ -35,6 +47,12 @@ interface Graph {
      * to indicate callers should fall back to [nodes].
      */
     fun nodeCount(type: Class<out Node>): Long? = null
+
+    /**
+     * Return a precomputed edge count when the graph can answer without
+     * scanning every node's adjacency list.
+     */
+    fun edgeCount(): Long? = null
 
     /**
      * Get all outgoing edges from a node
@@ -71,6 +89,18 @@ interface Graph {
      * Find methods matching a pattern
      */
     fun methods(pattern: MethodPattern): Sequence<MethodDescriptor>
+
+    /**
+     * Return a precomputed method count when the graph can answer without
+     * materializing every method descriptor.
+     */
+    fun methodCount(): Long? = null
+
+    /**
+     * Return up to [limit] methods matching [pattern] when the graph can do so
+     * without materializing the full method index.
+     */
+    fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
 
     /**
      * Get the underlying values for an enum constant.
@@ -134,6 +164,12 @@ interface Graph {
      * - `elasticsearch-8.17.0 -> lucene-core-9.12.0`
      */
     fun artifactDependencies(): Map<String, Map<String, Int>> = emptyMap()
+
+    /**
+     * Return a precomputed class-level call overview when the graph can answer
+     * without scanning/deserializing call-site nodes.
+     */
+    fun classOverview(limit: Int): ClassOverview? = null
 
 }
 

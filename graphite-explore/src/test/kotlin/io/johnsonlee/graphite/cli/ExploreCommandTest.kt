@@ -191,8 +191,11 @@ class ExploreCommandTest {
         }
     }
 
-    private fun get(path: String, headers: Map<String, String> = emptyMap()): Pair<Int, String> {
-        val url = URI("http://localhost:$port$path").toURL()
+    private fun get(path: String, headers: Map<String, String> = emptyMap()): Pair<Int, String> =
+        get(port, path, headers)
+
+    private fun get(targetPort: Int, path: String, headers: Map<String, String> = emptyMap()): Pair<Int, String> {
+        val url = URI("http://localhost:$targetPort$path").toURL()
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "GET"
         conn.connectTimeout = 5000
@@ -206,6 +209,18 @@ class ExploreCommandTest {
         }
         conn.disconnect()
         return code to body
+    }
+
+    private fun withExploreApp(graph: Graph, block: (Int) -> Unit) {
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            ExploreRoutes().register(localApp, graph)
+            block(localApp.port())
+        } finally {
+            localApp.stop()
+        }
     }
 
     private fun post(path: String, jsonBody: String): Pair<Int, String> {
@@ -376,6 +391,14 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `GET api node outgoing respects limit`() {
+        val (code, body) = get("/api/node/${paramNode.id.value}/outgoing?limit=0")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertTrue(edges.isEmpty(), "limit=0 should return no outgoing edges")
+    }
+
+    @Test
     fun `GET api node outgoing returns 400 for invalid id`() {
         val (code, _) = get("/api/node/abc/outgoing")
         assertEquals(400, code)
@@ -391,6 +414,14 @@ class ExploreCommandTest {
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertTrue(edges.size >= 2, "localNode should have at least 2 incoming edges (param + intConst)")
+    }
+
+    @Test
+    fun `GET api node incoming respects limit`() {
+        val (code, body) = get("/api/node/${localNode.id.value}/incoming?limit=1")
+        assertEquals(200, code)
+        val edges: List<Map<String, Any?>> = parseJson(body)
+        assertEquals(1, edges.size)
     }
 
     @Test
@@ -573,6 +604,19 @@ class ExploreCommandTest {
     fun `GET api resource content returns 404 for missing path`() {
         val (code, body) = get("/api/resources/missing.yml")
         assertEquals(404, code, "Expected 404, body: $body")
+    }
+
+    @Test
+    fun `GET api resource content rejects oversized payloads`() {
+        val largeGraph = DefaultGraph.Builder()
+            .setResources(TestResourceAccessor(mapOf("large.txt" to "x".repeat(1_048_577))))
+            .build()
+
+        withExploreApp(largeGraph) { targetPort ->
+            val (code, body) = get(targetPort, "/api/resources/large.txt")
+            assertEquals(413, code, "Expected 413, body: $body")
+            assertTrue(body.contains("Resource exceeds maximum response size"))
+        }
     }
 
     @Test
@@ -1081,6 +1125,26 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `GET api subgraph supports outgoing-only traversal`() {
+        val (code, body) = get("/api/subgraph?center=${localNode.id.value}&depth=1&direction=outgoing")
+        assertEquals(200, code)
+        val subgraph: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val edges = subgraph["edges"] as List<Map<String, Any?>>
+        assertTrue(edges.isNotEmpty(), "Outgoing traversal should include localNode outgoing edges")
+        assertTrue(
+            edges.all { it["from"] == localNode.id.value.toDouble() },
+            "Outgoing-only traversal should not include incoming edges"
+        )
+    }
+
+    @Test
+    fun `GET api subgraph rejects invalid direction`() {
+        val (code, _) = get("/api/subgraph?center=${localNode.id.value}&direction=sideways")
+        assertEquals(400, code)
+    }
+
+    @Test
     fun `GET api subgraph for nonexistent center returns empty`() {
         val (code, body) = get("/api/subgraph?center=999999")
         assertEquals(200, code)
@@ -1093,6 +1157,13 @@ class ExploreCommandTest {
     // ========================================================================
     // ExploreCommand.call() integration test
     // ========================================================================
+
+    @Test
+    fun `explorer defaults to auto load mode`() {
+        val explore = ExploreCommand()
+
+        assertEquals(GraphStore.LoadMode.AUTO, explore.loadMode)
+    }
 
     @Test
     fun `call starts server and blocks until interrupted`() {
@@ -1148,6 +1219,23 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val nodes = result["nodes"] as List<Map<String, Any?>>
         assertEquals(0, nodes.size, "Negative depth should return nothing (remaining < 0 check)")
+    }
+
+    @Test
+    fun `buildSubgraph caps excessive traversals`() {
+        val builder = DefaultGraph.Builder()
+        val nodeCount = 2_100
+        repeat(nodeCount) { index ->
+            builder.addNode(IntConstant(NodeId(index), index))
+            if (index > 0) {
+                builder.addEdge(DataFlowEdge(NodeId(index - 1), NodeId(index), DataFlowKind.ASSIGN))
+            }
+        }
+
+        val result = ExploreCommand().buildSubgraph(builder.build(), NodeId(0), nodeCount)
+        @Suppress("UNCHECKED_CAST")
+        val nodes = result["nodes"] as List<Map<String, Any?>>
+        assertEquals(2_000, nodes.size, "Subgraph traversal should stop at the node cap")
     }
 
     @Test
@@ -2384,6 +2472,18 @@ class ExploreCommandTest {
     fun `GET api cypher with query param`() {
         val (code, body) = get("/api/cypher?query=" + java.net.URLEncoder.encode("MATCH (n) RETURN n.id LIMIT 1", "UTF-8"))
         assertEquals(200, code, "Expected 200, body: $body")
+    }
+
+    @Test
+    fun `GET api cypher applies server-side row limit`() {
+        val query = java.net.URLEncoder.encode("MATCH (n) RETURN n.id", "UTF-8")
+        val (code, body) = get("/api/cypher?query=$query&limit=1")
+        assertEquals(200, code, "Expected 200, body: $body")
+        val result: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val rows = result["rows"] as List<Map<String, Any?>>
+        assertEquals(1, rows.size)
+        assertEquals(1.0, result["rowCount"])
     }
 
     @Test

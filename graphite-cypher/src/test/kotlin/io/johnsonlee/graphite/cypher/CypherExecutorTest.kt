@@ -192,6 +192,39 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execute with maxRows adds server-side limit`() {
+        val result = executor.execute("MATCH (n) RETURN n.id", maxRows = 2)
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
+    fun `execute with maxRows caps oversized literal limit`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT 100", maxRows = 2)
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
+    fun `execute with maxRows preserves smaller literal limit`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT 1", maxRows = 5)
+        assertEquals(1, result.rows.size)
+    }
+
+    @Test
+    fun `execute with maxRows caps string literal limit`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT '100'", maxRows = 2)
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
+    fun `execute with maxRows applies to union queries`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) RETURN n.value AS v UNION ALL MATCH (m:StringConstant) RETURN m.value AS v",
+            maxRows = 1
+        )
+        assertEquals(1, result.rows.size)
+    }
+
+    @Test
     fun `match IntConstant with WHERE equality`() {
         val result = executor.execute("MATCH (n:IntConstant) WHERE n.value = 42 RETURN n.id")
         assertEquals(1, result.rows.size)

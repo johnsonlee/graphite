@@ -36,6 +36,8 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.MethodPattern
+import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -75,6 +77,8 @@ internal object NodeSerializer {
     internal const val MAGIC_NODEDATA    = 0x47524E00  // "GRN"
     internal const val MAGIC_NODEINDEX   = 0x47524900  // "GRI"
     internal const val MAGIC_COMPARISONS = 0x47524300  // "GRC"
+    internal const val MAGIC_NODEOFFSETS = 0x47524C00  // "GRL"
+    internal const val MAGIC_TYPEINDEX   = 0x47525400  // "GRT"
 
     /** Current format version (occupies the low byte of the 4-byte header int). */
     const val FORMAT_VERSION: Int = 3
@@ -88,7 +92,7 @@ internal object NodeSerializer {
     }
 
     /** Read and validate the 4-byte file header. Returns the format version. */
-    fun readHeader(dis: DataInputStream, expectedMagic: Int): Int {
+    fun readHeader(dis: DataInput, expectedMagic: Int): Int {
         val h = dis.readInt()
         val prefix = h and HEADER_MAGIC_MASK
         require(prefix == expectedMagic) {
@@ -382,26 +386,28 @@ internal object NodeSerializer {
     // Node writing / reading (string-table-aware)
     // ========================================================================
 
+    fun tagOf(node: Node): Int = when (node) {
+        is IntConstant -> TAG_INT_CONSTANT
+        is StringConstant -> TAG_STRING_CONSTANT
+        is LongConstant -> TAG_LONG_CONSTANT
+        is FloatConstant -> TAG_FLOAT_CONSTANT
+        is DoubleConstant -> TAG_DOUBLE_CONSTANT
+        is BooleanConstant -> TAG_BOOLEAN_CONSTANT
+        is NullConstant -> TAG_NULL_CONSTANT
+        is EnumConstant -> TAG_ENUM_CONSTANT
+        is LocalVariable -> TAG_LOCAL_VARIABLE
+        is FieldNode -> TAG_FIELD_NODE
+        is ParameterNode -> TAG_PARAMETER_NODE
+        is ReturnNode -> TAG_RETURN_NODE
+        is CallSiteNode -> TAG_CALL_SITE_NODE
+        is AnnotationNode -> TAG_ANNOTATION_NODE
+        is ResourceFileNode -> TAG_RESOURCE_FILE_NODE
+        is ResourceValueNode -> TAG_RESOURCE_VALUE_NODE
+    }
+
     fun writeNode(dos: DataOutputStream, node: Node, strings: StringTable): Int {
         dos.writeInt(node.id.value)
-        val tag = when (node) {
-            is IntConstant -> TAG_INT_CONSTANT
-            is StringConstant -> TAG_STRING_CONSTANT
-            is LongConstant -> TAG_LONG_CONSTANT
-            is FloatConstant -> TAG_FLOAT_CONSTANT
-            is DoubleConstant -> TAG_DOUBLE_CONSTANT
-            is BooleanConstant -> TAG_BOOLEAN_CONSTANT
-            is NullConstant -> TAG_NULL_CONSTANT
-            is EnumConstant -> TAG_ENUM_CONSTANT
-            is LocalVariable -> TAG_LOCAL_VARIABLE
-            is FieldNode -> TAG_FIELD_NODE
-            is ParameterNode -> TAG_PARAMETER_NODE
-            is ReturnNode -> TAG_RETURN_NODE
-            is CallSiteNode -> TAG_CALL_SITE_NODE
-            is AnnotationNode -> TAG_ANNOTATION_NODE
-            is ResourceFileNode -> TAG_RESOURCE_FILE_NODE
-            is ResourceValueNode -> TAG_RESOURCE_VALUE_NODE
-        }
+        val tag = tagOf(node)
         dos.writeByte(tag)
         // Type-specific fields
         when (node) {
@@ -476,7 +482,7 @@ internal object NodeSerializer {
         return tag
     }
 
-    fun readNode(dis: DataInputStream, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
+    fun readNode(dis: DataInput, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
         val id = NodeId(dis.readInt())
         return when (val tag = dis.readByte().toInt()) {
             TAG_INT_CONSTANT -> IntConstant(id, dis.readInt())
@@ -640,7 +646,7 @@ internal object NodeSerializer {
         }
     }
 
-    fun loadMetadata(dis: DataInputStream, strings: StringTable): GraphMetadata {
+    fun loadMetadata(dis: DataInput, strings: StringTable): GraphMetadata {
         val formatVersion = readHeader(dis, MAGIC_METADATA)
         // Methods
         val methodCount = dis.readInt()
@@ -738,6 +744,34 @@ internal object NodeSerializer {
         return GraphMetadata(methods, supertypes, subtypes, enumValues, classOrigins, artifactDependencies, memberAnnotations, branchScopes)
     }
 
+    fun readMetadataMethodCount(dis: DataInput): Int {
+        readHeader(dis, MAGIC_METADATA)
+        return dis.readInt()
+    }
+
+    fun readMetadataMethodSlice(
+        dis: DataInput,
+        strings: StringTable,
+        pattern: MethodPattern,
+        limit: Int
+    ): List<MethodDescriptor> {
+        readHeader(dis, MAGIC_METADATA)
+        val methodCount = dis.readInt()
+        val boundedLimit = limit.coerceAtLeast(0)
+        if (boundedLimit == 0) return emptyList()
+
+        val result = ArrayList<MethodDescriptor>(minOf(methodCount, boundedLimit))
+        var remaining = methodCount
+        while (remaining > 0 && result.size < boundedLimit) {
+            val method = readMethodDescriptor(dis, strings)
+            if (pattern.matches(method)) {
+                result.add(method)
+            }
+            remaining--
+        }
+        return result
+    }
+
     // ========================================================================
     // ControlFlowEdge comparison writing / reading
     // ========================================================================
@@ -752,7 +786,7 @@ internal object NodeSerializer {
         }
     }
 
-    fun readComparisons(dis: DataInputStream): Map<Long, BranchComparison> {
+    fun readComparisons(dis: DataInput): Map<Long, BranchComparison> {
         readHeader(dis, MAGIC_COMPARISONS)
         val count = dis.readInt()
         val result = HashMap<Long, BranchComparison>(count)
@@ -777,7 +811,7 @@ internal object NodeSerializer {
         dos.writeInt(strings.indexOf(md.returnType.className))
     }
 
-    private fun readMethodDescriptor(dis: DataInputStream, strings: StringTable): MethodDescriptor {
+    private fun readMethodDescriptor(dis: DataInput, strings: StringTable): MethodDescriptor {
         val className = TypeDescriptor(strings.get(dis.readInt()))
         val name = strings.get(dis.readInt())
         val paramCount = dis.readInt()
@@ -805,7 +839,7 @@ internal object NodeSerializer {
         }
     }
 
-    private fun readAnyValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? = when (dis.readByte().toInt()) {
+    private fun readAnyValue(dis: DataInput, strings: StringTable, formatVersion: Int): Any? = when (dis.readByte().toInt()) {
         VAL_INT -> dis.readInt()
         VAL_LONG -> dis.readLong()
         VAL_STRING -> strings.get(dis.readInt())
@@ -823,7 +857,7 @@ internal object NodeSerializer {
         else -> strings.get(dis.readInt()) // fallback
     }
 
-    private fun readAnnotationValue(dis: DataInputStream, strings: StringTable, formatVersion: Int): Any? {
+    private fun readAnnotationValue(dis: DataInput, strings: StringTable, formatVersion: Int): Any? {
         return if (formatVersion == LEGACY_FORMAT_VERSION) {
             strings.get(dis.readInt()).let { it.ifEmpty { null } }
         } else {

@@ -37,14 +37,18 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.ClassDependency
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import it.unimi.dsi.fastutil.io.BinIO
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
+import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.OutputStream
@@ -118,6 +122,20 @@ class GraphStoreTest {
                 assertEquals(originalEdges.size, loadedEdges.size,
                     "Incoming edge count should match for node ${node.id}")
             }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `round-trip exposes precomputed edge count`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.load(dir)
+
+            assertEquals(graph.edgeCount(), loaded.edgeCount())
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -488,6 +506,233 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `comparison lookup is skipped for non-control-flow edge labels`() {
+        val label = NodeSerializer.encodeEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+        val lookup = BranchComparisonLookup {
+            error("comparison lookup should not run for non-control-flow edges")
+        }
+
+        assertNull(comparisonForEdge(label, 1, 2, NodeSerializer.FORMAT_VERSION, lookup))
+    }
+
+    @Test
+    fun `mapped comparison lookup reads persisted comparisons by edge key`() {
+        val builder = DefaultGraph.Builder()
+        val n1 = IntConstant(NodeId.next(), 1)
+        val n2 = IntConstant(NodeId.next(), 2)
+        val n3 = IntConstant(NodeId.next(), 3)
+        val n4 = IntConstant(NodeId.next(), 4)
+        builder.addNode(n1)
+        builder.addNode(n2)
+        builder.addNode(n3)
+        builder.addNode(n4)
+
+        val first = BranchComparison(ComparisonOp.EQ, n3.id)
+        val second = BranchComparison(ComparisonOp.NE, n4.id)
+        builder.addEdge(ControlFlowEdge(n1.id, n2.id, ControlFlowKind.BRANCH_TRUE, first))
+        builder.addEdge(ControlFlowEdge(n2.id, n4.id, ControlFlowKind.BRANCH_FALSE, second))
+
+        val dir = Files.createTempDirectory("webgraph-mapped-comparison-test")
+        try {
+            GraphStore.save(builder.build(), dir)
+            val lookup = MappedBranchComparisonLookup.load(dir.resolve("graph.comparisons"))
+
+            assertEquals(first, lookup.find(edgeKey(n1.id, n2.id)))
+            assertEquals(second, lookup.find(edgeKey(n2.id, n4.id)))
+            assertNull(lookup.find(edgeKey(n3.id, n4.id)))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun edgeKey(from: NodeId, to: NodeId): Long =
+        from.value.toLong() shl INT_BITS or (to.value.toLong() and UNSIGNED_INT_MASK)
+
+    @Test
+    fun `mapped comparison lookup handles empty and corrupt comparison files`() {
+        val emptyFile = Files.createTempFile("webgraph-empty-comparisons", ".bin")
+        val corruptFile = Files.createTempFile("webgraph-corrupt-comparisons", ".bin")
+        try {
+            DataOutputStream(emptyFile.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_COMPARISONS)
+                dos.writeInt(0)
+            }
+            DataOutputStream(corruptFile.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_COMPARISONS)
+                dos.writeInt(-1)
+            }
+
+            assertNull(MappedBranchComparisonLookup.load(emptyFile).find(1L))
+            assertFailsWith<IllegalArgumentException> {
+                MappedBranchComparisonLookup.load(corruptFile)
+            }
+        } finally {
+            Files.deleteIfExists(emptyFile)
+            Files.deleteIfExists(corruptFile)
+        }
+    }
+
+    @Test
+    fun `node offset indexes preserve missing sentinel grow and wide offsets`() {
+        val compact = IntNodeOffsetIndex(1)
+        assertEquals(-1L, compact.offset(0))
+        compact.ensureSize(3)
+        compact.set(2, 42L)
+
+        assertEquals(-1L, compact.offset(1))
+        assertEquals(42L, compact.offset(2))
+        assertFailsWith<IllegalArgumentException> {
+            compact.set(0, Int.MAX_VALUE.toLong() + 1L)
+        }
+
+        val wide = LongNodeOffsetIndex(1)
+        val wideOffset = Int.MAX_VALUE.toLong() + 1L
+        wide.ensureSize(2)
+        wide.set(1, wideOffset)
+
+        assertEquals(-1L, wide.offset(0))
+        assertEquals(wideOffset, wide.offset(1))
+    }
+
+    @Test
+    fun `save writes mmap node offset and type indexes`() {
+        val builder = DefaultGraph.Builder()
+        val first = IntConstant(NodeId(0), 1)
+        val second = IntConstant(NodeId(2), 2)
+        builder.addNode(first)
+        builder.addNode(second)
+
+        val dir = Files.createTempDirectory("webgraph-mapped-index-test")
+        try {
+            GraphStore.save(builder.build(), dir)
+
+            val offsets = MappedNodeOffsetIndex.load(dir.resolve("graph.nodeoffsets"))
+            assertEquals(3, offsets.size)
+            assertTrue(offsets.offset(first.id.value) >= 0L)
+            assertEquals(-1L, offsets.offset(1))
+            assertTrue(offsets.offset(second.id.value) > offsets.offset(first.id.value))
+
+            val typeIndex = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
+            assertEquals(2L, typeIndex.count(IntConstant::class.java))
+            assertEquals(listOf(0, 2), typeIndex.ids(IntConstant::class.java).toList().sorted())
+            assertEquals(2L, typeIndex.count(Node::class.java))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `save writes label prefix and mapped load falls back when missing`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-label-prefix-test")
+        try {
+            GraphStore.save(graph, dir)
+
+            val prefix = BinIO.loadInts(dir.resolve("graph.labelprefix").toString())
+            val maxNodeId = graph.nodes(Node::class.java).maxOf { it.id.value }
+            assertEquals(maxNodeId + 2, prefix.size)
+            assertEquals(graph.edgeCount(), prefix.last().toLong())
+
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, loaded)
+            } finally {
+                (loaded as Closeable).close()
+            }
+
+            Files.delete(dir.resolve("graph.labelprefix"))
+            val loadedWithoutPrefix = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, loadedWithoutPrefix)
+            } finally {
+                (loadedWithoutPrefix as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped load rebuilds mmap indexes from legacy node index`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-rebuild-mapped-index-test")
+        try {
+            GraphStore.save(graph, dir)
+            Files.delete(dir.resolve("graph.nodeoffsets"))
+            Files.delete(dir.resolve("graph.typeindex"))
+
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertTrue(Files.exists(dir.resolve("graph.nodeoffsets")))
+                assertTrue(Files.exists(dir.resolve("graph.typeindex")))
+                assertGraphOperations(graph, loaded)
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped node indexes reject invalid headers and ranges`() {
+        val dir = Files.createTempDirectory("webgraph-invalid-mapped-index-test")
+        try {
+            val offsetIndex = dir.resolve("graph.nodeoffsets")
+            DataOutputStream(offsetIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_NODEOFFSETS)
+                dos.writeInt(-1)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeOffsetIndex.load(offsetIndex)
+            }
+
+            val typeIndex = dir.resolve("graph.typeindex")
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(-1)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(1)
+                dos.writeByte(NodeSerializer.TAG_INT_CONSTANT)
+                dos.writeInt(-1)
+                dos.writeLong(0L)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+
+            DataOutputStream(typeIndex.toFile().outputStream()).use { dos ->
+                NodeSerializer.writeHeader(dos, NodeSerializer.MAGIC_TYPEINDEX)
+                dos.writeInt(1)
+                dos.writeByte(NodeSerializer.TAG_INT_CONSTANT)
+                dos.writeInt(0)
+                dos.writeLong(Int.MAX_VALUE.toLong() + 1L)
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedNodeTypeIndex.load(typeIndex)
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `node tag helpers expose stable defensive mappings`() {
+        val tags = nodeTagEntries()
+        tags[0] = 99
+
+        assertEquals(NodeSerializer.TAG_INT_CONSTANT, nodeTagEntries()[0])
+        assertEquals(IntConstant::class.java, nodeClassForTag(NodeSerializer.TAG_INT_CONSTANT))
+        assertNull(nodeClassForTag(255))
+    }
+
+    @Test
     fun `round-trip preserves TypeEdge`() {
         val builder = DefaultGraph.Builder()
         val n1 = IntConstant(NodeId.next(), 1)
@@ -725,6 +970,9 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.load(dir)
 
+            assertEquals(8L, loaded.nodeCount(Node::class.java))
+            assertEquals(1L, loaded.nodeCount(CallSiteNode::class.java))
+
             val barMethods = loaded.methods(MethodPattern(name = "bar")).toList()
             assertEquals(1, barMethods.size)
             assertEquals("bar", barMethods[0].name)
@@ -734,6 +982,143 @@ class GraphStoreTest {
         } finally {
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `mapped graph exposes method count and limited method slices`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-method-slice-test")
+        val loadedGraphs = mutableListOf<Graph>()
+        try {
+            GraphStore.save(graph, dir)
+            loadedGraphs += GraphStore.loadMapped(dir)
+
+            for (loaded in loadedGraphs) {
+                assertEquals(8L, loaded.nodeCount(Node::class.java))
+                assertEquals(1L, loaded.nodeCount(CallSiteNode::class.java))
+                assertEquals(graph.edgeCount(), loaded.edgeCount())
+                assertEquals(2L, loaded.methodCount())
+
+                val firstMethod = assertNotNull(loaded.methodSlice(MethodPattern(), 1))
+                assertEquals(1, firstMethod.size)
+
+                val barMethods = assertNotNull(loaded.methodSlice(MethodPattern(name = "bar"), 10))
+                assertEquals(1, barMethods.size)
+                assertEquals("bar", barMethods[0].name)
+
+                val missingMethods = assertNotNull(loaded.methodSlice(MethodPattern(name = "missing"), 10))
+                assertTrue(missingMethods.isEmpty())
+
+                val zeroLimit = assertNotNull(loaded.methodSlice(MethodPattern(), 0))
+                assertTrue(zeroLimit.isEmpty())
+            }
+        } finally {
+            loadedGraphs.forEach { (it as? Closeable)?.close() }
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `loaded graphs expose persisted class overview`() {
+        val callerType = TypeDescriptor("com.example.Caller")
+        val calleeType = TypeDescriptor("com.example.Callee")
+        val caller = MethodDescriptor(callerType, "call", emptyList(), TypeDescriptor("void"))
+        val callee = MethodDescriptor(calleeType, "serve", emptyList(), TypeDescriptor("void"))
+        val callSite = CallSiteNode(NodeId.next(), caller, callee, 42, null, emptyList())
+        val graph = DefaultGraph.Builder()
+            .addNode(callSite)
+            .addMethod(caller)
+            .addMethod(callee)
+            .build()
+        val dir = Files.createTempDirectory("webgraph-class-overview-test")
+        val loadedGraphs = mutableListOf<Graph>()
+        try {
+            GraphStore.save(graph, dir)
+            loadedGraphs += GraphStore.load(dir, GraphStore.LoadMode.EAGER)
+            loadedGraphs += GraphStore.loadMapped(dir)
+
+            for (loaded in loadedGraphs) {
+                val overview = assertNotNull(loaded.classOverview(10))
+                assertEquals(1, overview.callSiteCount)
+                assertEquals(1, overview.classCounts["com.example.Caller"])
+                assertEquals(1, overview.classCounts["com.example.Callee"])
+                assertEquals(
+                    1,
+                    overview.classEdges[ClassDependency("com.example.Caller", "com.example.Callee")]
+                )
+                assertEquals(2, assertNotNull(loaded.classOverview(Int.MAX_VALUE)).classCounts.size)
+            }
+        } finally {
+            loadedGraphs.forEach { (it as? Closeable)?.close() }
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `class overview store bounds reads and provider cache`() {
+        val overview = ClassOverview(
+            classCounts = linkedMapOf(
+                "com.example.A" to 3,
+                "com.example.B" to 2,
+                "com.example.C" to 1
+            ),
+            classEdges = linkedMapOf(
+                ClassDependency("com.example.A", "com.example.B") to 2,
+                ClassDependency("com.example.B", "com.example.C") to 1
+            ),
+            callSiteCount = 3
+        )
+        val dir = Files.createTempDirectory("class-overview-store-test")
+        try {
+            val strings = mutableSetOf<String>()
+            ClassOverviewStore.collectStrings(overview, strings)
+            val stringTable = StringTable.build(strings, dir)
+            assertNull(ClassOverviewStore.load(dir, stringTable, 10))
+
+            ClassOverviewStore.save(overview, dir, stringTable)
+            assertTrue(Files.isRegularFile(dir.resolve(ClassOverviewStore.FILE_NAME)))
+            assertEquals(0, ClassOverviewStore.boundLimit(-1))
+            assertEquals(ClassOverviewStore.MAX_PERSISTED_CLASSES, ClassOverviewStore.boundLimit(Int.MAX_VALUE))
+
+            val negative = assertNotNull(ClassOverviewStore.load(dir, stringTable, -1))
+            assertTrue(negative.classCounts.isEmpty())
+            assertTrue(negative.classEdges.isEmpty())
+
+            val firstClass = assertNotNull(ClassOverviewStore.load(dir, stringTable, 1))
+            assertEquals(listOf("com.example.A"), firstClass.classCounts.keys.toList())
+            assertTrue(firstClass.classEdges.isEmpty())
+
+            val provider = PersistedClassOverviewProvider(dir, stringTable)
+            val full = assertNotNull(provider.load(Int.MAX_VALUE))
+            assertEquals(3, full.classCounts.size)
+            assertEquals(2, full.classEdges.size)
+            val cachedSlice = assertNotNull(provider.load(2))
+            assertEquals(listOf("com.example.A", "com.example.B"), cachedSlice.classCounts.keys.toList())
+            assertEquals(1, cachedSlice.classEdges.size)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `class overview builders keep only top class edges`() {
+        val methodA = MethodDescriptor(TypeDescriptor("com.example.A"), "a", emptyList(), TypeDescriptor("void"))
+        val methodB = MethodDescriptor(TypeDescriptor("com.example.B"), "b", emptyList(), TypeDescriptor("void"))
+        val methodC = MethodDescriptor(TypeDescriptor("com.example.C"), "c", emptyList(), TypeDescriptor("void"))
+        val callAB = CallSiteNode(NodeId.next(), methodA, methodB, 1, null, emptyList())
+        val callAB2 = CallSiteNode(NodeId.next(), methodA, methodB, 2, null, emptyList())
+        val callBC = CallSiteNode(NodeId.next(), methodB, methodC, 3, null, emptyList())
+        val callAA = CallSiteNode(NodeId.next(), methodA, methodA, 4, null, emptyList())
+
+        val classBuilder = ClassOverviewBuilder()
+        listOf(callAB, callAB2, callBC, callAA).forEach(classBuilder::add)
+        val topCounts = classBuilder.topClassCounts(2)
+        assertEquals(4, classBuilder.callSiteCount())
+        assertEquals(listOf("com.example.A", "com.example.B"), topCounts.keys.toList())
+
+        val edgeBuilder = ClassOverviewEdgeBuilder(topCounts.keys)
+        listOf(callAB, callAB2, callBC, callAA).forEach(edgeBuilder::add)
+        assertEquals(mapOf(ClassDependency("com.example.A", "com.example.B") to 2), edgeBuilder.build())
     }
 
     // ========================================================================
@@ -917,7 +1302,12 @@ class GraphStoreTest {
             val serializerClass = NodeSerializer::class.java
             val collectAnyValueString = serializerClass.getDeclaredMethod("collectAnyValueString", Any::class.java, MutableSet::class.java).apply { isAccessible = true }
             val writeAnyValue = serializerClass.getDeclaredMethod("writeAnyValue", DataOutputStream::class.java, Any::class.java, StringTable::class.java).apply { isAccessible = true }
-            val readAnyValue = serializerClass.getDeclaredMethod("readAnyValue", DataInputStream::class.java, StringTable::class.java, Int::class.javaPrimitiveType).apply { isAccessible = true }
+            val readAnyValue = serializerClass.getDeclaredMethod(
+                "readAnyValue",
+                DataInput::class.java,
+                StringTable::class.java,
+                Int::class.javaPrimitiveType
+            ).apply { isAccessible = true }
             val decodeEdgeV2 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV2") }.apply { isAccessible = true }
             val decodeEdgeV3 = serializerClass.declaredMethods.first { it.name.startsWith("decodeEdgeV3") }.apply { isAccessible = true }
 
@@ -1003,17 +1393,54 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `byte buffer input stream available and counting output stream flush delegate correctly`() {
-        val byteBufferInputStreamClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferInputStream")
-        val inputCtor = byteBufferInputStreamClass.getDeclaredConstructor(ByteBuffer::class.java).apply { isAccessible = true }
-        val input = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(1, 2, 3))) as java.io.InputStream
-        assertEquals(3, input.available())
-        assertEquals(1, input.read())
-        assertEquals(2, input.available())
-        val buffer = ByteArray(4)
-        assertEquals(2, input.read(buffer, 1, 2))
-        assertEquals(byteArrayOf(0, 2, 3, 0).toList(), buffer.toList())
-        assertEquals(-1, input.read(buffer, 0, buffer.size))
+    fun `byte buffer data input reads primitives and counting output stream flush delegate correctly`() {
+        val byteBufferDataInputClass = Class.forName("io.johnsonlee.graphite.webgraph.ByteBufferDataInput")
+        val inputCtor = byteBufferDataInputClass
+            .getDeclaredConstructor(ByteBuffer::class.java, Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+        val source = ByteBuffer.wrap(byteArrayOf(0, 0, 0, 7, 1, 2, 3))
+        val input = inputCtor.newInstance(source, 0) as DataInput
+
+        assertEquals(7, input.readInt())
+        assertTrue(input.readBoolean())
+        assertEquals(2, input.readUnsignedByte())
+        val buffer = ByteArray(1)
+        input.readFully(buffer)
+        assertEquals(byteArrayOf(3).toList(), buffer.toList())
+        assertFailsWith<java.io.EOFException> {
+            input.readByte()
+        }
+        assertEquals(0, source.position())
+
+        val offsetInput = inputCtor.newInstance(source, 4) as DataInput
+        assertTrue(offsetInput.readBoolean())
+        assertEquals(0, offsetInput.skipBytes(-1))
+
+        val skipInput = inputCtor.newInstance(ByteBuffer.wrap(byteArrayOf(1, 2, 3)), 0) as DataInput
+        assertEquals(2, skipInput.skipBytes(2))
+        assertEquals(3, skipInput.readUnsignedByte())
+        assertEquals(0, skipInput.skipBytes(1))
+
+        val primitives = ByteBuffer.allocate(
+            Short.SIZE_BYTES + Char.SIZE_BYTES + Long.SIZE_BYTES + Float.SIZE_BYTES + Double.SIZE_BYTES
+        )
+        primitives.putShort(7)
+        primitives.putChar('g')
+        primitives.putLong(11L)
+        primitives.putFloat(1.25f)
+        primitives.putDouble(2.5)
+        primitives.flip()
+        val primitiveInput = inputCtor.newInstance(primitives, 0) as DataInput
+        assertEquals(7, primitiveInput.readShort().toInt())
+        assertEquals('g', primitiveInput.readChar())
+        assertEquals(11L, primitiveInput.readLong())
+        assertEquals(1.25f, primitiveInput.readFloat())
+        assertEquals(2.5, primitiveInput.readDouble())
+
+        val utfOut = ByteArrayOutputStream()
+        DataOutputStream(utfOut).use { it.writeUTF("ok") }
+        val utfInput = inputCtor.newInstance(ByteBuffer.wrap(utfOut.toByteArray()), 0) as DataInput
+        assertEquals("ok", utfInput.readUTF())
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {
@@ -1340,7 +1767,7 @@ class GraphStoreTest {
     }
 
     // ========================================================================
-    // Load mode variants and lazy/mapped loading
+    // Load mode variants and mapped loading
     // ========================================================================
 
     @Test
@@ -1392,13 +1819,12 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `loadLazy preserves all graph operations`() {
+    fun `loadMapped preserves all graph operations`() {
         val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-test")
+        val dir = Files.createTempDirectory("webgraph-loadmapped-test")
         try {
             GraphStore.save(graph, dir)
-            // save() already builds the node index
-            val loaded = GraphStore.loadLazy(dir)
+            val loaded = GraphStore.loadMapped(dir)
             try {
                 assertGraphOperations(graph, loaded)
             } finally {
@@ -1410,16 +1836,33 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `loadMapped preserves all graph operations`() {
+    fun `mapped incoming query persists compressed backward graph lazily`() {
         val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-loadmapped-test")
+        val dir = Files.createTempDirectory("webgraph-lazy-backward-test")
         try {
             GraphStore.save(graph, dir)
+            assertFalse(Files.exists(dir.resolve("backward.graph")))
+            assertFalse(Files.exists(dir.resolve("backward.properties")))
+
+            val nodeWithIncoming = graph.nodes(Node::class.java)
+                .first { graph.incoming(it.id).any() }
             val loaded = GraphStore.loadMapped(dir)
             try {
-                assertGraphOperations(graph, loaded)
+                assertEquals(
+                    graph.incoming(nodeWithIncoming.id).count(),
+                    loaded.incoming(nodeWithIncoming.id).count()
+                )
+                assertTrue(Files.exists(dir.resolve("backward.graph")))
+                assertTrue(Files.exists(dir.resolve("backward.properties")))
             } finally {
                 (loaded as Closeable).close()
+            }
+
+            val reloaded = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, reloaded)
+            } finally {
+                (reloaded as Closeable).close()
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -1454,29 +1897,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `LazyWebGraphBackedGraph close releases resources`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-close-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir) as Closeable
-
-            // Access a node to trigger RAF creation
-            val lazyGraph = loaded as Graph
-            val firstNode = lazyGraph.nodes(Node::class.java).first()
-            assertNotNull(lazyGraph.node(firstNode.id))
-
-            // Close should not throw
-            loaded.close()
-
-            // Calling close again should also be safe (idempotent)
-            loaded.close()
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `MappedWebGraphBackedGraph close is safe`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-mapped-close-test")
@@ -1500,32 +1920,9 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `loadLazy from nonexistent directory throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            GraphStore.loadLazy(Files.createTempFile("not", "dir"))
-        }
-    }
-
-    @Test
     fun `loadMapped from nonexistent directory throws`() {
         assertFailsWith<IllegalArgumentException> {
             GraphStore.loadMapped(Files.createTempFile("not", "dir"))
-        }
-    }
-
-    @Test
-    fun `loadLazy without node index throws`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-no-index-test")
-        try {
-            GraphStore.save(graph, dir)
-            // Delete node index
-            Files.delete(dir.resolve("graph.nodeindex"))
-            assertFailsWith<IllegalArgumentException> {
-                GraphStore.loadLazy(dir)
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
         }
     }
 
@@ -1539,40 +1936,6 @@ class GraphStoreTest {
             Files.delete(dir.resolve("graph.nodeindex"))
             assertFailsWith<IllegalArgumentException> {
                 GraphStore.loadMapped(dir)
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph typed outgoing and incoming edges`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-typed-edges-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                val callSites = loaded.nodes(CallSiteNode::class.java).toList()
-                assertEquals(1, callSites.size)
-                val cs = callSites[0]
-
-                // Typed outgoing
-                val callEdges = loaded.outgoing(cs.id, CallEdge::class.java).toList()
-                assertEquals(1, callEdges.size)
-
-                val dataFlowEdges = loaded.outgoing(cs.id, DataFlowEdge::class.java).toList()
-                assertEquals(0, dataFlowEdges.size)
-
-                // Typed incoming
-                val locals = loaded.nodes(LocalVariable::class.java).toList()
-                assertEquals(1, locals.size)
-                val incomingDf = loaded.incoming(locals[0].id, DataFlowEdge::class.java).toList()
-                assertEquals(2, incomingDf.size)
-                val incomingCall = loaded.incoming(locals[0].id, CallEdge::class.java).toList()
-                assertEquals(0, incomingCall.size)
-            } finally {
-                (loaded as Closeable).close()
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -1614,30 +1977,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy graph out-of-bounds NodeId returns empty`() {
-        val builder = DefaultGraph.Builder()
-        val node = IntConstant(NodeId(0), 1)
-        builder.addNode(node)
-        val graph = builder.build()
-
-        val dir = Files.createTempDirectory("webgraph-lazy-oob-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                val bigId = NodeId(999999)
-                assertEquals(0, loaded.outgoing(bigId).count())
-                assertEquals(0, loaded.incoming(bigId).count())
-                assertNull(loaded.node(bigId))
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `mapped graph out-of-bounds NodeId returns empty`() {
         val builder = DefaultGraph.Builder()
         val node = IntConstant(NodeId(0), 1)
@@ -1653,29 +1992,6 @@ class GraphStoreTest {
                 assertEquals(0, loaded.outgoing(bigId).count())
                 assertEquals(0, loaded.incoming(bigId).count())
                 assertNull(loaded.node(bigId))
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph nodes with supertype returns all subtypes`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-supertype-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                // ConstantNode is a supertype of IntConstant, EnumConstant
-                val constants = loaded.nodes(ConstantNode::class.java).toList()
-                assertTrue(constants.size >= 2, "Should find at least IntConstant and EnumConstant")
-
-                // Node is the ultimate supertype
-                val allNodes = loaded.nodes(Node::class.java).toList()
-                assertEquals(8, allNodes.size)
             } finally {
                 (loaded as Closeable).close()
             }
@@ -1706,23 +2022,6 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `lazy graph branch scopes round-trip`() {
-        val graph = buildBranchScopeGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-branch-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertBranchScopeOperations(loaded)
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `mapped graph branch scopes round-trip`() {
         val graph = buildBranchScopeGraph()
         val dir = Files.createTempDirectory("webgraph-mapped-branch-test")
@@ -1731,25 +2030,6 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir)
             try {
                 assertBranchScopeOperations(loaded)
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `lazy graph resources preserves persisted text resources`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("webgraph-lazy-resources-test")
-        try {
-            GraphStore.save(graph, dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertEquals(1, loaded.resources.list("**").count())
-                val content = loaded.resources.open("application.properties").bufferedReader().readText()
-                assertTrue(content.contains("feature.enabled=true"))
             } finally {
                 (loaded as Closeable).close()
             }
@@ -2201,29 +2481,8 @@ class GraphStoreTest {
     }
 
     // ========================================================================
-    // Lazy and mapped load with parallel IO
+    // Mapped load with parallel IO
     // ========================================================================
-
-    @Test
-    fun `lazy load with parallel IO preserves graph`() {
-        val graph = buildTestGraph()
-        val dir = Files.createTempDirectory("lazy-parallel-test")
-        try {
-            GraphStore.save(graph, dir)
-            GraphStore.ensureNodeIndex(dir)
-            val loaded = GraphStore.loadLazy(dir)
-            try {
-                assertEquals(
-                    graph.nodes(Node::class.java).count(),
-                    loaded.nodes(Node::class.java).count()
-                )
-            } finally {
-                (loaded as Closeable).close()
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
 
     @Test
     fun `mapped load with parallel IO preserves graph`() {

@@ -7,12 +7,15 @@ import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
+import java.util.LinkedHashMap
 
 private const val PREDICATE_ANY = "any"
 private const val PREDICATE_ALL = "all"
 private const val PREDICATE_NONE = "none"
 private const val PREDICATE_SINGLE = "single"
 private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
+private const val LOAD_FACTOR = 0.75f
+private const val MAX_REGEX_CACHE_SIZE = 256
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
@@ -21,7 +24,10 @@ private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
  */
 class ExpressionEvaluator {
 
-    private val regexCache = mutableMapOf<String, Regex>()
+    private val regexCache = object : LinkedHashMap<String, Regex>(MAX_REGEX_CACHE_SIZE + 1, LOAD_FACTOR, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Regex>?): Boolean =
+            size > MAX_REGEX_CACHE_SIZE
+    }
 
     /**
      * Evaluate a parsed expression node.
@@ -208,7 +214,9 @@ class ExpressionEvaluator {
     private fun evaluateRegex(expr: CypherExpr.RegexMatch, bindings: Map<String, Any?>): Any? {
         val value = evaluate(expr.left, bindings) as? String ?: return null
         val pattern = evaluate(expr.right, bindings) as? String ?: return null
-        val regex = regexCache.getOrPut(pattern) { Regex(pattern) }
+        val regex = synchronized(regexCache) {
+            regexCache.getOrPut(pattern) { Regex(pattern) }
+        }
         return regex.matches(value)
     }
 

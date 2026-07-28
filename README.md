@@ -79,6 +79,9 @@ graphite query --format json /data/app-graph \
 
 # Launch the web UI
 graphite-explore /data/app-graph --port 8080
+
+# Use mmap explicitly for large local graphs
+graphite-explore /data/app-graph --load-mode MAPPED
 ```
 
 ## Kotlin API
@@ -308,6 +311,8 @@ Start the Explorer first, then LLMs can query the graph:
 ```bash
 # Start Explorer
 graphite-explore /path/to/saved-graph
+
+# Explorer defaults to --load-mode AUTO: eager for small graphs, mapped for large graphs.
 
 # LLM can now use tools: openapi, cypher, resources, resource, api_spec,
 # c4, nodes, methods, call_sites, annotations, etc.

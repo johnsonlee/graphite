@@ -4,11 +4,14 @@ plugins {
     application
     id("com.gradleup.shadow") version "8.3.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
+    id("me.champeau.jmh")
 }
 
 application {
     mainClass.set("io.johnsonlee.graphite.cli.MainKt")
 }
+
+val integrationFixtures: Configuration by configurations.creating
 
 dependencies {
     implementation(project(":core"))
@@ -17,6 +20,30 @@ dependencies {
     implementation(libs.picocli)
     implementation(libs.gson)
     implementation(libs.javalin)
+
+    add(integrationFixtures.name, libs.android.all)
+
+    jmh(project(":sootup"))
+    jmh(libs.jmh.core)
+    jmhAnnotationProcessor(libs.jmh.generator)
+}
+
+val integrationFixtureJvmArgs = providers.provider {
+    integrationFixtures.resolve().mapNotNull { jar ->
+        when {
+            jar.name.startsWith("android-all-") && jar.name.endsWith(".jar") -> "-Dandroid.jar.path=${jar.absolutePath}"
+            else -> null
+        }
+    }
+}
+
+jmh {
+    val filter = project.findProperty("jmh.filter") as String?
+    if (filter != null) {
+        includes.set(listOf(filter))
+    }
+    failOnError.set(true)
+    jvmArgsAppend.addAll(integrationFixtureJvmArgs)
 }
 
 tasks.jar {
@@ -47,7 +74,13 @@ tasks.shadowJar {
 kover {
     reports {
         filters {
-            excludes { classes("io.johnsonlee.graphite.cli.MainKt") }
+            excludes {
+                classes(
+                    "*Benchmark*",
+                    "io.johnsonlee.graphite.cli.ExplorerMemoryCounters",
+                    "io.johnsonlee.graphite.cli.MainKt"
+                )
+            }
         }
     }
 }

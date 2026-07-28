@@ -406,6 +406,22 @@ class ExpressionEvaluatorTest {
         assertNull(eval(CypherExpr.RegexMatch(lit("hello"), lit(null))))
     }
 
+    @Test
+    fun `regex cache is bounded`() {
+        repeat(300) { index ->
+            assertEquals(
+                true,
+                eval(CypherExpr.RegexMatch(lit("value-$index"), lit("value-$index")))
+            )
+        }
+
+        val field = ExpressionEvaluator::class.java.getDeclaredField("regexCache")
+        field.isAccessible = true
+        val cache = field.get(evaluator) as Map<*, *>
+
+        assertTrue(cache.size <= 256)
+    }
+
     // ========================================================================
     // 12. IS NULL / IS NOT NULL
     // ========================================================================

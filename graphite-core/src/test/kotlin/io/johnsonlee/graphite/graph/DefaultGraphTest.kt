@@ -165,6 +165,22 @@ class DefaultGraphTest {
     }
 
     @Test
+    fun `edgeCount returns precomputed edge total`() {
+        val from = NodeId.next()
+        val to1 = NodeId.next()
+        val to2 = NodeId.next()
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(from, 1))
+            .addNode(IntConstant(to1, 2))
+            .addNode(IntConstant(to2, 3))
+            .addEdge(DataFlowEdge(from, to1, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(from, to2, isVirtual = false))
+            .build()
+
+        assertEquals(2L, graph.edgeCount())
+    }
+
+    @Test
     fun `outgoing returns empty for node without edges`() {
         val id = NodeId.next()
         val graph = DefaultGraph.Builder().addNode(IntConstant(id, 1)).build()
@@ -200,6 +216,17 @@ class DefaultGraphTest {
 
         val fooMethods = graph.methods(MethodPattern(declaringClass = "com.example.Foo")).toList()
         assertEquals(1, fooMethods.size)
+    }
+
+    @Test
+    fun `methodCount and methodSlice use precomputed method index`() {
+        val m1 = makeMethod("com.example.Foo", "doWork")
+        val m2 = makeMethod("com.example.Bar", "process")
+        val graph = DefaultGraph.Builder().addMethod(m1).addMethod(m2).build()
+
+        assertEquals(2L, graph.methodCount())
+        assertEquals(listOf(m1), graph.methodSlice(MethodPattern(declaringClass = "com.example.Foo"), 10))
+        assertTrue(assertNotNull(graph.methodSlice(MethodPattern(), 0)).isEmpty())
     }
 
     // ========================================================================
@@ -317,9 +344,36 @@ class DefaultGraphTest {
 
         assertTrue(graph.typeHierarchyTypes().isEmpty())
         assertNull(graph.nodeCount(Node::class.java))
+        assertNull(graph.edgeCount())
+        assertNull(graph.methodCount())
+        assertNull(graph.methodSlice(MethodPattern(), 10))
         assertNull(graph.classOrigin("com.example.App"))
         assertTrue(graph.classOrigins().isEmpty())
         assertTrue(graph.artifactDependencies().isEmpty())
+        assertNull(graph.classOverview(10))
+    }
+
+    @Test
+    fun `class overview value objects expose dependency data`() {
+        val dependency = ClassDependency("com.example.Caller", "com.example.Callee")
+        val overview = ClassOverview(
+            classCounts = mapOf("com.example.Caller" to 2, "com.example.Callee" to 1),
+            classEdges = mapOf(dependency to 1),
+            callSiteCount = 1
+        )
+
+        assertEquals("com.example.Caller", dependency.component1())
+        assertEquals("com.example.Callee", dependency.component2())
+        assertEquals(ClassDependency("com.example.Caller", "com.example.Other"), dependency.copy(calleeClass = "com.example.Other"))
+        assertTrue(dependency.toString().contains("Caller"))
+
+        val (classCounts, classEdges, callSiteCount) = overview
+        assertEquals(2, classCounts["com.example.Caller"])
+        assertEquals(1, classEdges[dependency])
+        assertEquals(1, callSiteCount)
+        assertEquals(overview, overview.copy())
+        assertEquals(overview.hashCode(), overview.copy().hashCode())
+        assertTrue(overview.toString().contains("classCounts"))
     }
 
     // ========================================================================

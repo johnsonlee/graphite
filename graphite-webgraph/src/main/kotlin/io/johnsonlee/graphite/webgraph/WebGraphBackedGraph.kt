@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.BranchComparison
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
@@ -9,6 +8,7 @@ import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -23,16 +23,17 @@ import it.unimi.dsi.webgraph.ImmutableGraph
  * [ControlFlowEdge.comparison] data is stored in a separate map keyed by
  * `(from << 32 | to)`.
  */
-@Suppress("TooManyFunctions")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class WebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,
     private val nodesById: Map<Int, Node>,
     private val nodeDataVersion: Int,
     private val forwardLabels: ByteArray,
-    private val cumulativeOutdeg: LongArray,
-    private val comparisonMap: Map<Long, BranchComparison>,
+    private val cumulativeOutdeg: IntArray,
+    private val comparisonLookup: BranchComparisonLookup,
     private val metadata: GraphMetadata,
+    private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor
 ) : Graph {
 
@@ -70,6 +71,8 @@ internal class WebGraphBackedGraph(
                 .filter { type.isAssignableFrom(it.key) }
                 .sumOf { it.value.size.toLong() }
 
+    override fun edgeCount(): Long = forwardLabels.size.toLong()
+
     override fun outgoing(id: NodeId): Sequence<Edge> {
         val nodeIdx = id.value
         if (nodeIdx >= forward.numNodes()) return emptySequence()
@@ -78,9 +81,8 @@ internal class WebGraphBackedGraph(
         val labelStart = cumulativeOutdeg[nodeIdx]
         return (0 until outdeg).asSequence().map { i ->
             val to = succs[i]
-            val label = forwardLabels[(labelStart + i).toInt()].toInt() and BYTE_MASK
-            val key = nodeIdx.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val label = forwardLabels[labelStart + i].toInt() and BYTE_MASK
+            val comparison = comparisonForEdge(label, nodeIdx, to, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(nodeIdx), NodeId(to), comparison, nodeDataVersion)
         }
     }
@@ -94,8 +96,7 @@ internal class WebGraphBackedGraph(
         return (0 until indeg).asSequence().map { i ->
             val from = preds[i]
             val label = lookupForwardLabel(from, nodeIdx)
-            val key = from.toLong() shl INT_BITS or (nodeIdx.toLong() and UNSIGNED_INT_MASK)
-            val comparison = comparisonMap[key]
+            val comparison = comparisonForEdge(label, from, nodeIdx, nodeDataVersion, comparisonLookup)
             NodeSerializer.decodeEdge(label, NodeId(from), NodeId(nodeIdx), comparison, nodeDataVersion)
         }
     }
@@ -104,7 +105,7 @@ internal class WebGraphBackedGraph(
         val succs = forward.successorArray(from)
         val outdeg = forward.outdegree(from)
         val pos = java.util.Arrays.binarySearch(succs, 0, outdeg, to)
-        return if (pos >= 0) forwardLabels[(cumulativeOutdeg[from] + pos).toInt()].toInt() and BYTE_MASK else 0
+        return if (pos >= 0) forwardLabels[cumulativeOutdeg[from] + pos].toInt() and BYTE_MASK else 0
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -127,6 +128,11 @@ internal class WebGraphBackedGraph(
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
         metadata.methods.values.asSequence().filter { pattern.matches(it) }
 
+    override fun methodCount(): Long = metadata.methods.size.toLong()
+
+    override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        methods(pattern).take(limit.coerceAtLeast(0)).toList()
+
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.enumValues["$enumClass#$enumName"]
 
@@ -138,6 +144,8 @@ internal class WebGraphBackedGraph(
     override fun classOrigins(): Map<String, String> = metadata.classOrigins
 
     override fun artifactDependencies(): Map<String, Map<String, Int>> = metadata.artifactDependencies
+
+    override fun classOverview(limit: Int): ClassOverview? = classOverviewProvider(limit)
 
     override fun branchScopes(): Sequence<BranchScope> =
         branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
