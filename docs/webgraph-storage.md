@@ -8,6 +8,7 @@ graph-dir/
 ├── backward.*         Optional BVGraph compressed backward adjacency
 ├── graph.strings      FrontCodedStringList (deduplicated string dictionary)
 ├── graph.labels       byte[] edge type labels (1 byte per arc)
+├── graph.labelprefix  int[] cumulative outdegree values for label lookup
 ├── graph.nodedata     Sequential node records
 ├── graph.nodeindex    Legacy/compat Node ID -> offset index
 ├── graph.nodeoffsets  Mmap Node ID -> offset lookup
@@ -63,7 +64,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
                                                                    4. Mapped node indexes + nodedata
                                                                    5. Prepare/load backward on demand
                                  4. BVGraph.store                  5. Read nodes + metadata
-                                 5. Labels + comparisons write
+                                 5. Labels + label prefix + comparisons write
                                  6. Nodedata + node indexes write
                                  7. Metadata write
 ```
@@ -80,7 +81,7 @@ graph TD
     D --> D1["Pass 1: Count outdegree per node"]
     D --> D2["Pass 2: Fill sorted targets + encode labels"]
     D2 --> E["4. BVGraph.store(forward)"]
-    E --> F[5. Write labels + comparisons]
+    E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
     G --> H[7. Write metadata]
 ```
@@ -1208,3 +1209,73 @@ lazy trigger for forward-only load performance, but it changes the post-trigger
 resident form: the uncompressed incoming transpose is no longer kept as the
 steady-state graph. Under both forward and incoming explorer workloads, used
 heap remains flat after warmup and RSS growth stays below the explicit guardrail.
+
+### 2026-07-28 — Attempt 022: Persist heap label prefix offsets
+
+**Hypothesis:** after lazy load mode is removed, `mapped_load` is query-ready but
+still spends time rebuilding `cumulativeOutdeg` by calling `forward.outdegree()`
+for every node. That work exists only to find the byte offset into
+`graph.labels` during edge decoding. The array is already available as
+`forwardAdj.offsets` while saving and is already kept as a heap `IntArray` while
+serving queries, so persisting the same `IntArray` should improve load without
+changing the query hot path or increasing steady heap.
+
+This is intentionally different from the rejected mmap `graph.labeloffsets`
+experiment: the accepted shape loads the prefix into the same heap `IntArray`
+used before, so edge-label lookup remains an array access.
+
+**Change:**
+
+- add `graph.labelprefix`, a persisted `int[]` cumulative outdegree table
+- write it during `GraphStore.save()` from the existing `forwardAdj.offsets`; no
+  extra graph traversal is added
+- load `graph.labelprefix` in eager and mapped graph loads when it is present
+- fall back to rebuilding the prefix from `forward.*` when older graphs lack the
+  file or when the auxiliary file is corrupt
+
+**Rejected before commit:**
+
+| Approach | Result | Reason |
+|----------|--------|--------|
+| `BVGraph.loadMapped(forward)` for mapped graphs | `mapped_load` regressed to `268.716 ms/op`; `mapped_singleHopRelationship` regressed to `0.800 ms/op` | moved forward graph bytes out of heap but made both load and hot query slower |
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test --tests io.johnsonlee.graphite.webgraph.GraphStoreTest :webgraph:detekt --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='(AndroidLoadBenchmark.mapped_load|AndroidQueryBenchmark.mapped_singleHopRelationship|GraphEndToEndBenchmark.android_build_save_load_query)' --no-daemon
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_(incomingExplorerWaterline|longRunningExplorerWaterline)' --no-daemon
+./gradlew check -S --no-daemon
+./gradlew koverLog --no-daemon
+```
+
+**Build/load/query guardrail result:**
+
+| Benchmark | Attempt 021 | Attempt 022 | Change |
+|-----------|-------------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `256.929 ms/op` | `138.768 ms/op` | `-118.161 ms` / `-46.0%`; `~16.5x` faster than the original `2292.892 ms/op` baseline |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `0.667 ms/op` | `0.633 ms/op` | no regression |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `106287.182 ms/op` | `105041.169 ms/op` | no regression |
+
+**Explorer waterline result:**
+
+| Benchmark / metric | Attempt 021 | Attempt 022 | Change |
+|--------------------|-------------|-------------|--------|
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` time | `2848.062 ms/op` | `3142.191 ms/op` | single-shot route variance; guardrails pass |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` max used heap | `166313592 B` | `167434568 B` | effectively unchanged |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` steady used heap before/after | `97210072 B` -> `97123592 B` | `97179960 B` -> `97334336 B` | `154376 B` growth, below `16 MiB` |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` post-warmup RSS growth | `15302656 B` | `9699328 B` | below `64 MiB` |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` max used heap | `192419600 B` | `193384752 B` | effectively unchanged |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` steady used heap before/after | `113776400 B` -> `113791136 B` | `113692976 B` -> `113706200 B` | `13224 B` growth, below `16 MiB` |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` post-warmup RSS growth | `8077312 B` | `5767168 B` | below `64 MiB` |
+
+**Conclusion:** accepted. `mapped_load` now clears the strict order-of-magnitude
+target even after making mapped graphs query-ready: `138.768 ms/op` vs the
+original `2292.892 ms/op` baseline. The load improvement is not achieved by
+deferring work to first query; the hot query path still uses the same heap
+prefix array, and the long-running explorer guardrails remain stable.
+
+`git diff --check`, targeted tests/detekt, `check -S`, and `koverLog`
+passed. Line coverage stayed above the gate: `core` `98.0592%`, `cypher`
+`98.0652%`, `explore` `98.0691%`, `query` `100%`, `sootup` `98.2783%`,
+and `webgraph` `98.3513%`.

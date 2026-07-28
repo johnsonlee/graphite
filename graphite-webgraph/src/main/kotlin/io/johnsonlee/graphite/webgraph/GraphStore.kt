@@ -53,6 +53,7 @@ import java.util.concurrent.CompletionException
 private const val NODE_OFFSETS_FILE = "graph.nodeoffsets"
 private const val NODE_INDEX_FILE = "graph.nodeindex"
 private const val TYPE_INDEX_FILE = "graph.typeindex"
+private const val LABEL_PREFIX_FILE = "graph.labelprefix"
 private const val BACKWARD_GRAPH = "backward"
 private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
 private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
@@ -314,6 +315,39 @@ private fun moveGraphFiles(sourceDir: Path, targetDir: Path) {
     }
 }
 
+/**
+ * Build a cumulative outdegree array for O(1) label offset lookup.
+ * `cumulativeOutdeg[i]` = sum of outdegree(0..i-1), so the labels for
+ * node `i` start at `forwardLabels[cumulativeOutdeg[i]]`.
+ */
+private fun buildCumulativeOutdeg(forward: ImmutableGraph): IntArray {
+    val numNodes = forward.numNodes()
+    val cumOutdeg = IntArray(numNodes + 1)
+    for (i in 0 until numNodes) {
+        val next = cumOutdeg[i].toLong() + forward.outdegree(i).toLong()
+        require(next <= Int.MAX_VALUE) {
+            "Graph has too many edges for byte-addressed labels: $next"
+        }
+        cumOutdeg[i + 1] = next.toInt()
+    }
+    return cumOutdeg
+}
+
+private fun loadCumulativeOutdeg(dir: Path, forward: ImmutableGraph): IntArray {
+    val path = dir.resolve(LABEL_PREFIX_FILE)
+    if (Files.isRegularFile(path)) {
+        try {
+            val persisted = BinIO.loadInts(path.toString())
+            if (persisted.size == forward.numNodes() + 1 && persisted.last().toLong() == forward.numArcs()) {
+                return persisted
+            }
+        } catch (_: Exception) {
+            // Older or corrupt auxiliary files can be ignored; forward.* remains authoritative.
+        }
+    }
+    return buildCumulativeOutdeg(forward)
+}
+
 private class NodeDataWriteContext(
     val dataDos: DataOutputStream,
     val idxDos: DataOutputStream,
@@ -338,6 +372,7 @@ internal data class NodeIndexData(
  * - `backward.*`               -- optional BVGraph compressed backward adjacency, created after first incoming query
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
+ * - `graph.labelprefix`        -- int[] cumulative outdegree values for label lookup
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
  * - `graph.nodedata`           -- sequential binary node data with string table indices
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
@@ -432,6 +467,7 @@ object GraphStore {
 
         // 5. Store labels + comparisons
         BinIO.storeBytes(labelArray, dir.resolve(LABELS_FILE).toString())
+        BinIO.storeInts(forwardAdj.offsets, dir.resolve(LABEL_PREFIX_FILE).toString())
         DataOutputStream(BufferedOutputStream(dir.resolve(COMPARISONS_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
@@ -576,7 +612,7 @@ object GraphStore {
         val stringTable = stringTableFuture.join()
         val labelBytes = labelsFuture.join()
 
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
+        val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val backward = lazy { loadBackward(dir, forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
@@ -648,7 +684,7 @@ object GraphStore {
         val methodCount = joinLoad(methodCountFuture)
         val comparisonLookup = joinLoad(comparisonFuture)
         val backward = lazy { loadBackward(dir, forward) }
-        val cumulativeOutdeg = buildCumulativeOutdeg(forward)
+        val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val metadata = lazy {
             DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
                 NodeSerializer.loadMetadata(dis, stringTable)
@@ -737,24 +773,6 @@ object GraphStore {
      */
     private fun collectSingleNodeStrings(node: Node, dest: MutableSet<String>) {
         NodeSerializer.collectNodeStrings(listOf(node), dest)
-    }
-
-    /**
-     * Build a cumulative outdegree array for O(1) label offset lookup.
-     * `cumulativeOutdeg[i]` = sum of outdegree(0..i-1), so the labels for
-     * node `i` start at `forwardLabels[cumulativeOutdeg[i]]`.
-     */
-    private fun buildCumulativeOutdeg(forward: ImmutableGraph): IntArray {
-        val numNodes = forward.numNodes()
-        val cumOutdeg = IntArray(numNodes + 1)
-        for (i in 0 until numNodes) {
-            val next = cumOutdeg[i].toLong() + forward.outdegree(i).toLong()
-            require(next <= Int.MAX_VALUE) {
-                "Graph has too many edges for byte-addressed labels: $next"
-            }
-            cumOutdeg[i + 1] = next.toInt()
-        }
-        return cumOutdeg
     }
 
     /**

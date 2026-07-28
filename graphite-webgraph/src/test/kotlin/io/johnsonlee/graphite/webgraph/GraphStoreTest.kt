@@ -44,6 +44,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import it.unimi.dsi.fastutil.io.BinIO
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
@@ -615,6 +616,37 @@ class GraphStoreTest {
             assertEquals(2L, typeIndex.count(IntConstant::class.java))
             assertEquals(listOf(0, 2), typeIndex.ids(IntConstant::class.java).toList().sorted())
             assertEquals(2L, typeIndex.count(Node::class.java))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `save writes label prefix and mapped load falls back when missing`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-label-prefix-test")
+        try {
+            GraphStore.save(graph, dir)
+
+            val prefix = BinIO.loadInts(dir.resolve("graph.labelprefix").toString())
+            val maxNodeId = graph.nodes(Node::class.java).maxOf { it.id.value }
+            assertEquals(maxNodeId + 2, prefix.size)
+            assertEquals(graph.edgeCount(), prefix.last().toLong())
+
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, loaded)
+            } finally {
+                (loaded as Closeable).close()
+            }
+
+            Files.delete(dir.resolve("graph.labelprefix"))
+            val loadedWithoutPrefix = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, loadedWithoutPrefix)
+            } finally {
+                (loadedWithoutPrefix as Closeable).close()
+            }
         } finally {
             dir.toFile().deleteRecursively()
         }
