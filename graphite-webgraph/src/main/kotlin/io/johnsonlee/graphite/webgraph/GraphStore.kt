@@ -53,8 +53,10 @@ import java.util.concurrent.CompletionException
 private const val NODE_OFFSETS_FILE = "graph.nodeoffsets"
 private const val NODE_INDEX_FILE = "graph.nodeindex"
 private const val TYPE_INDEX_FILE = "graph.typeindex"
+private const val BACKWARD_GRAPH = "backward"
 private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
 private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
+private const val BACKWARD_COMPRESSION_THREADS = 2
 
 /** OutputStream wrapper that tracks total bytes written. */
 private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
@@ -247,6 +249,50 @@ private data class LegacyNodeIndexStats(
     val typeCounts: IntArray
 )
 
+private fun loadPersistedBackwardGraph(dir: Path): ImmutableGraph? {
+    if (!hasPersistedBackwardGraph(dir)) return null
+    return try {
+        BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph? {
+    var tempDir: Path? = null
+    return try {
+        tempDir = Files.createTempDirectory(dir, "$BACKWARD_GRAPH.")
+        BVGraph.store(
+            backward,
+            tempDir.resolve(BACKWARD_GRAPH).toString(),
+            BVGraph.DEFAULT_WINDOW_SIZE,
+            BVGraph.DEFAULT_MAX_REF_COUNT,
+            BVGraph.DEFAULT_MIN_INTERVAL_LENGTH,
+            BVGraph.DEFAULT_ZETA_K,
+            0,
+            BACKWARD_COMPRESSION_THREADS
+        )
+        moveGraphFiles(tempDir, dir)
+        BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
+    } catch (_: Exception) {
+        null
+    } finally {
+        tempDir?.toFile()?.deleteRecursively()
+    }
+}
+
+private fun hasPersistedBackwardGraph(dir: Path): Boolean =
+    Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.graph")) &&
+        Files.isRegularFile(dir.resolve("$BACKWARD_GRAPH.properties"))
+
+private fun moveGraphFiles(sourceDir: Path, targetDir: Path) {
+    Files.list(sourceDir).use { paths ->
+        paths.forEach { source ->
+            Files.move(source, targetDir.resolve(source.fileName), StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}
+
 private class NodeDataWriteContext(
     val dataDos: DataOutputStream,
     val idxDos: DataOutputStream,
@@ -267,7 +313,8 @@ internal data class NodeIndexData(
  * ecosystem tools (dsiutils + sux4j + fastutil).
  *
  * Storage layout:
- * - `forward.*`                -- BVGraph adjacency (forward only; backward is rebuilt on incoming queries)
+ * - `forward.*`                -- BVGraph compressed forward adjacency
+ * - `backward.*`               -- optional BVGraph compressed backward adjacency, created after first incoming query
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -509,7 +556,7 @@ object GraphStore {
         val labelBytes = labelsFuture.join()
 
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
-        val backward = lazy { loadBackward(forward) }
+        val backward = lazy { loadBackward(dir, forward) }
 
         val comparisonMap = DataInputStream(BufferedInputStream(dir.resolve(COMPARISONS_FILE).toFile().inputStream())).use { dis ->
             NodeSerializer.readComparisons(dis)
@@ -579,7 +626,7 @@ object GraphStore {
         val nodeIndex = joinLoad(nodeIndexFuture)
         val methodCount = joinLoad(methodCountFuture)
         val comparisonLookup = joinLoad(comparisonFuture)
-        val backward = lazy { loadBackward(forward) }
+        val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = buildCumulativeOutdeg(forward)
         val metadata = lazy {
             DataInputStream(BufferedInputStream(dir.resolve(METADATA_FILE).toFile().inputStream())).use { dis ->
@@ -630,11 +677,15 @@ object GraphStore {
         }
 
         // Build offsets (prefix sum)
-        val offsets = LongArray(numNodes + 1)
+        val offsets = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
-            offsets[i + 1] = offsets[i] + outdeg[i]
+            val next = offsets[i].toLong() + outdeg[i].toLong()
+            require(next <= Int.MAX_VALUE) {
+                "Graph has too many edges for in-memory adjacency: $next"
+            }
+            offsets[i + 1] = next.toInt()
         }
-        val totalArcs = offsets[numNodes].toInt()
+        val totalArcs = offsets[numNodes]
         val targets = IntArray(totalArcs)
         val labels = ByteArray(totalArcs)
 
@@ -645,7 +696,7 @@ object GraphStore {
                 edgesByTarget[edge.to.value] = edge
             }
             val sorted = edgesByTarget.keys.sorted()
-            val start = offsets[node].toInt()
+            val start = offsets[node]
             for ((i, to) in sorted.withIndex()) {
                 targets[start + i] = to
                 val edge = edgesByTarget[to]!!
@@ -692,12 +743,12 @@ object GraphStore {
     internal class PrecomputedAdjacency(
         val numNodes: Int,
         val targets: IntArray,
-        val offsets: LongArray
+        val offsets: IntArray
     ) {
-        fun outdegree(node: Int): Int = (offsets[node + 1] - offsets[node]).toInt()
+        fun outdegree(node: Int): Int = offsets[node + 1] - offsets[node]
         fun successorArray(node: Int): IntArray {
-            val start = offsets[node].toInt()
-            val end = offsets[node + 1].toInt()
+            val start = offsets[node]
+            val end = offsets[node + 1]
             return targets.copyOfRange(start, end)
         }
     }
@@ -710,7 +761,7 @@ object GraphStore {
         private val adj: PrecomputedAdjacency
     ) : ImmutableGraph() {
         override fun numNodes(): Int = adj.numNodes
-        override fun numArcs(): Long = adj.offsets[adj.numNodes]
+        override fun numArcs(): Long = adj.offsets[adj.numNodes].toLong()
         override fun randomAccess(): Boolean = true
         override fun outdegree(x: Int): Int = adj.outdegree(x)
         override fun successorArray(x: Int): IntArray = adj.successorArray(x)
@@ -719,13 +770,16 @@ object GraphStore {
     }
 
     /** Build backward adjacency from forward BVGraph. */
-    private fun loadBackward(forward: ImmutableGraph): ImmutableGraph =
-        buildBackwardFromForward(forward)
+    private fun loadBackward(dir: Path, forward: ImmutableGraph): ImmutableGraph =
+        loadPersistedBackwardGraph(dir) ?: run {
+            val backward = buildBackwardFromForward(forward)
+            persistAndLoadBackwardGraph(dir, backward) ?: backward
+        }
 
     /**
      * Build backward (transpose) adjacency from forward BVGraph.
      * Two passes over the compressed forward graph -- no intermediate collections.
-     * Memory: IntArray(totalEdges) + LongArray(numNodes+1) + IntArray(numNodes) work array.
+     * Memory: IntArray(totalEdges) + IntArray(numNodes+1) + IntArray(numNodes) work array.
      */
     private fun buildBackwardFromForward(forward: ImmutableGraph): PrecomputedImmutableGraph {
         val numNodes = forward.numNodes()
@@ -741,28 +795,32 @@ object GraphStore {
         }
 
         // Build offsets
-        val offsets = LongArray(numNodes + 1)
+        val offsets = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
-            offsets[i + 1] = offsets[i] + backwardDeg[i]
+            val next = offsets[i].toLong() + backwardDeg[i].toLong()
+            require(next <= Int.MAX_VALUE) {
+                "Graph has too many edges for in-memory transpose: $next"
+            }
+            offsets[i + 1] = next.toInt()
         }
 
         // Pass 2: fill targets
-        val targets = IntArray(offsets[numNodes].toInt())
+        val targets = IntArray(offsets[numNodes])
         val fillPos = IntArray(numNodes)
         for (node in 0 until numNodes) {
             val succs = forward.successorArray(node)
             val outdeg = forward.outdegree(node)
             for (i in 0 until outdeg) {
                 val to = succs[i]
-                targets[(offsets[to] + fillPos[to]).toInt()] = node
+                targets[offsets[to] + fillPos[to]] = node
                 fillPos[to]++
             }
         }
 
         // Sort each node's predecessors
         for (node in 0 until numNodes) {
-            val start = offsets[node].toInt()
-            val end = offsets[node + 1].toInt()
+            val start = offsets[node]
+            val end = offsets[node + 1]
             java.util.Arrays.sort(targets, start, end)
         }
 

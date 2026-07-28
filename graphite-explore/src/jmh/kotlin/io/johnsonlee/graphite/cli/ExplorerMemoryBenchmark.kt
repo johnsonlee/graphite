@@ -59,8 +59,11 @@ open class ExplorerMemoryBenchmark {
     @Param("4294967296")
     var memoryLimitBytes: Long = 0
 
-    @Param("536870912")
+    @Param("16777216")
     var stableHeapGrowthLimitBytes: Long = 0
+
+    @Param("67108864")
+    var stableResidentGrowthLimitBytes: Long = 0
 
     private lateinit var graph: Graph
     private lateinit var app: Javalin
@@ -111,7 +114,37 @@ open class ExplorerMemoryBenchmark {
         }
 
     @Benchmark
-    fun android_longRunningExplorerWaterline(counters: ExplorerMemoryCounters): Long {
+    fun android_longRunningExplorerWaterline(counters: ExplorerMemoryCounters): Long =
+        measureWaterline(counters) { cycle, issue ->
+            val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
+            issue("/api/node/$nodeId")
+            issue("/api/node/$nodeId/outgoing?limit=200")
+            if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
+                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
+            }
+            if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
+                issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
+            }
+        }
+
+    @Benchmark
+    fun android_incomingExplorerWaterline(counters: ExplorerMemoryCounters): Long =
+        measureWaterline(counters) { cycle, issue ->
+            val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
+            issue("/api/node/$nodeId")
+            issue("/api/node/$nodeId/incoming?limit=200")
+            if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
+                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=incoming")
+            }
+            if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
+                issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
+            }
+        }
+
+    private fun measureWaterline(
+        counters: ExplorerMemoryCounters,
+        issueCycle: (cycle: Int, issue: (String) -> Unit) -> Unit
+    ): Long {
         var bytes = 0L
         var maxUsedHeapBytes = 0L
         var maxCommittedHeapBytes = 0L
@@ -130,30 +163,18 @@ open class ExplorerMemoryBenchmark {
             record()
         }
 
-        fun issueCycle(cycle: Int) {
-            val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
-            issue("/api/node/$nodeId")
-            issue("/api/node/$nodeId/outgoing?limit=200")
-            if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
-                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
-            }
-            if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
-                issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
-            }
-        }
-
         forceGc()
         val before = record()
         issue("/api/info")
         issue("/api/overview?limit=200")
         issue("/api/methods?limit=200")
 
-        repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle) }
+        repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle, ::issue) }
         forceGc()
         val steadyBefore = record()
 
         repeat(waterlineMeasuredCycles) { cycle ->
-            issueCycle(cycle + waterlineWarmupCycles)
+            issueCycle(cycle + waterlineWarmupCycles, ::issue)
         }
 
         forceGc()
@@ -177,6 +198,7 @@ open class ExplorerMemoryBenchmark {
         counters.postWarmupResidentGrowthBytes = postWarmupResidentGrowthBytes
         counters.memoryLimitBytes = memoryLimitBytes
         counters.stableHeapGrowthLimitBytes = stableHeapGrowthLimitBytes
+        counters.stableResidentGrowthLimitBytes = stableResidentGrowthLimitBytes
         counters.residentSetMeasured = if (residentSetBytes() != null) 1 else 0
 
         check(maxUsedHeapBytes <= memoryLimitBytes) {
@@ -185,6 +207,12 @@ open class ExplorerMemoryBenchmark {
         check(postWarmupHeapGrowthBytes <= stableHeapGrowthLimitBytes) {
             "Explorer heap kept growing after warmup: growth=$postWarmupHeapGrowthBytes " +
                 "limit=$stableHeapGrowthLimitBytes"
+        }
+        if (counters.residentSetMeasured == 1L) {
+            check(postWarmupResidentGrowthBytes <= stableResidentGrowthLimitBytes) {
+                "Explorer RSS kept growing after warmup: growth=$postWarmupResidentGrowthBytes " +
+                    "limit=$stableResidentGrowthLimitBytes"
+            }
         }
 
         return bytes
@@ -368,6 +396,9 @@ open class ExplorerMemoryCounters {
 
     @JvmField
     var stableHeapGrowthLimitBytes: Long = 0
+
+    @JvmField
+    var stableResidentGrowthLimitBytes: Long = 0
 
     @JvmField
     var residentSetMeasured: Long = 0

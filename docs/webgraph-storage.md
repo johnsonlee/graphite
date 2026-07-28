@@ -5,6 +5,7 @@
 ```
 graph-dir/
 ├── forward.*          BVGraph compressed forward adjacency
+├── backward.*         Optional BVGraph compressed backward adjacency
 ├── graph.strings      FrontCodedStringList (deduplicated string dictionary)
 ├── graph.labels       byte[] edge type labels (1 byte per arc)
 ├── graph.nodedata     Sequential node records
@@ -16,9 +17,12 @@ graph-dir/
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
-Backward adjacency is not stored on disk. It is rebuilt on demand from `forward.*`
-on the first `incoming()` query for a loaded graph, so forward-only queries do
-not pay transpose construction during load.
+`GraphStore.save()` writes only `forward.*`. Backward adjacency is loaded from
+`backward.*` when those files already exist; otherwise the first `incoming()`
+query builds the transpose from `forward.*`, stores it as compressed `backward.*`,
+reloads that compressed graph, and lets the temporary uncompressed transpose be
+collected. Forward-only queries still do not pay transpose construction during
+load, and later explorer processes reuse the compressed backward graph.
 
 ## Binary Format
 
@@ -55,7 +59,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
                                  2. Metadata + StringTable         2. StringTable.load    ├ parallel
                                  3. Forward adjacency + labels     3. Labels + comparisons mmap
                                                                    4. Mapped node indexes + nodedata
-                                                                   5. Prepare backward builder
+                                                                   5. Prepare/load backward on demand
                                  4. BVGraph.store                  5. Read nodes + metadata
                                  5. Labels + comparisons write
                                  6. Nodedata + node indexes write
@@ -89,9 +93,11 @@ graph TD
     B --> B3[Labels + comparisons mmap]
     B --> B4[Mmap node offset/type indexes]
     B1 --> C[Build cumulative outdegree]
-    B1 --> D[Prepare backward builder]
-    D --> D1[First incoming query: count indegree]
-    D1 --> D2[Fill predecessor arrays + sort]
+    B1 --> D[Prepare backward loader]
+    D --> D1["If backward.* exists: BVGraph.load(backward)"]
+    D --> D2[First incoming without backward: count indegree]
+    D2 --> D3[Fill predecessor arrays + sort]
+    D3 --> D4["BVGraph.store(backward.*) + reload compressed graph"]
     B2 --> E[Read nodes]
     E -->|Eager| E1[Deserialize all to heap]
     E -->|Mapped| E2[mmap nodedata file]
@@ -1127,3 +1133,75 @@ git diff --check
 **Conclusion:** this is a real resident-heap reduction on the eager+mmap path, not a lazy relocation. The long-running explorer benchmark stabilizes around `97 MB` used heap after warmup, max used heap stays around `166 MB`, and max committed heap stays around `350 MB` under `-Xmx4g`. Loading improves modestly because mapped load no longer reconstructs node offset/type arrays on heap. Query performance is materially unchanged, but the Android end-to-end single-shot run is `2.6%` slower and does not satisfy the larger "order-of-magnitude loading improvement" target yet.
 
 `GraphStoreTest`, `:webgraph:check -S`, `:webgraph:koverLog`, `check -S`, and `git diff --check` passed after the coverage backfill. `webgraph` line coverage is `98.8243%`.
+
+### 2026-07-28 — Attempt 021: Compress lazy backward graph residency
+
+**Hypothesis:** lazy backward construction only defers memory until the first
+incoming traversal. It does not fix a long-running explorer process, because
+the uncompressed transpose then remains resident for the lifetime of the loaded
+graph. To keep memory at a stable waterline across many microservices, the
+incoming path must replace that uncompressed resident structure with a compact
+form after the first use, without adding build/save cost.
+
+**Change:**
+
+- keep `GraphStore.save()` forward-only; `backward.*` is not written during build/save
+- on the first `incoming()` query, load existing `backward.*` when present
+- when `backward.*` is missing, build the transpose, store it as compressed BVGraph files, reload the compressed graph, and allow the temporary flat arrays to be collected
+- change precomputed adjacency offsets from `LongArray` to `IntArray`, matching the existing `ByteArray` edge-label address limit
+- add `ExplorerMemoryBenchmark.android_incomingExplorerWaterline`
+- tighten the long-running waterline guardrail to fail when post-warmup heap growth exceeds `16 MiB`, and add a post-warmup RSS growth guardrail of `64 MiB`
+
+**Build/save impact:** no extra graph traversal and no backward compression in
+the save path. The first incoming query pays a one-time transpose compression
+cost; later queries and later explorer processes reuse the compressed
+`backward.*` files.
+
+**Rejected before commit:**
+
+| Approach | Result | Reason |
+|----------|--------|--------|
+| mmap `graph.labeloffsets` | `mapped_singleHopRelationship` regressed to `1.551 ms/op`; Android end-to-end regressed to `278193.662 ms/op` | moved offset residency but made hot edge-label access slower |
+| file-channel node reads | long-running RSS growth was not better than mmap | moved page-cache behavior to syscalls without improving the waterline |
+
+**Validation commands:**
+
+```
+./gradlew :webgraph:test --tests io.johnsonlee.graphite.webgraph.GraphStoreTest :explore:test --tests io.johnsonlee.graphite.cli.ExploreCommandTest :webgraph:detekt :explore:detekt --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='(AndroidLoadBenchmark.mapped_load|AndroidQueryBenchmark.mapped_singleHopRelationship|GraphEndToEndBenchmark.android_build_save_load_query)' --no-daemon
+./gradlew :explore:jmh -Pjmh.filter='ExplorerMemoryBenchmark.android_(incomingExplorerWaterline|longRunningExplorerWaterline)' --no-daemon
+./gradlew check -S --no-daemon
+./gradlew koverLog --no-daemon
+```
+
+**Explorer waterline result:**
+
+| Benchmark / metric | Attempt 020 / prior | Attempt 021 | Change |
+|--------------------|---------------------|-------------|--------|
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` time | `2790.566 ms/op` | `2848.062 ms/op` | `+57.496 ms` / `+2.1%`, within single-shot variance |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` max used heap | `165903768 B` | `166313592 B` | effectively unchanged |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` steady used heap before/after | `96797384 B` -> `96708488 B` | `97210072 B` -> `97123592 B` | stable waterline |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` post-warmup heap growth | effectively flat | `0 B` | stable |
+| `ExplorerMemoryBenchmark.android_longRunningExplorerWaterline` post-warmup RSS growth | `7258112 B` | `15302656 B` | below `64 MiB` guardrail |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` time | not previously measured | `4746.793 ms/op` | includes first incoming compression |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` steady used heap before/after | not previously measured | `113776400 B` -> `113791136 B` | `14736 B` growth |
+| `ExplorerMemoryBenchmark.android_incomingExplorerWaterline` post-warmup RSS growth | not previously measured | `8077312 B` | below `64 MiB` guardrail |
+
+**Build/load/query guardrail result:**
+
+| Benchmark | Attempt 020 | Attempt 021 | Change |
+|-----------|-------------|-------------|--------|
+| `AndroidLoadBenchmark.mapped_load` | `256.958 ms/op` | `256.929 ms/op` | no regression |
+| `AndroidQueryBenchmark.mapped_singleHopRelationship` | `0.642 ms/op` | `0.667 ms/op` | `+0.025 ms` / `+3.9%`, within CI/noise |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `108408.647 ms/op` | `106287.182 ms/op` | no regression |
+
+`git diff --check`, targeted tests/detekt, `check -S`, and `koverLog`
+passed. Line coverage stayed above the gate: `core` `98.0592%`, `cypher`
+`98.0652%`, `explore` `98.0691%`, `query` `100%`, `sootup` `98.2783%`,
+and `webgraph` `98.6564%`.
+
+**Conclusion:** lazy mode by itself was only relocation. This change keeps the
+lazy trigger for forward-only load performance, but it changes the post-trigger
+resident form: the uncompressed incoming transpose is no longer kept as the
+steady-state graph. Under both forward and incoming explorer workloads, used
+heap remains flat after warmup and RSS growth stays below the explicit guardrail.

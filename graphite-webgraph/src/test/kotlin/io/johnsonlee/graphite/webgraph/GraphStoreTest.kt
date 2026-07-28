@@ -1804,6 +1804,40 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped incoming query persists compressed backward graph lazily`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-lazy-backward-test")
+        try {
+            GraphStore.save(graph, dir)
+            assertFalse(Files.exists(dir.resolve("backward.graph")))
+            assertFalse(Files.exists(dir.resolve("backward.properties")))
+
+            val nodeWithIncoming = graph.nodes(Node::class.java)
+                .first { graph.incoming(it.id).any() }
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertEquals(
+                    graph.incoming(nodeWithIncoming.id).count(),
+                    loaded.incoming(nodeWithIncoming.id).count()
+                )
+                assertTrue(Files.exists(dir.resolve("backward.graph")))
+                assertTrue(Files.exists(dir.resolve("backward.properties")))
+            } finally {
+                (loaded as Closeable).close()
+            }
+
+            val reloaded = GraphStore.loadMapped(dir)
+            try {
+                assertGraphOperations(graph, reloaded)
+            } finally {
+                (reloaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `ensureNodeIndex is idempotent`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-idempotent-index-test")

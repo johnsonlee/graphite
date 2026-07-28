@@ -229,18 +229,22 @@ open class SavePhaseBreakdownBenchmark {
             }
             forwardDeg[node] = targets.size
         }
-        val forwardOffsets = LongArray(numNodes + 1)
+        val forwardOffsets = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
-            forwardOffsets[i + 1] = forwardOffsets[i] + forwardDeg[i]
+            val next = forwardOffsets[i].toLong() + forwardDeg[i].toLong()
+            require(next <= Int.MAX_VALUE) {
+                "Graph has too many edges for in-memory adjacency: $next"
+            }
+            forwardOffsets[i + 1] = next.toInt()
         }
-        val forwardTargets = IntArray(forwardOffsets[numNodes].toInt())
+        val forwardTargets = IntArray(forwardOffsets[numNodes])
         for (node in 0 until numNodes) {
             val targets = mutableSetOf<Int>()
             for (edge in graph.outgoing(NodeId(node))) {
                 targets.add(edge.to.value)
             }
             val sorted = targets.toIntArray().also { it.sort() }
-            System.arraycopy(sorted, 0, forwardTargets, forwardOffsets[node].toInt(), sorted.size)
+            System.arraycopy(sorted, 0, forwardTargets, forwardOffsets[node], sorted.size)
         }
         return GraphStore.PrecomputedAdjacency(numNodes, forwardTargets, forwardOffsets)
     }
