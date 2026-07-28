@@ -19,10 +19,12 @@ graph-dir/
 
 `GraphStore.save()` writes only `forward.*`. Backward adjacency is loaded from
 `backward.*` when those files already exist; otherwise the first `incoming()`
-query builds the transpose from `forward.*`, stores it as compressed `backward.*`,
-reloads that compressed graph, and lets the temporary uncompressed transpose be
-collected. Forward-only queries still do not pay transpose construction during
-load, and later explorer processes reuse the compressed backward graph.
+query builds the transpose from `forward.*`, tries to store it as compressed
+`backward.*`, reloads a compressed graph, and lets the temporary uncompressed
+transpose be collected. If the graph directory is not writable, the current
+process still uses a transient compressed graph; it just cannot reuse
+`backward.*` across later processes. Forward-only queries still do not pay
+transpose construction during load.
 
 ## Binary Format
 
@@ -1147,7 +1149,8 @@ form after the first use, without adding build/save cost.
 
 - keep `GraphStore.save()` forward-only; `backward.*` is not written during build/save
 - on the first `incoming()` query, load existing `backward.*` when present
-- when `backward.*` is missing, build the transpose, store it as compressed BVGraph files, reload the compressed graph, and allow the temporary flat arrays to be collected
+- when `backward.*` is missing, build the transpose, store it as compressed BVGraph files when possible, reload the compressed graph, and allow the temporary flat arrays to be collected
+- when the graph directory is read-only, fall back to a transient compressed backward graph for the current process instead of retaining the uncompressed transpose
 - change precomputed adjacency offsets from `LongArray` to `IntArray`, matching the existing `ByteArray` edge-label address limit
 - add `ExplorerMemoryBenchmark.android_incomingExplorerWaterline`
 - tighten the long-running waterline guardrail to fail when post-warmup heap growth exceeds `16 MiB`, and add a post-warmup RSS growth guardrail of `64 MiB`
@@ -1155,7 +1158,7 @@ form after the first use, without adding build/save cost.
 **Build/save impact:** no extra graph traversal and no backward compression in
 the save path. The first incoming query pays a one-time transpose compression
 cost; later queries and later explorer processes reuse the compressed
-`backward.*` files.
+`backward.*` files when the graph directory is writable.
 
 **Rejected before commit:**
 
@@ -1198,7 +1201,7 @@ cost; later queries and later explorer processes reuse the compressed
 `git diff --check`, targeted tests/detekt, `check -S`, and `koverLog`
 passed. Line coverage stayed above the gate: `core` `98.0592%`, `cypher`
 `98.0652%`, `explore` `98.0691%`, `query` `100%`, `sootup` `98.2783%`,
-and `webgraph` `98.6564%`.
+and `webgraph` `98.3439%`.
 
 **Conclusion:** lazy mode by itself was only relocation. This change keeps the
 lazy trigger for forward-only load performance, but it changes the post-trigger

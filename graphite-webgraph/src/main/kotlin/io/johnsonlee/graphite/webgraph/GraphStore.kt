@@ -262,23 +262,44 @@ private fun persistAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): Im
     var tempDir: Path? = null
     return try {
         tempDir = Files.createTempDirectory(dir, "$BACKWARD_GRAPH.")
-        BVGraph.store(
-            backward,
-            tempDir.resolve(BACKWARD_GRAPH).toString(),
-            BVGraph.DEFAULT_WINDOW_SIZE,
-            BVGraph.DEFAULT_MAX_REF_COUNT,
-            BVGraph.DEFAULT_MIN_INTERVAL_LENGTH,
-            BVGraph.DEFAULT_ZETA_K,
-            0,
-            BACKWARD_COMPRESSION_THREADS
-        )
-        moveGraphFiles(tempDir, dir)
-        BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
+        val loaded = storeAndLoadBackwardGraph(tempDir, backward)
+        try {
+            moveGraphFiles(tempDir, dir)
+        } catch (_: Exception) {
+            // The current process can still use the compressed in-memory graph.
+        }
+        loaded
     } catch (_: Exception) {
         null
     } finally {
         tempDir?.toFile()?.deleteRecursively()
     }
+}
+
+private fun compressAndLoadTransientBackwardGraph(backward: ImmutableGraph): ImmutableGraph? {
+    var tempDir: Path? = null
+    return try {
+        tempDir = Files.createTempDirectory("$BACKWARD_GRAPH.")
+        storeAndLoadBackwardGraph(tempDir, backward)
+    } catch (_: Exception) {
+        null
+    } finally {
+        tempDir?.toFile()?.deleteRecursively()
+    }
+}
+
+private fun storeAndLoadBackwardGraph(dir: Path, backward: ImmutableGraph): ImmutableGraph {
+    BVGraph.store(
+        backward,
+        dir.resolve(BACKWARD_GRAPH).toString(),
+        BVGraph.DEFAULT_WINDOW_SIZE,
+        BVGraph.DEFAULT_MAX_REF_COUNT,
+        BVGraph.DEFAULT_MIN_INTERVAL_LENGTH,
+        BVGraph.DEFAULT_ZETA_K,
+        0,
+        BACKWARD_COMPRESSION_THREADS
+    )
+    return BVGraph.load(dir.resolve(BACKWARD_GRAPH).toString())
 }
 
 private fun hasPersistedBackwardGraph(dir: Path): Boolean =
@@ -773,7 +794,7 @@ object GraphStore {
     private fun loadBackward(dir: Path, forward: ImmutableGraph): ImmutableGraph =
         loadPersistedBackwardGraph(dir) ?: run {
             val backward = buildBackwardFromForward(forward)
-            persistAndLoadBackwardGraph(dir, backward) ?: backward
+            persistAndLoadBackwardGraph(dir, backward) ?: compressAndLoadTransientBackwardGraph(backward) ?: backward
         }
 
     /**
