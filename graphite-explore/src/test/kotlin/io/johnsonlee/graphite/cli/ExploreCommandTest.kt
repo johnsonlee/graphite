@@ -362,6 +362,7 @@ class ExploreCommandTest {
         val root = Files.createTempDirectory("explore-registry-empty")
         try {
             saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
             val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
 
             withRegistryApp(registry) { targetPort ->
@@ -389,10 +390,28 @@ class ExploreCommandTest {
                 assertEquals(200, cypherCode, "Expected 200, body: $cypherBody")
                 assertTrue(cypherBody.contains("101"), "Expected scoped query to hit service-a graph, body: $cypherBody")
 
+                val (queryLoadCode, queryLoadBody) = put(
+                    targetPort,
+                    "/api/graphs/service-b?path=service-b&loadMode=eager",
+                    ""
+                )
+                assertEquals(200, queryLoadCode, "Expected 200, body: $queryLoadBody")
+                assertTrue(queryLoadBody.contains("EAGER"), "Expected query load mode to be honored, body: $queryLoadBody")
+
+                val (invalidScopedCode, invalidScopedBody) = get(targetPort, "/api/graphs/bad%20id/info")
+                assertEquals(400, invalidScopedCode, "Expected 400, body: $invalidScopedBody")
+                assertTrue(invalidScopedBody.contains("Invalid graph id"), "Expected invalid id error, body: $invalidScopedBody")
+
                 val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/service-a")
                 assertEquals(204, deleteCode, "Expected 204, body: $deleteBody")
                 val (missingAfterDeleteCode, _) = get(targetPort, "/api/graphs/service-a/info")
                 assertEquals(404, missingAfterDeleteCode)
+
+                val (missingDeleteCode, missingDeleteBody) = delete(targetPort, "/api/graphs/service-a")
+                assertEquals(404, missingDeleteCode, "Expected 404, body: $missingDeleteBody")
+
+                val (invalidDeleteCode, invalidDeleteBody) = delete(targetPort, "/api/graphs/bad%20id")
+                assertEquals(400, invalidDeleteCode, "Expected 400, body: $invalidDeleteBody")
             }
         } finally {
             root.toFile().deleteRecursively()
@@ -427,6 +446,42 @@ class ExploreCommandTest {
                 )
                 assertEquals(200, secondQueryCode, "Expected 200, body: $secondQueryBody")
                 assertEquals(2.0, singleCypherValue(secondQueryBody), "Expected v2 value, body: $secondQueryBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry keeps retired graph alive until checked out lease closes`() {
+        val root = Files.createTempDirectory("explore-registry-lease")
+        try {
+            saveConstantGraph(root, "service-a", 1)
+            saveConstantGraph(root, "service-b", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            try {
+                val first = registry.load(" service-a ", Path.of("service-a"), makeDefault = false)
+                val second = registry.load("service-b", Path.of("service-b"), makeDefault = false)
+                assertEquals("service-a", first.id)
+                assertEquals("service-b", second.id)
+
+                val heldLease = registry.acquireDefault()
+                assertEquals("service-a", heldLease?.id)
+
+                assertTrue(registry.unload("service-a"))
+                assertNull(registry.acquire("service-a"))
+                registry.acquireDefault()?.use { lease ->
+                    assertEquals("service-b", lease.id)
+                }
+                assertFalse(registry.unload("missing"))
+
+                val invalid = runCatching { registry.acquire("bad id") }.exceptionOrNull()
+                assertTrue(invalid is IllegalArgumentException, "Expected invalid graph id error, got: $invalid")
+
+                heldLease?.close()
+                heldLease?.close()
+            } finally {
+                registry.close()
             }
         } finally {
             root.toFile().deleteRecursively()
@@ -1349,6 +1404,9 @@ class ExploreCommandTest {
         val explore = ExploreCommand()
 
         assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
+        assertNull(explore.graphRoot)
+        assertEquals(DEFAULT_GRAPH_ID, explore.graphId)
+        assertTrue(explore.graphSpecs.isEmpty())
     }
 
     @Test
@@ -1359,6 +1417,58 @@ class ExploreCommandTest {
 
         assertEquals(1, code)
         assertTrue(err.contains("--graph-root"), "Expected graph root error, got: $err")
+    }
+
+    @Test
+    fun `serve with invalid graph spec returns error before blocking`() {
+        val root = Files.createTempDirectory("explore-invalid-graph-spec")
+        try {
+            val serve = ServeCommand()
+            serve.graphRoot = root
+            serve.graphSpecs = listOf("missing-separator")
+
+            val (_, err, code) = captureOutput { serve.call() }
+
+            assertEquals(1, code)
+            assertTrue(err.contains("Invalid --graph 'missing-separator'"), "Expected invalid graph error, got: $err")
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `serve loads positional and graph specs into registry`() {
+        val root = Files.createTempDirectory("explore-initial-graphs")
+        try {
+            val positional = saveConstantGraph(root, "service-a", 11)
+            saveConstantGraph(root, "service-b", 22)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            try {
+                val serve = ServeCommand()
+                serve.graphDir = positional
+                serve.graphId = "service-a"
+                serve.graphSpecs = listOf("service-b=service-b")
+
+                val loadInitialGraphs = ServeCommand::class.java.getDeclaredMethod(
+                    "loadInitialGraphs",
+                    GraphRegistry::class.java
+                )
+                loadInitialGraphs.isAccessible = true
+                loadInitialGraphs.invoke(serve, registry)
+
+                assertEquals(listOf("service-a", "service-b"), registry.list().map { it.id })
+                registry.acquireDefault()?.use { lease ->
+                    assertEquals("service-a", lease.id)
+                }
+                registry.acquire("service-b")?.use { lease ->
+                    assertEquals(1L, lease.graph.nodeCount(Node::class.java))
+                }
+            } finally {
+                registry.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
     }
 
     @Test

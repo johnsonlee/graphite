@@ -78,6 +78,7 @@ kover {
                 classes(
                     "*Benchmark*",
                     "io.johnsonlee.graphite.cli.ExplorerMemoryCounters",
+                    "io.johnsonlee.graphite.cli.MemorySample",
                     "io.johnsonlee.graphite.cli.ExploreMainKt"
                 )
             }
