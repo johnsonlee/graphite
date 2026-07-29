@@ -37,6 +37,9 @@ class GraphiteCommandTest {
         val (out, _, code) = captureOutput { cmd.call() }
         assertEquals(0, code)
         assertTrue(out.contains("graphite"), "Help should contain command name, got: $out")
+        assertTrue(out.contains("build"), "Help should contain build subcommand, got: $out")
+        assertTrue(out.contains("query"), "Help should contain query subcommand, got: $out")
+        assertTrue(out.contains("serve"), "Help should contain serve subcommand, got: $out")
     }
 
     // ========================================================================

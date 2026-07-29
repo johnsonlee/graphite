@@ -11,23 +11,32 @@ import io.johnsonlee.graphite.webgraph.GraphStore
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
-import java.io.Closeable
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Callable
 
 private const val DEFAULT_PORT = 8080
 private const val DEFAULT_PORT_TEXT = "8080"
-private const val DEFAULT_LOAD_MODE_TEXT = "AUTO"
+private const val DEFAULT_LOAD_MODE_TEXT = "MAPPED"
 
 @Command(
-    name = "graphite-explore",
-    description = ["Interactive web visualization for saved Graphite graphs"],
+    name = "serve",
+    description = ["Serve one or more saved Graphite webgraphs over HTTP"],
     mixinStandardHelpOptions = true
 )
-class ExploreCommand : Callable<Int> {
+open class ServeCommand : Callable<Int> {
 
-    @Parameters(index = "0", description = ["Path to saved graph directory"])
-    lateinit var graphDir: Path
+    @Parameters(index = "0", arity = "0..1", description = ["Optional saved graph directory for single-graph startup"])
+    var graphDir: Path? = null
+
+    @Option(names = ["--graph-root"], description = ["Storage root used to resolve relative graph paths and allow empty startup"])
+    var graphRoot: Path? = null
+
+    @Option(names = ["--graph"], description = ["Initial graph mapping id=path. Repeat for multiple graphs."])
+    var graphSpecs: List<String> = emptyList()
+
+    @Option(names = ["--id"], description = ["Graph id for the optional positional graph"], defaultValue = DEFAULT_GRAPH_ID)
+    var graphId: String = DEFAULT_GRAPH_ID
 
     @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = DEFAULT_PORT_TEXT)
     var port: Int = DEFAULT_PORT
@@ -35,17 +44,33 @@ class ExploreCommand : Callable<Int> {
     @Option(
         names = ["--load-mode"],
         description = [
-            "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to AUTO (<1M nodes eager, larger graphs mapped)."
+            "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to MAPPED for multi-graph heap stability."
         ],
         defaultValue = DEFAULT_LOAD_MODE_TEXT
     )
-    var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.AUTO
+    var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.MAPPED
 
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
+    @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
-        val graph = GraphStore.load(graphDir, loadMode)
-        System.err.println("Loaded graph from $graphDir using $loadMode mode")
+        val hasInitialGraphs = graphDir != null || graphSpecs.isNotEmpty()
+        if (!hasInitialGraphs && graphRoot == null) {
+            System.err.println("Error: --graph-root is required when starting without an initial graph")
+            return 1
+        }
+
+        val root = resolveGraphRoot(graphRoot, graphDir)
+        Files.createDirectories(root)
+        val registry = GraphRegistry(root, loadMode)
+
+        try {
+            loadInitialGraphs(registry)
+        } catch (e: RuntimeException) {
+            System.err.println("Error: ${e.message}")
+            registry.close()
+            return 1
+        }
 
         var app: Javalin? = null
         try {
@@ -54,21 +79,27 @@ class ExploreCommand : Callable<Int> {
                 config.staticFiles.add("/web")
             }.start(port)
 
-            registerApiRoutes(app, graph)
+            registerApiRoutes(app, registry)
 
             System.err.println("Web UI: http://localhost:${app.port()}")
+            System.err.println("Graph root: $root")
+            System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
             System.err.println("Press Ctrl+C to stop")
 
             Thread.currentThread().join()
             return 0
         } finally {
             app?.stop()
-            (graph as? Closeable)?.close()
+            registry.close()
         }
     }
 
     internal fun registerApiRoutes(app: Javalin, graph: Graph) {
         ExploreRoutes().register(app, graph)
+    }
+
+    internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry) {
+        ExploreRoutes().register(app, registry)
     }
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =
@@ -86,4 +117,44 @@ class ExploreCommand : Callable<Int> {
         limit: Int = C4ViewLimits.FALLBACK_MODEL_ELEMENTS
     ): Map<String, Any?> =
         C4ArchitectureService().buildModel(graph, level, limit)
+
+    private fun loadInitialGraphs(registry: GraphRegistry) {
+        val ids = mutableSetOf<String>()
+        var first = true
+
+        graphDir?.let { dir ->
+            val id = GraphRegistry.validateGraphId(graphId)
+            require(ids.add(id)) { "Duplicate initial graph id: $id" }
+            val descriptor = registry.load(id, dir, loadMode, makeDefault = true)
+            System.err.println("Loaded graph '${descriptor.id}' from ${descriptor.path} using ${descriptor.loadMode} mode")
+            first = false
+        }
+
+        for (spec in graphSpecs) {
+            val (id, path) = parseGraphSpec(spec)
+            require(ids.add(id)) { "Duplicate initial graph id: $id" }
+            val descriptor = registry.load(id, path, loadMode, makeDefault = first)
+            System.err.println("Loaded graph '${descriptor.id}' from ${descriptor.path} using ${descriptor.loadMode} mode")
+            first = false
+        }
+    }
+
+    private fun parseGraphSpec(spec: String): Pair<String, Path> {
+        val separator = spec.indexOf('=')
+        require(separator > 0 && separator < spec.lastIndex) {
+            "Invalid --graph '$spec'. Expected id=path."
+        }
+        val id = GraphRegistry.validateGraphId(spec.substring(0, separator))
+        return id to Path.of(spec.substring(separator + 1))
+    }
+
+    private fun resolveGraphRoot(root: Path?, initialGraph: Path?): Path =
+        (root ?: initialGraph?.toAbsolutePath()?.parent ?: Path.of(".")).toAbsolutePath().normalize()
 }
+
+@Command(
+    name = "graphite-explore",
+    description = ["Interactive web visualization for saved Graphite graphs"],
+    mixinStandardHelpOptions = true
+)
+class ExploreCommand : ServeCommand()

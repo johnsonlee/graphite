@@ -340,6 +340,171 @@ open class ExplorerMemoryBenchmark {
     }
 }
 
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Measurement(iterations = 1)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class MultiGraphExplorerBenchmark {
+
+    @Param("100")
+    var graphCount: Int = 0
+
+    @Param("32")
+    var concurrency: Int = 0
+
+    @Param("1")
+    var queriesPerGraph: Int = 0
+
+    @Param("8589934592")
+    var memoryLimitBytes: Long = 0
+
+    private lateinit var root: Path
+    private lateinit var registry: GraphRegistry
+    private lateinit var app: Javalin
+    private var port: Int = 0
+
+    @Setup
+    fun setup() {
+        root = Files.createTempDirectory("graphite-explorer-multigraph")
+        registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+        val graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
+        repeat(graphCount) { index ->
+            registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED, makeDefault = index == 0)
+        }
+        app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+        ExploreRoutes().register(app, registry)
+        port = app.port()
+    }
+
+    @TearDown
+    fun tearDown() {
+        runCatching { app.stop() }
+        runCatching { registry.close() }
+        runCatching { root.toFile().deleteRecursively() }
+    }
+
+    @Benchmark
+    fun android_multiGraphScopedCypher(counters: ExplorerMemoryCounters): Long {
+        forceGc()
+        val before = currentMemorySample()
+        val executor = java.util.concurrent.Executors.newFixedThreadPool(concurrency)
+        val bytes = try {
+            val tasks = (0 until graphCount).flatMap { index ->
+                List(queriesPerGraph) {
+                    java.util.concurrent.Callable {
+                        request(cypherPath(index, "MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
+                    }
+                }
+            }
+            executor.invokeAll(tasks).sumOf { it.get() }
+        } finally {
+            executor.shutdownNow()
+        }
+        forceGc()
+        val after = currentMemorySample()
+
+        counters.usedHeapBeforeBytes = before.usedHeapBytes
+        counters.usedHeapAfterBytes = after.usedHeapBytes
+        counters.retainedHeapBytes = after.usedHeapBytes - before.usedHeapBytes
+        counters.committedHeapBeforeBytes = before.committedHeapBytes
+        counters.committedHeapAfterBytes = after.committedHeapBytes
+        counters.maxUsedHeapBytes = maxOf(before.usedHeapBytes, after.usedHeapBytes)
+        counters.maxCommittedHeapBytes = maxOf(before.committedHeapBytes, after.committedHeapBytes)
+        counters.residentSetBeforeBytes = before.residentSetBytes
+        counters.residentSetAfterBytes = after.residentSetBytes
+        counters.maxResidentSetBytes = maxOf(before.residentSetBytes, after.residentSetBytes)
+        counters.memoryLimitBytes = memoryLimitBytes
+        counters.residentSetMeasured = if (residentSetBytes() != null) 1 else 0
+
+        check(counters.maxUsedHeapBytes <= memoryLimitBytes) {
+            "Multi-graph explorer heap exceeded limit: max=${counters.maxUsedHeapBytes} limit=$memoryLimitBytes"
+        }
+        return bytes
+    }
+
+    private fun cypherPath(graphIndex: Int, query: String): String =
+        "/api/graphs/service-$graphIndex/cypher?limit=10&query=${URLEncoder.encode(query, StandardCharsets.UTF_8)}"
+
+    private fun request(path: String): Long {
+        val connection = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connectTimeout = HTTP_TIMEOUT_MS
+        connection.readTimeout = HTTP_TIMEOUT_MS
+        val code = connection.responseCode
+        val body = if (code in HTTP_SUCCESS_RANGE) {
+            connection.inputStream.use { it.readBytes() }
+        } else {
+            connection.errorStream?.use { it.readBytes() } ?: ByteArray(0)
+        }
+        connection.disconnect()
+        check(code in HTTP_SUCCESS_RANGE) { "GET $path returned $code: ${body.decodeToString()}" }
+        return body.size.toLong()
+    }
+
+    private fun currentMemorySample(): MemorySample {
+        val runtime = Runtime.getRuntime()
+        val committedHeapBytes = runtime.totalMemory()
+        val usedHeapBytes = committedHeapBytes - runtime.freeMemory()
+        return MemorySample(
+            usedHeapBytes = usedHeapBytes,
+            committedHeapBytes = committedHeapBytes,
+            residentSetBytes = residentSetBytes() ?: committedHeapBytes
+        )
+    }
+
+    private fun forceGc() {
+        repeat(GC_ATTEMPTS) {
+            System.gc()
+            System.runFinalization()
+            Thread.sleep(GC_PAUSE_MS)
+        }
+    }
+
+    private fun residentSetBytes(): Long? =
+        residentSetBytesFromProcStatus() ?: residentSetBytesFromPs()
+
+    private fun residentSetBytesFromProcStatus(): Long? {
+        val status = Path.of("/proc/self/status")
+        if (!Files.isRegularFile(status)) return null
+        val line = Files.readAllLines(status).firstOrNull { it.startsWith("VmRSS:") } ?: return null
+        val kilobytes = line.split(WHITESPACE).firstNotNullOfOrNull { it.toLongOrNull() } ?: return null
+        return kilobytes * BYTES_PER_KIB
+    }
+
+    private fun residentSetBytesFromPs(): Long? {
+        val process = ProcessBuilder(
+            "ps",
+            "-o",
+            "rss=",
+            "-p",
+            ProcessHandle.current().pid().toString()
+        ).redirectErrorStream(true).start()
+        if (!process.waitFor(PS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+            process.destroyForcibly()
+            return null
+        }
+        if (process.exitValue() != 0) return null
+        return process.inputStream.bufferedReader().use { it.readText() }
+            .lineSequence()
+            .mapNotNull { it.trim().toLongOrNull() }
+            .firstOrNull()
+            ?.times(BYTES_PER_KIB)
+    }
+
+    private companion object {
+        private const val HTTP_TIMEOUT_MS = 120_000
+        private const val GC_ATTEMPTS = 3
+        private const val GC_PAUSE_MS = 100L
+        private const val BYTES_PER_KIB = 1024L
+        private const val PS_TIMEOUT_SECONDS = 2L
+        private val WHITESPACE = Regex("\\s+")
+        private val HTTP_SUCCESS_RANGE = 200..299
+    }
+}
+
 private data class MemorySample(
     val usedHeapBytes: Long,
     val committedHeapBytes: Long,

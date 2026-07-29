@@ -62,7 +62,7 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ```bash
 # Install via Homebrew
 brew tap johnsonlee/tap
-brew install graphite graphite-explore
+brew install graphite
 
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
@@ -78,10 +78,18 @@ graphite query --format json /data/app-graph \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
 
 # Launch the web UI
-graphite-explore /data/app-graph --port 8080
+graphite serve /data/app-graph --port 8080
 
-# Use mmap explicitly for large local graphs
-graphite-explore /data/app-graph --load-mode MAPPED
+# Serve multiple graphs by id. Relative graph paths resolve under --graph-root.
+graphite serve --graph-root /data/graphs \
+  --graph orders=orders-graph \
+  --graph billing=/data/billing-graph \
+  --port 8080
+
+# Hot-load or replace a graph without restarting the server
+curl -X PUT http://localhost:8080/api/graphs/orders \
+  -H 'Content-Type: application/json' \
+  -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
 
 ## Kotlin API
@@ -199,10 +207,13 @@ Generic JDK resource linking currently covers:
 
 ### Explore Resource APIs
 
-`graphite-explore` exposes resource-aware HTTP APIs for agents and tooling:
+`graphite serve` exposes resource-aware HTTP APIs for agents and tooling:
 
 | Endpoint | Description |
 |----------|-------------|
+| `/api/graphs` | List loaded webgraphs |
+| `/api/graphs/{graphId}` | Load, replace, or unload a webgraph by id |
+| `/api/graphs/{graphId}/cypher` | Query a specific webgraph by id |
 | `/api/resources` | List indexed resources |
 | `/api/resources/{path}` | Read persisted raw resource content |
 | `/api/api-spec` | Extract API specs/endpoints for agent discovery |
@@ -210,8 +221,9 @@ Generic JDK resource linking currently covers:
 | `/swagger.json` | Swagger-compatible alias of the same API document |
 
 For agent-driven discovery, probe `/openapi.json` first. It describes the full
-explore REST surface, including `/api/cypher`, `/api/resources`,
-`/api/resources/{path}`, `/api/api-spec`, and the node/subgraph endpoints.
+explore REST surface, including `/api/cypher`, id-scoped graph endpoints,
+`/api/resources`, `/api/resources/{path}`, `/api/api-spec`, and the
+node/subgraph endpoints.
 
 ## Architecture
 
@@ -221,8 +233,8 @@ graphite/
 ├── graphite-cypher/        # Cypher query engine (ANTLR parser + executor)
 ├── graphite-sootup/        # SootUp bytecode → graph builder
 ├── graphite-webgraph/      # WebGraph disk persistence (BVGraph + LAW tools)
-├── graphite-query/         # CLI: build, query, Cypher
-└── graphite-explore/       # CLI: web visualization
+├── graphite-query/         # CLI: build, query, serve
+└── graphite-explore/       # Explore HTTP routes and legacy standalone launcher
 ```
 
 ### Storage Format
@@ -310,13 +322,22 @@ Start the Explorer first, then LLMs can query the graph:
 
 ```bash
 # Start Explorer
-graphite-explore /path/to/saved-graph
+graphite serve /path/to/saved-graph
 
-# Explorer defaults to --load-mode AUTO: eager for small graphs, mapped for large graphs.
-
-# LLM can now use tools: openapi, cypher, resources, resource, api_spec,
-# c4, nodes, methods, call_sites, annotations, etc.
+# The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
 ```
+
+You can also start with no initial graph and hot-load services later:
+
+```bash
+graphite serve --graph-root /data/graphs
+curl -X PUT http://localhost:8080/api/graphs/orders \
+  -H 'Content-Type: application/json' \
+  -d '{"path":"orders-graph"}'
+```
+
+LLMs can now use tools such as openapi, cypher, resources, resource,
+api_spec, c4, nodes, methods, call_sites, and annotations.
 
 The explore server also exposes a single C4 architecture endpoint:
 

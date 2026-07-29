@@ -2,7 +2,6 @@ package io.johnsonlee.graphite.cli
 
 import picocli.CommandLine
 import picocli.CommandLine.Command
-import picocli.CommandLine.Option
 import java.util.concurrent.Callable
 
 @Command(
@@ -11,7 +10,8 @@ import java.util.concurrent.Callable
     mixinStandardHelpOptions = true,
     subcommands = [
         BuildCommand::class,
-        QueryCommand::class
+        QueryCommand::class,
+        ServeCommand::class
     ]
 )
 class GraphiteCommand : Callable<Int> {

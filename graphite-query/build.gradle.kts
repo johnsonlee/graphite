@@ -1,4 +1,4 @@
-description = "Graphite Query CLI - Query and visualize saved graphs"
+description = "Graphite CLI - build, query, and serve saved graphs"
 
 plugins {
     application
@@ -8,11 +8,13 @@ plugins {
 
 application {
     mainClass.set("io.johnsonlee.graphite.cli.MainKt")
+    applicationName = "graphite"
 }
 
 dependencies {
     implementation(project(":core"))
     implementation(project(":cypher"))
+    implementation(project(":explore"))
     implementation(project(":sootup"))
     implementation(project(":webgraph"))
     implementation(libs.picocli)
@@ -24,7 +26,7 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-    archiveBaseName.set("graphite-query")
+    archiveBaseName.set("graphite")
     archiveClassifier.set("")
     archiveVersion.set("")
     mergeServiceFiles()
@@ -35,6 +37,9 @@ tasks.shadowJar {
         exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:.*"))
         exclude(dependency("org.soot-oss:.*:.*"))
         exclude(dependency("org.slf4j:slf4j-nop:.*"))
+        exclude(dependency("io.javalin:.*:.*"))
+        exclude(dependency("org.eclipse.jetty:.*:.*"))
+        exclude(dependency("org.eclipse.jetty.websocket:.*:.*"))
     }
 
     manifest {

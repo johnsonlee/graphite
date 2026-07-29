@@ -223,18 +223,45 @@ class ExploreCommandTest {
         }
     }
 
-    private fun post(path: String, jsonBody: String): Pair<Int, String> {
-        val url = URI("http://localhost:$port$path").toURL()
+    private fun withRegistryApp(registry: GraphRegistry, block: (Int) -> Unit) {
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            ExploreRoutes().register(localApp, registry)
+            block(localApp.port())
+        } finally {
+            localApp.stop()
+            registry.close()
+        }
+    }
+
+    private fun post(path: String, jsonBody: String): Pair<Int, String> =
+        request(port, "POST", path, jsonBody)
+
+    private fun post(targetPort: Int, path: String, jsonBody: String): Pair<Int, String> =
+        request(targetPort, "POST", path, jsonBody)
+
+    private fun put(targetPort: Int, path: String, jsonBody: String): Pair<Int, String> =
+        request(targetPort, "PUT", path, jsonBody)
+
+    private fun delete(targetPort: Int, path: String): Pair<Int, String> =
+        request(targetPort, "DELETE", path, null)
+
+    private fun request(targetPort: Int, method: String, path: String, jsonBody: String?): Pair<Int, String> {
+        val url = URI("http://localhost:$targetPort$path").toURL()
         val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.doOutput = true
+        conn.requestMethod = method
         conn.connectTimeout = 5000
         conn.readTimeout = 5000
-        conn.setRequestProperty("Content-Type", "application/json")
-        conn.outputStream.use { it.write(jsonBody.toByteArray()) }
+        if (jsonBody != null) {
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.outputStream.use { it.write(jsonBody.toByteArray()) }
+        }
         val code = conn.responseCode
         val body = if (code in 200..299) {
-            InputStreamReader(conn.inputStream).use { it.readText() }
+            conn.inputStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
         } else {
             conn.errorStream?.let { InputStreamReader(it).use { r -> r.readText() } } ?: ""
         }
@@ -242,8 +269,39 @@ class ExploreCommandTest {
         return code to body
     }
 
+    private fun saveConstantGraph(root: Path, directory: String, value: Int): Path {
+        val output = root.resolve(directory)
+        val builder = DefaultGraph.Builder()
+        builder.addNode(IntConstant(NodeId.next(), value))
+        GraphStore.save(builder.build(), output)
+        return output
+    }
+
     private inline fun <reified T> parseJson(json: String): T {
         return gson.fromJson(json, object : TypeToken<T>() {}.type)
+    }
+
+    private fun captureOutput(block: () -> Int): Triple<String, String, Int> {
+        val outBaos = java.io.ByteArrayOutputStream()
+        val errBaos = java.io.ByteArrayOutputStream()
+        val oldOut = System.out
+        val oldErr = System.err
+        System.setOut(java.io.PrintStream(outBaos))
+        System.setErr(java.io.PrintStream(errBaos))
+        val code = try {
+            block()
+        } finally {
+            System.setOut(oldOut)
+            System.setErr(oldErr)
+        }
+        return Triple(outBaos.toString(), errBaos.toString(), code)
+    }
+
+    private fun singleCypherValue(json: String): Any? {
+        val result: Map<String, Any?> = parseJson(json)
+        @Suppress("UNCHECKED_CAST")
+        val rows = result["rows"] as List<Map<String, Any?>>
+        return rows.single().values.single()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -297,6 +355,131 @@ class ExploreCommandTest {
         assertEquals(5.0, info["edges"])
         assertEquals(3.0, info["methods"])
         assertEquals(1.0, info["callSites"])
+    }
+
+    @Test
+    fun `registry routes support empty startup and loading graph by id`() {
+        val root = Files.createTempDirectory("explore-registry-empty")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                val (emptyCode, emptyBody) = get(targetPort, "/api/graphs")
+                assertEquals(200, emptyCode, "Expected 200, body: $emptyBody")
+                val emptyResult: Map<String, Any?> = parseJson(emptyBody)
+                assertEquals(0.0, emptyResult["count"])
+
+                val (missingDefaultCode, _) = get(targetPort, "/api/info")
+                assertEquals(404, missingDefaultCode)
+
+                val (loadCode, loadBody) = put(targetPort, "/api/graphs/service-a", """{"path":"service-a"}""")
+                assertEquals(200, loadCode, "Expected 200, body: $loadBody")
+
+                val (infoCode, infoBody) = get(targetPort, "/api/graphs/service-a/info")
+                assertEquals(200, infoCode, "Expected 200, body: $infoBody")
+                val info: Map<String, Double> = parseJson(infoBody)
+                assertEquals(1.0, info["nodes"])
+
+                val (cypherCode, cypherBody) = post(
+                    targetPort,
+                    "/api/graphs/service-a/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, cypherCode, "Expected 200, body: $cypherBody")
+                assertTrue(cypherBody.contains("101"), "Expected scoped query to hit service-a graph, body: $cypherBody")
+
+                val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/service-a")
+                assertEquals(204, deleteCode, "Expected 204, body: $deleteBody")
+                val (missingAfterDeleteCode, _) = get(targetPort, "/api/graphs/service-a/info")
+                assertEquals(404, missingAfterDeleteCode)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry hot update swaps graph path for same id`() {
+        val root = Files.createTempDirectory("explore-registry-update")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                val (firstLoadCode, firstLoadBody) = put(targetPort, "/api/graphs/service", """{"path":"service-v1"}""")
+                assertEquals(200, firstLoadCode, "Expected 200, body: $firstLoadBody")
+                val (firstQueryCode, firstQueryBody) = post(
+                    targetPort,
+                    "/api/graphs/service/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, firstQueryCode, "Expected 200, body: $firstQueryBody")
+                assertEquals(1.0, singleCypherValue(firstQueryBody), "Expected v1 value, body: $firstQueryBody")
+
+                val (secondLoadCode, secondLoadBody) = put(targetPort, "/api/graphs/service", """{"path":"service-v2"}""")
+                assertEquals(200, secondLoadCode, "Expected 200, body: $secondLoadBody")
+                val (secondQueryCode, secondQueryBody) = post(
+                    targetPort,
+                    "/api/graphs/service/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, secondQueryCode, "Expected 200, body: $secondQueryBody")
+                assertEquals(2.0, singleCypherValue(secondQueryBody), "Expected v2 value, body: $secondQueryBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry serves concurrent scoped cypher queries across many graphs`() {
+        val root = Files.createTempDirectory("explore-registry-concurrent")
+        val graphCount = 24
+        try {
+            repeat(graphCount) { index ->
+                saveConstantGraph(root, "service-$index", 1_000 + index)
+            }
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                repeat(graphCount) { index ->
+                    val (loadCode, loadBody) = put(
+                        targetPort,
+                        "/api/graphs/service-$index",
+                        """{"path":"service-$index"}"""
+                    )
+                    assertEquals(200, loadCode, "Expected 200 for service-$index, body: $loadBody")
+                }
+
+                val executor = java.util.concurrent.Executors.newFixedThreadPool(8)
+                try {
+                    val tasks = (0 until graphCount).flatMap { index ->
+                        List(4) {
+                            java.util.concurrent.Callable {
+                                val (code, body) = post(
+                                    targetPort,
+                                    "/api/graphs/service-$index/cypher",
+                                    """{"query":"MATCH (n:IntConstant) RETURN n.value LIMIT 1"}"""
+                                )
+                                code to singleCypherValue(body)
+                            }
+                        }
+                    }
+                    val results = executor.invokeAll(tasks).map { it.get() }
+                    results.forEachIndexed { taskIndex, (code, value) ->
+                        val graphIndex = taskIndex / 4
+                        assertEquals(200, code)
+                        assertEquals((1_000 + graphIndex).toDouble(), value)
+                    }
+                } finally {
+                    executor.shutdownNow()
+                }
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
     }
 
     // ========================================================================
@@ -628,6 +811,9 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val paths = result["paths"] as Map<String, Map<String, Any?>>
         assertTrue(paths.containsKey("/api/cypher"))
+        assertTrue(paths.containsKey("/api/graphs"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/cypher"))
         assertTrue(paths.containsKey("/api/api-spec"))
         assertTrue(paths.containsKey("/api/resources/{path}"))
         @Suppress("UNCHECKED_CAST")
@@ -1159,10 +1345,20 @@ class ExploreCommandTest {
     // ========================================================================
 
     @Test
-    fun `explorer defaults to auto load mode`() {
+    fun `explorer defaults to mapped load mode`() {
         val explore = ExploreCommand()
 
-        assertEquals(GraphStore.LoadMode.AUTO, explore.loadMode)
+        assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
+    }
+
+    @Test
+    fun `serve without initial graph requires graph root`() {
+        val serve = ServeCommand()
+
+        val (_, err, code) = captureOutput { serve.call() }
+
+        assertEquals(1, code)
+        assertTrue(err.contains("--graph-root"), "Expected graph root error, got: $err")
     }
 
     @Test

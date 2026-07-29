@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass.set("io.johnsonlee.graphite.cli.MainKt")
+    mainClass.set("io.johnsonlee.graphite.cli.ExploreMainKt")
 }
 
 val integrationFixtures: Configuration by configurations.creating
@@ -67,7 +67,7 @@ tasks.shadowJar {
     }
 
     manifest {
-        attributes("Main-Class" to "io.johnsonlee.graphite.cli.MainKt")
+        attributes("Main-Class" to "io.johnsonlee.graphite.cli.ExploreMainKt")
     }
 }
 
@@ -78,7 +78,7 @@ kover {
                 classes(
                     "*Benchmark*",
                     "io.johnsonlee.graphite.cli.ExplorerMemoryCounters",
-                    "io.johnsonlee.graphite.cli.MainKt"
+                    "io.johnsonlee.graphite.cli.ExploreMainKt"
                 )
             }
         }
