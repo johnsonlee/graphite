@@ -171,6 +171,9 @@ internal class MappedWebGraphBackedGraph(
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.value.memberAnnotations["$className#$memberName"] ?: emptyMap()
 
+    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
+        metadata.value.memberAnnotations
+
     override fun classOrigin(className: String): String? = metadata.value.classOrigins[className]
 
     override fun classOrigins(): Map<String, String> = metadata.value.classOrigins

@@ -255,7 +255,7 @@ Synthetic benchmarks (IntConstant) understate steps 1/2/6 because production use
 
 | Target | Phase | Approach |
 |--------|-------|----------|
-| Build time (not yet instrumented) | BUILD | Add timing to SootUpAdapter; reduce `DefaultGraph` footprint |
+| Build time | BUILD | Reduce SootUp body-walk overhead, or bypass it with an ASM-first persisted builder for the subset of graph semantics that can be emitted directly |
 | String + metadata (50s, 40% of save) | Steps 1+2 | Pre-collect at build time, or merge with step 3 |
 | Nodedata write (18s, 14% of save) | Step 6 | Optimize MethodDescriptor serialization |
 
@@ -1279,3 +1279,70 @@ prefix array, and the long-running explorer guardrails remain stable.
 passed. Line coverage stayed above the gate: `core` `98.0592%`, `cypher`
 `98.0652%`, `explore` `98.0691%`, `query` `100%`, `sootup` `98.2783%`,
 and `webgraph` `98.3513%`.
+
+### 2026-07-30 — Attempt 023: Remove redundant build and save scans
+
+**Question:** why did previous load/query work not noticeably improve
+`GraphEndToEndBenchmark`?
+
+Because the end-to-end benchmark is dominated by `JAR -> build -> save`, not by
+mapped load or Cypher query. Attempts 018-022 made serving a persisted graph much
+cheaper and stabilized long-running explorer heap, but they mostly left
+`JavaProjectLoader` and the `GraphStore.save()` metadata collection path
+unchanged.
+
+**Hypothesis:** remove repeated work in the current build/save path without
+adding permanent heap:
+
+- build the temporary mmap node type index from compact node record headers,
+  instead of deserializing every node after writing it
+- build temporary edge indexes through buffered sequential scans, instead of
+  per-record `RandomAccessFile` reads
+- scan all mmap nodes in node-id order for full-graph save passes, avoiding
+  type-grouped random mmap reads
+- reuse graph-owned member annotation and type hierarchy indexes during metadata
+  collection, instead of rediscovering them from all nodes
+- reduce SootUp adapter hashing work by using identity keys for per-method
+  statement maps and caching branch reachability within each method
+
+**Environment:**
+
+- machine: macOS arm64, Darwin 23.3.0
+- JVM: OpenJDK 17.0.18 Homebrew
+- fixture: Android SDK jar discovered from the local Gradle cache
+- JMH mode: SingleShotTime, one fork
+
+**Validation commands:**
+
+```
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph$' --no-daemon
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query' --no-daemon
+java -Xmx4g -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+./gradlew :core:check :webgraph:check --no-daemon
+./gradlew :sootup:check --no-daemon
+```
+
+**Main comparison:**
+
+| Benchmark | `main` (`74e937a`) | Attempt 023 | Change |
+|-----------|--------------------|-------------|--------|
+| `GraphBuildBenchmark.buildAndroidSdkGraph` | `95195.133 ms/op` | `27647.563 ms/op` | `-67547.570 ms` / `-70.96%`, `3.44x` faster |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `111921.044 ms/op` | `35765.348 ms/op` | `-76155.696 ms` / `-68.04%`, `3.13x` faster |
+
+**Stage attribution:**
+
+| Benchmark / metric | Result |
+|--------------------|--------|
+| `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig` | `26825.472 ms/op` |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `35765.348 ms/op` |
+| Approximate save + mapped load + query remainder | `~8939.876 ms/op` |
+| E2E with GC profiler | `37315.659 ms/op`, `71960564456 B/op`, `122` GCs, `1719 ms` GC time |
+
+**Conclusion:** accepted as a meaningful end-to-end improvement, but not the
+requested order-of-magnitude improvement. The optimized path is now roughly
+`3.1x` faster than `main` and still runs under `-Xmx4g`; the remaining lower
+bound is the SootUp/Jimple method-body walk itself. Reaching `10x` from here
+requires a larger architectural change, most likely an ASM-first builder for the
+parts of the graph that can be emitted directly, or an explicit reduction in the
+graph semantics built from bytecode.

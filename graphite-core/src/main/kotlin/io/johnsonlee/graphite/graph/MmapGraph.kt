@@ -85,15 +85,14 @@ class MmapGraph internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
-        // Fast path: exact type match
-        nodeTypeIndex[type]?.let { ids ->
-            return ids.asSequence().mapNotNull { node(NodeId(it)) as? T }
+        val ids = when {
+            type == Node::class.java -> nodeIndex.indices.asSequence()
+            nodeTypeIndex.containsKey(type) -> nodeTypeIndex.getValue(type).asSequence()
+            else -> nodeTypeIndex.entries.asSequence()
+                .filter { type.isAssignableFrom(it.key) }
+                .flatMap { it.value.asSequence() }
         }
-        // Slow path: supertype match
-        return nodeTypeIndex.entries.asSequence()
-            .filter { type.isAssignableFrom(it.key) }
-            .flatMap { it.value.asSequence() }
-            .mapNotNull { node(NodeId(it)) as? T }
+        return ids.mapNotNull { node(NodeId(it)) as? T }
     }
 
     override fun outgoing(id: NodeId): Sequence<Edge> {
@@ -134,6 +133,9 @@ class MmapGraph internal constructor(
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
+
+    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
+        memberAnnotationsMap
 
     override fun classOrigin(className: String): String? = classOriginsMap[className]
 

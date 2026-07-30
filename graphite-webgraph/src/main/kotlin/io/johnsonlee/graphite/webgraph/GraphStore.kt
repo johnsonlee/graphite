@@ -913,50 +913,81 @@ object GraphStore {
     }
 
     internal fun collectMetadata(graph: Graph): GraphMetadata {
+        fun collectReferencedTypes(): MutableSet<TypeDescriptor> {
+            val allTypes = mutableSetOf<TypeDescriptor>()
+            graph.nodes(Node::class.java).forEach { node ->
+                when (node) {
+                    is LocalVariable -> {
+                        allTypes.add(node.type)
+                        allTypes.add(node.method.declaringClass)
+                    }
+                    is FieldNode -> {
+                        allTypes.add(node.descriptor.declaringClass)
+                        allTypes.add(node.descriptor.type)
+                    }
+                    is ParameterNode -> {
+                        allTypes.add(node.type)
+                        allTypes.add(node.method.declaringClass)
+                    }
+                    is ReturnNode -> {
+                        node.actualType?.let { allTypes.add(it) }
+                        allTypes.add(node.method.declaringClass)
+                        allTypes.add(node.method.returnType)
+                    }
+                    is CallSiteNode -> {
+                        allTypes.add(node.callee.declaringClass)
+                        allTypes.add(node.callee.returnType)
+                        allTypes.add(node.caller.declaringClass)
+                    }
+                    is EnumConstant -> allTypes.add(node.enumType)
+                    is AnnotationNode -> {}
+                    else -> {}
+                }
+            }
+            graph.methods(MethodPattern()).forEach { method ->
+                allTypes.add(method.declaringClass)
+                allTypes.add(method.returnType)
+                method.parameterTypes.forEach { allTypes.add(it) }
+            }
+            return allTypes
+        }
+
+        fun collectMemberAnnotations(): Map<String, Map<String, Map<String, Any?>>> {
+            val memberAnnotations = mutableMapOf<String, Map<String, Map<String, Any?>>>()
+            val classMembers = mutableSetOf<Pair<String, String>>()
+            graph.nodes(Node::class.java).forEach { node ->
+                when (node) {
+                    is FieldNode -> classMembers.add(node.descriptor.declaringClass.className to node.descriptor.name)
+                    is CallSiteNode -> classMembers.add(node.callee.declaringClass.className to node.callee.name)
+                    is ParameterNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
+                    is ReturnNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
+                    is AnnotationNode -> {}
+                    else -> {}
+                }
+            }
+            // Also add <class> level annotations
+            val allClasses = classMembers.map { it.first }.toSet()
+            for (className in allClasses) {
+                classMembers.add(className to "<class>")
+            }
+            for ((className, memberName) in classMembers) {
+                val annotations = graph.memberAnnotations(className, memberName)
+                if (annotations.isNotEmpty()) {
+                    memberAnnotations["$className#$memberName"] = annotations
+                }
+            }
+            return memberAnnotations
+        }
+
         // Collect type hierarchy
         val supertypes = mutableMapOf<String, Set<TypeDescriptor>>()
         val subtypes = mutableMapOf<String, Set<TypeDescriptor>>()
-
-        // Walk all types referenced in the graph (nodes + methods)
-        val allTypes = mutableSetOf<TypeDescriptor>()
-        graph.nodes(Node::class.java).forEach { node ->
-            when (node) {
-                is LocalVariable -> {
-                    allTypes.add(node.type)
-                    allTypes.add(node.method.declaringClass)
-                }
-                is FieldNode -> {
-                    allTypes.add(node.descriptor.declaringClass)
-                    allTypes.add(node.descriptor.type)
-                }
-                is ParameterNode -> {
-                    allTypes.add(node.type)
-                    allTypes.add(node.method.declaringClass)
-                }
-                is ReturnNode -> {
-                    node.actualType?.let { allTypes.add(it) }
-                    allTypes.add(node.method.declaringClass)
-                    allTypes.add(node.method.returnType)
-                }
-                is CallSiteNode -> {
-                    allTypes.add(node.callee.declaringClass)
-                    allTypes.add(node.callee.returnType)
-                    allTypes.add(node.caller.declaringClass)
-                }
-                is EnumConstant -> allTypes.add(node.enumType)
-                is AnnotationNode -> {}
-                else -> {}
-            }
+        val hierarchyTypeNames = graph.typeHierarchyTypes()
+        val allTypes = if (hierarchyTypeNames.isNotEmpty()) {
+            hierarchyTypeNames.mapTo(mutableSetOf()) { TypeDescriptor(it) }
+        } else {
+            collectReferencedTypes()
         }
-        // Also collect types from registered methods
-        graph.methods(MethodPattern()).forEach { method ->
-            allTypes.add(method.declaringClass)
-            allTypes.add(method.returnType)
-            method.parameterTypes.forEach { allTypes.add(it) }
-        }
-
-        // Include all types that have hierarchy info (covers types not referenced by nodes)
-        graph.typeHierarchyTypes().forEach { allTypes.add(TypeDescriptor(it)) }
 
         for (type in allTypes) {
             val sups = graph.supertypes(type).toSet()
@@ -980,30 +1011,8 @@ object GraphStore {
             }
         }
 
-        // Collect member annotations - extract from all classes referenced in nodes
-        val memberAnnotations = mutableMapOf<String, Map<String, Map<String, Any?>>>()
-        val classMembers = mutableSetOf<Pair<String, String>>()
-        graph.nodes(Node::class.java).forEach { node ->
-            when (node) {
-                is FieldNode -> classMembers.add(node.descriptor.declaringClass.className to node.descriptor.name)
-                is CallSiteNode -> classMembers.add(node.callee.declaringClass.className to node.callee.name)
-                is ParameterNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
-                is ReturnNode -> classMembers.add(node.method.declaringClass.className to node.method.name)
-                is AnnotationNode -> {}
-                else -> {}
-            }
-        }
-        // Also add <class> level annotations
-        val allClasses = classMembers.map { it.first }.toSet()
-        for (className in allClasses) {
-            classMembers.add(className to "<class>")
-        }
-        for ((className, memberName) in classMembers) {
-            val annotations = graph.memberAnnotations(className, memberName)
-            if (annotations.isNotEmpty()) {
-                memberAnnotations["$className#$memberName"] = annotations
-            }
-        }
+        val memberAnnotations = graph.memberAnnotationIndex()?.toMap()
+            ?: collectMemberAnnotations()
 
         // Collect branch scopes
         val branchScopes = graph.branchScopes().map { bs ->
@@ -1027,4 +1036,5 @@ object GraphStore {
             branchScopes = branchScopes
         )
     }
+
 }

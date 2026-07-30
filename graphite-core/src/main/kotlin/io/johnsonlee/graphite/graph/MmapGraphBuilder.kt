@@ -44,10 +44,10 @@ import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutput
 import java.io.DataOutputStream
+import java.io.EOFException
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -178,7 +178,9 @@ class MmapGraphBuilder(
         nodeStream.close()
         edgeStream.close()
 
-        // Build indexes by scanning files sequentially
+        // Build indexes by scanning compact record headers sequentially.
+        // Node payloads stay on disk; deserializing every node here was pure
+        // build-time overhead because MmapGraph will decode nodes on demand.
         var nodeOffsets = LongArray(INITIAL_NODE_INDEX_CAPACITY) { -1L }
         var maxNodeId = -1
         val nodeTypeIndexBuilder = HashMap<Class<out Node>, MutableList<Int>>()
@@ -188,16 +190,15 @@ class MmapGraphBuilder(
             val fileLen = workDir.resolve(NODES_FILE).toFile().length()
             while (offset < fileLen) {
                 val len = dis.readInt()
-                val bytes = ByteArray(len)
-                dis.readFully(bytes)
-                val node = deserializeNode(bytes, nodeMethods)
-                val nodeId = node.id.value
+                val nodeId = dis.readInt()
+                val tag = dis.readByte().toInt()
+                skipFully(dis, len - NODE_ID_BYTES - NODE_TAG_BYTES)
                 if (nodeId >= nodeOffsets.size) {
                     nodeOffsets = growLongArray(nodeOffsets, nodeId + 1)
                 }
                 nodeOffsets[nodeId] = offset
                 maxNodeId = maxOf(maxNodeId, nodeId)
-                nodeTypeIndexBuilder.getOrPut(node::class.java) { mutableListOf() }.add(nodeId)
+                nodeTypeIndexBuilder.getOrPut(nodeClassForTag(tag)) { mutableListOf() }.add(nodeId)
                 offset += LENGTH_PREFIX_BYTES + len
             }
         }
@@ -213,13 +214,15 @@ class MmapGraphBuilder(
         val incomingCounts = IntArray(nodeCapacity)
 
         offset = 0L
-        RandomAccessFile(workDir.resolve(EDGES_FILE).toFile(), "r").use { edgeRaf ->
-            while (edgeRaf.filePointer < edgeRaf.length()) {
-                val from = edgeRaf.readInt()
-                val to = edgeRaf.readInt()
+        val edgeFile = workDir.resolve(EDGES_FILE).toFile()
+        val edgeFileLen = edgeFile.length()
+        DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
+            while (offset < edgeFileLen) {
+                val from = edgeDis.readInt()
+                val to = edgeDis.readInt()
                 outgoingCounts[from]++
                 incomingCounts[to]++
-                skipEdgePayload(edgeRaf)
+                offset += EDGE_ENDPOINT_BYTES + skipEdgePayload(edgeDis)
             }
         }
 
@@ -230,14 +233,15 @@ class MmapGraphBuilder(
         val outgoingCursor = outgoingStarts.copyOf(outgoingStarts.size - 1)
         val incomingCursor = incomingStarts.copyOf(incomingStarts.size - 1)
 
-        RandomAccessFile(workDir.resolve(EDGES_FILE).toFile(), "r").use { edgeRaf ->
-            while (edgeRaf.filePointer < edgeRaf.length()) {
-                offset = edgeRaf.filePointer
-                val from = edgeRaf.readInt()
-                val to = edgeRaf.readInt()
-                skipEdgePayload(edgeRaf)
-                outgoingOffsets[outgoingCursor[from]++] = offset
-                incomingOffsets[incomingCursor[to]++] = offset
+        offset = 0L
+        DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
+            while (offset < edgeFileLen) {
+                val recordOffset = offset
+                val from = edgeDis.readInt()
+                val to = edgeDis.readInt()
+                offset += EDGE_ENDPOINT_BYTES + skipEdgePayload(edgeDis)
+                outgoingOffsets[outgoingCursor[from]++] = recordOffset
+                incomingOffsets[incomingCursor[to]++] = recordOffset
             }
         }
 
@@ -267,6 +271,15 @@ class MmapGraphBuilder(
         private const val EDGES_FILE = "edges.dat"
         private const val INITIAL_NODE_INDEX_CAPACITY = 16
         private const val LENGTH_PREFIX_BYTES = 4
+        private const val NODE_ID_BYTES = 4
+        private const val NODE_TAG_BYTES = 1
+        private const val EDGE_ENDPOINT_BYTES = 8
+        private const val EDGE_TAG_BYTES = 1
+        private const val EDGE_KIND_BYTES = 1
+        private const val EDGE_FLAGS_BYTES = 1
+        private const val CONTROL_FLOW_HAS_COMPARISON_BYTES = 1
+        private const val COMPARISON_OPERATOR_BYTES = 1
+        private const val COMPARISON_NODE_ID_BYTES = 4
         private const val NODE_SERIALIZATION_BUFFER_BYTES = 128
 
         // Node type tags
@@ -286,6 +299,25 @@ class MmapGraphBuilder(
         internal const val TAG_ANNOTATION_NODE = 13
         internal const val TAG_RESOURCE_VALUE_NODE = 14
         internal const val TAG_RESOURCE_FILE_NODE = 15
+
+        private val NODE_CLASSES_BY_TAG: Array<Class<out Node>> = arrayOf(
+            IntConstant::class.java,
+            StringConstant::class.java,
+            LongConstant::class.java,
+            FloatConstant::class.java,
+            DoubleConstant::class.java,
+            BooleanConstant::class.java,
+            NullConstant::class.java,
+            EnumConstant::class.java,
+            LocalVariable::class.java,
+            FieldNode::class.java,
+            ParameterNode::class.java,
+            ReturnNode::class.java,
+            CallSiteNode::class.java,
+            AnnotationNode::class.java,
+            ResourceValueNode::class.java,
+            ResourceFileNode::class.java
+        )
 
         // Edge type tags
         internal const val TAG_EDGE_DATAFLOW = 0
@@ -408,24 +440,63 @@ class MmapGraphBuilder(
             }
         }
 
+        private fun nodeClassForTag(tag: Int): Class<out Node> {
+            require(tag in NODE_CLASSES_BY_TAG.indices) {
+                "Unknown node type tag during index build: $tag"
+            }
+            return NODE_CLASSES_BY_TAG[tag]
+        }
+
+        private fun skipFully(input: DataInputStream, bytes: Int) {
+            require(bytes >= 0) { "Cannot skip a negative byte count: $bytes" }
+            var remaining = bytes
+            while (remaining > 0) {
+                val skipped = input.skipBytes(remaining)
+                if (skipped <= 0) {
+                    if (input.read() == -1) {
+                        throw EOFException("Unexpected EOF while skipping node payload")
+                    }
+                    remaining--
+                } else {
+                    remaining -= skipped
+                }
+            }
+        }
+
         /**
          * Skip past the payload of an edge record (after from/to have been read).
-         * Advances the file pointer past type tag + type-specific bytes.
+         *
+         * @return number of bytes consumed after the 8-byte from/to endpoint header.
          */
-        private fun skipEdgePayload(raf: RandomAccessFile) {
-            when (raf.readByte().toInt()) {
-                TAG_EDGE_DATAFLOW -> raf.readByte()   // kind
-                TAG_EDGE_CALL -> raf.readByte()       // flags
-                TAG_EDGE_TYPE -> raf.readByte()       // kind
-                TAG_EDGE_CONTROL_FLOW -> {
-                    raf.readByte()                    // kind
-                    val hasComparison = raf.readByte().toInt() == 1
-                    if (hasComparison) {
-                        raf.readByte()                // operator
-                        raf.readInt()                 // comparandNodeId
-                    }
+        private fun skipEdgePayload(input: DataInput): Int {
+            return when (input.readByte().toInt()) {
+                TAG_EDGE_DATAFLOW -> {
+                    input.readByte()   // kind
+                    EDGE_TAG_BYTES + EDGE_KIND_BYTES
                 }
-                TAG_EDGE_RESOURCE -> raf.readByte()   // kind
+                TAG_EDGE_CALL -> {
+                    input.readByte()   // flags
+                    EDGE_TAG_BYTES + EDGE_FLAGS_BYTES
+                }
+                TAG_EDGE_TYPE -> {
+                    input.readByte()   // kind
+                    EDGE_TAG_BYTES + EDGE_KIND_BYTES
+                }
+                TAG_EDGE_CONTROL_FLOW -> {
+                    input.readByte()                  // kind
+                    var consumed = EDGE_TAG_BYTES + EDGE_KIND_BYTES + CONTROL_FLOW_HAS_COMPARISON_BYTES
+                    val hasComparison = input.readByte().toInt() == 1
+                    if (hasComparison) {
+                        input.readByte()              // operator
+                        input.readInt()               // comparandNodeId
+                        consumed += COMPARISON_OPERATOR_BYTES + COMPARISON_NODE_ID_BYTES
+                    }
+                    consumed
+                }
+                TAG_EDGE_RESOURCE -> {
+                    input.readByte()   // kind
+                    EDGE_TAG_BYTES + EDGE_KIND_BYTES
+                }
                 else -> error("Unknown edge type tag during skip")
             }
         }

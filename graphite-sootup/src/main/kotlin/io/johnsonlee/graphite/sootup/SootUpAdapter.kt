@@ -43,6 +43,8 @@ import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.nio.file.Files
+import java.util.Collections
+import java.util.IdentityHashMap
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.ServiceLoader
@@ -132,6 +134,11 @@ private const val GET_KEYS_METHOD = "getKeys"
 private const val PASS1_PROGRESS_INTERVAL = 500
 private const val PASS2_PROGRESS_INTERVAL = 100
 
+private fun <K, V> identityMutableMap(): MutableMap<K, V> = IdentityHashMap()
+
+private fun <T> identityMutableSet(): MutableSet<T> =
+    Collections.newSetFromMap(IdentityHashMap())
+
 /**
  * Adapter that converts SootUp's IR to Graphite's graph model.
  *
@@ -150,8 +157,20 @@ class SootUpAdapter(
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
 
-    private data class LocalKey(val method: MethodDescriptor, val name: String)
-    private data class ParameterBinding(val method: MethodDescriptor, val index: Int)
+    private class LocalKey(val method: MethodDescriptor, val name: String) {
+        override fun equals(other: Any?): Boolean =
+            other is LocalKey && method === other.method && name == other.name
+
+        override fun hashCode(): Int = 31 * System.identityHashCode(method) + name.hashCode()
+    }
+
+    private class ParameterBinding(val method: MethodDescriptor, val index: Int) {
+        override fun equals(other: Any?): Boolean =
+            other is ParameterBinding && method === other.method && index == other.index
+
+        override fun hashCode(): Int = 31 * System.identityHashCode(method) + index
+    }
+
     private data class BundleControlSpec(
         val noFallback: Boolean = false,
         val formats: Set<String> = setOf(RESOURCE_BUNDLE_FORMAT_PROPERTIES, RESOURCE_BUNDLE_FORMAT_CLASS),
@@ -229,7 +248,7 @@ class SootUpAdapter(
 
     // Per-method: tracks which NodeIds were created from each statement
     // Reset per method in processMethod()
-    private var stmtNodeIds = mutableMapOf<Stmt, MutableList<NodeId>>()
+    private var stmtNodeIds = identityMutableMap<Stmt, MutableList<NodeId>>()
     private var activeMethod: MethodDescriptor? = null
     private var activeMethodLocals = mutableSetOf<LocalKey>()
     private var activeMethodParameters = mutableSetOf<ParameterBinding>()
@@ -578,7 +597,7 @@ class SootUpAdapter(
                 val stmtGraph = body.stmtGraph
 
                 // Reset per-method stmt tracking
-                stmtNodeIds = mutableMapOf()
+                stmtNodeIds = identityMutableMap()
 
                 // Process parameters
                 processParameters(method, methodDescriptor)
@@ -1232,6 +1251,7 @@ class SootUpAdapter(
      * Creates ControlFlowEdge and BranchScope entries.
      */
     private fun processControlFlow(stmtGraph: StmtGraph<*>, method: MethodDescriptor) {
+        val reachableCache = identityMutableMap<Stmt, Set<Stmt>>()
         for (stmt in stmtGraph) {
             if (stmt !is JIfStmt) continue
 
@@ -1274,8 +1294,8 @@ class SootUpAdapter(
             val trueSuccessor = successors[1]   // goto target
 
             // Walk each branch collecting all reachable statements until merge point
-            val trueBranchStmts = walkBranch(trueSuccessor, falseSuccessor, stmtGraph)
-            val falseBranchStmts = walkBranch(falseSuccessor, trueSuccessor, stmtGraph)
+            val trueBranchStmts = walkBranch(trueSuccessor, falseSuccessor, stmtGraph, reachableCache)
+            val falseBranchStmts = walkBranch(falseSuccessor, trueSuccessor, stmtGraph, reachableCache)
 
             // Collect NodeIds from each branch's statements as IntArrays
             val trueIds = trueBranchStmts.flatMap { stmtNodeIds[it] ?: emptyList() }
@@ -1332,12 +1352,15 @@ class SootUpAdapter(
     private fun walkBranch(
         start: Stmt,
         otherBranchStart: Stmt,
-        stmtGraph: StmtGraph<*>
+        stmtGraph: StmtGraph<*>,
+        reachableCache: MutableMap<Stmt, Set<Stmt>>
     ): Set<Stmt> {
         // Collect statements reachable from the other branch (to find merge points)
-        val otherReachable = collectReachable(otherBranchStart, stmtGraph)
+        val otherReachable = reachableCache.getOrPut(otherBranchStart) {
+            collectReachable(otherBranchStart, stmtGraph)
+        }
 
-        val result = mutableSetOf<Stmt>()
+        val result = identityMutableSet<Stmt>()
         val queue = ArrayDeque<Stmt>()
         queue.add(start)
 
@@ -1365,7 +1388,7 @@ class SootUpAdapter(
      * Collect all statements reachable from [start] via forward traversal.
      */
     private fun collectReachable(start: Stmt, stmtGraph: StmtGraph<*>): Set<Stmt> {
-        val reachable = mutableSetOf<Stmt>()
+        val reachable = identityMutableSet<Stmt>()
         val queue = ArrayDeque<Stmt>()
         queue.add(start)
 
