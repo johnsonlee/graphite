@@ -41,7 +41,7 @@ internal class ExploreRoutes {
         app.get("$API_ROOT/graphs") { ctx ->
             ctx.json(
                 mapOf(
-                    API_FIELD_GRAPH_ROOT to registry.graphRoot.toString(),
+                    API_FIELD_DATA to registry.dataDir.toString(),
                     API_FIELD_LOAD_MODE to registry.defaultLoadMode.name,
                     API_FIELD_COUNT to registry.list().size,
                     API_FIELD_GRAPHS to registry.list().map { it.toApiMap() }

@@ -370,6 +370,7 @@ class ExploreCommandTest {
                 assertEquals(200, emptyCode, "Expected 200, body: $emptyBody")
                 val emptyResult: Map<String, Any?> = parseJson(emptyBody)
                 assertEquals(0.0, emptyResult["count"])
+                assertEquals(root.toString(), emptyResult["data"])
 
                 val (missingDefaultCode, _) = get(targetPort, "/api/info")
                 assertEquals(404, missingDefaultCode)
@@ -1404,19 +1405,19 @@ class ExploreCommandTest {
         val explore = ExploreCommand()
 
         assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
-        assertNull(explore.graphRoot)
+        assertNull(explore.data)
         assertEquals(DEFAULT_GRAPH_ID, explore.graphId)
         assertTrue(explore.graphSpecs.isEmpty())
     }
 
     @Test
-    fun `serve without initial graph requires graph root`() {
+    fun `serve without initial graph requires data directory`() {
         val serve = ServeCommand()
 
         val (_, err, code) = captureOutput { serve.call() }
 
         assertEquals(1, code)
-        assertTrue(err.contains("--graph-root"), "Expected graph root error, got: $err")
+        assertTrue(err.contains("--data"), "Expected data directory error, got: $err")
     }
 
     @Test
@@ -1424,7 +1425,7 @@ class ExploreCommandTest {
         val root = Files.createTempDirectory("explore-invalid-graph-spec")
         try {
             val serve = ServeCommand()
-            serve.graphRoot = root
+            serve.data = root
             serve.graphSpecs = listOf("missing-separator")
 
             val (_, err, code) = captureOutput { serve.call() }

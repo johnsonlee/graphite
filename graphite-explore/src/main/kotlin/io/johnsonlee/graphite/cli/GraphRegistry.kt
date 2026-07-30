@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal const val API_FIELD_GRAPH_ID = "graphId"
-internal const val API_FIELD_GRAPH_ROOT = "graphRoot"
+internal const val API_FIELD_DATA = "data"
 internal const val API_FIELD_GRAPHS = "graphs"
 internal const val API_FIELD_LOADED_AT = "loadedAt"
 internal const val API_FIELD_LOAD_MODE = "loadMode"
@@ -65,7 +65,7 @@ internal class RegistryPathGraphProvider(private val registry: GraphRegistry) : 
 }
 
 internal class GraphRegistry(
-    val graphRoot: Path,
+    val dataDir: Path,
     val defaultLoadMode: GraphStore.LoadMode
 ) : Closeable {
 
@@ -114,7 +114,7 @@ internal class GraphRegistry(
         defaultGraphId.get()?.let { acquire(it) }
 
     fun resolveGraphPath(path: Path): Path =
-        if (path.isAbsolute) path.normalize() else graphRoot.resolve(path).normalize()
+        if (path.isAbsolute) path.normalize() else dataDir.resolve(path).normalize()
 
     override fun close() {
         val loaded = graphs.values.toList()

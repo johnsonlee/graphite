@@ -29,8 +29,8 @@ open class ServeCommand : Callable<Int> {
     @Parameters(index = "0", arity = "0..1", description = ["Optional saved graph directory for single-graph startup"])
     var graphDir: Path? = null
 
-    @Option(names = ["--graph-root"], description = ["Storage root used to resolve relative graph paths and allow empty startup"])
-    var graphRoot: Path? = null
+    @Option(names = ["--data"], description = ["Data directory used to resolve relative graph paths and allow empty startup"])
+    var data: Path? = null
 
     @Option(names = ["--graph"], description = ["Initial graph mapping id=path. Repeat for multiple graphs."])
     var graphSpecs: List<String> = emptyList()
@@ -55,12 +55,12 @@ open class ServeCommand : Callable<Int> {
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
         val hasInitialGraphs = graphDir != null || graphSpecs.isNotEmpty()
-        if (!hasInitialGraphs && graphRoot == null) {
-            System.err.println("Error: --graph-root is required when starting without an initial graph")
+        if (!hasInitialGraphs && data == null) {
+            System.err.println("Error: --data is required when starting without an initial graph")
             return 1
         }
 
-        val root = resolveGraphRoot(graphRoot, graphDir)
+        val root = resolveDataDir(data, graphDir)
         Files.createDirectories(root)
         val registry = GraphRegistry(root, loadMode)
 
@@ -82,7 +82,7 @@ open class ServeCommand : Callable<Int> {
             registerApiRoutes(app, registry)
 
             System.err.println("Web UI: http://localhost:${app.port()}")
-            System.err.println("Graph root: $root")
+            System.err.println("Data: $root")
             System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
             System.err.println("Press Ctrl+C to stop")
 
@@ -148,7 +148,7 @@ open class ServeCommand : Callable<Int> {
         return id to Path.of(spec.substring(separator + 1))
     }
 
-    private fun resolveGraphRoot(root: Path?, initialGraph: Path?): Path =
+    private fun resolveDataDir(root: Path?, initialGraph: Path?): Path =
         (root ?: initialGraph?.toAbsolutePath()?.parent ?: Path.of(".")).toAbsolutePath().normalize()
 }
 

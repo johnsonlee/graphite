@@ -80,8 +80,8 @@ graphite query --format json /data/app-graph \
 # Launch the web UI
 graphite serve /data/app-graph --port 8080
 
-# Serve multiple graphs by id. Relative graph paths resolve under --graph-root.
-graphite serve --graph-root /data/graphs \
+# Serve multiple graphs by id. Relative graph paths resolve under --data.
+graphite serve --data /data/graphs \
   --graph orders=orders-graph \
   --graph billing=/data/billing-graph \
   --port 8080
@@ -330,7 +330,7 @@ graphite serve /path/to/saved-graph
 You can also start with no initial graph and hot-load services later:
 
 ```bash
-graphite serve --graph-root /data/graphs
+graphite serve --data /data/graphs
 curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"orders-graph"}'

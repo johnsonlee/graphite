@@ -302,7 +302,7 @@ internal class OpenApiSpecBuilder {
             mapOf(
                 API_FIELD_PATH to mapOf(
                     API_FIELD_TYPE to TYPE_STRING,
-                    FIELD_DESCRIPTION to "Absolute graph path, or path relative to --graph-root"
+                    FIELD_DESCRIPTION to "Absolute graph path, or path relative to --data"
                 ),
                 API_FIELD_LOAD_MODE to mapOf(
                     API_FIELD_TYPE to TYPE_STRING,
