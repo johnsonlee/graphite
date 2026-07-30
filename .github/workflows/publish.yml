@@ -61,7 +61,7 @@ jobs:
         VERSION=${GITHUB_REF/refs\/tags\/v/}
         ./gradlew :query:shadowJar :explore:shadowJar --no-daemon -Pversion=${VERSION}
         mkdir -p release-assets
-        cp graphite-query/build/libs/graphite-query.jar release-assets/graphite-query.jar
+        cp graphite-query/build/libs/graphite.jar release-assets/graphite.jar
         cp graphite-explore/build/libs/graphite-explore.jar release-assets/graphite-explore.jar
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -82,28 +82,27 @@ jobs:
         fi
 
         VERSION=${GITHUB_REF/refs\/tags\/v/}
-        QUERY_SHA=$(sha256sum release-assets/graphite-query.jar | awk '{print $1}')
+        QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
         EXPLORE_SHA=$(sha256sum release-assets/graphite-explore.jar | awk '{print $1}')
 
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
         cd tap
         mkdir -p Formula
 
-        rm -f Formula/graphite-query.rb
-
-        cat > Formula/graphite.rb <<RUBY
-        class Graphite < Formula
-          desc "Query and inspect Graphite static analysis graphs"
+        cat > Formula/graphite@2.0.rb <<RUBY
+        class GraphiteAT20 < Formula
+          desc "Build, query, and serve Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
           version "${VERSION}"
-          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite-query.jar"
+          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite.jar"
           sha256 "${QUERY_SHA}"
           license "Apache-2.0"
 
           depends_on "openjdk@17"
+          conflicts_with "graphite", because: "both install the graphite executable"
 
           def install
-            libexec.install "graphite-query.jar"
+            libexec.install "graphite.jar"
             (bin/"graphite").write <<~EOS
               #!/bin/bash
               export JAVA_TOOL_OPTIONS="\${JAVA_TOOL_OPTIONS:-\${JAVA_OPTS:--Xmx8g}}"
@@ -130,7 +129,7 @@ jobs:
                   PASSTHROUGH_ARGS+=("\$arg")
                 fi
               done
-              exec "#{Formula["openjdk@17"].opt_bin}/java" \$AGENT_ARGS -jar "#{libexec}/graphite-query.jar" "\${PASSTHROUGH_ARGS[@]}"
+              exec "#{Formula["openjdk@17"].opt_bin}/java" \$AGENT_ARGS -jar "#{libexec}/graphite.jar" "\${PASSTHROUGH_ARGS[@]}"
             EOS
           end
 
@@ -140,8 +139,8 @@ jobs:
         end
         RUBY
 
-        cat > Formula/graphite-explore.rb <<RUBY
-        class GraphiteExplore < Formula
+        cat > Formula/graphite-explore@2.0.rb <<RUBY
+        class GraphiteExploreAT20 < Formula
           desc "Interactive web visualization for Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
           version "${VERSION}"
@@ -150,6 +149,7 @@ jobs:
           license "Apache-2.0"
 
           depends_on "openjdk@17"
+          conflicts_with "graphite-explore", because: "both install the graphite-explore executable"
 
           def install
             libexec.install "graphite-explore.jar"
