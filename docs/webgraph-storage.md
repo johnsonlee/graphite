@@ -1346,3 +1346,74 @@ bound is the SootUp/Jimple method-body walk itself. Reaching `10x` from here
 requires a larger architectural change, most likely an ASM-first builder for the
 parts of the graph that can be emitted directly, or an explicit reduction in the
 graph semantics built from bytecode.
+
+### 2026-07-31 — Attempt 024: Reduce mmap build/save allocation overhead
+
+**Question:** why did Attempt 023 still miss the order-of-magnitude target?
+
+The build-only benchmark had already fallen from `~95s` to `~27s`, but the
+end-to-end path was still paying avoidable allocation and decoding cost in two
+places: temporary mmap graph construction and `GraphStore.save()` forward
+adjacency generation.
+
+**Changes retained:**
+
+- write temporary mmap node type references as builder-local type ids instead of
+  repeatedly UTF-8 encoding the same type class names
+- collect the temporary mmap node type index with primitive int buffers instead
+  of boxed `MutableList<Int>` values
+- use an identity map for the builder-local method id table; the SootUp adapter
+  already canonicalizes `MethodDescriptor` instances
+- let `MmapGraph` expose target-only outgoing scans so `GraphStore.save()` can
+  count unique outdegree without decoding full edge objects
+- replace per-node `MutableSet`/`MutableMap`/`sorted()` allocation in forward
+  data construction with reusable primitive scratch arrays while preserving
+  sorted targets and "last edge for duplicate target wins" semantics
+
+**Rejected during this attempt:** lazy `ControlFlowIndex` successors, local
+identity-key caching in `SootUpAdapter`, invoke argument loop rewrites, and a raw
+mmap edge-record save path. Each either regressed the Android single-shot score
+or failed to show a stable improvement, so those changes were removed.
+
+**Environment:**
+
+- machine: macOS arm64, Darwin 23.3.0
+- JVM: OpenJDK 17.0.18 Homebrew
+- fixture: Android SDK jar discovered from the local Gradle cache
+- JMH mode: SingleShotTime, one fork
+
+**Validation commands:**
+
+```
+./gradlew :core:check :webgraph:check :sootup:check --no-daemon
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph$' --no-daemon
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query' --no-daemon
+java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+```
+
+**Main comparison:**
+
+| Benchmark | `main` (`74e937a`) | Attempt 024 | Change |
+|-----------|--------------------|-------------|--------|
+| `GraphBuildBenchmark.buildAndroidSdkGraph` | `95195.133 ms/op` | `19971.867 ms/op` | `-75223.266 ms` / `-79.02%`, `4.77x` faster |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `111921.044 ms/op` | `25594.160 ms/op` | `-86326.884 ms` / `-77.13%`, `4.37x` faster |
+
+**Attempt 023 comparison:**
+
+| Benchmark / metric | Attempt 023 | Attempt 024 | Change |
+|--------------------|-------------|-------------|--------|
+| `GraphBuildBenchmark.buildAndroidSdkGraph` | `27647.563 ms/op` | `19971.867 ms/op` | `-7675.696 ms` / `-27.76%` |
+| `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig` | `26825.472 ms/op` | `19768.045 ms/op` | `-7057.427 ms` / `-26.31%` |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `35765.348 ms/op` | `25594.160 ms/op` | `-10171.188 ms` / `-28.44%` |
+| Approximate save + mapped load + query remainder | `~8939.876 ms/op` | `~5826.115 ms/op` | `-3113.761 ms` |
+| E2E with GC profiler | `37315.659 ms/op`, `71960564456 B/op`, `122` GCs, `1719 ms` GC time | `28605.346 ms/op`, `39170535112 B/op`, `71` GCs, `946 ms` GC time | allocation `-45.57%`, GC count `-41.80%` |
+
+**Conclusion:** accepted as another concrete build/save improvement under the
+same `-Xmx4g` end-to-end heap setting. It still does not prove the requested
+`10x` improvement: the current Android end-to-end path is `4.37x` faster than
+`main`, not `10x`. The remaining lower bound is still dominated by SootUp/Jimple
+body materialization plus the adapter's full statement walk. Further order-level
+improvement likely requires an ASM-first builder for the graph elements that do
+not need full Jimple semantics, or a product-level decision to make some
+expensive graph semantics optional.

@@ -1,16 +1,29 @@
 package io.johnsonlee.graphite.graph
 
 import io.johnsonlee.graphite.core.BranchScope
+import io.johnsonlee.graphite.core.BranchComparison
+import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ComparisonOp
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
+import io.johnsonlee.graphite.core.DataFlowEdge
+import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceRelation
+import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
+import java.io.DataInput
 import java.io.DataInputStream
+import java.io.EOFException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -18,6 +31,7 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
 private const val BYTE_MASK = 0xFF
+private const val USHORT_MASK = 0xFFFF
 
 /**
  * A [Graph] implementation backed by disk files.
@@ -34,6 +48,7 @@ private const val BYTE_MASK = 0xFF
  *
  * Created by [MmapGraphBuilder.build].
  */
+@Suppress("LongParameterList")
 class MmapGraph internal constructor(
     private val dataDir: Path,
     private val nodeIndex: LongArray,
@@ -41,6 +56,7 @@ class MmapGraph internal constructor(
     private val outgoingIndex: EdgeOffsetIndex,
     private val incomingIndex: EdgeOffsetIndex,
     private val nodeMethods: List<MethodDescriptor>,
+    private val nodeTypes: List<TypeDescriptor>,
     private val methodIndex: Map<String, MethodDescriptor>,
     private val typeHierarchy: TypeHierarchy,
     private val enumValuesMap: Map<String, List<Any?>>,
@@ -86,7 +102,7 @@ class MmapGraph internal constructor(
     @Suppress("UNCHECKED_CAST")
     override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
         val ids = when {
-            type == Node::class.java -> nodeIndex.indices.asSequence()
+            type == Node::class.java -> return allNodes() as Sequence<T>
             nodeTypeIndex.containsKey(type) -> nodeTypeIndex.getValue(type).asSequence()
             else -> nodeTypeIndex.entries.asSequence()
                 .filter { type.isAssignableFrom(it.key) }
@@ -101,6 +117,29 @@ class MmapGraph internal constructor(
 
     override fun incoming(id: NodeId): Sequence<Edge> {
         return edgeOffsets(incomingIndex, id).map { readEdgeAt(it) }
+    }
+
+    fun forEachOutgoingEdge(nodeId: Int, action: (Edge) -> Unit) {
+        if (nodeId < 0 || nodeId + 1 >= outgoingIndex.starts.size) return
+        val start = outgoingIndex.starts[nodeId]
+        val end = outgoingIndex.starts[nodeId + 1]
+        if (start == end) return
+        val buf = edgeMmap.duplicate()
+        for (position in start until end) {
+            action(readEdgeAt(buf, outgoingIndex.offsets[position]))
+        }
+    }
+
+    fun forEachOutgoingTarget(nodeId: Int, action: (Int) -> Unit) {
+        if (nodeId < 0 || nodeId + 1 >= outgoingIndex.starts.size) return
+        val start = outgoingIndex.starts[nodeId]
+        val end = outgoingIndex.starts[nodeId + 1]
+        if (start == end) return
+        val buf = edgeMmap.duplicate()
+        for (position in start until end) {
+            buf.position(outgoingIndex.offsets[position].toInt() + Int.SIZE_BYTES)
+            action(buf.int)
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -156,19 +195,53 @@ class MmapGraph internal constructor(
     }
 
     private fun readNodeAt(offset: Long): Node {
-        val buf = nodeMmap.duplicate()
-        buf.position(offset.toInt())
-        val len = buf.getInt()
-        val bytes = ByteArray(len)
-        buf.get(bytes)
-        return MmapGraphBuilder.deserializeNode(bytes, nodeMethods)
+        val input = ByteBufferDataInput(nodeMmap, offset.toInt())
+        input.readInt()
+        return MmapGraphBuilder.deserializeNode(input, nodeMethods, nodeTypes)
+    }
+
+    private fun allNodes(): Sequence<Node> = sequence {
+        val input = ByteBufferDataInput(nodeMmap, 0)
+        while (input.hasRemaining()) {
+            val len = input.readInt()
+            val recordEnd = input.position + len
+            yield(MmapGraphBuilder.deserializeNode(input, nodeMethods, nodeTypes))
+            input.position = recordEnd
+        }
     }
 
     private fun readEdgeAt(offset: Long): Edge {
         val buf = edgeMmap.duplicate()
+        return readEdgeAt(buf, offset)
+    }
+
+    private fun readEdgeAt(buf: ByteBuffer, offset: Long): Edge {
         buf.position(offset.toInt())
-        val dis = DataInputStream(ByteBufferInputStream(buf))
-        return MmapGraphBuilder.deserializeEdge(dis)
+        val from = NodeId(buf.int)
+        val to = NodeId(buf.int)
+        return when (val tag = buf.get().toInt()) {
+            MmapGraphBuilder.TAG_EDGE_DATAFLOW ->
+                DataFlowEdge(from, to, DataFlowKind.entries[buf.get().toInt()])
+            MmapGraphBuilder.TAG_EDGE_CALL -> {
+                val flags = buf.get().toInt()
+                CallEdge(from, to, isVirtual = (flags and 1) != 0, isDynamic = (flags and 2) != 0)
+            }
+            MmapGraphBuilder.TAG_EDGE_TYPE ->
+                TypeEdge(from, to, TypeRelation.entries[buf.get().toInt()])
+            MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW -> {
+                val kind = ControlFlowKind.entries[buf.get().toInt()]
+                val hasComparison = buf.get().toInt() == 1
+                val comparison = if (hasComparison) {
+                    BranchComparison(ComparisonOp.entries[buf.get().toInt()], NodeId(buf.int))
+                } else {
+                    null
+                }
+                ControlFlowEdge(from, to, kind, comparison)
+            }
+            MmapGraphBuilder.TAG_EDGE_RESOURCE ->
+                ResourceEdge(from, to, ResourceRelation.entries[buf.get().toInt()])
+            else -> error("Unknown edge type tag: $tag")
+        }
     }
 
     private fun edgeOffsets(index: EdgeOffsetIndex, id: NodeId): Sequence<Long> {
@@ -187,6 +260,91 @@ class MmapGraph internal constructor(
             val n = minOf(len, buf.remaining())
             buf.get(b, off, n)
             return n
+        }
+    }
+
+    private class ByteBufferDataInput(private val buf: ByteBuffer, var position: Int) : DataInput {
+        fun hasRemaining(): Boolean = position < buf.limit()
+
+        override fun readFully(bytes: ByteArray) {
+            readFully(bytes, 0, bytes.size)
+        }
+
+        override fun readFully(bytes: ByteArray, off: Int, len: Int) {
+            requireRemaining(len)
+            for (index in 0 until len) {
+                bytes[off + index] = buf.get(position + index)
+            }
+            position += len
+        }
+
+        override fun skipBytes(n: Int): Int {
+            if (n <= 0) return 0
+            val skipped = minOf(n, buf.limit() - position)
+            position += skipped
+            return skipped
+        }
+
+        override fun readBoolean(): Boolean = readUnsignedByte() != 0
+
+        override fun readByte(): Byte {
+            requireRemaining(Byte.SIZE_BYTES)
+            return buf.get(position++)
+        }
+
+        override fun readUnsignedByte(): Int = readByte().toInt() and BYTE_MASK
+
+        override fun readShort(): Short {
+            requireRemaining(Short.SIZE_BYTES)
+            val value = buf.getShort(position)
+            position += Short.SIZE_BYTES
+            return value
+        }
+
+        override fun readUnsignedShort(): Int = readShort().toInt() and USHORT_MASK
+
+        override fun readChar(): Char {
+            requireRemaining(Char.SIZE_BYTES)
+            val value = buf.getChar(position)
+            position += Char.SIZE_BYTES
+            return value
+        }
+
+        override fun readInt(): Int {
+            requireRemaining(Int.SIZE_BYTES)
+            val value = buf.getInt(position)
+            position += Int.SIZE_BYTES
+            return value
+        }
+
+        override fun readLong(): Long {
+            requireRemaining(Long.SIZE_BYTES)
+            val value = buf.getLong(position)
+            position += Long.SIZE_BYTES
+            return value
+        }
+
+        override fun readFloat(): Float {
+            requireRemaining(Float.SIZE_BYTES)
+            val value = buf.getFloat(position)
+            position += Float.SIZE_BYTES
+            return value
+        }
+
+        override fun readDouble(): Double {
+            requireRemaining(Double.SIZE_BYTES)
+            val value = buf.getDouble(position)
+            position += Double.SIZE_BYTES
+            return value
+        }
+
+        override fun readLine(): String =
+            throw UnsupportedOperationException("ByteBufferDataInput does not support readLine")
+
+        override fun readUTF(): String = DataInputStream.readUTF(this)
+
+        private fun requireRemaining(bytes: Int) {
+            if (position < 0 || position > buf.limit() - bytes) throw EOFException()
         }
     }
 }

@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.MmapGraph
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
@@ -47,6 +48,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 
@@ -358,6 +360,127 @@ private class NodeDataWriteContext(
     val classOverviewEdges: ClassOverviewEdgeBuilder
 )
 
+private class ForwardDataScratch {
+    private var targets = IntArray(INITIAL_TARGET_CAPACITY)
+    private var targetCount = 0
+    private var edgeKeys = LongArray(INITIAL_TARGET_CAPACITY)
+    private var edgeLabels = ByteArray(INITIAL_TARGET_CAPACITY)
+    private var edgeComparisons = arrayOfNulls<BranchComparison>(INITIAL_TARGET_CAPACITY)
+    private var edgeCount = 0
+
+    fun resetTargets() {
+        targetCount = 0
+    }
+
+    fun addTarget(target: Int) {
+        ensureTargetCapacity(targetCount + 1)
+        targets[targetCount++] = target
+    }
+
+    fun uniqueTargetCount(): Int {
+        if (targetCount < 2) return targetCount
+        Arrays.sort(targets, 0, targetCount)
+        var unique = 1
+        var previous = targets[0]
+        for (i in 1 until targetCount) {
+            val current = targets[i]
+            if (current != previous) {
+                unique++
+                previous = current
+            }
+        }
+        return unique
+    }
+
+    fun resetEdges() {
+        edgeCount = 0
+    }
+
+    fun addEdge(edge: Edge) {
+        val ordinal = edgeCount
+        ensureEdgeCapacity(ordinal + 1)
+        edgeKeys[ordinal] = edgeSortKey(edge.to.value, ordinal)
+        edgeLabels[ordinal] = NodeSerializer.encodeEdge(edge).toByte()
+        edgeComparisons[ordinal] = (edge as? ControlFlowEdge)?.comparison
+        edgeCount++
+    }
+
+    fun emitSortedEdges(
+        fromNode: Int,
+        startOffset: Int,
+        outputTargets: IntArray,
+        outputLabels: ByteArray,
+        comparisonMap: MutableMap<Long, BranchComparison>
+    ): Int {
+        if (edgeCount == 0) return 0
+        Arrays.sort(edgeKeys, 0, edgeCount)
+        var emitted = 0
+        var groupTarget = targetFromSortKey(edgeKeys[0])
+        var chosenOrdinal = ordinalFromSortKey(edgeKeys[0])
+        for (i in 1 until edgeCount) {
+            val key = edgeKeys[i]
+            val target = targetFromSortKey(key)
+            if (target != groupTarget) {
+                writeEdge(fromNode, groupTarget, chosenOrdinal, startOffset + emitted, outputTargets, outputLabels, comparisonMap)
+                emitted++
+                groupTarget = target
+            }
+            chosenOrdinal = ordinalFromSortKey(key)
+        }
+        writeEdge(fromNode, groupTarget, chosenOrdinal, startOffset + emitted, outputTargets, outputLabels, comparisonMap)
+        return emitted + 1
+    }
+
+    private fun writeEdge(
+        fromNode: Int,
+        target: Int,
+        ordinal: Int,
+        outputOffset: Int,
+        outputTargets: IntArray,
+        outputLabels: ByteArray,
+        comparisonMap: MutableMap<Long, BranchComparison>
+    ) {
+        outputTargets[outputOffset] = target
+        outputLabels[outputOffset] = edgeLabels[ordinal]
+        edgeComparisons[ordinal]?.let { comparison ->
+            val key = fromNode.toLong() shl INT_BITS or (target.toLong() and UNSIGNED_INT_MASK)
+            comparisonMap[key] = comparison
+        }
+    }
+
+    private fun ensureTargetCapacity(required: Int) {
+        if (required <= targets.size) return
+        targets = targets.copyOf(grownCapacity(targets.size, required))
+    }
+
+    private fun ensureEdgeCapacity(required: Int) {
+        if (required <= edgeKeys.size) return
+        val newSize = grownCapacity(edgeKeys.size, required)
+        edgeKeys = edgeKeys.copyOf(newSize)
+        edgeLabels = edgeLabels.copyOf(newSize)
+        edgeComparisons = edgeComparisons.copyOf(newSize)
+    }
+
+    private fun grownCapacity(current: Int, required: Int): Int {
+        var next = current
+        while (next < required) {
+            next = next * 2
+        }
+        return next
+    }
+
+    private fun edgeSortKey(target: Int, ordinal: Int): Long =
+        target.toLong() shl INT_BITS or (ordinal.toLong() and UNSIGNED_INT_MASK)
+
+    private fun targetFromSortKey(key: Long): Int = (key ushr INT_BITS).toInt()
+
+    private fun ordinalFromSortKey(key: Long): Int = key.toInt()
+
+    private companion object {
+        private const val INITIAL_TARGET_CAPACITY = 8
+    }
+}
+
 internal data class NodeIndexData(
     val nodeOffsets: NodeOffsetIndex,
     val nodeTypeIndex: NodeTypeIndex
@@ -454,7 +577,11 @@ object GraphStore {
         // 3. Build forward adjacency + labels + comparisons
         val numNodes = maxNodeId + 1
         val comparisonMap = mutableMapOf<Long, BranchComparison>()
-        val (forwardAdj, labelArray) = buildForwardData(graph, numNodes, comparisonMap)
+        val (forwardAdj, labelArray) = if (graph is MmapGraph) {
+            buildForwardData(graph, numNodes, comparisonMap)
+        } else {
+            buildForwardData(graph, numNodes, comparisonMap)
+        }
 
         // 4. Store BVGraph (forward only)
         val forwardGraph = PrecomputedImmutableGraph(forwardAdj)
@@ -723,17 +850,16 @@ object GraphStore {
         numNodes: Int,
         comparisonMap: MutableMap<Long, BranchComparison>
     ): Pair<PrecomputedAdjacency, ByteArray> {
-        // Pass 1: count outdegree
+        val scratch = ForwardDataScratch()
         val outdeg = IntArray(numNodes)
         for (node in 0 until numNodes) {
-            val targets = mutableSetOf<Int>()
+            scratch.resetTargets()
             for (edge in graph.outgoing(NodeId(node))) {
-                targets.add(edge.to.value)
+                scratch.addTarget(edge.to.value)
             }
-            outdeg[node] = targets.size
+            outdeg[node] = scratch.uniqueTargetCount()
         }
 
-        // Build offsets (prefix sum)
         val offsets = IntArray(numNodes + 1)
         for (i in 0 until numNodes) {
             val next = offsets[i].toLong() + outdeg[i].toLong()
@@ -746,22 +872,55 @@ object GraphStore {
         val targets = IntArray(totalArcs)
         val labels = ByteArray(totalArcs)
 
-        // Pass 2: fill targets + labels + comparisons
         for (node in 0 until numNodes) {
-            val edgesByTarget = mutableMapOf<Int, Edge>()
+            scratch.resetEdges()
             for (edge in graph.outgoing(NodeId(node))) {
-                edgesByTarget[edge.to.value] = edge
+                scratch.addEdge(edge)
             }
-            val sorted = edgesByTarget.keys.sorted()
-            val start = offsets[node]
-            for ((i, to) in sorted.withIndex()) {
-                targets[start + i] = to
-                val edge = edgesByTarget[to]!!
-                labels[start + i] = NodeSerializer.encodeEdge(edge).toByte()
-                if (edge is ControlFlowEdge && edge.comparison != null) {
-                    val key = node.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
-                    comparisonMap[key] = edge.comparison!!
-                }
+            val written = scratch.emitSortedEdges(node, offsets[node], targets, labels, comparisonMap)
+            check(written == outdeg[node]) {
+                "Forward adjacency mismatch for node $node: wrote $written edges, expected ${outdeg[node]}"
+            }
+        }
+
+        return PrecomputedAdjacency(numNodes, targets, offsets) to labels
+    }
+
+    private fun buildForwardData(
+        graph: MmapGraph,
+        numNodes: Int,
+        comparisonMap: MutableMap<Long, BranchComparison>
+    ): Pair<PrecomputedAdjacency, ByteArray> {
+        val scratch = ForwardDataScratch()
+        val outdeg = IntArray(numNodes)
+        for (node in 0 until numNodes) {
+            scratch.resetTargets()
+            graph.forEachOutgoingTarget(node) { target ->
+                scratch.addTarget(target)
+            }
+            outdeg[node] = scratch.uniqueTargetCount()
+        }
+
+        val offsets = IntArray(numNodes + 1)
+        for (i in 0 until numNodes) {
+            val next = offsets[i].toLong() + outdeg[i].toLong()
+            require(next <= Int.MAX_VALUE) {
+                "Graph has too many edges for in-memory adjacency: $next"
+            }
+            offsets[i + 1] = next.toInt()
+        }
+        val totalArcs = offsets[numNodes]
+        val targets = IntArray(totalArcs)
+        val labels = ByteArray(totalArcs)
+
+        for (node in 0 until numNodes) {
+            scratch.resetEdges()
+            graph.forEachOutgoingEdge(node) { edge ->
+                scratch.addEdge(edge)
+            }
+            val written = scratch.emitSortedEdges(node, offsets[node], targets, labels, comparisonMap)
+            check(written == outdeg[node]) {
+                "Forward adjacency mismatch for node $node: wrote $written edges, expected ${outdeg[node]}"
             }
         }
 
@@ -772,7 +931,7 @@ object GraphStore {
      * Collect strings from a single node (avoids building a list of all nodes).
      */
     private fun collectSingleNodeStrings(node: Node, dest: MutableSet<String>) {
-        NodeSerializer.collectNodeStrings(listOf(node), dest)
+        NodeSerializer.collectNodeStrings(node, dest)
     }
 
     /**
