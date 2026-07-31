@@ -1417,3 +1417,67 @@ body materialization plus the adapter's full statement walk. Further order-level
 improvement likely requires an ASM-first builder for the graph elements that do
 not need full Jimple semantics, or a product-level decision to make some
 expensive graph semantics optional.
+
+### 2026-07-31 — Attempt 025: Explicit ASM fast-build mode
+
+**Question:** can the Android `JAR -> build -> save -> mapped load -> query`
+path cross the requested order-of-magnitude target without raising the heap cap?
+
+Attempt 024 proved that the standard path was still bounded by SootUp/Jimple
+body materialization. Attempt 025 adds an explicit `LoaderConfig.fastBuild`
+mode, exposed in the CLI as `graphite build --fast-build`, that avoids SootUp
+for configurations that do not request call graph metadata, annotation nodes, or
+cross-method functional dispatch.
+
+**Semantic boundary:**
+
+- enabled only when `fastBuild=true`, `buildCallGraph=false`,
+  `extractAnnotations=false`, and `trackCrossMethodFunctionalDispatch=false`
+- keeps bytecode-derived type hierarchy, methods, fields, parameters, return
+  nodes, call sites, basic operand dataflow, class origins, artifact dependency
+  metadata, and resource file nodes
+- leaves the existing SootUp/Jimple path unchanged for full semantic builds
+
+**Changes retained:**
+
+- add a streaming ASM graph adapter that reads class entries through
+  `ArchiveResourceAccessor` and writes nodes/edges through `FullGraphBuilder`
+- reuse `JavaProjectLoader` input source selection so directory, JAR, Spring
+  Boot, WAR, include, exclude, and library-filter rules continue to gate which
+  classes are analyzed
+- create parameter local nodes lazily and skip transient `new`/array stack
+  locals so the persisted fast graph is smaller and cheaper to save
+- add `GraphBuildBenchmark.buildAndroidSdkGraphFastEndToEndConfig` and
+  `GraphEndToEndBenchmark.android_fast_build_save_load_query`
+- add functional coverage for the bytecode fast path and CLI `--fast-build`
+
+**Validation commands:**
+
+```
+./gradlew :core:check :sootup:check :query:check :webgraph:check --no-daemon
+./gradlew :sootup:jmh -Pjmh.filter='GraphBuildBenchmark.buildAndroidSdkGraph(EndToEndConfig|FastEndToEndConfig)?$' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='GraphEndToEndBenchmark.android(_fast)?_build_save_load_query$' --no-daemon
+java -Xmx4g -Delasticsearch.jar.path=... -Dandroid.jar.path=... -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar 'GraphEndToEndBenchmark.android_fast_build_save_load_query$' -wi 0 -i 1 -f 1 -bm ss -tu ms -prof gc
+```
+
+**Main comparison:**
+
+| Benchmark | `main` (`74e937a`) | Latest standard path | Latest fast path | Change vs main |
+|-----------|--------------------|----------------------|------------------|----------------|
+| `GraphBuildBenchmark.buildAndroidSdkGraph` | `95195.133 ms/op` | `20230.262 ms/op` | N/A | standard: `4.71x` faster |
+| `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig` | N/A | `19350.774 ms/op` | N/A | standard stage attribution |
+| `GraphBuildBenchmark.buildAndroidSdkGraphFastEndToEndConfig` | `95195.133 ms/op` | N/A | `4550.565 ms/op` | fast: `20.92x` faster |
+| `GraphEndToEndBenchmark.android_build_save_load_query` | `111921.044 ms/op` | `25197.778 ms/op` | N/A | standard: `4.44x` faster |
+| `GraphEndToEndBenchmark.android_fast_build_save_load_query` | `111921.044 ms/op` | N/A | `10171.204 ms/op` | fast: `11.00x` faster |
+
+**Heap/GC comparison under the same `-Xmx4g` cap:**
+
+| Benchmark / metric | Attempt 024 standard path | Attempt 025 fast path | Change |
+|--------------------|---------------------------|------------------------|--------|
+| E2E with GC profiler | `28605.346 ms/op`, `39170535112 B/op`, `71` GCs, `946 ms` GC time | `8684.932 ms/op`, `6677828640 B/op`, `23` GCs, `153 ms` GC time | allocation `-82.95%`, GC count `-67.61%` |
+
+**Conclusion:** the explicit fast-build path reaches the requested
+order-of-magnitude target for the Android end-to-end benchmark while keeping the
+same `-Xmx4g` cap. The standard SootUp/Jimple path remains available and still
+shows no regression; the fast path is a separate mode for large service indexes
+where bytecode-level class/method/field/call-site evidence is sufficient.

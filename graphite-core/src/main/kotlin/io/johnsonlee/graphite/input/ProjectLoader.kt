@@ -63,6 +63,12 @@ data class LoaderConfig(
     val trackCrossMethodFunctionalDispatch: Boolean = true,
 
     /**
+     * Use the bytecode-only graph builder when the requested graph semantics do
+     * not require SootUp/Jimple materialization.
+     */
+    val fastBuild: Boolean = false,
+
+    /**
      * Call graph algorithm
      */
     val callGraphAlgorithm: CallGraphAlgorithm = CallGraphAlgorithm.CHA,

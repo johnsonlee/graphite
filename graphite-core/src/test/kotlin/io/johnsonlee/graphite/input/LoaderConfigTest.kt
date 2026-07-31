@@ -18,6 +18,7 @@ class LoaderConfigTest {
         assertTrue(config.buildCallGraph)
         assertTrue(config.extractAnnotations)
         assertTrue(config.trackCrossMethodFunctionalDispatch)
+        assertFalse(config.fastBuild)
         assertEquals(CallGraphAlgorithm.CHA, config.callGraphAlgorithm)
         assertNull(config.verbose)
     }
@@ -47,6 +48,7 @@ class LoaderConfigTest {
             buildCallGraph = false,
             extractAnnotations = false,
             trackCrossMethodFunctionalDispatch = false,
+            fastBuild = true,
             callGraphAlgorithm = CallGraphAlgorithm.RTA,
             verbose = { verboseCalled = true }
         )
@@ -58,6 +60,7 @@ class LoaderConfigTest {
         assertFalse(config.buildCallGraph)
         assertFalse(config.extractAnnotations)
         assertFalse(config.trackCrossMethodFunctionalDispatch)
+        assertTrue(config.fastBuild)
         assertEquals(CallGraphAlgorithm.RTA, config.callGraphAlgorithm)
 
         config.verbose?.invoke("test")
