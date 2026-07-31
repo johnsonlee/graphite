@@ -40,8 +40,9 @@ import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
-import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -717,6 +718,63 @@ class GraphStoreTest {
             assertFailsWith<IllegalArgumentException> {
                 MappedNodeTypeIndex.load(typeIndex)
             }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mutable node offset indexes and loaded string tables expose fallback behavior`() {
+        val intOffsets = IntNodeOffsetIndex(1)
+        assertEquals(1, intOffsets.size)
+        intOffsets.set(0, 12)
+        intOffsets.ensureSize(3)
+        assertEquals(3, intOffsets.size)
+        assertEquals(12L, intOffsets.offset(0))
+        assertEquals(-1L, intOffsets.offset(2))
+
+        val longOffsets = LongNodeOffsetIndex(1)
+        assertEquals(1, longOffsets.size)
+        longOffsets.set(0, Int.MAX_VALUE.toLong() + 10L)
+        longOffsets.ensureSize(2)
+        assertEquals(2, longOffsets.size)
+        assertEquals(Int.MAX_VALUE.toLong() + 10L, longOffsets.offset(0))
+        assertEquals(-1L, longOffsets.offset(1))
+
+        val dir = Files.createTempDirectory("webgraph-string-table-test")
+        try {
+            val built = StringTable.build(listOf("beta", "alpha"), dir)
+            assertEquals(0, built.indexOf("alpha"))
+            val loaded = StringTable.load(dir)
+            assertEquals("alpha", loaded.get(0))
+            assertEquals(-1, loaded.indexOf("alpha"))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped comparison lookup binary search covers lower and upper misses`() {
+        val builder = DefaultGraph.Builder()
+        val n1 = IntConstant(NodeId(10), 1)
+        val n2 = IntConstant(NodeId(20), 2)
+        val n3 = IntConstant(NodeId(30), 3)
+        builder.addNode(n1).addNode(n2).addNode(n3)
+        builder.addEdge(
+            ControlFlowEdge(
+                n2.id,
+                n3.id,
+                ControlFlowKind.BRANCH_TRUE,
+                BranchComparison(ComparisonOp.EQ, n1.id)
+            )
+        )
+
+        val dir = Files.createTempDirectory("webgraph-mapped-comparison-miss-test")
+        try {
+            GraphStore.save(builder.build(), dir)
+            val lookup = MappedBranchComparisonLookup.load(dir.resolve("graph.comparisons"))
+            assertNull(lookup.find(edgeKey(NodeId(0), NodeId(0))))
+            assertNull(lookup.find(edgeKey(NodeId(99), NodeId(99))))
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -1836,6 +1894,71 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `save from core mmap graph uses streaming outgoing traversal`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.MmapSource"),
+            "run",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(NodeId(0), 1))
+            .addNode(StringConstant(NodeId(1), "two"))
+            .addNode(ReturnNode(NodeId(2), method))
+            .addNode(BooleanConstant(NodeId(3), true))
+            .addEdge(DataFlowEdge(NodeId(0), NodeId(2), DataFlowKind.RETURN_VALUE))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.PARAMETER_PASS))
+            .addEdge(
+                ControlFlowEdge(
+                    NodeId(3),
+                    NodeId(2),
+                    ControlFlowKind.BRANCH_TRUE,
+                    BranchComparison(ComparisonOp.EQ, NodeId(0))
+                )
+            )
+            .addMethod(method)
+            .build()
+        val dir = Files.createTempDirectory("webgraph-save-mmap-source-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertEquals(4L, loaded.nodeCount(Node::class.java))
+                assertEquals(3L, loaded.edgeCount())
+                assertEquals(graph.outgoing(NodeId(0)).toList(), loaded.outgoing(NodeId(0)).toList())
+                assertEquals(graph.incoming(NodeId(2)).toList(), loaded.incoming(NodeId(2)).toList())
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `save collects metadata from graph fallback scans`() {
+        val base = buildTestGraph()
+        val graph = MetadataFallbackGraph(base)
+        val dir = Files.createTempDirectory("webgraph-metadata-fallback-test")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertEquals(2L, loaded.methodCount())
+                assertEquals(
+                    base.memberAnnotations("com.example.Foo", "bar"),
+                    loaded.memberAnnotations("com.example.Foo", "bar")
+                )
+                assertEquals(1, loaded.methods(MethodPattern(name = "bar")).count())
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped incoming query persists compressed backward graph lazily`() {
         val graph = buildTestGraph()
         val dir = Files.createTempDirectory("webgraph-lazy-backward-test")
@@ -2064,6 +2187,11 @@ class GraphStoreTest {
     private var branchCondNodeId: NodeId = NodeId(0)
     private var branchTrueNodeId: NodeId = NodeId(0)
     private var branchFalseNodeId: NodeId = NodeId(0)
+
+    private class MetadataFallbackGraph(private val delegate: Graph) : Graph by delegate {
+        override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>>? = null
+        override fun typeHierarchyTypes(): Set<String> = emptySet()
+    }
 
     private fun buildBranchScopeGraph(): Graph {
         val builder = DefaultGraph.Builder()

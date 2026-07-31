@@ -7,6 +7,8 @@ import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ComparisonOp
 import io.johnsonlee.graphite.core.ConstantNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
@@ -17,14 +19,20 @@ import io.johnsonlee.graphite.core.LongConstant
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import java.io.DataInput
+import java.io.EOFException
 import java.nio.ByteBuffer
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -79,6 +87,17 @@ class MmapGraphTest {
     fun `node returns null for unknown ID`() {
         val graph = MmapGraphBuilder().addNode(IntConstant(NodeId.next(), 1)).build()
         assertNull(graph.node(NodeId(9999)))
+    }
+
+    @Test
+    fun `node returns null for negative and sparse missing IDs`() {
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(NodeId(5), 5))
+            .build()
+
+        assertNull(graph.node(NodeId(-1)))
+        assertNull(graph.node(NodeId(0)))
+        assertEquals(IntConstant(NodeId(5), 5), graph.node(NodeId(5)))
     }
 
     // ========================================================================
@@ -142,6 +161,20 @@ class MmapGraphTest {
         assertEquals(callId, callSites[0].id)
     }
 
+    @Test
+    fun `nodes of base Node type streams every persisted node`() {
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(NodeId(0), 1))
+            .addNode(StringConstant(NodeId(2), "two"))
+            .addNode(LongConstant(NodeId(5), 5L))
+            .build()
+
+        assertEquals(
+            listOf(NodeId(0), NodeId(2), NodeId(5)),
+            graph.nodes(Node::class.java).map { it.id }.toList()
+        )
+    }
+
     // ========================================================================
     // Edge traversal
     // ========================================================================
@@ -180,6 +213,8 @@ class MmapGraphTest {
         val graph = MmapGraphBuilder().addNode(IntConstant(id, 1)).build()
         assertEquals(0, graph.outgoing(id).count())
         assertEquals(0, graph.incoming(id).count())
+        assertEquals(0, graph.outgoing(NodeId(-1)).count())
+        assertEquals(0, graph.incoming(NodeId(999)).count())
     }
 
     @Test
@@ -200,6 +235,63 @@ class MmapGraphTest {
         val callEdges = graph.outgoing(n1, CallEdge::class.java).toList()
         assertEquals(1, callEdges.size)
         assertIs<CallEdge>(callEdges[0])
+    }
+
+    @Test
+    fun `forEachOutgoing helpers stream edges and targets without allocating sequences`() {
+        val from = NodeId(0)
+        val dataTarget = NodeId(1)
+        val callTarget = NodeId(2)
+        val typeTarget = NodeId(3)
+        val controlTarget = NodeId(4)
+        val resourceTarget = NodeId(5)
+        val graph = MmapGraphBuilder()
+            .addNode(IntConstant(from, 0))
+            .addNode(IntConstant(dataTarget, 1))
+            .addNode(IntConstant(callTarget, 2))
+            .addNode(IntConstant(typeTarget, 3))
+            .addNode(IntConstant(controlTarget, 4))
+            .addNode(IntConstant(resourceTarget, 5))
+            .addEdge(DataFlowEdge(from, dataTarget, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(from, callTarget, isVirtual = true, isDynamic = true))
+            .addEdge(TypeEdge(from, typeTarget, TypeRelation.IMPLEMENTS))
+            .addEdge(
+                ControlFlowEdge(
+                    from,
+                    controlTarget,
+                    ControlFlowKind.BRANCH_TRUE,
+                    BranchComparison(ComparisonOp.EQ, dataTarget)
+                )
+            )
+            .addEdge(ResourceEdge(from, resourceTarget, ResourceRelation.LOOKUP))
+            .build()
+
+        assertIs<MmapGraph>(graph)
+        val streamedEdges = mutableListOf<Edge>()
+        graph.forEachOutgoingEdge(from.value, streamedEdges::add)
+        assertEquals(
+            listOf(
+                DataFlowEdge(from, dataTarget, DataFlowKind.ASSIGN),
+                CallEdge(from, callTarget, isVirtual = true, isDynamic = true),
+                TypeEdge(from, typeTarget, TypeRelation.IMPLEMENTS),
+                ControlFlowEdge(
+                    from,
+                    controlTarget,
+                    ControlFlowKind.BRANCH_TRUE,
+                    BranchComparison(ComparisonOp.EQ, dataTarget)
+                ),
+                ResourceEdge(from, resourceTarget, ResourceRelation.LOOKUP)
+            ),
+            streamedEdges
+        )
+
+        val targets = mutableListOf<Int>()
+        graph.forEachOutgoingTarget(from.value, targets::add)
+        assertEquals(listOf(1, 2, 3, 4, 5), targets)
+
+        graph.forEachOutgoingEdge(-1) { error("negative node id should not be visited") }
+        graph.forEachOutgoingEdge(resourceTarget.value) { error("node with no outgoing edge should not be visited") }
+        graph.forEachOutgoingTarget(999) { error("out-of-range node id should not be visited") }
     }
 
     // ========================================================================
@@ -310,6 +402,10 @@ class MmapGraphTest {
         assertEquals(1, annotations.size)
         assertEquals("required", annotations["NotNull"]?.get("msg"))
         assertTrue(graph.memberAnnotations("com.example.User", "unknown").isEmpty())
+        assertEquals(
+            mapOf("NotNull" to mapOf("msg" to "required")),
+            graph.memberAnnotationIndex()?.get("com.example.User#name")
+        )
     }
 
     @Test
@@ -607,5 +703,56 @@ class MmapGraphTest {
 
         val out = ByteArray(5)
         assertEquals(-1, stream.read(out, 0, 5))
+    }
+
+    @Test
+    fun `ByteBufferDataInput supports primitive reads skip and bounds checks`() {
+        val buffer = ByteBuffer.allocate(64)
+            .put(0x7f.toByte())
+            .putShort(0x1234)
+            .putChar('Z')
+            .putInt(0x01020304)
+            .putLong(0x0102030405060708L)
+            .putFloat(1.5f)
+            .putDouble(2.5)
+            .flip()
+        val input = newByteBufferDataInput(buffer)
+
+        assertEquals(0x7f, input.readUnsignedByte())
+        assertEquals(0x1234, input.readUnsignedShort())
+        assertEquals('Z', input.readChar())
+        assertEquals(0x01020304, input.readInt())
+        assertEquals(0x0102030405060708L, input.readLong())
+        assertEquals(1.5f, input.readFloat())
+        assertEquals(2.5, input.readDouble())
+        assertFailsWith<UnsupportedOperationException> { input.readLine() }
+
+        val utfBytes = java.io.ByteArrayOutputStream().use { baos ->
+            java.io.DataOutputStream(baos).use { it.writeUTF("hello") }
+            baos.toByteArray()
+        }
+        assertEquals("hello", newByteBufferDataInput(ByteBuffer.wrap(utfBytes)).readUTF())
+
+        val fullInput = newByteBufferDataInput(ByteBuffer.wrap(byteArrayOf(10, 20, 30)))
+        val out = ByteArray(5)
+        fullInput.readFully(out, 1, 3)
+        assertEquals(listOf(0, 10, 20, 30, 0), out.map { it.toInt() })
+
+        val skipInput = newByteBufferDataInput(ByteBuffer.wrap(byteArrayOf(1, 2, 3)))
+        assertEquals(0, skipInput.skipBytes(-1))
+        assertEquals(2, skipInput.skipBytes(2))
+        assertEquals(3, skipInput.readUnsignedByte())
+        assertEquals(0, skipInput.skipBytes(1))
+
+        assertFailsWith<EOFException> {
+            newByteBufferDataInput(ByteBuffer.allocate(0)).readInt()
+        }
+    }
+
+    private fun newByteBufferDataInput(buffer: ByteBuffer): DataInput {
+        val type = Class.forName("io.johnsonlee.graphite.graph.MmapGraph\$ByteBufferDataInput")
+        val constructor = type.getDeclaredConstructor(ByteBuffer::class.java, Int::class.javaPrimitiveType)
+        constructor.isAccessible = true
+        return constructor.newInstance(buffer, 0) as DataInput
     }
 }
