@@ -35,14 +35,6 @@ class BuildCommand : Callable<Int> {
     @Option(names = ["-v", "--verbose"], description = ["Enable verbose output"])
     var verbose: Boolean = false
 
-    @Option(
-        names = ["--fast-build"],
-        description = [
-            "Use bytecode-only fast build; disables call graph, annotations, and cross-method functional dispatch"
-        ]
-    )
-    var fastBuild: Boolean = false
-
     override fun call(): Int {
         if (!Files.exists(input)) {
             System.err.println("Error: Input does not exist: $input")
@@ -55,10 +47,7 @@ class BuildCommand : Callable<Int> {
                 excludePackages = excludePackages,
                 includeLibraries = includeLibs,
                 libraryFilters = libFilters,
-                buildCallGraph = !fastBuild,
-                extractAnnotations = !fastBuild,
-                trackCrossMethodFunctionalDispatch = !fastBuild,
-                fastBuild = fastBuild,
+                buildCallGraph = true,
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )
 

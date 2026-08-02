@@ -103,37 +103,6 @@ class GraphiteCommandTest {
     }
 
     @Test
-    fun `build from valid classes directory succeeds with fast build`() {
-        val classesDir = Files.createTempDirectory("build-test-fast-classes")
-        val outputDir = Files.createTempDirectory("build-test-fast-output")
-        try {
-            val javaFile = classesDir.resolve("FastSample.java")
-            Files.writeString(javaFile, """
-                package sample;
-                public class FastSample {
-                    public String upper(String value) { return value.toUpperCase(); }
-                }
-            """.trimIndent())
-            val compiler = javax.tools.ToolProvider.getSystemJavaCompiler()
-            Files.createDirectories(classesDir.resolve("sample"))
-            val compileResult = compiler.run(null, null, null, "-d", classesDir.toString(), javaFile.toString())
-            assertEquals(0, compileResult, "Java compilation should succeed")
-
-            val cmd = BuildCommand()
-            cmd.input = classesDir
-            cmd.output = outputDir
-            cmd.includePackages = listOf("sample")
-            cmd.fastBuild = true
-            val (_, err, code) = captureOutput { cmd.call() }
-            assertEquals(0, code, "Fast build should succeed, stderr: $err")
-            assertTrue(err.contains("Done"), "Should show done message, got: $err")
-        } finally {
-            classesDir.toFile().deleteRecursively()
-            outputDir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `build from empty directory triggers catch block`() {
         val emptyDir = Files.createTempDirectory("build-test-empty")
         val outputDir = Files.createTempDirectory("build-test-output-empty")

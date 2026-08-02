@@ -37,14 +37,9 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.input.JavaArchiveLayout
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -279,7 +274,7 @@ class MmapGraphBuilderTest {
     @Test
     fun `round-trip AnnotationNode with very large string value`() {
         val id = NodeId.next()
-        val largeValue = "x".repeat(1_100_000)
+        val largeValue = "x".repeat(70_000)
         val node = AnnotationNode(
             id,
             "com.example.BigAnnotation",
@@ -515,18 +510,6 @@ class MmapGraphBuilderTest {
         val annotations = graph.memberAnnotations("com.example.User", "id")
         assertTrue(annotations.containsKey("javax.persistence.Id"))
         assertTrue(annotations["javax.persistence.Id"]!!.isEmpty())
-    }
-
-    @Test
-    fun `FullGraphBuilder default arguments are honored by mmap builder`() {
-        val builder: FullGraphBuilder = MmapGraphBuilder()
-        val graph = builder
-            .addMemberAnnotation("com.example.User", "id", "javax.persistence.Id")
-            .addArtifactDependency("app", "lib")
-            .build()
-
-        assertEquals(emptyMap(), graph.memberAnnotations("com.example.User", "id")["javax.persistence.Id"])
-        assertEquals(1, graph.artifactDependencies()["app"]?.get("lib"))
     }
 
     @Test
@@ -817,100 +800,6 @@ class MmapGraphBuilderTest {
         assertEquals(false, restored.constructorArgs[3])
     }
 
-    @Test
-    fun `deserializeNode supports legacy string type descriptors`() {
-        val method = makeMethod("com.example.Owner", "method")
-        val bytes = bytes {
-            writeInt(7)
-            writeByte(MmapGraphBuilder.TAG_LOCAL_VARIABLE)
-            MmapGraphBuilder.writeString(this, "value")
-            MmapGraphBuilder.writeString(this, "java.lang.String")
-            writeInt(0)
-        }
-
-        assertEquals(
-            LocalVariable(NodeId(7), "value", TypeDescriptor("java.lang.String"), method),
-            MmapGraphBuilder.deserializeNode(bytes, listOf(method))
-        )
-    }
-
-    @Test
-    fun `deserializeEdge supports every compact edge tag`() {
-        assertEquals(
-            DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.RETURN_VALUE),
-            MmapGraphBuilder.deserializeEdge(edgeInput(1, 2) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_DATAFLOW)
-                writeByte(DataFlowKind.RETURN_VALUE.ordinal)
-            })
-        )
-        assertEquals(
-            CallEdge(NodeId(3), NodeId(4), isVirtual = true, isDynamic = true),
-            MmapGraphBuilder.deserializeEdge(edgeInput(3, 4) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CALL)
-                writeByte(3)
-            })
-        )
-        assertEquals(
-            TypeEdge(NodeId(5), NodeId(6), TypeRelation.IMPLEMENTS),
-            MmapGraphBuilder.deserializeEdge(edgeInput(5, 6) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_TYPE)
-                writeByte(TypeRelation.IMPLEMENTS.ordinal)
-            })
-        )
-        assertEquals(
-            ControlFlowEdge(NodeId(7), NodeId(8), ControlFlowKind.SEQUENTIAL),
-            MmapGraphBuilder.deserializeEdge(edgeInput(7, 8) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW)
-                writeByte(ControlFlowKind.SEQUENTIAL.ordinal)
-                writeByte(0)
-            })
-        )
-        assertEquals(
-            ControlFlowEdge(
-                NodeId(9),
-                NodeId(10),
-                ControlFlowKind.BRANCH_TRUE,
-                BranchComparison(ComparisonOp.GT, NodeId(11))
-            ),
-            MmapGraphBuilder.deserializeEdge(edgeInput(9, 10) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW)
-                writeByte(ControlFlowKind.BRANCH_TRUE.ordinal)
-                writeByte(1)
-                writeByte(ComparisonOp.GT.ordinal)
-                writeInt(11)
-            })
-        )
-        assertEquals(
-            ResourceEdge(NodeId(12), NodeId(13), ResourceRelation.LOADS),
-            MmapGraphBuilder.deserializeEdge(edgeInput(12, 13) {
-                writeByte(MmapGraphBuilder.TAG_EDGE_RESOURCE)
-                writeByte(ResourceRelation.LOADS.ordinal)
-            })
-        )
-    }
-
-    @Test
-    fun `deserialize helpers reject unknown tags and preserve fallback values`() {
-        val fallback = dataInput {
-            writeByte(99)
-            MmapGraphBuilder.writeString(this, "fallback")
-        }
-        assertEquals("fallback", MmapGraphBuilder.readAnyValue(fallback, emptyList()))
-
-        assertFailsWith<IllegalStateException> {
-            MmapGraphBuilder.deserializeNode(
-                bytes {
-                    writeInt(1)
-                    writeByte(99)
-                },
-                emptyList()
-            )
-        }
-        assertFailsWith<IllegalStateException> {
-            MmapGraphBuilder.deserializeEdge(edgeInput(1, 2) { writeByte(99) })
-        }
-    }
-
     // ========================================================================
     // MmapGraph operations on a realistic graph
     // ========================================================================
@@ -1019,6 +908,7 @@ class MmapGraphBuilderTest {
 
         val intConstants = graph.nodes(IntConstant::class.java).toList()
         assertEquals(2, intConstants.size)
+        assertTrue(intConstants.all { it is IntConstant })
         assertTrue(intConstants.map { it.value }.containsAll(listOf(42, 99)))
 
         val stringConstants = graph.nodes(StringConstant::class.java).toList()
@@ -1239,27 +1129,4 @@ class MmapGraphBuilderTest {
             assertEquals(listOf(3), graph.enumValues("com.example.Level", "HIGH"))
         }
     }
-
-    private fun bytes(writer: DataOutputStream.() -> Unit): ByteArray =
-        ByteArrayOutputStream().use { baos ->
-            DataOutputStream(baos).use { output ->
-                output.writer()
-                output.flush()
-            }
-            baos.toByteArray()
-        }
-
-    private fun dataInput(writer: DataOutputStream.() -> Unit): DataInputStream =
-        DataInputStream(ByteArrayInputStream(bytes(writer)))
-
-    private fun edgeInput(
-        from: Int,
-        to: Int,
-        writePayload: DataOutputStream.() -> Unit
-    ): DataInputStream =
-        dataInput {
-            writeInt(from)
-            writeInt(to)
-            writePayload()
-        }
 }

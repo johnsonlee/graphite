@@ -57,6 +57,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type as AsmType
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldNode as AsmFieldNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.IntInsnNode
@@ -182,25 +183,14 @@ private class IntQueue(initialCapacity: Int = 16) {
     fun removeFirst(): Int = values[head++]
 }
 
-private class ControlFlowIndex(stmtGraph: StmtGraph<*>) {
+private class ControlFlowIndex(private val stmtGraph: StmtGraph<*>, statementsInOrder: List<Stmt>) {
     private val ids = IdentityHashMap<Stmt, Int>()
     private val statements = ArrayList<Stmt>()
-    private val successorIds = ArrayList<IntArray>()
+    private val successorIds = ArrayList<IntArray?>()
 
     init {
-        for (stmt in stmtGraph) {
+        for (stmt in statementsInOrder) {
             register(stmt)
-        }
-
-        var index = 0
-        while (index < statements.size) {
-            val successors = stmtGraph.successors(statements[index])
-            val encoded = IntArray(successors.size)
-            for (successorIndex in successors.indices) {
-                encoded[successorIndex] = register(successors[successorIndex])
-            }
-            successorIds += encoded
-            index++
         }
     }
 
@@ -210,6 +200,7 @@ private class ControlFlowIndex(stmtGraph: StmtGraph<*>) {
         val id = statements.size
         ids[stmt] = id
         statements += stmt
+        successorIds += null
         return id
     }
 
@@ -217,7 +208,16 @@ private class ControlFlowIndex(stmtGraph: StmtGraph<*>) {
 
     fun statement(id: Int): Stmt = statements[id]
 
-    fun successors(id: Int): IntArray = successorIds[id]
+    fun successors(id: Int): IntArray {
+        successorIds[id]?.let { return it }
+        val successors = stmtGraph.successors(statements[id])
+        val encoded = IntArray(successors.size)
+        for (successorIndex in successors.indices) {
+            encoded[successorIndex] = register(successors[successorIndex])
+        }
+        successorIds[id] = encoded
+        return encoded
+    }
 }
 
 /**
@@ -233,6 +233,7 @@ class SootUpAdapter(
     private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
+    private val singleArtifactSource: String? = null,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
 ) {
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
@@ -314,6 +315,7 @@ class SootUpAdapter(
     private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()
     private val typeDescriptorCache = identityMutableMap<Type, TypeDescriptor>()
     private val declaredMethodSubSignaturesByClass = mutableMapOf<String, Set<String>>()
+    private val fieldGenericTypesByClass = mutableMapOf<String, Map<String, TypeDescriptor>>()
     private val classOriginsByName = mutableMapOf<String, String>()
     private val classOriginSourceCounts = mutableMapOf<String, Int>()
     private val artifactDependenciesByArtifact = mutableMapOf<String, MutableMap<String, Int>>()
@@ -344,9 +346,17 @@ class SootUpAdapter(
     fun buildGraph(): Graph {
         val classes = view.classes.toList()
         classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
-        val indexedClasses = indexSootClassOrigins(classes)
-        val unloadedClassEntries = indexResourceValues(indexedClasses.map { it.source }.toSet())
-        if (classOriginSourceCounts.size > 1) {
+        val indexedClasses: List<IndexedClass>
+        val loadedClassSources: Set<String>
+        if (singleArtifactSource == null) {
+            indexedClasses = indexSootClassOrigins(classes)
+            loadedClassSources = indexedClasses.mapTo(HashSet()) { it.source }
+        } else {
+            indexedClasses = emptyList()
+            loadedClassSources = setOf(singleArtifactSource)
+        }
+        val unloadedClassEntries = indexResourceValues(loadedClassSources)
+        if (singleArtifactSource == null && classOriginSourceCounts.size > 1) {
             indexedClasses.forEach { indexArtifactDependency(it.sootClass, it.source) }
             unloadedClassEntries.forEach(::indexArtifactDependency)
         } else {
@@ -361,7 +371,7 @@ class SootUpAdapter(
         classes.forEach { sootClass ->
             pass1Count++
             if (pass1Count % PASS1_PROGRESS_INTERVAL == 0) {
-                log("Pass 1 processed $pass1Count classes; current=${sootClass.type}")
+                log { "Pass 1 processed $pass1Count classes; current=${sootClass.type}" }
             }
             processTypeHierarchyForClass(sootClass)
             if (sootClass.isEnum) {
@@ -383,7 +393,7 @@ class SootUpAdapter(
             .forEach { sootClass ->
                 pass2Count++
                 if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
-                    log("Pass 2 processed $pass2Count classes; current=${sootClass.type}")
+                    log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
                 }
                 if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
                     val className = sootClass.type.fullyQualifiedName
@@ -434,6 +444,11 @@ class SootUpAdapter(
         config.verbose?.invoke(message)
     }
 
+    private inline fun log(message: () -> String) {
+        val verbose = config.verbose ?: return
+        verbose(message())
+    }
+
     /**
      * Extract enum constant values from a single enum class.
      *
@@ -447,16 +462,16 @@ class SootUpAdapter(
      */
     private fun extractEnumValues(enumClass: SootClass) {
         val className = enumClass.type.fullyQualifiedName
-        log("Processing enum class: $className")
+        log { "Processing enum class: $className" }
 
         val clinit = firstMethod(enumClass) { it.name == "<clinit>" && it.isStatic }
         if (clinit == null) {
-            log("  No <clinit> found for $className")
+            log { "  No <clinit> found for $className" }
             return
         }
 
         if (!clinit.hasBody()) {
-            log("  <clinit> has no body for $className")
+            log { "  <clinit> has no body for $className" }
             return
         }
 
@@ -498,7 +513,7 @@ class SootUpAdapter(
                         // Check if the field type matches the declaring class (enum constant pattern)
                         if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
                             localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
-                            log("  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}")
+                            log { "  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}" }
                         }
                     }
 
@@ -519,11 +534,11 @@ class SootUpAdapter(
                         if (right is Local) {
                             // Resolve alias to find the original local that was used with new/init
                             val originalLocal = localAliases[right.name] ?: right.name
-                            log("  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)")
+                            log { "  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)" }
                             val initValues = findEnumInitValues(originalLocal, stmtGraph, localValues)
                             if (initValues.isNotEmpty()) {
                                 graphBuilder.addEnumValues(className, fieldName, initValues)
-                                log("  Extracted enum value: $className.$fieldName = $initValues")
+                                log { "  Extracted enum value: $className.$fieldName = $initValues" }
                             }
                         }
                     }
@@ -543,35 +558,35 @@ class SootUpAdapter(
             if (stmt !is JInvokeStmt) continue
 
             val invokeExpr = stmt.invokeExpr.orElse(null) ?: continue
-            log("    Checking invoke: ${invokeExpr.javaClass.simpleName} - ${invokeExpr.methodSignature}")
+            log { "    Checking invoke: ${invokeExpr.javaClass.simpleName} - ${invokeExpr.methodSignature}" }
 
             if (invokeExpr !is AbstractInstanceInvokeExpr) {
-                log("    Skipping: not AbstractInstanceInvokeExpr")
+                log { "    Skipping: not AbstractInstanceInvokeExpr" }
                 continue
             }
             if (invokeExpr.methodSignature.name != INIT_METHOD) {
-                log("    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'")
+                log { "    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'" }
                 continue
             }
 
             val base = invokeExpr.base
-            log("    Base: ${base.javaClass.simpleName} - $base (looking for $localName)")
+            log { "    Base: ${base.javaClass.simpleName} - $base (looking for $localName)" }
             if (base.name != localName) continue
 
             // Found the <init> call
             // Args: [name, ordinal, ...user args...]
             val args = invokeExpr.args
-            log("    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}")
+            log { "    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}" }
             if (args.size > 2) {
                 // Get all user-defined arguments (starting from index 2)
                 return args.drop(2).map { arg ->
                     extractValueFromArg(arg, localValues)
                 }
             } else {
-                log("    Only ${args.size} args (need > 2 for user-defined values)")
+                log { "    Only ${args.size} args (need > 2 for user-defined values)" }
             }
         }
-        log("    No <init> call found for local $localName")
+        log { "    No <init> call found for local $localName" }
         return emptyList()
     }
 
@@ -682,7 +697,7 @@ class SootUpAdapter(
             // Android/large corpus can contain a few pathological methods whose CFG
             // materialization explodes heap. Skip the offending method so graph build
             // can continue instead of failing the entire load.
-            log("Skipping method due to OOM while building ${methodDescriptor.signature}: ${oom.message}")
+            log { "Skipping method due to OOM while building ${methodDescriptor.signature}: ${oom.message}" }
             System.gc()
         } finally {
             clearMethodState(methodDescriptor)
@@ -691,6 +706,7 @@ class SootUpAdapter(
 
     private fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor) {
         val stmtGraph = method.body.stmtGraph
+        val statements = stmtGraph.stmts
 
         // Reset per-method stmt tracking
         stmtNodeIds = identityMutableMap()
@@ -701,7 +717,7 @@ class SootUpAdapter(
         var stmtCount = 0
         var branchStatements: MutableList<JIfStmt>? = null
         var hasBranch = false
-        for (stmt in stmtGraph) {
+        for (stmt in statements) {
             processStatement(stmt, methodDescriptor)
             if (stmt is JIfStmt) {
                 hasBranch = true
@@ -714,12 +730,12 @@ class SootUpAdapter(
 
         if (!hasBranch) return
         if (stmtCount <= MAX_CONTROL_FLOW_STATEMENTS) {
-            processControlFlow(branchStatements ?: emptyList(), stmtGraph, methodDescriptor)
+            processControlFlow(branchStatements ?: emptyList(), stmtGraph, statements, methodDescriptor)
         } else {
-            log(
+            log {
                 "Skipping control-flow extraction for ${methodDescriptor.signature}: " +
                     "$stmtCount statements exceed $MAX_CONTROL_FLOW_STATEMENTS"
-            )
+            }
         }
     }
 
@@ -919,10 +935,8 @@ class SootUpAdapter(
         val callee = toMethodDescriptor(calleeSignature)
 
         // Create argument nodes and track dataflow
-        val argNodeIds = invokeExpr.args.mapIndexed { index, arg ->
-            val argNode = getOrCreateValueNode(arg, caller)
-            argNode?.id ?: nextNodeId("unknown")
-        }
+        val args = invokeExpr.args
+        val argNodeIds = argumentNodeIds(args, caller)
 
         // Handle boxing methods (Integer.valueOf, Long.valueOf, etc.)
         // These should propagate the value directly without going through the call site
@@ -1002,7 +1016,7 @@ class SootUpAdapter(
         // Resolve functional interface dispatch:
         // If the receiver was assigned from an invokedynamic, connect this
         // virtual call (e.g., Function.apply) to the actual target method
-        if (receiverNode is LocalVariable) {
+        if (receiverNode is LocalVariable && (trackCrossMethodFunctionalDispatch || dynamicTargets.isNotEmpty())) {
             val key = localKey(caller, receiverNode.name)
             val targets = dynamicTargets[key]
 
@@ -1090,8 +1104,8 @@ class SootUpAdapter(
 
             // Track dynamic targets flowing through arguments for cross-method dispatch
             // Check both direct dynamic targets and array dynamic targets (for varargs)
-            if (trackCrossMethodFunctionalDispatch && index < invokeExpr.args.size) {
-                val arg = invokeExpr.args[index]
+            if (trackCrossMethodFunctionalDispatch && index < args.size) {
+                val arg = args[index]
                 if (arg is Local) {
                     val argKey = localKey(caller, arg.name)
                     val targets = dynamicTargets[argKey] ?: arrayDynamicTargets[argKey]
@@ -1163,10 +1177,7 @@ class SootUpAdapter(
             }
 
         // Create argument nodes
-        val argNodeIds = invokeExpr.args.mapIndexed { _, arg ->
-            val argNode = getOrCreateValueNode(arg, caller)
-            argNode?.id ?: nextNodeId("unknown")
-        }
+        val argNodeIds = argumentNodeIds(invokeExpr.args, caller)
 
         // For each target method, create a call site
         for (target in targetMethods) {
@@ -1271,6 +1282,16 @@ class SootUpAdapter(
                 )
             }
         }
+    }
+
+    private fun argumentNodeIds(args: List<Value>, caller: MethodDescriptor): List<NodeId> {
+        if (args.isEmpty()) return emptyList()
+        val nodeIds = ArrayList<NodeId>(args.size)
+        for (arg in args) {
+            val argNode = getOrCreateValueNode(arg, caller)
+            nodeIds += argNode?.id ?: nextNodeId("unknown")
+        }
+        return nodeIds
     }
 
     /**
@@ -1416,9 +1437,10 @@ class SootUpAdapter(
     private fun processControlFlow(
         branchStatements: List<JIfStmt>,
         stmtGraph: StmtGraph<*>,
+        statements: List<Stmt>,
         method: MethodDescriptor
     ) {
-        val controlFlowIndex = ControlFlowIndex(stmtGraph)
+        val controlFlowIndex = ControlFlowIndex(stmtGraph, statements)
         val reachableCache = HashMap<Int, BitSet>()
         for (stmt in branchStatements) {
             val condition = stmt.condition
@@ -1733,10 +1755,10 @@ class SootUpAdapter(
                 try {
                     createStreamingMethod(sootClass, methodNode)?.let { yield(it) }
                 } catch (oom: OutOfMemoryError) {
-                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution")
+                    log { "Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: OOM during streaming resolution" }
                     System.gc()
                 } catch (e: Exception) {
-                    log("Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}")
+                    log { "Skipping method ${sootClass.type}.${methodNode.name}${methodNode.desc}: ${e.message}" }
                 }
             }
         }
@@ -1803,10 +1825,10 @@ class SootUpAdapter(
     } catch (failure: Throwable) {
         when (failure) {
             is OutOfMemoryError -> {
-                log("Skipping methods for ${sootClass.type}: OOM during method resolution")
+                log { "Skipping methods for ${sootClass.type}: OOM during method resolution" }
                 System.gc()
             }
-            is IllegalStateException -> log("Skipping methods for ${sootClass.type}: ${failure.message}")
+            is IllegalStateException -> log { "Skipping methods for ${sootClass.type}: ${failure.message}" }
             else -> throw failure
         }
         emptySet()
@@ -1888,7 +1910,7 @@ class SootUpAdapter(
                     id = nextNodeId(CONST_NODE_PREFIX)
                 )
                 else -> {
-                    log("Unsupported constant type: ${constant.javaClass.simpleName} = $constant")
+                    log { "Unsupported constant type: ${constant.javaClass.simpleName} = $constant" }
                     IntConstant(
                         id = nextNodeId(CONST_NODE_PREFIX),
                         value = 0
@@ -1995,7 +2017,7 @@ class SootUpAdapter(
         val referencedClasses = runCatching {
             extractReferencedClasses(Files.readAllBytes(sootClass.classSource.sourcePath))
         }.getOrElse {
-            log("Failed to extract artifact dependencies from $source!/${sootClass.type.fullyQualifiedName}: ${it.message}")
+            log { "Failed to extract artifact dependencies from $source!/${sootClass.type.fullyQualifiedName}: ${it.message}" }
             return
         }
         recordArtifactDependencies(fromArtifact, referencedClasses)
@@ -2008,7 +2030,7 @@ class SootUpAdapter(
                 extractReferencedClasses(input.readBytes())
             }
         }.getOrElse {
-            log("Failed to extract artifact dependencies from ${entry.source}!/${entry.path}: ${it.message}")
+            log { "Failed to extract artifact dependencies from ${entry.source}!/${entry.path}: ${it.message}" }
             return
         }
         recordArtifactDependencies(fromArtifact, referencedClasses)
@@ -2787,7 +2809,7 @@ class SootUpAdapter(
             }
             indexRuntimeBundle(bundle)
         }.onFailure {
-            log("Skipping runtime bundle resolution for $baseName: ${it.message}")
+            log { "Skipping runtime bundle resolution for $baseName: ${it.message}" }
         }
     }
 
@@ -3137,8 +3159,36 @@ class SootUpAdapter(
         fieldName: String,
         fallbackType: TypeDescriptor
     ): TypeDescriptor {
-        return signatureReader?.getFieldType(declaringClass, fieldName) ?: fallbackType
+        return signatureReader?.getFieldType(declaringClass, fieldName)
+            ?: fieldGenericTypes(declaringClass)[fieldName]
+            ?: fallbackType
     }
+
+    private fun fieldGenericTypes(className: String): Map<String, TypeDescriptor> =
+        fieldGenericTypesByClass.getOrPut(className) {
+            val sootClass = resolveClassByName(className) as? JavaSootClass ?: return@getOrPut emptyMap()
+            val classNode = getAsmClassNode(sootClass) ?: loadClassNodeFromResource(className) ?: return@getOrPut emptyMap()
+            @Suppress("UNCHECKED_CAST")
+            val fields = classNode.fields as? List<AsmFieldNode> ?: return@getOrPut emptyMap()
+            val genericTypes = HashMap<String, TypeDescriptor>(fields.size)
+            for (field in fields) {
+                val type = GenericSignatureParser.parseFieldSignature(field.signature) ?: continue
+                genericTypes[field.name] = type
+            }
+            genericTypes
+        }
+
+    private fun loadClassNodeFromResource(className: String): ClassNode? =
+        try {
+            val resourcePath = className.replace('.', '/') + CLASS_FILE_SUFFIX
+            resourceAccessor.open(resourcePath).use { input ->
+                ClassNode().also { classNode ->
+                    ClassReader(input).accept(classNode, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+                }
+            }
+        } catch (_: Exception) {
+            null
+        }
 
     private fun toMethodDescriptor(method: SootMethod): MethodDescriptor {
         return toMethodDescriptor(method.signature)

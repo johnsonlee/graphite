@@ -15,7 +15,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
@@ -32,7 +31,6 @@ private const val ZIP_EXTENSION_NAME = "zip"
  * - Directories containing .class files
  * - Spring Boot fat JARs (BOOT-INF layout)
  */
-@Suppress("TooManyFunctions")
 class JavaProjectLoader(
     private val config: LoaderConfig = LoaderConfig(),
     private val graphBuilderFactory: () -> FullGraphBuilder = { MmapGraphBuilder() }
@@ -52,149 +50,27 @@ class JavaProjectLoader(
     )
 
     override fun load(path: Path): Graph {
-        if (canUseFastBuild()) {
-            val resourceAccessor = ArchiveResourceAccessor.create(path)
-            return AsmFastGraphAdapter(
-                config = config,
-                resourceAccessor = resourceAccessor,
-                loadedSources = fastLoadedSources(path),
-                graphBuilder = graphBuilderFactory()
-            ).buildGraph()
-        }
-
         val inputLocations = createInputLocations(path)
-        val resourceAccessor = ArchiveResourceAccessor.create(path)
         val view = JavaView(inputLocations.locations)
 
-        // Load generic signatures from bytecode
-        val signatureReader = BytecodeSignatureReader()
-        loadSignatures(path, signatureReader)
-
+        val resourceAccessor = ArchiveResourceAccessor.create(path)
         val adapter = SootUpAdapter(
-            view, config, signatureReader,
+            view, config,
             resourceAccessor = resourceAccessor,
             inputLocationSources = inputLocations.sources,
+            singleArtifactSource = singleArtifactSource(path),
             graphBuilder = graphBuilderFactory()
         )
         return adapter.buildGraph()
     }
 
-    private fun canUseFastBuild(): Boolean =
-        config.fastBuild &&
-            !config.buildCallGraph &&
-            !config.extractAnnotations &&
-            !config.trackCrossMethodFunctionalDispatch
-
-    private fun fastLoadedSources(path: Path): Set<String> {
-        return when {
-            path.isDirectory() -> fastDirectorySources(path)
-            isSpringBootJar(path) -> fastNestedArchiveSources(path, JavaArchiveLayout.BOOT_INF_CLASSES, JavaArchiveLayout.BOOT_INF_LIB)
-            isWarFile(path) -> fastNestedArchiveSources(path, JavaArchiveLayout.WEB_INF_CLASSES, JavaArchiveLayout.WEB_INF_LIB)
-            else -> setOf(path.fileName.toString())
+    private fun singleArtifactSource(path: Path): String? =
+        when {
+            path.isDirectory() -> null
+            isSpringBootJar(path) -> null
+            isWarFile(path) -> null
+            else -> path.fileName.toString()
         }
-    }
-
-    private fun fastDirectorySources(path: Path): Set<String> {
-        val sources = linkedSetOf<String>()
-        if (containsLooseClassFiles(path)) {
-            sources += path.fileName.toString()
-        }
-
-        Files.walk(path).use { stream ->
-            stream.filter { Files.isRegularFile(it) }
-                .filter { it.fileName.toString().endsWith(".jar", ignoreCase = true) }
-                .sorted()
-                .forEach { jarPath ->
-                    val relativeJar = path.relativize(jarPath).toString().replace('\\', '/')
-                    if (jarContainsIncludedPackages(jarPath) ||
-                        (config.includeLibraries && matchesLibraryFilter(jarPath.fileName.toString()))
-                    ) {
-                        sources += relativeJar
-                    }
-                }
-        }
-
-        return sources.ifEmpty { setOf(path.fileName.toString()) }
-    }
-
-    private fun fastNestedArchiveSources(path: Path, classesSource: String, libPrefix: String): Set<String> {
-        val sources = linkedSetOf(classesSource)
-        if (!config.includeLibraries) return sources
-
-        ZipFile(path.toFile()).use { zip ->
-            zip.entries().asSequence()
-                .filter { it.name.startsWith(libPrefix) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) && !it.isDirectory }
-                .filter { matchesLibraryFilter(it.name.substringAfterLast("/")) }
-                .filter { nestedJarContainsIncludedPackages(zip, it) }
-                .forEach { sources += it.name.substringAfterLast("/") }
-        }
-        return sources
-    }
-
-    /**
-     * Load generic signatures from bytecode.
-     */
-    private fun loadSignatures(path: Path, reader: BytecodeSignatureReader) {
-        try {
-            when {
-                path.isDirectory() -> {
-                    reader.loadFromDirectory(path)
-                    Files.walk(path).use { stream ->
-                        stream.filter { Files.isRegularFile(it) }
-                            .filter {
-                                when (it.fileName.toString().substringAfterLast('.', "").lowercase()) {
-                                    JAR_EXTENSION_NAME -> true
-                                    else -> false
-                                }
-                            }
-                            .forEach { jarPath ->
-                                try {
-                                    reader.loadFromJar(jarPath)
-                                } catch (_: Exception) {
-                                }
-                            }
-                    }
-                }
-                path.extension.lowercase() == JAR_EXTENSION_NAME -> {
-                    if (isSpringBootJar(path)) {
-                        loadSpringBootSignatures(path, reader)
-                    } else {
-                        reader.loadFromJar(path)
-                    }
-                }
-                path.extension.lowercase() == WAR_EXTENSION_NAME -> {
-                    loadWarSignatures(path, reader)
-                }
-            }
-        } catch (e: Exception) {
-            // Log but don't fail - signatures are optional enhancement
-            log("Warning: Failed to load generic signatures: ${e.message}")
-        }
-    }
-
-    private fun loadSpringBootSignatures(jarPath: Path, reader: BytecodeSignatureReader) {
-        ZipFile(jarPath.toFile()).use { zip ->
-            zip.entries().asSequence()
-                .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                .forEach { entry ->
-                    zip.getInputStream(entry).use { inputStream ->
-                        reader.loadFromStream(inputStream)
-                    }
-                }
-        }
-    }
-
-    private fun loadWarSignatures(warPath: Path, reader: BytecodeSignatureReader) {
-        ZipFile(warPath.toFile()).use { zip ->
-            zip.entries().asSequence()
-                .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                .forEach { entry ->
-                    zip.getInputStream(entry).use { inputStream ->
-                        reader.loadFromStream(inputStream)
-                    }
-                }
-        }
-    }
 
     override fun canLoad(path: Path): Boolean {
         if (path.isDirectory()) {
@@ -491,27 +367,6 @@ class JavaProjectLoader(
             }
         } catch (e: Exception) {
             true // On error, include to be safe
-        }
-    }
-
-    private fun nestedJarContainsIncludedPackages(zip: ZipFile, entry: ZipEntry): Boolean {
-        if (config.includePackages.isEmpty()) {
-            return true
-        }
-
-        return try {
-            ZipInputStream(zip.getInputStream(entry)).use { nested ->
-                generateSequence { nested.nextEntry }
-                    .filter { !it.isDirectory && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                    .any { nestedEntry ->
-                        val className = nestedEntry.name
-                            .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
-                            .replace('/', '.')
-                        config.includePackages.any { pkg -> className.startsWith(pkg) }
-                    }
-            }
-        } catch (e: Exception) {
-            true
         }
     }
 

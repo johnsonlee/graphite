@@ -67,9 +67,6 @@ brew install graphite@2.0
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
 
-# Optional: faster bytecode-only graph for large service indexes
-graphite build app.jar -o /data/app-fast-graph --include com.example --fast-build
-
 # Query with Cypher
 graphite query /data/app-graph \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
@@ -94,10 +91,6 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
-
-`--fast-build` uses a bytecode-only builder for large indexes. It keeps core
-class/method/field/call-site evidence and basic dataflow, but it does not build
-call graph metadata, annotation nodes, or cross-method functional dispatch.
 
 ## Kotlin API
 
