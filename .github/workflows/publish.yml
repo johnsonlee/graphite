@@ -107,17 +107,16 @@ jobs:
         cd tap
         mkdir -p Formula
 
-        cat > Formula/graphite@2.0.rb <<RUBY
-        class GraphiteAT20 < Formula
+        cat > Formula/graphite.rb <<RUBY
+        class Graphite < Formula
           desc "Build, query, and serve Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
+          url "https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}/graphite.jar"
           version "${RELEASE_VERSION}"
-          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite.jar"
           sha256 "${QUERY_SHA}"
           license "Apache-2.0"
 
           depends_on "openjdk@17"
-          conflicts_with "graphite", because: "both install the graphite executable"
 
           def install
             libexec.install "graphite.jar"
@@ -147,7 +146,7 @@ jobs:
                   PASSTHROUGH_ARGS+=("\$arg")
                 fi
               done
-              exec "#{Formula["openjdk@17"].opt_bin}/java" \$AGENT_ARGS -jar "#{libexec}/graphite.jar" "\${PASSTHROUGH_ARGS[@]}"
+              exec "#{formula_opt_bin("openjdk@17")}/java" \$AGENT_ARGS -jar "#{libexec}/graphite.jar" "\${PASSTHROUGH_ARGS[@]}"
             EOS
           end
 
@@ -157,17 +156,16 @@ jobs:
         end
         RUBY
 
-        cat > Formula/graphite-explore@2.0.rb <<RUBY
-        class GraphiteExploreAT20 < Formula
+        cat > Formula/graphite-explore.rb <<RUBY
+        class GraphiteExplore < Formula
           desc "Interactive web visualization for Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
+          url "https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}/graphite-explore.jar"
           version "${RELEASE_VERSION}"
-          url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite-explore.jar"
           sha256 "${EXPLORE_SHA}"
           license "Apache-2.0"
 
           depends_on "openjdk@17"
-          conflicts_with "graphite-explore", because: "both install the graphite-explore executable"
 
           def install
             libexec.install "graphite-explore.jar"
@@ -197,7 +195,7 @@ jobs:
                   PASSTHROUGH_ARGS+=("\$arg")
                 fi
               done
-              exec "#{Formula["openjdk@17"].opt_bin}/java" \$AGENT_ARGS -jar "#{libexec}/graphite-explore.jar" "\${PASSTHROUGH_ARGS[@]}"
+              exec "#{formula_opt_bin("openjdk@17")}/java" \$AGENT_ARGS -jar "#{libexec}/graphite-explore.jar" "\${PASSTHROUGH_ARGS[@]}"
             EOS
           end
 
@@ -209,8 +207,10 @@ jobs:
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        # Keep existing 1.0/unversioned formulae in the tap untouched.
-        git add Formula/graphite@2.0.rb Formula/graphite-explore@2.0.rb
+        # The unversioned formulae track the current release. Version-pinned
+        # formulae are maintained directly in the tap without cutting duplicate
+        # Graphite releases.
+        git add Formula/graphite.rb Formula/graphite-explore.rb
         if ! git diff --cached --quiet; then
           git commit -m "graphite ${RELEASE_VERSION}"
           git push origin main

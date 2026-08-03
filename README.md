@@ -62,7 +62,7 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ```bash
 # Install via Homebrew
 brew tap johnsonlee/tap
-brew install graphite@2.0
+brew install graphite
 
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
