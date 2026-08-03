@@ -73,6 +73,33 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
+            "/api/cypher/graphs" to mapOf(
+                "get" to operation(
+                    "Execute a Cypher query across loaded graphs",
+                    parameters = listOf(
+                        queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
+                        queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Optional graph id filter; repeat or comma-separate"),
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows per graph")
+                    ),
+                    responses = mapOf(
+                        "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
+                        "400" to response("Missing or invalid query"),
+                        "404" to response("Requested graph not loaded")
+                    )
+                ),
+                "post" to operation(
+                    "Execute a Cypher query across loaded graphs",
+                    parameters = listOf(
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows per graph")
+                    ),
+                    requestBody = multiGraphCypherRequestBody(),
+                    responses = mapOf(
+                        "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
+                        "400" to response("Missing or invalid query"),
+                        "404" to response("Requested graph not loaded")
+                    )
+                )
+            ),
             "/api/info" to mapOf(
                 "get" to operation(
                     "Get graph summary statistics",
@@ -310,6 +337,26 @@ internal class OpenApiSpecBuilder {
                 )
             ),
             listOf(API_FIELD_PATH)
+        )
+
+    private fun multiGraphCypherRequestBody(): Map<String, Any?> =
+        objectRequestBody(
+            mapOf(
+                API_PARAM_QUERY to mapOf(
+                    API_FIELD_TYPE to TYPE_STRING,
+                    FIELD_DESCRIPTION to "Cypher query text"
+                ),
+                API_FIELD_GRAPHS to mapOf(
+                    API_FIELD_TYPE to "array",
+                    FIELD_DESCRIPTION to "Optional graph ids to query; omitted means all loaded graphs",
+                    "items" to mapOf(API_FIELD_TYPE to TYPE_STRING)
+                ),
+                API_PARAM_LIMIT to mapOf(
+                    API_FIELD_TYPE to TYPE_INTEGER,
+                    FIELD_DESCRIPTION to "Server-side maximum result rows per graph"
+                )
+            ),
+            listOf(API_PARAM_QUERY)
         )
 
     private fun objectRequestBody(properties: Map<String, Any?>, required: List<String>): Map<String, Any?> =

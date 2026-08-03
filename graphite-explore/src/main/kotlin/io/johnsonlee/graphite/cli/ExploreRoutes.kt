@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cli
 
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.javalin.Javalin
 import io.javalin.http.Context
@@ -47,6 +48,14 @@ internal class ExploreRoutes {
                     API_FIELD_GRAPHS to registry.list().map { it.toApiMap() }
                 )
             )
+        }
+
+        app.get("$API_ROOT/cypher/graphs") { ctx ->
+            queryLoadedGraphsFromRequest(ctx, registry)
+        }
+
+        app.post("$API_ROOT/cypher/graphs") { ctx ->
+            queryLoadedGraphsFromRequest(ctx, registry)
         }
 
         app.put("$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}") { ctx ->
@@ -373,6 +382,33 @@ internal class ExploreRoutes {
         }
     }
 
+    private fun queryLoadedGraphsFromRequest(ctx: Context, registry: GraphRegistry) {
+        runCatching {
+            val request = parseMultiGraphCypherRequest(ctx)
+            val graphIds = resolveMultiGraphIds(registry, request.graphIds)
+            val leases = mutableListOf<GraphLease>()
+            try {
+                for (id in graphIds) {
+                    leases += (registry.acquire(id) ?: throw GraphNotLoadedException(id))
+                }
+                val results = leases.map { lease ->
+                    val result = CypherExecutor(lease.graph).execute(request.query, request.limit)
+                    MultiGraphCypherResult(
+                        graphId = lease.id,
+                        columns = result.columns,
+                        rows = result.rows
+                    )
+                }
+                ctx.json(buildMultiGraphCypherResponse(results))
+            } finally {
+                leases.forEach { it.close() }
+            }
+        }.onFailure { error ->
+            val status = if (error is GraphNotLoadedException) HTTP_NOT_FOUND else HTTP_BAD_REQUEST
+            ctx.status(status).json(mapOf(API_FIELD_ERROR to (error.message ?: "Query execution failed")))
+        }
+    }
+
     private fun parseGraphLoadRequest(ctx: Context): GraphLoadRequest {
         val body = ctx.body().trim()
         val path = if (body.isBlank()) {
@@ -386,6 +422,77 @@ internal class ExploreRoutes {
             JsonParser.parseString(body).asJsonObject.get(API_FIELD_LOAD_MODE)?.asString
         }?.let { GraphStore.LoadMode.valueOf(it.uppercase()) }
         return GraphLoadRequest(Path.of(path), loadMode)
+    }
+
+    private fun parseMultiGraphCypherRequest(ctx: Context): MultiGraphCypherRequest {
+        val body = ctx.body().trim()
+        val json = if (body.isBlank()) null else JsonParser.parseString(body).asJsonObject
+        val query = if (json == null) {
+            ctx.queryParam(API_PARAM_QUERY) ?: error("Missing 'query' parameter")
+        } else {
+            json.get(API_PARAM_QUERY)?.asString ?: error("Missing 'query' parameter")
+        }
+        val graphIds = json?.let { parseGraphIdsFromJson(it) } ?: parseGraphIdsFromQuery(ctx)
+        val limit = boundedLimit(
+            json?.get(API_PARAM_LIMIT)?.asString ?: ctx.queryParam(API_PARAM_LIMIT),
+            DEFAULT_CYPHER_ROW_LIMIT,
+            MAX_CYPHER_ROW_LIMIT
+        )
+        return MultiGraphCypherRequest(query.trim(), graphIds, limit)
+    }
+
+    private fun parseGraphIdsFromJson(json: JsonObject): List<String> {
+        val graphElement = json.get(API_FIELD_GRAPHS) ?: json.get(API_PARAM_GRAPH) ?: return emptyList()
+        return when {
+            graphElement.isJsonArray -> graphElement.asJsonArray.map { it.asString }
+            graphElement.isJsonPrimitive -> splitGraphIds(graphElement.asString)
+            else -> error("Invalid 'graphs' field")
+        }.map { it.trim() }.filter { it.isNotEmpty() }
+    }
+
+    private fun parseGraphIdsFromQuery(ctx: Context): List<String> {
+        val params = ctx.queryParamMap()
+        return (params[API_PARAM_GRAPH].orEmpty() + params[API_FIELD_GRAPHS].orEmpty())
+            .flatMap(::splitGraphIds)
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+    }
+
+    private fun splitGraphIds(raw: String): List<String> =
+        raw.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
+    private fun resolveMultiGraphIds(registry: GraphRegistry, requested: List<String>): List<String> =
+        if (requested.isEmpty()) {
+            registry.ids()
+        } else {
+            requested.map { GraphRegistry.validateGraphId(it) }.distinct()
+        }
+
+    private fun buildMultiGraphCypherResponse(results: List<MultiGraphCypherResult>): Map<String, Any?> {
+        val columns = linkedSetOf(API_FIELD_GRAPH_ID)
+        results.forEach { columns.addAll(it.columns) }
+        val rows = results.flatMap { result ->
+            result.rows.map { row ->
+                linkedMapOf<String, Any?>(API_FIELD_GRAPH_ID to result.graphId).apply {
+                    putAll(row)
+                    put(API_FIELD_GRAPH_ID, result.graphId)
+                }
+            }
+        }
+        return mapOf(
+            API_FIELD_COLUMNS to columns.toList(),
+            API_FIELD_ROWS to rows,
+            API_FIELD_ROW_COUNT to rows.size,
+            "graphCount" to results.size,
+            API_FIELD_GRAPHS to results.map {
+                mapOf(
+                    API_FIELD_GRAPH_ID to it.graphId,
+                    API_FIELD_COLUMNS to it.columns,
+                    API_FIELD_ROWS to it.rows,
+                    API_FIELD_ROW_COUNT to it.rows.size
+                )
+            }
+        )
     }
 
     private inline fun withGraph(ctx: Context, provider: GraphProvider, block: (Graph) -> Unit) {
@@ -598,6 +705,20 @@ internal class ExploreRoutes {
         val path: Path,
         val loadMode: GraphStore.LoadMode?
     )
+
+    private data class MultiGraphCypherRequest(
+        val query: String,
+        val graphIds: List<String>,
+        val limit: Int
+    )
+
+    private data class MultiGraphCypherResult(
+        val graphId: String,
+        val columns: List<String>,
+        val rows: List<Map<String, Any?>>
+    )
+
+    private class GraphNotLoadedException(id: String) : RuntimeException("Graph not loaded: $id")
 
     private enum class SubgraphDirection(
         val includeOutgoing: Boolean,

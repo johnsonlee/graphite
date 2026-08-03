@@ -420,6 +420,75 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `registry cypher endpoint fans out across loaded graphs`() {
+        val root = Files.createTempDirectory("explore-registry-fanout")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"), makeDefault = false)
+                registry.load("service-b", Path.of("service-b"), makeDefault = false)
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (allCode, allBody) = post(targetPort, "/api/cypher/graphs", """{"query":"$query"}""")
+                assertEquals(200, allCode, "Expected 200, body: $allBody")
+                val allResult: Map<String, Any?> = parseJson(allBody)
+                assertEquals(2.0, allResult["graphCount"])
+                assertEquals(2.0, allResult[API_FIELD_ROW_COUNT])
+
+                @Suppress("UNCHECKED_CAST")
+                val rows = allResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                val valuesByGraph = rows.associate { it[API_FIELD_GRAPH_ID] as String to it["n.value"] }
+                assertEquals(101.0, valuesByGraph["service-a"])
+                assertEquals(202.0, valuesByGraph["service-b"])
+
+                @Suppress("UNCHECKED_CAST")
+                val columns = allResult[API_FIELD_COLUMNS] as List<String>
+                assertEquals(API_FIELD_GRAPH_ID, columns.first())
+                assertTrue(columns.contains("n.value"))
+
+                val (subsetCode, subsetBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-b"]}"""
+                )
+                assertEquals(200, subsetCode, "Expected 200, body: $subsetBody")
+                val subsetResult: Map<String, Any?> = parseJson(subsetBody)
+                @Suppress("UNCHECKED_CAST")
+                val subsetRows = subsetResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(1, subsetRows.size)
+                assertEquals("service-b", subsetRows.single()[API_FIELD_GRAPH_ID])
+                assertEquals(202.0, subsetRows.single()["n.value"])
+
+                val encodedQuery = java.net.URLEncoder.encode(query, Charsets.UTF_8)
+                val (getSubsetCode, getSubsetBody) = get(
+                    targetPort,
+                    "/api/cypher/graphs?query=$encodedQuery&graph=service-a"
+                )
+                assertEquals(200, getSubsetCode, "Expected 200, body: $getSubsetBody")
+                val getSubsetResult: Map<String, Any?> = parseJson(getSubsetBody)
+                @Suppress("UNCHECKED_CAST")
+                val getSubsetRows = getSubsetResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(1, getSubsetRows.size)
+                assertEquals("service-a", getSubsetRows.single()[API_FIELD_GRAPH_ID])
+                assertEquals(101.0, getSubsetRows.single()["n.value"])
+
+                val (missingCode, missingBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["missing"]}"""
+                )
+                assertEquals(404, missingCode, "Expected 404, body: $missingBody")
+                assertTrue(missingBody.contains("Graph not loaded: missing"), "Expected missing graph error, body: $missingBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `registry hot update swaps graph path for same id`() {
         val root = Files.createTempDirectory("explore-registry-update")
         try {
@@ -1042,6 +1111,7 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/openapi.json"))
         assertTrue(paths.containsKey("/swagger.json"))
         assertTrue(paths.containsKey("/api/architecture/c4"))
+        assertTrue(paths.containsKey("/api/cypher/graphs"))
         @Suppress("UNCHECKED_CAST")
         val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
         @Suppress("UNCHECKED_CAST")
@@ -1432,6 +1502,7 @@ class ExploreCommandTest {
 
             assertEquals(1, code)
             assertTrue(err.contains("Invalid --graph 'missing-separator'"), "Expected invalid graph error, got: $err")
+            assertTrue(err.contains("Expected id:path"), "Expected id:path hint, got: $err")
         } finally {
             root.toFile().deleteRecursively()
         }
@@ -1448,7 +1519,7 @@ class ExploreCommandTest {
                 val serve = ServeCommand()
                 serve.graphDir = positional
                 serve.graphId = "service-a"
-                serve.graphSpecs = listOf("service-b=service-b")
+                serve.graphSpecs = listOf("service-b:service-b")
 
                 val loadInitialGraphs = ServeCommand::class.java.getDeclaredMethod(
                     "loadInitialGraphs",

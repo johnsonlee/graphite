@@ -32,7 +32,7 @@ open class ServeCommand : Callable<Int> {
     @Option(names = ["--data"], description = ["Data directory used to resolve relative graph paths and allow empty startup"])
     var data: Path? = null
 
-    @Option(names = ["--graph"], description = ["Initial graph mapping id=path. Repeat for multiple graphs."])
+    @Option(names = ["--graph"], description = ["Initial graph mapping id:path. Repeat for multiple graphs."])
     var graphSpecs: List<String> = emptyList()
 
     @Option(names = ["--id"], description = ["Graph id for the optional positional graph"], defaultValue = DEFAULT_GRAPH_ID)
@@ -140,9 +140,9 @@ open class ServeCommand : Callable<Int> {
     }
 
     private fun parseGraphSpec(spec: String): Pair<String, Path> {
-        val separator = spec.indexOf('=')
+        val separator = spec.indexOf(':')
         require(separator > 0 && separator < spec.lastIndex) {
-            "Invalid --graph '$spec'. Expected id=path."
+            "Invalid --graph '$spec'. Expected id:path."
         }
         val id = GraphRegistry.validateGraphId(spec.substring(0, separator))
         return id to Path.of(spec.substring(separator + 1))

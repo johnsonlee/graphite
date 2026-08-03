@@ -82,8 +82,8 @@ graphite serve /data/app-graph --port 8080
 
 # Serve multiple graphs by id. Relative graph paths resolve under --data.
 graphite serve --data /data/graphs \
-  --graph orders=orders-graph \
-  --graph billing=/data/billing-graph \
+  --graph orders:orders-graph \
+  --graph billing:/data/billing-graph \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -214,6 +214,7 @@ Generic JDK resource linking currently covers:
 | `/api/graphs` | List loaded webgraphs |
 | `/api/graphs/{graphId}` | Load, replace, or unload a webgraph by id |
 | `/api/graphs/{graphId}/cypher` | Query a specific webgraph by id |
+| `/api/cypher/graphs` | Query all or selected loaded webgraphs in one request |
 | `/api/resources` | List indexed resources |
 | `/api/resources/{path}` | Read persisted raw resource content |
 | `/api/api-spec` | Extract API specs/endpoints for agent discovery |
@@ -222,8 +223,8 @@ Generic JDK resource linking currently covers:
 
 For agent-driven discovery, probe `/openapi.json` first. It describes the full
 explore REST surface, including `/api/cypher`, id-scoped graph endpoints,
-`/api/resources`, `/api/resources/{path}`, `/api/api-spec`, and the
-node/subgraph endpoints.
+server-side fan-out via `/api/cypher/graphs`, `/api/resources`,
+`/api/resources/{path}`, `/api/api-spec`, and the node/subgraph endpoints.
 
 ## Architecture
 
@@ -336,8 +337,19 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -d '{"path":"orders-graph"}'
 ```
 
-LLMs can now use tools such as openapi, cypher, resources, resource,
-api_spec, c4, nodes, methods, call_sites, and annotations.
+To query across loaded graphs without client-side fan-out:
+
+```bash
+curl -X POST http://localhost:8080/api/cypher/graphs \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"MATCH (n:IntConstant) RETURN n.value","graphs":["orders","billing"]}'
+```
+
+The MCP `cypher` tool also supports native multi-graph querying via
+`all_graphs: true`, or `graphs: ["orders", "billing"]` for a selected subset.
+
+LLMs can now use tools such as openapi, cypher, resources, resource, api_spec,
+c4, nodes, methods, call_sites, and annotations.
 
 The explore server also exposes a single C4 architecture endpoint:
 

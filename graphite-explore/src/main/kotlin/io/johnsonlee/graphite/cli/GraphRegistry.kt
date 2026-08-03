@@ -107,6 +107,11 @@ internal class GraphRegistry(
             .sortedBy { it.id }
             .toList()
 
+    fun ids(): List<String> =
+        graphs.keys.asSequence()
+            .sorted()
+            .toList()
+
     fun acquire(id: String): GraphLease? =
         graphs[validateGraphId(id)]?.acquire()
 
