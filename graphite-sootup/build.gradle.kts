@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.sootup.core)
     implementation(libs.sootup.java.core)
     implementation(libs.sootup.java.bytecode.frontend)
+    implementation(libs.sootup.apk.frontend)
     implementation(libs.sootup.callgraph)
     implementation(libs.asm)  // For parsing generic signatures from bytecode
     implementation(libs.gson)

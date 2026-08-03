@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.LoaderConfig
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.lang.reflect.InvocationTargetException
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.tools.StandardLocation
@@ -21,6 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -72,6 +74,272 @@ class JavaProjectLoaderTest {
             assertTrue(loader.canLoad(tempZip), "Should be able to load ZIP files")
         } finally {
             Files.deleteIfExists(tempZip)
+        }
+    }
+
+    @Test
+    fun `canLoad should return true for apk files`() {
+        val loader = JavaProjectLoader()
+        val tempApk = Files.createTempFile("test", ".apk")
+        try {
+            assertTrue(loader.canLoad(tempApk), "Should be able to load APK files")
+        } finally {
+            Files.deleteIfExists(tempApk)
+        }
+    }
+
+    @Test
+    fun `android platforms resolution accepts sdk root and platforms directory`() {
+        val sdkRoot = Files.createTempDirectory("graphite-android-sdk-root")
+        val platformsFromRoot = Files.createDirectories(sdkRoot.resolve("platforms"))
+        val directPlatforms = Files.createTempDirectory("graphite-android-platforms")
+        try {
+            createAndroidJar(platformsFromRoot, 36)
+            createAndroidJar(directPlatforms, 35)
+
+            assertEquals(
+                platformsFromRoot,
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidPlatformsPath",
+                    arrayOf(LoaderConfig::class.java),
+                    LoaderConfig(androidPlatforms = sdkRoot)
+                )
+            )
+            assertEquals(
+                directPlatforms,
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidPlatformsPath",
+                    arrayOf(LoaderConfig::class.java),
+                    LoaderConfig(androidPlatforms = directPlatforms)
+                )
+            )
+            assertTrue(
+                invokeLoaderFilePrivate<Boolean>(
+                    "containsAndroidPlatformJar",
+                    arrayOf(Path::class.java),
+                    directPlatforms
+                )
+            )
+            assertFalse(
+                invokeLoaderFilePrivate<Boolean>(
+                    "containsAndroidPlatformJar",
+                    arrayOf(Path::class.java),
+                    directPlatforms.resolve("missing")
+                )
+            )
+        } finally {
+            sdkRoot.toFile().deleteRecursively()
+            directPlatforms.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `android platforms environment lookup keeps configured priority`() {
+        val androidPlatforms = Path.of("/env/platforms")
+        val androidHome = Path.of("/env/home")
+        val androidSdkRoot = Path.of("/env/sdk-root")
+
+        assertEquals(
+            androidPlatforms,
+            invokeLoaderFilePrivate<Path>(
+                "findAndroidPlatformsFromEnvironment",
+                arrayOf(Map::class.java),
+                mapOf(
+                    "ANDROID_PLATFORMS" to androidPlatforms.toString(),
+                    "ANDROID_HOME" to androidHome.toString(),
+                    "ANDROID_SDK_ROOT" to androidSdkRoot.toString()
+                )
+            )
+        )
+        assertEquals(
+            androidHome,
+            invokeLoaderFilePrivate<Path>(
+                "findAndroidPlatformsFromEnvironment",
+                arrayOf(Map::class.java),
+                mapOf(
+                    "ANDROID_HOME" to androidHome.toString(),
+                    "ANDROID_SDK_ROOT" to androidSdkRoot.toString()
+                )
+            )
+        )
+        assertEquals(
+            androidSdkRoot,
+            invokeLoaderFilePrivate<Path>(
+                "findAndroidPlatformsFromEnvironment",
+                arrayOf(Map::class.java),
+                mapOf("ANDROID_SDK_ROOT" to androidSdkRoot.toString())
+            )
+        )
+        assertNull(
+            invokeLoaderFilePrivate<Path?>(
+                "findAndroidPlatformsFromEnvironment",
+                arrayOf(Map::class.java),
+                mapOf("ANDROID_HOME" to "")
+            )
+        )
+    }
+
+    @Test
+    fun `android platforms discovery includes platform default install roots`() {
+        val home = Path.of("/home/tester")
+
+        val macRoots = invokeLoaderFilePrivate<List<Path>>(
+            "defaultAndroidSdkRoots",
+            arrayOf(String::class.java, Path::class.java),
+            "Mac OS X",
+            home
+        )
+        val linuxRoots = invokeLoaderFilePrivate<List<Path>>(
+            "defaultAndroidSdkRoots",
+            arrayOf(String::class.java, Path::class.java),
+            "Linux",
+            home
+        )
+        val windowsRoots = invokeLoaderFilePrivate<List<Path>>(
+            "defaultAndroidSdkRoots",
+            arrayOf(String::class.java, Path::class.java),
+            "Windows 11",
+            home
+        )
+
+        assertTrue(macRoots.contains(home.resolve("Library").resolve("Android").resolve("sdk")))
+        assertTrue(macRoots.contains(Path.of("/opt/homebrew/share/android-commandlinetools")))
+        assertTrue(linuxRoots.contains(home.resolve("Android").resolve("Sdk")))
+        assertTrue(linuxRoots.contains(Path.of("/usr/lib/android-sdk")))
+        assertTrue(
+            windowsRoots.contains(
+                home.resolve("AppData").resolve("Local").resolve("Android").resolve("Sdk")
+            )
+        )
+    }
+
+    @Test
+    fun `android platforms discovery tries default roots before tool paths`() {
+        val defaultSdkRoot = Files.createTempDirectory("graphite-default-android-sdk")
+        val toolSdkRoot = Files.createTempDirectory("graphite-tool-android-sdk")
+        val defaultPlatforms = Files.createDirectories(defaultSdkRoot.resolve("platforms"))
+        val toolPlatforms = Files.createDirectories(toolSdkRoot.resolve("platforms"))
+        val sdkmanagerDir = Files.createDirectories(toolSdkRoot.resolve("cmdline-tools/latest/bin"))
+        try {
+            createAndroidJar(defaultPlatforms, 34)
+            createAndroidJar(toolPlatforms, 35)
+            createAndroidTool(sdkmanagerDir, "sdkmanager")
+
+            assertEquals(
+                defaultPlatforms,
+                invokeLoaderFilePrivate<Path>(
+                    "discoverAndroidPlatformsPath",
+                    arrayOf(List::class.java, String::class.java),
+                    listOf(defaultSdkRoot),
+                    sdkmanagerDir.toString()
+                )
+            )
+        } finally {
+            defaultSdkRoot.toFile().deleteRecursively()
+            toolSdkRoot.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `android platforms discovery infers sdk roots from android tools on path`() {
+        val sdkRoot = Files.createTempDirectory("graphite-tool-path-android-sdk")
+        val platforms = Files.createDirectories(sdkRoot.resolve("platforms"))
+        val platformToolsDir = Files.createDirectories(sdkRoot.resolve("platform-tools"))
+        val emulatorDir = Files.createDirectories(sdkRoot.resolve("emulator"))
+        val sdkmanagerDir = Files.createDirectories(sdkRoot.resolve("cmdline-tools/latest/bin"))
+        try {
+            createAndroidJar(platforms, 36)
+            createAndroidTool(platformToolsDir, "adb")
+            createAndroidTool(emulatorDir, "emulator")
+            createAndroidTool(sdkmanagerDir, "sdkmanager")
+
+            listOf(platformToolsDir, emulatorDir, sdkmanagerDir).forEach { toolDir ->
+                assertEquals(
+                    platforms,
+                    invokeLoaderFilePrivate<Path>(
+                        "discoverAndroidPlatformsPath",
+                        arrayOf(List::class.java, String::class.java),
+                        emptyList<Path>(),
+                        toolDir.toString()
+                    )
+                )
+            }
+        } finally {
+            sdkRoot.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `android platforms discovery returns null when no fallback candidates are valid`() {
+        assertNull(
+            invokeLoaderFilePrivate<Path?>(
+                "discoverAndroidPlatformsPath",
+                arrayOf(List::class.java, String::class.java),
+                emptyList<Path>(),
+                ""
+            )
+        )
+    }
+
+    @Test
+    fun `android platforms resolution reports missing and invalid directories`() {
+        val missingPlatforms = Files.createTempDirectory("graphite-missing-android-platforms")
+            .resolve("missing")
+        val invalidPlatforms = Files.createTempDirectory("graphite-invalid-android-platforms")
+        try {
+            val missing = assertFailsWith<IllegalArgumentException> {
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidPlatformsPath",
+                    arrayOf(LoaderConfig::class.java),
+                    LoaderConfig(androidPlatforms = missingPlatforms)
+                )
+            }
+            val invalid = assertFailsWith<IllegalArgumentException> {
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidPlatformsPath",
+                    arrayOf(LoaderConfig::class.java),
+                    LoaderConfig(androidPlatforms = invalidPlatforms)
+                )
+            }
+
+            assertTrue(missing.message.orEmpty().contains("does not exist"))
+            assertTrue(invalid.message.orEmpty().contains("must contain android-<api>/android.jar"))
+        } finally {
+            missingPlatforms.parent.toFile().deleteRecursively()
+            invalidPlatforms.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `android jar resolution picks the available platform API`() {
+        val platforms = Files.createTempDirectory("graphite-android-platforms-api")
+        val invalidPlatforms = Files.createTempDirectory("graphite-android-platforms-empty")
+        val appInput = Files.createTempFile("graphite-plain-input", ".jar")
+        try {
+            val androidJar = createAndroidJar(platforms, 16)
+
+            assertEquals(
+                androidJar,
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidJar",
+                    arrayOf(Path::class.java, Path::class.java),
+                    appInput,
+                    platforms
+                )
+            )
+            val missingJar = assertFailsWith<IllegalArgumentException> {
+                invokeLoaderFilePrivate<Path>(
+                    "resolveAndroidJar",
+                    arrayOf(Path::class.java, Path::class.java),
+                    appInput,
+                    invalidPlatforms
+                )
+            }
+            assertTrue(missingJar.message.orEmpty().contains("android.jar not found for API"))
+        } finally {
+            platforms.toFile().deleteRecursively()
+            invalidPlatforms.toFile().deleteRecursively()
+            Files.deleteIfExists(appInput)
         }
     }
 
@@ -1104,6 +1372,36 @@ class JavaProjectLoaderTest {
         val submodulePath = projectDir.resolve("build/classes/java/test")
         val rootPath = projectDir.resolve("graphite-sootup/build/classes/java/test")
         return if (submodulePath.exists()) submodulePath else rootPath
+    }
+
+    private fun createAndroidJar(platforms: Path, api: Int): Path {
+        val platform = Files.createDirectories(platforms.resolve("android-$api"))
+        val androidJar = platform.resolve("android.jar")
+        Files.write(androidJar, ByteArray(0))
+        return androidJar
+    }
+
+    private fun createAndroidTool(directory: Path, name: String): Path {
+        val tool = directory.resolve(name)
+        Files.write(tool, ByteArray(0))
+        tool.toFile().setExecutable(true)
+        return tool
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> invokeLoaderFilePrivate(
+        name: String,
+        parameterTypes: Array<Class<*>>,
+        vararg args: Any?
+    ): T {
+        val method = Class.forName("io.johnsonlee.graphite.sootup.JavaProjectLoaderKt")
+            .getDeclaredMethod(name, *parameterTypes)
+        method.isAccessible = true
+        return try {
+            method.invoke(null, *args) as T
+        } catch (e: InvocationTargetException) {
+            throw e.targetException
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

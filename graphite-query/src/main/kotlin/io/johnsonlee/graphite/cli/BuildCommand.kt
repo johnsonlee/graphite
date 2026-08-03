@@ -11,10 +11,10 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Callable
 
-@Command(name = "build", description = ["Build graph from JAR/WAR/directory and save to disk"])
+@Command(name = "build", description = ["Build graph from JAR/WAR/APK/directory and save to disk"])
 class BuildCommand : Callable<Int> {
 
-    @Parameters(index = "0", description = ["Input JAR, WAR, or class directory"])
+    @Parameters(index = "0", description = ["Input JAR, WAR, APK, or class directory"])
     lateinit var input: Path
 
     @Option(names = ["-o", "--output"], description = ["Output directory for saved graph"], required = true)
@@ -26,8 +26,19 @@ class BuildCommand : Callable<Int> {
     @Option(names = ["--exclude"], description = ["Package prefixes to exclude (comma-separated)"], split = ",")
     var excludePackages: List<String> = emptyList()
 
-    @Option(names = ["--include-libs"], description = ["Include library JARs from WEB-INF/lib or BOOT-INF/lib"])
+    @Option(
+        names = ["--include-libs"],
+        description = ["Include library JARs from WEB-INF/lib or BOOT-INF/lib, or Android platform classes for APK inputs"]
+    )
     var includeLibs: Boolean = false
+
+    @Option(
+        names = ["--android-platforms"],
+        description = [
+            "Android platforms directory or SDK root for APK inputs; defaults to env, standard SDK paths, or Android tools on PATH"
+        ]
+    )
+    var androidPlatforms: Path? = null
 
     @Option(names = ["--lib-filter"], description = ["Only load JARs matching these patterns (comma-separated)"], split = ",")
     var libFilters: List<String> = emptyList()
@@ -48,6 +59,7 @@ class BuildCommand : Callable<Int> {
                 includeLibraries = includeLibs,
                 libraryFilters = libFilters,
                 buildCallGraph = true,
+                androidPlatforms = androidPlatforms,
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )
 

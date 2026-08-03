@@ -7,10 +7,15 @@ import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.ProjectLoader
+import sootup.apk.frontend.ApkAnalysisInputLocation
+import sootup.apk.frontend.DexBodyInterceptors
+import sootup.apk.frontend.main.AndroidVersionInfo
 import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.model.SourceType
+import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
 import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.views.JavaView
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
@@ -21,6 +26,198 @@ import kotlin.io.path.isDirectory
 private const val JAR_EXTENSION_NAME = "jar"
 private const val WAR_EXTENSION_NAME = "war"
 private const val ZIP_EXTENSION_NAME = "zip"
+private const val APK_EXTENSION_NAME = "apk"
+private const val ANDROID_JAR_NAME = "android.jar"
+private const val ANDROID_PLATFORM_PREFIX = "android-"
+private const val ANDROID_PLATFORMS_DIR = "platforms"
+private const val ANDROID_PLATFORMS_ENV = "ANDROID_PLATFORMS"
+private const val ANDROID_HOME_ENV = "ANDROID_HOME"
+private const val ANDROID_SDK_ROOT_ENV = "ANDROID_SDK_ROOT"
+private const val PATH_ENV = "PATH"
+private const val MAC_OS_NAME = "mac"
+private const val DARWIN_OS_NAME = "darwin"
+private const val WINDOWS_OS_NAME = "win"
+private const val ANDROID_DIR_NAME = "Android"
+private const val ANDROID_SDK_DIR_NAME = "Sdk"
+private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
+
+private data class InputLocations(
+    val locations: List<AnalysisInputLocation>,
+    val sources: Map<AnalysisInputLocation, String>
+)
+
+private fun createApkInputLocations(
+    path: Path,
+    config: LoaderConfig,
+    log: (String) -> Unit
+): InputLocations {
+    val platforms = resolveAndroidPlatformsPath(config)
+    val apkLocation = ApkAnalysisInputLocation(
+        path,
+        platforms.toString(),
+        DexBodyInterceptors.Default.bodyInterceptors()
+    )
+    val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
+    val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
+
+    if (config.includeLibraries) {
+        val androidJar = resolveAndroidJar(path, platforms)
+        val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
+        val androidJarLocation = JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
+        locations.add(androidJarLocation)
+        sources[androidJarLocation] = sourceName
+        log("  + Loading Android platform: $sourceName")
+    }
+
+    return InputLocations(locations, sources)
+}
+
+private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
+    val configured = config.androidPlatforms ?: findAndroidPlatformsFromEnvironment()
+    if (configured != null) {
+        return validateAndroidPlatformsPath(configured)
+    }
+    return discoverAndroidPlatformsPath()
+        ?: throw IllegalArgumentException(
+            "APK input requires Android platforms. Pass --android-platforms <dir>, set " +
+                "$ANDROID_PLATFORMS_ENV, $ANDROID_HOME_ENV, or $ANDROID_SDK_ROOT_ENV, " +
+                "install the Android SDK in a default location, or put adb, emulator, " +
+                "or sdkmanager on PATH."
+        )
+}
+
+private fun validateAndroidPlatformsPath(path: Path): Path {
+    val normalized = normalizeAndroidPlatformsPath(path.toAbsolutePath().normalize())
+    require(Files.isDirectory(normalized)) {
+        "Android platforms path does not exist: $normalized"
+    }
+    require(containsAndroidPlatformJar(normalized)) {
+        "Android platforms path must contain android-<api>/android.jar entries: $normalized"
+    }
+    return normalized
+}
+
+private fun findAndroidPlatformsFromEnvironment(environment: Map<String, String> = System.getenv()): Path? =
+    environmentPath(environment, ANDROID_PLATFORMS_ENV)
+        ?: environmentPath(environment, ANDROID_HOME_ENV)
+        ?: environmentPath(environment, ANDROID_SDK_ROOT_ENV)
+
+private fun environmentPath(environment: Map<String, String>, name: String): Path? =
+    environment[name]?.takeIf { it.isNotBlank() }?.let { Path.of(it) }
+
+private fun discoverAndroidPlatformsPath(
+    defaultRoots: List<Path> = defaultAndroidSdkRoots(),
+    pathValue: String? = System.getenv(PATH_ENV)
+): Path? =
+    findValidAndroidPlatformsPath(defaultRoots)
+        ?: findValidAndroidPlatformsPath(androidSdkRootsFromTools(pathValue))
+
+private fun defaultAndroidSdkRoots(
+    osName: String = System.getProperty("os.name").orEmpty(),
+    userHome: Path? = System.getProperty("user.home")?.takeIf { it.isNotBlank() }?.let { Path.of(it) }
+): List<Path> {
+    val roots = linkedSetOf<Path>()
+    val lowerOsName = osName.lowercase()
+
+    when {
+        MAC_OS_NAME in lowerOsName || DARWIN_OS_NAME in lowerOsName -> {
+            userHome?.let { roots.add(it.resolve("Library").resolve(ANDROID_DIR_NAME).resolve("sdk")) }
+            roots.add(Path.of("/opt/homebrew/share/android-commandlinetools"))
+            roots.add(Path.of("/usr/local/share/android-commandlinetools"))
+        }
+        WINDOWS_OS_NAME in lowerOsName -> {
+            userHome?.let {
+                roots.add(it.resolve("AppData").resolve("Local").resolve(ANDROID_DIR_NAME).resolve(ANDROID_SDK_DIR_NAME))
+            }
+        }
+        else -> {
+            userHome?.let {
+                roots.add(it.resolve(ANDROID_DIR_NAME).resolve(ANDROID_SDK_DIR_NAME))
+                roots.add(it.resolve("android-sdk"))
+            }
+            roots.add(Path.of("/opt/android-sdk"))
+            roots.add(Path.of("/usr/local/android-sdk"))
+            roots.add(Path.of("/usr/lib/android-sdk"))
+        }
+    }
+
+    return roots.toList()
+}
+
+private fun androidSdkRootsFromTools(pathValue: String?): List<Path> =
+    executablePathsFromPath(pathValue)
+        .flatMap(::candidateAndroidSdkRootsForTool)
+        .distinct()
+
+private fun executablePathsFromPath(pathValue: String?): List<Path> {
+    if (pathValue.isNullOrBlank()) {
+        return emptyList()
+    }
+    return pathValue.split(File.pathSeparator)
+        .asSequence()
+        .filter { it.isNotBlank() }
+        .map { Path.of(it) }
+        .flatMap { dir ->
+            ANDROID_TOOL_NAMES.asSequence()
+                .flatMap(::androidToolExecutableNames)
+                .map { dir.resolve(it) }
+        }
+        .filter { Files.isRegularFile(it) }
+        .toList()
+}
+
+private fun androidToolExecutableNames(toolName: String): Sequence<String> =
+    sequenceOf(toolName, "$toolName.exe", "$toolName.bat", "$toolName.cmd")
+        .distinct()
+
+private fun candidateAndroidSdkRootsForTool(toolPath: Path): List<Path> =
+    sequenceOf(toolPath.toAbsolutePath().normalize(), realPathOrNull(toolPath))
+        .filterNotNull()
+        .flatMap { path -> path.ancestors() }
+        .distinct()
+        .toList()
+
+private fun realPathOrNull(path: Path): Path? =
+    runCatching { path.toRealPath().normalize() }.getOrNull()
+
+private fun Path.ancestors(): Sequence<Path> =
+    generateSequence(parent) { it.parent }
+
+private fun findValidAndroidPlatformsPath(candidates: Iterable<Path>): Path? =
+    candidates.asSequence()
+        .map { normalizeAndroidPlatformsPath(it.toAbsolutePath().normalize()) }
+        .distinct()
+        .firstOrNull(::containsAndroidPlatformJar)
+
+private fun normalizeAndroidPlatformsPath(path: Path): Path =
+    when {
+        containsAndroidPlatformJar(path) -> path
+        containsAndroidPlatformJar(path.resolve(ANDROID_PLATFORMS_DIR)) -> path.resolve(ANDROID_PLATFORMS_DIR)
+        else -> path
+    }
+
+private fun containsAndroidPlatformJar(path: Path): Boolean {
+    if (!Files.isDirectory(path)) {
+        return false
+    }
+    return Files.list(path).use { stream ->
+        stream.anyMatch { child ->
+            Files.isDirectory(child) &&
+                child.fileName.toString().startsWith(ANDROID_PLATFORM_PREFIX) &&
+                Files.isRegularFile(child.resolve(ANDROID_JAR_NAME))
+        }
+    }
+}
+
+private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path {
+    val versionInfo = AndroidVersionInfo(apkPath, platforms.toString())
+    val api = versionInfo.getApi_version()
+    val androidJar = platforms.resolve("$ANDROID_PLATFORM_PREFIX$api").resolve(ANDROID_JAR_NAME)
+    require(Files.isRegularFile(androidJar)) {
+        "Android platform android.jar not found for API $api: $androidJar"
+    }
+    return androidJar
+}
 
 /**
  * SootUp-based loader for Java projects.
@@ -28,6 +225,7 @@ private const val ZIP_EXTENSION_NAME = "zip"
  * Supports loading from various sources:
  * - JAR files
  * - WAR files
+ * - APK files
  * - Directories containing .class files
  * - Spring Boot fat JARs (BOOT-INF layout)
  */
@@ -77,17 +275,13 @@ class JavaProjectLoader(
             return true
         }
         val ext = path.extension.lowercase()
-        return ext in listOf(JAR_EXTENSION_NAME, WAR_EXTENSION_NAME, ZIP_EXTENSION_NAME)
+        return ext in listOf(JAR_EXTENSION_NAME, WAR_EXTENSION_NAME, ZIP_EXTENSION_NAME, APK_EXTENSION_NAME)
     }
-
-    private data class InputLocations(
-        val locations: List<AnalysisInputLocation>,
-        val sources: Map<AnalysisInputLocation, String>
-    )
 
     private fun createInputLocations(path: Path): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
+            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, ::log)
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> {

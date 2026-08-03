@@ -68,6 +68,14 @@ data class LoaderConfig(
     val callGraphAlgorithm: CallGraphAlgorithm = CallGraphAlgorithm.CHA,
 
     /**
+     * Android platform directory used when loading APK inputs.
+     *
+     * Accepts either a platforms directory containing android-<api>/android.jar
+     * entries, or an Android SDK root containing a platforms directory.
+     */
+    val androidPlatforms: Path? = null,
+
+    /**
      * Verbose logging callback
      */
     val verbose: ((String) -> Unit)? = null

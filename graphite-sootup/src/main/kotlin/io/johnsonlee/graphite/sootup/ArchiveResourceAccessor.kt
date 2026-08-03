@@ -17,7 +17,7 @@ private const val GLOBSTAR_SLASH_LENGTH = 3
 private const val GLOBSTAR_LENGTH = 2
 
 /**
- * [ResourceAccessor] that supports directories, JARs, Spring Boot fat JARs, and WAR files.
+ * [ResourceAccessor] that supports directories, JARs, Spring Boot fat JARs, WAR files, and APK files.
  *
  * For fat JARs / WARs, resources inside nested JARs are also accessible.
  * are also accessible.
@@ -82,7 +82,7 @@ class ArchiveResourceAccessor private constructor(
                     sources.add(DirectorySource(path))
                     collectDirectoryJars(path).appendTo(sources, closers)
                 }
-                path.extension.lowercase() == "jar" -> {
+                path.extension.lowercase() in listOf("jar", "apk") -> {
                     val zip = ZipFile(path.toFile())
                     val hasBootInf = zip.getEntry(JavaArchiveLayout.BOOT_INF_CLASSES) != null
                     if (hasBootInf) {
@@ -143,7 +143,7 @@ class ArchiveResourceAccessor private constructor(
                 stream.filter { Files.isRegularFile(it) }
                     .filter {
                         when (it.fileName.toString().substringAfterLast('.', "").lowercase()) {
-                            "jar", "war", "zip" -> true
+                            "jar", "war", "zip", "apk" -> true
                             else -> false
                         }
                     }
@@ -226,7 +226,7 @@ private class DirectorySource(private val root: Path) : ResourceSource {
 
     private fun isArchive(path: Path): Boolean =
         when (path.fileName.toString().substringAfterLast('.', "").lowercase()) {
-            "jar", "war", "zip" -> true
+            "jar", "war", "zip", "apk" -> true
             else -> false
         }
 }
