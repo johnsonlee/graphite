@@ -245,59 +245,63 @@ internal object NodeSerializer {
      */
     fun collectNodeStrings(nodes: Iterable<Node>, dest: MutableSet<String>) {
         for (node in nodes) {
-            when (node) {
-                is StringConstant -> dest.add(node.value)
-                is EnumConstant -> {
-                    dest.add(node.enumType.className)
-                    dest.add(node.enumName)
-                    collectAnyValueStrings(node.constructorArgs, dest)
-                }
-                is LocalVariable -> {
-                    dest.add(node.name)
-                    dest.add(node.type.className)
-                    collectMethodDescriptorStrings(node.method, dest)
-                }
-                is FieldNode -> {
-                    dest.add(node.descriptor.declaringClass.className)
-                    dest.add(node.descriptor.name)
-                    dest.add(node.descriptor.type.className)
-                }
-                is ParameterNode -> {
-                    dest.add(node.type.className)
-                    collectMethodDescriptorStrings(node.method, dest)
-                }
-                is ReturnNode -> {
-                    collectMethodDescriptorStrings(node.method, dest)
-                    node.actualType?.let { dest.add(it.className) }
-                }
-                is ResourceFileNode -> {
-                    dest.add(node.path)
-                    dest.add(node.source)
-                    dest.add(node.format)
-                    node.profile?.let(dest::add)
-                }
-                is ResourceValueNode -> {
-                    dest.add(node.path)
-                    dest.add(node.key)
-                    dest.add(node.format)
-                    node.profile?.let(dest::add)
-                    collectAnyValueString(node.value, dest)
-                }
-                is CallSiteNode -> {
-                    collectMethodDescriptorStrings(node.caller, dest)
-                    collectMethodDescriptorStrings(node.callee, dest)
-                }
-                is AnnotationNode -> {
-                    dest.add(node.name)
-                    dest.add(node.className)
-                    dest.add(node.memberName)
-                    for ((k, v) in node.values) {
-                        dest.add(k)
-                        collectAnyValueString(v, dest)
-                    }
-                }
-                else -> {} // IntConstant, LongConstant, FloatConstant, DoubleConstant, BooleanConstant, NullConstant
+            collectNodeStrings(node, dest)
+        }
+    }
+
+    fun collectNodeStrings(node: Node, dest: MutableSet<String>) {
+        when (node) {
+            is StringConstant -> dest.add(node.value)
+            is EnumConstant -> {
+                dest.add(node.enumType.className)
+                dest.add(node.enumName)
+                collectAnyValueStrings(node.constructorArgs, dest)
             }
+            is LocalVariable -> {
+                dest.add(node.name)
+                dest.add(node.type.className)
+                collectMethodDescriptorStrings(node.method, dest)
+            }
+            is FieldNode -> {
+                dest.add(node.descriptor.declaringClass.className)
+                dest.add(node.descriptor.name)
+                dest.add(node.descriptor.type.className)
+            }
+            is ParameterNode -> {
+                dest.add(node.type.className)
+                collectMethodDescriptorStrings(node.method, dest)
+            }
+            is ReturnNode -> {
+                collectMethodDescriptorStrings(node.method, dest)
+                node.actualType?.let { dest.add(it.className) }
+            }
+            is ResourceFileNode -> {
+                dest.add(node.path)
+                dest.add(node.source)
+                dest.add(node.format)
+                node.profile?.let(dest::add)
+            }
+            is ResourceValueNode -> {
+                dest.add(node.path)
+                dest.add(node.key)
+                dest.add(node.format)
+                node.profile?.let(dest::add)
+                collectAnyValueString(node.value, dest)
+            }
+            is CallSiteNode -> {
+                collectMethodDescriptorStrings(node.caller, dest)
+                collectMethodDescriptorStrings(node.callee, dest)
+            }
+            is AnnotationNode -> {
+                dest.add(node.name)
+                dest.add(node.className)
+                dest.add(node.memberName)
+                for ((k, v) in node.values) {
+                    dest.add(k)
+                    collectAnyValueString(v, dest)
+                }
+            }
+            else -> {} // IntConstant, LongConstant, FloatConstant, DoubleConstant, BooleanConstant, NullConstant
         }
     }
 

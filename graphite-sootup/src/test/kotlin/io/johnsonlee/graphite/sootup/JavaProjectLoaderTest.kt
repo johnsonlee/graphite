@@ -506,8 +506,8 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `should handle loadSignatures failure gracefully`() {
-        // Create a JAR with invalid content to trigger the catch in loadSignatures
+    fun `should handle jars with no class files gracefully`() {
+        // Create a valid JAR with only a manifest and no class files.
         val tempJar = Files.createTempFile("invalid", ".jar")
         try {
             // Write a minimal valid ZIP but no .class entries
@@ -522,7 +522,6 @@ class JavaProjectLoaderTest {
                 verbose = { println(it) }
             ))
 
-            // Should not throw - signatures are optional enhancement
             val graph = loader.load(tempJar)
             assertNotNull(graph, "Should still produce a graph even with no class files")
         } finally {
@@ -532,7 +531,7 @@ class JavaProjectLoaderTest {
 
     @Test
     fun `private helpers tolerate invalid archives`() {
-        val invalidJar = Files.createTempFile("invalid-signatures", ".jar")
+        val invalidJar = Files.createTempFile("invalid-archive", ".jar")
         val invalidBootJar = Files.createTempFile("invalid-boot", ".jar")
         val invalidWar = Files.createTempFile("invalid-war", ".war")
         try {
@@ -548,7 +547,6 @@ class JavaProjectLoaderTest {
                 )
             )
 
-            invokePrivate<Unit>(loader, "loadSignatures", invalidJar, BytecodeSignatureReader())
             assertTrue(
                 invokePrivate<Boolean>(loader, "jarContainsIncludedPackages", invalidJar),
                 "Invalid jars should be included on error to stay fail-open"
@@ -566,10 +564,10 @@ class JavaProjectLoaderTest {
         }
     }
 
-    // ========== WAR signature loading ==========
+    // ========== WAR generic field recovery ==========
 
     @Test
-    fun `should load WAR signatures from WEB-INF classes`() {
+    fun `should recover generic fields from WAR WEB-INF classes`() {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
 
@@ -591,7 +589,7 @@ class JavaProjectLoaderTest {
 
             if (usersField != null) {
                 assertEquals("java.util.List", usersField.descriptor.type.className,
-                    "Field type should be List after signature loading from WAR")
+                    "Field type should be List after generic field recovery from WAR")
             }
         } finally {
             Files.deleteIfExists(warPath)
@@ -601,10 +599,10 @@ class JavaProjectLoaderTest {
         }
     }
 
-    // ========== Spring Boot signature loading ==========
+    // ========== Spring Boot generic field recovery ==========
 
     @Test
-    fun `should load Spring Boot JAR signatures from BOOT-INF classes`() {
+    fun `should recover generic fields from Spring Boot BOOT-INF classes`() {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
 
@@ -618,7 +616,7 @@ class JavaProjectLoaderTest {
 
             val graph = loader.load(jarPath)
 
-            // Generic field types should be loaded via Spring Boot signature loading
+            // Generic field types should be recovered from the Spring Boot class bytes.
             val usersField = graph.nodes<FieldNode>()
                 .filter { it.descriptor.name == "users" }
                 .filter { it.descriptor.declaringClass.className.contains("GenericFieldService") }
@@ -626,7 +624,7 @@ class JavaProjectLoaderTest {
 
             if (usersField != null) {
                 assertEquals("java.util.List", usersField.descriptor.type.className,
-                    "Field type should be List after signature loading from Spring Boot JAR")
+                    "Field type should be List after generic field recovery from Spring Boot JAR")
             }
         } finally {
             Files.deleteIfExists(jarPath)
@@ -858,6 +856,10 @@ class JavaProjectLoaderTest {
             assertTrue(
                 graph.artifactDependencies().isEmpty(),
                 "Single-jar inputs should not perform artifact-to-artifact dependency extraction"
+            )
+            assertTrue(
+                graph.classOrigins().isEmpty(),
+                "Single-jar inputs should not persist redundant class origins"
             )
         } finally {
             Files.deleteIfExists(appJar)
@@ -1109,7 +1111,6 @@ class JavaProjectLoaderTest {
         val parameterTypes = args.map {
             when (it) {
                 is Path -> Path::class.java
-                is BytecodeSignatureReader -> BytecodeSignatureReader::class.java
                 else -> it!!::class.java
             }
         }.toTypedArray()

@@ -36,8 +36,13 @@ async function graphiteGetText(path: string, params?: Record<string, string>): P
   return res.text();
 }
 
-async function graphitePost(path: string, body: unknown): Promise<unknown> {
+async function graphitePost(path: string, body: unknown, params?: Record<string, string>): Promise<unknown> {
   const url = new URL(path, GRAPHITE_URL);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v) url.searchParams.set(k, v);
+    }
+  }
   const res = await fetch(url.toString(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -58,7 +63,7 @@ function encodeResourcePath(path: string): string {
     .join("/");
 }
 
-    const server = new McpServer({
+const server = new McpServer({
   name: "graphite",
   version: "1.0.0",
 });
@@ -83,10 +88,35 @@ server.tool(
 // Cypher query
 server.tool(
   "cypher",
-  "Execute a Cypher query against the graph",
-  { query: z.string().describe("Cypher query string") },
-  async ({ query }) => {
-    const data = await graphitePost("/api/cypher", { query });
+  "Execute a Cypher query against the default graph, or across loaded graphs when all_graphs or graphs is provided",
+  {
+    query: z.string().describe("Cypher query string"),
+    all_graphs: z.boolean().optional().default(false)
+      .describe("Query all loaded graphs with server-side fan-out"),
+    graphs: z.array(z.string()).optional()
+      .describe("Optional graph ids to query with server-side fan-out"),
+    limit: z.number().optional()
+      .describe("Maximum total result rows for the request"),
+    per_graph_limit: z.number().optional()
+      .describe("Optional maximum result rows per graph for multi-graph queries"),
+    include_graph_rows: z.boolean().optional().default(false)
+      .describe("Include duplicate per-graph row arrays in multi-graph responses"),
+  },
+  async ({ query, all_graphs, graphs, limit, per_graph_limit, include_graph_rows }) => {
+    const selectedGraphs = graphs?.filter((graph: string) => graph.trim().length > 0);
+    const queryParams: Record<string, string> = {};
+    if (limit !== undefined) queryParams.limit = String(limit);
+    if (per_graph_limit !== undefined) queryParams.perGraphLimit = String(per_graph_limit);
+    if (include_graph_rows) queryParams.includeGraphRows = "true";
+    const body: Record<string, unknown> = { query };
+    if (selectedGraphs && selectedGraphs.length > 0) {
+      body.graphs = selectedGraphs;
+    }
+    if (all_graphs || (selectedGraphs && selectedGraphs.length > 0)) {
+      const data = await graphitePost("/api/cypher/graphs", body, queryParams);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+    const data = await graphitePost("/api/cypher", body, queryParams);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );

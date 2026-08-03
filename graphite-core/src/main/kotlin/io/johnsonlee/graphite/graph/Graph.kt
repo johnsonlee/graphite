@@ -122,6 +122,13 @@ interface Graph {
     fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>>
 
     /**
+     * Return all member annotations keyed by "$className#$memberName" when
+     * the graph already stores that index. Implementations may return null to
+     * let callers discover annotated members by scanning nodes.
+     */
+    fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>>? = null
+
+    /**
      * Access resource files from the analyzed archive (JAR, WAR, directory).
      */
     val resources: ResourceAccessor

@@ -53,84 +53,24 @@ class JavaProjectLoader(
         val inputLocations = createInputLocations(path)
         val view = JavaView(inputLocations.locations)
 
-        // Load generic signatures from bytecode
-        val signatureReader = BytecodeSignatureReader()
-        loadSignatures(path, signatureReader)
-
         val resourceAccessor = ArchiveResourceAccessor.create(path)
         val adapter = SootUpAdapter(
-            view, config, signatureReader,
+            view, config,
             resourceAccessor = resourceAccessor,
             inputLocationSources = inputLocations.sources,
+            singleArtifactSource = singleArtifactSource(path),
             graphBuilder = graphBuilderFactory()
         )
         return adapter.buildGraph()
     }
 
-    /**
-     * Load generic signatures from bytecode.
-     */
-    private fun loadSignatures(path: Path, reader: BytecodeSignatureReader) {
-        try {
-            when {
-                path.isDirectory() -> {
-                    reader.loadFromDirectory(path)
-                    Files.walk(path).use { stream ->
-                        stream.filter { Files.isRegularFile(it) }
-                            .filter {
-                                when (it.fileName.toString().substringAfterLast('.', "").lowercase()) {
-                                    JAR_EXTENSION_NAME -> true
-                                    else -> false
-                                }
-                            }
-                            .forEach { jarPath ->
-                                try {
-                                    reader.loadFromJar(jarPath)
-                                } catch (_: Exception) {
-                                }
-                            }
-                    }
-                }
-                path.extension.lowercase() == JAR_EXTENSION_NAME -> {
-                    if (isSpringBootJar(path)) {
-                        loadSpringBootSignatures(path, reader)
-                    } else {
-                        reader.loadFromJar(path)
-                    }
-                }
-                path.extension.lowercase() == WAR_EXTENSION_NAME -> {
-                    loadWarSignatures(path, reader)
-                }
-            }
-        } catch (e: Exception) {
-            // Log but don't fail - signatures are optional enhancement
-            log("Warning: Failed to load generic signatures: ${e.message}")
+    private fun singleArtifactSource(path: Path): String? =
+        when {
+            path.isDirectory() -> null
+            isSpringBootJar(path) -> null
+            isWarFile(path) -> null
+            else -> path.fileName.toString()
         }
-    }
-
-    private fun loadSpringBootSignatures(jarPath: Path, reader: BytecodeSignatureReader) {
-        ZipFile(jarPath.toFile()).use { zip ->
-            zip.entries().asSequence()
-                .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                .forEach { entry ->
-                    zip.getInputStream(entry).use { inputStream ->
-                        reader.loadFromStream(inputStream)
-                    }
-                }
-        }
-    }
-
-    private fun loadWarSignatures(warPath: Path, reader: BytecodeSignatureReader) {
-        ZipFile(warPath.toFile()).use { zip ->
-            zip.entries().asSequence()
-                .filter { it.name.startsWith(JavaArchiveLayout.WEB_INF_CLASSES) && it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                .forEach { entry ->
-                    zip.getInputStream(entry).use { inputStream ->
-                        reader.loadFromStream(inputStream)
-                    }
-                }
-        }
-    }
 
     override fun canLoad(path: Path): Boolean {
         if (path.isDirectory()) {

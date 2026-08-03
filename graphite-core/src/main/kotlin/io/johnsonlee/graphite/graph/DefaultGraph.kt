@@ -135,6 +135,9 @@ class DefaultGraph private constructor(
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         memberAnnotationsMap["$className#$memberName"] ?: emptyMap()
 
+    override fun memberAnnotationIndex(): Map<String, Map<String, Map<String, Any?>>> =
+        memberAnnotationsMap
+
     override fun classOrigin(className: String): String? = classOriginsMap[className]
 
     override fun classOrigins(): Map<String, String> = classOriginsMap

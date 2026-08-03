@@ -56,4 +56,16 @@ open class GraphBuildBenchmark {
         val jar = androidJarPath ?: throw IllegalStateException("Android JAR not found")
         return JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(Path.of(jar))
     }
+
+    @Benchmark
+    fun buildAndroidSdkGraphEndToEndConfig(): Graph {
+        val jar = androidJarPath ?: throw IllegalStateException("Android JAR not found")
+        return JavaProjectLoader(
+            LoaderConfig(
+                buildCallGraph = false,
+                extractAnnotations = false,
+                trackCrossMethodFunctionalDispatch = false
+            )
+        ).load(Path.of(jar))
+    }
 }
