@@ -78,10 +78,9 @@ jobs:
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Build CLI shadow JARs
       run: |
-        ./gradlew :query:shadowJar :explore:shadowJar --no-daemon -Pversion=${RELEASE_VERSION}
+        ./gradlew :query:shadowJar --no-daemon -Pversion=${RELEASE_VERSION}
         mkdir -p release-assets
         cp graphite-query/build/libs/graphite.jar release-assets/graphite.jar
-        cp graphite-explore/build/libs/graphite-explore.jar release-assets/graphite-explore.jar
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -101,7 +100,6 @@ jobs:
         fi
 
         QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
-        EXPLORE_SHA=$(sha256sum release-assets/graphite-explore.jar | awk '{print $1}')
 
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
         cd tap
@@ -156,61 +154,12 @@ jobs:
         end
         RUBY
 
-        cat > Formula/graphite-explore.rb <<RUBY
-        class GraphiteExplore < Formula
-          desc "Interactive web visualization for Graphite static analysis graphs"
-          homepage "https://github.com/johnsonlee/graphite"
-          url "https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}/graphite-explore.jar"
-          version "${RELEASE_VERSION}"
-          sha256 "${EXPLORE_SHA}"
-          license "Apache-2.0"
-
-          depends_on "openjdk@17"
-
-          def install
-            libexec.install "graphite-explore.jar"
-            (bin/"graphite-explore").write <<~EOS
-              #!/bin/bash
-              export JAVA_TOOL_OPTIONS="\${JAVA_TOOL_OPTIONS:-\${JAVA_OPTS:--Xmx8g}}"
-              AGENT_ARGS=""
-              PASSTHROUGH_ARGS=()
-              for arg in "\$@"; do
-                if [ "\$arg" = "--profile" ]; then
-                  PROFILE_OUT="\${GRAPHITE_PROFILE:-profile.html}"
-                  AP_LIB=""
-                  ASPROF="\$(which asprof 2>/dev/null)"
-                  if [ -n "\$ASPROF" ]; then
-                    AP_DIR="\$(dirname "\$ASPROF")/../lib"
-                    for ext in dylib so; do
-                      [ -f "\$AP_DIR/libasyncProfiler.\$ext" ] && AP_LIB="\$AP_DIR/libasyncProfiler.\$ext" && break
-                    done
-                  fi
-                  if [ -n "\$AP_LIB" ]; then
-                    AGENT_ARGS="-agentpath:\$AP_LIB=start,event=cpu,file=\$PROFILE_OUT"
-                  else
-                    echo "async-profiler not found. Install: brew install async-profiler" >&2
-                    exit 1
-                  fi
-                else
-                  PASSTHROUGH_ARGS+=("\$arg")
-                fi
-              done
-              exec "#{formula_opt_bin("openjdk@17")}/java" \$AGENT_ARGS -jar "#{libexec}/graphite-explore.jar" "\${PASSTHROUGH_ARGS[@]}"
-            EOS
-          end
-
-          test do
-            assert_match "Usage", shell_output("#{bin}/graphite-explore --help")
-          end
-        end
-        RUBY
-
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         # The unversioned formulae track the current release. Version-pinned
         # formulae are maintained directly in the tap without cutting duplicate
         # Graphite releases.
-        git add Formula/graphite.rb Formula/graphite-explore.rb
+        git add Formula/graphite.rb
         if ! git diff --cached --quiet; then
           git commit -m "graphite ${RELEASE_VERSION}"
           git push origin main
@@ -235,9 +184,9 @@ jobs:
           exit 1
         fi
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
-    - name: Download explore jar from GitHub Release
+    - name: Download graphite jar from GitHub Release
       run: |
-        gh release download "${RELEASE_TAG}" -p "graphite-explore.jar" -D .
+        gh release download "${RELEASE_TAG}" -p "graphite.jar" -D .
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: docker/setup-qemu-action@v3
