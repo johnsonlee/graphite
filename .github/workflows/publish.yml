@@ -7,6 +7,9 @@ on:
   repository_dispatch:
     types: [publish]
 
+env:
+  RELEASE_TAG: ${{ github.event.client_payload.tag || github.ref_name }}
+
 jobs:
   # ---- Maven Central (Sonatype) ----
   maven:
@@ -16,18 +19,26 @@ jobs:
     if: github.repository_owner == 'johnsonlee'
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_TAG }}
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
+    - name: Resolve release version
+      run: |
+        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
+          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
+          exit 1
+        fi
+        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Publish to Sonatype Central
       run: |
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
-        echo "Publishing version ${VERSION} ..."
+        echo "Publishing version ${RELEASE_VERSION} ..."
         echo "Create GPG private key"
         echo $GPG_KEY_ARMOR | base64 --decode > ${GITHUB_WORKSPACE}/secring.gpg
         ./gradlew clean publishMavenJavaPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository -S --no-daemon \
-            -Pversion=${VERSION} \
+            -Pversion=${RELEASE_VERSION} \
             -POSSRH_USERNAME=${OSSRH_USERNAME} \
             -POSSRH_PASSWORD=${OSSRH_PASSWORD} \
             -POSSRH_PACKAGE_GROUP=${OSSRH_PACKAGE_GROUP} \
@@ -52,22 +63,30 @@ jobs:
     if: github.repository_owner == 'johnsonlee'
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_TAG }}
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
+    - name: Resolve release version
+      run: |
+        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
+          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
+          exit 1
+        fi
+        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Build CLI shadow JARs
       run: |
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
-        ./gradlew :query:shadowJar :explore:shadowJar --no-daemon -Pversion=${VERSION}
+        ./gradlew :query:shadowJar :explore:shadowJar --no-daemon -Pversion=${RELEASE_VERSION}
         mkdir -p release-assets
         cp graphite-query/build/libs/graphite.jar release-assets/graphite.jar
         cp graphite-explore/build/libs/graphite-explore.jar release-assets/graphite-explore.jar
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: Release ${{ github.ref_name }}
-        tag_name: ${{ github.ref_name }}
+        name: Release ${{ env.RELEASE_TAG }}
+        tag_name: ${{ env.RELEASE_TAG }}
         generate_release_notes: true
         files: release-assets/*.jar
       env:
@@ -81,7 +100,6 @@ jobs:
           exit 0
         fi
 
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
         QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
         EXPLORE_SHA=$(sha256sum release-assets/graphite-explore.jar | awk '{print $1}')
 
@@ -93,7 +111,7 @@ jobs:
         class GraphiteAT20 < Formula
           desc "Build, query, and serve Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
-          version "${VERSION}"
+          version "${RELEASE_VERSION}"
           url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite.jar"
           sha256 "${QUERY_SHA}"
           license "Apache-2.0"
@@ -143,7 +161,7 @@ jobs:
         class GraphiteExploreAT20 < Formula
           desc "Interactive web visualization for Graphite static analysis graphs"
           homepage "https://github.com/johnsonlee/graphite"
-          version "${VERSION}"
+          version "${RELEASE_VERSION}"
           url "https://github.com/johnsonlee/graphite/releases/download/v#{version}/graphite-explore.jar"
           sha256 "${EXPLORE_SHA}"
           license "Apache-2.0"
@@ -194,7 +212,7 @@ jobs:
         # Keep existing 1.0/unversioned formulae in the tap untouched.
         git add Formula/graphite@2.0.rb Formula/graphite-explore@2.0.rb
         if ! git diff --cached --quiet; then
-          git commit -m "graphite ${VERSION}"
+          git commit -m "graphite ${RELEASE_VERSION}"
           git push origin main
         fi
 
@@ -208,10 +226,18 @@ jobs:
     if: github.repository_owner == 'johnsonlee'
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_TAG }}
+    - name: Resolve release version
+      run: |
+        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
+          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
+          exit 1
+        fi
+        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Download explore jar from GitHub Release
       run: |
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
-        gh release download "${{ github.ref_name }}" -p "graphite-explore.jar" -D .
+        gh release download "${RELEASE_TAG}" -p "graphite-explore.jar" -D .
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: docker/setup-qemu-action@v3
@@ -235,10 +261,10 @@ jobs:
           ghcr.io/johnsonlee/graphite-explore
           docker.io/johnsonlee/graphite-explore
         tags: |
-          type=semver,pattern={{version}},value=${{ github.ref_name }}
-          type=semver,pattern={{major}}.{{minor}},value=${{ github.ref_name }}
-          type=semver,pattern={{major}},value=${{ github.ref_name }}
-          type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+          type=semver,pattern={{version}},value=${{ env.RELEASE_TAG }}
+          type=semver,pattern={{major}}.{{minor}},value=${{ env.RELEASE_TAG }}
+          type=semver,pattern={{major}},value=${{ env.RELEASE_TAG }}
+          type=raw,value=latest,enable=${{ !contains(env.RELEASE_TAG, '-') }}
         labels: |
           org.opencontainers.image.title=graphite-explore
           org.opencontainers.image.description=Interactive web visualization for Graphite static analysis graphs
@@ -254,7 +280,7 @@ jobs:
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
         build-args: |
-          VERSION=${{ github.ref_name }}
+          VERSION=${{ env.RELEASE_TAG }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -266,15 +292,23 @@ jobs:
     if: github.repository_owner == 'johnsonlee'
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.RELEASE_TAG }}
     - uses: actions/setup-node@v4
       with:
         node-version: '20'
         registry-url: 'https://registry.npmjs.org'
+    - name: Resolve release version
+      run: |
+        if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
+          echo "RELEASE_TAG must be a v-prefixed tag, got '${RELEASE_TAG:-<empty>}'" >&2
+          exit 1
+        fi
+        echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Publish graphite-mcp to npm
       working-directory: graphite-mcp
       run: |
-        VERSION=${GITHUB_REF/refs\/tags\/v/}
-        npm version "$VERSION" --no-git-tag-version
+        npm version "$RELEASE_VERSION" --no-git-tag-version
         npm install
         npm run build
         npm publish
