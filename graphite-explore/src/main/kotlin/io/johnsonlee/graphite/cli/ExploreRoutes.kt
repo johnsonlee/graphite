@@ -19,7 +19,7 @@ import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.IOException
 import java.nio.file.Path
 
-@Suppress("StringLiteralDuplication", "TooManyFunctions")
+@Suppress("LargeClass", "StringLiteralDuplication", "TooManyFunctions")
 internal class ExploreRoutes {
 
     private val apiSpecExtractor = ApiSpecExtractor()
@@ -386,20 +386,41 @@ internal class ExploreRoutes {
         runCatching {
             val request = parseMultiGraphCypherRequest(ctx)
             val graphIds = resolveMultiGraphIds(registry, request.graphIds)
+            val perGraphLimit = request.perGraphLimit ?: defaultPerGraphLimit(graphIds.size, request.limit)
             val leases = mutableListOf<GraphLease>()
             try {
                 for (id in graphIds) {
                     leases += (registry.acquire(id) ?: throw GraphNotLoadedException(id))
                 }
-                val results = leases.map { lease ->
-                    val result = CypherExecutor(lease.graph).execute(request.query, request.limit)
-                    MultiGraphCypherResult(
+                val results = mutableListOf<MultiGraphCypherResult>()
+                var remainingRows = request.limit
+                var truncated = false
+                for (lease in leases) {
+                    if (remainingRows <= 0) {
+                        truncated = true
+                        break
+                    }
+                    val result = CypherExecutor(lease.graph).execute(request.query, minOf(perGraphLimit, remainingRows))
+                    val rows = result.rows.map { rowWithGraphId(lease.id, it) }
+                    remainingRows -= rows.size
+                    truncated = truncated || remainingRows <= 0
+                    results += MultiGraphCypherResult(
                         graphId = lease.id,
                         columns = result.columns,
-                        rows = result.rows
+                        rows = rows
                     )
                 }
-                ctx.json(buildMultiGraphCypherResponse(results))
+                ctx.json(
+                    buildMultiGraphCypherResponse(
+                        results = results,
+                        requestedGraphCount = graphIds.size,
+                        queriedGraphCount = results.size,
+                        perGraphLimit = perGraphLimit,
+                        limit = request.limit,
+                        includeGraphRows = request.includeGraphRows,
+                        truncated = truncated
+                    )
+                )
             } finally {
                 leases.forEach { it.close() }
             }
@@ -408,6 +429,19 @@ internal class ExploreRoutes {
             ctx.status(status).json(mapOf(API_FIELD_ERROR to (error.message ?: "Query execution failed")))
         }
     }
+
+    private fun rowWithGraphId(graphId: String, row: Map<String, Any?>): Map<String, Any?> =
+        linkedMapOf<String, Any?>(API_FIELD_GRAPH_ID to graphId).apply {
+            putAll(row)
+            put(API_FIELD_GRAPH_ID, graphId)
+        }
+
+    private fun defaultPerGraphLimit(graphCount: Int, limit: Int): Int =
+        if (graphCount <= 0) {
+            0
+        } else {
+            ((limit + graphCount - 1) / graphCount).coerceIn(0, MAX_CYPHER_ROW_LIMIT)
+        }
 
     private fun parseGraphLoadRequest(ctx: Context): GraphLoadRequest {
         val body = ctx.body().trim()
@@ -433,12 +467,21 @@ internal class ExploreRoutes {
             json.get(API_PARAM_QUERY)?.asString ?: error("Missing 'query' parameter")
         }
         val graphIds = json?.let { parseGraphIdsFromJson(it) } ?: parseGraphIdsFromQuery(ctx)
+        val perGraphLimit = optionalBoundedLimit(
+            firstJsonString(json, API_PARAM_PER_GRAPH_LIMIT, API_FIELD_PER_GRAPH_LIMIT)
+                ?: firstQueryParam(ctx, API_PARAM_PER_GRAPH_LIMIT, API_FIELD_PER_GRAPH_LIMIT),
+            MAX_CYPHER_ROW_LIMIT
+        )
         val limit = boundedLimit(
-            json?.get(API_PARAM_LIMIT)?.asString ?: ctx.queryParam(API_PARAM_LIMIT),
+            firstJsonString(json, API_PARAM_LIMIT) ?: firstQueryParam(ctx, API_PARAM_LIMIT),
             DEFAULT_CYPHER_ROW_LIMIT,
             MAX_CYPHER_ROW_LIMIT
         )
-        return MultiGraphCypherRequest(query.trim(), graphIds, limit)
+        val includeGraphRows = parseBoolean(
+            firstJsonString(json, API_PARAM_INCLUDE_GRAPH_ROWS)
+                ?: firstQueryParam(ctx, API_PARAM_INCLUDE_GRAPH_ROWS)
+        )
+        return MultiGraphCypherRequest(query.trim(), graphIds, perGraphLimit, limit, includeGraphRows)
     }
 
     private fun parseGraphIdsFromJson(json: JsonObject): List<String> {
@@ -468,32 +511,51 @@ internal class ExploreRoutes {
             requested.map { GraphRegistry.validateGraphId(it) }.distinct()
         }
 
-    private fun buildMultiGraphCypherResponse(results: List<MultiGraphCypherResult>): Map<String, Any?> {
+    private fun buildMultiGraphCypherResponse(
+        results: List<MultiGraphCypherResult>,
+        requestedGraphCount: Int,
+        queriedGraphCount: Int,
+        perGraphLimit: Int,
+        limit: Int,
+        includeGraphRows: Boolean,
+        truncated: Boolean
+    ): Map<String, Any?> {
         val columns = linkedSetOf(API_FIELD_GRAPH_ID)
         results.forEach { columns.addAll(it.columns) }
-        val rows = results.flatMap { result ->
-            result.rows.map { row ->
-                linkedMapOf<String, Any?>(API_FIELD_GRAPH_ID to result.graphId).apply {
-                    putAll(row)
-                    put(API_FIELD_GRAPH_ID, result.graphId)
-                }
-            }
-        }
+        val rows = results.flatMap { it.rows }
         return mapOf(
             API_FIELD_COLUMNS to columns.toList(),
             API_FIELD_ROWS to rows,
             API_FIELD_ROW_COUNT to rows.size,
-            "graphCount" to results.size,
+            "graphCount" to requestedGraphCount,
+            API_FIELD_QUERIED_GRAPH_COUNT to queriedGraphCount,
+            API_FIELD_PER_GRAPH_LIMIT to perGraphLimit,
+            API_PARAM_LIMIT to limit,
+            API_FIELD_TRUNCATED to truncated,
             API_FIELD_GRAPHS to results.map {
-                mapOf(
-                    API_FIELD_GRAPH_ID to it.graphId,
-                    API_FIELD_COLUMNS to it.columns,
-                    API_FIELD_ROWS to it.rows,
-                    API_FIELD_ROW_COUNT to it.rows.size
-                )
+                buildMap {
+                    put(API_FIELD_GRAPH_ID, it.graphId)
+                    put(API_FIELD_COLUMNS, it.columns)
+                    put(API_FIELD_ROW_COUNT, it.rows.size)
+                    if (includeGraphRows) put(API_FIELD_ROWS, it.rows)
+                }
             }
         )
     }
+
+    private fun firstJsonString(json: JsonObject?, vararg names: String): String? =
+        names.firstNotNullOfOrNull { name ->
+            json?.get(name)?.takeUnless { it.isJsonNull }?.asString
+        }
+
+    private fun firstQueryParam(ctx: Context, vararg names: String): String? =
+        names.firstNotNullOfOrNull { ctx.queryParam(it) }
+
+    private fun parseBoolean(raw: String?): Boolean =
+        when (raw?.trim()?.lowercase()) {
+            "true", "1", "yes", "on" -> true
+            else -> false
+        }
 
     private inline fun withGraph(ctx: Context, provider: GraphProvider, block: (Graph) -> Unit) {
         val lease = try {
@@ -637,6 +699,9 @@ internal class ExploreRoutes {
     private fun boundedLimit(raw: String?, default: Int, max: Int): Int =
         (raw?.toIntOrNull() ?: default).coerceIn(0, max)
 
+    private fun optionalBoundedLimit(raw: String?, max: Int): Int? =
+        raw?.toIntOrNull()?.coerceIn(0, max)
+
     private fun boundedDepth(raw: String?): Int =
         (raw?.toIntOrNull() ?: DEFAULT_SUBGRAPH_DEPTH).coerceAtMost(MAX_SUBGRAPH_DEPTH)
 
@@ -709,7 +774,9 @@ internal class ExploreRoutes {
     private data class MultiGraphCypherRequest(
         val query: String,
         val graphIds: List<String>,
-        val limit: Int
+        val perGraphLimit: Int?,
+        val limit: Int,
+        val includeGraphRows: Boolean
     )
 
     private data class MultiGraphCypherResult(

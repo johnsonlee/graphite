@@ -269,10 +269,10 @@ class ExploreCommandTest {
         return code to body
     }
 
-    private fun saveConstantGraph(root: Path, directory: String, value: Int): Path {
+    private fun saveConstantGraph(root: Path, directory: String, vararg values: Int): Path {
         val output = root.resolve(directory)
         val builder = DefaultGraph.Builder()
-        builder.addNode(IntConstant(NodeId.next(), value))
+        values.forEach { value -> builder.addNode(IntConstant(NodeId.next(), value)) }
         GraphStore.save(builder.build(), output)
         return output
     }
@@ -436,6 +436,8 @@ class ExploreCommandTest {
                 assertEquals(200, allCode, "Expected 200, body: $allBody")
                 val allResult: Map<String, Any?> = parseJson(allBody)
                 assertEquals(2.0, allResult["graphCount"])
+                assertEquals(2.0, allResult[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(false, allResult[API_FIELD_TRUNCATED])
                 assertEquals(2.0, allResult[API_FIELD_ROW_COUNT])
 
                 @Suppress("UNCHECKED_CAST")
@@ -448,6 +450,9 @@ class ExploreCommandTest {
                 val columns = allResult[API_FIELD_COLUMNS] as List<String>
                 assertEquals(API_FIELD_GRAPH_ID, columns.first())
                 assertTrue(columns.contains("n.value"))
+                @Suppress("UNCHECKED_CAST")
+                val graphSummaries = allResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(graphSummaries.none { API_FIELD_ROWS in it }, "Grouped rows should be opt-in")
 
                 val (subsetCode, subsetBody) = post(
                     targetPort,
@@ -482,6 +487,90 @@ class ExploreCommandTest {
                 )
                 assertEquals(404, missingCode, "Expected 404, body: $missingBody")
                 assertTrue(missingBody.contains("Graph not loaded: missing"), "Expected missing graph error, body: $missingBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry cypher endpoint caps total rows and can opt into grouped rows`() {
+        val root = Files.createTempDirectory("explore-registry-capped-fanout")
+        try {
+            saveConstantGraph(root, "service-a", 101, 102, 103)
+            saveConstantGraph(root, "service-b", 201, 202, 203)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"), makeDefault = false)
+                registry.load("service-b", Path.of("service-b"), makeDefault = false)
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (cappedCode, cappedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-a","service-b"],"limit":4,"perGraphLimit":3}"""
+                )
+                assertEquals(200, cappedCode, "Expected 200, body: $cappedBody")
+                val cappedResult: Map<String, Any?> = parseJson(cappedBody)
+                assertEquals(2.0, cappedResult["graphCount"])
+                assertEquals(2.0, cappedResult[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(3.0, cappedResult[API_FIELD_PER_GRAPH_LIMIT])
+                assertEquals(4.0, cappedResult[API_PARAM_LIMIT])
+                assertEquals(true, cappedResult[API_FIELD_TRUNCATED])
+                @Suppress("UNCHECKED_CAST")
+                val cappedRows = cappedResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(4, cappedRows.size)
+                @Suppress("UNCHECKED_CAST")
+                val cappedGraphs = cappedResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(cappedGraphs.none { API_FIELD_ROWS in it }, "Grouped rows should be omitted by default")
+
+                val (groupedCode, groupedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs?includeGraphRows=true",
+                    """{"query":"$query","graphs":["service-a","service-b"],"limit":2,"perGraphLimit":1}"""
+                )
+                assertEquals(200, groupedCode, "Expected 200, body: $groupedBody")
+                val groupedResult: Map<String, Any?> = parseJson(groupedBody)
+                @Suppress("UNCHECKED_CAST")
+                val groupedGraphs = groupedResult[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(groupedGraphs.all { API_FIELD_ROWS in it }, "Grouped rows should be included on request")
+                assertEquals(2.0, groupedResult[API_FIELD_ROW_COUNT])
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry cypher endpoint keeps default limit global across twenty one graphs`() {
+        val root = Files.createTempDirectory("explore-registry-21-fanout")
+        val graphCount = 21
+        try {
+            repeat(graphCount) { graphIndex ->
+                val values = IntArray(60) { valueIndex -> graphIndex * 1_000 + valueIndex }
+                saveConstantGraph(root, "service-$graphIndex", *values)
+            }
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                repeat(graphCount) { graphIndex ->
+                    registry.load("service-$graphIndex", Path.of("service-$graphIndex"), makeDefault = false)
+                }
+
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+                val (code, body) = post(targetPort, "/api/cypher/graphs", """{"query":"$query"}""")
+                assertEquals(200, code, "Expected 200, body: $body")
+                val result: Map<String, Any?> = parseJson(body)
+                assertEquals(graphCount.toDouble(), result["graphCount"])
+                assertEquals(graphCount.toDouble(), result[API_FIELD_QUERIED_GRAPH_COUNT])
+                assertEquals(48.0, result[API_FIELD_PER_GRAPH_LIMIT])
+                assertEquals(1_000.0, result[API_PARAM_LIMIT])
+                assertEquals(1_000.0, result[API_FIELD_ROW_COUNT])
+                assertEquals(true, result[API_FIELD_TRUNCATED])
+                @Suppress("UNCHECKED_CAST")
+                val graphSummaries = result[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+                assertTrue(graphSummaries.none { API_FIELD_ROWS in it }, "Grouped rows should stay opt-in")
             }
         } finally {
             root.toFile().deleteRecursively()

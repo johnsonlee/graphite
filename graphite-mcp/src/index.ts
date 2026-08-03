@@ -95,11 +95,19 @@ server.tool(
       .describe("Query all loaded graphs with server-side fan-out"),
     graphs: z.array(z.string()).optional()
       .describe("Optional graph ids to query with server-side fan-out"),
-    limit: z.number().optional().describe("Maximum result rows per graph"),
+    limit: z.number().optional()
+      .describe("Maximum total result rows for the request"),
+    per_graph_limit: z.number().optional()
+      .describe("Optional maximum result rows per graph for multi-graph queries"),
+    include_graph_rows: z.boolean().optional().default(false)
+      .describe("Include duplicate per-graph row arrays in multi-graph responses"),
   },
-  async ({ query, all_graphs, graphs, limit }) => {
+  async ({ query, all_graphs, graphs, limit, per_graph_limit, include_graph_rows }) => {
     const selectedGraphs = graphs?.filter((graph: string) => graph.trim().length > 0);
-    const queryParams = limit === undefined ? undefined : { limit: String(limit) };
+    const queryParams: Record<string, string> = {};
+    if (limit !== undefined) queryParams.limit = String(limit);
+    if (per_graph_limit !== undefined) queryParams.perGraphLimit = String(per_graph_limit);
+    if (include_graph_rows) queryParams.includeGraphRows = "true";
     const body: Record<string, unknown> = { query };
     if (selectedGraphs && selectedGraphs.length > 0) {
       body.graphs = selectedGraphs;

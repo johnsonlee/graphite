@@ -79,7 +79,14 @@ internal class OpenApiSpecBuilder {
                     parameters = listOf(
                         queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
                         queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Optional graph id filter; repeat or comma-separate"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows per graph")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
+                        queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
+                        queryParameter(
+                            API_PARAM_INCLUDE_GRAPH_ROWS,
+                            TYPE_BOOLEAN,
+                            false,
+                            "Include duplicate per-graph row arrays in graph summaries"
+                        )
                     ),
                     responses = mapOf(
                         "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
@@ -90,7 +97,14 @@ internal class OpenApiSpecBuilder {
                 "post" to operation(
                     "Execute a Cypher query across loaded graphs",
                     parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows per graph")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
+                        queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
+                        queryParameter(
+                            API_PARAM_INCLUDE_GRAPH_ROWS,
+                            TYPE_BOOLEAN,
+                            false,
+                            "Include duplicate per-graph row arrays in graph summaries"
+                        )
                     ),
                     requestBody = multiGraphCypherRequestBody(),
                     responses = mapOf(
@@ -353,7 +367,15 @@ internal class OpenApiSpecBuilder {
                 ),
                 API_PARAM_LIMIT to mapOf(
                     API_FIELD_TYPE to TYPE_INTEGER,
-                    FIELD_DESCRIPTION to "Server-side maximum result rows per graph"
+                    FIELD_DESCRIPTION to "Maximum total result rows across queried graphs"
+                ),
+                API_PARAM_PER_GRAPH_LIMIT to mapOf(
+                    API_FIELD_TYPE to TYPE_INTEGER,
+                    FIELD_DESCRIPTION to "Optional maximum result rows per graph"
+                ),
+                API_PARAM_INCLUDE_GRAPH_ROWS to mapOf(
+                    API_FIELD_TYPE to TYPE_BOOLEAN,
+                    FIELD_DESCRIPTION to "Include duplicate per-graph row arrays in graph summaries"
                 )
             ),
             listOf(API_PARAM_QUERY)
@@ -394,6 +416,7 @@ internal class OpenApiSpecBuilder {
     companion object {
         private const val FIELD_DESCRIPTION = "description"
         private const val FIELD_REQUIRED = "required"
+        private const val TYPE_BOOLEAN = "boolean"
         private const val TYPE_INTEGER = "integer"
         private const val TYPE_OBJECT = "object"
         private const val TYPE_STRING = "string"

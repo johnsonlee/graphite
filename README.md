@@ -342,11 +342,17 @@ To query across loaded graphs without client-side fan-out:
 ```bash
 curl -X POST http://localhost:8080/api/cypher/graphs \
   -H 'Content-Type: application/json' \
-  -d '{"query":"MATCH (n:IntConstant) RETURN n.value","graphs":["orders","billing"]}'
+  -d '{"query":"MATCH (n:IntConstant) RETURN n.value","graphs":["orders","billing"],"limit":100}'
 ```
+
+Multi-graph Cypher applies `limit` to the total response row count, matching
+the single-graph query API. Use `perGraphLimit` only when you also need a
+per-graph cap, and `includeGraphRows=true` only when you need duplicate per-graph row
+arrays in addition to the top-level `graphId`-tagged rows.
 
 The MCP `cypher` tool also supports native multi-graph querying via
 `all_graphs: true`, or `graphs: ["orders", "billing"]` for a selected subset.
+Use `limit` to keep all-graph responses bounded.
 
 LLMs can now use tools such as openapi, cypher, resources, resource, api_spec,
 c4, nodes, methods, call_sites, and annotations.
