@@ -1,8 +1,10 @@
 package io.johnsonlee.graphite.cli
 
 import io.javalin.http.Context
+import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.Closeable
 import java.nio.file.Files
@@ -11,31 +13,64 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicReference
 
 internal const val API_FIELD_GRAPH_ID = "graphId"
 internal const val API_FIELD_DATA = "data"
 internal const val API_FIELD_GRAPHS = "graphs"
 internal const val API_FIELD_LOADED_AT = "loadedAt"
 internal const val API_FIELD_LOAD_MODE = "loadMode"
-internal const val DEFAULT_GRAPH_ID = "default"
+internal const val STANDALONE_GRAPH_ID = "standalone"
+
+internal class GraphNotLoadedException(id: String) : RuntimeException("Graph not loaded: $id")
+
+internal data class GraphStats(
+    val nodes: Long,
+    val edges: Long,
+    val methods: Long,
+    val callSites: Long
+) {
+    fun toApiMap(): Map<String, Long> = mapOf(
+        API_FIELD_NODES to nodes,
+        API_FIELD_EDGES to edges,
+        API_FIELD_METHODS to methods,
+        API_FIELD_CALL_SITES to callSites
+    )
+
+    operator fun plus(other: GraphStats): GraphStats = GraphStats(
+        nodes = nodes + other.nodes,
+        edges = edges + other.edges,
+        methods = methods + other.methods,
+        callSites = callSites + other.callSites
+    )
+
+    companion object {
+        val EMPTY = GraphStats(0, 0, 0, 0)
+    }
+}
+
+internal fun graphStats(graph: Graph): GraphStats {
+    val nodes = graph.nodeCount(Node::class.java) ?: graph.nodes(Node::class.java).count().toLong()
+    val edges = graph.edgeCount()
+        ?: graph.nodes(Node::class.java).sumOf { graph.outgoing(it.id).count().toLong() }
+    val methods = graph.methodCount() ?: graph.methods(MethodPattern()).count().toLong()
+    val callSites = graph.nodeCount(CallSiteNode::class.java)
+        ?: graph.nodes(CallSiteNode::class.java).count().toLong()
+    return GraphStats(nodes, edges, methods, callSites)
+}
 
 internal data class GraphDescriptor(
     val id: String,
     val path: Path,
     val loadMode: GraphStore.LoadMode,
     val loadedAt: Instant,
-    val nodeCount: Long?,
-    val edgeCount: Long?
+    val stats: GraphStats
 ) {
     fun toApiMap(): Map<String, Any?> = mapOf(
         API_FIELD_ID to id,
         API_FIELD_PATH to path.toString(),
         API_FIELD_LOAD_MODE to loadMode.name,
-        API_FIELD_LOADED_AT to loadedAt.toString(),
-        API_FIELD_NODES to nodeCount,
-        API_FIELD_EDGES to edgeCount
-    )
+        API_FIELD_LOADED_AT to loadedAt.toString()
+    ) + stats.toApiMap()
 }
 
 internal interface GraphLease : Closeable {
@@ -47,16 +82,19 @@ internal fun interface GraphProvider {
     fun acquire(ctx: Context): GraphLease?
 }
 
-internal class StaticGraphProvider(private val graph: Graph) : GraphProvider {
-    override fun acquire(ctx: Context): GraphLease = object : GraphLease {
-        override val id: String = DEFAULT_GRAPH_ID
-        override val graph: Graph = this@StaticGraphProvider.graph
-        override fun close() = Unit
+internal class StaticGraphProvider(
+    private val id: String,
+    private val graph: Graph
+) : GraphProvider {
+    override fun acquire(ctx: Context): GraphLease? {
+        val requestedId = ctx.pathParamMap()[API_FIELD_GRAPH_ID]
+        if (requestedId != null && requestedId != id) return null
+        return object : GraphLease {
+            override val id: String = this@StaticGraphProvider.id
+            override val graph: Graph = this@StaticGraphProvider.graph
+            override fun close() = Unit
+        }
     }
-}
-
-internal class RegistryDefaultGraphProvider(private val registry: GraphRegistry) : GraphProvider {
-    override fun acquire(ctx: Context): GraphLease? = registry.acquireDefault()
 }
 
 internal class RegistryPathGraphProvider(private val registry: GraphRegistry) : GraphProvider {
@@ -70,13 +108,11 @@ internal class GraphRegistry(
 ) : Closeable {
 
     private val graphs = ConcurrentHashMap<String, ServedGraph>()
-    private val defaultGraphId = AtomicReference<String?>()
 
     fun load(
         id: String,
         path: Path,
-        loadMode: GraphStore.LoadMode = defaultLoadMode,
-        makeDefault: Boolean = false
+        loadMode: GraphStore.LoadMode = defaultLoadMode
     ): GraphDescriptor {
         val cleanId = validateGraphId(id)
         val resolvedPath = resolveGraphPath(path)
@@ -86,10 +122,6 @@ internal class GraphRegistry(
         val served = ServedGraph(cleanId, resolvedPath, loadMode, graph)
         graphs.put(cleanId, served)?.retire()
 
-        if (makeDefault || defaultGraphId.get() == null) {
-            defaultGraphId.set(cleanId)
-        }
-
         return served.descriptor()
     }
 
@@ -97,7 +129,6 @@ internal class GraphRegistry(
         val cleanId = validateGraphId(id)
         val removed = graphs.remove(cleanId) ?: return false
         removed.retire()
-        defaultGraphId.compareAndSet(cleanId, graphs.keys.asSequence().sorted().firstOrNull())
         return true
     }
 
@@ -107,16 +138,38 @@ internal class GraphRegistry(
             .sortedBy { it.id }
             .toList()
 
+    fun describe(id: String): GraphDescriptor? =
+        graphs[validateGraphId(id)]?.descriptor()
+
     fun ids(): List<String> =
         graphs.keys.asSequence()
             .sorted()
             .toList()
 
-    fun acquire(id: String): GraphLease? =
-        graphs[validateGraphId(id)]?.acquire()
+    fun acquire(id: String): GraphLease? {
+        val cleanId = validateGraphId(id)
+        while (true) {
+            val served = graphs[cleanId] ?: return null
+            served.acquire()?.let { return it }
+        }
+    }
 
-    fun acquireDefault(): GraphLease? =
-        defaultGraphId.get()?.let { acquire(it) }
+    fun acquireAll(): List<GraphLease> =
+        ids().mapNotNull(::acquire)
+
+    @Suppress("TooGenericExceptionCaught")
+    fun acquireAll(ids: List<String>): List<GraphLease> {
+        val leases = mutableListOf<GraphLease>()
+        try {
+            ids.map(::validateGraphId).distinct().forEach { id ->
+                leases += acquire(id) ?: throw GraphNotLoadedException(id)
+            }
+            return leases
+        } catch (error: RuntimeException) {
+            leases.forEach { it.close() }
+            throw error
+        }
+    }
 
     fun resolveGraphPath(path: Path): Path =
         if (path.isAbsolute) path.normalize() else dataDir.resolve(path).normalize()
@@ -124,7 +177,6 @@ internal class GraphRegistry(
     override fun close() {
         val loaded = graphs.values.toList()
         graphs.clear()
-        defaultGraphId.set(null)
         loaded.forEach { it.retire() }
     }
 
@@ -135,19 +187,12 @@ internal class GraphRegistry(
         private val graph: Graph
     ) {
         private val loadedAt = Instant.now()
+        private val descriptor = GraphDescriptor(id, path, loadMode, loadedAt, graphStats(graph))
         private val leases = AtomicInteger()
         private val retired = AtomicBoolean()
         private val closed = AtomicBoolean()
 
-        fun descriptor(): GraphDescriptor =
-            GraphDescriptor(
-                id = id,
-                path = path,
-                loadMode = loadMode,
-                loadedAt = loadedAt,
-                nodeCount = graph.nodeCount(Node::class.java),
-                edgeCount = graph.edgeCount()
-            )
+        fun descriptor(): GraphDescriptor = descriptor
 
         @Suppress("ReturnCount")
         fun acquire(): GraphLease? {

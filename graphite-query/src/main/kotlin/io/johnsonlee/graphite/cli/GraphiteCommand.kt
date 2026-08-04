@@ -8,6 +8,7 @@ import java.util.concurrent.Callable
     name = "graphite",
     description = ["Build and query Graphite graphs"],
     mixinStandardHelpOptions = true,
+    versionProvider = GraphiteVersionProvider::class,
     subcommands = [
         BuildCommand::class,
         QueryCommand::class,

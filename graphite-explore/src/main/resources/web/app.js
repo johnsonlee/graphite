@@ -39,22 +39,29 @@ function initCytoscape() {
         minZoom: 0.1, maxZoom: 5, wheelSensitivity: 0.3
     });
 
-    cy.on('tap', 'node', e => showNodeDetail(e.target.data('nodeId')));
-    cy.on('dbltap', 'node', e => loadSubgraph(e.target.data('nodeId'), 2));
+    cy.on('tap', 'node', e => {
+        const nodeId = e.target.data('nodeId');
+        if (Number.isInteger(nodeId)) showNodeDetail(e.target.data('graphId'), nodeId);
+    });
+    cy.on('dbltap', 'node', e => {
+        const nodeId = e.target.data('nodeId');
+        if (Number.isInteger(nodeId)) loadSubgraph(e.target.data('graphId'), nodeId, 2);
+    });
     cy.on('tap', 'edge', e => {
-        const target = e.target.data('target').replace('n', '');
-        showNodeDetail(parseInt(target));
+        const nodeId = e.target.data('targetNodeId');
+        if (Number.isInteger(nodeId)) showNodeDetail(e.target.data('graphId'), nodeId);
     });
 }
 
 async function loadDashboard() {
-    const res = await fetch('/api/info');
+    const res = await fetch('/api/graphs');
     const info = await res.json();
 
-    document.querySelector('#stat-nodes .stat-value').textContent = info.nodes.toLocaleString();
-    document.querySelector('#stat-edges .stat-value').textContent = info.edges.toLocaleString();
-    document.querySelector('#stat-methods .stat-value').textContent = info.methods.toLocaleString();
-    document.querySelector('#stat-callsites .stat-value').textContent = info.callSites.toLocaleString();
+    const totals = info.totals || info;
+    document.querySelector('#stat-nodes .stat-value').textContent = totals.nodes.toLocaleString();
+    document.querySelector('#stat-edges .stat-value').textContent = totals.edges.toLocaleString();
+    document.querySelector('#stat-methods .stat-value').textContent = totals.methods.toLocaleString();
+    document.querySelector('#stat-callsites .stat-value').textContent = totals.callSites.toLocaleString();
 
     await loadTopClasses();
     await loadInitialGraph();
@@ -62,24 +69,29 @@ async function loadDashboard() {
 
 async function loadTopClasses() {
     const res = await fetch('/api/methods?limit=200');
-    const methods = await res.json();
+    const response = await res.json();
+    const methods = flattenGroupedData(response);
 
     const classCounts = {};
     methods.forEach(m => {
         const cls = m.class || '';
-        classCounts[cls] = (classCounts[cls] || 0) + 1;
+        const key = m.graphId + ':' + cls;
+        classCounts[key] = (classCounts[key] || 0) + 1;
     });
 
     const sorted = Object.entries(classCounts).sort((a, b) => b[1] - a[1]).slice(0, 15);
     const list = document.getElementById('class-list');
     list.innerHTML = '';
 
-    sorted.forEach(([cls, count]) => {
+    sorted.forEach(([key, count]) => {
+        const separator = key.indexOf(':');
+        const graphId = key.substring(0, separator);
+        const cls = key.substring(separator + 1);
         const div = document.createElement('div');
         div.className = 'item';
         const shortName = cls.split('.').pop();
         div.innerHTML = '<span class="item-badge badge-methods">' + count + '</span>' + shortName;
-        div.title = cls;
+        div.title = graphId + ': ' + cls;
         div.onclick = () => searchByClass(cls);
         list.appendChild(div);
     });
@@ -87,21 +99,23 @@ async function loadTopClasses() {
 
 async function loadInitialGraph() {
     const res = await fetch('/api/overview');
-    const data = await res.json();
+    const response = await res.json();
+    const data = mergeGroupedGraphs(response);
     renderGraph(data, null);
     document.getElementById('graph-info').textContent = `${data.nodes.length} nodes, ${data.edges.length} edges`;
 }
 
-async function showNodeDetail(nodeId) {
+async function showNodeDetail(graphId, nodeId) {
+    const prefix = '/api/graphs/' + encodeURIComponent(graphId);
     const [nodeRes, outRes] = await Promise.all([
-        fetch('/api/node/' + nodeId), fetch('/api/node/' + nodeId + '/outgoing?limit=200')
+        fetch(prefix + '/node/' + nodeId), fetch(prefix + '/node/' + nodeId + '/outgoing?limit=200')
     ]);
     const node = await nodeRes.json();
     const outgoing = await outRes.json();
 
     // Highlight in graph
     cy.elements().removeClass('highlighted');
-    const cyNode = cy.getElementById('n' + nodeId);
+    const cyNode = cy.getElementById(graphId + ':' + nodeId);
     if (cyNode.length) cyNode.addClass('highlighted');
 
     const panel = document.getElementById('detail-content');
@@ -110,26 +124,26 @@ async function showNodeDetail(nodeId) {
     if (outgoing.length > 0) {
         html += '<div class="detail-block"><h4>Outgoing (' + outgoing.length + ')</h4>';
         outgoing.slice(0, 20).forEach(e => {
-            html += '<div class="detail-edge" onclick="loadSubgraph(' + e.to + ', 1)">' + e.type + (e.kind ? '.' + e.kind : '') + ' &rarr; node#' + e.to + '</div>';
+            html += '<div class="detail-edge" onclick="loadSubgraph(' + htmlJsString(graphId) + ', ' + e.to + ', 1)">' + e.type + (e.kind ? '.' + e.kind : '') + ' &rarr; node#' + e.to + '</div>';
         });
         if (outgoing.length > 20) html += '<div class="hint">...and ' + (outgoing.length - 20) + ' more</div>';
         html += '</div>';
     }
 
-    html += '<div class="detail-block" id="incoming-block"><button onclick="loadIncomingEdges(' + nodeId + ')">Load incoming</button></div>';
+    html += '<div class="detail-block" id="incoming-block"><button onclick="loadIncomingEdges(' + htmlJsString(graphId) + ', ' + nodeId + ')">Load incoming</button></div>';
 
     panel.innerHTML = html;
 }
 
-async function loadIncomingEdges(nodeId) {
+async function loadIncomingEdges(graphId, nodeId) {
     const block = document.getElementById('incoming-block');
     block.innerHTML = '<h4>Incoming</h4><div class="hint">Loading...</div>';
-    const res = await fetch('/api/node/' + nodeId + '/incoming?limit=200');
+    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/node/' + nodeId + '/incoming?limit=200');
     const incoming = await res.json();
     let html = '<h4>Incoming (' + incoming.length + ')</h4>';
     if (incoming.length > 0) {
         incoming.slice(0, 20).forEach(e => {
-            html += '<div class="detail-edge" onclick="loadSubgraph(' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
+            html += '<div class="detail-edge" onclick="loadSubgraph(' + htmlJsString(graphId) + ', ' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
         });
         if (incoming.length > 20) html += '<div class="hint">...and ' + (incoming.length - 20) + ' more</div>';
     } else {
@@ -138,10 +152,12 @@ async function loadIncomingEdges(nodeId) {
     block.innerHTML = html;
 }
 
-async function loadSubgraph(centerId, depth) {
-    const res = await fetch('/api/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
+async function loadSubgraph(graphId, centerId, depth) {
+    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
     const data = await res.json();
-    renderGraph(data, centerId);
+    data.nodes.forEach(n => { n.graphId = graphId; n.elementId = graphId + ':' + n.id; });
+    data.edges.forEach(e => { e.graphId = graphId; e.fromElementId = graphId + ':' + e.from; e.toElementId = graphId + ':' + e.to; });
+    renderGraph(data, graphId + ':' + centerId);
     document.getElementById('graph-info').textContent = data.nodes.length + ' nodes, ' + data.edges.length + ' edges';
 }
 
@@ -150,10 +166,11 @@ function renderGraph(data, centerId) {
     const seen = new Set();
 
     data.nodes.forEach(n => {
-        if (seen.has(n.id)) return;
-        seen.add(n.id);
+        const elementId = n.elementId || (n.graphId + ':' + n.id);
+        if (seen.has(elementId)) return;
+        seen.add(elementId);
         elements.push({ data: {
-            id: 'n' + n.id, nodeId: n.id,
+            id: elementId, graphId: n.graphId, nodeId: n.id,
             label: truncate(n.label || n.type, 25),
             color: NODE_COLORS[n.type] || '#8b949e',
             size: NODE_SIZES[n.type] || 16
@@ -161,10 +178,12 @@ function renderGraph(data, centerId) {
     });
 
     data.edges.forEach((e, i) => {
-        if (!seen.has(e.from) || !seen.has(e.to)) return;
+        const from = e.fromElementId || (e.graphId + ':' + e.from);
+        const to = e.toElementId || (e.graphId + ':' + e.to);
+        if (!seen.has(from) || !seen.has(to)) return;
         elements.push({ data: {
-            id: 'e' + e.from + '-' + e.to + '-' + i,
-            source: 'n' + e.from, target: 'n' + e.to,
+            id: e.graphId + ':e:' + e.from + '-' + e.to + '-' + i,
+            source: from, target: to, graphId: e.graphId, targetNodeId: e.to,
             color: EDGE_COLORS[e.type] || '#30363d'
         }});
     });
@@ -181,7 +200,7 @@ function renderGraph(data, centerId) {
 
     if (centerId) {
         setTimeout(function() {
-            var centerNode = cy.getElementById('n' + centerId);
+            var centerNode = cy.getElementById(centerId);
             if (centerNode.length) {
                 cy.animate({ center: { eles: centerNode }, zoom: 1.5, duration: 300 });
             }
@@ -193,14 +212,51 @@ function renderGraph(data, centerId) {
 
 function truncate(s, len) { return s.length > len ? s.substring(0, len) + '...' : s; }
 
+function htmlJsString(value) {
+    return JSON.stringify(value).replace(/"/g, '&quot;');
+}
+
+function flattenGroupedData(response) {
+    if (!response || !Array.isArray(response.results)) return Array.isArray(response) ? response : [];
+    var values = [];
+    response.results.forEach(function(group) {
+        var data = Array.isArray(group.data) ? group.data : [];
+        data.forEach(function(item) { values.push(Object.assign({ graphId: group.graphId }, item)); });
+    });
+    return values;
+}
+
+function mergeGroupedGraphs(response) {
+    if (!response || !Array.isArray(response.results)) return response;
+    var nodes = [];
+    var edges = [];
+    response.results.forEach(function(group) {
+        var data = group.data || { nodes: [], edges: [] };
+        (data.nodes || []).forEach(function(node) {
+            nodes.push(Object.assign({}, node, {
+                graphId: group.graphId,
+                elementId: group.graphId + ':' + node.id
+            }));
+        });
+        (data.edges || []).forEach(function(edge) {
+            edges.push(Object.assign({}, edge, {
+                graphId: group.graphId,
+                fromElementId: group.graphId + ':' + edge.from,
+                toElementId: group.graphId + ':' + edge.to
+            }));
+        });
+    });
+    return { nodes: nodes, edges: edges };
+}
+
 async function search() {
     var query = document.getElementById('search').value.trim();
     var type = document.getElementById('search-type').value;
     if (!query) return;
 
-    var nodeId = parseInt(query);
-    if (!isNaN(nodeId) && type === 'nodes') {
-        loadSubgraph(nodeId, 2);
+    var nodeRef = query.match(/^([A-Za-z0-9][A-Za-z0-9._-]{0,127}):(\d+)$/);
+    if (nodeRef && type === 'nodes') {
+        loadSubgraph(nodeRef[1], parseInt(nodeRef[2]), 2);
         return;
     }
 
@@ -212,7 +268,7 @@ async function search() {
     }
 
     var res = await fetch(url);
-    var results = await res.json();
+    var results = flattenGroupedData(await res.json());
     showResults(results, type);
 }
 
@@ -233,12 +289,14 @@ function showResults(results, type) {
         if (type === 'methods') {
             var shortClass = (item.class || '').split('.').pop();
             div.innerHTML = '<span class="item-badge badge-methods">M</span>' + shortClass + '.' + item.name + '()';
-            div.title = item.class + '.' + item.name + '(' + (item.returnType || '') + ')';
+            div.title = item.graphId + ': ' + item.class + '.' + item.name + '(' + (item.returnType || '') + ')';
         } else if (item.id !== undefined) {
             var badge = type === 'call-sites' ? '<span class="item-badge badge-callsite">CS</span>' : '';
             div.innerHTML = badge + (item.label || item.type);
-            div.title = 'node#' + item.id;
-            div.onclick = (function(id) { return function() { loadSubgraph(id, 2); }; })(item.id);
+            div.title = item.graphId + ':node#' + item.id;
+            div.onclick = (function(graphId, id) {
+                return function() { loadSubgraph(graphId, id, 2); };
+            })(item.graphId, item.id);
         }
         list.appendChild(div);
     });
@@ -254,25 +312,35 @@ document.getElementById('btn-fit').addEventListener('click', function() { cy.fit
 document.getElementById('btn-reset').addEventListener('click', function() { cy.elements().remove(); loadInitialGraph(); });
 
 // Load Cypher result nodes onto the canvas
-async function loadCypherResults(nodeIds) {
-    if (nodeIds.length === 0) return;
+async function loadCypherResults(nodeRefs) {
+    if (nodeRefs.length === 0) return;
     // Fetch subgraphs for all result nodes and merge them
     var allNodes = new Map();
     var allEdges = [];
 
     // Limit to first 50 nodes to avoid overloading
-    var ids = nodeIds.slice(0, 50);
+    var refs = nodeRefs.slice(0, 50);
 
-    for (var i = 0; i < ids.length; i++) {
+    for (var i = 0; i < refs.length; i++) {
         try {
-            var res = await fetch('/api/subgraph?center=' + ids[i] + '&depth=1&direction=outgoing');
+            var ref = refs[i];
+            var res = await fetch('/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing');
             var data = await res.json();
-            data.nodes.forEach(function(n) { if (!allNodes.has(n.id)) allNodes.set(n.id, n); });
-            data.edges.forEach(function(e) { allEdges.push(e); });
+            data.nodes.forEach(function(n) {
+                n.graphId = ref.graphId;
+                n.elementId = ref.graphId + ':' + n.id;
+                if (!allNodes.has(n.elementId)) allNodes.set(n.elementId, n);
+            });
+            data.edges.forEach(function(e) {
+                e.graphId = ref.graphId;
+                e.fromElementId = ref.graphId + ':' + e.from;
+                e.toElementId = ref.graphId + ':' + e.to;
+                allEdges.push(e);
+            });
         } catch (e) { /* skip failed fetches */ }
     }
 
-    renderGraph({ nodes: Array.from(allNodes.values()), edges: allEdges }, ids[0]);
+    renderGraph({ nodes: Array.from(allNodes.values()), edges: allEdges }, refs[0].graphId + ':' + refs[0].id);
     document.getElementById('graph-info').textContent = allNodes.size + ' nodes, ' + allEdges.length + ' edges';
 }
 
@@ -310,12 +378,7 @@ async function runCypher() {
             data.columns.forEach(function(col) {
                 var val = row[col];
                 var display = val === null ? 'null' : (typeof val === 'object' ? JSON.stringify(val) : val);
-                var nodeId = (typeof val === 'object' && val !== null && val.id) ? val.id : null;
-                if (nodeId) {
-                    html += '<td onclick="loadSubgraph(' + nodeId + ', 2)">' + display + '</td>';
-                } else {
-                    html += '<td>' + display + '</td>';
-                }
+                html += '<td>' + display + '</td>';
             });
             html += '</tr>';
         });
@@ -324,32 +387,35 @@ async function runCypher() {
         resultDiv.innerHTML = html;
 
         // Collect node IDs from results
-        var nodeIds = [];
+        var nodeRefs = [];
         data.rows.forEach(function(row) {
+            var graphIds = row.$metadata && row.$metadata.graphIds;
             data.columns.forEach(function(col) {
                 var val = row[col];
                 // Object with .id (node reference)
-                if (typeof val === 'object' && val !== null && val.id !== undefined) {
-                    nodeIds.push(val.id);
+                if (typeof val === 'object' && val !== null && val.id !== undefined && val.graphId) {
+                    nodeRefs.push({ graphId: val.graphId, id: val.id });
                 }
-                // Column named *.id with integer value (e.g., n.id)
-                else if (col.endsWith('.id') && typeof val === 'number') {
-                    nodeIds.push(val);
+                // A scalar local id is resolvable only when row provenance names one graph.
+                else if (col.endsWith('.id') && typeof val === 'number' && graphIds && graphIds.length === 1) {
+                    nodeRefs.push({ graphId: graphIds[0], id: val });
                 }
                 // Path variable (list of nodes/edges)
                 else if (Array.isArray(val)) {
                     val.forEach(function(item) {
-                        if (typeof item === 'object' && item !== null && item.id !== undefined) {
-                            nodeIds.push(item.id);
+                        if (typeof item === 'object' && item !== null && item.id !== undefined && item.graphId) {
+                            nodeRefs.push({ graphId: item.graphId, id: item.id });
                         }
                     });
                 }
             });
         });
         // Deduplicate
-        nodeIds = [...new Set(nodeIds)];
-        if (nodeIds.length > 0) {
-            loadCypherResults(nodeIds);
+        var uniqueRefs = new Map();
+        nodeRefs.forEach(function(ref) { uniqueRefs.set(ref.graphId + ':' + ref.id, ref); });
+        nodeRefs = Array.from(uniqueRefs.values());
+        if (nodeRefs.length > 0) {
+            loadCypherResults(nodeRefs);
         }
     } catch (e) {
         resultDiv.innerHTML = '<div id="cypher-error">Error: ' + e.message + '</div>';

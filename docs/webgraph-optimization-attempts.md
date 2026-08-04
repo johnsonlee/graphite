@@ -401,7 +401,7 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 
 **Baseline scenarios:**
 
-- `android_initialExplorerSession`: `/api/info`, `/api/overview?limit=200`, `/api/methods?limit=200`
+- `android_initialExplorerSession`: `/api/graphs`, `/api/overview?limit=200`, `/api/methods?limit=200`
 - `android_browserForwardExploration`: repeated node detail/outgoing/subgraph requests, passing `direction=outgoing` to the subgraph endpoint. Current main ignores that parameter, so this captures the pre-optimization behavior where subgraph expansion still traverses incoming edges.
 
 **Validation command:**
@@ -417,7 +417,7 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 | `ExplorerMemoryBenchmark.android_browserForwardExploration` | ss | 1 | `2190.773 ms/op` | `215089672 B` | `122481864 B` | `337571536 B` |
 | `ExplorerMemoryBenchmark.android_initialExplorerSession` | ss | 1 | `14451.838 ms/op` | `713390624 B` | `122877128 B` | `836267752 B` |
 
-**Conclusion:** baseline established. The initial explorer session retains ~713 MB after forced GC because current `/api/info` scans every node's outgoing edges and forces edge traversal structures resident. Forward browser exploration retains ~215 MB because current subgraph expansion ignores `direction=outgoing` and still traverses incoming edges, which initializes the backward adjacency path. This commit is a benchmark harness and documentation baseline only; it does not change explorer runtime behavior.
+**Conclusion:** baseline established. The initial explorer session retains ~713 MB after forced GC because the graph statistics request scans every node's outgoing edges and forces edge traversal structures resident. Forward browser exploration retains ~215 MB because current subgraph expansion ignores `direction=outgoing` and still traverses incoming edges, which initializes the backward adjacency path. This commit is a benchmark harness and documentation baseline only; it does not change explorer runtime behavior.
 
 ### 2026-07-25 — Attempt 011: Explorer route memory guardrails
 
@@ -425,8 +425,8 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 
 **Change:**
 
-- add optional `Graph.edgeCount()` so `/api/info` can report edge totals from precomputed graph state instead of scanning every node's outgoing edges
-- clamp list-style request limits for nodes, edges, resources, API spec, overview, and Cypher rows
+- add optional `Graph.edgeCount()` so `/api/graphs` can report edge totals from precomputed graph state instead of scanning every node's outgoing edges
+- clamp list-style request limits for nodes, edges, resources, endpoints, overview, and Cypher rows
 - reject resource content responses larger than 1 MiB before converting them to UTF-8 strings
 - cap subgraph traversal by depth, node count, and edge count
 - add `direction=outgoing|incoming|both` for `/api/subgraph`; the Web UI uses outgoing-only exploration by default so clicking nodes does not initialize backward adjacency
@@ -455,7 +455,7 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 
 ### 2026-07-25 — Attempt 012: Lazy edge count without forward graph load
 
-**Hypothesis:** `LazyWebGraphBackedGraph.edgeCount()` and `MappedWebGraphBackedGraph.edgeCount()` still call `forward.value.numArcs()`, which can load the forward BVGraph during `/api/info`. Since `graph.labels` is one byte per stored edge label, existing persisted files can answer edge count by file size without initializing the forward graph.
+**Hypothesis:** `LazyWebGraphBackedGraph.edgeCount()` and `MappedWebGraphBackedGraph.edgeCount()` still call `forward.value.numArcs()`, which can load the forward BVGraph during `/api/graphs`. Since `graph.labels` is one byte per stored edge label, existing persisted files can answer edge count by file size without initializing the forward graph.
 
 **Change:** load `Files.size(graph.labels)` once in `GraphStore.loadLazy` and `GraphStore.loadMapped`, pass that value into the lazy/mapped graph implementations, and return it from `edgeCount()`. The eager WebGraph-backed graph returns the already-loaded label byte-array size.
 
@@ -479,18 +479,18 @@ The benchmark uses `-Xmx4g` and the same Android fixture resolution pattern as t
 
 Compared with the Attempt 010 baseline, the current initial session is `~86.4%` faster and retains `~19.7%` less heap; browser forward exploration is `~51.2%` faster and retains `~66.4%` less heap.
 
-**Conclusion:** correct but not sufficient. Avoiding forward graph initialization from `edgeCount()` removes a real lazy-loading leak and gives a small initial-session improvement, but the remaining retained heap is still ~573 MB. The dominant memory source is no longer `/api/info`; it is the broad initial explorer routes that load metadata and/or deserialize large graph slices, especially `/api/overview` and `/api/methods`.
+**Conclusion:** correct but not sufficient. Avoiding forward graph initialization from `edgeCount()` removes a real lazy-loading leak and gives a small initial-session improvement, but the remaining retained heap is still ~573 MB. The dominant memory source is no longer graph statistics; it is the broad initial explorer routes that load metadata and/or deserialize large graph slices, especially `/api/overview` and `/api/methods`.
 
 ### 2026-07-25 — Attempt 013: Bounded method metadata reads for explorer
 
-**Hypothesis:** the remaining initial-session retained heap is caused by method metadata materialization. `/api/info` calls `graph.methods(MethodPattern()).count()`, and `/api/methods?limit=200` calls `graph.methods(pattern).take(limit)`, but WebGraph-backed lazy/mapped implementations load the entire `graph.metadata` object before returning a method sequence.
+**Hypothesis:** the remaining initial-session retained heap is caused by method metadata materialization. Graph statistics call `graph.methods(MethodPattern()).count()`, and `/api/methods?limit=200` calls `graph.methods(pattern).take(limit)`, but WebGraph-backed lazy/mapped implementations load the entire `graph.metadata` object before returning a method sequence.
 
 **Change:**
 
 - add optional `Graph.methodCount()` and `Graph.methodSlice(pattern, limit)` APIs
 - answer `methodCount()` for lazy/mapped WebGraph loads by reading only the method count at the start of `graph.metadata`
 - answer `methodSlice()` for lazy/mapped WebGraph loads by opening `graph.metadata`, reading method descriptors until `limit` matches are found, then closing the stream
-- update explorer `/api/info` and `/api/methods` to use these optional bounded APIs before falling back to the legacy full sequence
+- update explorer `/api/graphs` statistics and `/api/methods` to use these optional bounded APIs before falling back to the legacy full sequence
 - keep full metadata lazy loading for hierarchy, annotation, enum, artifact, and branch-scope APIs
 
 **Build/save impact:** none. The persisted metadata format is unchanged; methods were already the first section in `graph.metadata`, so the new loader reads existing bytes more selectively.
@@ -578,7 +578,7 @@ Two smaller long-lived retention paths were also present:
 - sample process RSS through `/proc/self/status` on Linux and `ps` as a local fallback
 - keep existing heap counters and add committed heap, max heap, RSS before/after, max RSS, post-warmup RSS growth, and explicit limit counters
 - run a warmup phase followed by 256 measured cycles over 512 sampled graph nodes
-- include representative explorer traffic: `/api/info`, `/api/overview`, `/api/methods`, node detail, outgoing edges, outgoing subgraph expansion, and bounded Cypher
+- include representative explorer traffic: `/api/graphs`, `/api/overview`, `/api/methods`, node detail, outgoing edges, outgoing subgraph expansion, and bounded Cypher
 - fail the benchmark when max RSS exceeds `4 GiB` or post-warmup RSS growth exceeds `512 MiB`
 
 **Build/save impact:** none. This is a JMH guardrail only; graph build, save, load, query, and HTTP behavior are unchanged.
