@@ -8,7 +8,7 @@
 #   docker build -f graphite-explore/Dockerfile \
 #     -t graphite-explore .
 #
-#   docker run --rm -p 8080:8080 -v /path/to/graph:/data graphite-explore /data
+#   docker run --rm -p 8080:8080 -v /path/to/graph:/data graphite-explore
 
 FROM eclipse-temurin:17-jre-jammy
 
@@ -35,4 +35,4 @@ EXPOSE 8080
 VOLUME ["/data"]
 
 ENTRYPOINT ["java", "-jar", "/app/graphite.jar", "serve"]
-CMD ["/data"]
+CMD ["--id", "app", "/data"]

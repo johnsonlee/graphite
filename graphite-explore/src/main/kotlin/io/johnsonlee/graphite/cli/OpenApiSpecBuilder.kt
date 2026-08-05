@@ -2,22 +2,24 @@ package io.johnsonlee.graphite.cli
 
 @Suppress("StringLiteralDuplication")
 internal class OpenApiSpecBuilder {
-    internal fun build(): Map<String, Any?> = mapOf(
-        "openapi" to "3.0.3",
-        "info" to mapOf(
-            "title" to "Graphite Explore API",
-            "version" to "1.0.0",
-            "description" to "Machine-readable API surface for Graphite Explore."
-        ),
-        "paths" to mapOf(
+    internal fun build(): Map<String, Any?> {
+        val paths = linkedMapOf<String, Any?>(
             "/api/graphs" to mapOf(
                 "get" to operation(
-                    "List loaded webgraphs",
+                    "List loaded webgraphs with cached statistics and aggregate totals",
                     parameters = emptyList(),
-                    responses = mapOf("200" to response("Loaded graph registry"))
+                    responses = mapOf("200" to response("Loaded graph registry, per-graph statistics, and totals"))
                 )
             ),
             "/api/graphs/{graphId}" to mapOf(
+                "get" to operation(
+                    "Get metadata and cached statistics for one graph",
+                    parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
+                    responses = mapOf(
+                        "200" to response("Loaded graph descriptor and statistics"),
+                        "404" to response("Graph not loaded")
+                    )
+                ),
                 "put" to operation(
                     "Load or replace a webgraph by id",
                     parameters = listOf(pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")),
@@ -75,10 +77,12 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/cypher/graphs" to mapOf(
                 "get" to operation(
-                    "Execute a Cypher query across loaded graphs",
+                    "Execute one cross-graph query or explicit fanout over selected graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Optional graph id filter; repeat or comma-separate"),
+                        queryParameter(API_PARAM_ALL_GRAPHS, TYPE_BOOLEAN, false, "Query all loaded graphs; mutually exclusive with graph"),
+                        queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Graph id selection; repeat or comma-separate"),
+                        queryParameter(API_PARAM_MODE, TYPE_STRING, false, "cross-graph (default) or fanout"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
                         queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
                         queryParameter(
@@ -95,7 +99,7 @@ internal class OpenApiSpecBuilder {
                     )
                 ),
                 "post" to operation(
-                    "Execute a Cypher query across loaded graphs",
+                    "Execute one cross-graph query or explicit fanout over selected graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
                         queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
@@ -114,16 +118,9 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
-            "/api/info" to mapOf(
-                "get" to operation(
-                    "Get graph summary statistics",
-                    parameters = emptyList(),
-                    responses = mapOf("200" to response("Graph statistics"))
-                )
-            ),
             "/api/nodes" to mapOf(
                 "get" to operation(
-                    "List graph nodes",
+                    "List nodes across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_TYPE, TYPE_STRING, false, "Optional node label/type filter"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of nodes to return")
@@ -133,7 +130,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/node/{id}" to mapOf(
                 "get" to operation(
-                    "Fetch a single node by id",
+                    "Fetch every graph-local node with this id, grouped by graphId",
                     parameters = listOf(
                         pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER)
                     ),
@@ -146,7 +143,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/node/{id}/outgoing" to mapOf(
                 "get" to operation(
-                    "List outgoing edges for a node",
+                    "List outgoing edges for this local node id, grouped by graphId",
                     parameters = listOf(
                         pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
@@ -159,7 +156,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/node/{id}/incoming" to mapOf(
                 "get" to operation(
-                    "List incoming edges for a node",
+                    "List incoming edges for this local node id, grouped by graphId",
                     parameters = listOf(
                         pathParameter(API_FIELD_ID, TYPE_INTEGER, API_OPENAPI_NODE_IDENTIFIER),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of edges to return")
@@ -172,7 +169,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/call-sites" to mapOf(
                 "get" to operation(
-                    "List call sites",
+                    "List call sites across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional caller/callee class filter"),
                         queryParameter(API_PARAM_METHOD, TYPE_STRING, false, "Optional method name filter"),
@@ -183,7 +180,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/methods" to mapOf(
                 "get" to operation(
-                    "List methods",
+                    "List methods across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional declaring class filter"),
                         queryParameter(API_PARAM_NAME, TYPE_STRING, false, "Optional method name filter"),
@@ -194,7 +191,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/annotations" to mapOf(
                 "get" to operation(
-                    "Fetch member annotations",
+                    "Fetch member annotations across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_CLASS, TYPE_STRING, true, "Declaring class name"),
                         queryParameter(API_PARAM_MEMBER, TYPE_STRING, true, "Member name")
@@ -207,7 +204,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/resources" to mapOf(
                 "get" to operation(
-                    "List persisted resources",
+                    "List persisted resources across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_PATTERN, TYPE_STRING, false, "Glob pattern, defaults to **"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
@@ -217,7 +214,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/resources/{path}" to mapOf(
                 "get" to operation(
-                    "Read persisted raw resource content",
+                    "Read every matching persisted resource, grouped by graphId",
                     parameters = listOf(
                         pathParameter(API_FIELD_PATH, TYPE_STRING, "Resource path inside the graph payload; may include nested segments")
                     ),
@@ -228,19 +225,19 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
-            "/api/api-spec" to mapOf(
+            "/api/endpoints" to mapOf(
                 "get" to operation(
-                    "Extract framework API endpoints from the graph",
+                    "Extract framework API endpoints across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of endpoints"),
                         queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional controller class filter")
                     ),
-                    responses = mapOf("200" to response("Extracted framework API specification"))
+                    responses = mapOf("200" to response("Extracted framework HTTP endpoints"))
                 )
             ),
             "/api/architecture/c4" to mapOf(
                 "get" to operation(
-                    "Build C4 architecture views automatically derived from the code graph as Structurizr workspace JSON, Structurizr DSL, Mermaid, or PlantUML",
+                    "Build C4 architecture views for all loaded graphs, grouped by graphId for JSON",
                     parameters = listOf(
                         queryParameter(API_PARAM_LEVEL, TYPE_STRING, false, "context, container, component, or all"),
                         queryParameter(API_PARAM_FORMAT, TYPE_STRING, false, "json, dsl, mermaid, or plantuml")
@@ -253,7 +250,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/overview" to mapOf(
                 "get" to operation(
-                    "Build a class-level overview graph",
+                    "Build class-level overviews for all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of classes")
                     ),
@@ -262,7 +259,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/subgraph" to mapOf(
                 "get" to operation(
-                    "Build a local subgraph around a node",
+                    "Build local subgraphs for this graph-local node id, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_CENTER, TYPE_INTEGER, true, "Center node id"),
                         queryParameter(API_PARAM_DEPTH, TYPE_INTEGER, false, "Traversal depth"),
@@ -276,7 +273,7 @@ internal class OpenApiSpecBuilder {
             ),
             "/api/cypher" to mapOf(
                 "get" to operation(
-                    "Execute a Cypher query via query string",
+                    "Execute one query over the union of all loaded graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
@@ -287,7 +284,7 @@ internal class OpenApiSpecBuilder {
                     )
                 ),
                 "post" to operation(
-                    "Execute a Cypher query via JSON body",
+                    "Execute one query over the union of all loaded graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
                     ),
@@ -313,7 +310,67 @@ internal class OpenApiSpecBuilder {
                 )
             )
         )
-    )
+        addGraphScopedPaths(paths)
+        GRAPH_LOCAL_ID_PATHS.forEach(paths::remove)
+        return mapOf(
+            "openapi" to "3.0.3",
+            "info" to mapOf(
+                "title" to "Graphite Explore API",
+                "version" to "2.0.0",
+                "description" to "Graph-qualified single-graph and cross-graph query API for Graphite Explore."
+            ),
+            "paths" to paths
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun addGraphScopedPaths(paths: MutableMap<String, Any?>) {
+        val graphBoundRoots = listOf(
+            "/api/nodes",
+            "/api/node/{id}",
+            "/api/node/{id}/outgoing",
+            "/api/node/{id}/incoming",
+            "/api/call-sites",
+            "/api/methods",
+            "/api/annotations",
+            "/api/resources",
+            "/api/resources/{path}",
+            "/api/endpoints",
+            "/api/architecture/c4",
+            "/api/overview",
+            "/api/subgraph"
+        )
+        graphBoundRoots.forEach { rootPath ->
+            val scopedPath = "/api/graphs/{graphId}" + rootPath.removePrefix("/api")
+            val operations = paths.getValue(rootPath) as Map<String, Map<String, Any?>>
+            paths[scopedPath] = operations.mapValues { (_, operation) ->
+                operation.toMutableMap().apply {
+                    val parameters = (this["parameters"] as? List<Map<String, Any?>>).orEmpty()
+                    this["parameters"] = listOf(
+                        pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id")
+                    ) + parameters
+                    this["summary"] = scopedSummary(rootPath)
+                }
+            }
+        }
+    }
+
+    private fun scopedSummary(rootPath: String): String = when (rootPath) {
+        "/api/nodes" -> "List nodes in one explicit graph"
+        "/api/node/{id}" -> "Fetch a node by graph-local id in one explicit graph"
+        "/api/node/{id}/outgoing" -> "List outgoing edges in one explicit graph"
+        "/api/node/{id}/incoming" -> "List incoming edges in one explicit graph"
+        "/api/call-sites" -> "List call sites in one explicit graph"
+        "/api/methods" -> "List methods in one explicit graph"
+        "/api/annotations" -> "Fetch member annotations in one explicit graph"
+        "/api/resources" -> "List persisted resources in one explicit graph"
+        "/api/resources/{path}" -> "Read persisted resource content in one explicit graph"
+        "/api/endpoints" -> "Extract framework API endpoints from one explicit graph"
+        "/api/architecture/c4" -> "Build C4 architecture views for one explicit graph"
+        "/api/overview" -> "Build a class-level overview for one explicit graph"
+        "/api/subgraph" -> "Build a local subgraph in one explicit graph"
+        else -> error("Unknown graph-bound route: $rootPath")
+    }
 
     private fun operation(
         summary: String,
@@ -362,8 +419,16 @@ internal class OpenApiSpecBuilder {
                 ),
                 API_FIELD_GRAPHS to mapOf(
                     API_FIELD_TYPE to "array",
-                    FIELD_DESCRIPTION to "Optional graph ids to query; omitted means all loaded graphs",
+                    FIELD_DESCRIPTION to "Explicit graph ids to query; mutually exclusive with allGraphs",
                     "items" to mapOf(API_FIELD_TYPE to TYPE_STRING)
+                ),
+                API_PARAM_ALL_GRAPHS to mapOf(
+                    API_FIELD_TYPE to TYPE_BOOLEAN,
+                    FIELD_DESCRIPTION to "Query all loaded graphs; mutually exclusive with graphs"
+                ),
+                API_PARAM_MODE to mapOf(
+                    API_FIELD_TYPE to TYPE_STRING,
+                    FIELD_DESCRIPTION to "cross-graph (default) or fanout"
                 ),
                 API_PARAM_LIMIT to mapOf(
                     API_FIELD_TYPE to TYPE_INTEGER,
@@ -420,6 +485,12 @@ internal class OpenApiSpecBuilder {
         private const val TYPE_INTEGER = "integer"
         private const val TYPE_OBJECT = "object"
         private const val TYPE_STRING = "string"
+        private val GRAPH_LOCAL_ID_PATHS = listOf(
+            "/api/node/{id}",
+            "/api/node/{id}/outgoing",
+            "/api/node/{id}/incoming",
+            "/api/subgraph"
+        )
     }
 
 }

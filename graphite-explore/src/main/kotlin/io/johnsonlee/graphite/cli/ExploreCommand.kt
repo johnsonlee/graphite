@@ -35,8 +35,8 @@ open class ServeCommand : Callable<Int> {
     @Option(names = ["--graph"], description = ["Initial graph mapping id:path. Repeat for multiple graphs."])
     var graphSpecs: List<String> = emptyList()
 
-    @Option(names = ["--id"], description = ["Graph id for the optional positional graph"], defaultValue = DEFAULT_GRAPH_ID)
-    var graphId: String = DEFAULT_GRAPH_ID
+    @Option(names = ["--id"], description = ["Required graph id for the optional positional graph"])
+    var graphId: String? = null
 
     @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = DEFAULT_PORT_TEXT)
     var port: Int = DEFAULT_PORT
@@ -105,8 +105,8 @@ open class ServeCommand : Callable<Int> {
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =
         ExploreRoutes().buildSubgraph(graph, center, depth)
 
-    internal fun extractApiSpec(graph: Graph): List<Map<String, Any?>> =
-        ApiSpecExtractor().extract(graph)
+    internal fun extractEndpoints(graph: Graph): List<Map<String, Any?>> =
+        EndpointExtractor().extract(graph)
 
     internal fun buildOpenApiSpec(): Map<String, Any?> =
         OpenApiSpecBuilder().build()
@@ -120,22 +120,20 @@ open class ServeCommand : Callable<Int> {
 
     private fun loadInitialGraphs(registry: GraphRegistry) {
         val ids = mutableSetOf<String>()
-        var first = true
-
         graphDir?.let { dir ->
-            val id = GraphRegistry.validateGraphId(graphId)
+            val id = GraphRegistry.validateGraphId(
+                requireNotNull(graphId) { "--id is required when a positional graph directory is provided" }
+            )
             require(ids.add(id)) { "Duplicate initial graph id: $id" }
-            val descriptor = registry.load(id, dir, loadMode, makeDefault = true)
+            val descriptor = registry.load(id, dir, loadMode)
             System.err.println("Loaded graph '${descriptor.id}' from ${descriptor.path} using ${descriptor.loadMode} mode")
-            first = false
         }
 
         for (spec in graphSpecs) {
             val (id, path) = parseGraphSpec(spec)
             require(ids.add(id)) { "Duplicate initial graph id: $id" }
-            val descriptor = registry.load(id, path, loadMode, makeDefault = first)
+            val descriptor = registry.load(id, path, loadMode)
             System.err.println("Loaded graph '${descriptor.id}' from ${descriptor.path} using ${descriptor.loadMode} mode")
-            first = false
         }
     }
 

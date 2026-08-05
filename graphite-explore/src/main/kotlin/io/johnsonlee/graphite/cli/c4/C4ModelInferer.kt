@@ -1,13 +1,13 @@
 package io.johnsonlee.graphite.cli.c4
 
-import io.johnsonlee.graphite.cli.ApiSpecExtractor
+import io.johnsonlee.graphite.cli.EndpointExtractor
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 
 internal class C4ModelInferer(
-    private val apiSpecExtractor: ApiSpecExtractor = ApiSpecExtractor()
+    private val endpointExtractor: EndpointExtractor = EndpointExtractor()
 ) {
 
     internal fun buildViewModel(
@@ -36,7 +36,7 @@ internal class C4ModelInferer(
             .filterNot { isSyntheticArchitectureClass(it) }
             .distinct()
             .sorted()
-        val apiEndpoints = apiSpecExtractor.extract(graph).mapNotNull(::apiEndpointEvidenceFromMap)
+        val apiEndpoints = endpointExtractor.extract(graph).mapNotNull(::apiEndpointEvidenceFromMap)
         val systemBoundary = deriveSystemBoundary(methods, callSites)
         fun subject() = inferSubjectDescriptor(graph, methods, callSites, apiEndpoints.size, systemBoundary)
 

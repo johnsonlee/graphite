@@ -78,7 +78,7 @@ graphite query --format json /data/app-graph \
   "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 10"
 
 # Launch the web UI
-graphite serve /data/app-graph --port 8080
+graphite serve --id app /data/app-graph --port 8080
 
 # Serve multiple graphs by id. Relative graph paths resolve under --data.
 graphite serve --data /data/graphs \
@@ -211,20 +211,33 @@ Generic JDK resource linking currently covers:
 
 | Endpoint | Description |
 |----------|-------------|
-| `/api/graphs` | List loaded webgraphs |
-| `/api/graphs/{graphId}` | Load, replace, or unload a webgraph by id |
-| `/api/graphs/{graphId}/cypher` | Query a specific webgraph by id |
-| `/api/cypher/graphs` | Query all or selected loaded webgraphs in one request |
-| `/api/resources` | List indexed resources |
-| `/api/resources/{path}` | Read persisted raw resource content |
-| `/api/api-spec` | Extract API specs/endpoints for agent discovery |
+| `/api/graphs` | List loaded webgraphs with cached per-graph statistics and aggregate totals |
+| `/api/graphs/{graphId}` | Get, load, replace, or unload a webgraph by id |
+| `/api/graphs/{graphId}/...` | Query one explicit webgraph with the direct single-graph response shape |
+| `/api/cypher` | Run one Cypher query over the union of every loaded graph |
+| `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
+| `/api/nodes`, `/api/methods`, ... | Query every loaded graph; non-Cypher results are grouped by `graphId` |
+| `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
+| `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
+| `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
 | `/openapi.json` | Machine-readable OpenAPI document for the explore server |
 | `/swagger.json` | Swagger-compatible alias of the same API document |
 
+Graph-local node IDs are accepted only by graph-scoped routes such as
+`/api/graphs/{graphId}/node/{id}` and
+`/api/graphs/{graphId}/subgraph?center={id}`. The corresponding root routes do
+not exist because the same local ID can identify unrelated nodes in different
+graphs.
+
+There is no default graph and no automatic graph selection. Root graph APIs
+always mean all loaded graphs; `/api/graphs/{graphId}/...` always means exactly
+one graph. Every root non-Cypher result is grouped by `graphId`, while every
+cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
+qualified identities such as `elementId = "orders:42"`.
+
 For agent-driven discovery, probe `/openapi.json` first. It describes the full
-explore REST surface, including `/api/cypher`, id-scoped graph endpoints,
-server-side fan-out via `/api/cypher/graphs`, `/api/resources`,
-`/api/resources/{path}`, `/api/api-spec`, and the node/subgraph endpoints.
+root-all and graph-scoped REST surface, including the two explicit modes of
+`/api/cypher/graphs`.
 
 ## Architecture
 
@@ -323,7 +336,7 @@ Start the Explorer first, then LLMs can query the graph:
 
 ```bash
 # Start Explorer
-graphite serve /path/to/saved-graph
+graphite serve --id app /path/to/saved-graph
 
 # The serve command defaults to --load-mode MAPPED for multi-graph heap stability.
 ```
@@ -337,7 +350,13 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -d '{"path":"orders-graph"}'
 ```
 
-To query across loaded graphs without client-side fan-out:
+Graph replacement is atomic for readers. Requests that already acquired the
+previous graph finish against that snapshot, requests acquired after the swap
+use the replacement, and the previous graph is closed only after its last
+request releases it. A replacement that fails to load leaves the current graph
+unchanged.
+
+To run one query across an explicit graph set:
 
 ```bash
 curl -X POST http://localhost:8080/api/cypher/graphs \
@@ -345,16 +364,18 @@ curl -X POST http://localhost:8080/api/cypher/graphs \
   -d '{"query":"MATCH (n:IntConstant) RETURN n.value","graphs":["orders","billing"],"limit":100}'
 ```
 
-Multi-graph Cypher applies `limit` to the total response row count, matching
-the single-graph query API. Use `perGraphLimit` only when you also need a
-per-graph cap, and `includeGraphRows=true` only when you need duplicate per-graph row
-arrays in addition to the top-level `graphId`-tagged rows.
+The default mode is `cross-graph`: patterns, joins, filters, and aggregations
+operate once over the selected graph union. Every row reports all contributing
+graphs in `$metadata.graphIds`. To preserve independent per-graph execution, explicitly
+send `"mode":"fanout"`; only this mode accepts `perGraphLimit` and
+`includeGraphRows`. In both modes, `limit` caps the total response row count.
 
-The MCP `cypher` tool also supports native multi-graph querying via
-`all_graphs: true`, or `graphs: ["orders", "billing"]` for a selected subset.
-Use `limit` to keep all-graph responses bounded.
+The MCP tools follow the same rule: omitting `graph_id` queries all graphs;
+providing `graph_id` selects exactly one graph. The `cypher` tool can also use
+`graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
+with `mode: "cross-graph"` or `mode: "fanout"`.
 
-LLMs can now use tools such as openapi, cypher, resources, resource, api_spec,
+LLMs can now use tools such as openapi, graphs, cypher, resources, resource, endpoints,
 c4, nodes, methods, call_sites, and annotations.
 
 The explore server also exposes a single C4 architecture endpoint:

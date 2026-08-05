@@ -23,6 +23,12 @@ dependencies {
 
 tasks.jar {
     archiveClassifier.set("slim")
+    manifest {
+        attributes(
+            "Implementation-Title" to "Graphite",
+            "Implementation-Version" to project.version.toString(),
+        )
+    }
 }
 
 tasks.shadowJar {
@@ -43,8 +49,16 @@ tasks.shadowJar {
     }
 
     manifest {
-        attributes("Main-Class" to "io.johnsonlee.graphite.cli.MainKt")
+        attributes(
+            "Main-Class" to "io.johnsonlee.graphite.cli.MainKt",
+            "Implementation-Title" to "Graphite",
+            "Implementation-Version" to project.version.toString(),
+        )
     }
+}
+
+tasks.named<JavaExec>("run") {
+    systemProperty("graphite.version", project.version.toString())
 }
 
 kover {
@@ -56,6 +70,7 @@ kover {
 }
 
 tasks.test {
+    systemProperty("graphite.version", project.version.toString())
     testLogging {
         events("passed", "skipped", "failed")
         showExceptions = true

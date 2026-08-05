@@ -63,14 +63,25 @@ function encodeResourcePath(path: string): string {
     .join("/");
 }
 
+function graphApiPath(graphId: string | undefined, path: string): string {
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return graphId
+    ? `/api/graphs/${encodeURIComponent(graphId)}${suffix}`
+    : `/api${suffix}`;
+}
+
 const server = new McpServer({
   name: "graphite",
   version: "1.0.0",
 });
 
-// Graph info
-server.tool("info", "Get graph statistics (node count, edge count, methods, call sites)", {}, async () => {
-  const data = await graphiteGet("/api/info");
+// Graph registry and cached statistics
+server.tool("graphs", "List all graphs with aggregate statistics, or get one graph by id", {
+  graph_id: z.string().optional().describe("Explicit graph id; omit to list all graphs and totals"),
+}, async ({ graph_id }) => {
+  const data = await graphiteGet(
+    graph_id ? `/api/graphs/${encodeURIComponent(graph_id)}` : "/api/graphs"
+  );
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 });
 
@@ -88,13 +99,17 @@ server.tool(
 // Cypher query
 server.tool(
   "cypher",
-  "Execute a Cypher query against the default graph, or across loaded graphs when all_graphs or graphs is provided",
+  "Execute a true cross-graph Cypher query across all graphs by default, one explicit graph with graph_id, or an explicit graph set with graphs/all_graphs",
   {
     query: z.string().describe("Cypher query string"),
+    graph_id: z.string().optional()
+      .describe("Explicit single graph id; mutually exclusive with graphs and all_graphs"),
     all_graphs: z.boolean().optional().default(false)
-      .describe("Query all loaded graphs with server-side fan-out"),
+      .describe("Explicitly select all loaded graphs for /api/cypher/graphs"),
     graphs: z.array(z.string()).optional()
-      .describe("Optional graph ids to query with server-side fan-out"),
+      .describe("Explicit graph ids for /api/cypher/graphs"),
+    mode: z.enum(["cross-graph", "fanout"]).optional().default("cross-graph")
+      .describe("One union query across graphs, or independent per-graph fan-out"),
     limit: z.number().optional()
       .describe("Maximum total result rows for the request"),
     per_graph_limit: z.number().optional()
@@ -102,21 +117,42 @@ server.tool(
     include_graph_rows: z.boolean().optional().default(false)
       .describe("Include duplicate per-graph row arrays in multi-graph responses"),
   },
-  async ({ query, all_graphs, graphs, limit, per_graph_limit, include_graph_rows }) => {
+  async ({ query, graph_id, all_graphs, graphs, mode, limit, per_graph_limit, include_graph_rows }) => {
     const selectedGraphs = graphs?.filter((graph: string) => graph.trim().length > 0);
+    if (graph_id && (all_graphs || (selectedGraphs && selectedGraphs.length > 0))) {
+      throw new Error("graph_id is mutually exclusive with all_graphs and graphs");
+    }
+    if (all_graphs && selectedGraphs && selectedGraphs.length > 0) {
+      throw new Error("all_graphs and graphs are mutually exclusive");
+    }
+    const hasExplicitGraphSet = all_graphs || Boolean(selectedGraphs && selectedGraphs.length > 0);
+    if (graph_id && mode !== "cross-graph") {
+      throw new Error("mode is only valid with graphs or all_graphs");
+    }
+    if (!hasExplicitGraphSet && !graph_id && mode === "fanout") {
+      throw new Error("fanout mode requires graphs or all_graphs=true");
+    }
+    if (mode === "cross-graph" && (per_graph_limit !== undefined || include_graph_rows)) {
+      throw new Error("per_graph_limit and include_graph_rows are only valid in fanout mode");
+    }
     const queryParams: Record<string, string> = {};
     if (limit !== undefined) queryParams.limit = String(limit);
     if (per_graph_limit !== undefined) queryParams.perGraphLimit = String(per_graph_limit);
     if (include_graph_rows) queryParams.includeGraphRows = "true";
-    const body: Record<string, unknown> = { query };
+    if (graph_id) {
+      const data = await graphitePost(graphApiPath(graph_id, "/cypher"), { query }, queryParams);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+    const body: Record<string, unknown> = { query, mode };
     if (selectedGraphs && selectedGraphs.length > 0) {
       body.graphs = selectedGraphs;
     }
+    if (all_graphs) body.allGraphs = true;
     if (all_graphs || (selectedGraphs && selectedGraphs.length > 0)) {
       const data = await graphitePost("/api/cypher/graphs", body, queryParams);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
-    const data = await graphitePost("/api/cypher", body, queryParams);
+    const data = await graphitePost("/api/cypher", { query }, queryParams);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -124,16 +160,17 @@ server.tool(
 // List nodes
 server.tool(
   "nodes",
-  "List nodes by type",
+  "List nodes by type across all graphs, grouped by graph, or in one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     type: z.string().optional().describe("Node type filter (e.g., CallSiteNode, IntConstant, Annotation)"),
     limit: z.number().optional().default(50).describe("Max results"),
   },
-  async ({ type, limit }) => {
+  async ({ graph_id, type, limit }) => {
     const params: Record<string, string> = {};
     if (type) params.type = type;
     if (limit) params.limit = String(limit);
-    const data = await graphiteGet("/api/nodes", params);
+    const data = await graphiteGet(graphApiPath(graph_id, "/nodes"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -141,10 +178,13 @@ server.tool(
 // Get node by ID
 server.tool(
   "node",
-  "Get a single node by ID",
-  { id: z.number().describe("Node ID") },
-  async ({ id }) => {
-    const data = await graphiteGet(`/api/node/${id}`);
+  "Get every node with a local ID across all graphs, grouped by graph, or the node in one explicit graph",
+  {
+    id: z.number().describe("Graph-local node ID"),
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query every graph"),
+  },
+  async ({ id, graph_id }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, `/node/${id}`));
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -152,10 +192,13 @@ server.tool(
 // Outgoing edges
 server.tool(
   "outgoing",
-  "Get outgoing edges from a node",
-  { id: z.number().describe("Node ID") },
-  async ({ id }) => {
-    const data = await graphiteGet(`/api/node/${id}/outgoing`);
+  "Get outgoing edges for a graph-local node ID across all graphs, or in one explicit graph",
+  {
+    id: z.number().describe("Graph-local node ID"),
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query every graph"),
+  },
+  async ({ id, graph_id }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, `/node/${id}/outgoing`));
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -163,10 +206,13 @@ server.tool(
 // Incoming edges
 server.tool(
   "incoming",
-  "Get incoming edges to a node",
-  { id: z.number().describe("Node ID") },
-  async ({ id }) => {
-    const data = await graphiteGet(`/api/node/${id}/incoming`);
+  "Get incoming edges for a graph-local node ID across all graphs, or in one explicit graph",
+  {
+    id: z.number().describe("Graph-local node ID"),
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query every graph"),
+  },
+  async ({ id, graph_id }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, `/node/${id}/incoming`));
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -174,18 +220,19 @@ server.tool(
 // Find call sites
 server.tool(
   "call_sites",
-  "Find call sites matching a pattern",
+  "Find call sites across all graphs, grouped by graph, or in one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     class_pattern: z.string().optional().describe("Class name pattern"),
     method_pattern: z.string().optional().describe("Method name pattern"),
     limit: z.number().optional().default(50).describe("Max results"),
   },
-  async ({ class_pattern, method_pattern, limit }) => {
+  async ({ graph_id, class_pattern, method_pattern, limit }) => {
     const params: Record<string, string> = {};
     if (class_pattern) params.class = class_pattern;
     if (method_pattern) params.method = method_pattern;
     if (limit) params.limit = String(limit);
-    const data = await graphiteGet("/api/call-sites", params);
+    const data = await graphiteGet(graphApiPath(graph_id, "/call-sites"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -193,18 +240,19 @@ server.tool(
 // List methods
 server.tool(
   "methods",
-  "List methods matching a pattern",
+  "List methods across all graphs, grouped by graph, or in one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     class_pattern: z.string().optional().describe("Class name pattern"),
     name_pattern: z.string().optional().describe("Method name pattern"),
     limit: z.number().optional().default(50).describe("Max results"),
   },
-  async ({ class_pattern, name_pattern, limit }) => {
+  async ({ graph_id, class_pattern, name_pattern, limit }) => {
     const params: Record<string, string> = {};
     if (class_pattern) params.class = class_pattern;
     if (name_pattern) params.name = name_pattern;
     if (limit) params.limit = String(limit);
-    const data = await graphiteGet("/api/methods", params);
+    const data = await graphiteGet(graphApiPath(graph_id, "/methods"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -212,30 +260,35 @@ server.tool(
 // Get annotations
 server.tool(
   "annotations",
-  "Get annotations for a class member",
+  "Get annotations for a class member across all graphs, grouped by graph, or in one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     class_name: z.string().describe("Fully qualified class name"),
     member_name: z.string().describe("Method or field name"),
   },
-  async ({ class_name, member_name }) => {
-    const data = await graphiteGet("/api/annotations", { class: class_name, member: member_name });
+  async ({ graph_id, class_name, member_name }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, "/annotations"), {
+      class: class_name,
+      member: member_name,
+    });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
 
 // Extract framework API endpoints
 server.tool(
-  "api_spec",
-  "Extract framework API endpoints from the graph",
+  "endpoints",
+  "Extract framework API endpoints across all graphs, grouped by graph, or from one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     class_name: z.string().optional().describe("Optional controller class filter"),
     limit: z.number().optional().default(200).describe("Max endpoints to return"),
   },
-  async ({ class_name, limit }) => {
+  async ({ graph_id, class_name, limit }) => {
     const params: Record<string, string> = {};
     if (class_name) params.class = class_name;
     if (limit) params.limit = String(limit);
-    const data = await graphiteGet("/api/api-spec", params);
+    const data = await graphiteGet(graphApiPath(graph_id, "/endpoints"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -243,16 +296,17 @@ server.tool(
 // List resources
 server.tool(
   "resources",
-  "List persisted resources available in the graph",
+  "List persisted resources across all graphs, grouped by graph, or in one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     pattern: z.string().optional().describe("Glob pattern filter, defaults to **"),
     limit: z.number().optional().default(100).describe("Max results"),
   },
-  async ({ pattern, limit }) => {
+  async ({ graph_id, pattern, limit }) => {
     const params: Record<string, string> = {};
     if (pattern) params.pattern = pattern;
     if (limit) params.limit = String(limit);
-    const data = await graphiteGet("/api/resources", params);
+    const data = await graphiteGet(graphApiPath(graph_id, "/resources"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -260,13 +314,14 @@ server.tool(
 // Read raw resource content
 server.tool(
   "resource",
-  "Read persisted raw resource content by path",
+  "Read every matching resource path grouped by graph, or read it from one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query every graph"),
     path: z.string().describe("Resource path inside the saved graph"),
   },
-  async ({ path }) => {
+  async ({ graph_id, path }) => {
     const encodedPath = encodeResourcePath(path);
-    const data = await graphiteGet(`/api/resources/${encodedPath}`);
+    const data = await graphiteGet(graphApiPath(graph_id, `/resources/${encodedPath}`));
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -274,13 +329,17 @@ server.tool(
 // Subgraph
 server.tool(
   "subgraph",
-  "Get subgraph around a center node",
+  "Get subgraphs for a graph-local center ID across all graphs, or from one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query every graph"),
     center: z.number().describe("Center node ID"),
     depth: z.number().optional().default(2).describe("Traversal depth"),
   },
-  async ({ center, depth }) => {
-    const data = await graphiteGet("/api/subgraph", { center: String(center), depth: String(depth) });
+  async ({ graph_id, center, depth }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, "/subgraph"), {
+      center: String(center),
+      depth: String(depth),
+    });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -288,10 +347,13 @@ server.tool(
 // Overview
 server.tool(
   "overview",
-  "Get class-level dependency graph overview",
-  { limit: z.number().optional().default(200).describe("Max classes") },
-  async ({ limit }) => {
-    const data = await graphiteGet("/api/overview", { limit: String(limit) });
+  "Get class-level dependency overviews across all graphs, grouped by graph, or for one explicit graph",
+  {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
+    limit: z.number().optional().default(200).describe("Max classes"),
+  },
+  async ({ graph_id, limit }) => {
+    const data = await graphiteGet(graphApiPath(graph_id, "/overview"), { limit: String(limit) });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
@@ -299,24 +361,26 @@ server.tool(
 // C4 architecture model
 server.tool(
   "c4",
-  "Get C4 architecture views automatically derived from the code graph as Structurizr workspace JSON, Structurizr DSL, Mermaid, or PlantUML",
+  "Get C4 views for all graphs, grouped by graph for JSON, or for one explicit graph",
   {
+    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
     level: z.enum(["context", "container", "component", "all"]).optional().default("all")
       .describe("C4 view level"),
     format: z.enum(["json", "dsl", "mermaid", "plantuml"]).optional().default("json")
       .describe("Output format"),
     limit: z.number().optional().default(200).describe("Max containers or components"),
   },
-  async ({ level, format, limit }) => {
+  async ({ graph_id, level, format, limit }) => {
+    const path = graphApiPath(graph_id, "/architecture/c4");
     if (format === "mermaid" || format === "plantuml" || format === "dsl") {
-      const text = await graphiteGetText("/api/architecture/c4", {
+      const text = await graphiteGetText(path, {
         level,
         format,
         limit: String(limit),
       });
       return { content: [{ type: "text", text }] };
     }
-    const data = await graphiteGet("/api/architecture/c4", {
+    const data = await graphiteGet(path, {
       level,
       format,
       limit: String(limit),

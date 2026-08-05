@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cli
 
+import picocli.CommandLine
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.nio.file.Files
@@ -40,6 +41,18 @@ class GraphiteCommandTest {
         assertTrue(out.contains("build"), "Help should contain build subcommand, got: $out")
         assertTrue(out.contains("query"), "Help should contain query subcommand, got: $out")
         assertTrue(out.contains("serve"), "Help should contain serve subcommand, got: $out")
+    }
+
+    @Test
+    fun `parent command shows build version`() {
+        val (out, err, code) = captureOutput {
+            CommandLine(GraphiteCommand()).execute("--version")
+        }
+
+        assertEquals(0, code)
+        assertEquals("", err)
+        assertEquals("graphite ${GraphiteVersionProvider.currentVersion()}", out.trim())
+        assertTrue(GraphiteVersionProvider.currentVersion() != "unknown")
     }
 
     // ========================================================================

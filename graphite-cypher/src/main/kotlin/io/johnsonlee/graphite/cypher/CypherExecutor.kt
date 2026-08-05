@@ -43,9 +43,9 @@ private const val PROPERTY_NAME = "name"
  * [QueryPipeline] against the graph. Node values in result rows are
  * converted to property maps for interoperability.
  */
-class CypherExecutor(private val graph: Graph) {
+class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
 
-    private val pipeline = QueryPipeline(graph)
+    constructor(graph: Graph) : this(QueryPipeline(graph))
 
     fun execute(cypher: String): CypherResult {
         // 1. Parse Cypher text into internal AST clauses
@@ -140,18 +140,16 @@ class CypherExecutor(private val graph: Graph) {
         }
         segments.add(current)
 
-        val results = segments.map { segment ->
-            materializeResult(pipeline.execute(segment))
-        }
+        val results = segments.map { segment -> pipeline.execute(segment) }
 
         if (results.isEmpty()) return CypherResult(emptyList(), emptyList())
 
         val columns = results.first().columns
         val combinedRows = results.flatMap { it.rows }
-        val finalRows = if (unionAll) combinedRows else combinedRows.distinct()
+        val finalRows = if (unionAll) combinedRows else distinctRows(combinedRows)
         val limitedRows = maxRows?.let { finalRows.take(it) } ?: finalRows
 
-        return CypherResult(columns, limitedRows)
+        return materializeResult(CypherResult(columns, limitedRows))
     }
 
     /**
@@ -162,16 +160,73 @@ class CypherExecutor(private val graph: Graph) {
      */
     private fun materializeResult(raw: CypherResult): CypherResult {
         val rows = raw.rows.map { row ->
-            row.mapValues { (_, value) -> materializeValue(value) }
+            buildMap {
+                row.forEach { (key, value) ->
+                    if (key != INTERNAL_PROVENANCE_KEY) put(key, materializeValue(value))
+                }
+                @Suppress("UNCHECKED_CAST")
+                val graphIds = row[INTERNAL_PROVENANCE_KEY] as? Set<String>
+                if (!graphIds.isNullOrEmpty()) {
+                    put(RESULT_METADATA_KEY, mapOf(RESULT_GRAPH_IDS_KEY to graphIds.sorted()))
+                }
+            }
         }
         return CypherResult(raw.columns, rows)
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun distinctRows(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
+        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        for (row in rows) {
+            val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+            val existing = byVisibleValues[visible]
+            if (existing == null) {
+                byVisibleValues[visible] = row.toMutableMap()
+            } else {
+                val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                    (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+            }
+        }
+        return byVisibleValues.values.toList()
+    }
+
     private fun materializeValue(value: Any?): Any? = when (value) {
         is GraphiteNode -> nodeToMap(value)
+        is QualifiedNode -> nodeToMap(value.node) + mapOf(
+            GRAPH_ID_PROPERTY to value.graphId,
+            ELEMENT_ID_PROPERTY to value.elementId,
+            QUALIFIED_ID_PROPERTY to value.elementId
+        )
+        is QualifiedEdge -> edgeToMap(value)
+        is QualifiedPath -> mapOf(
+            GRAPH_ID_PROPERTY to value.graphId,
+            "length" to value.edges.size,
+            "nodes" to value.nodes.map { materializeValue(it) },
+            "relationships" to value.edges.map { materializeValue(it) }
+        )
         is List<*> -> value.map { materializeValue(it) }
         is Map<*, *> -> value.mapValues { materializeValue(it.value) }
         else -> value
+    }
+
+    private fun edgeToMap(value: QualifiedEdge): Map<String, Any?> = buildMap {
+        put(GRAPH_ID_PROPERTY, value.graphId)
+        put("from", value.edge.from.value)
+        put("to", value.edge.to.value)
+        put("fromElementId", "${value.graphId}:${value.edge.from.value}")
+        put("toElementId", "${value.graphId}:${value.edge.to.value}")
+        put("type", CypherFunctions.type(value.edge))
+        when (val edge = value.edge) {
+            is io.johnsonlee.graphite.core.DataFlowEdge -> put("kind", edge.kind.name)
+            is io.johnsonlee.graphite.core.CallEdge -> {
+                put("virtual", edge.isVirtual)
+                put("dynamic", edge.isDynamic)
+            }
+            is io.johnsonlee.graphite.core.TypeEdge -> put("kind", edge.kind.name)
+            is io.johnsonlee.graphite.core.ControlFlowEdge -> put("kind", edge.kind.name)
+            is io.johnsonlee.graphite.core.ResourceEdge -> put("kind", edge.kind.name)
+        }
     }
 
     private fun nodeToMap(node: GraphiteNode): Map<String, Any?> {
@@ -242,6 +297,38 @@ class CypherExecutor(private val graph: Graph) {
         }
         return map
     }
+}
+
+/**
+ * Executes one Cypher query over a graph-qualified, read-only union of graphs.
+ *
+ * Node and edge identity remains local to the owning graph internally and is
+ * exposed as `(graphId, id)` / `elementId` in materialized results. Relationship
+ * traversal never crosses graph boundaries; independent patterns and joins can
+ * bind values from different graphs in the same result row.
+ */
+class CrossGraphCypherExecutor(graphs: List<CypherGraph>) {
+    private val delegate: CypherExecutor
+
+    init {
+        require(graphs.map { it.id }.distinct().size == graphs.size) { "Graph ids must be unique" }
+        delegate = CypherExecutor(QueryPipeline(graphs))
+    }
+
+    fun execute(cypher: String): CypherResult = delegate.execute(cypher).withExplicitMetadata()
+
+    fun execute(cypher: String, maxRows: Int): CypherResult =
+        delegate.execute(cypher, maxRows).withExplicitMetadata()
+
+    private fun CypherResult.withExplicitMetadata(): CypherResult = copy(
+        rows = rows.map { row ->
+            if (RESULT_METADATA_KEY in row) {
+                row
+            } else {
+                row + (RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to emptyList<String>()))
+            }
+        }
+    )
 }
 
 /**

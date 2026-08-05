@@ -96,7 +96,7 @@ open class ExplorerMemoryBenchmark {
     @Benchmark
     fun android_initialExplorerSession(counters: ExplorerMemoryCounters): Long =
         measureRetainedHeap(counters) {
-            request("/api/info") +
+            request("/api/graphs") +
                 request("/api/overview?limit=200") +
                 request("/api/methods?limit=200")
         }
@@ -106,9 +106,9 @@ open class ExplorerMemoryBenchmark {
         measureRetainedHeap(counters) {
             var bytes = 0L
             repeat(repeats) {
-                bytes += request("/api/node/$centerNodeId")
-                bytes += request("/api/node/$centerNodeId/outgoing?limit=200")
-                bytes += request("/api/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
+                bytes += request("/api/graphs/standalone/node/$centerNodeId")
+                bytes += request("/api/graphs/standalone/node/$centerNodeId/outgoing?limit=200")
+                bytes += request("/api/graphs/standalone/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
             }
             bytes
         }
@@ -117,10 +117,10 @@ open class ExplorerMemoryBenchmark {
     fun android_longRunningExplorerWaterline(counters: ExplorerMemoryCounters): Long =
         measureWaterline(counters) { cycle, issue ->
             val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
-            issue("/api/node/$nodeId")
-            issue("/api/node/$nodeId/outgoing?limit=200")
+            issue("/api/graphs/standalone/node/$nodeId")
+            issue("/api/graphs/standalone/node/$nodeId/outgoing?limit=200")
             if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
-                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
+                issue("/api/graphs/standalone/subgraph?center=$centerNodeId&depth=2&direction=outgoing")
             }
             if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
                 issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
@@ -131,10 +131,10 @@ open class ExplorerMemoryBenchmark {
     fun android_incomingExplorerWaterline(counters: ExplorerMemoryCounters): Long =
         measureWaterline(counters) { cycle, issue ->
             val nodeId = sampledNodeIds[cycle % sampledNodeIds.size]
-            issue("/api/node/$nodeId")
-            issue("/api/node/$nodeId/incoming?limit=200")
+            issue("/api/graphs/standalone/node/$nodeId")
+            issue("/api/graphs/standalone/node/$nodeId/incoming?limit=200")
             if (cycle % SUBGRAPH_SAMPLE_INTERVAL == 0) {
-                issue("/api/subgraph?center=$centerNodeId&depth=2&direction=incoming")
+                issue("/api/graphs/standalone/subgraph?center=$centerNodeId&depth=2&direction=incoming")
             }
             if (cycle % CYPHER_SAMPLE_INTERVAL == 0) {
                 issue(cypherPath("MATCH (n:CallSiteNode) RETURN n LIMIT 10"))
@@ -165,7 +165,7 @@ open class ExplorerMemoryBenchmark {
 
         forceGc()
         val before = record()
-        issue("/api/info")
+        issue("/api/graphs")
         issue("/api/overview?limit=200")
         issue("/api/methods?limit=200")
 
@@ -370,7 +370,7 @@ open class MultiGraphExplorerBenchmark {
         registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
         val graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
         repeat(graphCount) { index ->
-            registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED, makeDefault = index == 0)
+            registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED)
         }
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))

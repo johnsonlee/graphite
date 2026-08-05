@@ -84,6 +84,8 @@ object CypherFunctions {
 
         // Scalar
         "id" -> id(args[0])
+        "elementid", "qualifiedid" -> elementId(args[0])
+        "graphid" -> graphId(args[0])
         "coalesce" -> coalesce(args)
         "timestamp" -> System.currentTimeMillis()
         "tointeger", "toint" -> toInteger(args[0])
@@ -192,6 +194,20 @@ object CypherFunctions {
 
     private fun id(value: Any?): Any? = when (value) {
         is Node -> value.id.value
+        is QualifiedNode -> value.node.id.value
+        else -> null
+    }
+
+    private fun elementId(value: Any?): String? = when (value) {
+        is QualifiedNode -> value.elementId
+        is Node -> value.id.value.toString()
+        else -> null
+    }
+
+    private fun graphId(value: Any?): String? = when (value) {
+        is QualifiedNode -> value.graphId
+        is QualifiedEdge -> value.graphId
+        is QualifiedPath -> value.graphId
         else -> null
     }
 
@@ -222,15 +238,22 @@ object CypherFunctions {
 
     private fun properties(value: Any?): Map<String, Any?>? = when (value) {
         is Node -> NodePropertyAccessor.getAllProperties(value)
+        is QualifiedNode -> NodePropertyAccessor.getAllProperties(value.node) + mapOf(
+            "graphId" to value.graphId,
+            "elementId" to value.elementId,
+            "qualifiedId" to value.elementId
+        )
         else -> null
     }
 
     private fun keys(value: Any?): List<String>? = when (value) {
         is Node -> NodePropertyAccessor.getAllProperties(value).keys.toList()
+        is QualifiedNode -> properties(value)?.keys?.toList()
         else -> null
     }
 
     internal fun labels(value: Any?): List<String> = when (value) {
+        is QualifiedNode -> labels(value.node)
         is CallSiteNode -> listOf("CallSiteNode")
         is IntConstant -> listOf("IntConstant", CONSTANT_LABEL)
         is StringConstant -> listOf("StringConstant", CONSTANT_LABEL)
@@ -251,6 +274,7 @@ object CypherFunctions {
     }
 
     internal fun type(value: Any?): String? = when (value) {
+        is QualifiedEdge -> type(value.edge)
         is DataFlowEdge -> "DATAFLOW"
         is CallEdge -> "CALL"
         is TypeEdge -> "TYPE"
@@ -268,6 +292,7 @@ object CypherFunctions {
     private fun size(value: Any?): Int? = when (value) {
         is String -> value.length
         is List<*> -> value.size
+        is QualifiedPath -> value.edges.size
         else -> null
     }
 
@@ -297,15 +322,17 @@ object CypherFunctions {
         else (start downTo end step -step).toList()
     }
 
-    private fun nodes(value: Any?): List<Node>? = when (value) {
+    private fun nodes(value: Any?): List<*>? = when (value) {
+        is QualifiedPath -> value.nodes
         is PathFinder.Path -> value.nodes
-        is List<*> -> value.filterIsInstance<Node>()
+        is List<*> -> value.filter { it is Node || it is QualifiedNode }
         else -> null
     }
 
-    private fun relationships(value: Any?): List<Edge>? = when (value) {
+    private fun relationships(value: Any?): List<*>? = when (value) {
+        is QualifiedPath -> value.edges
         is PathFinder.Path -> value.edges
-        is List<*> -> value.filterIsInstance<Edge>()
+        is List<*> -> value.filter { it is Edge || it is QualifiedEdge }
         else -> null
     }
 

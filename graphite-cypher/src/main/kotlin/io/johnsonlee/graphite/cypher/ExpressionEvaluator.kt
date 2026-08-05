@@ -173,6 +173,13 @@ class ExpressionEvaluator {
         a is Number && b is Number -> toDouble(a).compareTo(toDouble(b))
         a is String && b is String -> a.compareTo(b)
         a is Boolean && b is Boolean -> a.compareTo(b)
+        a is QualifiedNode && b is QualifiedNode ->
+            if (a == b) 0 else a.elementId.compareTo(b.elementId)
+        a is QualifiedEdge && b is QualifiedEdge -> if (a == b) {
+            0
+        } else {
+            "${a.graphId}:${a.edge}".compareTo("${b.graphId}:${b.edge}")
+        }
         else -> a.toString().compareTo(b.toString())
     }
 
@@ -316,11 +323,26 @@ class ExpressionEvaluator {
     // Property resolution
     // ========================================================================
 
+    @Suppress("CyclomaticComplexMethod")
     private fun resolveProperty(obj: Any?, propertyName: String): Any? = when (obj) {
         is Node -> NodePropertyAccessor.getProperty(obj, propertyName)
+        is QualifiedNode -> when (propertyName) {
+            GRAPH_ID_PROPERTY -> obj.graphId
+            ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY -> obj.elementId
+            else -> NodePropertyAccessor.getProperty(obj.node, propertyName)
+        }
         is Edge -> getEdgeProperty(obj, propertyName)
+        is QualifiedEdge -> when (propertyName) {
+            GRAPH_ID_PROPERTY -> obj.graphId
+            else -> getEdgeProperty(obj.edge, propertyName)
+        }
         is Map<*, *> -> obj[propertyName]
         is PathFinder.Path -> when (propertyName) {
+            "length" -> obj.edges.size
+            else -> null
+        }
+        is QualifiedPath -> when (propertyName) {
+            GRAPH_ID_PROPERTY -> obj.graphId
             "length" -> obj.edges.size
             else -> null
         }

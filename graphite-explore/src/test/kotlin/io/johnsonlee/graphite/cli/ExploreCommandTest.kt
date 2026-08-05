@@ -56,6 +56,11 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -277,6 +282,20 @@ class ExploreCommandTest {
         return output
     }
 
+    private fun saveCollidingGraph(root: Path, directory: String, value: Int, resource: String): Path {
+        val output = root.resolve(directory)
+        val constant = IntConstant(NodeId(7), value)
+        val local = LocalVariable(NodeId(8), "value", TypeDescriptor("int"), barMethod)
+        val graph = DefaultGraph.Builder()
+            .setResources(TestResourceAccessor(mapOf("shared/config.txt" to resource)))
+            .addNode(constant)
+            .addNode(local)
+            .addEdge(DataFlowEdge(constant.id, local.id, DataFlowKind.ASSIGN))
+            .build()
+        GraphStore.save(graph, output)
+        return output
+    }
+
     private inline fun <reified T> parseJson(json: String): T {
         return gson.fromJson(json, object : TypeToken<T>() {}.type)
     }
@@ -343,18 +362,34 @@ class ExploreCommandTest {
     }
 
     // ========================================================================
-    // /api/info
+    // /api/graphs statistics
     // ========================================================================
 
     @Test
-    fun `GET api info returns stats`() {
-        val (code, body) = get("/api/info")
+    fun `GET api graphs returns cached stats and totals`() {
+        val (code, body) = get("/api/graphs")
         assertEquals(200, code, "Expected 200 but got $code, body: $body")
-        val info: Map<String, Double> = parseJson(body)
-        assertEquals(10.0, info["nodes"])
-        assertEquals(5.0, info["edges"])
-        assertEquals(3.0, info["methods"])
-        assertEquals(1.0, info["callSites"])
+        val response: Map<String, Any?> = parseJson(body)
+        @Suppress("UNCHECKED_CAST")
+        val totals = response["totals"] as Map<String, Any?>
+        assertEquals(10.0, totals["nodes"])
+        assertEquals(5.0, totals["edges"])
+        assertEquals(3.0, totals["methods"])
+        assertEquals(1.0, totals["callSites"])
+        @Suppress("UNCHECKED_CAST")
+        val graphs = response[API_FIELD_GRAPHS] as List<Map<String, Any?>>
+        assertEquals(STANDALONE_GRAPH_ID, graphs.single()[API_FIELD_ID])
+        assertEquals(10.0, graphs.single()[API_FIELD_NODES])
+
+        val (detailCode, detailBody) = get("/api/graphs/$STANDALONE_GRAPH_ID")
+        assertEquals(200, detailCode, detailBody)
+        val detail: Map<String, Any?> = parseJson(detailBody)
+        @Suppress("UNCHECKED_CAST")
+        val graph = detail["graph"] as Map<String, Any?>
+        assertEquals(5.0, graph[API_FIELD_EDGES])
+        assertEquals(404, get("/api/graphs/missing").first)
+        assertEquals(400, get("/api/graphs/bad%20id").first)
+        assertEquals(404, get("/api/info").first)
     }
 
     @Test
@@ -371,17 +406,21 @@ class ExploreCommandTest {
                 val emptyResult: Map<String, Any?> = parseJson(emptyBody)
                 assertEquals(0.0, emptyResult["count"])
                 assertEquals(root.toString(), emptyResult["data"])
-
-                val (missingDefaultCode, _) = get(targetPort, "/api/info")
-                assertEquals(404, missingDefaultCode)
+                @Suppress("UNCHECKED_CAST")
+                val emptyTotals = emptyResult["totals"] as Map<String, Any?>
+                assertEquals(0.0, emptyTotals[API_FIELD_NODES])
 
                 val (loadCode, loadBody) = put(targetPort, "/api/graphs/service-a", """{"path":"service-a"}""")
                 assertEquals(200, loadCode, "Expected 200, body: $loadBody")
 
-                val (infoCode, infoBody) = get(targetPort, "/api/graphs/service-a/info")
-                assertEquals(200, infoCode, "Expected 200, body: $infoBody")
-                val info: Map<String, Double> = parseJson(infoBody)
-                assertEquals(1.0, info["nodes"])
+                val (detailCode, detailBody) = get(targetPort, "/api/graphs/service-a")
+                assertEquals(200, detailCode, "Expected 200, body: $detailBody")
+                val detail: Map<String, Any?> = parseJson(detailBody)
+                @Suppress("UNCHECKED_CAST")
+                val graph = detail["graph"] as Map<String, Any?>
+                assertEquals("service-a", graph[API_FIELD_ID])
+                assertEquals(1.0, graph[API_FIELD_NODES])
+                assertEquals(0.0, graph[API_FIELD_METHODS])
 
                 val (cypherCode, cypherBody) = post(
                     targetPort,
@@ -399,13 +438,13 @@ class ExploreCommandTest {
                 assertEquals(200, queryLoadCode, "Expected 200, body: $queryLoadBody")
                 assertTrue(queryLoadBody.contains("EAGER"), "Expected query load mode to be honored, body: $queryLoadBody")
 
-                val (invalidScopedCode, invalidScopedBody) = get(targetPort, "/api/graphs/bad%20id/info")
+                val (invalidScopedCode, invalidScopedBody) = get(targetPort, "/api/graphs/bad%20id")
                 assertEquals(400, invalidScopedCode, "Expected 400, body: $invalidScopedBody")
                 assertTrue(invalidScopedBody.contains("Invalid graph id"), "Expected invalid id error, body: $invalidScopedBody")
 
                 val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/service-a")
                 assertEquals(204, deleteCode, "Expected 204, body: $deleteBody")
-                val (missingAfterDeleteCode, _) = get(targetPort, "/api/graphs/service-a/info")
+                val (missingAfterDeleteCode, _) = get(targetPort, "/api/graphs/service-a")
                 assertEquals(404, missingAfterDeleteCode)
 
                 val (missingDeleteCode, missingDeleteBody) = delete(targetPort, "/api/graphs/service-a")
@@ -420,6 +459,174 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `root graph APIs query all graphs without collisions and preserve graph identity`() {
+        val root = Files.createTempDirectory("explore-registry-root-all")
+        try {
+            saveCollidingGraph(root, "service-a", 101, "from-a")
+            saveCollidingGraph(root, "service-b", 202, "from-b")
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+
+            withRegistryApp(registry) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+
+                val (graphsCode, graphsBody) = get(targetPort, "/api/graphs")
+                assertEquals(200, graphsCode, graphsBody)
+                val graphRegistry: Map<String, Any?> = parseJson(graphsBody)
+                assertEquals(2.0, graphRegistry[API_FIELD_COUNT])
+                @Suppress("UNCHECKED_CAST")
+                val totals = graphRegistry["totals"] as Map<String, Any?>
+                assertEquals(4.0, totals[API_FIELD_NODES])
+
+                val (limitedCode, limitedBody) = get(targetPort, "/api/nodes?limit=1")
+                assertEquals(200, limitedCode, limitedBody)
+                val limitedEnvelope: Map<String, Any?> = parseJson(limitedBody)
+                @Suppress("UNCHECKED_CAST")
+                val limitedGroups = limitedEnvelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
+                val limitedCount = limitedGroups.sumOf { (it[API_FIELD_DATA] as List<*>).size }
+                assertEquals(1, limitedCount, "Root limit must be global, body: $limitedBody")
+
+                val (resourceCode, resourceBody) = get(targetPort, "/api/resources/shared/config.txt")
+                assertEquals(200, resourceCode, resourceBody)
+                val resourceEnvelope: Map<String, Any?> = parseJson(resourceBody)
+                @Suppress("UNCHECKED_CAST")
+                val resourceGroups = resourceEnvelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
+                val resourcesByGraph = resourceGroups.associate { group ->
+                    @Suppress("UNCHECKED_CAST")
+                    val data = group[API_FIELD_DATA] as Map<String, Any?>
+                    group[API_FIELD_GRAPH_ID] as String to data[API_FIELD_CONTENT]
+                }
+                assertEquals(mapOf("service-a" to "from-a", "service-b" to "from-b"), resourcesByGraph)
+
+                val query = "MATCH (a:IntConstant), (b:IntConstant) " +
+                    "WHERE graphId(a) <> graphId(b) " +
+                    "RETURN a.value, b.value, elementId(a), elementId(b)"
+                val (cypherCode, cypherBody) = post(targetPort, "/api/cypher", """{"query":"$query"}""")
+                assertEquals(200, cypherCode, cypherBody)
+                val cypherResult: Map<String, Any?> = parseJson(cypherBody)
+                @Suppress("UNCHECKED_CAST")
+                val rows = cypherResult[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(2, rows.size)
+                assertTrue(
+                    rows.all {
+                        @Suppress("UNCHECKED_CAST")
+                        val metadata = it["\$metadata"] as Map<String, Any?>
+                        metadata["graphIds"] == listOf("service-a", "service-b")
+                    }
+                )
+                assertEquals(
+                    setOf("service-a:7" to "service-b:7", "service-b:7" to "service-a:7"),
+                    rows.map { it["elementId(a)"] as String to it["elementId(b)"] as String }.toSet()
+                )
+
+                val (selectedCode, selectedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graphs":["service-a","service-b"]}"""
+                )
+                assertEquals(200, selectedCode, selectedBody)
+                val selectedResult: Map<String, Any?> = parseJson(selectedBody)
+                assertEquals("cross-graph", selectedResult[API_PARAM_MODE])
+                assertEquals(2.0, selectedResult[API_FIELD_ROW_COUNT])
+
+                val (unscopedCode, unscopedBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"MATCH (n) RETURN n"}"""
+                )
+                assertEquals(400, unscopedCode, unscopedBody)
+                assertTrue(unscopedBody.contains("Specify exactly one"), unscopedBody)
+
+                val (crossFanoutOptionCode, crossFanoutOptionBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"MATCH (n) RETURN n","allGraphs":true,"includeGraphRows":true}"""
+                )
+                assertEquals(400, crossFanoutOptionCode, crossFanoutOptionBody)
+                assertTrue(crossFanoutOptionBody.contains("fanout mode"), crossFanoutOptionBody)
+
+                val (scopedCode, scopedBody) = get(targetPort, "/api/graphs/service-a/node/7")
+                assertEquals(200, scopedCode, scopedBody)
+                val scopedNode: Map<String, Any?> = parseJson(scopedBody)
+                assertEquals(101.0, scopedNode[API_FIELD_VALUE])
+                assertFalse(API_FIELD_GRAPH_ID in scopedNode, "Scoped response remains the direct single-graph shape")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `root all-graph surface returns grouped results for every graph-bound API`() {
+        val registry = GraphRegistry(graphDir.parent, GraphStore.LoadMode.MAPPED)
+
+        withRegistryApp(registry) { targetPort ->
+            registry.load("service-a", graphDir)
+            registry.load("service-b", graphDir)
+
+            val groupedPaths = listOf(
+                "/api/call-sites?method=baz&limit=10",
+                "/api/methods?class=com.example.Foo&limit=10",
+                "/api/annotations?class=com.example.Foo&member=bar",
+                "/api/resources?pattern=**&limit=10",
+                "/api/endpoints?class=com.example.Foo&limit=10",
+                "/api/overview?limit=10"
+            )
+            groupedPaths.forEach { path ->
+                val (code, body) = get(targetPort, path)
+                assertEquals(200, code, "$path failed: $body")
+                val envelope: Map<String, Any?> = parseJson(body)
+                assertEquals(2.0, envelope["graphCount"], "$path was not grouped: $body")
+                @Suppress("UNCHECKED_CAST")
+                val groups = envelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
+                assertEquals(listOf("service-a", "service-b"), groups.map { it[API_FIELD_GRAPH_ID] })
+            }
+
+            val (scopedEndpointsCode, scopedEndpointsBody) = get(
+                targetPort,
+                "/api/graphs/service-a/endpoints?class=com.example.Foo"
+            )
+            assertEquals(200, scopedEndpointsCode, scopedEndpointsBody)
+            val scopedEndpoints: Map<String, Any?> = parseJson(scopedEndpointsBody)
+            assertEquals("spring-web", scopedEndpoints["framework"])
+            assertFalse("graphCount" in scopedEndpoints)
+
+            listOf("json", "mermaid", "plantuml", "dsl").forEach { format ->
+                val (code, body) = get(targetPort, "/api/architecture/c4?level=all&format=$format")
+                assertEquals(200, code, "C4 $format failed: $body")
+                assertTrue(body.contains("service-a"), "C4 $format must identify service-a")
+                assertTrue(body.contains("service-b"), "C4 $format must identify service-b")
+            }
+
+            val encodedQuery = java.net.URLEncoder.encode(
+                "MATCH (n:IntConstant) RETURN elementId(n)",
+                Charsets.UTF_8
+            )
+            val (cypherCode, cypherBody) = get(targetPort, "/api/cypher?query=$encodedQuery&limit=2")
+            assertEquals(200, cypherCode, cypherBody)
+            val cypher: Map<String, Any?> = parseJson(cypherBody)
+            assertEquals(2.0, cypher[API_FIELD_ROW_COUNT])
+
+            assertEquals(404, get(targetPort, "/api/node/1").first)
+            assertEquals(404, get(targetPort, "/api/node/1/outgoing").first)
+            assertEquals(404, get(targetPort, "/api/node/1/incoming").first)
+            assertEquals(404, get(targetPort, "/api/subgraph?center=1").first)
+            assertEquals(400, get(targetPort, "/api/annotations?class=com.example.Foo").first)
+            assertEquals(404, get(targetPort, "/api/resources/missing.txt").first)
+            assertEquals(400, get(targetPort, "/api/architecture/c4?level=invalid").first)
+            assertEquals(400, get(targetPort, "/api/architecture/c4?format=invalid").first)
+            assertEquals(400, get(targetPort, "/api/cypher").first)
+
+            val (postLoadCode, postLoadBody) = post(
+                targetPort,
+                "/api/graphs/service-c",
+                """{"path":"$graphDir"}"""
+            )
+            assertEquals(200, postLoadCode, postLoadBody)
+        }
+    }
+
+    @Test
     fun `registry cypher endpoint fans out across loaded graphs`() {
         val root = Files.createTempDirectory("explore-registry-fanout")
         try {
@@ -428,11 +635,15 @@ class ExploreCommandTest {
             val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
 
             withRegistryApp(registry) { targetPort ->
-                registry.load("service-a", Path.of("service-a"), makeDefault = false)
-                registry.load("service-b", Path.of("service-b"), makeDefault = false)
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
 
                 val query = "MATCH (n:IntConstant) RETURN n.value"
-                val (allCode, allBody) = post(targetPort, "/api/cypher/graphs", """{"query":"$query"}""")
+                val (allCode, allBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout"}"""
+                )
                 assertEquals(200, allCode, "Expected 200, body: $allBody")
                 val allResult: Map<String, Any?> = parseJson(allBody)
                 assertEquals(2.0, allResult["graphCount"])
@@ -457,7 +668,7 @@ class ExploreCommandTest {
                 val (subsetCode, subsetBody) = post(
                     targetPort,
                     "/api/cypher/graphs",
-                    """{"query":"$query","graphs":["service-b"]}"""
+                    """{"query":"$query","graphs":["service-b"],"mode":"fanout"}"""
                 )
                 assertEquals(200, subsetCode, "Expected 200, body: $subsetBody")
                 val subsetResult: Map<String, Any?> = parseJson(subsetBody)
@@ -470,7 +681,7 @@ class ExploreCommandTest {
                 val encodedQuery = java.net.URLEncoder.encode(query, Charsets.UTF_8)
                 val (getSubsetCode, getSubsetBody) = get(
                     targetPort,
-                    "/api/cypher/graphs?query=$encodedQuery&graph=service-a"
+                    "/api/cypher/graphs?query=$encodedQuery&graph=service-a&mode=fanout"
                 )
                 assertEquals(200, getSubsetCode, "Expected 200, body: $getSubsetBody")
                 val getSubsetResult: Map<String, Any?> = parseJson(getSubsetBody)
@@ -502,14 +713,14 @@ class ExploreCommandTest {
             val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
 
             withRegistryApp(registry) { targetPort ->
-                registry.load("service-a", Path.of("service-a"), makeDefault = false)
-                registry.load("service-b", Path.of("service-b"), makeDefault = false)
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
 
                 val query = "MATCH (n:IntConstant) RETURN n.value"
                 val (cappedCode, cappedBody) = post(
                     targetPort,
                     "/api/cypher/graphs",
-                    """{"query":"$query","graphs":["service-a","service-b"],"limit":4,"perGraphLimit":3}"""
+                    """{"query":"$query","graphs":["service-a","service-b"],"mode":"fanout","limit":4,"perGraphLimit":3}"""
                 )
                 assertEquals(200, cappedCode, "Expected 200, body: $cappedBody")
                 val cappedResult: Map<String, Any?> = parseJson(cappedBody)
@@ -528,7 +739,7 @@ class ExploreCommandTest {
                 val (groupedCode, groupedBody) = post(
                     targetPort,
                     "/api/cypher/graphs?includeGraphRows=true",
-                    """{"query":"$query","graphs":["service-a","service-b"],"limit":2,"perGraphLimit":1}"""
+                    """{"query":"$query","graphs":["service-a","service-b"],"mode":"fanout","limit":2,"perGraphLimit":1}"""
                 )
                 assertEquals(200, groupedCode, "Expected 200, body: $groupedBody")
                 val groupedResult: Map<String, Any?> = parseJson(groupedBody)
@@ -555,11 +766,15 @@ class ExploreCommandTest {
 
             withRegistryApp(registry) { targetPort ->
                 repeat(graphCount) { graphIndex ->
-                    registry.load("service-$graphIndex", Path.of("service-$graphIndex"), makeDefault = false)
+                    registry.load("service-$graphIndex", Path.of("service-$graphIndex"))
                 }
 
                 val query = "MATCH (n:IntConstant) RETURN n.value"
-                val (code, body) = post(targetPort, "/api/cypher/graphs", """{"query":"$query"}""")
+                val (code, body) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout"}"""
+                )
                 assertEquals(200, code, "Expected 200, body: $body")
                 val result: Map<String, Any?> = parseJson(body)
                 assertEquals(graphCount.toDouble(), result["graphCount"])
@@ -596,18 +811,96 @@ class ExploreCommandTest {
                 assertEquals(200, firstQueryCode, "Expected 200, body: $firstQueryBody")
                 assertEquals(1.0, singleCypherValue(firstQueryBody), "Expected v1 value, body: $firstQueryBody")
 
-                val (secondLoadCode, secondLoadBody) = put(targetPort, "/api/graphs/service", """{"path":"service-v2"}""")
-                assertEquals(200, secondLoadCode, "Expected 200, body: $secondLoadBody")
-                val (secondQueryCode, secondQueryBody) = post(
-                    targetPort,
-                    "/api/graphs/service/cypher",
-                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
-                )
-                assertEquals(200, secondQueryCode, "Expected 200, body: $secondQueryBody")
-                assertEquals(2.0, singleCypherValue(secondQueryBody), "Expected v2 value, body: $secondQueryBody")
+                registry.acquire("service")!!.use { oldLease ->
+                    val (secondLoadCode, secondLoadBody) = put(
+                        targetPort,
+                        "/api/graphs/service",
+                        """{"path":"service-v2"}"""
+                    )
+                    assertEquals(200, secondLoadCode, "Expected 200, body: $secondLoadBody")
+
+                    val oldValues = oldLease.graph.nodes(IntConstant::class.java).map { it.value }.toList()
+                    assertEquals(listOf(1), oldValues, "In-flight lease must retain the old graph snapshot")
+
+                    val (secondQueryCode, secondQueryBody) = post(
+                        targetPort,
+                        "/api/graphs/service/cypher",
+                        """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                    )
+                    assertEquals(200, secondQueryCode, "Expected 200, body: $secondQueryBody")
+                    assertEquals(2.0, singleCypherValue(secondQueryBody), "Expected v2 value, body: $secondQueryBody")
+                }
             }
         } finally {
             root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry refresh never exposes an acquire gap`() {
+        val root = Files.createTempDirectory("explore-registry-refresh-race")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val executor = Executors.newFixedThreadPool(5)
+            val start = CountDownLatch(1)
+            val refreshComplete = AtomicBoolean()
+            val failures = ConcurrentLinkedQueue<String>()
+            try {
+                registry.load("service", Path.of("service-v1"))
+                val refresher = executor.submit {
+                    start.await()
+                    try {
+                        repeat(1_000) { index ->
+                            registry.load("service", Path.of("service-v${index % 2 + 1}"))
+                        }
+                    } finally {
+                        refreshComplete.set(true)
+                    }
+                }
+                val readers = List(4) { readerIndex ->
+                    executor.submit {
+                        start.await()
+                        var reads = 0
+                        while (!refreshComplete.get() || reads < 2_000) {
+                            if (readerIndex % 2 == 0) {
+                                val lease = registry.acquire("service")
+                                if (lease == null) {
+                                    failures += "scoped acquire returned null"
+                                } else {
+                                    lease.use { assertRefreshValue(it.graph, failures) }
+                                }
+                            } else {
+                                val leases = registry.acquireAll()
+                                if (leases.size != 1) {
+                                    failures += "all-graph acquire returned ${leases.size} graphs"
+                                }
+                                leases.forEach { lease -> lease.use { assertRefreshValue(it.graph, failures) } }
+                            }
+                            reads++
+                        }
+                    }
+                }
+
+                start.countDown()
+                refresher.get(30, TimeUnit.SECONDS)
+                readers.forEach { it.get(30, TimeUnit.SECONDS) }
+
+                assertTrue(failures.isEmpty(), failures.firstOrNull() ?: "Unexpected refresh failure")
+            } finally {
+                executor.shutdownNow()
+                registry.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    private fun assertRefreshValue(graph: Graph, failures: ConcurrentLinkedQueue<String>) {
+        val values = graph.nodes(IntConstant::class.java).map { it.value }.toList()
+        if (values != listOf(1) && values != listOf(2)) {
+            failures += "acquired partial graph values: $values"
         }
     }
 
@@ -619,17 +912,17 @@ class ExploreCommandTest {
             saveConstantGraph(root, "service-b", 2)
             val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
             try {
-                val first = registry.load(" service-a ", Path.of("service-a"), makeDefault = false)
-                val second = registry.load("service-b", Path.of("service-b"), makeDefault = false)
+                val first = registry.load(" service-a ", Path.of("service-a"))
+                val second = registry.load("service-b", Path.of("service-b"))
                 assertEquals("service-a", first.id)
                 assertEquals("service-b", second.id)
 
-                val heldLease = registry.acquireDefault()
+                val heldLease = registry.acquire("service-a")
                 assertEquals("service-a", heldLease?.id)
 
                 assertTrue(registry.unload("service-a"))
                 assertNull(registry.acquire("service-a"))
-                registry.acquireDefault()?.use { lease ->
+                registry.acquire("service-b")?.use { lease ->
                     assertEquals("service-b", lease.id)
                 }
                 assertFalse(registry.unload("missing"))
@@ -746,8 +1039,20 @@ class ExploreCommandTest {
     // ========================================================================
 
     @Test
+    fun `graph-local id routes require an explicit graph id`() {
+        listOf(
+            "/api/node/${paramNode.id.value}",
+            "/api/node/${paramNode.id.value}/outgoing",
+            "/api/node/${localNode.id.value}/incoming",
+            "/api/subgraph?center=${localNode.id.value}"
+        ).forEach { path ->
+            assertEquals(404, get(path).first, "$path must not be available without graphId")
+        }
+    }
+
+    @Test
     fun `GET api node by id returns node`() {
-        val (code, body) = get("/api/node/${paramNode.id.value}")
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}")
         assertEquals(200, code)
         val node: Map<String, Any?> = parseJson(body)
         assertEquals("ParameterNode", node["type"])
@@ -756,13 +1061,13 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node by id returns 404 for missing`() {
-        val (code, _) = get("/api/node/999999")
+        val (code, _) = get("/api/graphs/standalone/node/999999")
         assertEquals(404, code)
     }
 
     @Test
     fun `GET api node by id returns 400 for invalid id`() {
-        val (code, _) = get("/api/node/notanumber")
+        val (code, _) = get("/api/graphs/standalone/node/notanumber")
         assertEquals(400, code)
     }
 
@@ -772,7 +1077,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node outgoing returns edges`() {
-        val (code, body) = get("/api/node/${paramNode.id.value}/outgoing")
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}/outgoing")
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertTrue(edges.isNotEmpty(), "paramNode should have outgoing edges")
@@ -781,7 +1086,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node outgoing returns empty for isolated node`() {
-        val (code, body) = get("/api/node/${strConstNode.id.value}/outgoing")
+        val (code, body) = get("/api/graphs/standalone/node/${strConstNode.id.value}/outgoing")
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertTrue(edges.isEmpty(), "strConstNode should have no outgoing edges")
@@ -789,7 +1094,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node outgoing respects limit`() {
-        val (code, body) = get("/api/node/${paramNode.id.value}/outgoing?limit=0")
+        val (code, body) = get("/api/graphs/standalone/node/${paramNode.id.value}/outgoing?limit=0")
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertTrue(edges.isEmpty(), "limit=0 should return no outgoing edges")
@@ -797,7 +1102,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node outgoing returns 400 for invalid id`() {
-        val (code, _) = get("/api/node/abc/outgoing")
+        val (code, _) = get("/api/graphs/standalone/node/abc/outgoing")
         assertEquals(400, code)
     }
 
@@ -807,7 +1112,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node incoming returns edges`() {
-        val (code, body) = get("/api/node/${localNode.id.value}/incoming")
+        val (code, body) = get("/api/graphs/standalone/node/${localNode.id.value}/incoming")
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertTrue(edges.size >= 2, "localNode should have at least 2 incoming edges (param + intConst)")
@@ -815,7 +1120,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node incoming respects limit`() {
-        val (code, body) = get("/api/node/${localNode.id.value}/incoming?limit=1")
+        val (code, body) = get("/api/graphs/standalone/node/${localNode.id.value}/incoming?limit=1")
         assertEquals(200, code)
         val edges: List<Map<String, Any?>> = parseJson(body)
         assertEquals(1, edges.size)
@@ -823,7 +1128,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api node incoming returns 400 for invalid id`() {
-        val (code, _) = get("/api/node/xyz/incoming")
+        val (code, _) = get("/api/graphs/standalone/node/xyz/incoming")
         assertEquals(400, code)
     }
 
@@ -1028,7 +1333,10 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/api/graphs"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/cypher"))
-        assertTrue(paths.containsKey("/api/api-spec"))
+        assertFalse(paths.containsKey("/api/info"))
+        assertFalse(paths.containsKey("/api/graphs/{graphId}/info"))
+        assertTrue(paths.containsKey("/api/endpoints"))
+        assertFalse(paths.containsKey("/api/api-spec"))
         assertTrue(paths.containsKey("/api/resources/{path}"))
         @Suppress("UNCHECKED_CAST")
         val cypher = paths["/api/cypher"] as Map<String, Map<String, Any?>>
@@ -1049,12 +1357,12 @@ class ExploreCommandTest {
     }
 
     // ========================================================================
-    // /api/api-spec
+    // /api/endpoints
     // ========================================================================
 
     @Test
-    fun `GET api api-spec returns Spring endpoints`() {
-        val (code, body) = get("/api/api-spec")
+    fun `GET api endpoints returns Spring endpoints`() {
+        val (code, body) = get("/api/endpoints")
         assertEquals(200, code, "Expected 200, body: $body")
         val result: Map<String, Any?> = parseJson(body)
         assertEquals("spring-web", result["framework"])
@@ -1067,18 +1375,19 @@ class ExploreCommandTest {
         assertEquals("GET", endpoint["httpMethod"])
         assertEquals("/v1/api/bar", endpoint["path"])
         assertEquals(barMethod.signature, endpoint["signature"])
+        assertEquals(404, get("/api/api-spec").first)
     }
 
     @Test
-    fun `GET api api-spec supports class filter`() {
-        val (code, body) = get("/api/api-spec?class=com.example.Foo")
+    fun `GET api endpoints supports class filter`() {
+        val (code, body) = get("/api/endpoints?class=com.example.Foo")
         assertEquals(200, code, "Expected 200, body: $body")
         val result: Map<String, Any?> = parseJson(body)
         @Suppress("UNCHECKED_CAST")
         val endpoints = result["endpoints"] as List<Map<String, Any?>>
         assertEquals(1, endpoints.size)
 
-        val (missingCode, missingBody) = get("/api/api-spec?class=com.example.Baz")
+        val (missingCode, missingBody) = get("/api/endpoints?class=com.example.Baz")
         assertEquals(200, missingCode, "Expected 200, body: $missingBody")
         val missingResult: Map<String, Any?> = parseJson(missingBody)
         @Suppress("UNCHECKED_CAST")
@@ -1087,7 +1396,7 @@ class ExploreCommandTest {
     }
 
     @Test
-    fun `extractApiSpec handles RequestMapping arrays iterables and default request method`() {
+    fun `extractEndpoints handles RequestMapping arrays iterables and default request method`() {
         val method = MethodDescriptor(
             TypeDescriptor("com.example.RequestController"),
             "handle",
@@ -1126,7 +1435,7 @@ class ExploreCommandTest {
             )
             .build()
 
-        val endpoints = ExploreCommand().extractApiSpec(graph)
+        val endpoints = ExploreCommand().extractEndpoints(graph)
 
         assertEquals(10, endpoints.size)
         val fallbackEndpoints = endpoints.filter { it["member"] == "fallback" }
@@ -1145,18 +1454,18 @@ class ExploreCommandTest {
     }
 
     @Test
-    fun `private API spec helpers cover all HTTP mapping branches`() {
-        val extractor = ApiSpecExtractor()
-        val extractHttpMethods = ApiSpecExtractor::class.java.getDeclaredMethod(
+    fun `private endpoint helpers cover all HTTP mapping branches`() {
+        val extractor = EndpointExtractor()
+        val extractHttpMethods = EndpointExtractor::class.java.getDeclaredMethod(
             "extractHttpMethods",
             String::class.java,
             Map::class.java
         ).apply { isAccessible = true }
-        val extractStringValues = ApiSpecExtractor::class.java.getDeclaredMethod(
+        val extractStringValues = EndpointExtractor::class.java.getDeclaredMethod(
             "extractStringValues",
             Any::class.java
         ).apply { isAccessible = true }
-        val combinePaths = ApiSpecExtractor::class.java.getDeclaredMethod(
+        val combinePaths = EndpointExtractor::class.java.getDeclaredMethod(
             "combinePaths",
             List::class.java,
             List::class.java
@@ -1201,6 +1510,18 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/swagger.json"))
         assertTrue(paths.containsKey("/api/architecture/c4"))
         assertTrue(paths.containsKey("/api/cypher/graphs"))
+        @Suppress("UNCHECKED_CAST")
+        val graphDetail = paths["/api/graphs/{graphId}"] as Map<String, Map<String, Any?>>
+        assertTrue(graphDetail.containsKey("get"))
+        assertFalse(paths.containsKey("/api/node/{id}"))
+        assertFalse(paths.containsKey("/api/node/{id}/outgoing"))
+        assertFalse(paths.containsKey("/api/node/{id}/incoming"))
+        assertFalse(paths.containsKey("/api/subgraph"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/node/{id}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/subgraph"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/resources/{path}"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/endpoints"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/architecture/c4"))
         @Suppress("UNCHECKED_CAST")
         val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
         @Suppress("UNCHECKED_CAST")
@@ -1479,7 +1800,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api subgraph returns nodes and edges`() {
-        val (code, body) = get("/api/subgraph?center=${localNode.id.value}&depth=1")
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${localNode.id.value}&depth=1")
         assertEquals(200, code)
         val subgraph: Map<String, Any?> = parseJson(body)
         assertTrue(subgraph.containsKey("nodes"), "Should contain 'nodes' key")
@@ -1491,7 +1812,7 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api subgraph with depth 0 returns only center node`() {
-        val (code, body) = get("/api/subgraph?center=${fieldNode.id.value}&depth=0")
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${fieldNode.id.value}&depth=0")
         assertEquals(200, code)
         val subgraph: Map<String, Any?> = parseJson(body)
         @Suppress("UNCHECKED_CAST")
@@ -1504,19 +1825,19 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api subgraph missing center returns 400`() {
-        val (code, _) = get("/api/subgraph?depth=2")
+        val (code, _) = get("/api/graphs/standalone/subgraph?depth=2")
         assertEquals(400, code)
     }
 
     @Test
     fun `GET api subgraph with invalid center returns 400`() {
-        val (code, _) = get("/api/subgraph?center=notanumber")
+        val (code, _) = get("/api/graphs/standalone/subgraph?center=notanumber")
         assertEquals(400, code)
     }
 
     @Test
     fun `GET api subgraph defaults to depth 2`() {
-        val (code, body) = get("/api/subgraph?center=${localNode.id.value}")
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=${localNode.id.value}")
         assertEquals(200, code)
         val subgraph: Map<String, Any?> = parseJson(body)
         @Suppress("UNCHECKED_CAST")
@@ -1527,7 +1848,9 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api subgraph supports outgoing-only traversal`() {
-        val (code, body) = get("/api/subgraph?center=${localNode.id.value}&depth=1&direction=outgoing")
+        val (code, body) = get(
+            "/api/graphs/standalone/subgraph?center=${localNode.id.value}&depth=1&direction=outgoing"
+        )
         assertEquals(200, code)
         val subgraph: Map<String, Any?> = parseJson(body)
         @Suppress("UNCHECKED_CAST")
@@ -1541,13 +1864,15 @@ class ExploreCommandTest {
 
     @Test
     fun `GET api subgraph rejects invalid direction`() {
-        val (code, _) = get("/api/subgraph?center=${localNode.id.value}&direction=sideways")
+        val (code, _) = get(
+            "/api/graphs/standalone/subgraph?center=${localNode.id.value}&direction=sideways"
+        )
         assertEquals(400, code)
     }
 
     @Test
     fun `GET api subgraph for nonexistent center returns empty`() {
-        val (code, body) = get("/api/subgraph?center=999999")
+        val (code, body) = get("/api/graphs/standalone/subgraph?center=999999")
         assertEquals(200, code)
         val subgraph: Map<String, Any?> = parseJson(body)
         @Suppress("UNCHECKED_CAST")
@@ -1565,7 +1890,7 @@ class ExploreCommandTest {
 
         assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
         assertNull(explore.data)
-        assertEquals(DEFAULT_GRAPH_ID, explore.graphId)
+        assertNull(explore.graphId)
         assertTrue(explore.graphSpecs.isEmpty())
     }
 
@@ -1577,6 +1902,17 @@ class ExploreCommandTest {
 
         assertEquals(1, code)
         assertTrue(err.contains("--data"), "Expected data directory error, got: $err")
+    }
+
+    @Test
+    fun `serve positional graph requires an explicit graph id`() {
+        val serve = ServeCommand()
+        serve.graphDir = graphDir
+
+        val (_, err, code) = captureOutput { serve.call() }
+
+        assertEquals(1, code)
+        assertTrue(err.contains("--id is required"), "Expected explicit graph id error, got: $err")
     }
 
     @Test
@@ -1618,7 +1954,7 @@ class ExploreCommandTest {
                 loadInitialGraphs.invoke(serve, registry)
 
                 assertEquals(listOf("service-a", "service-b"), registry.list().map { it.id })
-                registry.acquireDefault()?.use { lease ->
+                registry.acquire("service-a")?.use { lease ->
                     assertEquals("service-a", lease.id)
                 }
                 registry.acquire("service-b")?.use { lease ->
@@ -1637,6 +1973,7 @@ class ExploreCommandTest {
         // Test that call() actually starts a server and blocks
         val explore = ExploreCommand()
         explore.graphDir = graphDir
+        explore.graphId = "test"
         explore.port = 0 // random port
 
         var result: Int? = null

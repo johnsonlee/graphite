@@ -3,7 +3,7 @@ package io.johnsonlee.graphite.cli
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 
-internal class ApiSpecExtractor {
+internal class EndpointExtractor {
     internal fun extract(graph: Graph): List<Map<String, Any?>> {
         val mappingAnnotations = setOf(
             "org.springframework.web.bind.annotation.RequestMapping",
@@ -97,5 +97,4 @@ internal class ApiSpecExtractor {
             else -> "/$basePart/$methodPart"
         }
     }
-
 }
