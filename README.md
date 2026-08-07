@@ -98,7 +98,7 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 ```
 
 For APK inputs, Graphite uses Android platform jars to resolve the APK's target
-API level. Pass `--android-platforms` with either the SDK `platforms` directory
+API level. Pass `--android-sdk` with either the SDK `platforms` directory
 or the Android SDK root. If omitted, Graphite first checks `ANDROID_PLATFORMS`,
 `ANDROID_HOME`, and `ANDROID_SDK_ROOT`, then checks common platform SDK install
 locations, then infers SDK roots from `adb`, `emulator`, or `sdkmanager` on

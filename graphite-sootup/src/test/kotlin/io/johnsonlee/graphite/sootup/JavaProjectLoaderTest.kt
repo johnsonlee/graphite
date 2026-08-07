@@ -89,7 +89,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms resolution accepts sdk root and platforms directory`() {
+    fun `android SDK resolution accepts sdk root and platforms directory`() {
         val sdkRoot = Files.createTempDirectory("graphite-android-sdk-root")
         val platformsFromRoot = Files.createDirectories(sdkRoot.resolve("platforms"))
         val directPlatforms = Files.createTempDirectory("graphite-android-platforms")
@@ -102,7 +102,7 @@ class JavaProjectLoaderTest {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidPlatforms = sdkRoot)
+                    LoaderConfig(androidSdk = sdkRoot)
                 )
             )
             assertEquals(
@@ -110,7 +110,7 @@ class JavaProjectLoaderTest {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidPlatforms = directPlatforms)
+                    LoaderConfig(androidSdk = directPlatforms)
                 )
             )
             assertTrue(
@@ -134,18 +134,18 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms environment lookup keeps configured priority`() {
-        val androidPlatforms = Path.of("/env/platforms")
+    fun `android SDK environment lookup keeps configured priority`() {
+        val androidSdk = Path.of("/env/platforms")
         val androidHome = Path.of("/env/home")
         val androidSdkRoot = Path.of("/env/sdk-root")
 
         assertEquals(
-            androidPlatforms,
+            androidSdk,
             invokeLoaderFilePrivate<Path>(
                 "findAndroidPlatformsFromEnvironment",
                 arrayOf(Map::class.java),
                 mapOf(
-                    "ANDROID_PLATFORMS" to androidPlatforms.toString(),
+                    "ANDROID_PLATFORMS" to androidSdk.toString(),
                     "ANDROID_HOME" to androidHome.toString(),
                     "ANDROID_SDK_ROOT" to androidSdkRoot.toString()
                 )
@@ -180,7 +180,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms discovery includes platform default install roots`() {
+    fun `android SDK discovery includes platform default install roots`() {
         val home = Path.of("/home/tester")
 
         val macRoots = invokeLoaderFilePrivate<List<Path>>(
@@ -214,7 +214,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms discovery tries default roots before tool paths`() {
+    fun `android SDK discovery tries default roots before tool paths`() {
         val defaultSdkRoot = Files.createTempDirectory("graphite-default-android-sdk")
         val toolSdkRoot = Files.createTempDirectory("graphite-tool-android-sdk")
         val defaultPlatforms = Files.createDirectories(defaultSdkRoot.resolve("platforms"))
@@ -241,7 +241,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms discovery infers sdk roots from android tools on path`() {
+    fun `android SDK discovery infers sdk roots from android tools on path`() {
         val sdkRoot = Files.createTempDirectory("graphite-tool-path-android-sdk")
         val platforms = Files.createDirectories(sdkRoot.resolve("platforms"))
         val platformToolsDir = Files.createDirectories(sdkRoot.resolve("platform-tools"))
@@ -270,7 +270,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms discovery returns null when no fallback candidates are valid`() {
+    fun `android SDK discovery returns null when no fallback candidates are valid`() {
         assertNull(
             invokeLoaderFilePrivate<Path?>(
                 "discoverAndroidPlatformsPath",
@@ -282,7 +282,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android platforms resolution reports missing and invalid directories`() {
+    fun `android SDK resolution reports missing and invalid directories`() {
         val missingPlatforms = Files.createTempDirectory("graphite-missing-android-platforms")
             .resolve("missing")
         val invalidPlatforms = Files.createTempDirectory("graphite-invalid-android-platforms")
@@ -291,19 +291,19 @@ class JavaProjectLoaderTest {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidPlatforms = missingPlatforms)
+                    LoaderConfig(androidSdk = missingPlatforms)
                 )
             }
             val invalid = assertFailsWith<IllegalArgumentException> {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidPlatforms = invalidPlatforms)
+                    LoaderConfig(androidSdk = invalidPlatforms)
                 )
             }
 
             assertTrue(missing.message.orEmpty().contains("does not exist"))
-            assertTrue(invalid.message.orEmpty().contains("must contain android-<api>/android.jar"))
+            assertTrue(invalid.message.orEmpty().contains("SDK root or platforms directory"))
         } finally {
             missingPlatforms.parent.toFile().deleteRecursively()
             invalidPlatforms.toFile().deleteRecursively()

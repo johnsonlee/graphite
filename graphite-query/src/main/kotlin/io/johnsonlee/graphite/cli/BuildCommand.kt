@@ -33,12 +33,12 @@ class BuildCommand : Callable<Int> {
     var includeLibs: Boolean = false
 
     @Option(
-        names = ["--android-platforms"],
+        names = ["--android-sdk"],
         description = [
-            "Android platforms directory or SDK root for APK inputs; defaults to env, standard SDK paths, or Android tools on PATH"
+            "Android SDK root (or platforms directory) for APK inputs; defaults to env, standard SDK paths, or Android tools on PATH"
         ]
     )
-    var androidPlatforms: Path? = null
+    var androidSdk: Path? = null
 
     @Option(names = ["--lib-filter"], description = ["Only load JARs matching these patterns (comma-separated)"], split = ",")
     var libFilters: List<String> = emptyList()
@@ -59,7 +59,7 @@ class BuildCommand : Callable<Int> {
                 includeLibraries = includeLibs,
                 libraryFilters = libFilters,
                 buildCallGraph = true,
-                androidPlatforms = androidPlatforms,
+                androidSdk = androidSdk,
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )
 

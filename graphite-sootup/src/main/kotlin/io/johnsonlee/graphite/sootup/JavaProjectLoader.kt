@@ -73,13 +73,13 @@ private fun createApkInputLocations(
 }
 
 private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
-    val configured = config.androidPlatforms ?: findAndroidPlatformsFromEnvironment()
+    val configured = config.androidSdk ?: findAndroidPlatformsFromEnvironment()
     if (configured != null) {
         return validateAndroidPlatformsPath(configured)
     }
     return discoverAndroidPlatformsPath()
         ?: throw IllegalArgumentException(
-            "APK input requires Android platforms. Pass --android-platforms <dir>, set " +
+            "APK input requires an Android SDK. Pass --android-sdk <dir>, set " +
                 "$ANDROID_PLATFORMS_ENV, $ANDROID_HOME_ENV, or $ANDROID_SDK_ROOT_ENV, " +
                 "install the Android SDK in a default location, or put adb, emulator, " +
                 "or sdkmanager on PATH."
@@ -87,12 +87,14 @@ private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
 }
 
 private fun validateAndroidPlatformsPath(path: Path): Path {
-    val normalized = normalizeAndroidPlatformsPath(path.toAbsolutePath().normalize())
+    val requested = path.toAbsolutePath().normalize()
+    val normalized = normalizeAndroidPlatformsPath(requested)
     require(Files.isDirectory(normalized)) {
-        "Android platforms path does not exist: $normalized"
+        "Android SDK path does not exist: $requested"
     }
     require(containsAndroidPlatformJar(normalized)) {
-        "Android platforms path must contain android-<api>/android.jar entries: $normalized"
+        "Android SDK path must be an SDK root or platforms directory containing " +
+            "android-<api>/android.jar entries: $requested"
     }
     return normalized
 }
