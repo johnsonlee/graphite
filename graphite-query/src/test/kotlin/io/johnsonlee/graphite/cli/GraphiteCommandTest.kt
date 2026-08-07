@@ -2,8 +2,10 @@ package io.johnsonlee.graphite.cli
 
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import picocli.CommandLine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -45,6 +47,29 @@ class GraphiteCommandTest {
     // ========================================================================
     // BuildCommand
     // ========================================================================
+
+    @Test
+    fun `build help describes android sdk discovery order`() {
+        val outBaos = ByteArrayOutputStream()
+        CommandLine(BuildCommand()).usage(PrintWriter(outBaos, true))
+        val help = outBaos.toString()
+        val normalizedHelp = help.replace(Regex("\\s+"), " ")
+
+        assertTrue(help.contains("--android-sdk"), "Help should contain Android SDK option, got: $help")
+        assertTrue(help.contains("ANDROID_PLATFORMS"), "Help should contain env priority, got: $help")
+        assertTrue(help.contains("ANDROID_HOME"), "Help should contain env priority, got: $help")
+        assertTrue(help.contains("ANDROID_SDK_ROOT"), "Help should contain env priority, got: $help")
+        assertTrue(help.contains("~/Library/Android/sdk"), "Help should contain macOS default path, got: $help")
+        assertTrue(help.contains("~/Android/Sdk"), "Help should contain Linux default path, got: $help")
+        assertTrue(
+            help.contains("%USERPROFILE%\\AppData\\Local\\Android\\Sdk"),
+            "Help should contain Windows default path, got: $help"
+        )
+        assertTrue(
+            normalizedHelp.contains("adb, emulator, or sdkmanager"),
+            "Help should contain PATH tool fallback, got: $help"
+        )
+    }
 
     @Test
     fun `build from nonexistent path returns error`() {

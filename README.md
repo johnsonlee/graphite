@@ -99,10 +99,17 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 For APK inputs, Graphite uses Android platform jars to resolve the APK's target
 API level. Pass `--android-sdk` with either the SDK `platforms` directory
-or the Android SDK root. If omitted, Graphite first checks `ANDROID_PLATFORMS`,
-`ANDROID_HOME`, and `ANDROID_SDK_ROOT`, then checks common platform SDK install
-locations, then infers SDK roots from `adb`, `emulator`, or `sdkmanager` on
-`PATH`.
+or the Android SDK root. If omitted, Graphite searches in this order:
+
+1. `ANDROID_PLATFORMS`, `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
+2. Default SDK roots for the current OS:
+   - macOS: `~/Library/Android/sdk`,
+     `/opt/homebrew/share/android-commandlinetools`,
+     `/usr/local/share/android-commandlinetools`
+   - Linux: `~/Android/Sdk`, `~/android-sdk`, `/opt/android-sdk`,
+     `/usr/local/android-sdk`, `/usr/lib/android-sdk`
+   - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
+3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
 
 ## Kotlin API
 
