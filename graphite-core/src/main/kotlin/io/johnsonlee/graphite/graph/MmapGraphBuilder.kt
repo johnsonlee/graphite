@@ -183,40 +183,35 @@ class MmapGraphBuilder(
         nodeStream.close()
         edgeStream.close()
 
-        // Build indexes by scanning compact record headers sequentially.
-        // Node payloads stay on disk; deserializing every node here was pure
-        // build-time overhead because MmapGraph will decode nodes on demand.
-        var nodeOffsets = LongArray(INITIAL_NODE_INDEX_CAPACITY) { -1L }
-        var maxNodeId = -1
-        val nodeTypeIndexBuilder = HashMap<Class<out Node>, IntArrayBuilder>()
+        val nodeFile = workDir.resolve(NODES_FILE).toFile()
+        val nodeFileLen = nodeFile.length()
+        val (maxNodeId, nodeTypeCounts) = scanNodeIndexShape(nodeFile, nodeFileLen)
+        val nodeIndex = if (maxNodeId >= 0) LongArray(maxNodeId + 1) { -1L } else LongArray(0)
+        val nodeTypeArrays = nodeTypeCounts.mapValues { (_, count) -> IntArray(count) }
+        val nodeTypeCursors = HashMap<Class<out Node>, Int>(nodeTypeArrays.size)
 
         var offset = 0L
-        DataInputStream(workDir.resolve(NODES_FILE).toFile().inputStream().buffered()).use { dis ->
-            val fileLen = workDir.resolve(NODES_FILE).toFile().length()
-            while (offset < fileLen) {
+        DataInputStream(nodeFile.inputStream().buffered()).use { dis ->
+            while (offset < nodeFileLen) {
                 val len = dis.readInt()
                 val nodeId = dis.readInt()
                 val tag = dis.readByte().toInt()
                 skipFully(dis, len - NODE_ID_BYTES - NODE_TAG_BYTES)
-                if (nodeId >= nodeOffsets.size) {
-                    nodeOffsets = growLongArray(nodeOffsets, nodeId + 1)
-                }
-                nodeOffsets[nodeId] = offset
-                maxNodeId = maxOf(maxNodeId, nodeId)
-                nodeTypeIndexBuilder.getOrPut(nodeClassForTag(tag)) { IntArrayBuilder() }.add(nodeId)
+                nodeIndex[nodeId] = offset
+                val nodeClass = nodeClassForTag(tag)
+                val cursor = nodeTypeCursors[nodeClass] ?: 0
+                nodeTypeArrays.getValue(nodeClass)[cursor] = nodeId
+                nodeTypeCursors[nodeClass] = cursor + 1
                 offset += LENGTH_PREFIX_BYTES + len
             }
         }
-
-        val nodeIndex = if (maxNodeId >= 0) nodeOffsets.copyOf(maxNodeId + 1) else LongArray(0)
-        val nodeTypeIndex = nodeTypeIndexBuilder.mapValues { (_, ids) -> ids.toIntArray() }
+        val nodeTypeIndex = nodeTypeArrays
         val nodeCapacity = nodeIndex.size
         require(edgeCount <= Int.MAX_VALUE.toLong()) {
             "MmapGraphBuilder supports at most ${Int.MAX_VALUE} edges in memory-mapped indexes, got $edgeCount"
         }
         val totalEdges = edgeCount.toInt()
         val outgoingCounts = IntArray(nodeCapacity)
-        val incomingCounts = IntArray(nodeCapacity)
 
         offset = 0L
         val edgeFile = workDir.resolve(EDGES_FILE).toFile()
@@ -224,31 +219,14 @@ class MmapGraphBuilder(
         DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
             while (offset < edgeFileLen) {
                 val from = edgeDis.readInt()
-                val to = edgeDis.readInt()
+                edgeDis.readInt()
                 outgoingCounts[from]++
-                incomingCounts[to]++
                 offset += EDGE_ENDPOINT_BYTES + skipEdgePayload(edgeDis)
             }
         }
 
         val outgoingStarts = buildPrefixStarts(outgoingCounts)
-        val incomingStarts = buildPrefixStarts(incomingCounts)
-        val outgoingOffsets = LongArray(totalEdges)
-        val incomingOffsets = LongArray(totalEdges)
-        val outgoingCursor = outgoingStarts.copyOf(outgoingStarts.size - 1)
-        val incomingCursor = incomingStarts.copyOf(incomingStarts.size - 1)
-
-        offset = 0L
-        DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
-            while (offset < edgeFileLen) {
-                val recordOffset = offset
-                val from = edgeDis.readInt()
-                val to = edgeDis.readInt()
-                offset += EDGE_ENDPOINT_BYTES + skipEdgePayload(edgeDis)
-                outgoingOffsets[outgoingCursor[from]++] = recordOffset
-                incomingOffsets[incomingCursor[to]++] = recordOffset
-            }
-        }
+        val outgoingOffsetIndex = buildOutgoingEdgeOffsetIndex(edgeFile, edgeFileLen, totalEdges, outgoingStarts, outgoingCounts)
 
         val methodIndex = LinkedHashMap<String, MethodDescriptor>(methods.size)
         methods.forEach { methodIndex[it.signature] = it }
@@ -257,8 +235,7 @@ class MmapGraphBuilder(
             dataDir = workDir,
             nodeIndex = nodeIndex,
             nodeTypeIndex = nodeTypeIndex,
-            outgoingIndex = MmapGraph.EdgeOffsetIndex(outgoingStarts, outgoingOffsets),
-            incomingIndex = MmapGraph.EdgeOffsetIndex(incomingStarts, incomingOffsets),
+            outgoingIndex = MmapGraph.EdgeOffsetIndex(outgoingStarts, outgoingOffsetIndex),
             nodeMethods = nodeMethods.toList(),
             nodeTypes = nodeTypes.toList(),
             methodIndex = methodIndex,
@@ -268,14 +245,43 @@ class MmapGraphBuilder(
             artifactDependenciesMap = artifactDependencies.mapValues { (_, deps) -> deps.toMap() },
             memberAnnotationsMap = memberAnnotations.mapValues { it.value.toMap() },
             branchScopeData = branchScopes.toList(),
+            incomingIndex = null,
             resources = resourceAccessor
         )
+    }
+
+    private fun buildOutgoingEdgeOffsetIndex(
+        edgeFile: File,
+        edgeFileLen: Long,
+        totalEdges: Int,
+        outgoingStarts: IntArray,
+        outgoingCounts: IntArray
+    ): MmapGraph.LongOffsetIndex {
+        if (totalEdges == 0) {
+            return MmapGraph.HeapLongOffsetIndex(LongArray(0))
+        }
+
+        val outgoingOffsetsFile = workDir.resolve(OUTGOING_OFFSETS_FILE)
+        System.arraycopy(outgoingStarts, 0, outgoingCounts, 0, outgoingCounts.size)
+        MmapGraph.createMappedLongOffsetIndex(outgoingOffsetsFile, totalEdges).use { outgoingOffsets ->
+            var offset = 0L
+            DataInputStream(edgeFile.inputStream().buffered()).use { edgeDis ->
+                while (offset < edgeFileLen) {
+                    val recordOffset = offset
+                    val from = edgeDis.readInt()
+                    edgeDis.readInt()
+                    offset += EDGE_ENDPOINT_BYTES + skipEdgePayload(edgeDis)
+                    outgoingOffsets.putLong(outgoingCounts[from]++, recordOffset)
+                }
+            }
+        }
+        return MmapGraph.MappedLongOffsetIndex(outgoingOffsetsFile)
     }
 
     companion object {
         private const val NODES_FILE = "nodes.dat"
         private const val EDGES_FILE = "edges.dat"
-        private const val INITIAL_NODE_INDEX_CAPACITY = 16
+        private const val OUTGOING_OFFSETS_FILE = "outgoing-offsets.dat"
         private const val LENGTH_PREFIX_BYTES = 4
         private const val NODE_ID_BYTES = 4
         private const val NODE_TAG_BYTES = 1
@@ -559,12 +565,22 @@ class MmapGraphBuilder(
             return String(bytes, Charsets.UTF_8)
         }
 
-        private fun growLongArray(current: LongArray, minSize: Int): LongArray {
-            var newSize = current.size
-            while (newSize < minSize) {
-                newSize = maxOf(newSize * 2, 1)
+        private fun scanNodeIndexShape(nodeFile: File, fileLen: Long): Pair<Int, Map<Class<out Node>, Int>> {
+            var maxNodeId = -1
+            val nodeTypeCounts = HashMap<Class<out Node>, Int>()
+            var offset = 0L
+            DataInputStream(nodeFile.inputStream().buffered()).use { dis ->
+                while (offset < fileLen) {
+                    val len = dis.readInt()
+                    val nodeId = dis.readInt()
+                    val tag = dis.readByte().toInt()
+                    skipFully(dis, len - NODE_ID_BYTES - NODE_TAG_BYTES)
+                    maxNodeId = maxOf(maxNodeId, nodeId)
+                    nodeTypeCounts.merge(nodeClassForTag(tag), 1, Int::plus)
+                    offset += LENGTH_PREFIX_BYTES + len
+                }
             }
-            return LongArray(newSize) { index -> if (index < current.size) current[index] else -1L }
+            return maxNodeId to nodeTypeCounts
         }
 
         private fun buildPrefixStarts(counts: IntArray): IntArray {
@@ -759,19 +775,5 @@ class MmapGraphBuilder(
     private class ReusableByteArrayOutputStream(initialSize: Int) : ByteArrayOutputStream(initialSize) {
         val capacity: Int
             get() = buf.size
-    }
-
-    private class IntArrayBuilder(initialSize: Int = INITIAL_NODE_INDEX_CAPACITY) {
-        private var values = IntArray(initialSize)
-        private var size = 0
-
-        fun add(value: Int) {
-            if (size == values.size) {
-                values = values.copyOf(values.size * 2)
-            }
-            values[size++] = value
-        }
-
-        fun toIntArray(): IntArray = values.copyOf(size)
     }
 }

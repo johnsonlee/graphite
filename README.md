@@ -67,6 +67,11 @@ brew install graphite
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
 
+# Build a graph from an Android APK
+graphite build app.apk \
+  -o /data/apk-graph \
+  --include com.example
+
 # Query with Cypher
 graphite query /data/app-graph \
   "MATCH (c:IntConstant)-[:DATAFLOW*]->(cs:CallSiteNode)
@@ -91,6 +96,20 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
 ```
+
+For APK inputs, Graphite uses Android platform jars to resolve the APK's target
+API level. Pass `--android-sdk` with either the SDK `platforms` directory
+or the Android SDK root. If omitted, Graphite searches in this order:
+
+1. `ANDROID_PLATFORMS`, `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
+2. Default SDK roots for the current OS:
+   - macOS: `~/Library/Android/sdk`,
+     `/opt/homebrew/share/android-commandlinetools`,
+     `/usr/local/share/android-commandlinetools`
+   - Linux: `~/Android/Sdk`, `~/android-sdk`, `/opt/android-sdk`,
+     `/usr/local/android-sdk`, `/usr/lib/android-sdk`
+   - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
+3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
 
 ## Kotlin API
 
