@@ -14,6 +14,7 @@ graph-dir/
 ├── graph.nodeoffsets  Mmap Node ID -> offset lookup
 ├── graph.typeindex    Mmap node type -> Node ID ranges lookup
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
+├── graph.declaredclasses Compact declaring-class string IDs for multi-graph ownership
 ├── graph.classoverview Persisted explorer overview summary
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
@@ -40,6 +41,7 @@ transpose construction during load.
 | graph.nodeindex | `GRI` | `0x47524903` |
 | graph.nodeoffsets | `GRL` | `0x47524C03` |
 | graph.typeindex | `GRT` | `0x47525403` |
+| graph.declaredclasses | `GRD` | `0x47524403` |
 | graph.classoverview | `GRO` | `0x47524F03` |
 | graph.comparisons | `GRC` | `0x47524303` |
 
@@ -67,6 +69,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
                                  5. Labels + label prefix + comparisons write
                                  6. Nodedata + node indexes write
                                  7. Metadata write
+                                 8. Declared-class + overview summaries
 ```
 
 ### Save Flow
@@ -84,6 +87,7 @@ graph TD
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
     G --> H[7. Write metadata]
+    H --> I[8. Write declared-class + overview summaries]
 ```
 
 ### Load Flow
@@ -108,6 +112,14 @@ graph TD
 C & D & B3 & B4 & E & F --> G[Construct Graph]
 ```
 
+`graph.declaredclasses` contains only string-table IDs, sorted by class name.
+The Explorer uses it to resolve class ownership across many graphs without
+deserializing millions of `MethodDescriptor` objects. A mapped load does not
+read the sidecar until the graph-overview route needs it. Graphs written by an
+older Graphite version remain compatible: if the sidecar is absent, the reader
+streams only declaring-class IDs from `graph.metadata`, skipping method names,
+parameters, return types, and all trailing metadata.
+
 ### Load Modes
 
 | Mode | Behavior | Threshold | Heap |
@@ -125,6 +137,7 @@ Every optimization must satisfy both simultaneously — trading one for the othe
 |------------|--------|-------------|
 | **Time** | Minimize build + save + load | JMH SingleShotTime, same-session back-to-back |
 | **Peak memory** | <= 4 GB for 10M nodes | `-Xmx4g`, no OOM |
+| **Multi-graph peak heap** | <= 8 GB for 50 distinct graphs / >=100M total nodes | real-corpus JMH, `-Xmx8g`, sampled request peak |
 
 ### Methodology
 
@@ -143,8 +156,17 @@ Use both micro and end-to-end benchmarks. A change is not accepted based on synt
 | `GraphBuildPersistBenchmark` | Synthetic 10M save/load guardrail | `./gradlew :webgraph:jmh -Pjmh.filter=GraphBuildPersistBenchmark` |
 | `GraphEndToEndBenchmark` | Real JAR `build -> save -> load -> query` | `./gradlew :webgraph:jmh -Pjmh.filter=GraphEndToEndBenchmark` |
 | `GraphBenchmark` | Persisted-graph load/query comparisons | `./gradlew :webgraph:jmh -Pjmh.filter='(Es|Android).*(Load|Query)Benchmark'` |
+| `RealMultiGraphMemoryBenchmark` | 50 distinct persisted graphs, global search + topology heap gate | `./gradlew :explore:realMultiGraphAcceptance -Pgraphite.multigraph.root=/data/graphs` |
 
 `GraphEndToEndBenchmark` and `GraphBenchmark` auto-discover fixture JARs from Gradle cache, or accept explicit overrides via `-Delasticsearch.jar.path`, `-Dandroid.jar.path`, `-Delasticsearch.graph.path`, and `-Dandroid.graph.path`.
+
+The real multi-graph suite intentionally does not synthesize scale. Its root
+must contain exactly 50 different persisted graph directories, node-data files
+must not resolve to the same file, and their combined node count must be at
+least 100,000,000. Both setup and requests run in a fork capped at `-Xmx8g`.
+The acceptance task writes a machine-readable report to
+`graphite-explore/build/results/jmh/real-multigraph-acceptance.json` and fails
+the build on the first invalid corpus, OOM, HTTP error, or heap-gate failure.
 
 ### Results Summary
 

@@ -11,6 +11,13 @@ internal class OpenApiSpecBuilder {
                     responses = mapOf("200" to response("Loaded graph registry, per-graph statistics, and totals"))
                 )
             ),
+            "/api/graph-overview" to mapOf(
+                "get" to operation(
+                    "Build the loaded graph topology from cross-graph call relationships",
+                    parameters = emptyList(),
+                    responses = mapOf("200" to response("Graph-level nodes and aggregated cross-graph call edges"))
+                )
+            ),
             "/api/graphs/{graphId}" to mapOf(
                 "get" to operation(
                     "Get metadata and cached statistics for one graph",

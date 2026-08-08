@@ -37,6 +37,18 @@ val integrationFixtureJvmArgs = providers.provider {
     }
 }
 
+val realMultiGraphJvmArgs = providers.provider {
+    listOfNotNull(
+        System.getProperty("graphite.multigraph.root")
+            ?.takeIf { it.isNotBlank() }
+            ?.let { "-Dgraphite.multigraph.root=$it" }
+    )
+}
+
+val realMultiGraphRoot = providers.gradleProperty("graphite.multigraph.root")
+    .orElse(providers.systemProperty("graphite.multigraph.root"))
+    .orElse(providers.environmentVariable("GRAPHITE_MULTIGRAPH_ROOT"))
+
 jmh {
     val filter = project.findProperty("jmh.filter") as String?
     if (filter != null) {
@@ -44,6 +56,38 @@ jmh {
     }
     failOnError.set(true)
     jvmArgsAppend.addAll(integrationFixtureJvmArgs)
+    jvmArgsAppend.addAll(realMultiGraphJvmArgs)
+}
+
+val jmhJarTask = tasks.named<Jar>("jmhJar")
+
+tasks.register<JavaExec>("realMultiGraphAcceptance") {
+    group = "verification"
+    description = "Runs the strict 50-graph / 100M-node acceptance suite with an 8 GiB max heap"
+    dependsOn(jmhJarTask)
+    classpath(files(jmhJarTask.flatMap { it.archiveFile }))
+    mainClass.set("org.openjdk.jmh.Main")
+
+    val resultFile = layout.buildDirectory.file("results/jmh/real-multigraph-acceptance.json")
+    outputs.file(resultFile)
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        val graphRoot = realMultiGraphRoot.orNull
+        require(!graphRoot.isNullOrBlank()) {
+            "Set -Pgraphite.multigraph.root=<root>, -Dgraphite.multigraph.root=<root>, " +
+                "or GRAPHITE_MULTIGRAPH_ROOT for the real 50-graph corpus"
+        }
+        val report = resultFile.get().asFile
+        report.parentFile.mkdirs()
+        args(
+            "RealMultiGraphMemoryBenchmark.*",
+            "-foe", "true",
+            "-rf", "json",
+            "-rff", report.absolutePath,
+            "-jvmArgsAppend", "-Dgraphite.multigraph.root=$graphRoot"
+        )
+    }
 }
 
 tasks.jar {

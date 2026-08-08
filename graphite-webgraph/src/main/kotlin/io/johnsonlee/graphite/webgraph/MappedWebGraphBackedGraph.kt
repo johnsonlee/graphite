@@ -60,6 +60,7 @@ internal class MappedWebGraphBackedGraph(
     private val edgeCount: Long,
     private val metadataFile: File,
     private val methodCount: Long,
+    private val declaredClassProvider: () -> Set<String>,
     private val comparisonLookup: BranchComparisonLookup,
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
@@ -164,6 +165,8 @@ internal class MappedWebGraphBackedGraph(
         DataInputStream(BufferedInputStream(metadataFile.inputStream())).use { dis ->
             NodeSerializer.readMetadataMethodSlice(dis, stringTable, pattern, limit)
         }
+
+    override fun declaredClasses(): Set<String> = declaredClassProvider()
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]

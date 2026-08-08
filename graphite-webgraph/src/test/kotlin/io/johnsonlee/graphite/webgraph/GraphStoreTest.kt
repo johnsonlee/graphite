@@ -1113,6 +1113,34 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped graphs expose declared classes without materializing method metadata`() {
+        val graph = buildTestGraph()
+        val dir = Files.createTempDirectory("webgraph-declared-classes-test")
+        try {
+            GraphStore.save(graph, dir)
+            assertTrue(Files.isRegularFile(dir.resolve(DeclaredClassStore.FILE_NAME)))
+            GraphStore.loadMapped(dir).let { loaded ->
+                try {
+                    assertEquals(graph.declaredClasses(), loaded.declaredClasses())
+                } finally {
+                    (loaded as Closeable).close()
+                }
+            }
+
+            Files.delete(dir.resolve(DeclaredClassStore.FILE_NAME))
+            GraphStore.loadMapped(dir).let { loaded ->
+                try {
+                    assertEquals(graph.declaredClasses(), loaded.declaredClasses())
+                } finally {
+                    (loaded as Closeable).close()
+                }
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `class overview store bounds reads and provider cache`() {
         val overview = ClassOverview(
             classCounts = linkedMapOf(
@@ -2273,6 +2301,7 @@ class GraphStoreTest {
         assertEquals(1, matched.size)
         val noMatch = loaded.callSites(MethodPattern(name = "nonexistent")).toList()
         assertTrue(noMatch.isEmpty())
+        assertEquals(original.declaredClasses(), loaded.declaredClasses())
 
         // supertypes and subtypes
         val child = TypeDescriptor("com.example.Child")

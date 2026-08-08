@@ -29,7 +29,11 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Comparator
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.locks.LockSupport
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -505,6 +509,213 @@ open class MultiGraphExplorerBenchmark {
     }
 }
 
+/**
+ * Acceptance benchmark for a real multi-service corpus. The configured root
+ * must contain exactly 50 distinct persisted graph directories totalling at
+ * least 100M nodes. Unlike [MultiGraphExplorerBenchmark], this never repeats a
+ * single fixture to simulate services.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Measurement(iterations = 1)
+@Fork(1, jvmArgs = ["-Xms512m", "-Xmx8g"])
+open class RealMultiGraphMemoryBenchmark {
+
+    @Param("50")
+    var expectedGraphCount: Int = 0
+
+    @Param("100000000")
+    var minimumNodeCount: Long = 0
+
+    @Param("8589934592")
+    var memoryLimitBytes: Long = 0
+
+    private lateinit var registry: GraphRegistry
+    private lateinit var app: Javalin
+    private var port: Int = 0
+    private var setupMaxUsedHeapBytes: Long = 0
+    private var totalNodes: Long = 0
+    private var totalEdges: Long = 0
+
+    @Setup
+    fun setup() {
+        totalNodes = 0
+        totalEdges = 0
+        val root = configuredGraphRoot()
+        val graphPaths = discoverPersistedGraphs(root)
+        require(graphPaths.size == expectedGraphCount) {
+            "Real corpus must contain exactly $expectedGraphCount graphs, found ${graphPaths.size} under $root"
+        }
+        require(graphPaths.map { it.toRealPath() }.distinct().size == expectedGraphCount) {
+            "Real corpus contains duplicate graph directories"
+        }
+        requireDistinctGraphData(graphPaths)
+
+        registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+        val loadMeasurement = measurePeakHeap {
+            graphPaths.forEachIndexed { index, path ->
+                val descriptor = registry.load("service-${index.toString().padStart(2, '0')}", path)
+                totalNodes += descriptor.stats.nodes
+                totalEdges += descriptor.stats.edges
+            }
+        }
+        setupMaxUsedHeapBytes = loadMeasurement.maxUsedHeapBytes
+        require(totalNodes >= minimumNodeCount) {
+            "Real corpus has $totalNodes nodes; at least $minimumNodeCount are required"
+        }
+        check(setupMaxUsedHeapBytes <= memoryLimitBytes) {
+            "50-graph load exceeded heap gate: peak=$setupMaxUsedHeapBytes limit=$memoryLimitBytes"
+        }
+
+        app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+        ExploreRoutes().register(app, registry)
+        port = app.port()
+    }
+
+    @TearDown
+    fun tearDown() {
+        runCatching { app.stop() }
+        runCatching { registry.close() }
+    }
+
+    @Benchmark
+    fun real50GraphFullCallSiteSearch(counters: ExplorerMemoryCounters): Long {
+        return measureRealCorpusRequest(counters, "/api/call-sites?class=__graphite_absent__&limit=50")
+    }
+
+    @Benchmark
+    fun real50GraphTopology(counters: ExplorerMemoryCounters): Long =
+        measureRealCorpusRequest(counters, "/api/graph-overview")
+
+    private fun measureRealCorpusRequest(counters: ExplorerMemoryCounters, path: String): Long {
+        forceGcForRealCorpus()
+        val before = realCorpusMemorySample()
+        val measurement = measurePeakHeap {
+            requestRealCorpus(path)
+        }
+        forceGcForRealCorpus()
+        val after = realCorpusMemorySample()
+
+        counters.usedHeapBeforeBytes = before.usedHeapBytes
+        counters.usedHeapAfterBytes = after.usedHeapBytes
+        counters.retainedHeapBytes = after.usedHeapBytes - before.usedHeapBytes
+        counters.maxUsedHeapBytes = maxOf(setupMaxUsedHeapBytes, measurement.maxUsedHeapBytes)
+        counters.committedHeapBeforeBytes = before.committedHeapBytes
+        counters.committedHeapAfterBytes = after.committedHeapBytes
+        counters.maxCommittedHeapBytes = maxOf(before.committedHeapBytes, after.committedHeapBytes)
+        counters.residentSetBeforeBytes = before.residentSetBytes
+        counters.residentSetAfterBytes = after.residentSetBytes
+        counters.maxResidentSetBytes = maxOf(before.residentSetBytes, after.residentSetBytes)
+        counters.memoryLimitBytes = memoryLimitBytes
+        counters.graphCount = expectedGraphCount.toLong()
+        counters.totalNodes = totalNodes
+        counters.totalEdges = totalEdges
+        counters.setupMaxUsedHeapBytes = setupMaxUsedHeapBytes
+
+        check(counters.maxUsedHeapBytes <= memoryLimitBytes) {
+            "50-graph request exceeded heap gate for $path: max=${counters.maxUsedHeapBytes} limit=$memoryLimitBytes"
+        }
+        return measurement.result
+    }
+
+    private fun requestRealCorpus(path: String): Long {
+        val connection = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connectTimeout = REAL_CORPUS_HTTP_TIMEOUT_MS
+        connection.readTimeout = REAL_CORPUS_HTTP_TIMEOUT_MS
+        val code = connection.responseCode
+        val body = if (code in REAL_CORPUS_HTTP_SUCCESS_RANGE) {
+            connection.inputStream.use { it.readBytes() }
+        } else {
+            connection.errorStream?.use { it.readBytes() } ?: ByteArray(0)
+        }
+        connection.disconnect()
+        check(code in REAL_CORPUS_HTTP_SUCCESS_RANGE) { "GET $path returned $code: ${body.decodeToString()}" }
+        return body.size.toLong()
+    }
+
+    private fun configuredGraphRoot(): Path {
+        val configured = System.getProperty(REAL_CORPUS_ROOT_PROPERTY)
+            ?: System.getenv(REAL_CORPUS_ROOT_ENV)
+        require(!configured.isNullOrBlank()) {
+            "Set -D$REAL_CORPUS_ROOT_PROPERTY=<root> or $REAL_CORPUS_ROOT_ENV for the real 50-graph corpus"
+        }
+        return Path.of(configured).toAbsolutePath().normalize().also { root ->
+            require(root.isDirectory()) { "Real multi-graph root is not a directory: $root" }
+        }
+    }
+
+    private fun discoverPersistedGraphs(root: Path): List<Path> =
+        Files.walk(root, REAL_CORPUS_MAX_DEPTH).use { paths ->
+            paths.filter { path -> path.fileName.toString() == REAL_CORPUS_NODE_DATA_FILE && path.isRegularFile() }
+                .map { it.parent }
+                .sorted()
+                .toList()
+        }
+
+    private fun requireDistinctGraphData(graphPaths: List<Path>) {
+        val nodeDataFiles = graphPaths.map { it.resolve(REAL_CORPUS_NODE_DATA_FILE) }
+        nodeDataFiles.forEachIndexed { index, current ->
+            for (otherIndex in 0 until index) {
+                require(!Files.isSameFile(current, nodeDataFiles[otherIndex])) {
+                    "Real corpus reuses graph data: ${graphPaths[otherIndex]} and ${graphPaths[index]}"
+                }
+            }
+        }
+    }
+
+    private companion object {
+        private const val REAL_CORPUS_ROOT_PROPERTY = "graphite.multigraph.root"
+        private const val REAL_CORPUS_ROOT_ENV = "GRAPHITE_MULTIGRAPH_ROOT"
+        private const val REAL_CORPUS_NODE_DATA_FILE = "graph.nodedata"
+        private const val REAL_CORPUS_MAX_DEPTH = 6
+        private const val REAL_CORPUS_HTTP_TIMEOUT_MS = 30 * 60 * 1_000
+        private val REAL_CORPUS_HTTP_SUCCESS_RANGE = 200..299
+    }
+}
+
+private data class PeakHeapMeasurement<T>(val result: T, val maxUsedHeapBytes: Long)
+
+private fun <T> measurePeakHeap(block: () -> T): PeakHeapMeasurement<T> {
+    val running = AtomicBoolean(true)
+    val maximum = AtomicLong(realCorpusMemorySample().usedHeapBytes)
+    val sampler = thread(start = true, isDaemon = true, name = "graphite-heap-peak-sampler") {
+        while (running.get()) {
+            maximum.accumulateAndGet(realCorpusMemorySample().usedHeapBytes, ::maxOf)
+            LockSupport.parkNanos(REAL_CORPUS_SAMPLE_NANOS)
+        }
+    }
+    return try {
+        val result = block()
+        maximum.accumulateAndGet(realCorpusMemorySample().usedHeapBytes, ::maxOf)
+        PeakHeapMeasurement(result, maximum.get())
+    } finally {
+        running.set(false)
+        sampler.join()
+    }
+}
+
+private fun realCorpusMemorySample(): MemorySample {
+    val runtime = Runtime.getRuntime()
+    val committed = runtime.totalMemory()
+    return MemorySample(committed - runtime.freeMemory(), committed, committed)
+}
+
+private fun forceGcForRealCorpus() {
+    repeat(REAL_CORPUS_GC_ATTEMPTS) {
+        System.gc()
+        System.runFinalization()
+        Thread.sleep(REAL_CORPUS_GC_PAUSE_MS)
+    }
+}
+
+private const val REAL_CORPUS_SAMPLE_NANOS = 5_000_000L
+private const val REAL_CORPUS_GC_ATTEMPTS = 3
+private const val REAL_CORPUS_GC_PAUSE_MS = 100L
+
 private data class MemorySample(
     val usedHeapBytes: Long,
     val committedHeapBytes: Long,
@@ -567,6 +778,18 @@ open class ExplorerMemoryCounters {
 
     @JvmField
     var residentSetMeasured: Long = 0
+
+    @JvmField
+    var graphCount: Long = 0
+
+    @JvmField
+    var totalNodes: Long = 0
+
+    @JvmField
+    var totalEdges: Long = 0
+
+    @JvmField
+    var setupMaxUsedHeapBytes: Long = 0
 }
 
 private object ExplorerBenchmarkCorpus {
