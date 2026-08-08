@@ -607,7 +607,8 @@ object GraphStore {
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
         }
 
-        // 8. Save class-level overview summary for explorer routes
+        // 8. Save compact class-ownership and Explorer overview summaries
+        DeclaredClassStore.save(metadata.methods.values, dir, stringTable)
         ClassOverviewStore.save(
             ClassOverview(
                 classCounts = classOverviewCounts,
@@ -818,6 +819,7 @@ object GraphStore {
             }
         }
         val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
+        val declaredClasses = { DeclaredClassStore.load(dir, metadataFile, stringTable) }
 
         return MappedWebGraphBackedGraph(
             forward = forward,
@@ -832,6 +834,7 @@ object GraphStore {
             edgeCount = labelBytes.size.toLong(),
             metadataFile = metadataFile.toFile(),
             methodCount = methodCount,
+            declaredClassProvider = declaredClasses,
             comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,

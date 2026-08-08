@@ -1,7 +1,8 @@
 let cy;
+let dashboardInfo;
 
 const NODE_COLORS = {
-    Class: '#58a6ff',
+    Graph: '#58a6ff', Class: '#58a6ff',
     CallSiteNode: '#f85149',
     IntConstant: '#39d2c0', StringConstant: '#58a6ff', EnumConstant: '#d29922',
     FieldNode: '#bc8cff', ParameterNode: '#3fb950', ReturnNode: '#f778ba',
@@ -11,10 +12,10 @@ const NODE_COLORS = {
 };
 
 const NODE_SIZES = {
-    Class: 32, CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
+    Graph: 72, Class: 32, CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
 };
 
-const EDGE_COLORS = { DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
+const EDGE_COLORS = { GraphCall: '#f85149', DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
 
 function initCytoscape() {
     cy = cytoscape({
@@ -27,9 +28,19 @@ function initCytoscape() {
                 'border-width': 0, 'text-max-width': '120px', 'text-wrap': 'ellipsis'
             }},
             { selector: 'edge', style: {
-                'width': 1.2, 'line-color': 'data(color)', 'target-arrow-color': 'data(color)',
+                'width': 'data(width)', 'line-color': 'data(color)', 'target-arrow-color': 'data(color)',
                 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8,
                 'curve-style': 'bezier', 'opacity': 0.6
+            }},
+            { selector: 'node[nodeType = "Graph"]', style: {
+                'shape': 'round-rectangle', 'color': '#e6edf3', 'font-size': '12px', 'font-weight': 600,
+                'text-valign': 'center', 'text-margin-y': 0, 'border-width': 2, 'border-color': '#79c0ff',
+                'text-max-width': '150px'
+            }},
+            { selector: 'edge[edgeType = "GraphCall"]', style: {
+                'label': 'data(label)', 'color': '#d29922', 'font-size': '10px',
+                'text-background-color': '#0d1117', 'text-background-opacity': 0.85,
+                'text-background-padding': '3px', 'text-rotation': 'autorotate', 'opacity': 0.85
             }},
             { selector: 'node:selected', style: { 'border-width': 2, 'border-color': '#58a6ff' }},
             { selector: 'node.highlighted', style: { 'border-width': 2, 'border-color': '#fff', 'z-index': 10 }},
@@ -41,21 +52,34 @@ function initCytoscape() {
 
     cy.on('tap', 'node', e => {
         const nodeId = e.target.data('nodeId');
-        if (Number.isInteger(nodeId)) showNodeDetail(e.target.data('graphId'), nodeId);
+        if (Number.isInteger(nodeId)) {
+            showNodeDetail(e.target.data('graphId'), nodeId);
+        } else if (e.target.data('nodeType') === 'Graph') {
+            showGraphDetail(e.target.data('nodeData'));
+        }
     });
     cy.on('dbltap', 'node', e => {
         const nodeId = e.target.data('nodeId');
-        if (Number.isInteger(nodeId)) loadSubgraph(e.target.data('graphId'), nodeId, 2);
+        if (Number.isInteger(nodeId)) {
+            loadSubgraph(e.target.data('graphId'), nodeId, 2);
+        } else if (e.target.data('nodeType') === 'Graph') {
+            loadSingleGraphOverview(e.target.data('graphId'));
+        }
     });
     cy.on('tap', 'edge', e => {
         const nodeId = e.target.data('targetNodeId');
-        if (Number.isInteger(nodeId)) showNodeDetail(e.target.data('graphId'), nodeId);
+        if (Number.isInteger(nodeId)) {
+            showNodeDetail(e.target.data('graphId'), nodeId);
+        } else if (e.target.data('edgeType') === 'GraphCall') {
+            showGraphRelationDetail(e.target.data('edgeData'));
+        }
     });
 }
 
 async function loadDashboard() {
     const res = await fetch('/api/graphs');
     const info = await res.json();
+    dashboardInfo = info;
 
     const totals = info.totals || info;
     document.querySelector('#stat-nodes .stat-value').textContent = totals.nodes.toLocaleString();
@@ -63,11 +87,54 @@ async function loadDashboard() {
     document.querySelector('#stat-methods .stat-value').textContent = totals.methods.toLocaleString();
     document.querySelector('#stat-callsites .stat-value').textContent = totals.callSites.toLocaleString();
 
-    await loadTopClasses();
-    await loadInitialGraph();
+    if ((info.count || 0) > 1) {
+        loadGraphList(info.graphs || []);
+        await loadGraphTopology();
+    } else {
+        await loadTopClasses();
+        await loadInitialGraph();
+    }
+}
+
+function loadGraphList(graphs) {
+    document.getElementById('navigation-title').textContent = 'Graphs';
+    const list = document.getElementById('class-list');
+    list.innerHTML = '';
+    graphs.forEach(function(graph) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = '<span class="item-badge badge-graph">' + Number(graph.callSites || 0).toLocaleString() + '</span>' + graph.id;
+        div.title = Number(graph.nodes || 0).toLocaleString() + ' nodes, ' + Number(graph.edges || 0).toLocaleString() + ' edges';
+        div.onclick = function() {
+            const node = cy.getElementById(graphElementId(graph.id));
+            if (node.length) {
+                cy.elements().removeClass('highlighted');
+                node.addClass('highlighted');
+                cy.animate({ center: { eles: node }, zoom: 1.3, duration: 250 });
+            }
+            showGraphDetail(graph);
+        };
+        list.appendChild(div);
+    });
+}
+
+async function loadGraphTopology() {
+    const res = await fetch('/api/graph-overview');
+    const data = await res.json();
+    data.nodes.forEach(function(node) { node.elementId = graphElementId(node.id); });
+    data.edges.forEach(function(edge) {
+        edge.fromElementId = graphElementId(edge.from);
+        edge.toElementId = graphElementId(edge.to);
+    });
+    renderGraph(data, null, 'graphs');
+    let info = data.graphCount + ' graphs, ' + data.relationCount + ' call relations, ' +
+        Number(data.crossGraphCallSites || 0).toLocaleString() + ' cross-graph calls';
+    if (data.truncated) info += ' (ownership sample limited)';
+    document.getElementById('graph-info').textContent = info;
 }
 
 async function loadTopClasses() {
+    document.getElementById('navigation-title').textContent = 'Top Classes';
     const res = await fetch('/api/methods?limit=200');
     const response = await res.json();
     const methods = flattenGroupedData(response);
@@ -104,6 +171,50 @@ async function loadInitialGraph() {
     renderGraph(data, null);
     document.getElementById('graph-info').textContent = `${data.nodes.length} nodes, ${data.edges.length} edges`;
 }
+
+async function loadSingleGraphOverview(graphId) {
+    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/overview');
+    const data = await res.json();
+    data.nodes.forEach(function(node) {
+        node.graphId = graphId;
+        node.elementId = graphId + ':' + node.id;
+    });
+    data.edges.forEach(function(edge) {
+        edge.graphId = graphId;
+        edge.fromElementId = graphId + ':' + edge.from;
+        edge.toElementId = graphId + ':' + edge.to;
+    });
+    renderGraph(data, null);
+    document.getElementById('graph-info').textContent = graphId + ': ' + data.nodes.length + ' classes, ' + data.edges.length + ' calls';
+}
+
+function showGraphDetail(graph) {
+    cy.elements().removeClass('highlighted');
+    const cyNode = cy.getElementById(graphElementId(graph.graphId || graph.id));
+    if (cyNode.length) cyNode.addClass('highlighted');
+    const graphId = graph.graphId || graph.id;
+    const panel = document.getElementById('detail-content');
+    panel.innerHTML = '<div class="detail-block"><h4>Graph</h4>' +
+        '<div class="detail-row"><span class="detail-key">ID</span><span class="detail-value">' + graphId + '</span></div>' +
+        graphMetricRow('Nodes', graph.nodes) + graphMetricRow('Edges', graph.edges) +
+        graphMetricRow('Methods', graph.methods) + graphMetricRow('Call sites', graph.callSites) +
+        '</div><div class="detail-block"><button onclick="loadSingleGraphOverview(' + htmlJsString(graphId) + ')">Explore classes</button></div>' +
+        '<p class="hint">Double-click the graph node to drill down.</p>';
+}
+
+function showGraphRelationDetail(edge) {
+    const panel = document.getElementById('detail-content');
+    panel.innerHTML = '<div class="detail-block"><h4>Cross-graph calls</h4>' +
+        '<div class="relation-route"><span>' + edge.from + '</span><strong>&rarr;</strong><span>' + edge.to + '</span></div>' +
+        graphMetricRow('Call sites', edge.weight) + '</div>';
+}
+
+function graphMetricRow(label, value) {
+    return '<div class="detail-row"><span class="detail-key">' + label + '</span><span class="detail-value">' +
+        Number(value || 0).toLocaleString() + '</span></div>';
+}
+
+function graphElementId(graphId) { return 'graph:' + graphId; }
 
 async function showNodeDetail(graphId, nodeId) {
     const prefix = '/api/graphs/' + encodeURIComponent(graphId);
@@ -161,7 +272,7 @@ async function loadSubgraph(graphId, centerId, depth) {
     document.getElementById('graph-info').textContent = data.nodes.length + ' nodes, ' + data.edges.length + ' edges';
 }
 
-function renderGraph(data, centerId) {
+function renderGraph(data, centerId, viewMode) {
     const elements = [];
     const seen = new Set();
 
@@ -171,9 +282,10 @@ function renderGraph(data, centerId) {
         seen.add(elementId);
         elements.push({ data: {
             id: elementId, graphId: n.graphId, nodeId: n.id,
+            nodeType: n.type, nodeData: n,
             label: truncate(n.label || n.type, 25),
             color: NODE_COLORS[n.type] || '#8b949e',
-            size: NODE_SIZES[n.type] || 16
+            size: n.type === 'Graph' ? graphNodeSize(n.callSites) : (NODE_SIZES[n.type] || 16)
         }});
     });
 
@@ -182,9 +294,10 @@ function renderGraph(data, centerId) {
         const to = e.toElementId || (e.graphId + ':' + e.to);
         if (!seen.has(from) || !seen.has(to)) return;
         elements.push({ data: {
-            id: e.graphId + ':e:' + e.from + '-' + e.to + '-' + i,
+            id: (e.graphId || 'graphs') + ':e:' + e.from + '-' + e.to + '-' + i,
             source: from, target: to, graphId: e.graphId, targetNodeId: e.to,
-            color: EDGE_COLORS[e.type] || '#30363d'
+            edgeType: e.type, edgeData: e, label: e.type === 'GraphCall' ? Number(e.weight || 0).toLocaleString() : '',
+            color: EDGE_COLORS[e.type] || '#30363d', width: graphEdgeWidth(e)
         }});
     });
 
@@ -193,7 +306,9 @@ function renderGraph(data, centerId) {
 
     // Use fast layout for large graphs, detailed layout for small subgraphs
     var isLarge = elements.length > 200;
-    var layoutOpts = isLarge
+    var layoutOpts = viewMode === 'graphs'
+        ? { name: 'cose', animate: true, animationDuration: 500, nodeRepulsion: function() { return 28000; }, idealEdgeLength: function() { return 180; }, gravity: 0.2, numIter: 400 }
+        : isLarge
         ? { name: 'concentric', concentric: function(n) { return n.degree(); }, levelWidth: function() { return 3; }, animate: false, minNodeSpacing: 10 }
         : { name: 'cose', animate: true, animationDuration: 400, nodeRepulsion: function() { return 12000; }, idealEdgeLength: function() { return 80; }, gravity: 0.3, numIter: 200 };
     cy.layout(layoutOpts).run();
@@ -208,6 +323,15 @@ function renderGraph(data, centerId) {
     } else {
         cy.fit(null, 30);
     }
+}
+
+function graphNodeSize(callSites) {
+    return Math.max(NODE_SIZES.Graph, Math.min(112, 64 + Math.log10(Number(callSites || 0) + 1) * 8));
+}
+
+function graphEdgeWidth(edge) {
+    if (edge.type !== 'GraphCall') return 1.2;
+    return Math.max(1.5, Math.min(8, 1.5 + Math.log10(Number(edge.weight || 0) + 1) * 1.8));
 }
 
 function truncate(s, len) { return s.length > len ? s.substring(0, len) + '...' : s; }
@@ -309,7 +433,10 @@ document.getElementById('search-btn').addEventListener('click', search);
 document.getElementById('search').addEventListener('keypress', function(e) { if (e.key === 'Enter') search(); });
 document.getElementById('close-results').addEventListener('click', function() { document.getElementById('results-section').style.display = 'none'; });
 document.getElementById('btn-fit').addEventListener('click', function() { cy.fit(null, 30); });
-document.getElementById('btn-reset').addEventListener('click', function() { cy.elements().remove(); loadInitialGraph(); });
+document.getElementById('btn-reset').addEventListener('click', function() {
+    cy.elements().remove();
+    if (dashboardInfo && (dashboardInfo.count || 0) > 1) loadGraphTopology(); else loadInitialGraph();
+});
 
 // Load Cypher result nodes onto the canvas
 async function loadCypherResults(nodeRefs) {

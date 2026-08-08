@@ -776,6 +776,22 @@ internal object NodeSerializer {
         return result
     }
 
+    fun readMetadataDeclaredClasses(dis: DataInput, strings: StringTable): Set<String> {
+        readHeader(dis, MAGIC_METADATA)
+        val methodCount = dis.readInt()
+        require(methodCount >= 0) { "Invalid metadata method count: $methodCount" }
+        val result = linkedSetOf<String>()
+        repeat(methodCount) {
+            result += strings.get(dis.readInt())
+            dis.readInt() // method name
+            val parameterCount = dis.readInt()
+            require(parameterCount >= 0) { "Invalid method parameter count: $parameterCount" }
+            repeat(parameterCount) { dis.readInt() }
+            dis.readInt() // return type
+        }
+        return result
+    }
+
     // ========================================================================
     // ControlFlowEdge comparison writing / reading
     // ========================================================================

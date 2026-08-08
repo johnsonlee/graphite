@@ -3630,3 +3630,75 @@ loader tests passed.
 field lookup, the top-level cached-field path made the Android build-only score
 worse. Since build-only regressed, no end-to-end benchmark was run. The
 candidate was reverted and no product code from this attempt is retained.
+
+### 2026-08-07 — Attempt 093: Bound multi-graph overview heap with a declaring-class sidecar
+
+**Problem:** a production Explorer loaded 42 graphs containing 80,000,940
+nodes and 91,388,243 edges, then reached almost the full 12 GiB Java heap. The
+multi-graph topology route discovered class ownership by requesting up to
+100,001 fully deserialized `MethodDescriptor` objects per graph. At 42 graphs,
+one request could temporarily materialize more than 4.2 million descriptors,
+while the 100K-per-graph cutoff also made topology incomplete.
+
+**Change:** persisted graphs now write `graph.declaredclasses`, a compact sorted
+list of declaring-class string-table IDs. `Graph.declaredClasses()` exposes the
+same information to the Explorer. MAPPED graphs load the sidecar lazily; old
+graphs without it stream only the declaring-class ID from every method record
+in `graph.metadata` and skip the rest of each descriptor. The graph-overview
+route builds ownership one graph at a time and no longer retains both all
+per-graph class sets and the combined ownership map.
+
+The product's forward adjacency, labels, prefix table, string table, backward
+adjacency, node decoding, and Cypher execution paths are unchanged. An
+experimental mapped-backward-graph change was removed before final baseline
+measurement because the targeted fix did not require it.
+
+**Real-corpus gate:** `RealMultiGraphMemoryBenchmark` runs in a fork with
+`-Xms512m -Xmx8g`. It requires exactly 50 distinct graph directories, rejects
+node-data files that resolve to the same file, and requires at least 100M total
+nodes. It measures both an absent-class call-site search, which forces all 50
+graphs to scan, and `/api/graph-overview`, sampling used heap every 5 ms during
+load and request execution.
+
+Run it on the production corpus with:
+
+```
+./gradlew :explore:realMultiGraphAcceptance \
+  -Pgraphite.multigraph.root=/data/graphs \
+  --no-daemon
+```
+
+The task writes its auditable JSON result to
+`graphite-explore/build/results/jmh/real-multigraph-acceptance.json`.
+
+**Implementation stress result:** before adding the hard-link rejection to the
+final acceptance gate, the implementation was exercised with 50 mapped graph
+directories backed by a repeated 5,336,480-node / 5,380,825-edge production
+graph. This is intentionally not reported as the real-corpus acceptance result;
+it is a 266,824,000-node / 269,041,250-edge pressure test of the code path.
+
+| Operation | Setup peak heap | Request peak heap | Retained heap | Time |
+|-----------|----------------:|------------------:|--------------:|-----:|
+| Global absent call-site search | 2,995,484,720 B | 4,464,016,928 B | 555,848 B | 57,841.856 ms |
+| Multi-graph topology | 2,988,842,256 B | 4,699,806,968 B | 324,534,040 B | 9,157.662 ms |
+
+Both operations completed under `-Xmx8g`; the larger observed request peak was
+about 4.38 GiB.
+
+**Same-machine negative controls:** a detached HEAD worktree and the candidate
+were benchmarked back-to-back with the same fixture and JVM.
+
+| Baseline | HEAD | Candidate | Change |
+|----------|-----:|----------:|-------:|
+| Android build-save-load-query | 30,831.631 ms | 30,799.302 ms | -0.10% |
+| Explorer initial session | 779.317 ms | 772.625 ms | -0.86% |
+| Explorer initial-session max used heap | 96,681,240 B | 96,689,712 B | +8,472 B |
+| MAPPED integer filter | 0.214 ms | 0.225 ms | within JMH error interval |
+| MAPPED simple node match | 0.111 ms | 0.118 ms | within JMH error interval |
+| MAPPED single-hop relationship | 0.869 ms | 0.791 ms | -8.98% |
+
+**Conclusion:** retain the targeted sidecar and streaming compatibility path.
+Functional, build, serve, and representative query baselines show no material
+regression. The implementation stress clears the 8 GiB heap cap with substantial
+headroom, but the final acceptance result remains pending until the benchmark is
+run where the 50 genuinely distinct production graphs are available.

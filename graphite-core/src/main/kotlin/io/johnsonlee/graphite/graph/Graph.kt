@@ -103,6 +103,12 @@ interface Graph {
     fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
 
     /**
+     * Return every class that declares at least one method in this graph when
+     * the backend can answer without materializing the complete method index.
+     */
+    fun declaredClasses(): Set<String>? = null
+
+    /**
      * Get the underlying values for an enum constant.
      * Enum constructors can have multiple user-defined arguments.
      *

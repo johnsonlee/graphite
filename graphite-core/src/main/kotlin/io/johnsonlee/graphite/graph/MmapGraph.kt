@@ -167,6 +167,9 @@ class MmapGraph internal constructor(
     override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
         methods(pattern).take(limit.coerceAtLeast(0)).toList()
 
+    override fun declaredClasses(): Set<String> =
+        methodIndex.values.asSequence().mapTo(linkedSetOf()) { it.declaringClass.className }
+
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         enumValuesMap["$enumClass#$enumName"]
 

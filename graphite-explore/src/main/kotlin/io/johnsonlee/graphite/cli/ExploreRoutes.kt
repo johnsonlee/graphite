@@ -31,6 +31,7 @@ internal class ExploreRoutes {
     internal fun register(app: Javalin, graph: Graph) {
         val provider = StaticGraphProvider(STANDALONE_GRAPH_ID, graph)
         registerStaticGraphRoutes(app, graphStats(graph))
+        registerGraphOverviewRoute(app) { ctx -> listOfNotNull(provider.acquire(ctx)) }
         registerGraphRoutes(app, API_ROOT, provider)
         val scopedPrefix = "$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}"
         registerGraphRoutes(app, scopedPrefix, provider)
@@ -40,6 +41,7 @@ internal class ExploreRoutes {
 
     internal fun register(app: Javalin, registry: GraphRegistry) {
         registerRegistryRoutes(app, registry)
+        registerGraphOverviewRoute(app) { registry.acquireAll() }
         registerAllGraphRoutes(app) { registry.acquireAll() }
         val scopedPrefix = "$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}"
         val provider = RegistryPathGraphProvider(registry)
@@ -72,6 +74,20 @@ internal class ExploreRoutes {
                 .onFailure { error ->
                     ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to error.message))
                 }
+        }
+    }
+
+    private fun registerGraphOverviewRoute(
+        app: Javalin,
+        acquire: (Context) -> List<GraphLease>
+    ) {
+        app.get("$API_ROOT/graph-overview") { ctx ->
+            withAllGraphs(ctx, acquire) { leases ->
+                val inputs = leases.map { lease ->
+                    GraphOverviewInput(lease.id, lease.graph, graphStats(lease.graph))
+                }
+                ctx.json(buildGraphOverview(inputs))
+            }
         }
     }
 

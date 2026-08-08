@@ -390,6 +390,14 @@ class ExploreCommandTest {
         assertEquals(404, get("/api/graphs/missing").first)
         assertEquals(400, get("/api/graphs/bad%20id").first)
         assertEquals(404, get("/api/info").first)
+
+        val (overviewCode, overviewBody) = get("/api/graph-overview")
+        assertEquals(200, overviewCode, overviewBody)
+        val graphOverview: Map<String, Any?> = parseJson(overviewBody)
+        assertEquals(1.0, graphOverview["graphCount"])
+        @Suppress("UNCHECKED_CAST")
+        val graphNodes = graphOverview[API_FIELD_NODES] as List<Map<String, Any?>>
+        assertEquals(STANDALONE_GRAPH_ID, graphNodes.single()[API_FIELD_ID])
     }
 
     @Test
@@ -1331,6 +1339,7 @@ class ExploreCommandTest {
         val paths = result["paths"] as Map<String, Map<String, Any?>>
         assertTrue(paths.containsKey("/api/cypher"))
         assertTrue(paths.containsKey("/api/graphs"))
+        assertTrue(paths.containsKey("/api/graph-overview"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/cypher"))
         assertFalse(paths.containsKey("/api/info"))
