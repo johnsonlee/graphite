@@ -28,10 +28,9 @@ jobs:
         java-version: '17'
 
     - name: Build
-      id: build
       run: |
+        set -o pipefail
         ./gradlew check -S --no-daemon 2>&1 | tee build-output.txt
-        echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
       env:
         JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
         JVM_OPTS:  -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
@@ -39,6 +38,7 @@ jobs:
     - name: Generate coverage report
       if: success() && github.event_name == 'pull_request'
       run: |
+        set -o pipefail
         ./gradlew koverLog --no-daemon 2>&1 | tee coverage-output.txt
 
     - name: Comment coverage on PR
