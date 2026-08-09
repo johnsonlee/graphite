@@ -56,7 +56,6 @@ class GraphiteCommandTest {
         val normalizedHelp = help.replace(Regex("\\s+"), " ")
 
         assertTrue(help.contains("--android-sdk"), "Help should contain Android SDK option, got: $help")
-        assertTrue(help.contains("ANDROID_PLATFORMS"), "Help should contain env priority, got: $help")
         assertTrue(help.contains("ANDROID_HOME"), "Help should contain env priority, got: $help")
         assertTrue(help.contains("ANDROID_SDK_ROOT"), "Help should contain env priority, got: $help")
         assertTrue(help.contains("~/Library/Android/sdk"), "Help should contain macOS default path, got: $help")

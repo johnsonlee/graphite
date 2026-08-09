@@ -35,16 +35,16 @@ class BuildCommand : Callable<Int> {
     @Option(
         names = ["--android-sdk"],
         description = [
-            "Android SDK root (or platforms directory) for APK inputs.",
+            "Android SDK root for APK inputs.",
             "When omitted, search order is:",
-            "1) ANDROID_PLATFORMS, 2) ANDROID_HOME, 3) ANDROID_SDK_ROOT.",
-            "4) Default roots for the current OS:",
+            "1) ANDROID_HOME, 2) ANDROID_SDK_ROOT.",
+            "3) Default roots for the current OS:",
             "   macOS: ~/Library/Android/sdk, /opt/homebrew/share/android-commandlinetools, " +
                 "/usr/local/share/android-commandlinetools.",
             "   Linux: ~/Android/Sdk, ~/android-sdk, /opt/android-sdk, " +
                 "/usr/local/android-sdk, /usr/lib/android-sdk.",
-            "   Windows: %USERPROFILE%\\AppData\\Local\\Android\\Sdk.",
-            "5) SDK roots inferred from adb, emulator, or sdkmanager on PATH."
+            "   Windows: %%USERPROFILE%%\\AppData\\Local\\Android\\Sdk.",
+            "4) SDK roots inferred from adb, emulator, or sdkmanager on PATH."
         ]
     )
     var androidSdk: Path? = null

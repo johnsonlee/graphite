@@ -98,10 +98,10 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 ```
 
 For APK inputs, Graphite uses Android platform jars to resolve the APK's target
-API level. Pass `--android-sdk` with either the SDK `platforms` directory
-or the Android SDK root. If omitted, Graphite searches in this order:
+API level. Pass `--android-sdk` with the Android SDK root. If omitted,
+Graphite searches in this order:
 
-1. `ANDROID_PLATFORMS`, `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
+1. `ANDROID_HOME`, then `ANDROID_SDK_ROOT`.
 2. Default SDK roots for the current OS:
    - macOS: `~/Library/Android/sdk`,
      `/opt/homebrew/share/android-commandlinetools`,

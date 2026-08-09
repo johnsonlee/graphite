@@ -70,8 +70,7 @@ data class LoaderConfig(
     /**
      * Android SDK location used when loading APK inputs.
      *
-     * Accepts either a platforms directory containing android-<api>/android.jar
-     * entries, or an Android SDK root containing a platforms directory.
+     * Must be an Android SDK root containing a platforms directory.
      */
     val androidSdk: Path? = null,
 

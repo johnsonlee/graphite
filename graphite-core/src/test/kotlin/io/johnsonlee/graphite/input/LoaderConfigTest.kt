@@ -50,7 +50,7 @@ class LoaderConfigTest {
             extractAnnotations = false,
             trackCrossMethodFunctionalDispatch = false,
             callGraphAlgorithm = CallGraphAlgorithm.RTA,
-            androidSdk = Path.of("/opt/android-sdk/platforms"),
+            androidSdk = Path.of("/opt/android-sdk"),
             verbose = { verboseCalled = true }
         )
 
@@ -62,7 +62,7 @@ class LoaderConfigTest {
         assertFalse(config.extractAnnotations)
         assertFalse(config.trackCrossMethodFunctionalDispatch)
         assertEquals(CallGraphAlgorithm.RTA, config.callGraphAlgorithm)
-        assertEquals(Path.of("/opt/android-sdk/platforms"), config.androidSdk)
+        assertEquals(Path.of("/opt/android-sdk"), config.androidSdk)
 
         config.verbose?.invoke("test")
         assertTrue(verboseCalled)

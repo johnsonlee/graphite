@@ -30,7 +30,6 @@ private const val APK_EXTENSION_NAME = "apk"
 private const val ANDROID_JAR_NAME = "android.jar"
 private const val ANDROID_PLATFORM_PREFIX = "android-"
 private const val ANDROID_PLATFORMS_DIR = "platforms"
-private const val ANDROID_PLATFORMS_ENV = "ANDROID_PLATFORMS"
 private const val ANDROID_HOME_ENV = "ANDROID_HOME"
 private const val ANDROID_SDK_ROOT_ENV = "ANDROID_SDK_ROOT"
 private const val PATH_ENV = "PATH"
@@ -73,35 +72,33 @@ private fun createApkInputLocations(
 }
 
 private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
-    val configured = config.androidSdk ?: findAndroidPlatformsFromEnvironment()
+    val configured = config.androidSdk ?: findAndroidSdkRootFromEnvironment()
     if (configured != null) {
-        return validateAndroidPlatformsPath(configured)
+        return validateAndroidSdkRoot(configured)
     }
     return discoverAndroidPlatformsPath()
         ?: throw IllegalArgumentException(
-            "APK input requires an Android SDK. Pass --android-sdk <dir>, set " +
-                "$ANDROID_PLATFORMS_ENV, $ANDROID_HOME_ENV, or $ANDROID_SDK_ROOT_ENV, " +
+            "APK input requires an Android SDK. Pass --android-sdk <sdk-root>, set " +
+                "$ANDROID_HOME_ENV or $ANDROID_SDK_ROOT_ENV, " +
                 "install the Android SDK in a default location, or put adb, emulator, " +
                 "or sdkmanager on PATH."
         )
 }
 
-private fun validateAndroidPlatformsPath(path: Path): Path {
+private fun validateAndroidSdkRoot(path: Path): Path {
     val requested = path.toAbsolutePath().normalize()
-    val normalized = normalizeAndroidPlatformsPath(requested)
-    require(Files.isDirectory(normalized)) {
-        "Android SDK path does not exist: $requested"
+    val platforms = requested.resolve(ANDROID_PLATFORMS_DIR)
+    require(Files.isDirectory(requested)) {
+        "Android SDK root does not exist: $requested"
     }
-    require(containsAndroidPlatformJar(normalized)) {
-        "Android SDK path must be an SDK root or platforms directory containing " +
-            "android-<api>/android.jar entries: $requested"
+    require(containsAndroidPlatformJar(platforms)) {
+        "Android SDK root must contain platforms/android-<api>/android.jar entries: $requested"
     }
-    return normalized
+    return platforms
 }
 
-private fun findAndroidPlatformsFromEnvironment(environment: Map<String, String> = System.getenv()): Path? =
-    environmentPath(environment, ANDROID_PLATFORMS_ENV)
-        ?: environmentPath(environment, ANDROID_HOME_ENV)
+private fun findAndroidSdkRootFromEnvironment(environment: Map<String, String> = System.getenv()): Path? =
+    environmentPath(environment, ANDROID_HOME_ENV)
         ?: environmentPath(environment, ANDROID_SDK_ROOT_ENV)
 
 private fun environmentPath(environment: Map<String, String>, name: String): Path? =
@@ -187,16 +184,9 @@ private fun Path.ancestors(): Sequence<Path> =
 
 private fun findValidAndroidPlatformsPath(candidates: Iterable<Path>): Path? =
     candidates.asSequence()
-        .map { normalizeAndroidPlatformsPath(it.toAbsolutePath().normalize()) }
+        .map { it.toAbsolutePath().normalize().resolve(ANDROID_PLATFORMS_DIR) }
         .distinct()
         .firstOrNull(::containsAndroidPlatformJar)
-
-private fun normalizeAndroidPlatformsPath(path: Path): Path =
-    when {
-        containsAndroidPlatformJar(path) -> path
-        containsAndroidPlatformJar(path.resolve(ANDROID_PLATFORMS_DIR)) -> path.resolve(ANDROID_PLATFORMS_DIR)
-        else -> path
-    }
 
 private fun containsAndroidPlatformJar(path: Path): Boolean {
     if (!Files.isDirectory(path)) {

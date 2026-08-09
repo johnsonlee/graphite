@@ -89,7 +89,7 @@ class JavaProjectLoaderTest {
     }
 
     @Test
-    fun `android SDK resolution accepts sdk root and platforms directory`() {
+    fun `android SDK resolution accepts sdk root only`() {
         val sdkRoot = Files.createTempDirectory("graphite-android-sdk-root")
         val platformsFromRoot = Files.createDirectories(sdkRoot.resolve("platforms"))
         val directPlatforms = Files.createTempDirectory("graphite-android-platforms")
@@ -105,14 +105,14 @@ class JavaProjectLoaderTest {
                     LoaderConfig(androidSdk = sdkRoot)
                 )
             )
-            assertEquals(
-                directPlatforms,
+            val directPlatformsError = assertFailsWith<IllegalArgumentException> {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
                     LoaderConfig(androidSdk = directPlatforms)
                 )
-            )
+            }
+            assertTrue(directPlatformsError.message.orEmpty().contains("Android SDK root must contain"))
             assertTrue(
                 invokeLoaderFilePrivate<Boolean>(
                     "containsAndroidPlatformJar",
@@ -135,26 +135,13 @@ class JavaProjectLoaderTest {
 
     @Test
     fun `android SDK environment lookup keeps configured priority`() {
-        val androidSdk = Path.of("/env/platforms")
         val androidHome = Path.of("/env/home")
         val androidSdkRoot = Path.of("/env/sdk-root")
 
         assertEquals(
-            androidSdk,
-            invokeLoaderFilePrivate<Path>(
-                "findAndroidPlatformsFromEnvironment",
-                arrayOf(Map::class.java),
-                mapOf(
-                    "ANDROID_PLATFORMS" to androidSdk.toString(),
-                    "ANDROID_HOME" to androidHome.toString(),
-                    "ANDROID_SDK_ROOT" to androidSdkRoot.toString()
-                )
-            )
-        )
-        assertEquals(
             androidHome,
             invokeLoaderFilePrivate<Path>(
-                "findAndroidPlatformsFromEnvironment",
+                "findAndroidSdkRootFromEnvironment",
                 arrayOf(Map::class.java),
                 mapOf(
                     "ANDROID_HOME" to androidHome.toString(),
@@ -165,14 +152,14 @@ class JavaProjectLoaderTest {
         assertEquals(
             androidSdkRoot,
             invokeLoaderFilePrivate<Path>(
-                "findAndroidPlatformsFromEnvironment",
+                "findAndroidSdkRootFromEnvironment",
                 arrayOf(Map::class.java),
                 mapOf("ANDROID_SDK_ROOT" to androidSdkRoot.toString())
             )
         )
         assertNull(
             invokeLoaderFilePrivate<Path?>(
-                "findAndroidPlatformsFromEnvironment",
+                "findAndroidSdkRootFromEnvironment",
                 arrayOf(Map::class.java),
                 mapOf("ANDROID_HOME" to "")
             )
@@ -283,30 +270,30 @@ class JavaProjectLoaderTest {
 
     @Test
     fun `android SDK resolution reports missing and invalid directories`() {
-        val missingPlatforms = Files.createTempDirectory("graphite-missing-android-platforms")
+        val missingSdkRoot = Files.createTempDirectory("graphite-missing-android-sdk")
             .resolve("missing")
-        val invalidPlatforms = Files.createTempDirectory("graphite-invalid-android-platforms")
+        val invalidSdkRoot = Files.createTempDirectory("graphite-invalid-android-sdk")
         try {
             val missing = assertFailsWith<IllegalArgumentException> {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidSdk = missingPlatforms)
+                    LoaderConfig(androidSdk = missingSdkRoot)
                 )
             }
             val invalid = assertFailsWith<IllegalArgumentException> {
                 invokeLoaderFilePrivate<Path>(
                     "resolveAndroidPlatformsPath",
                     arrayOf(LoaderConfig::class.java),
-                    LoaderConfig(androidSdk = invalidPlatforms)
+                    LoaderConfig(androidSdk = invalidSdkRoot)
                 )
             }
 
             assertTrue(missing.message.orEmpty().contains("does not exist"))
-            assertTrue(invalid.message.orEmpty().contains("SDK root or platforms directory"))
+            assertTrue(invalid.message.orEmpty().contains("SDK root must contain"))
         } finally {
-            missingPlatforms.parent.toFile().deleteRecursively()
-            invalidPlatforms.toFile().deleteRecursively()
+            missingSdkRoot.parent.toFile().deleteRecursively()
+            invalidSdkRoot.toFile().deleteRecursively()
         }
     }
 
