@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
+import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
@@ -573,6 +574,14 @@ class QueryDslTest {
         val enumConst = EnumConstant(enumId, TypeDescriptor("com.example.Status"), "ACTIVE")
         val nullId = NodeId.next()
         val nullConst = NullConstant(nullId)
+        val resourceIds = listOf(
+            ResourceValueNode(NodeId.next(), "app.yml", "int", 7, "yaml"),
+            ResourceValueNode(NodeId.next(), "app.yml", "long", 8L, "yaml"),
+            ResourceValueNode(NodeId.next(), "app.yml", "float", 1.25f, "yaml"),
+            ResourceValueNode(NodeId.next(), "app.yml", "double", 2.5, "yaml"),
+            ResourceValueNode(NodeId.next(), "app.yml", "boolean", true, "yaml"),
+            ResourceValueNode(NodeId.next(), "app.yml", "string", "enabled", "yaml")
+        )
 
         val returnId = NodeId.next()
         val returnNode = ReturnNode(returnId, method)
@@ -587,6 +596,7 @@ class QueryDslTest {
         builder.addNode(strConst)
         builder.addNode(enumConst)
         builder.addNode(nullConst)
+        resourceIds.forEach(builder::addNode)
         builder.addNode(returnNode)
         builder.addEdge(DataFlowEdge(intId, returnId, DataFlowKind.ASSIGN))
         builder.addEdge(DataFlowEdge(longId, returnId, DataFlowKind.ASSIGN))
@@ -596,6 +606,7 @@ class QueryDslTest {
         builder.addEdge(DataFlowEdge(strId, returnId, DataFlowKind.ASSIGN))
         builder.addEdge(DataFlowEdge(enumId, returnId, DataFlowKind.ASSIGN))
         builder.addEdge(DataFlowEdge(nullId, returnId, DataFlowKind.ASSIGN))
+        resourceIds.forEach { builder.addEdge(DataFlowEdge(it.id, returnId, DataFlowKind.ASSIGN)) }
         val graph = builder.build()
 
         val query = GraphiteQuery(graph)

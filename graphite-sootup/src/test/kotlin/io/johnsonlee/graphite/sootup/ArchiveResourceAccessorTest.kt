@@ -7,6 +7,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -229,6 +231,27 @@ class ArchiveResourceAccessorTest {
         }
     }
 
+    @Test
+    fun `create from APK lists Android resources`() {
+        val apkFile = createTempZip(
+            extension = ".apk",
+            entries = mapOf(
+                "AndroidManifest.xml" to "manifest",
+                "assets/config.json" to "{\"enabled\":true}",
+                "res/raw/settings.json" to "{}"
+            )
+        )
+        try {
+            val accessor = ArchiveResourceAccessor.create(apkFile.toPath())
+            val entries = accessor.list("**").toList()
+            assertTrue(entries.any { it.path == "AndroidManifest.xml" })
+            assertTrue(entries.any { it.path == "assets/config.json" })
+            assertEquals("{\"enabled\":true}", accessor.open("assets/config.json").bufferedReader().readText())
+        } finally {
+            apkFile.delete()
+        }
+    }
+
     // ========================================================================
     // Spring Boot fat JAR (NestedJarSource)
     // ========================================================================
@@ -340,6 +363,18 @@ class ArchiveResourceAccessorTest {
                 jos.putNextEntry(JarEntry(name))
                 jos.write(content)
                 jos.closeEntry()
+            }
+        }
+        return file
+    }
+
+    private fun createTempZip(extension: String, entries: Map<String, String>): File {
+        val file = File.createTempFile("test", extension)
+        ZipOutputStream(file.outputStream()).use { zos ->
+            entries.forEach { (name, content) ->
+                zos.putNextEntry(ZipEntry(name))
+                zos.write(content.toByteArray())
+                zos.closeEntry()
             }
         }
         return file

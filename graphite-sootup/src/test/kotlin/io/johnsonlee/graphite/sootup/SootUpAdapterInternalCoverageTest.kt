@@ -1,3 +1,5 @@
+@file:Suppress("FunctionOnlyReturningConstant", "LargeClass", "LongMethod", "MaxLineLength")
+
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.graph.DefaultGraph
@@ -17,6 +19,8 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.NodeId
+import java.io.ByteArrayInputStream
+import java.util.stream.Stream
 import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -24,27 +28,46 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.LdcInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.VarInsnNode
+import sootup.core.IdentifierFactory
+import sootup.core.frontend.BodySource
+import sootup.core.frontend.SootClassSource
+import sootup.core.jimple.basic.NoPositionInformation
 import sootup.core.jimple.basic.StmtPositionInfo
 import sootup.core.jimple.common.constant.MethodHandle
 import sootup.core.jimple.common.constant.StringConstant as SootStringConstant
 import sootup.core.jimple.common.expr.JDynamicInvokeExpr
+import sootup.core.jimple.common.expr.JNewExpr
+import sootup.core.jimple.common.expr.JSpecialInvokeExpr
 import sootup.core.jimple.common.expr.JStaticInvokeExpr
+import sootup.core.jimple.common.expr.JVirtualInvokeExpr
 import sootup.core.jimple.common.ref.JStaticFieldRef
 import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.inputlocation.AnalysisInputLocation
+import sootup.core.model.Body
+import sootup.core.model.ClassModifier
+import sootup.core.model.MethodModifier
+import sootup.core.model.SootClass
+import sootup.core.model.SootField
+import sootup.core.model.SootMethod
 import sootup.core.model.SourceType
+import sootup.core.signatures.FieldSignature
 import sootup.core.signatures.MethodSignature
+import sootup.core.typehierarchy.TypeHierarchy
+import sootup.core.types.ClassType
 import sootup.core.types.VoidType
 import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.JavaIdentifierFactory
 import sootup.java.core.JavaSootClass
 import sootup.java.core.jimple.basic.JavaLocal
 import sootup.java.core.views.JavaView
+import sootup.core.views.View
 
 class SootUpAdapterInternalCoverageTest {
     private val identifierFactory = JavaIdentifierFactory.getInstance()
@@ -130,11 +153,16 @@ class SootUpAdapterInternalCoverageTest {
         assertEquals("alpha", invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), "\"alpha\""))
         assertEquals(listOf("a"), invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), listOf("a", "")))
         assertEquals(listOf("b"), invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), arrayOf("b", "")))
+        assertEquals(1, invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), 1))
+        assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), emptyList<String>()))
+        assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), emptyArray<String>()))
         assertNull(invokePrivate<Any?>(adapter, "normalizeAnnotationValue", arrayOf(Any::class.java), object {
             override fun toString(): String = "null"
         }))
         assertEquals("", invokePrivate<String>(adapter, "getAnnotationFullName", arrayOf(Any::class.java), null))
         assertTrue(invokePrivate<Map<String, Any?>>(adapter, "getAnnotationValues", arrayOf(Any::class.java), null).isEmpty())
+        assertEquals("sample.Annotation", invokePrivate<String>(adapter, "getAnnotationFullName", arrayOf(Any::class.java), FakeAnnotationUsage()))
+        assertEquals(mapOf("value" to "\"ok\""), invokePrivate<Map<String, Any?>>(adapter, "getAnnotationValues", arrayOf(Any::class.java), FakeAnnotationUsage()))
     }
 
     @Test
@@ -157,6 +185,45 @@ class SootUpAdapterInternalCoverageTest {
                 TypeDescriptor("fallback.Type")
             )
         )
+
+        val method = MethodDescriptor(TypeDescriptor("sample.Owner"), "read", emptyList(), TypeDescriptor("void"))
+        val otherMethod = MethodDescriptor(TypeDescriptor("sample.Owner"), "read", emptyList(), TypeDescriptor("void"))
+        val bindingClass = Class.forName("io.johnsonlee.graphite.sootup.SootUpAdapter\$ParameterBinding")
+        val bindingConstructor = bindingClass.getDeclaredConstructor(MethodDescriptor::class.java, Int::class.javaPrimitiveType!!)
+            .also { it.isAccessible = true }
+        val firstBinding = bindingConstructor.newInstance(method, 0)
+
+        assertEquals(firstBinding, bindingConstructor.newInstance(method, 0))
+        assertFalse(firstBinding == bindingConstructor.newInstance(otherMethod, 0))
+        assertFalse(firstBinding == bindingConstructor.newInstance(method, 1))
+        assertFalse(firstBinding == "not-a-binding")
+
+        assertNotNull(
+            invokePrivate<Any>(
+                adapter,
+                "parameterBinding",
+                arrayOf(MethodDescriptor::class.java, Int::class.javaPrimitiveType!!),
+                method,
+                1
+            )
+        )
+        writeField(adapter, "activeMethod", method)
+        val activeBinding = invokePrivate<Any>(
+            adapter,
+            "parameterBinding",
+            arrayOf(MethodDescriptor::class.java, Int::class.javaPrimitiveType!!),
+            method,
+            0
+        )
+        val activeBindingAgain = invokePrivate<Any>(
+            adapter,
+            "parameterBinding",
+            arrayOf(MethodDescriptor::class.java, Int::class.javaPrimitiveType!!),
+            method,
+            0
+        )
+        assertEquals(activeBinding, activeBindingAgain)
+        assertEquals(1, readField<MutableList<Any>>(adapter, "activeMethodParameters").size)
     }
 
     @Test
@@ -170,6 +237,127 @@ class SootUpAdapterInternalCoverageTest {
         )
 
         assertTrue(references.any { it == "java.lang.invoke.LambdaMetafactory" || it == "sample.lambda.LambdaExample" })
+
+        val descriptorReferences = invokePrivate<Set<String>>(
+            adapter,
+            "extractReferencedClasses",
+            arrayOf(ByteArray::class.java),
+            referencedClassBytes()
+        )
+        assertTrue(descriptorReferences.contains("java.io.Serializable"))
+        assertTrue(descriptorReferences.contains("java.util.List"))
+        assertTrue(descriptorReferences.contains("java.util.Map"))
+        assertTrue(descriptorReferences.contains("java.util.Optional"))
+        assertTrue(descriptorReferences.contains("java.io.IOException"))
+    }
+
+    @Test
+    fun `resource indexing helpers record class resources profiles and formats`() {
+        val entries = listOf(
+            ResourceEntry("com/example/Helper.class", "lib/helper.jar"),
+            ResourceEntry("config/application-dev.yaml", "app.jar"),
+            ResourceEntry("config/feature.json", "app.jar"),
+            ResourceEntry("config/service.xml", "app.jar"),
+            ResourceEntry("notes.txt", "app.jar")
+        )
+        val adapter = createAdapter(resourceAccessor = object : ResourceAccessor {
+            override fun list(pattern: String): Sequence<ResourceEntry> = entries.asSequence()
+            override fun open(path: String) = ByteArrayInputStream(ByteArray(0))
+        })
+
+        val unloadedClasses = invokePrivate<List<ResourceEntry>>(
+            adapter,
+            "indexResourceValues",
+            arrayOf(Set::class.java),
+            setOf("app.jar")
+        )
+        val resourceFilesByPath = readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath")
+        val configurationResourcePaths = readField<LinkedHashSet<String>>(adapter, "configurationResourcePaths")
+        val classOrigins = readField<MutableMap<String, String>>(adapter, "classOriginsByName")
+
+        assertEquals(listOf(ResourceEntry("com/example/Helper.class", "lib/helper.jar")), unloadedClasses)
+        assertEquals("lib/helper.jar", classOrigins["com.example.Helper"])
+        assertEquals("yaml", resourceFilesByPath.getValue("config/application-dev.yaml").single().format)
+        assertEquals("dev", resourceFilesByPath.getValue("config/application-dev.yaml").single().profile)
+        assertEquals("json", resourceFilesByPath.getValue("config/feature.json").single().format)
+        assertEquals("xml", resourceFilesByPath.getValue("config/service.xml").single().format)
+        assertEquals("text", resourceFilesByPath.getValue("notes.txt").single().format)
+        assertTrue(configurationResourcePaths.contains("config/application-dev.yaml"))
+        assertTrue(configurationResourcePaths.contains("config/feature.json"))
+        assertTrue(configurationResourcePaths.contains("config/service.xml"))
+        assertFalse(configurationResourcePaths.contains("notes.txt"))
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceConfig", arrayOf(String::class.java), "application.yml"))
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceConfig", arrayOf(String::class.java), "application.yaml"))
+        assertEquals("local", invokePrivate<String?>(adapter, "resourceProfile", arrayOf(String::class.java), "config/application-local.json"))
+        assertNull(invokePrivate<String?>(adapter, "resourceProfile", arrayOf(String::class.java), "config/feature.json"))
+    }
+
+    @Test
+    fun `method resolution fallbacks handle missing bodies and failing classes`() {
+        val adapter = createAdapter()
+        val enumType = identifierFactory.getClassType("sample.fake.EmptyEnum")
+        val clinitSignature = identifierFactory.getMethodSignature("sample.fake.EmptyEnum", "<clinit>", "void", emptyList())
+        val clinit = object : FakeSootMethod(clinitSignature, listOf(MethodModifier.STATIC)) {
+            override fun hasBody(): Boolean = false
+        }
+        val enumClass = FakeSootClass(enumType, methods = setOf(clinit), enumClass = true)
+
+        invokePrivate<Unit>(adapter, "extractEnumValues", arrayOf(SootClass::class.java), enumClass)
+
+        assertTrue(
+            invokePrivate<Set<SootMethod>>(
+                adapter,
+                "resolveMethodsOrEmpty",
+                arrayOf(SootClass::class.java),
+                FakeSootClass(identifierFactory.getClassType("sample.fake.Oom"), failure = OutOfMemoryError("boom"))
+            ).isEmpty()
+        )
+        assertTrue(
+            invokePrivate<Set<SootMethod>>(
+                adapter,
+                "resolveMethodsOrEmpty",
+                arrayOf(SootClass::class.java),
+                FakeSootClass(identifierFactory.getClassType("sample.fake.Illegal"), failure = IllegalStateException("missing"))
+            ).isEmpty()
+        )
+
+        writeField(adapter, "classesByNameCache", mapOf("sample.fake.EmptyEnum" to enumClass))
+        assertTrue(
+            invokePrivate<Set<String>>(
+                adapter,
+                "collectDeclaredMethodSubSignatures",
+                arrayOf(String::class.java),
+                "sample.fake.EmptyEnum"
+            ).any { it.contains("<clinit>") }
+        )
+
+        val throwingMethod = object : FakeSootMethod(
+            identifierFactory.getMethodSignature("sample.fake.Owner", "boom", "void", emptyList())
+        ) {
+            override fun hasBody(): Boolean = throw OutOfMemoryError("boom")
+        }
+        invokePrivate<Unit>(adapter, "processMethod", arrayOf(SootMethod::class.java), throwingMethod)
+    }
+
+    @Test
+    fun `build graph reports progress for large class sets`() {
+        val logs = mutableListOf<String>()
+        val classes = (1..500).map {
+            FakeSootClass(identifierFactory.getClassType("sample.fake.Progress$it"))
+        }
+        val adapter = SootUpAdapter(
+            view = FakeView(classes, identifierFactory),
+            config = LoaderConfig(includePackages = listOf("sample.fake"), buildCallGraph = false, verbose = logs::add),
+            extensions = emptyList(),
+            resourceAccessor = EmptyResourceAccessor,
+            inputLocationSources = emptyMap(),
+            graphBuilder = DefaultGraph.Builder()
+        )
+
+        adapter.buildGraph()
+
+        assertTrue(logs.any { it.contains("Pass 1 processed 500 classes") })
+        assertTrue(logs.any { it.contains("Pass 2 processed 500 classes") })
     }
 
     @Test
@@ -275,6 +463,7 @@ class SootUpAdapterInternalCoverageTest {
         assertEquals(5, invokePrivate<Any?>(adapter, "evaluateLiteralMethod", arrayOf(MethodNode::class.java), iconstReturnMethod(Opcodes.ICONST_5)))
         assertNull(invokePrivate<Any?>(adapter, "evaluateLiteralMethod", arrayOf(MethodNode::class.java), localeCtorMethod()))
         assertEquals(listOf("java.class", "java.properties"), invokePrivate<Any?>(adapter, "evaluateLiteralMethod", arrayOf(MethodNode::class.java), arraysAsListMethod()))
+        assertEquals("stored", invokePrivate<Any?>(adapter, "evaluateLiteralMethod", arrayOf(MethodNode::class.java), storedStringMethod()))
         assertEquals(setOf("java.class"), invokePrivate<Set<String>?>(adapter, "extractControlFormatsFromMethod", arrayOf(MethodNode::class.java), singleFormatMethod("java.class")))
         assertEquals(setOf("java.properties"), invokePrivate<Set<String>?>(adapter, "extractControlFormatsFromMethod", arrayOf(MethodNode::class.java), singleFormatMethod("java.properties")))
         assertNull(invokePrivate<Set<String>?>(adapter, "extractControlFormatsFromMethod", arrayOf(MethodNode::class.java), singleIntListOfMethod(7)))
@@ -282,11 +471,34 @@ class SootUpAdapterInternalCoverageTest {
 
         val bundle = ResourceBundle.getBundle("sample.resources.MessagesListBundle", Locale.KOREA)
         invokePrivate<Unit>(adapter, "indexRuntimeBundle", arrayOf(ResourceBundle::class.java), bundle)
-        val indexed = readField<MutableMap<String, *>>(adapter, "resourceFilesByPath")
+        invokePrivate<Unit>(
+            adapter,
+            "indexRuntimeBundle",
+            arrayOf(ResourceBundle::class.java),
+            java.util.PropertyResourceBundle(ByteArrayInputStream("hello=world\n".toByteArray()))
+        )
+        val indexed = readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath")
         assertTrue(indexed.containsKey("sample.resources.MessagesListBundle_ko_KR"))
+        assertEquals("propertybundle", indexed.getValue("java.util.PropertyResourceBundle").single().format)
         val parent = SimpleBundle("parent")
         val child = SimpleBundle("child").withParent(parent)
         assertNull(invokePrivate<ResourceBundle?>(adapter, "bundleParent", arrayOf(ResourceBundle::class.java), child))
+
+        indexed["messages_ko_KR.properties"] = mutableListOf(ResourceFileNode(NodeId.next(), "messages_ko_KR.properties", "test", "properties", null))
+        indexed["messages_ko.properties"] = mutableListOf(ResourceFileNode(NodeId.next(), "messages_ko.properties", "test", "properties", null))
+        val controlSpecClass = Class.forName("io.johnsonlee.graphite.sootup.SootUpAdapter\$BundleControlSpec")
+        assertEquals(
+            linkedSetOf("messages_ko_KR.properties", "messages_ko.properties", "messages.properties", "messages"),
+            invokePrivate<LinkedHashSet<String>>(
+                adapter,
+                "buildResourceBundleCandidatePaths",
+                arrayOf(String::class.java, String::class.java, String::class.java, controlSpecClass),
+                "messages",
+                "messages",
+                "ko_KR",
+                null
+            )
+        )
     }
 
     @Test
@@ -414,6 +626,11 @@ class SootUpAdapterInternalCoverageTest {
         val integerValueOf = identifierFactory.getMethodSignature("java.lang.Integer", "valueOf", "java.lang.Integer", listOf("int"))
         val stringValueOf = identifierFactory.getMethodSignature("java.lang.String", "valueOf", "java.lang.String", listOf("java.lang.Object"))
         val resourceBundleGetBundle = identifierFactory.getMethodSignature("java.util.ResourceBundle", "getBundle", "java.util.ResourceBundle", listOf("java.lang.String", "java.util.Locale"))
+        val gsonFromJson = identifierFactory.getMethodSignature("com.google.gson.Gson", "fromJson", "java.lang.Object", listOf("java.lang.String", "java.lang.Class"))
+        val documentBuilderParse = identifierFactory.getMethodSignature("javax.xml.parsers.DocumentBuilder", "parse", "org.w3c.dom.Document", listOf("java.io.InputStream"))
+        val urlOpenStream = identifierFactory.getMethodSignature("java.net.URL", "openStream", "java.io.InputStream", emptyList())
+        val channelsNewReader = identifierFactory.getMethodSignature("java.nio.channels.Channels", "newReader", "java.io.Reader", listOf("java.nio.channels.ReadableByteChannel", "java.lang.String"))
+        val irrelevantUrlMethod = identifierFactory.getMethodSignature("java.net.URL", "toString", "java.lang.String", emptyList())
         val listBundle = resolveJavaSootClass(adapter, "sample.resources.MessagesListBundle")
 
         assertNull(
@@ -461,6 +678,22 @@ class SootUpAdapterInternalCoverageTest {
                 JStaticInvokeExpr(resourceBundleGetBundle, listOf(local, local))
             )
         )
+        readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath")["messages.properties"] =
+            mutableListOf(ResourceFileNode(NodeId.next(), "messages.properties", "test", "properties", null))
+        assertEquals(
+            linkedSetOf("messages.properties"),
+            invokePrivate<LinkedHashSet<String>?>(
+                adapter,
+                "extractResourceBundlePaths",
+                arrayOf(MethodDescriptor::class.java, MethodSignature::class.java, sootup.core.jimple.common.expr.AbstractInvokeExpr::class.java),
+                caller,
+                resourceBundleGetBundle,
+                JStaticInvokeExpr(
+                    resourceBundleGetBundle,
+                    listOf(SootStringConstant("messages", identifierFactory.getType("java.lang.String")), local)
+                )
+            )
+        )
         assertNull(
             invokePrivate<Any?>(
                 adapter,
@@ -495,9 +728,113 @@ class SootUpAdapterInternalCoverageTest {
                 JStaticInvokeExpr(integerValueOf, emptyList())
             )
         )
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceRelevantCall", arrayOf(MethodSignature::class.java), gsonFromJson))
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceRelevantCall", arrayOf(MethodSignature::class.java), documentBuilderParse))
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceRelevantCall", arrayOf(MethodSignature::class.java), urlOpenStream))
+        assertTrue(invokePrivate<Boolean>(adapter, "isResourceRelevantCall", arrayOf(MethodSignature::class.java), channelsNewReader))
+        assertFalse(invokePrivate<Boolean>(adapter, "isResourceRelevantCall", arrayOf(MethodSignature::class.java), irrelevantUrlMethod))
+
+        val localeLocal = JavaLocal("locale", identifierFactory.getType("java.util.Locale"), emptyList())
+        val localeCtor = identifierFactory.getMethodSignature("java.util.Locale", "<init>", "void", listOf("java.lang.String", "java.lang.String"))
+        val localeCtorInvoke = JSpecialInvokeExpr(
+            localeLocal,
+            localeCtor,
+            listOf(
+                SootStringConstant("ko", identifierFactory.getType("java.lang.String")),
+                SootStringConstant("KR", identifierFactory.getType("java.lang.String"))
+            )
+        )
+        invokePrivate<Unit>(
+            adapter,
+            "trackResourceAssociations",
+            arrayOf(
+                io.johnsonlee.graphite.core.CallSiteNode::class.java,
+                MethodSignature::class.java,
+                sootup.core.jimple.common.expr.AbstractInvokeExpr::class.java,
+                MethodDescriptor::class.java,
+                io.johnsonlee.graphite.core.ValueNode::class.java
+            ),
+            io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, MethodDescriptor(TypeDescriptor("java.util.Locale"), "<init>", emptyList(), TypeDescriptor("void")), null, null, emptyList()),
+            localeCtor,
+            localeCtorInvoke,
+            caller,
+            null
+        )
+        val localeKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, localeLocal.name)
+        assertEquals("ko_KR", readField<MutableMap<Any, String>>(adapter, "localeSpecsByLocal")[localeKey])
+
+        val urlLocal = JavaLocal("url", identifierFactory.getType("java.net.URL"), emptyList())
+        val streamNode = LocalVariable(NodeId.next(), "stream", TypeDescriptor("java.io.InputStream"), caller)
+        readField<MutableMap<Any, LinkedHashSet<String>>>(adapter, "resourceHandlePathsByLocal")[
+            invokePrivate(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, urlLocal.name)
+        ] = linkedSetOf("config/service.xml")
+        invokePrivate<Unit>(
+            adapter,
+            "trackResourceAssociations",
+            arrayOf(
+                io.johnsonlee.graphite.core.CallSiteNode::class.java,
+                MethodSignature::class.java,
+                sootup.core.jimple.common.expr.AbstractInvokeExpr::class.java,
+                MethodDescriptor::class.java,
+                io.johnsonlee.graphite.core.ValueNode::class.java
+            ),
+            io.johnsonlee.graphite.core.CallSiteNode(NodeId.next(), caller, MethodDescriptor(TypeDescriptor("java.net.URL"), "openStream", emptyList(), TypeDescriptor("java.io.InputStream")), null, null, emptyList()),
+            urlOpenStream,
+            JVirtualInvokeExpr(urlLocal, urlOpenStream, emptyList()),
+            caller,
+            streamNode
+        )
+        val streamKey = invokePrivate<Any>(adapter, "localKey", arrayOf(MethodDescriptor::class.java, String::class.java), caller, "stream")
+        assertEquals(linkedSetOf("config/service.xml"), readField<MutableMap<Any, LinkedHashSet<String>>>(adapter, "resourceHandlePathsByLocal")[streamKey])
+
+        assertNull(invokePrivate<Any?>(adapter, "evaluateLiteralMethod", arrayOf(MethodNode::class.java), emptyMethod()))
+        assertNull(
+            invokePrivate<Any?>(
+                adapter,
+                "extractBundleControlSpec",
+                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java, String::class.java, String::class.java),
+                caller,
+                JNewExpr(identifierFactory.getClassType("missing.Control")),
+                "sample.resources.MessagesListBundle",
+                "ko_KR"
+            )
+        )
+        assertNull(
+            invokePrivate<Any?>(
+                adapter,
+                "extractBundleControlSpec",
+                arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java, String::class.java, String::class.java),
+                caller,
+                SootStringConstant("not-control", identifierFactory.getType("java.lang.String")),
+                "sample.resources.MessagesListBundle",
+                "ko_KR"
+            )
+        )
+        val unsupportedControl = identifierFactory.getMethodSignature("java.util.ResourceBundle\$Control", "unsupported", "java.util.ResourceBundle\$Control", emptyList())
+        assertNull(
+            invokePrivate<Any?>(
+                adapter,
+                "extractBundleControlSpec",
+                arrayOf(MethodDescriptor::class.java, MethodSignature::class.java, sootup.core.jimple.common.expr.AbstractInvokeExpr::class.java),
+                caller,
+                unsupportedControl,
+                JStaticInvokeExpr(unsupportedControl, emptyList())
+            )
+        )
+        val unknownFormatRef = JStaticFieldRef(identifierFactory.getFieldSignature("UNKNOWN", identifierFactory.getClassType("java.util.ResourceBundle\$Control"), identifierFactory.getType("java.lang.Object")))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, unknownFormatRef))
+        assertNull(invokePrivate<String?>(adapter, "extractControlFormat", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, sootup.core.jimple.common.constant.IntConstant.getInstance(1)))
+        assertNull(invokePrivate<String?>(adapter, "extractLocaleSpec", arrayOf(MethodDescriptor::class.java, sootup.core.jimple.basic.Value::class.java), caller, SootStringConstant("ko", identifierFactory.getType("java.lang.String"))))
+        val plainBundle = SimpleBundle("plain")
+        invokePrivate<Unit>(adapter, "indexRuntimeBundle", arrayOf(ResourceBundle::class.java), plainBundle)
+        assertEquals("bundle", readField<MutableMap<String, MutableList<ResourceFileNode>>>(adapter, "resourceFilesByPath").getValue(plainBundle.javaClass.name).single().format)
     }
 
-    private fun createAdapter(includePackages: List<String> = listOf("sample.resources"), buildCallGraph: Boolean = false): SootUpAdapter {
+    private fun createAdapter(
+        includePackages: List<String> = listOf("sample.resources"),
+        buildCallGraph: Boolean = false,
+        resourceAccessor: ResourceAccessor = EmptyResourceAccessor
+    ): SootUpAdapter {
         val testClassesDir = findTestClassesDir()
         assertTrue(testClassesDir.exists(), "Test classes directory should exist: $testClassesDir")
         val location = PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)
@@ -507,10 +844,32 @@ class SootUpAdapterInternalCoverageTest {
             config = LoaderConfig(includePackages = includePackages, buildCallGraph = buildCallGraph),
             signatureReader = BytecodeSignatureReader(),
             extensions = emptyList(),
-            resourceAccessor = EmptyResourceAccessor,
+            resourceAccessor = resourceAccessor,
             inputLocationSources = mapOf(location to testClassesDir.fileName.toString()),
             graphBuilder = DefaultGraph.Builder()
         )
+    }
+
+    private fun referencedClassBytes(): ByteArray {
+        val writer = ClassWriter(0)
+        writer.visit(
+            Opcodes.V1_8,
+            Opcodes.ACC_PUBLIC,
+            "sample/refs/Owner",
+            null,
+            "java/lang/Object",
+            arrayOf("java/io/Serializable")
+        )
+        writer.visitField(Opcodes.ACC_PRIVATE, "items", "[Ljava/util/List;", null, null).visitEnd()
+        writer.visitMethod(
+            Opcodes.ACC_PUBLIC,
+            "read",
+            "(Ljava/util/Map;[Ljava/lang/String;)Ljava/util/Optional;",
+            null,
+            arrayOf("java/io/IOException")
+        ).visitEnd()
+        writer.visitEnd()
+        return writer.toByteArray()
     }
 
     private fun createResourceBackedAdapter(): SootUpAdapter {
@@ -546,6 +905,9 @@ class SootUpAdapterInternalCoverageTest {
             instructions.add(InsnNode(Opcodes.ACONST_NULL))
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
+
+    private fun emptyMethod(): MethodNode =
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "empty", "()Ljava/lang/Object;", null, null)
 
     private fun listOfMethod(): MethodNode =
         MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/util/List;", null, null).apply {
@@ -598,6 +960,15 @@ class SootUpAdapterInternalCoverageTest {
             instructions.add(InsnNode(Opcodes.ARETURN))
         }
 
+    private fun storedStringMethod(): MethodNode =
+        MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "stored", "()Ljava/lang/Object;", null, null).apply {
+            instructions.add(LdcInsnNode("stored"))
+            instructions.add(VarInsnNode(Opcodes.ASTORE, 0))
+            instructions.add(VarInsnNode(Opcodes.ALOAD, 0))
+            instructions.add(InsnNode(Opcodes.DUP))
+            instructions.add(InsnNode(Opcodes.ARETURN))
+        }
+
     private fun singleFormatMethod(value: String): MethodNode =
         MethodNode(ASM_API_VERSION, Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "formats", "()Ljava/lang/Object;", null, null).apply {
             instructions.add(LdcInsnNode(value))
@@ -633,6 +1004,12 @@ class SootUpAdapterInternalCoverageTest {
         return field.get(target) as T
     }
 
+    private fun writeField(target: Any, name: String, value: Any?) {
+        val field = target.javaClass.getDeclaredField(name)
+        field.isAccessible = true
+        field.set(target, value)
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun <T> invokePrivate(target: Any, name: String, parameterTypes: Array<Class<*>>, vararg args: Any?): T {
         val method = target.javaClass.getDeclaredMethod(name, *parameterTypes)
@@ -657,5 +1034,75 @@ class SootUpAdapterInternalCoverageTest {
             setParent(parent)
             return this
         }
+    }
+
+    private class FakeAnnotationUsage {
+        fun getAnnotation(): FakeAnnotation = FakeAnnotation()
+        fun getValues(): Map<String, Any?> = mapOf("value" to "\"ok\"")
+    }
+
+    private class FakeAnnotation {
+        fun getFullyQualifiedName(): String = "sample.Annotation"
+    }
+
+    private open class FakeSootMethod(
+        signature: MethodSignature,
+        modifiers: Iterable<MethodModifier> = emptyList()
+    ) : SootMethod(
+        FakeBodySource(signature),
+        signature,
+        modifiers,
+        emptyList<ClassType>(),
+        NoPositionInformation.getInstance()
+    )
+
+    private class FakeBodySource(private val signature: MethodSignature) : BodySource {
+        override fun resolveBody(modifiers: Iterable<MethodModifier>): Body =
+            error("Fake method has no body")
+
+        override fun resolveAnnotationsDefaultValue(): Any? = null
+
+        override fun getSignature(): MethodSignature = signature
+    }
+
+    private open class FakeSootClass(
+        classType: ClassType,
+        private val methods: Set<SootMethod> = emptySet(),
+        private val failure: Throwable? = null,
+        private val enumClass: Boolean = false
+    ) : SootClass(FakeClassSource(classType), SourceType.Application) {
+        override fun getMethods(): Set<SootMethod> {
+            failure?.let { throw it }
+            return methods
+        }
+
+        override fun isEnum(): Boolean = enumClass
+    }
+
+    private class FakeClassSource(classType: ClassType) : SootClassSource(
+        PathBasedAnalysisInputLocation.create(Path.of(System.getProperty("java.io.tmpdir")), SourceType.Application),
+        classType,
+        Path.of("fake.class")
+    ) {
+        override fun resolveMethods(): Collection<SootMethod> = emptyList()
+        override fun resolveFields(): Collection<SootField> = emptyList()
+        override fun resolveModifiers(): Set<ClassModifier> = emptySet()
+        override fun resolveInterfaces(): Set<ClassType> = emptySet()
+        override fun resolveSuperclass(): java.util.Optional<ClassType> = java.util.Optional.empty()
+        override fun resolveOuterClass(): java.util.Optional<ClassType> = java.util.Optional.empty()
+        override fun resolvePosition() = NoPositionInformation.getInstance()
+        override fun buildClass(sourceType: SourceType): SootClass = FakeSootClass(classType)
+    }
+
+    private class FakeView(
+        private val classes: List<SootClass>,
+        private val identifierFactory: IdentifierFactory
+    ) : View {
+        override fun getClasses(): Stream<out SootClass> = classes.stream()
+        override fun getClass(type: ClassType) = classes.firstOrNull { it.type == type }.let { java.util.Optional.ofNullable(it) }
+        override fun getField(signature: FieldSignature): java.util.Optional<out SootField> = java.util.Optional.empty()
+        override fun getMethod(signature: MethodSignature): java.util.Optional<out SootMethod> = java.util.Optional.empty()
+        override fun getTypeHierarchy(): TypeHierarchy = error("Fake view does not provide a type hierarchy")
+        override fun getIdentifierFactory(): IdentifierFactory = identifierFactory
     }
 }

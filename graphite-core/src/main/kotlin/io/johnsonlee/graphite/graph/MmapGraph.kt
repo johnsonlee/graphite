@@ -27,6 +27,7 @@ import java.io.EOFException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
@@ -54,7 +55,6 @@ class MmapGraph internal constructor(
     private val nodeIndex: LongArray,
     private val nodeTypeIndex: Map<Class<out Node>, IntArray>,
     private val outgoingIndex: EdgeOffsetIndex,
-    private val incomingIndex: EdgeOffsetIndex,
     private val nodeMethods: List<MethodDescriptor>,
     private val nodeTypes: List<TypeDescriptor>,
     private val methodIndex: Map<String, MethodDescriptor>,
@@ -64,6 +64,7 @@ class MmapGraph internal constructor(
     private val artifactDependenciesMap: Map<String, Map<String, Int>>,
     private val memberAnnotationsMap: Map<String, Map<String, Map<String, Any?>>>,
     private val branchScopeData: List<DefaultGraph.RawBranchScope>,
+    incomingIndex: EdgeOffsetIndex?,
     override val resources: ResourceAccessor
 ) : Graph, Closeable {
 
@@ -72,6 +73,9 @@ class MmapGraph internal constructor(
     }
     private val edgeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("edges.dat"), StandardOpenOption.READ).use {
         it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
+    }
+    private val incomingIndex: EdgeOffsetIndex by lazy {
+        incomingIndex ?: buildIncomingEdgeOffsetIndex()
     }
 
     private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
@@ -88,8 +92,24 @@ class MmapGraph internal constructor(
 
     internal data class EdgeOffsetIndex(
         val starts: IntArray,
-        val offsets: LongArray
+        val offsets: LongOffsetIndex
     )
+
+    internal interface LongOffsetIndex {
+        operator fun get(position: Int): Long
+    }
+
+    internal class HeapLongOffsetIndex(private val offsets: LongArray) : LongOffsetIndex {
+        override fun get(position: Int): Long = offsets[position]
+    }
+
+    internal class MappedLongOffsetIndex(path: Path) : LongOffsetIndex {
+        private val offsets: ByteBuffer = FileChannel.open(path, StandardOpenOption.READ).use {
+            it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
+        }
+
+        override fun get(position: Int): Long = offsets.getLong(position * Long.SIZE_BYTES)
+    }
 
     override fun node(id: NodeId): Node? {
         val nodeId = id.value
@@ -251,6 +271,100 @@ class MmapGraph internal constructor(
         val end = index.starts[nodeId + 1]
         if (start == end) return emptySequence()
         return (start until end).asSequence().map { position -> index.offsets[position] }
+    }
+
+    private fun buildIncomingEdgeOffsetIndex(): EdgeOffsetIndex {
+        val counts = IntArray(nodeIndex.size)
+        var totalEdges = 0
+        val countBuf = edgeMmap.duplicate()
+        while (countBuf.hasRemaining()) {
+            countBuf.int
+            val to = countBuf.int
+            counts[to]++
+            skipEdgePayload(countBuf)
+            totalEdges++
+        }
+
+        val starts = buildPrefixStarts(counts)
+        if (totalEdges == 0) {
+            return EdgeOffsetIndex(starts, HeapLongOffsetIndex(LongArray(0)))
+        }
+        val offsetsFile = Files.createTempFile(dataDir, "incoming-offsets", ".dat")
+        val offsets = createMappedLongOffsetIndex(offsetsFile, totalEdges)
+        System.arraycopy(starts, 0, counts, 0, counts.size)
+
+        val fillBuf = edgeMmap.duplicate()
+        while (fillBuf.hasRemaining()) {
+            val recordOffset = fillBuf.position().toLong()
+            fillBuf.int
+            val to = fillBuf.int
+            skipEdgePayload(fillBuf)
+            offsets.putLong(counts[to]++, recordOffset)
+        }
+
+        return EdgeOffsetIndex(starts, MappedLongOffsetIndex(offsetsFile))
+    }
+
+    internal class WritableLongOffsetIndex private constructor(
+        private val channel: FileChannel,
+        private val buffer: ByteBuffer
+    ) : Closeable {
+        fun putLong(position: Int, value: Long) {
+            buffer.putLong(position * Long.SIZE_BYTES, value)
+        }
+
+        override fun close() {
+            channel.close()
+        }
+
+        companion object {
+            fun create(path: Path, entries: Int): WritableLongOffsetIndex {
+                val bytes = entries.toLong() * Long.SIZE_BYTES
+                require(bytes <= Int.MAX_VALUE) {
+                    "Memory-mapped edge offset indexes support at most ${Int.MAX_VALUE / Long.SIZE_BYTES} edges"
+                }
+                val channel = FileChannel.open(
+                    path,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.READ,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+                )
+                channel.truncate(bytes)
+                val buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bytes)
+                return WritableLongOffsetIndex(channel, buffer)
+            }
+        }
+    }
+
+    internal companion object {
+        fun createMappedLongOffsetIndex(path: Path, entries: Int): WritableLongOffsetIndex =
+            WritableLongOffsetIndex.create(path, entries)
+    }
+
+    private fun skipEdgePayload(buf: ByteBuffer) {
+        when (buf.get().toInt()) {
+            MmapGraphBuilder.TAG_EDGE_DATAFLOW,
+            MmapGraphBuilder.TAG_EDGE_CALL,
+            MmapGraphBuilder.TAG_EDGE_TYPE,
+            MmapGraphBuilder.TAG_EDGE_RESOURCE -> buf.get()
+            MmapGraphBuilder.TAG_EDGE_CONTROL_FLOW -> {
+                buf.get()
+                if (buf.get().toInt() == 1) {
+                    buf.get()
+                    buf.int
+                }
+            }
+            else -> error("Unknown edge type tag")
+        }
+    }
+
+    private fun buildPrefixStarts(counts: IntArray): IntArray {
+        val starts = IntArray(counts.size + 1)
+        for (i in counts.indices) {
+            starts[i + 1] = starts[i] + counts[i]
+        }
+        return starts
     }
 
     internal class ByteBufferInputStream(private val buf: ByteBuffer) : InputStream() {
