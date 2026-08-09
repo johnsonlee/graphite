@@ -50,6 +50,15 @@ open class ServeCommand : Callable<Int> {
     )
     var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.MAPPED
 
+    @Option(
+        names = ["--topology"],
+        description = [
+            "Cypher file or directory used at startup to derive graph-to-graph calls. " +
+                "Queries return sourceGraph, targetGraph, and optional protocol, operation, weight, evidence."
+        ]
+    )
+    var topology: Path? = null
+
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
@@ -64,8 +73,11 @@ open class ServeCommand : Callable<Int> {
         Files.createDirectories(root)
         val registry = GraphRegistry(root, loadMode)
 
+        val topologyService: TopologyService
         try {
             loadInitialGraphs(registry)
+            topologyService = TopologyService(registry, TopologyQuerySource.load(topology))
+            topologyService.rebuild()
         } catch (e: RuntimeException) {
             System.err.println("Error: ${e.message}")
             registry.close()
@@ -79,11 +91,15 @@ open class ServeCommand : Callable<Int> {
                 config.staticFiles.add("/web")
             }.start(port)
 
-            registerApiRoutes(app, registry)
+            registerApiRoutes(app, registry, topologyService)
 
             System.err.println("Web UI: http://localhost:${app.port()}")
             System.err.println("Data: $root")
             System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
+            System.err.println(
+                "Topology: ${topologyService.snapshot().nodes.size} graphs, " +
+                    "${topologyService.snapshot().edges.size} relations"
+            )
             System.err.println("Press Ctrl+C to stop")
 
             Thread.currentThread().join()
@@ -100,6 +116,10 @@ open class ServeCommand : Callable<Int> {
 
     internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry) {
         ExploreRoutes().register(app, registry)
+    }
+
+    internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
+        ExploreRoutes().register(app, registry, topology)
     }
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =

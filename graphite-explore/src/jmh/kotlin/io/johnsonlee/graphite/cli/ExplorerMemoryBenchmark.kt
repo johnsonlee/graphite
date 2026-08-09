@@ -13,6 +13,7 @@ import org.openjdk.jmh.annotations.AuxCounters
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
+import org.openjdk.jmh.annotations.Level
 import org.openjdk.jmh.annotations.Measurement
 import org.openjdk.jmh.annotations.Mode
 import org.openjdk.jmh.annotations.OutputTimeUnit
@@ -21,6 +22,7 @@ import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
+import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
 import java.net.HttpURLConnection
 import java.net.URI
@@ -505,6 +507,115 @@ open class MultiGraphExplorerBenchmark {
     }
 }
 
+/**
+ * Measures the real multi-graph startup path with and without topology materialization.
+ * Both variants load the same Android-scale mapped graph instances through GraphRegistry.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 1)
+@Measurement(iterations = 3)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class TopologyStartupBenchmark {
+
+    @Param("3")
+    var graphCount: Int = 0
+
+    private lateinit var graphPath: Path
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
+    }
+
+    @Benchmark
+    fun android_loadServiceGraphs(): Long = runStartup(buildTopology = false)
+
+    @Benchmark
+    fun android_loadAndBuildTopology(): Long = runStartup(buildTopology = true)
+
+    private fun runStartup(buildTopology: Boolean): Long {
+        val root = Files.createTempDirectory("graphite-topology-startup")
+        val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+        return try {
+            repeat(graphCount) { index ->
+                registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED)
+            }
+            val topology = TopologyService(
+                registry,
+                if (buildTopology) listOf(TOPOLOGY_BENCHMARK_QUERY) else emptyList()
+            ).also { it.rebuild() }.snapshot()
+            topology.nodes.sumOf { it.stats.nodes } + topology.edges.sumOf { it.weight }
+        } finally {
+            registry.close()
+            root.toFile().deleteRecursively()
+        }
+    }
+}
+
+/** End-to-end HTTP latency for querying an already materialized topology snapshot. */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 2, time = 1)
+@Measurement(iterations = 3, time = 1)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class TopologyApiBenchmark {
+
+    private lateinit var root: Path
+    private lateinit var registry: GraphRegistry
+    private lateinit var app: Javalin
+    private var port: Int = 0
+
+    @Setup(Level.Trial)
+    fun setup() {
+        root = Files.createTempDirectory("graphite-topology-api")
+        registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+        val graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
+        repeat(3) { index -> registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED) }
+        val topology = TopologyService(registry, listOf(TOPOLOGY_BENCHMARK_QUERY)).also { it.rebuild() }
+        app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+        ExploreRoutes().register(app, registry, topology)
+        port = app.port()
+    }
+
+    @TearDown(Level.Trial)
+    fun tearDown() {
+        runCatching { app.stop() }
+        runCatching { registry.close() }
+        runCatching { root.toFile().deleteRecursively() }
+    }
+
+    @Benchmark
+    fun android_topologyHttpQuery(): Long {
+        val connection = URI("http://localhost:$port/api/topology").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connectTimeout = 120_000
+        connection.readTimeout = 120_000
+        val code = connection.responseCode
+        val body = connection.inputStream.use { it.readBytes() }
+        connection.disconnect()
+        check(code == 200)
+        return body.size.toLong()
+    }
+}
+
+private val TOPOLOGY_BENCHMARK_QUERY = TopologyQuery(
+    "android-topology.cypher",
+    """
+    MATCH (call:CallSiteNode)
+    WHERE graphId(call) = 'service-0'
+    RETURN 'service-0' AS sourceGraph,
+           'service-1' AS targetGraph,
+           'benchmark-rpc' AS protocol,
+           call.callee_name AS operation
+    LIMIT 100
+    """.trimIndent()
+)
+
 private data class MemorySample(
     val usedHeapBytes: Long,
     val committedHeapBytes: Long,
@@ -569,7 +680,7 @@ open class ExplorerMemoryCounters {
     var residentSetMeasured: Long = 0
 }
 
-private object ExplorerBenchmarkCorpus {
+internal object ExplorerBenchmarkCorpus {
     @Volatile
     private var cachedAndroidGraph: Path? = null
 
