@@ -96,9 +96,10 @@ open class ServeCommand : Callable<Int> {
             System.err.println("Web UI: http://localhost:${app.port()}")
             System.err.println("Data: $root")
             System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
+            val topologySummary = topologyService.summary()
             System.err.println(
-                "Topology: ${topologyService.snapshot().nodes.size} graphs, " +
-                    "${topologyService.snapshot().edges.size} relations"
+                "Topology: ${topologySummary.graphCount} graphs, " +
+                    "${topologySummary.relationCount} relations"
             )
             System.err.println("Press Ctrl+C to stop")
 
@@ -106,16 +107,13 @@ open class ServeCommand : Callable<Int> {
             return 0
         } finally {
             app?.stop()
+            topologyService.close()
             registry.close()
         }
     }
 
     internal fun registerApiRoutes(app: Javalin, graph: Graph) {
         ExploreRoutes().register(app, graph)
-    }
-
-    internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry) {
-        ExploreRoutes().register(app, registry)
     }
 
     internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry, topology: TopologyService) {

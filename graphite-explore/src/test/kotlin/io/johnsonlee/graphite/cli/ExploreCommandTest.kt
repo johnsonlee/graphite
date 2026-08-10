@@ -242,6 +242,7 @@ class ExploreCommandTest {
             block(localApp.port())
         } finally {
             localApp.stop()
+            topology.close()
             registry.close()
         }
     }

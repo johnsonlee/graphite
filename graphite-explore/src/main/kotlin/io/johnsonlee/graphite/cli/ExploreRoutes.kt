@@ -43,15 +43,24 @@ internal class ExploreRoutes {
         registerSpecRoutes(app)
     }
 
-    internal fun register(app: Javalin, registry: GraphRegistry) {
-        val topology = TopologyService(registry, emptyList())
-        topology.rebuild()
-        register(app, registry, topology)
-    }
-
+    @Suppress("TooGenericExceptionCaught")
     internal fun register(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
         registerRegistryRoutes(app, registry, topology)
-        app.get("$API_ROOT/topology") { ctx -> ctx.json(topology.toApiMap()) }
+        app.get("$API_ROOT/topology") { ctx ->
+            val mapped = topology.openApiStream()
+            if (mapped == null) {
+                ctx.json(topology.toApiMap())
+            } else {
+                try {
+                    ctx.contentType("application/json; charset=utf-8")
+                        .header("Content-Length", mapped.contentLength.toString())
+                        .result(mapped.input)
+                } catch (error: RuntimeException) {
+                    mapped.input.close()
+                    throw error
+                }
+            }
+        }
         registerAllGraphRoutes(app) { registry.acquireAll() }
         val scopedPrefix = "$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}"
         val provider = RegistryPathGraphProvider(registry)

@@ -157,13 +157,14 @@ class TopologyGraphTest {
     fun `topology service exposes a current nodes-only snapshot`() {
         val root = Files.createTempDirectory("topology-service-test")
         val registry = GraphRegistry(root, io.johnsonlee.graphite.webgraph.GraphStore.LoadMode.MAPPED)
+        val service = TopologyService(registry, emptyList(), root)
         try {
-            val service = TopologyService(registry, emptyList())
             service.rebuild()
 
             assertEquals(0, service.toApiMap()["graphCount"])
             assertEquals(false, service.toApiMap()["stale"])
         } finally {
+            service.close()
             registry.close()
             root.toFile().deleteRecursively()
         }

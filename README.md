@@ -234,7 +234,7 @@ Generic JDK resource linking currently covers:
 | `/api/graphs` | List loaded webgraphs with cached per-graph statistics and aggregate totals |
 | `/api/graphs/{graphId}` | Get, load, replace, or unload a webgraph by id |
 | `/api/graphs/{graphId}/...` | Query one explicit webgraph with the direct single-graph response shape |
-| `/api/topology` | Get the in-memory graph-to-graph call topology built at startup |
+| `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
 | `/api/nodes`, `/api/methods`, ... | Query every loaded graph; non-Cypher results are grouped by `graphId` |
@@ -263,7 +263,9 @@ root-all and graph-scoped REST surface, including the two explicit modes of
 For multi-graph startup, `--topology` accepts one Cypher file (or a directory
 of `.cypher` files). The configured `--graph` entries are the catalog: Graphite
 loads them once, runs the topology query over those loaded graph instances,
-and aggregates the returned rows into an in-memory topology graph. The query
+and aggregates the returned rows into an internal topology graph stored under
+`${java.io.tmpdir}/graphite/<UUID>/` and mapped read-only. This internal format
+is independent of the public WebGraph/`GraphStore` format. The query
 must return `source` and `target`; it may also return `protocol`,
 `operation`, `weight`, and `evidence`. For example, a generated RPC adapter can
 encode its provider in a package segment:

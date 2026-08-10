@@ -16,12 +16,22 @@ At startup Graphite:
 1. loads every configured service graph into `GraphRegistry` once;
 2. acquires leases for those same graph instances;
 3. executes the topology Cypher over their read-only qualified union;
-4. aggregates result rows into an immutable in-memory topology graph; and
-5. serves that snapshot from `GET /api/topology`.
+4. aggregates result rows and writes an Explorer-internal topology snapshot;
+5. maps that snapshot read-only from `${tempRoot}/graphite/<UUID>/`; and
+6. serves that snapshot from `GET /api/topology`.
 
-The topology graph is not persisted beside the service graphs. Dynamic graph
-loads, replacements, and unloads rebuild the snapshot from the current
-registry without reloading unchanged graphs.
+The topology graph is not persisted beside the service graphs. Its internal
+format is deliberately separate from the public WebGraph/`GraphStore` format,
+so this feature does not change the public storage version. Each rebuild writes
+a new UUID directory; the previous directory is deleted after outstanding HTTP
+response leases close. Normal shutdown deletes the current directory. Dynamic
+graph loads, replacements, and unloads rebuild from the current registry
+without reloading unchanged graphs.
+
+The final snapshot and pre-rendered API JSON are mapped rather than retained as
+object graphs on the JVM heap. Cypher result rows and aggregation state are
+still transiently materialized while building, so peak build memory depends on
+the company query and result shape.
 
 ## Query contract
 
@@ -73,51 +83,59 @@ observation on a path this change does not modify. The mapped-load delta is
 below the 5% smoke-check threshold, but should likewise not be interpreted as
 a precise effect size.
 
-Feature-specific JMH results:
+Feature-specific JMH results after moving the topology snapshot to mapped
+temporary storage:
 
-| Benchmark | Result |
-|---|---:|
-| Load 3 mapped service graphs | 573.033 ms |
-| Load the same graphs and build topology | 555.776 ms |
-| Query built topology through HTTP | 0.059 ms/op |
+| Benchmark | First p50 | Repeated p50 |
+|---|---:|---:|
+| Load 3 mapped service graphs | 542.001 ms | 566.018 ms |
+| Load the same graphs and build topology | 555.122 ms | 549.536 ms |
+| Query built topology through HTTP | 0.049 ms/op mean | — |
 
-The startup pair is consistent with topology construction reusing loaded
-instances, but its ordering should not be read as a negative topology cost.
-Reuse is established structurally by `TopologyService` acquiring leases from
-`GraphRegistry`; this short run is only a regression smoke check.
+The two startup runs reverse their ordering: the observed build-minus-load
+difference changes from +13.121 ms to -16.482 ms. This short SingleShot test
+therefore cannot resolve the small topology cost from graph-load and operating
+system noise. It did not reveal a stable regression, but it is not evidence of
+a speedup or a statistical proof of a sub-1% effect. HTTP latency improved from
+the pre-change 0.060 ms/op mean to 0.049 ms/op in the same benchmark setup.
+Graph reuse is established structurally by `TopologyService` acquiring leases
+from `GraphRegistry`; service graphs are not loaded a second time.
 
 ## Heap baseline
 
 `TopologyHeapBenchmark` loads three mapped copies of the Android-scale graph,
 forces GC, records that loaded-service-graph heap as the baseline, and then
-builds controlled topology snapshots at three scales. A 1 ms sampler records
-the build-window peak. The retained value is recorded after forced GC while
-the resulting `TopologyService` and immutable snapshot remain strongly
-reachable. GC work is in JMH invocation fixtures and is excluded from the
-reported build time.
+builds three 100,000-row topology shapes. A 1 ms sampler records the build heap
+peak. It reads the mapped API JSON completely so the RSS measurement includes
+resident mapped pages. The next invocation records post-GC retained heap and
+process RSS while the `TopologyService` remains reachable. It also reports the
+exact UUID-directory file size. GC and RSS probes are outside the reported
+build/read time.
 
 The table reports the median of three measured SingleShot invocations after
 one warmup invocation, on JDK 17 with `-Xmx8g`. Heap deltas are calculated
 within the same fork and invocation sequence; absolute heap values are not
 subtracted across JVM processes.
 
-| Matched rows | Relations | Build p50 | Loaded graphs baseline p50 | Sampled peak delta p50 | Retained delta p50 |
-|---:|---:|---:|---:|---:|---:|
-| 100 | 10 | 5.312 ms | 215.9 MiB | below sampler/TLAB resolution | 0.021 MiB |
-| 10,000 | 100 | 30.517 ms | 216.0 MiB | 22.0 MiB | 1.170 MiB |
-| 100,000 | 1,000 | 129.479 ms | 216.2 MiB | 222.0 MiB | 11.623 MiB |
+| Shape | Relations | Build/read p50 | Heap peak delta p50 | Retained heap delta p50 | Retained RSS delta p50 | Topology files | Mapped JSON |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Details-heavy (100 details/relation, 256-byte evidence padding) | 1,000 | 284.270 ms | 298.000 MiB | 0.008 MiB | 35.344 MiB | 69.587 MiB | 33.953 MiB |
+| Relation-heavy (one detail on each relation) | 100,000 | 255.335 ms | 242.000 MiB | 0.008 MiB | 15.750 MiB | 28.643 MiB | 15.132 MiB |
+| Long strings (100 details/relation, 1 KiB evidence padding) | 1,000 | 694.965 ms | 384.523 MiB | 0.008 MiB | 118.062 MiB | 228.278 MiB | 113.299 MiB |
 
-At the enforced 100,000-row limit, the measured total used heap peaked at
-about 438.2 MiB and settled at about 227.8 MiB after GC: a 222.0 MiB transient
-increase and an 11.623 MiB retained increase over the three-graph baseline.
-The transient is dominated by Cypher result materialization; the retained
-snapshot is bounded by relation count and the 100 operation/evidence values
-kept per relation.
+The old 11.623 MiB synthetic retained-heap result is neither a production
+estimate nor an upper bound. With mapped storage, retained JVM heap is nearly
+flat, while disk footprint and resident mapped pages scale with relation detail
+and rendered JSON size. RSS is inherently noisier than used heap because the
+operating system controls mapped-page residency; the table reports the median
+of the measured post-GC deltas and should be used as a scenario baseline, not a
+guaranteed maximum.
 
-This controlled query isolates row and snapshot scaling. A company rule that
-scans different node types or computes more complex expressions can have a
-different transient profile, so these numbers are a reproducible baseline,
-not a universal production heap guarantee. Run it with:
+Build peak heap has not disappeared: Cypher currently materializes result rows
+and the builder aggregates them before writing the snapshot. A company rule
+that scans different node types, computes larger values, or has a different
+cardinality can have a different transient profile. Run the reproducible
+benchmark with:
 
 ```bash
 ./gradlew :explore:jmh \

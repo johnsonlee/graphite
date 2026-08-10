@@ -2,9 +2,12 @@ package io.johnsonlee.graphite.cli
 
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
+import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 internal const val TOPOLOGY_SOURCE = "source"
 internal const val TOPOLOGY_TARGET = "target"
@@ -206,15 +209,19 @@ internal object TopologyGraphBuilder {
 
 internal class TopologyService(
     private val registry: GraphRegistry,
-    private val queries: List<TopologyQuery>
-) {
+    private val queries: List<TopologyQuery>,
+    private val tempRoot: Path = Path.of(System.getProperty("java.io.tmpdir"))
+) : Closeable {
     @Volatile
-    private var graph: TopologyGraph = TopologyGraph.nodesOnly(emptyMap())
+    private var current: ServedTopology? = null
 
-    fun rebuild(): TopologyGraph = synchronized(this) {
+    private val closed = AtomicBoolean()
+
+    fun rebuild(): TopologySummary = synchronized(this) {
+        check(!closed.get()) { "Topology service is closed" }
         val descriptors = registry.list()
         val stats = descriptors.associate { it.id to it.stats }
-        val next = if (queries.isEmpty()) {
+        val graph = if (queries.isEmpty()) {
             TopologyGraph.nodesOnly(stats)
         } else {
             val leases = registry.acquireAll()
@@ -228,11 +235,103 @@ internal class TopologyService(
                 leases.forEach { it.close() }
             }
         }
-        graph = next
-        next
+        val next = ServedTopology(TopologyStore.writeAndOpen(tempRoot, graph))
+        val previous = current
+        current = next
+        previous?.retire()
+        next.summary()
     }
 
-    fun snapshot(): TopologyGraph = graph
+    fun summary(): TopologySummary = withLease { it.summary() }
 
-    fun toApiMap(): Map<String, Any> = graph.toApiMap(registry.ids())
+    fun snapshot(): TopologyGraph = withLease { it.materialize() }
+
+    fun toApiMap(): Map<String, Any> {
+        val currentGraphIds = registry.ids()
+        return withLease { it.toApiMap(currentGraphIds) }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    fun openApiStream(): TopologyApiStream? {
+        val currentGraphIds = registry.ids()
+        val lease = acquire()
+        if (lease.snapshot.graphIds() != currentGraphIds) {
+            lease.close()
+            return null
+        }
+        return try {
+            lease.snapshot.openApiStream(lease::close)
+        } catch (error: RuntimeException) {
+            lease.close()
+            throw error
+        }
+    }
+
+    internal fun currentBuildDir(): Path = withLease { it.buildDir }
+
+    override fun close() {
+        if (closed.compareAndSet(false, true)) {
+            synchronized(this) {
+                val previous = current
+                current = null
+                previous?.retire()
+            }
+        }
+    }
+
+    private fun acquire(): TopologyLease {
+        while (true) {
+            val served = checkNotNull(current) { "Topology has not been built" }
+            served.acquire()?.let { return it }
+        }
+    }
+
+    private inline fun <T> withLease(block: (MappedTopologySnapshot) -> T): T =
+        acquire().use { lease -> block(lease.snapshot) }
+
+    private class ServedTopology(private val snapshot: MappedTopologySnapshot) {
+        private val leases = AtomicInteger()
+        private val retired = AtomicBoolean()
+        private val closed = AtomicBoolean()
+
+        fun summary(): TopologySummary = snapshot.summary()
+
+        @Suppress("ReturnCount")
+        fun acquire(): TopologyLease? {
+            while (true) {
+                if (retired.get()) return null
+                val count = leases.get()
+                if (leases.compareAndSet(count, count + 1)) {
+                    if (retired.get()) {
+                        release()
+                        return null
+                    }
+                    return TopologyLease(this, snapshot)
+                }
+            }
+        }
+
+        fun retire() {
+            if (retired.compareAndSet(false, true)) closeIfIdle()
+        }
+
+        fun release() {
+            if (leases.decrementAndGet() == 0 && retired.get()) closeIfIdle()
+        }
+
+        private fun closeIfIdle() {
+            if (leases.get() == 0 && closed.compareAndSet(false, true)) snapshot.close()
+        }
+    }
+
+    private class TopologyLease(
+        private val owner: ServedTopology,
+        val snapshot: MappedTopologySnapshot
+    ) : Closeable {
+        private val closed = AtomicBoolean()
+
+        override fun close() {
+            if (closed.compareAndSet(false, true)) owner.release()
+        }
+    }
 }
