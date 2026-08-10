@@ -6,8 +6,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 
-internal const val TOPOLOGY_SOURCE_GRAPH = "sourceGraph"
-internal const val TOPOLOGY_TARGET_GRAPH = "targetGraph"
+internal const val TOPOLOGY_SOURCE = "source"
+internal const val TOPOLOGY_TARGET = "target"
 internal const val TOPOLOGY_PROTOCOL = "protocol"
 internal const val TOPOLOGY_OPERATION = "operation"
 internal const val TOPOLOGY_WEIGHT = "weight"
@@ -124,16 +124,16 @@ internal object TopologyGraphBuilder {
         for (query in queries) {
             val remainingRows = MAX_TOPOLOGY_ROWS - matchedRows
             val result = executor.execute(query.cypher, remainingRows + 1)
-            require(TOPOLOGY_SOURCE_GRAPH in result.columns && TOPOLOGY_TARGET_GRAPH in result.columns) {
-                "Topology query '${query.name}' must return '$TOPOLOGY_SOURCE_GRAPH' and '$TOPOLOGY_TARGET_GRAPH'"
+            require(TOPOLOGY_SOURCE in result.columns && TOPOLOGY_TARGET in result.columns) {
+                "Topology query '${query.name}' must return '$TOPOLOGY_SOURCE' and '$TOPOLOGY_TARGET'"
             }
             require(result.rows.size <= remainingRows) {
                 "Topology queries exceeded the combined $MAX_TOPOLOGY_ROWS row limit at '${query.name}'"
             }
             matchedRows += result.rows.size
             for (row in result.rows) {
-                val source = requiredGraphId(query, row, TOPOLOGY_SOURCE_GRAPH, loadedIds)
-                val target = requiredGraphId(query, row, TOPOLOGY_TARGET_GRAPH, loadedIds)
+                val source = requiredGraphId(query, row, TOPOLOGY_SOURCE, loadedIds)
+                val target = requiredGraphId(query, row, TOPOLOGY_TARGET, loadedIds)
                 if (source == target) continue
                 val protocol = optionalText(row[TOPOLOGY_PROTOCOL]) ?: DEFAULT_TOPOLOGY_PROTOCOL
                 val weight = optionalWeight(query, row[TOPOLOGY_WEIGHT])

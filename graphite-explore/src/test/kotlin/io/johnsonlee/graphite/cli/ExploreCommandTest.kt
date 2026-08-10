@@ -258,7 +258,7 @@ class ExploreCommandTest {
                     "test.cypher",
                     """
                     UNWIND [1, 2] AS match
-                    RETURN 'consumer' AS sourceGraph, 'provider' AS targetGraph,
+                    RETURN 'consumer' AS source, 'provider' AS target,
                            'rpc' AS protocol, 2 AS weight
                     """.trimIndent()
                 )
@@ -1994,7 +1994,7 @@ class ExploreCommandTest {
             saveConstantGraph(root, "service-a", 11)
             saveConstantGraph(root, "service-b", 22)
             val query = root.resolve("topology.cypher")
-            Files.writeString(query, "RETURN 'service-a' AS sourceGraph")
+            Files.writeString(query, "RETURN 'service-a' AS source")
             val serve = ServeCommand().apply {
                 data = root
                 graphSpecs = listOf("service-a:service-a", "service-b:service-b")
@@ -2005,7 +2005,7 @@ class ExploreCommandTest {
             val (_, err, code) = captureOutput { serve.call() }
 
             assertEquals(1, code)
-            assertTrue(err.contains("must return 'sourceGraph' and 'targetGraph'"), err)
+            assertTrue(err.contains("must return 'source' and 'target'"), err)
         } finally {
             root.toFile().deleteRecursively()
         }

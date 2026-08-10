@@ -54,7 +54,7 @@ open class ServeCommand : Callable<Int> {
         names = ["--topology"],
         description = [
             "Cypher file or directory used at startup to derive graph-to-graph calls. " +
-                "Queries return sourceGraph, targetGraph, and optional protocol, operation, weight, evidence."
+                "Queries return source, target, and optional protocol, operation, weight, evidence."
         ]
     )
     var topology: Path? = null

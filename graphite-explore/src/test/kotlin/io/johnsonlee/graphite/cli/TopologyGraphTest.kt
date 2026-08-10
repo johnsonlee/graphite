@@ -31,8 +31,8 @@ class TopologyGraphTest {
                     "rpc.cypher",
                     """
                     UNWIND [1, 2] AS match
-                    RETURN 'consumer' AS sourceGraph,
-                           'provider' AS targetGraph,
+                    RETURN 'consumer' AS source,
+                           'provider' AS target,
                            'rpc' AS protocol,
                            'Catalog.find' AS operation,
                            2 AS weight,
@@ -73,7 +73,7 @@ class TopologyGraphTest {
                 listOf(
                     TopologyQuery(
                         "bad.cypher",
-                        "RETURN 'consumer' AS sourceGraph, 'missing' AS targetGraph"
+                        "RETURN 'consumer' AS source, 'missing' AS target"
                     )
                 )
             )
@@ -109,8 +109,8 @@ class TopologyGraphTest {
                     MATCH (call:CallSiteNode)
                     WHERE graphId(call) = 'consumer'
                       AND call.callee_class =~ 'rpc\\.adapters\\..*\\.Adapter'
-                    RETURN graphId(call) AS sourceGraph,
-                           split(call.callee_class, '.')[2] AS targetGraph,
+                    RETURN graphId(call) AS source,
+                           split(call.callee_class, '.')[2] AS target,
                            'generated-rpc' AS protocol,
                            call.callee_name AS operation
                     """.trimIndent()
@@ -130,19 +130,19 @@ class TopologyGraphTest {
             TopologyGraphBuilder.build(
                 graphs,
                 stats,
-                listOf(TopologyQuery("bad.cypher", "RETURN 'consumer' AS sourceGraph"))
+                listOf(TopologyQuery("bad.cypher", "RETURN 'consumer' AS source"))
             )
         }
 
-        assertTrue(error.message.orEmpty().contains("must return 'sourceGraph' and 'targetGraph'"))
+        assertTrue(error.message.orEmpty().contains("must return 'source' and 'target'"))
     }
 
     @Test
     fun `topology query path accepts one file or a sorted directory`() {
         val directory = Files.createTempDirectory("topology-query-test")
         try {
-            Files.writeString(directory.resolve("02-mq.cypher"), "RETURN 'a' AS sourceGraph, 'b' AS targetGraph")
-            Files.writeString(directory.resolve("01-rpc.cypher"), "RETURN 'a' AS sourceGraph, 'b' AS targetGraph")
+            Files.writeString(directory.resolve("02-mq.cypher"), "RETURN 'a' AS source, 'b' AS target")
+            Files.writeString(directory.resolve("01-rpc.cypher"), "RETURN 'a' AS source, 'b' AS target")
             Files.writeString(directory.resolve("README.md"), "ignored")
 
             assertEquals(listOf("01-rpc.cypher", "02-mq.cypher"), TopologyQuerySource.load(directory).map { it.name })
@@ -176,7 +176,7 @@ class TopologyGraphTest {
             TopologyGraphBuilder.build(
                 graphs,
                 stats - "isolated",
-                listOf(TopologyQuery("catalog.cypher", "RETURN 'consumer' AS sourceGraph, 'provider' AS targetGraph"))
+                listOf(TopologyQuery("catalog.cypher", "RETURN 'consumer' AS source, 'provider' AS target"))
             )
         }
         val badWeight = assertFailsWith<IllegalArgumentException> {
@@ -186,7 +186,7 @@ class TopologyGraphTest {
                 listOf(
                     TopologyQuery(
                         "weight.cypher",
-                        "RETURN 'consumer' AS sourceGraph, 'provider' AS targetGraph, 0.5 AS weight"
+                        "RETURN 'consumer' AS source, 'provider' AS target, 0.5 AS weight"
                     )
                 )
             )
@@ -199,7 +199,7 @@ class TopologyGraphTest {
             listOf(
                 TopologyQuery(
                     "string-weight.cypher",
-                    "RETURN 'consumer' AS sourceGraph, 'provider' AS targetGraph, '3' AS weight"
+                    "RETURN 'consumer' AS source, 'provider' AS target, '3' AS weight"
                 )
             )
         )
@@ -212,11 +212,11 @@ class TopologyGraphTest {
                 listOf(
                     TopologyQuery(
                         "blank.cypher",
-                        "RETURN '' AS sourceGraph, 'provider' AS targetGraph"
+                        "RETURN '' AS source, 'provider' AS target"
                     )
                 )
             )
         }
-        assertTrue(blankGraph.message.orEmpty().contains("blank 'sourceGraph'"))
+        assertTrue(blankGraph.message.orEmpty().contains("blank 'source'"))
     }
 }

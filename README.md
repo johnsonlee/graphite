@@ -264,15 +264,15 @@ For multi-graph startup, `--topology` accepts one Cypher file (or a directory
 of `.cypher` files). The configured `--graph` entries are the catalog: Graphite
 loads them once, runs the topology query over those loaded graph instances,
 and aggregates the returned rows into an in-memory topology graph. The query
-must return `sourceGraph` and `targetGraph`; it may also return `protocol`,
+must return `source` and `target`; it may also return `protocol`,
 `operation`, `weight`, and `evidence`. For example, a generated RPC adapter can
 encode its provider in a package segment:
 
 ```cypher
 MATCH (call:CallSiteNode)
 WHERE call.callee_class =~ 'com\\.company\\.rpc\\..*\\.Adapter'
-RETURN graphId(call) AS sourceGraph,
-       split(call.callee_class, '.')[3] AS targetGraph,
+RETURN graphId(call) AS source,
+       split(call.callee_class, '.')[3] AS target,
        'company-rpc' AS protocol,
        call.callee_name AS operation,
        call.callee_class AS evidence

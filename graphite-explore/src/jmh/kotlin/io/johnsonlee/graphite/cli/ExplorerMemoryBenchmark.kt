@@ -782,8 +782,8 @@ private fun topologyHeapQuery(scale: TopologyHeapBenchmarkScale): TopologyQuery 
     "heap-${scale.name.lowercase()}.cypher",
     """
     UNWIND range(0, ${scale.rows - 1}) AS row
-    RETURN 'service-0' AS sourceGraph,
-           CASE row % 2 WHEN 0 THEN 'service-1' ELSE 'service-2' END AS targetGraph,
+    RETURN 'service-0' AS source,
+           CASE row % 2 WHEN 0 THEN 'service-1' ELSE 'service-2' END AS target,
            'rpc-' + toString(row % ${scale.relations}) AS protocol,
            'operation-' + toString(row) AS operation,
            'evidence-' + toString(row) AS evidence
@@ -814,8 +814,8 @@ private val TOPOLOGY_BENCHMARK_QUERY = TopologyQuery(
     """
     MATCH (call:CallSiteNode)
     WHERE graphId(call) = 'service-0'
-    RETURN 'service-0' AS sourceGraph,
-           'service-1' AS targetGraph,
+    RETURN 'service-0' AS source,
+           'service-1' AS target,
            'benchmark-rpc' AS protocol,
            call.callee_name AS operation
     LIMIT 100

@@ -27,8 +27,8 @@ registry without reloading unchanged graphs.
 
 A topology query must return these aliases:
 
-- `sourceGraph`: id of a loaded caller graph;
-- `targetGraph`: id of a loaded provider graph.
+- `source`: id of a loaded caller graph;
+- `target`: id of a loaded provider graph.
 
 It may return:
 
@@ -37,7 +37,7 @@ It may return:
 - `weight`: positive integral weight, defaulting to `1`;
 - `evidence`: human-readable evidence for the match.
 
-Rows are aggregated by `(sourceGraph, targetGraph, protocol)`. Weights are
+Rows are aggregated by `(source, target, protocol)`. Weights are
 summed, operation and evidence values are deduplicated, self-relations are
 discarded, and graphs with no relations remain as isolated topology nodes.
 Unknown graph ids, missing aliases, invalid weights, invalid Cypher, and more
