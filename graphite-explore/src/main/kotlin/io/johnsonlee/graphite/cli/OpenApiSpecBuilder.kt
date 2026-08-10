@@ -4,6 +4,13 @@ package io.johnsonlee.graphite.cli
 internal class OpenApiSpecBuilder {
     internal fun build(): Map<String, Any?> {
         val paths = linkedMapOf<String, Any?>(
+            "/api/topology" to mapOf(
+                "get" to operation(
+                    "Get the startup-built graph-to-graph call topology",
+                    parameters = emptyList(),
+                    responses = mapOf("200" to response("Topology graph with loaded graphs and aggregated call relations"))
+                )
+            ),
             "/api/graphs" to mapOf(
                 "get" to operation(
                     "List loaded webgraphs with cached statistics and aggregate totals",

@@ -30,7 +30,12 @@ internal class ExploreRoutes {
 
     internal fun register(app: Javalin, graph: Graph) {
         val provider = StaticGraphProvider(STANDALONE_GRAPH_ID, graph)
-        registerStaticGraphRoutes(app, graphStats(graph))
+        val stats = graphStats(graph)
+        val topology = TopologyGraph.nodesOnly(mapOf(STANDALONE_GRAPH_ID to stats))
+        registerStaticGraphRoutes(app, stats)
+        app.get("$API_ROOT/topology") { ctx ->
+            ctx.json(topology.toApiMap(listOf(STANDALONE_GRAPH_ID)))
+        }
         registerGraphRoutes(app, API_ROOT, provider)
         val scopedPrefix = "$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}"
         registerGraphRoutes(app, scopedPrefix, provider)
@@ -38,8 +43,24 @@ internal class ExploreRoutes {
         registerSpecRoutes(app)
     }
 
-    internal fun register(app: Javalin, registry: GraphRegistry) {
-        registerRegistryRoutes(app, registry)
+    @Suppress("TooGenericExceptionCaught")
+    internal fun register(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
+        registerRegistryRoutes(app, registry, topology)
+        app.get("$API_ROOT/topology") { ctx ->
+            val mapped = topology.openApiStream()
+            if (mapped == null) {
+                ctx.json(topology.toApiMap())
+            } else {
+                try {
+                    ctx.contentType("application/json; charset=utf-8")
+                        .header("Content-Length", mapped.contentLength.toString())
+                        .result(mapped.input)
+                } catch (error: RuntimeException) {
+                    mapped.input.close()
+                    throw error
+                }
+            }
+        }
         registerAllGraphRoutes(app) { registry.acquireAll() }
         val scopedPrefix = "$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}"
         val provider = RegistryPathGraphProvider(registry)
@@ -75,7 +96,7 @@ internal class ExploreRoutes {
         }
     }
 
-    private fun registerRegistryRoutes(app: Javalin, registry: GraphRegistry) {
+    private fun registerRegistryRoutes(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
         app.get("$API_ROOT/graphs") { ctx ->
             val descriptors = registry.list()
             val totals = descriptors.fold(GraphStats.EMPTY) { total, descriptor ->
@@ -116,11 +137,11 @@ internal class ExploreRoutes {
         }
 
         app.put("$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}") { ctx ->
-            loadGraphFromRequest(ctx, registry)
+            loadGraphFromRequest(ctx, registry, topology)
         }
 
         app.post("$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}") { ctx ->
-            loadGraphFromRequest(ctx, registry)
+            loadGraphFromRequest(ctx, registry, topology)
         }
 
         app.delete("$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}") { ctx ->
@@ -128,6 +149,7 @@ internal class ExploreRoutes {
             runCatching { registry.unload(id) }
                 .onSuccess { removed ->
                     if (removed) {
+                        topology.rebuild()
                         ctx.status(HTTP_NO_CONTENT)
                     } else {
                         ctx.status(HTTP_NOT_FOUND).json(mapOf(API_FIELD_ERROR to "Graph not loaded: $id"))
@@ -712,11 +734,12 @@ internal class ExploreRoutes {
         }
     }
 
-    private fun loadGraphFromRequest(ctx: Context, registry: GraphRegistry) {
+    private fun loadGraphFromRequest(ctx: Context, registry: GraphRegistry, topology: TopologyService) {
         val id = ctx.pathParam(API_FIELD_GRAPH_ID)
         runCatching {
             val request = parseGraphLoadRequest(ctx)
             val descriptor = registry.load(id, request.path, request.loadMode ?: registry.defaultLoadMode)
+            topology.rebuild()
             ctx.json(mapOf("graph" to descriptor.toApiMap()))
         }.onFailure { error ->
             ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to error.message))
