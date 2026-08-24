@@ -243,10 +243,6 @@ internal class MappedTopologySnapshot private constructor(
         rules = manifest.ruleRefs.map(::readString)
     )
 
-    fun graphIds(): List<String> = (0 until manifest.nodeCount).map { index ->
-        readString(readRef(buffers.nodes, recordOffset(index, NODE_RECORD_BYTES)))
-    }
-
     fun materialize(): TopologyGraph {
         checkOpen()
         val materializedNodes = (0 until manifest.nodeCount).map(::readNode)
