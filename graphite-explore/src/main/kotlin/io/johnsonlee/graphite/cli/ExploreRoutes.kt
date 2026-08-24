@@ -146,10 +146,9 @@ internal class ExploreRoutes {
 
         app.delete("$API_ROOT/graphs/{$API_FIELD_GRAPH_ID}") { ctx ->
             val id = ctx.pathParam(API_FIELD_GRAPH_ID)
-            runCatching { registry.unload(id) }
+            runCatching { registry.unload(id) { topology.rebuild() } }
                 .onSuccess { removed ->
                     if (removed) {
-                        topology.rebuild()
                         ctx.status(HTTP_NO_CONTENT)
                     } else {
                         ctx.status(HTTP_NOT_FOUND).json(mapOf(API_FIELD_ERROR to "Graph not loaded: $id"))
@@ -738,8 +737,13 @@ internal class ExploreRoutes {
         val id = ctx.pathParam(API_FIELD_GRAPH_ID)
         runCatching {
             val request = parseGraphLoadRequest(ctx)
-            val descriptor = registry.load(id, request.path, request.loadMode ?: registry.defaultLoadMode)
-            topology.rebuild()
+            val descriptor = registry.load(
+                id,
+                request.path,
+                request.loadMode ?: registry.defaultLoadMode
+            ) {
+                topology.rebuild()
+            }
             ctx.json(mapOf("graph" to descriptor.toApiMap()))
         }.onFailure { error ->
             ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to error.message))

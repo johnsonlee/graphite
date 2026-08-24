@@ -127,4 +127,32 @@ class TopologyStoreTest {
             tempRoot.toFile().deleteRecursively()
         }
     }
+
+    @Test
+    fun `service detects a same id graph replacement as stale`() {
+        val tempRoot = Files.createTempDirectory("topology-replacement-stale-test")
+        val registry = GraphRegistry(tempRoot, GraphStore.LoadMode.MAPPED)
+        val service = TopologyService(registry, emptyList(), tempRoot)
+        try {
+            val firstGraph = tempRoot.resolve("service-v1")
+            val secondGraph = tempRoot.resolve("service-v2")
+            GraphStore.save(DefaultGraph.Builder().build(), firstGraph)
+            GraphStore.save(DefaultGraph.Builder().build(), secondGraph)
+            registry.load("service", firstGraph)
+            service.rebuild()
+
+            requireNotNull(service.openApiStream()).input.use { it.readBytes() }
+            assertEquals(false, service.toApiMap()["stale"])
+
+            registry.load("service", secondGraph)
+
+            assertNull(service.openApiStream())
+            assertEquals(true, service.toApiMap()["stale"])
+            assertEquals(1, service.toApiMap()["graphCount"])
+        } finally {
+            service.close()
+            registry.close()
+            tempRoot.toFile().deleteRecursively()
+        }
+    }
 }

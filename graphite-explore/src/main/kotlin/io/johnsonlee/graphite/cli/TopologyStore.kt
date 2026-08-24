@@ -260,7 +260,7 @@ internal class MappedTopologySnapshot private constructor(
         )
     }
 
-    fun toApiMap(currentGraphIds: List<String>): Map<String, Any> = materialize().toApiMap(currentGraphIds)
+    fun toApiMap(stale: Boolean): Map<String, Any> = materialize().toApiMap(stale)
 
     fun openApiStream(onClose: () -> Unit): TopologyApiStream {
         checkOpen()

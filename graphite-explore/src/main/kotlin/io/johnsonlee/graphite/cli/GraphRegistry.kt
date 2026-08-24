@@ -13,6 +13,7 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 internal const val API_FIELD_GRAPH_ID = "graphId"
 internal const val API_FIELD_DATA = "data"
@@ -63,7 +64,8 @@ internal data class GraphDescriptor(
     val path: Path,
     val loadMode: GraphStore.LoadMode,
     val loadedAt: Instant,
-    val stats: GraphStats
+    val stats: GraphStats,
+    internal val generation: Long
 ) {
     fun toApiMap(): Map<String, Any?> = mapOf(
         API_FIELD_ID to id,
@@ -108,63 +110,103 @@ internal class GraphRegistry(
 ) : Closeable {
 
     private val graphs = ConcurrentHashMap<String, ServedGraph>()
+    private val mutationLock = Any()
+    private val nextGeneration = AtomicLong()
 
+    @Suppress("TooGenericExceptionCaught")
     fun load(
         id: String,
         path: Path,
-        loadMode: GraphStore.LoadMode = defaultLoadMode
+        loadMode: GraphStore.LoadMode = defaultLoadMode,
+        afterLoad: () -> Unit = {}
     ): GraphDescriptor {
         val cleanId = validateGraphId(id)
         val resolvedPath = resolveGraphPath(path)
         require(Files.isDirectory(resolvedPath)) { "Graph path is not a directory: $resolvedPath" }
 
         val graph = GraphStore.load(resolvedPath, loadMode)
-        val served = ServedGraph(cleanId, resolvedPath, loadMode, graph)
-        graphs.put(cleanId, served)?.retire()
-
-        return served.descriptor()
-    }
-
-    fun unload(id: String): Boolean {
-        val cleanId = validateGraphId(id)
-        val removed = graphs.remove(cleanId) ?: return false
-        removed.retire()
-        return true
-    }
-
-    fun list(): List<GraphDescriptor> =
-        graphs.values.asSequence()
-            .map { it.descriptor() }
-            .sortedBy { it.id }
-            .toList()
-
-    fun describe(id: String): GraphDescriptor? =
-        graphs[validateGraphId(id)]?.descriptor()
-
-    fun ids(): List<String> =
-        graphs.keys.asSequence()
-            .sorted()
-            .toList()
-
-    fun acquire(id: String): GraphLease? {
-        val cleanId = validateGraphId(id)
-        while (true) {
-            val served = graphs[cleanId] ?: return null
-            served.acquire()?.let { return it }
+        val served = ServedGraph(cleanId, resolvedPath, loadMode, graph, nextGeneration.incrementAndGet())
+        return synchronized(mutationLock) {
+            val previous = graphs.put(cleanId, served)
+            try {
+                afterLoad()
+                previous?.retire()
+                served.descriptor()
+            } catch (error: Throwable) {
+                if (previous == null) {
+                    check(graphs.remove(cleanId, served)) { "Graph registry changed during load rollback: $cleanId" }
+                } else {
+                    check(graphs.replace(cleanId, served, previous)) {
+                        "Graph registry changed during load rollback: $cleanId"
+                    }
+                }
+                served.retire()
+                throw error
+            }
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
+    fun unload(id: String, afterUnload: () -> Unit = {}): Boolean = synchronized(mutationLock) {
+        val cleanId = validateGraphId(id)
+        val removed = graphs.remove(cleanId) ?: return@synchronized false
+        try {
+            afterUnload()
+            removed.retire()
+            true
+        } catch (error: Throwable) {
+            check(graphs.putIfAbsent(cleanId, removed) == null) {
+                "Graph registry changed during unload rollback: $cleanId"
+            }
+            throw error
+        }
+    }
+
+    fun list(): List<GraphDescriptor> =
+        synchronized(mutationLock) {
+            graphs.values.asSequence()
+                .map { it.descriptor() }
+                .sortedBy { it.id }
+                .toList()
+        }
+
+    fun describe(id: String): GraphDescriptor? =
+        synchronized(mutationLock) {
+            graphs[validateGraphId(id)]?.descriptor()
+        }
+
+    fun ids(): List<String> =
+        synchronized(mutationLock) {
+            graphs.keys.asSequence()
+                .sorted()
+                .toList()
+        }
+
+    fun catalogVersion(): Map<String, Long> =
+        synchronized(mutationLock) {
+            graphs.values.associate { it.descriptor().let { descriptor -> descriptor.id to descriptor.generation } }
+        }
+
+    fun <T> withStableCatalog(action: () -> T): T = synchronized(mutationLock, action)
+
+    fun acquire(id: String): GraphLease? = synchronized(mutationLock) {
+        val cleanId = validateGraphId(id)
+        graphs[cleanId]?.acquire()
+    }
+
     fun acquireAll(): List<GraphLease> =
-        ids().mapNotNull(::acquire)
+        synchronized(mutationLock) {
+            ids().mapNotNull(::acquire)
+        }
 
     @Suppress("TooGenericExceptionCaught")
-    fun acquireAll(ids: List<String>): List<GraphLease> {
+    fun acquireAll(ids: List<String>): List<GraphLease> = synchronized(mutationLock) {
         val leases = mutableListOf<GraphLease>()
         try {
             ids.map(::validateGraphId).distinct().forEach { id ->
                 leases += acquire(id) ?: throw GraphNotLoadedException(id)
             }
-            return leases
+            leases
         } catch (error: RuntimeException) {
             leases.forEach { it.close() }
             throw error
@@ -175,19 +217,22 @@ internal class GraphRegistry(
         if (path.isAbsolute) path.normalize() else dataDir.resolve(path).normalize()
 
     override fun close() {
-        val loaded = graphs.values.toList()
-        graphs.clear()
-        loaded.forEach { it.retire() }
+        synchronized(mutationLock) {
+            val loaded = graphs.values.toList()
+            graphs.clear()
+            loaded.forEach { it.retire() }
+        }
     }
 
     private class ServedGraph(
         private val id: String,
         private val path: Path,
         private val loadMode: GraphStore.LoadMode,
-        private val graph: Graph
+        private val graph: Graph,
+        generation: Long
     ) {
         private val loadedAt = Instant.now()
-        private val descriptor = GraphDescriptor(id, path, loadMode, loadedAt, graphStats(graph))
+        private val descriptor = GraphDescriptor(id, path, loadMode, loadedAt, graphStats(graph), generation)
         private val leases = AtomicInteger()
         private val retired = AtomicBoolean()
         private val closed = AtomicBoolean()

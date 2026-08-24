@@ -86,7 +86,10 @@ internal data class TopologyGraph(
     val rules: List<String>,
     val matchedRows: Int
 ) {
-    fun toApiMap(currentGraphIds: List<String>): Map<String, Any> = mapOf(
+    fun toApiMap(currentGraphIds: List<String>): Map<String, Any> =
+        toApiMap(nodes.map { it.id } != currentGraphIds.sorted())
+
+    fun toApiMap(stale: Boolean): Map<String, Any> = mapOf(
         API_FIELD_NODES to nodes.map { it.toApiMap() },
         API_FIELD_EDGES to edges.map { it.toApiMap() },
         "graphCount" to nodes.size,
@@ -94,7 +97,7 @@ internal data class TopologyGraph(
         "matchedRows" to matchedRows,
         "builtAt" to builtAt.toString(),
         "rules" to rules,
-        "stale" to (nodes.map { it.id } != currentGraphIds.sorted())
+        "stale" to stale
     )
 
     companion object {
@@ -217,45 +220,50 @@ internal class TopologyService(
 
     private val closed = AtomicBoolean()
 
-    fun rebuild(): TopologySummary = synchronized(this) {
-        check(!closed.get()) { "Topology service is closed" }
-        val descriptors = registry.list()
-        val stats = descriptors.associate { it.id to it.stats }
-        val graph = if (queries.isEmpty()) {
-            TopologyGraph.nodesOnly(stats)
-        } else {
-            val leases = registry.acquireAll()
-            try {
-                TopologyGraphBuilder.build(
-                    leases.map { CypherGraph(it.id, it.graph) },
-                    stats,
-                    queries
-                )
-            } finally {
-                leases.forEach { it.close() }
+    fun rebuild(): TopologySummary = registry.withStableCatalog {
+        synchronized(this) {
+            check(!closed.get()) { "Topology service is closed" }
+            val descriptors = registry.list()
+            val stats = descriptors.associate { it.id to it.stats }
+            val graph = if (queries.isEmpty()) {
+                TopologyGraph.nodesOnly(stats)
+            } else {
+                val leases = registry.acquireAll()
+                try {
+                    TopologyGraphBuilder.build(
+                        leases.map { CypherGraph(it.id, it.graph) },
+                        stats,
+                        queries
+                    )
+                } finally {
+                    leases.forEach { it.close() }
+                }
             }
+            val catalogVersion = descriptors.associate { it.id to it.generation }
+            val next = ServedTopology(TopologyStore.writeAndOpen(tempRoot, graph), catalogVersion)
+            val previous = current
+            current = next
+            previous?.retire()
+            next.summary()
         }
-        val next = ServedTopology(TopologyStore.writeAndOpen(tempRoot, graph))
-        val previous = current
-        current = next
-        previous?.retire()
-        next.summary()
     }
 
-    fun summary(): TopologySummary = withLease { it.summary() }
+    fun summary(): TopologySummary = withLease { it.snapshot.summary() }
 
-    fun snapshot(): TopologyGraph = withLease { it.materialize() }
+    fun snapshot(): TopologyGraph = withLease { it.snapshot.materialize() }
 
     fun toApiMap(): Map<String, Any> {
-        val currentGraphIds = registry.ids()
-        return withLease { it.toApiMap(currentGraphIds) }
+        return acquire().use { lease ->
+            val catalogVersion = registry.catalogVersion()
+            lease.snapshot.toApiMap(lease.catalogVersion != catalogVersion)
+        }
     }
 
     @Suppress("TooGenericExceptionCaught")
     fun openApiStream(): TopologyApiStream? {
-        val currentGraphIds = registry.ids()
         val lease = acquire()
-        if (lease.snapshot.graphIds() != currentGraphIds) {
+        val catalogVersion = registry.catalogVersion()
+        if (lease.catalogVersion != catalogVersion) {
             lease.close()
             return null
         }
@@ -267,7 +275,7 @@ internal class TopologyService(
         }
     }
 
-    internal fun currentBuildDir(): Path = withLease { it.buildDir }
+    internal fun currentBuildDir(): Path = withLease { it.snapshot.buildDir }
 
     override fun close() {
         if (closed.compareAndSet(false, true)) {
@@ -286,10 +294,13 @@ internal class TopologyService(
         }
     }
 
-    private inline fun <T> withLease(block: (MappedTopologySnapshot) -> T): T =
-        acquire().use { lease -> block(lease.snapshot) }
+    private inline fun <T> withLease(block: (TopologyLease) -> T): T =
+        acquire().use(block)
 
-    private class ServedTopology(private val snapshot: MappedTopologySnapshot) {
+    private class ServedTopology(
+        val snapshot: MappedTopologySnapshot,
+        private val catalogVersion: Map<String, Long>
+    ) {
         private val leases = AtomicInteger()
         private val retired = AtomicBoolean()
         private val closed = AtomicBoolean()
@@ -306,7 +317,7 @@ internal class TopologyService(
                         release()
                         return null
                     }
-                    return TopologyLease(this, snapshot)
+                    return TopologyLease(this, snapshot, catalogVersion)
                 }
             }
         }
@@ -326,7 +337,8 @@ internal class TopologyService(
 
     private class TopologyLease(
         private val owner: ServedTopology,
-        val snapshot: MappedTopologySnapshot
+        val snapshot: MappedTopologySnapshot,
+        val catalogVersion: Map<String, Long>
     ) : Closeable {
         private val closed = AtomicBoolean()
 

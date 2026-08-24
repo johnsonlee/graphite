@@ -280,6 +280,126 @@ class ExploreCommandTest {
         }
     }
 
+    @Test
+    fun `registry load rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-load-rollback")
+        try {
+            saveConstantGraph(root, "anchor", 1)
+            saveConstantGraph(root, "candidate", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("anchor", Path.of("anchor"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "load-rollback.cypher",
+                        """
+                        MATCH (n:IntConstant)
+                        WHERE graphId(n) = 'candidate'
+                        RETURN graphId(n) AS source, 'missing' AS target
+                        """.trimIndent()
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (loadCode, loadBody) = put(
+                    targetPort,
+                    "/api/graphs/candidate",
+                    """{"path":"candidate"}"""
+                )
+                assertEquals(400, loadCode, loadBody)
+                assertTrue(loadBody.contains("unknown graph") && loadBody.contains("missing"), loadBody)
+                assertEquals(listOf("anchor"), registry.ids())
+                assertEquals(404, get(targetPort, "/api/graphs/candidate").first)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry replacement rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-replace-rollback")
+        try {
+            saveConstantGraph(root, "service-v1", 1)
+            saveConstantGraph(root, "service-v2", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("service", Path.of("service-v1"))
+            registry.load("1", Path.of("service-v1"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "replace-rollback.cypher",
+                        """
+                        MATCH (n:IntConstant)
+                        WHERE graphId(n) = 'service'
+                        RETURN graphId(n) AS source, n.value AS target
+                        """.trimIndent()
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (replaceCode, replaceBody) = put(
+                    targetPort,
+                    "/api/graphs/service",
+                    """{"path":"service-v2"}"""
+                )
+                assertEquals(400, replaceCode, replaceBody)
+                assertTrue(replaceBody.contains("unknown graph") && replaceBody.contains("2"), replaceBody)
+
+                val (queryCode, queryBody) = post(
+                    targetPort,
+                    "/api/graphs/service/cypher",
+                    """{"query":"MATCH (n:IntConstant) RETURN n.value"}"""
+                )
+                assertEquals(200, queryCode, queryBody)
+                assertEquals(1.0, singleCypherValue(queryBody), queryBody)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `registry unload rolls back when topology rebuild fails`() {
+        val root = Files.createTempDirectory("explore-registry-unload-rollback")
+        try {
+            saveConstantGraph(root, "consumer", 1)
+            saveConstantGraph(root, "provider", 2)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            registry.load("consumer", Path.of("consumer"))
+            registry.load("provider", Path.of("provider"))
+            val topology = TopologyService(
+                registry,
+                listOf(
+                    TopologyQuery(
+                        "unload-rollback.cypher",
+                        "RETURN 'consumer' AS source, 'provider' AS target"
+                    )
+                ),
+                root
+            ).also { it.rebuild() }
+
+            withRegistryApp(registry, topology) { targetPort ->
+                val (deleteCode, deleteBody) = delete(targetPort, "/api/graphs/provider")
+                assertEquals(400, deleteCode, deleteBody)
+                assertTrue(deleteBody.contains("unknown graph") && deleteBody.contains("provider"), deleteBody)
+                assertEquals(listOf("consumer", "provider"), registry.ids())
+                assertEquals(200, get(targetPort, "/api/graphs/provider").first)
+                assertEquals(200, get(targetPort, "/api/topology").first)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
     private fun post(path: String, jsonBody: String): Pair<Int, String> =
         request(port, "POST", path, jsonBody)
 
