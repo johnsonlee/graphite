@@ -89,6 +89,7 @@ graphite serve --id app /data/app-graph --port 8080
 graphite serve --data /data/graphs \
   --graph orders:orders-graph \
   --graph billing:/data/billing-graph \
+  --topology /rules/company-topology.cypher \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -233,6 +234,7 @@ Generic JDK resource linking currently covers:
 | `/api/graphs` | List loaded webgraphs with cached per-graph statistics and aggregate totals |
 | `/api/graphs/{graphId}` | Get, load, replace, or unload a webgraph by id |
 | `/api/graphs/{graphId}/...` | Query one explicit webgraph with the direct single-graph response shape |
+| `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
 | `/api/nodes`, `/api/methods`, ... | Query every loaded graph; non-Cypher results are grouped by `graphId` |
@@ -257,6 +259,30 @@ qualified identities such as `elementId = "orders:42"`.
 For agent-driven discovery, probe `/openapi.json` first. It describes the full
 root-all and graph-scoped REST surface, including the two explicit modes of
 `/api/cypher/graphs`.
+
+For multi-graph startup, `--topology` accepts one Cypher file (or a directory
+of `.cypher` files). The configured `--graph` entries are the catalog: Graphite
+loads them once, runs the topology query over those loaded graph instances,
+and aggregates the returned rows into an internal topology graph stored under
+`${java.io.tmpdir}/graphite/<UUID>/` and mapped read-only. This internal format
+is independent of the public WebGraph/`GraphStore` format. The query
+must return `source` and `target`; it may also return `protocol`,
+`operation`, `weight`, and `evidence`. For example, a generated RPC adapter can
+encode its provider in a package segment:
+
+```cypher
+MATCH (call:CallSiteNode)
+WHERE call.callee_class =~ 'com\\.company\\.rpc\\..*\\.Adapter'
+RETURN graphId(call) AS source,
+       split(call.callee_class, '.')[3] AS target,
+       'company-rpc' AS protocol,
+       call.callee_name AS operation,
+       call.callee_class AS evidence
+```
+
+The Explorer homepage displays this topology by default when more than one
+graph is loaded. Isolated graphs remain visible, and double-clicking a graph
+drills down to its class overview.
 
 ## Architecture
 
