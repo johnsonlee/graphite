@@ -365,8 +365,16 @@ not change graph building or the persisted format.
 
 ### Tests and lint
 
-The core, Cypher, and WebGraph test suites pass. Direct `detektMain` currently
-fails on both `main` and this branch with the same pre-existing totals: 17
-Cypher findings and 11 WebGraph findings. No new finding remains in a changed
-code path; new complexity and return-count findings were resolved or narrowly
-suppressed following existing project practice.
+The CI-equivalent gate passes:
+
+```shell
+./gradlew check -S --no-daemon
+```
+
+This covers every module's tests, baseline-aware detekt task, and Kover
+verification. Direct `detektMain` currently fails on both `main` and this branch
+with the same pre-existing totals: 17 Cypher findings and 11 WebGraph findings;
+that task does not apply the repository baselines used by `check`. No new
+finding remains in a changed code path. New complexity and return-count
+findings were resolved or narrowly suppressed following existing project
+practice.
