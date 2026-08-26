@@ -189,3 +189,19 @@ Workflow allocation falls from `83.335 MB/op` at baseline to `0.126 MB/op`, a
 for the complete search-then-expand workflow while preserving the keyword gains.
 The result confirms that direct graph-qualified lookup, rather than parallel
 fan-out, removes the dominant second-stage CPU and allocation cost.
+
+### 2026-08-26 - Attempt 005: Mapped cross-graph benchmark guardrail
+
+**Problem:** the method-level benchmark uses `DefaultGraph`, whose nodes are
+already materialized. Production explorer sessions use mapped WebGraph storage,
+where a scan must decode each node from mmap. An optimization that only removes
+heap-object overhead could overstate the real improvement.
+
+**Benchmark design:** add `CrossGraphMappedQueryBenchmark` in the WebGraph JMH
+module. It persists and maps the same 16 graphs, 80,000 colliding local node IDs,
+late keyword hit, and eight-edge call chain as the in-memory benchmark. Setup
+asserts the keyword result and complete call-chain row count before measurement.
+
+The exact same benchmark commit is run on this branch and on an `origin/main`
+worktree so both implementations use an identical fixture and harness. This
+attempt changes benchmark and documentation code only.
