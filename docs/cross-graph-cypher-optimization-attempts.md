@@ -615,8 +615,46 @@ absent after both stages. It measures `0.518 +/- 0.392 ms/op` on `main` and
 `2.884 ms/op` repeated on the 16-graph fixture and `202.359/199.474 ms/op`
 cold/repeated on Android.
 
-**Conclusion:** retained. The query remains lazy for limits, is correct for old
-unordered mapped graphs, and keeps the 36-37x Android-scale speedup.
+**Conclusion:** rejected and replaced by Attempt 014. The primitive set is lazy
+for an unqualified query that stops at its limit, but qualified cross-graph
+execution drains every source to collect complete provenance. In that path the
+set grows with every unique match and can again consume tens of megabytes on
+the Android corpus.
+
+### 2026-08-27 - Attempt 014: Filter-owned candidate streams
+
+**Review finding:** cross-graph `DISTINCT ... LIMIT 1` cannot stop after the
+first visible row because later graphs may contribute to that row's provenance.
+Attempt 013 therefore retained every unique matching node ID while draining the
+remaining candidate streams. At 5.9 million IDs, the primitive hash table alone
+would require roughly a 32 MiB backing array and would keep growing on larger
+corpora.
+
+**Design:** each candidate stream is owned by its corresponding direct string
+filter. The first filter emits all its matches. A later stream emits a node only
+when none of the earlier filters matches that node. This works with arbitrary
+storage order and retains no node IDs: deduplication memory is bounded by the
+number of query filters, which is six for the broad-discovery query. The CPU
+tradeoff is at most one property check per earlier filter for each candidate in
+a later stream.
+
+The unordered-stream regression now uses contract-correct lookup results: one
+node matches both filters, while the other two match only the second filter. It
+still produces `[1, 2, 0]` exactly once each. A qualified regression builds two
+graphs with 5,000 nodes apiece, where every node matches both filters. It proves
+that execution consumes all 20,000 indexed candidates, returns one distinct
+row, and merges provenance from both graphs without match-sized deduplication
+state. The single-graph `LIMIT 1` guard still consumes only one candidate.
+
+The final Android JAR benchmark measures `207.392 ms/op` cold and `204.300
+ms/op` repeated, versus `7,426.015` and `7,433.167 ms/op` on `main`: `35.81x`
+and `36.38x` speedups. The 16-graph cross-graph benchmark measures `2.861
+ms/op` repeated, `11.661 ms/op` cold hit, and `7.949 ms/op` cold miss.
+
+**Conclusion:** retained. Candidate deduplication is correct for unordered
+persisted graphs, remains lazy for single-graph limits, uses memory independent
+of match count for qualified execution, and preserves the Android-scale
+speedup.
 
 ## PR verification summary
 
@@ -699,7 +737,7 @@ verification. Direct `detektMain` currently fails on both `main` and this branch
 with the same pre-existing totals: 17 Cypher findings and 11 WebGraph findings;
 that task does not apply the repository baselines used by `check`. No new
 finding remains in a changed code path. New behavior tests cover the exact
-six-property agent query, cross-graph provenance merging, dynamic annotation
+six-property broad-discovery query, cross-graph provenance merging, dynamic annotation
 properties, generic fallback, and streaming `DISTINCT ... LIMIT` execution.
 
 The first PR workflow run exposed coverage below the repository's separate 98%
@@ -708,5 +746,5 @@ printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0873%` for Cypher, and `98.0072%` for WebGraph; the complete
+for Core, `98.0897%` for Cypher, and `98.0072%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.

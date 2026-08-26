@@ -561,12 +561,13 @@ class QueryPipelineTest {
 
     @Test
     fun `filtered distinct string disjunction deduplicates unordered candidate streams`() {
-        val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
-        val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
+        val targetCaller = MethodDescriptor(TypeDescriptor("com.example.TargetService"), "call", emptyList(), stringType)
+        val otherCaller = MethodDescriptor(TypeDescriptor("com.example.OtherService"), "call", emptyList(), stringType)
+        val targetCallee = MethodDescriptor(TypeDescriptor("com.example.TargetRepository"), "load", emptyList(), stringType)
         val backing = DefaultGraph.Builder().apply {
-            repeat(3) { index ->
-                addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
-            }
+            addNode(CallSiteNode(NodeId(0), otherCaller, targetCallee, 0, null, emptyList()))
+            addNode(CallSiteNode(NodeId(1), targetCaller, targetCallee, 1, null, emptyList()))
+            addNode(CallSiteNode(NodeId(2), otherCaller, targetCallee, 2, null, emptyList()))
         }.build()
         val lookupGraph = object : Graph by backing, StringPropertyLookup {
             override fun <T : Node> nodesByStringProperty(
@@ -587,7 +588,7 @@ class QueryPipelineTest {
 
         val result = CypherExecutor(lookupGraph).execute(
             "MATCH (n:CallSiteNode) WHERE " +
-                "n.caller_class CONTAINS 'example' OR n.callee_class CONTAINS 'example' " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
                 "RETURN DISTINCT n.id AS id LIMIT 4"
         )
 

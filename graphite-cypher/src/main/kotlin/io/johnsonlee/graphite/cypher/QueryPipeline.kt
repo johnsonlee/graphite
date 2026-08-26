@@ -16,7 +16,6 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.nodesByStringProperty
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
@@ -530,17 +529,26 @@ class QueryPipeline private constructor(
             val candidates = if (accelerated.any { it == null }) {
                 graph.nodes(candidateType).filter(disjunction::matches)
             } else {
-                uniqueNodes(accelerated.filterNotNull())
+                filterOwnedNodes(filters, accelerated.filterNotNull())
             }
             for (node in candidates) yield(node)
         }
     }
 
-    private fun <T : Node> uniqueNodes(sequences: List<Sequence<T>>): Sequence<Node> = sequence {
-        val seen = IntOpenHashSet()
-        for (nodes in sequences) {
+    private fun <T : Node> filterOwnedNodes(
+        filters: List<DirectStringFilter>,
+        sequences: List<Sequence<T>>
+    ): Sequence<Node> = sequence {
+        for ((index, nodes) in sequences.withIndex()) {
             for (node in nodes) {
-                if (seen.add(node.id.value)) yield(node)
+                var ownedByEarlierFilter = false
+                for (earlierIndex in 0 until index) {
+                    if (filters[earlierIndex].matches(node)) {
+                        ownedByEarlierFilter = true
+                        break
+                    }
+                }
+                if (!ownedByEarlierFilter) yield(node)
             }
         }
     }

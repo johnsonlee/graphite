@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
@@ -18,6 +19,8 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -173,7 +176,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `agent discovery query streams distinct rows and merges provenance`() {
+    fun `broad discovery query streams distinct rows and merges provenance`() {
         val caller = MethodDescriptor(
             TypeDescriptor("com.example.ThankYouService"),
             "create",
@@ -216,7 +219,58 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `agent discovery query preserves dynamic annotation properties`() {
+    fun `qualified broad discovery drains large matches with bounded deduplication state`() {
+        val matchCount = 5_000
+        val consumed = mutableMapOf("orders" to 0, "billing" to 0)
+        val caller = MethodDescriptor(
+            TypeDescriptor("com.example.TargetService"),
+            "call",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("com.example.TargetRepository"),
+            "load",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+
+        fun indexedGraph(graphId: String): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                repeat(matchCount) { index ->
+                    addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyLookup {
+                override fun <T : Node> nodesByStringProperty(
+                    type: Class<T>,
+                    property: String,
+                    mode: StringMatchMode,
+                    expected: String,
+                    limit: Int
+                ): Sequence<T> = backing.nodes(type).onEach {
+                    consumed[graphId] = consumed.getValue(graphId) + 1
+                }
+            }
+        }
+
+        val result = executor(
+            "orders" to indexedGraph("orders"),
+            "billing" to indexedGraph("billing")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.TargetService"), result.rows.map { it["caller"] })
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+        assertEquals(2 * matchCount, consumed.getValue("orders"))
+        assertEquals(2 * matchCount, consumed.getValue("billing"))
+    }
+
+    @Test
+    fun `broad discovery query preserves dynamic annotation properties`() {
         val annotation = AnnotationNode(
             NodeId(1),
             "com.example.Feature",
