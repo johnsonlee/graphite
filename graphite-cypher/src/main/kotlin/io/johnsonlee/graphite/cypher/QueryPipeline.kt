@@ -282,9 +282,9 @@ class QueryPipeline private constructor(
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
 
             val bindings = mutableMapOf<String, Any?>(variable to candidate)
-            addProvenance(bindings, candidate)
             if (evaluator.evaluate(where.condition, bindings) != true) continue
 
+            addProvenance(bindings, candidate)
             rows.add(projectRow(ret.items, columns, bindings))
             if (rows.size >= limitCount) return CypherResult(columns, rows)
         }

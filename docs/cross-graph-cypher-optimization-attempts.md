@@ -54,3 +54,43 @@ and five 1-second measurements.
 confirming that the filtered fast path still scans every qualified candidate
 when fewer than the requested 20 rows match. The two-stage workflow adds a
 second full candidate scan plus eager `WITH` materialization and path traversal.
+
+### 2026-08-26 - Attempt 001: Defer filtered-row provenance
+
+**Hypothesis:** the filtered-node fast path adds a provenance set to every
+candidate binding before evaluating `WHERE`. Misses discard that binding
+immediately, so broad low-selectivity searches allocate provenance for all
+80,000 candidates while only zero or one row reaches the result. Moving
+provenance creation after a successful predicate should preserve visible and
+metadata semantics while reducing allocation and CPU cost.
+
+**Build/save impact:** none. This only changes query execution order for
+internal result metadata that is not visible to `WHERE` expressions.
+
+**Validation:**
+
+```shell
+./gradlew :cypher:test :cypher:jmh \
+  -Pjmh.filter='.*CrossGraphCypherBenchmark.*' \
+  --no-daemon
+
+java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
+  '.*CrossGraphCypherBenchmark.(keywordLateHitAcrossAllGraphs|keywordThenCallChain)' \
+  -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
+```
+
+| Benchmark | Baseline | Attempt 001 | Speedup |
+|-----------|---------:|------------:|--------:|
+| `keywordMissAcrossAllGraphs` | `5.018 ms/op` | `2.809 ms/op` | `1.79x` |
+| `keywordLateHitAcrossAllGraphs` | `4.974 ms/op` | `2.794 ms/op` | `1.78x` |
+| `keywordThenCallChain` | `13.875 ms/op` | `10.882 ms/op` | `1.28x` |
+
+| Allocation | Baseline | Attempt 001 | Change |
+|------------|---------:|------------:|-------:|
+| `keywordLateHitAcrossAllGraphs` | `35.250 MB/op` | `15.410 MB/op` | `-56.3%` |
+| `keywordThenCallChain` | `83.335 MB/op` | `63.495 MB/op` | `-23.8%` |
+
+**Conclusion:** effective and retained, but short of the `10x` target. Deferring
+provenance removes most allocation from the filtered fast path. The remaining
+keyword cost still creates a qualified node and binding map per candidate, and
+the second workflow query still uses the eager generic `WITH` pipeline.
