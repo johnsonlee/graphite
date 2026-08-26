@@ -440,23 +440,23 @@ fixture in a separate clone at `e4d1c6a`.
 
 ```shell
 ./gradlew :webgraph:jmh \
-  -Pjmh.filter='AgentBroadDiscoveryMappedQueryBenchmark.*' \
+  -Pjmh.filter='BroadDiscoveryMappedQueryBenchmark.*' \
   --no-daemon
 
 java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
-  '.*AgentBroadDiscoveryMappedQueryBenchmark.coldBroadDiscoveryAcrossAllMappedGraphs' \
+  '.*BroadDiscoveryMappedQueryBenchmark.coldBroadDiscoveryAcrossAllMappedGraphs' \
   -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
 ```
 
-| Agent discovery benchmark | `main` | Attempt 009 | Speedup |
+| Broad discovery benchmark | `main` | Attempt 009 | Speedup |
 |---------------------------|-------:|------------:|--------:|
-| repeated query | `59.394 ms/op` | `3.359 ms/op` | `17.68x` |
-| cold hit after index reset | `59.394 ms/op` | `11.984 ms/op` | `4.96x` |
-| cold miss after index reset | not measured | `9.162 ms/op` | n/a |
+| repeated query | `59.394 ms/op` | `3.014 ms/op` | `19.71x` |
+| cold hit after index reset | `59.394 ms/op` | `10.855 ms/op` | `5.47x` |
+| cold miss after index reset | not measured | `9.378 ms/op` | n/a |
 
-The profiler run allocates `137.930 MB/op` on `main` and `25.202 MB/op` on the
+The profiler run allocates `137.930 MB/op` on `main` and `25.203 MB/op` on the
 cold branch path, an 81.7% reduction. The corresponding profiler times are
-`60.139 ms/op` and `11.637 ms/op`.
+`60.139 ms/op` and `11.881 ms/op`.
 
 **Limit:** this is query planning and allocation control, not a hard CPU
 budget. Arbitrary Cypher outside the recognized shape can still perform a
@@ -466,6 +466,102 @@ concurrency bulkhead remain separate availability work.
 **Conclusion:** retained. This attempt covers the reported 2.2.2 query shape
 and removes the main deserialization and intermediate-row costs without
 changing `DISTINCT`, `LIMIT`, or provenance semantics.
+
+### 2026-08-27 - Attempt 010: Predicate-specific index admission
+
+**Review evidence:** property-level admission created two latency traps. A full
+miss made the next finite lookup build the complete index before learning that
+its different predicate matched the first node. Evicting an index from the
+four-entry LRU left the same property-level admission hot, so the next early
+lookup rebuilt the evicted index. Review reproductions measured `25.074 ms/op`
+after an admitted miss and `9.810 ms/op` after LRU eviction.
+
+The new storage method on `Graph` also compiled as an abstract JVM interface
+method under the project's Kotlin settings. A graph implementation compiled
+against 2.2.2 could therefore fail with `AbstractMethodError` when the new
+Cypher fast path called it.
+
+**Design:** finite admission is now keyed by node type, property, match mode,
+and expected string. A costly scan admits only that exact predicate. A
+different early-hit predicate stays on the lazy raw mmap scan. Admission keeps
+at most 32 entries and 64 KiB of estimated retained state. LRU index eviction
+removes every admission for the evicted property. Rejected indexes remain on
+raw scan without repeatedly attempting construction.
+
+Storage-aware string lookup moved from the `Graph` interface to the optional
+`StringPropertyLookup` capability. A `Graph.nodesByStringProperty` extension
+performs a safe capability check, so existing implementations retain their old
+JVM interface and fall back to `Graph.nodes`. A regression test asserts that
+`Graph.class` has no `nodesByStringProperty` method and verifies the fallback.
+
+**Benchmark fixture:** one persisted mapped graph with 50,000 resource nodes
+and 50,000 field nodes. Invocation setup either performs a full miss before a
+first-node hit, or admits/builds five property keys against the four-entry LRU
+before querying the evicted key. Setup time is excluded from the single-shot
+measurement.
+
+```shell
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  '.*MappedStringAdmissionBenchmark.*' -f 1
+```
+
+| Admission control | `main` | Attempt 010 |
+|-------------------|-------:|------------:|
+| early hit after full miss | `0.555 ms/op` | `0.395 ms/op` |
+| early hit after LRU workload | `0.189 ms/op` | `0.198 ms/op` |
+
+Both controls are at `main` latency and eliminate the review reproductions'
+index-build spikes. Predicate-specific admission intentionally gives uncached,
+always-changing misses the raw scan instead of a property-level index:
+`5.155 ms/op` versus `15.080 ms/op` on `main`, rather than the unsafe previous
+branch result of `0.020 ms/op`.
+
+The other cross-graph controls remain improved: cold late hit is
+`4.886 ms/op` versus `14.719 ms/op`, two different cold searches are
+`10.176 ms/op` versus `29.292 ms/op`, repeated miss is `0.019 ms/op` versus
+`14.399 ms/op`, and search-then-call-chain is `0.073 ms/op` versus
+`32.087 ms/op`. The cold early-hit pair remains at parity (`0.038 ms/op`).
+
+**Conclusion:** retained. Admission now follows observed cost for the exact
+predicate, eviction resets its decision state, and the optimization no longer
+changes the binary contract of `Graph`.
+
+### 2026-08-27 - Attempt 011: Android-scale broad discovery
+
+**Review finding:** the ES regression corpus is too small for this availability
+problem. Its limited queries finish in less than one millisecond, so they are
+useful smoke tests but do not reproduce CPU pressure from a broad discovery
+query.
+
+**Benchmark design:** `AndroidBroadDiscoveryBenchmark` loads only the mapped
+graph built from the Android fixture JAR: 5.9 million nodes and about 6.5
+million edges. It runs the production six-property guarded disjunction from
+Attempt 009, using the common term `android`, and asserts all 120 requested
+distinct rows. The benchmark name describes the query workload rather than its
+original caller; the agent session is evidence for the query shape, not part of
+its execution semantics.
+
+The cold method clears optional string indexes before every invocation. The
+repeated method measures the same query in a long-lived mapped graph. The exact
+benchmark source was also compiled at `main` commit `e4d1c6a`; its reflective
+clear hook is a no-op there because `main` has no mapped string index.
+
+```shell
+./gradlew :webgraph:jmh \
+  -Pjmh.filter='AndroidBroadDiscoveryBenchmark.*' \
+  --no-daemon
+```
+
+| Android broad discovery | `main` | Branch | Speedup |
+|-------------------------|-------:|-------:|--------:|
+| cold query | `7,426.015 ms/op` | `393.236 ms/op` | `18.89x` |
+| repeated query | `7,433.167 ms/op` | `361.439 ms/op` | `20.57x` |
+
+**Conclusion:** retained. The production query shape improves by about 20x on
+the real Android-scale corpus. This replaces the ES query table as the primary
+large-graph performance evidence. The remaining `361-393 ms` cost is a real
+raw mapped-field scan across 5.9 million nodes, so request-level CPU budgets and
+concurrency isolation remain valid follow-up work.
 
 ## PR verification summary
 
@@ -483,44 +579,43 @@ used the same machine and dependency caches.
 
 | `CypherBenchmark` | `main` | Branch | Change |
 |-------------------|-------:|-------:|-------:|
-| `aggregationCountGroupBy` | `34.778 us/op` | `34.363 us/op` | `-1.2%` |
-| `countStar` | `2.294 us/op` | `2.349 us/op` | `+2.4%` |
-| `functionCalls` | `24.524 us/op` | `24.989 us/op` | `+1.9%` |
-| `nodeMatchWithWhere` | `58.112 us/op` | `57.659 us/op` | `-0.8%` |
-| `regexFilter` | `23.525 us/op` | `23.821 us/op` | `+1.3%` |
-| `returnDistinct` | `101.836 us/op` | `102.761 us/op` | `+0.9%` |
-| `simpleNodeMatch` | `19.313 us/op` | `20.098 us/op` | `+4.1%` |
-| `singleHopRelationship` | `29.468 us/op` | `30.438 us/op` | `+3.3%` |
-| `variableLengthPath` | `25.370 us/op` | `26.370 us/op` | `+3.9%` |
-| `withPipeline` | `75.281 us/op` | `75.869 us/op` | `+0.8%` |
+| `aggregationCountGroupBy` | `34.443 us/op` | `34.449 us/op` | `+0.0%` |
+| `countStar` | `2.263 us/op` | `2.284 us/op` | `+0.9%` |
+| `functionCalls` | `24.868 us/op` | `24.683 us/op` | `-0.7%` |
+| `nodeMatchWithWhere` | `58.748 us/op` | `57.674 us/op` | `-1.8%` |
+| `regexFilter` | `23.571 us/op` | `24.045 us/op` | `+2.0%` |
+| `returnDistinct` | `103.294 us/op` | `102.030 us/op` | `-1.2%` |
+| `simpleNodeMatch` | `20.418 us/op` | `20.417 us/op` | `+0.0%` |
+| `singleHopRelationship` | `30.085 us/op` | `29.920 us/op` | `-0.5%` |
+| `variableLengthPath` | `26.093 us/op` | `26.071 us/op` | `-0.1%` |
+| `withPipeline` | `76.079 us/op` | `76.587 us/op` | `+0.7%` |
 
-All confidence intervals overlap. There is no measured method-level
-regression.
+The noisier regex and distinct rows were repeated across three forks; their
+confidence intervals overlap. There is no measured method-level regression.
 
-### Large mapped graph regression
+### Android mapped graph regression
 
 ```shell
 ./gradlew :webgraph:jmh \
-  -Pjmh.filter='EsQueryBenchmark.mapped_.*' \
+  -Pjmh.filter='AndroidQueryBenchmark.mapped_.*' \
   --no-daemon
 ```
 
-This uses the repository's Elasticsearch corpus with approximately 968,000
-nodes. Values are `ms/op`.
+This uses the 5.9-million-node Android graph. These limited and metadata-backed
+queries are secondary regression guards, not the CPU pressure benchmark.
+Values are `ms/op`.
 
-| `EsQueryBenchmark` | `main` | Branch |
-|--------------------|-------:|-------:|
-| `mapped_countStar` | `0.002` | `0.003` |
-| `mapped_intConstantFilter` | `0.300` | `0.302` |
-| `mapped_regexFilter` | `0.076` | `0.077` |
-| `mapped_returnDistinct` | `0.095` | `0.100` |
-| `mapped_simpleNodeMatch` | `0.067` | `0.069` |
-| `mapped_singleHopRelationship` | `0.151` | `0.149` |
+| `AndroidQueryBenchmark` | `main` | Branch |
+|-------------------------|-------:|-------:|
+| `mapped_countStar` | `0.003` | `0.002` |
+| `mapped_intConstantFilter` | `0.172` | `0.182` |
+| `mapped_returnDistinct` | `0.171` | `0.209` |
+| `mapped_simpleNodeMatch` | `0.070` | `0.087` |
+| `mapped_singleHopRelationship` | `0.651` | `0.653` |
 
-`mapped_returnDistinct` was repeated with five warmups and ten measurements;
-the repeated branch result is `0.093 ms/op` versus `0.095 ms/op` on `main`.
-The remaining absolute differences are at most `0.002 ms/op`; there is no
-measured large-corpus query regression.
+The branch and main confidence intervals overlap for every row. The wide
+intervals also show why these sub-millisecond limited queries are not used as
+the primary pressure result.
 
 ### End-to-end regression
 
@@ -532,7 +627,7 @@ measured large-corpus query regression.
 
 `GraphEndToEndBenchmark` covers Android JAR analysis, graph build, save, mapped
 load, and Cypher count query. The single-shot result was `30,182.415 ms/op` on
-`main` and `26,668.587 ms/op` on the branch. This benchmark is intentionally
+`main` and `23,877.213 ms/op` on the branch. This benchmark is intentionally
 coarse and noisy, but it shows no end-to-end regression. The optimization does
 not change graph building or the persisted format.
 
@@ -556,6 +651,7 @@ The first PR workflow run exposed coverage below the repository's separate 98%
 per-module threshold even though `check` passed locally before coverage was
 printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
-access, and the unsupported `DataInput.readLine` contract. Final application
-line coverage is `98.04%` for Cypher and `98.1162%` for WebGraph; the complete
+access, ABI fallback, predicate admission bounds, and admission reset after
+cache clearing or LRU eviction. Final application line coverage is `98.3471%`
+for Core, `98.0433%` for Cypher, and `98.0061%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.

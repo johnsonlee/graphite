@@ -24,6 +24,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -530,7 +531,7 @@ class QueryPipelineTest {
 
     @Test
     fun `filtered distinct disjunction keeps unbounded storage lookup semantics`() {
-        val unboundedGraph = object : Graph by graph {
+        val unboundedGraph = object : Graph by graph, StringPropertyLookup {
             override fun nodeCount(type: Class<out Node>): Long = Int.MAX_VALUE.toLong()
 
             override fun <T : Node> nodesByStringProperty(

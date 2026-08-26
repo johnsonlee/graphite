@@ -26,6 +26,17 @@ enum class StringMatchMode {
     CONTAINS
 }
 
+/** Optional storage capability for graphs that can avoid materializing a full node scan. */
+interface StringPropertyLookup {
+    fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>?
+}
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -53,21 +64,6 @@ interface Graph {
      * to indicate callers should fall back to [nodes].
      */
     fun nodeCount(type: Class<out Node>): Long? = null
-
-    /**
-     * Return nodes whose string [property] matches [expected] when the graph has
-     * a storage-aware access path. Implementations may return null when the type
-     * or property is unsupported, or when the access path is not ready, so
-     * callers must fall back to [nodes]. At most [limit] matching nodes are
-     * returned when a finite limit is supplied.
-     */
-    fun <T : Node> nodesByStringProperty(
-        type: Class<T>,
-        property: String,
-        mode: StringMatchMode,
-        expected: String,
-        limit: Int = Int.MAX_VALUE
-    ): Sequence<T>? = null
 
     /**
      * Return a precomputed edge count when the graph can answer without
@@ -200,6 +196,20 @@ interface Graph {
     fun classOverview(limit: Int): ClassOverview? = null
 
 }
+
+/**
+ * Use a storage-aware string lookup when [Graph] also implements
+ * [StringPropertyLookup]. Existing graph implementations remain binary
+ * compatible and return null through this extension.
+ */
+fun <T : Node> Graph.nodesByStringProperty(
+    type: Class<T>,
+    property: String,
+    mode: StringMatchMode,
+    expected: String,
+    limit: Int = Int.MAX_VALUE
+): Sequence<T>? = (this as? StringPropertyLookup)
+    ?.nodesByStringProperty(type, property, mode, expected, limit)
 
 /**
  * Pattern for matching methods.

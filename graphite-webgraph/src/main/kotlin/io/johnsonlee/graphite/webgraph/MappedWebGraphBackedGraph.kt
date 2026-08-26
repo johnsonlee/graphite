@@ -17,6 +17,7 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
@@ -56,7 +57,7 @@ import java.util.LinkedHashMap
  *
  * Created by [GraphStore.loadMapped].
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class MappedWebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,
@@ -74,7 +75,7 @@ internal class MappedWebGraphBackedGraph(
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
-) : Graph, Closeable {
+) : Graph, StringPropertyLookup, Closeable {
 
     override val resources: ResourceAccessor
         get() = resourceAccessor.value
@@ -92,14 +93,19 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private val stringPropertyIndexLock = Any()
-    private val stringPropertyAccesses = LinkedHashMap<StringPropertyKey, Int>()
+    private val stringPropertyAdmissions = StringPropertyAdmissions()
     private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
         MAX_STRING_PROPERTY_INDEXES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
         true
     ) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<StringPropertyKey, MappedStringPropertyIndex>?): Boolean =
-            size > MAX_STRING_PROPERTY_INDEXES
+        override fun removeEldestEntry(
+            eldest: MutableMap.MutableEntry<StringPropertyKey, MappedStringPropertyIndex>?
+        ): Boolean {
+            val remove = size > MAX_STRING_PROPERTY_INDEXES
+            if (remove && eldest != null) stringPropertyAdmissions.clear(eldest.key)
+            return remove
+        }
     }
 
     override fun node(id: NodeId): Node? {
@@ -135,33 +141,32 @@ internal class MappedWebGraphBackedGraph(
             return indexedNodes(index, mode, expected, limit)
         }
 
-        val previousAccesses = synchronized(stringPropertyIndexLock) {
-            stringPropertyAccesses[key] ?: 0
+        val admission = StringPropertyAdmissionKey(key, mode, expected)
+        val shouldBuild = synchronized(stringPropertyIndexLock) {
+            stringPropertyAdmissions.shouldBuild(admission, limit == Int.MAX_VALUE)
         }
-        if (limit != Int.MAX_VALUE && previousAccesses <= 0) {
-            return rawStringPropertyScan(type, property, mode, expected, limit, key)
+        if (!shouldBuild) {
+            return if (limit == Int.MAX_VALUE) {
+                null
+            } else {
+                rawStringPropertyScan(type, property, mode, expected, limit, admission)
+            }
         }
 
         val index = synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes[key] ?: run {
-                val accesses = stringPropertyAccesses[key] ?: 0
-                if (accesses == REJECTED_STRING_PROPERTY_INDEX) return@synchronized null
-                if (accesses == 0) {
-                    stringPropertyAccesses[key] = 1
+                buildStringPropertyIndex(type, property)?.also {
+                    stringPropertyIndexes[key] = it
+                    stringPropertyAdmissions.clear(key)
+                } ?: run {
+                    stringPropertyAdmissions.reject(key)
                     null
-                } else {
-                    buildStringPropertyIndex(type, property)?.also {
-                        stringPropertyIndexes[key] = it
-                    } ?: run {
-                        stringPropertyAccesses[key] = REJECTED_STRING_PROPERTY_INDEX
-                        null
-                    }
                 }
             }
         } ?: return if (limit == Int.MAX_VALUE) {
             null
         } else {
-            rawStringPropertyScan(type, property, mode, expected, limit, key)
+            rawStringPropertyScan(type, property, mode, expected, limit, admission)
         }
         return indexedNodes(index, mode, expected, limit)
     }
@@ -183,7 +188,7 @@ internal class MappedWebGraphBackedGraph(
         mode: StringMatchMode,
         expected: String,
         limit: Int,
-        key: StringPropertyKey
+        admission: StringPropertyAdmissionKey
     ): Sequence<T> = sequence {
         var inspected = 0
         var yielded = 0
@@ -191,7 +196,11 @@ internal class MappedWebGraphBackedGraph(
         for (nodeId in nodeTypeIndex.ids(type)) {
             inspected++
             if (!admitted && inspected > MAX_STRING_PROPERTY_ADMISSION_NODES) {
-                admitStringPropertyIndex(key)
+                synchronized(stringPropertyIndexLock) {
+                    if (admission.property !in stringPropertyIndexes) {
+                        stringPropertyAdmissions.admit(admission)
+                    }
+                }
                 admitted = true
             }
             val stringId = rawStringPropertyIndex(nodeId, type, property)
@@ -202,14 +211,6 @@ internal class MappedWebGraphBackedGraph(
                     yielded++
                     if (yielded >= limit) break
                 }
-            }
-        }
-    }
-
-    private fun admitStringPropertyIndex(key: StringPropertyKey) {
-        synchronized(stringPropertyIndexLock) {
-            if ((stringPropertyAccesses[key] ?: 0) == 0) {
-                stringPropertyAccesses[key] = 1
             }
         }
     }
@@ -316,12 +317,17 @@ internal class MappedWebGraphBackedGraph(
     internal fun clearStringPropertyIndexes() {
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
-            stringPropertyAccesses.clear()
+            stringPropertyAdmissions.clear()
         }
     }
 
-    internal fun stringPropertyIndexCount(): Int = synchronized(stringPropertyIndexLock) {
-        stringPropertyIndexes.size
+    internal fun stringPropertyIndexCount(
+        type: Class<out Node>? = null,
+        property: String? = null
+    ): Int = synchronized(stringPropertyIndexLock) {
+        stringPropertyIndexes.keys.count { key ->
+            (type == null || key.type == type) && (property == null || key.property == property)
+        }
     }
 
     private fun buildStringPropertyIndex(
@@ -421,8 +427,10 @@ internal class MappedWebGraphBackedGraph(
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val MAX_STRING_PROPERTY_INDEXES = 4
-private const val REJECTED_STRING_PROPERTY_INDEX = -1
 private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
+private const val MAX_STRING_PROPERTY_ADMISSIONS = 32
+private const val MAX_STRING_PROPERTY_ADMISSION_BYTES = 64L * 1024
+private const val STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES = 96L
 private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
@@ -447,6 +455,72 @@ private data class StringPropertyKey(
     val type: Class<out Node>,
     val property: String
 )
+
+private data class StringPropertyAdmissionKey(
+    val property: StringPropertyKey,
+    val mode: StringMatchMode,
+    val expected: String
+)
+
+private class StringPropertyAdmissions {
+    private val predicates = LinkedHashMap<StringPropertyAdmissionKey, Unit>(
+        MAX_STRING_PROPERTY_ADMISSIONS + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
+    private val unboundedProperties = mutableSetOf<StringPropertyKey>()
+    private val rejectedProperties = mutableSetOf<StringPropertyKey>()
+    private var retainedBytes = 0L
+
+    fun shouldBuild(admission: StringPropertyAdmissionKey, unbounded: Boolean): Boolean {
+        if (admission.property in rejectedProperties) return false
+        return if (unbounded) {
+            !unboundedProperties.add(admission.property)
+        } else {
+            predicates[admission] != null
+        }
+    }
+
+    fun admit(admission: StringPropertyAdmissionKey) {
+        if (admission.property in rejectedProperties || predicates[admission] != null) return
+        val bytes = estimatedStringPropertyAdmissionBytes(admission)
+        if (bytes > MAX_STRING_PROPERTY_ADMISSION_BYTES) return
+        predicates[admission] = Unit
+        retainedBytes += bytes
+        while (predicates.size > MAX_STRING_PROPERTY_ADMISSIONS ||
+            retainedBytes > MAX_STRING_PROPERTY_ADMISSION_BYTES
+        ) {
+            val entries = predicates.entries.iterator()
+            val eldest = entries.next().key
+            retainedBytes -= estimatedStringPropertyAdmissionBytes(eldest)
+            entries.remove()
+        }
+    }
+
+    fun reject(property: StringPropertyKey) {
+        clear(property)
+        rejectedProperties.add(property)
+    }
+
+    fun clear(property: StringPropertyKey) {
+        val entries = predicates.entries.iterator()
+        while (entries.hasNext()) {
+            val admission = entries.next().key
+            if (admission.property == property) {
+                retainedBytes -= estimatedStringPropertyAdmissionBytes(admission)
+                entries.remove()
+            }
+        }
+        unboundedProperties.remove(property)
+    }
+
+    fun clear() {
+        predicates.clear()
+        unboundedProperties.clear()
+        rejectedProperties.clear()
+        retainedBytes = 0L
+    }
+}
 
 private data class StringMatchKey(
     val mode: StringMatchMode,
@@ -600,6 +674,11 @@ private fun estimatedMatchingStringCacheBytes(key: StringMatchKey, strings: IntA
     STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
         STRING_HEADER_ESTIMATED_BYTES + key.expected.length.toLong() * Char.SIZE_BYTES +
         strings.size.toLong() * Int.SIZE_BYTES
+
+private fun estimatedStringPropertyAdmissionBytes(key: StringPropertyAdmissionKey): Long =
+    STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES +
+        key.property.property.length.toLong() * Char.SIZE_BYTES +
+        key.expected.length.toLong() * Char.SIZE_BYTES
 
 private fun stringMatches(actual: String, mode: StringMatchMode, expected: String): Boolean = when (mode) {
     StringMatchMode.STARTS_WITH -> actual.startsWith(expected)

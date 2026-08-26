@@ -15,6 +15,7 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.nodesByStringProperty
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
@@ -90,11 +91,14 @@ class QueryPipeline private constructor(
         val earlyLimit = computeEarlyLimit(clauses)
 
         var consumedWhereIndex = -1
-        for ((clauseIndex, clause) in clauses.withIndex()) {
+        for (clauseIndex in clauses.indices) {
+            val clause = clauses[clauseIndex]
             when (clause) {
                 is CypherClause.Match -> {
                     val pushedWhere = clauses.getOrNull(clauseIndex + 1) as? CypherClause.Where
-                    val soughtRows = pushedWhere?.let { tryElementIdSeek(clause, it, rows) }
+                    val soughtRows = pushedWhere
+                        ?.takeIf { it.condition is CypherExpr.Comparison }
+                        ?.let { tryElementIdSeek(clause, it, rows) }
                     rows = if (soughtRows != null) {
                         consumedWhereIndex = clauseIndex + 1
                         soughtRows
@@ -375,7 +379,8 @@ class QueryPipeline private constructor(
         val nodeClass = nodePattern.labels.firstOrNull()
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
-        val directStringFilter = DirectStringFilter.compile(where.condition, variable)
+        val directStringFilter = (where.condition as? CypherExpr.StringOp)
+            ?.let { DirectStringFilter.compile(it, variable) }
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
                 nodeClass,
@@ -386,18 +391,18 @@ class QueryPipeline private constructor(
                 limitCount
             )
         }
-        val directStringDisjunction = DirectStringDisjunction.compile(where.condition, variable)
-        if (ret.distinct && directStringDisjunction != null &&
-            nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()
-        ) {
-            return executeDirectStringDisjunction(
-                nodeClass,
-                variable,
-                directStringDisjunction,
-                ret.items,
-                columns,
-                limitCount
-            )
+        if (ret.distinct && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
+            val directStringDisjunction = DirectStringDisjunction.compile(where.condition, variable)
+            if (directStringDisjunction != null) {
+                return executeDirectStringDisjunction(
+                    nodeClass,
+                    variable,
+                    directStringDisjunction,
+                    ret.items,
+                    columns,
+                    limitCount
+                )
+            }
         }
 
         val rows = mutableListOf<Map<String, Any?>>()

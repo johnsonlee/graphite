@@ -25,9 +25,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
-private const val AGENT_GRAPH_COUNT = 16
-private const val AGENT_STRINGS_PER_GRAPH = 5_000
-private const val AGENT_CALL_SITES_PER_GRAPH = 2_000
+private const val BROAD_DISCOVERY_GRAPH_COUNT = 16
+private const val BROAD_DISCOVERY_STRINGS_PER_GRAPH = 5_000
+private const val BROAD_DISCOVERY_CALL_SITES_PER_GRAPH = 2_000
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -35,7 +35,7 @@ private const val AGENT_CALL_SITES_PER_GRAPH = 2_000
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Fork(1, jvmArgs = ["-Xmx4g"])
-open class AgentBroadDiscoveryMappedQueryBenchmark {
+open class BroadDiscoveryMappedQueryBenchmark {
 
     private lateinit var root: Path
     private lateinit var executor: CrossGraphCypherExecutor
@@ -43,13 +43,13 @@ open class AgentBroadDiscoveryMappedQueryBenchmark {
 
     @Setup
     fun setup() {
-        root = Files.createTempDirectory("graphite-agent-discovery")
-        val graphs = (0 until AGENT_GRAPH_COUNT).map { graphIndex ->
+        root = Files.createTempDirectory("graphite-broad-discovery")
+        val graphs = (0 until BROAD_DISCOVERY_GRAPH_COUNT).map { graphIndex ->
             val builder = DefaultGraph.Builder()
-            repeat(AGENT_STRINGS_PER_GRAPH) { nodeIndex ->
+            repeat(BROAD_DISCOVERY_STRINGS_PER_GRAPH) { nodeIndex ->
                 builder.addNode(StringConstant(NodeId(nodeIndex), "symbol_${graphIndex}_$nodeIndex"))
             }
-            repeat(AGENT_CALL_SITES_PER_GRAPH) { callSiteIndex ->
+            repeat(BROAD_DISCOVERY_CALL_SITES_PER_GRAPH) { callSiteIndex ->
                 val prefix = if (callSiteIndex % 10 == 0) "ThankYou" else "Feature"
                 val caller = MethodDescriptor(
                     TypeDescriptor("com.example.$prefix${graphIndex}Service$callSiteIndex"),
@@ -65,7 +65,7 @@ open class AgentBroadDiscoveryMappedQueryBenchmark {
                 )
                 builder.addNode(
                     CallSiteNode(
-                        NodeId(AGENT_STRINGS_PER_GRAPH + callSiteIndex),
+                        NodeId(BROAD_DISCOVERY_STRINGS_PER_GRAPH + callSiteIndex),
                         caller,
                         callee,
                         callSiteIndex,
@@ -112,7 +112,7 @@ open class AgentBroadDiscoveryMappedQueryBenchmark {
 
     private companion object {
         val HIT_QUERY = discoveryQuery("ThankYou")
-        val MISS_QUERY = discoveryQuery("MissingAgentFeature")
+        val MISS_QUERY = discoveryQuery("MissingBroadFeature")
 
         private fun discoveryQuery(keyword: String): String =
             "MATCH (n) WHERE " +

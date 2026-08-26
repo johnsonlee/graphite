@@ -45,6 +45,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -289,6 +290,18 @@ class GraphStoreTest {
                 )
                 assertEquals(0, loaded.stringPropertyIndexCount())
 
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.STARTS_WITH,
+                        "symbol-0",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
                 assertTrue(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -299,6 +312,16 @@ class GraphStoreTest {
                     ).orEmpty().none()
                 )
                 assertEquals(1, loaded.stringPropertyIndexCount())
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.STARTS_WITH,
+                        "symbol-0",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
                 assertTrue(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -315,6 +338,171 @@ class GraphStoreTest {
             dir.toFile().deleteRecursively()
         }
     }
+
+    @Test
+    fun `mapped string lookup resets predicate admission after LRU eviction`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(ResourceFileNode(NodeId(index), "path-$index", "source-$index", "format-$index"))
+                addNode(
+                    FieldNode(
+                        NodeId(300 + index),
+                        FieldDescriptor(
+                            TypeDescriptor("example.Owner$index"),
+                            "field-$index",
+                            TypeDescriptor("example.Type$index")
+                        ),
+                        false
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-eviction")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                listOf(
+                    Triple(ResourceFileNode::class.java, "path", "missing-path"),
+                    Triple(ResourceFileNode::class.java, "source", "missing-source"),
+                    Triple(ResourceFileNode::class.java, "format", "missing-format"),
+                    Triple(FieldNode::class.java, "class", "missing-class"),
+                    Triple(FieldNode::class.java, "name", "missing-name")
+                ).forEach { (type, property, expected) ->
+                    repeat(2) {
+                        assertTrue(
+                            loaded.nodesByStringProperty(
+                                type,
+                                property,
+                                StringMatchMode.CONTAINS,
+                                expected,
+                                limit = 1
+                            ).orEmpty().none()
+                        )
+                    }
+                }
+
+                assertEquals(4, loaded.stringPropertyIndexCount())
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        ResourceFileNode::class.java,
+                        "path",
+                        StringMatchMode.CONTAINS,
+                        "missing-path",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+                assertEquals(
+                    listOf("path-0"),
+                    loaded.nodesByStringProperty(
+                        ResourceFileNode::class.java,
+                        "path",
+                        StringMatchMode.STARTS_WITH,
+                        "path-0",
+                        limit = 1
+                    ).orEmpty().map { it.path }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup bounds predicate admission state`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission-bounds")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                repeat(33) { index ->
+                    assertTrue(loaded.stringConstantsMissing("short-missing-$index"))
+                }
+                assertTrue(loaded.stringConstantsMissing("short-missing-0"))
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertTrue(loaded.stringConstantsMissing("short-missing-32"))
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+                val largePredicates = List(24) { index -> "large-missing-$index-${"x".repeat(1_500)}" }
+                largePredicates.forEach { expected ->
+                    assertTrue(loaded.stringConstantsMissing(expected))
+                }
+                assertTrue(loaded.stringConstantsMissing(largePredicates.first()))
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertTrue(loaded.stringConstantsMissing(largePredicates.last()))
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+                val oversized = "oversized-${"x".repeat(32_768)}"
+                repeat(2) {
+                    assertTrue(loaded.stringConstantsMissing(oversized))
+                }
+                assertEquals(0, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `clearing mapped string indexes resets unbounded admission`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission-clear")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertNull(loaded.unboundedStringConstants("symbol"))
+                assertEquals(300, loaded.unboundedStringConstants("symbol")?.count())
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertNull(loaded.unboundedStringConstants("symbol"))
+                assertEquals(300, loaded.unboundedStringConstants("symbol")?.count())
+                assertEquals(1, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun MappedWebGraphBackedGraph.stringConstantsMissing(expected: String): Boolean =
+        nodesByStringProperty(
+            StringConstant::class.java,
+            "value",
+            StringMatchMode.CONTAINS,
+            expected,
+            limit = 1
+        ).orEmpty().none()
+
+    private fun MappedWebGraphBackedGraph.unboundedStringConstants(expected: String): Sequence<StringConstant>? =
+        nodesByStringProperty(
+            StringConstant::class.java,
+            "value",
+            StringMatchMode.CONTAINS,
+            expected
+        )
 
     private fun assertRawStringPropertyLookups(graph: Graph) {
         assertEquals(
