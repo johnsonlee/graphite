@@ -1,9 +1,14 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
@@ -18,6 +23,20 @@ private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
 private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
+private val DIRECT_STRING_NODE_PROPERTIES = listOf(
+    EnumConstant::class.java to setOf("name"),
+    LocalVariable::class.java to setOf("name"),
+    FieldNode::class.java to setOf("class", "name"),
+    CallSiteNode::class.java to setOf("caller_class", "caller_name", "callee_class", "callee_name"),
+    AnnotationNode::class.java to setOf(
+        "class",
+        "name",
+        "caller_class",
+        "caller_name",
+        "callee_class",
+        "callee_name"
+    )
+)
 
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
@@ -339,7 +358,7 @@ class QueryPipeline private constructor(
         val where = clauses[1] as? CypherClause.Where ?: return null
         val ret = clauses[2] as? CypherClause.Return ?: return null
         val limit = clauses[3] as? CypherClause.Limit ?: return null
-        if (match.optional || ret.distinct || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
+        if (match.optional || match.patterns.size != 1 || ret.items.any { containsAggregation(it.expression) }) {
             return null
         }
         if (ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }) return null
@@ -357,7 +376,7 @@ class QueryPipeline private constructor(
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
         val directStringFilter = DirectStringFilter.compile(where.condition, variable)
-        if (directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
+        if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
                 nodeClass,
                 variable,
@@ -367,8 +386,26 @@ class QueryPipeline private constructor(
                 limitCount
             )
         }
+        val directStringDisjunction = DirectStringDisjunction.compile(where.condition, variable)
+        if (ret.distinct && directStringDisjunction != null &&
+            nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()
+        ) {
+            return executeDirectStringDisjunction(
+                nodeClass,
+                variable,
+                directStringDisjunction,
+                ret.items,
+                columns,
+                limitCount
+            )
+        }
 
         val rows = mutableListOf<Map<String, Any?>>()
+        val distinctRows = if (ret.distinct) {
+            LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        } else {
+            null
+        }
         val predicateBindings = mutableMapOf<String, Any?>(variable to null)
         for (candidate in nodeCandidates(nodeClass)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
@@ -378,11 +415,36 @@ class QueryPipeline private constructor(
 
             val bindings = mutableMapOf<String, Any?>(variable to candidate)
             addProvenance(bindings, candidate)
-            rows.add(projectRow(ret.items, columns, bindings))
-            if (rows.size >= limitCount) return CypherResult(columns, rows)
+            val projected = projectRow(ret.items, columns, bindings)
+            if (distinctRows == null) {
+                rows.add(projected)
+                if (rows.size >= limitCount) return CypherResult(columns, rows)
+            } else {
+                addDistinctRow(distinctRows, projected, limitCount)
+                if (!qualified && distinctRows.size >= limitCount) {
+                    return CypherResult(columns, distinctRows.values.toList())
+                }
+            }
         }
 
-        return CypherResult(columns, rows)
+        return CypherResult(columns, distinctRows?.values?.toList() ?: rows)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun addDistinctRow(
+        rows: LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        row: Map<String, Any?>,
+        limit: Int
+    ) {
+        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+        val existing = rows[visible]
+        if (existing != null) {
+            val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+            if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+        } else if (rows.size < limit) {
+            rows[visible] = row.toMutableMap()
+        }
     }
 
     private fun executeDirectStringFilter(
@@ -413,6 +475,61 @@ class QueryPipeline private constructor(
             }
         }
         return CypherResult(columns, rows)
+    }
+
+    private fun executeDirectStringDisjunction(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int
+    ): CypherResult {
+        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        for (source in sources) {
+            for (node in directStringCandidates(source.graph, nodeClass, filter)) {
+                val candidate = nodeValue(source, node)
+                val bindings = mutableMapOf<String, Any?>(variable to candidate)
+                addProvenance(bindings, candidate)
+                addDistinctRow(rows, projectRow(items, columns, bindings), limit)
+                if (!qualified && rows.size >= limit) return CypherResult(columns, rows.values.toList())
+            }
+        }
+        return CypherResult(columns, rows.values.toList())
+    }
+
+    private fun directStringCandidates(
+        graph: Graph,
+        nodeClass: Class<out Node>,
+        disjunction: DirectStringDisjunction
+    ): Sequence<Node> = sequence {
+        for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
+            if (!nodeClass.isAssignableFrom(candidateType)) continue
+            val filters = disjunction.filters.filter { it.property in properties }
+            if (filters.isEmpty()) continue
+
+            val completeScanLimit = graph.nodeCount(candidateType)
+                ?.takeIf { it < Int.MAX_VALUE }
+                ?.toInt()
+                ?: Int.MAX_VALUE
+            val accelerated = filters.map { filter ->
+                graph.nodesByStringProperty(
+                    candidateType,
+                    filter.property,
+                    filter.mode,
+                    filter.expected,
+                    completeScanLimit
+                )
+            }
+            val candidates = if (accelerated.any { it == null }) {
+                graph.nodes(candidateType).filter(disjunction::matches)
+            } else {
+                accelerated.asSequence().filterNotNull().flatten()
+            }
+            val unique = LinkedHashMap<Int, Node>()
+            candidates.forEach { node -> unique.putIfAbsent(node.id.value, node) }
+            unique.values.sortedBy { it.id.value }.forEach { yield(it) }
+        }
     }
 
     private data class DirectStringFilter(
@@ -446,6 +563,50 @@ class QueryPipeline private constructor(
                     else -> return null
                 }
                 return DirectStringFilter(property.propertyName, mode, expected)
+            }
+        }
+    }
+
+    private data class DirectStringDisjunction(val filters: List<DirectStringFilter>) {
+        fun matches(node: Node): Boolean = filters.any { it.matches(node) }
+
+        companion object {
+            @Suppress("ReturnCount")
+            fun compile(expression: CypherExpr, variable: String): DirectStringDisjunction? {
+                val terms = flattenOr(expression)
+                if (terms.size < 2) return null
+                val filters = terms.map { guardedFilter(it, variable) ?: return null }.distinct()
+                if (filters.any { filter ->
+                        DIRECT_STRING_NODE_PROPERTIES.none { (_, properties) -> filter.property in properties }
+                    }
+                ) {
+                    return null
+                }
+                return DirectStringDisjunction(filters)
+            }
+
+            private fun flattenOr(expression: CypherExpr): List<CypherExpr> = when (expression) {
+                is CypherExpr.Or -> flattenOr(expression.left) + flattenOr(expression.right)
+                else -> listOf(expression)
+            }
+
+            @Suppress("ReturnCount")
+            private fun guardedFilter(expression: CypherExpr, variable: String): DirectStringFilter? {
+                DirectStringFilter.compile(expression, variable)?.let { return it }
+                val and = expression as? CypherExpr.And ?: return null
+                val left = DirectStringFilter.compile(and.left, variable)
+                if (left != null && isExistenceGuard(and.right, variable, left.property)) return left
+                val right = DirectStringFilter.compile(and.right, variable)
+                if (right != null && isExistenceGuard(and.left, variable, right.property)) return right
+                return null
+            }
+
+            @Suppress("ReturnCount")
+            private fun isExistenceGuard(expression: CypherExpr, variable: String, property: String): Boolean {
+                val call = expression as? CypherExpr.FunctionCall ?: return false
+                if (!call.name.equals("exists", ignoreCase = true) || call.distinct) return false
+                val argument = call.args.singleOrNull() as? CypherExpr.Property ?: return false
+                return argument.expression == CypherExpr.Variable(variable) && argument.propertyName == property
             }
         }
     }

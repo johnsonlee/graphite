@@ -1,16 +1,20 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
@@ -166,6 +170,75 @@ class CrossGraphCypherExecutorTest {
         )
         assertEquals(1, union.rows.size)
         assertEquals(listOf("billing", "orders"), graphIds(union.rows.single()))
+    }
+
+    @Test
+    fun `agent discovery query streams distinct rows and merges provenance`() {
+        val caller = MethodDescriptor(
+            TypeDescriptor("com.example.ThankYouService"),
+            "create",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("com.example.Repository"),
+            "save",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val executor = executor(
+            "orders" to graph(CallSiteNode(NodeId(1), caller, callee, 10, null, emptyList())),
+            "billing" to graph(CallSiteNode(NodeId(1), caller, callee, 20, null, emptyList()))
+        )
+
+        val result = executor.execute(
+            """
+            MATCH (n)
+            WHERE (exists(n.class) AND n.class CONTAINS 'ThankYou')
+               OR (exists(n.name) AND n.name CONTAINS 'ThankYou')
+               OR (exists(n.caller_class) AND n.caller_class CONTAINS 'ThankYou')
+               OR (exists(n.caller_name) AND n.caller_name CONTAINS 'ThankYou')
+               OR (exists(n.callee_class) AND n.callee_class CONTAINS 'ThankYou')
+               OR (exists(n.callee_name) AND n.callee_name CONTAINS 'ThankYou')
+            RETURN DISTINCT n.class AS class, n.name AS name,
+                n.caller_class AS caller, n.caller_name AS callerMethod,
+                n.callee_class AS callee, n.callee_name AS calleeMethod
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertEquals(1, result.rows.size)
+        assertEquals("com.example.ThankYouService", result.rows.single()["caller"])
+        assertEquals("create", result.rows.single()["callerMethod"])
+        assertEquals("com.example.Repository", result.rows.single()["callee"])
+        assertEquals("save", result.rows.single()["calleeMethod"])
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `agent discovery query preserves dynamic annotation properties`() {
+        val annotation = AnnotationNode(
+            NodeId(1),
+            "com.example.Feature",
+            "com.example.Owner",
+            "create",
+            mapOf("caller_class" to "com.example.ThankYouDynamicOwner")
+        )
+        val executor = executor("orders" to graph(annotation))
+
+        val result = executor.execute(
+            "MATCH (n) WHERE " +
+                "(exists(n.class) AND n.class CONTAINS 'ThankYou') OR " +
+                "(exists(n.name) AND n.name CONTAINS 'ThankYou') OR " +
+                "(exists(n.caller_class) AND n.caller_class CONTAINS 'ThankYou') OR " +
+                "(exists(n.caller_name) AND n.caller_name CONTAINS 'ThankYou') OR " +
+                "(exists(n.callee_class) AND n.callee_class CONTAINS 'ThankYou') OR " +
+                "(exists(n.callee_name) AND n.callee_name CONTAINS 'ThankYou') " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("com.example.ThankYouDynamicOwner"), result.rows.map { it["caller"] })
+        assertEquals(listOf("orders"), graphIds(result.rows.single()))
     }
 
     @Test

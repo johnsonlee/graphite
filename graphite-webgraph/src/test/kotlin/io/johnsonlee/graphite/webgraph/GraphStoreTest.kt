@@ -108,6 +108,7 @@ class GraphStoreTest {
             try {
                 val mapped = loaded as MappedWebGraphBackedGraph
                 assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
+                assertAgentDiscoveryQuery(loaded)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -199,6 +200,31 @@ class GraphStoreTest {
             assertEquals(listOf("feature-alpha"), early)
         }
         assertEquals(0, graph.stringPropertyIndexCount())
+    }
+
+    private fun assertAgentDiscoveryQuery(graph: Graph) {
+        val rows = graph.query(
+            """
+            MATCH (n)
+            WHERE (exists(n.class) AND n.class CONTAINS 'Owner')
+               OR (exists(n.name) AND n.name CONTAINS 'Owner')
+               OR (exists(n.caller_class) AND n.caller_class CONTAINS 'Owner')
+               OR (exists(n.caller_name) AND n.caller_name CONTAINS 'Owner')
+               OR (exists(n.callee_class) AND n.callee_class CONTAINS 'Owner')
+               OR (exists(n.callee_name) AND n.callee_name CONTAINS 'Owner')
+            RETURN DISTINCT n.class AS class, n.name AS name,
+                n.caller_class AS caller, n.caller_name AS callerMethod,
+                n.callee_class AS callee, n.callee_name AS calleeMethod
+            LIMIT 120
+            """.trimIndent()
+        ).rows
+
+        assertEquals(2, rows.size)
+        assertEquals("token", rows.single { it["class"] == "example.Owner" }["name"])
+        val callSite = rows.single { it["caller"] == "example.Owner" }
+        assertEquals("callerFeature", callSite["callerMethod"])
+        assertEquals("example.Target", callSite["callee"])
+        assertEquals("billingFeature", callSite["calleeMethod"])
     }
 
     @Test

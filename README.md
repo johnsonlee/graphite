@@ -260,6 +260,10 @@ For agent-driven discovery, probe `/openapi.json` first. It describes the full
 root-all and graph-scoped REST surface, including the two explicit modes of
 `/api/cypher/graphs`.
 
+A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
+and then calling `/api/graphs/{graphId}/cypher` for each entry performs
+client-side fan-out and repeats HTTP and Cypher parsing overhead.
+
 For multi-graph startup, `--topology` accepts one Cypher file (or a directory
 of `.cypher` files). The configured `--graph` entries are the catalog: Graphite
 loads them once, runs the topology query over those loaded graph instances,

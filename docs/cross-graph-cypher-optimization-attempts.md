@@ -387,6 +387,86 @@ trigram budget exhaustion returns the same matches through dictionary scan.
 cold and amortized performance beyond Attempt 006, and replaces cardinality-only
 guards with explicit posting and byte budgets plus result-preserving fallback.
 
+### 2026-08-27 - Attempt 009: Agent broad-discovery query
+
+**Production evidence:** an agent using Graphite 2.2.2 began feature discovery
+with this query shape over the aggregate server:
+
+```cypher
+MATCH (n)
+WHERE (exists(n.class) AND n.class CONTAINS 'ThankYou')
+   OR (exists(n.name) AND n.name CONTAINS 'ThankYou')
+   OR (exists(n.caller_class) AND n.caller_class CONTAINS 'ThankYou')
+   OR (exists(n.caller_name) AND n.caller_name CONTAINS 'ThankYou')
+   OR (exists(n.callee_class) AND n.callee_class CONTAINS 'ThankYou')
+   OR (exists(n.callee_name) AND n.callee_name CONTAINS 'ThankYou')
+RETURN DISTINCT n.class AS class, n.name AS name,
+    n.caller_class AS caller, n.caller_name AS callerMethod,
+    n.callee_class AS callee, n.callee_name AS calleeMethod
+LIMIT 120
+```
+
+The agent also enumerated `/api/graphs` and called each scoped Cypher route,
+which is client-side fan-out. The aggregate server already exposes
+`/api/cypher` for one cross-graph query. `/api/graphs` itself reads cached graph
+descriptors, so its timeout while these searches were running is consistent
+with server saturation rather than graph-list computation.
+
+**Root cause:** `RETURN DISTINCT` excluded the filtered-node fast path, while
+the guarded six-way `OR` could not compile as a direct string filter. The
+generic pipeline therefore materialized every unlabeled node and binding,
+interpreted the full expression per node, projected every match, deduplicated
+the projected rows, and only then applied `LIMIT 120`.
+
+**Design:** filtered single-node `DISTINCT ... LIMIT` queries now stream rows
+and retain at most the requested distinct results. Qualified cross-graph
+execution continues scanning after the limit so later duplicate rows still
+contribute complete graph provenance.
+
+For a disjunction of direct `STARTS WITH`, `ENDS WITH`, or `CONTAINS`
+predicates, with an optional matching `exists(property)` guard, the planner
+narrows an unlabeled scan to node types that can expose those properties. It
+uses each graph's storage-aware string lookup, unions matching node IDs, and
+materializes matching nodes only. Annotation nodes retain generic evaluation
+because their dynamic value map can expose the same property names. Any
+unsupported property, mismatched guard, aggregation, ordering, or more complex
+expression stays on the generic evaluator.
+
+**Benchmark fixture:** 16 persisted mapped graphs, each with 5,000 string
+constants and 2,000 call sites (112,000 nodes total). Every tenth call site has
+a unique `ThankYou` caller class. The benchmark uses the production query
+above and checks all 120 returned rows. The `main` comparison uses an identical
+fixture in a separate clone at `e4d1c6a`.
+
+```shell
+./gradlew :webgraph:jmh \
+  -Pjmh.filter='AgentBroadDiscoveryMappedQueryBenchmark.*' \
+  --no-daemon
+
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  '.*AgentBroadDiscoveryMappedQueryBenchmark.coldBroadDiscoveryAcrossAllMappedGraphs' \
+  -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
+```
+
+| Agent discovery benchmark | `main` | Attempt 009 | Speedup |
+|---------------------------|-------:|------------:|--------:|
+| repeated query | `59.394 ms/op` | `3.359 ms/op` | `17.68x` |
+| cold hit after index reset | `59.394 ms/op` | `11.984 ms/op` | `4.96x` |
+| cold miss after index reset | not measured | `9.162 ms/op` | n/a |
+
+The profiler run allocates `137.930 MB/op` on `main` and `25.202 MB/op` on the
+cold branch path, an 81.7% reduction. The corresponding profiler times are
+`60.139 ms/op` and `11.637 ms/op`.
+
+**Limit:** this is query planning and allocation control, not a hard CPU
+budget. Arbitrary Cypher outside the recognized shape can still perform a
+large scan. Request deadlines, cooperative cancellation, and a Cypher
+concurrency bulkhead remain separate availability work.
+
+**Conclusion:** retained. This attempt covers the reported 2.2.2 query shape
+and removes the main deserialization and intermediate-row costs without
+changing `DISTINCT`, `LIMIT`, or provenance semantics.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
@@ -403,19 +483,19 @@ used the same machine and dependency caches.
 
 | `CypherBenchmark` | `main` | Branch | Change |
 |-------------------|-------:|-------:|-------:|
-| `aggregationCountGroupBy` | `35.208 us/op` | `34.609 us/op` | `-1.7%` |
-| `countStar` | `2.238 us/op` | `2.268 us/op` | `+1.3%` |
-| `functionCalls` | `24.702 us/op` | `24.269 us/op` | `-1.8%` |
-| `nodeMatchWithWhere` | `57.774 us/op` | `57.605 us/op` | `-0.3%` |
-| `regexFilter` | `23.097 us/op` | `22.926 us/op` | `-0.7%` |
-| `returnDistinct` | `100.328 us/op` | `92.856 us/op` | `-7.4%` |
-| `simpleNodeMatch` | `19.969 us/op` | `19.645 us/op` | `-1.6%` |
-| `singleHopRelationship` | `30.402 us/op` | `29.201 us/op` | `-4.0%` |
-| `variableLengthPath` | `26.319 us/op` | `25.500 us/op` | `-3.1%` |
-| `withPipeline` | `75.915 us/op` | `76.749 us/op` | `+1.1%` |
+| `aggregationCountGroupBy` | `34.778 us/op` | `34.363 us/op` | `-1.2%` |
+| `countStar` | `2.294 us/op` | `2.349 us/op` | `+2.4%` |
+| `functionCalls` | `24.524 us/op` | `24.989 us/op` | `+1.9%` |
+| `nodeMatchWithWhere` | `58.112 us/op` | `57.659 us/op` | `-0.8%` |
+| `regexFilter` | `23.525 us/op` | `23.821 us/op` | `+1.3%` |
+| `returnDistinct` | `101.836 us/op` | `102.761 us/op` | `+0.9%` |
+| `simpleNodeMatch` | `19.313 us/op` | `20.098 us/op` | `+4.1%` |
+| `singleHopRelationship` | `29.468 us/op` | `30.438 us/op` | `+3.3%` |
+| `variableLengthPath` | `25.370 us/op` | `26.370 us/op` | `+3.9%` |
+| `withPipeline` | `75.281 us/op` | `75.869 us/op` | `+0.8%` |
 
-The two small increases have overlapping confidence intervals. There is no
-measured method-level regression.
+All confidence intervals overlap. There is no measured method-level
+regression.
 
 ### Large mapped graph regression
 
@@ -430,17 +510,17 @@ nodes. Values are `ms/op`.
 
 | `EsQueryBenchmark` | `main` | Branch |
 |--------------------|-------:|-------:|
-| `mapped_countStar` | `0.002` | `0.002` |
-| `mapped_intConstantFilter` | `0.300` | `0.295` |
-| `mapped_regexFilter` | `0.076` | `0.078` |
-| `mapped_returnDistinct` | `0.095` | `0.093` |
-| `mapped_simpleNodeMatch` | `0.067` | `0.068` |
-| `mapped_singleHopRelationship` | `0.151` | `0.152` |
+| `mapped_countStar` | `0.002` | `0.003` |
+| `mapped_intConstantFilter` | `0.300` | `0.302` |
+| `mapped_regexFilter` | `0.076` | `0.077` |
+| `mapped_returnDistinct` | `0.095` | `0.100` |
+| `mapped_simpleNodeMatch` | `0.067` | `0.069` |
+| `mapped_singleHopRelationship` | `0.151` | `0.149` |
 
-`mapped_returnDistinct` was repeated with five warmups and ten measurements
-after an initial noisy result; the repeated branch result is `0.093 ms/op`
-versus `0.095 ms/op` on `main`. The remaining differences are at most
-`0.002 ms/op`; there is no measured large-corpus query regression.
+`mapped_returnDistinct` was repeated with five warmups and ten measurements;
+the repeated branch result is `0.093 ms/op` versus `0.095 ms/op` on `main`.
+The remaining absolute differences are at most `0.002 ms/op`; there is no
+measured large-corpus query regression.
 
 ### End-to-end regression
 
@@ -452,7 +532,7 @@ versus `0.095 ms/op` on `main`. The remaining differences are at most
 
 `GraphEndToEndBenchmark` covers Android JAR analysis, graph build, save, mapped
 load, and Cypher count query. The single-shot result was `30,182.415 ms/op` on
-`main` and `24,435.361 ms/op` on the branch. This benchmark is intentionally
+`main` and `26,668.587 ms/op` on the branch. This benchmark is intentionally
 coarse and noisy, but it shows no end-to-end regression. The optimization does
 not change graph building or the persisted format.
 
@@ -468,14 +548,14 @@ This covers every module's tests, baseline-aware detekt task, and Kover
 verification. Direct `detektMain` currently fails on both `main` and this branch
 with the same pre-existing totals: 17 Cypher findings and 11 WebGraph findings;
 that task does not apply the repository baselines used by `check`. No new
-finding remains in a changed code path. New complexity and return-count
-findings were resolved or narrowly suppressed following existing project
-practice.
+finding remains in a changed code path. New behavior tests cover the exact
+six-property agent query, cross-graph provenance merging, dynamic annotation
+properties, generic fallback, and streaming `DISTINCT ... LIMIT` execution.
 
 The first PR workflow run exposed coverage below the repository's separate 98%
 per-module threshold even though `check` passed locally before coverage was
 printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, and the unsupported `DataInput.readLine` contract. Final application
-line coverage is `98.0043%` for Cypher and `98.1162%` for WebGraph; the complete
+line coverage is `98.04%` for Cypher and `98.1162%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.
