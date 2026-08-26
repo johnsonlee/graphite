@@ -450,9 +450,9 @@ java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
 
 | Broad discovery benchmark | `main` | Attempt 009 | Speedup |
 |---------------------------|-------:|------------:|--------:|
-| repeated query | `59.394 ms/op` | `3.230 ms/op` | `18.39x` |
-| cold hit after index reset | `59.394 ms/op` | `11.373 ms/op` | `5.22x` |
-| cold miss after index reset | not measured | `8.512 ms/op` | n/a |
+| repeated query | `59.394 ms/op` | `2.884 ms/op` | `20.59x` |
+| cold hit after index reset | `59.394 ms/op` | `11.208 ms/op` | `5.30x` |
+| cold miss after index reset | not measured | `8.368 ms/op` | n/a |
 
 The profiler run allocates `137.930 MB/op` on `main` and `25.203 MB/op` on the
 cold branch path, an 81.7% reduction. The corresponding profiler times are
@@ -510,7 +510,7 @@ java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
 | Admission control | `main` | Attempt 010 |
 |-------------------|-------:|------------:|
 | early hit after full miss | `0.555 ms/op` | `0.390 ms/op` |
-| early hit after same-predicate large-limit scan | `0.484 ms/op` | `0.465 ms/op` |
+| early hit after same-predicate large-limit scan | `0.518 ms/op` | `0.463 ms/op` |
 | early hit after LRU workload | `0.189 ms/op` | `0.263 ms/op` |
 
 All controls are at `main` latency and eliminate the review reproductions'
@@ -557,12 +557,12 @@ clear hook is a no-op there because `main` has no mapped string index.
 
 | Android broad discovery | `main` | Branch | Speedup |
 |-------------------------|-------:|-------:|--------:|
-| cold query | `7,426.015 ms/op` | `217.354 ms/op` | `34.17x` |
-| repeated query | `7,433.167 ms/op` | `231.419 ms/op` | `32.12x` |
+| cold query | `7,426.015 ms/op` | `202.359 ms/op` | `36.70x` |
+| repeated query | `7,433.167 ms/op` | `199.474 ms/op` | `37.26x` |
 
-**Conclusion:** retained. The production query shape improves by 32-34x on
+**Conclusion:** retained. The production query shape improves by 36-37x on
 the real Android-scale corpus. This replaces the ES query table as the primary
-large-graph performance evidence. The remaining `217-231 ms` cost is a real
+large-graph performance evidence. The remaining `199-202 ms` cost is a real
 raw mapped-field scan across 5.9 million nodes, so request-level CPU budgets and
 concurrency isolation remain valid follow-up work.
 
@@ -574,20 +574,49 @@ first result. A `DISTINCT ... LIMIT 1` reproduction with 1,000 matching nodes
 therefore consumed all 1,000 candidates. This retained `O(matches)` nodes and
 paid `O(matches log matches)` sorting cost before `LIMIT` could stop execution.
 
-**Design:** each storage lookup already yields nodes in ascending node-ID order.
-The query pipeline now performs a lazy k-way merge across the property streams,
-retaining one head per stream and deduplicating equal node IDs as it advances.
-Memory is `O(property filters)`, and a downstream limit can suspend candidate
-production immediately. The lookup capability documents the ordering contract.
+**Initial design:** assume each storage lookup yields nodes in ascending node-ID
+order, then perform a lazy k-way merge across the property streams, retaining
+one head per stream and deduplicating equal node IDs as it advances.
 
-A regression test uses two matching property streams over 1,000 nodes and
-asserts that `LIMIT 1` consumes exactly two candidates, one head from each
-stream. The Android results in Attempt 011 include this change; compared with
-the eager-union branch, cold time falls from `393.236` to `190.103 ms/op` and
-repeated time falls from `361.439` to `217.750 ms/op`.
+A regression test using hand-sorted streams reduced a `LIMIT 1` reproduction
+from 1,000 consumed candidates to two. The Android run also improved, but the
+test did not represent persisted mapped ordering.
 
-**Conclusion:** retained. The fast path now streams candidates through
-`DISTINCT` and `LIMIT` instead of collecting and sorting every match first.
+**Conclusion:** rejected and replaced by Attempt 013. Existing mapped type
+indexes preserve source hash iteration order, including graphs already written
+by 2.2.2. The k-way merge could therefore emit the same node more than once.
+
+### 2026-08-27 - Attempt 013: Unordered mapped candidate deduplication
+
+**Review findings:** a real `save -> loadMapped` fixture returned type IDs in
+hash order rather than numeric order. Interleaved property streams could make
+the k-way merge emit IDs such as `[4, 6, 4]`; with `RETURN DISTINCT n.id,
+rand()`, the duplicate node remains a distinct projected row and displaces a
+different match. The large-limit admission JMH also used `path-` in setup and
+`path-0` in measurement, so it changed both predicate and limit and could not
+prove limit-specific admission.
+
+**Design:** candidate streams are now consumed lazily in storage order and
+deduplicated with a primitive node-ID set. No ordering contract is imposed on
+existing persisted graphs. The path retains only IDs actually consumed before
+the downstream distinct limit is met; it never retains matched `Node` objects
+or sorts the complete match set. `LIMIT 1` now consumes one candidate.
+
+A mapped integration test persists an intentionally hash-ordered call-site
+fixture, verifies that ID 90 precedes ID 4 in the stored type index, and runs
+the `DISTINCT n.id, rand()` reproduction. The result is exactly IDs `[4, 90]`
+with no duplicate. A separate unit test supplies explicitly unordered streams
+and verifies lazy cross-stream ID deduplication.
+
+The corrected admission benchmark uses `CONTAINS 'path-0'` for both setup and
+measurement, changing only `LIMIT 50000` to `LIMIT 1`; it asserts the index is
+absent after both stages. It measures `0.518 +/- 0.392 ms/op` on `main` and
+`0.463 +/- 0.356 ms/op` on the branch. The latest broad-discovery results are
+`2.884 ms/op` repeated on the 16-graph fixture and `202.359/199.474 ms/op`
+cold/repeated on Android.
+
+**Conclusion:** retained. The query remains lazy for limits, is correct for old
+unordered mapped graphs, and keeps the 36-37x Android-scale speedup.
 
 ## PR verification summary
 
@@ -679,5 +708,5 @@ printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0944%` for Cypher, and `98.0072%` for WebGraph; the complete
+for Core, `98.0873%` for Cypher, and `98.0072%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.

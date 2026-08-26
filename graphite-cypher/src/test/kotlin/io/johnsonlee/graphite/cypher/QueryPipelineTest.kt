@@ -556,11 +556,11 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(2, consumed)
+        assertEquals(1, consumed)
     }
 
     @Test
-    fun `filtered distinct string disjunction merges candidates in node order`() {
+    fun `filtered distinct string disjunction deduplicates unordered candidate streams`() {
         val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
         val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
         val backing = DefaultGraph.Builder().apply {
@@ -576,10 +576,10 @@ class QueryPipelineTest {
                 expected: String,
                 limit: Int
             ): Sequence<T> {
-                val nodes = backing.nodes(type).toList()
+                val nodes = backing.nodes(type).associateBy { it.id.value }
                 return when (property) {
-                    "caller_class" -> sequenceOf(nodes[0], nodes[2])
-                    "callee_class" -> sequenceOf(nodes[0], nodes[1], nodes[2])
+                    "caller_class" -> sequenceOf(nodes.getValue(1))
+                    "callee_class" -> sequenceOf(nodes.getValue(2), nodes.getValue(1), nodes.getValue(0))
                     else -> emptySequence()
                 }
             }
@@ -591,7 +591,7 @@ class QueryPipelineTest {
                 "RETURN DISTINCT n.id AS id LIMIT 4"
         )
 
-        assertEquals(listOf(0, 1, 2), result.rows.map { it["id"] })
+        assertEquals(listOf(1, 2, 0), result.rows.map { it["id"] })
     }
 
     @Test

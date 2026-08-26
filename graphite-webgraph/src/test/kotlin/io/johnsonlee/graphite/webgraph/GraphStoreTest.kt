@@ -109,7 +109,7 @@ class GraphStoreTest {
             try {
                 val mapped = loaded as MappedWebGraphBackedGraph
                 assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
-                assertAgentDiscoveryQuery(loaded)
+                assertBroadDiscoveryQuery(loaded)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -186,6 +186,55 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `mapped broad disjunction deduplicates unordered property streams`() {
+        val nodeIds = listOf(1, 30, 70, 2, 90, 4, 5, 50, 40, 3)
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            nodeIds.forEach { nodeId ->
+                val callerClass = if (nodeId == 4) "example.TargetCaller" else "example.OtherCaller$nodeId"
+                val calleeClass = if (nodeId == 90 || nodeId == 4) {
+                    "example.TargetCallee"
+                } else {
+                    "example.OtherCallee$nodeId"
+                }
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor(callerClass), "call$nodeId", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor(calleeClass), "load$nodeId", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-unordered-string-candidates")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val storedOrder = loaded.nodes(CallSiteNode::class.java).map { it.id.value }.toList()
+                assertTrue(storedOrder.indexOf(90) < storedOrder.indexOf(4), "Mapped fixture must be unordered")
+
+                val rows = loaded.query(
+                    "MATCH (n:CallSiteNode) WHERE " +
+                        "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                        "RETURN DISTINCT n.id AS id, rand() AS nonce LIMIT 3"
+                ).rows
+                val resultIds = rows.map { it["id"] }
+
+                assertEquals(listOf(4, 90), resultIds)
+                assertEquals(resultIds.size, resultIds.distinct().size)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
     private fun assertEarlyLimitedLookupsDoNotBuildIndex(graph: MappedWebGraphBackedGraph) {
         listOf(
             StringMatchMode.CONTAINS to "alpha",
@@ -203,7 +252,7 @@ class GraphStoreTest {
         assertEquals(0, graph.stringPropertyIndexCount())
     }
 
-    private fun assertAgentDiscoveryQuery(graph: Graph) {
+    private fun assertBroadDiscoveryQuery(graph: Graph) {
         val rows = graph.query(
             """
             MATCH (n)

@@ -16,6 +16,7 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
@@ -529,31 +530,20 @@ class QueryPipeline private constructor(
             val candidates = if (accelerated.any { it == null }) {
                 graph.nodes(candidateType).filter(disjunction::matches)
             } else {
-                mergeSortedNodes(accelerated.filterNotNull())
+                uniqueNodes(accelerated.filterNotNull())
             }
             for (node in candidates) yield(node)
         }
     }
 
-    private fun <T : Node> mergeSortedNodes(sequences: List<Sequence<T>>): Sequence<Node> = sequence {
-        val iterators = sequences.map { it.iterator() }
-        val heads = iterators.map { iterator -> iterator.nextOrNull() }.toMutableList()
-        while (true) {
-            var next: Node? = null
-            for (head in heads) {
-                if (head != null && (next == null || head.id.value < next.id.value)) next = head
-            }
-            next ?: break
-            yield(next)
-            heads.indices.forEach { index ->
-                while (heads[index]?.id == next.id) {
-                    heads[index] = iterators[index].nextOrNull()
-                }
+    private fun <T : Node> uniqueNodes(sequences: List<Sequence<T>>): Sequence<Node> = sequence {
+        val seen = IntOpenHashSet()
+        for (nodes in sequences) {
+            for (node in nodes) {
+                if (seen.add(node.id.value)) yield(node)
             }
         }
     }
-
-    private fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
 
     private data class DirectStringFilter(
         val property: String,
