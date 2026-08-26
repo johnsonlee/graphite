@@ -123,24 +123,95 @@ internal class MappedWebGraphBackedGraph(
         type: Class<T>,
         property: String,
         mode: StringMatchMode,
-        expected: String
+        expected: String,
+        limit: Int
     ): Sequence<T>? {
         if (!supportsRawStringProperty(type, property)) return null
+        if (limit <= 0) return emptySequence()
         val key = StringPropertyKey(type, property)
+        synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes[key]
+        }?.let { index ->
+            return indexedNodes(index, mode, expected, limit)
+        }
+
+        val previousAccesses = synchronized(stringPropertyIndexLock) {
+            stringPropertyAccesses[key] ?: 0
+        }
+        if (limit != Int.MAX_VALUE && previousAccesses <= 0) {
+            return rawStringPropertyScan(type, property, mode, expected, limit, key)
+        }
+
         val index = synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes[key] ?: run {
-                val accesses = (stringPropertyAccesses[key] ?: 0) + 1
-                stringPropertyAccesses[key] = accesses
-                trimStringPropertyAccesses()
-                if (accesses < MIN_STRING_PROPERTY_INDEX_ACCESSES) {
+                val accesses = stringPropertyAccesses[key] ?: 0
+                if (accesses == REJECTED_STRING_PROPERTY_INDEX) return@synchronized null
+                if (accesses == 0) {
+                    stringPropertyAccesses[key] = 1
                     null
                 } else {
-                    buildStringPropertyIndex(type, property).also { stringPropertyIndexes[key] = it }
+                    buildStringPropertyIndex(type, property)?.also {
+                        stringPropertyIndexes[key] = it
+                    } ?: run {
+                        stringPropertyAccesses[key] = REJECTED_STRING_PROPERTY_INDEX
+                        null
+                    }
                 }
             }
-        } ?: return null
-        return index.matchingNodeIds(mode, expected)
-            .mapNotNull { node(NodeId(it)) as? T }
+        } ?: return if (limit == Int.MAX_VALUE) {
+            null
+        } else {
+            rawStringPropertyScan(type, property, mode, expected, limit, key)
+        }
+        return indexedNodes(index, mode, expected, limit)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Node> indexedNodes(
+        index: MappedStringPropertyIndex,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T> = index.matchingNodeIds(mode, expected)
+        .take(limit)
+        .mapNotNull { node(NodeId(it)) as? T }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Node> rawStringPropertyScan(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int,
+        key: StringPropertyKey
+    ): Sequence<T> = sequence {
+        var inspected = 0
+        var yielded = 0
+        var admitted = false
+        for (nodeId in nodeTypeIndex.ids(type)) {
+            inspected++
+            if (!admitted && inspected > MAX_STRING_PROPERTY_ADMISSION_NODES) {
+                admitStringPropertyIndex(key)
+                admitted = true
+            }
+            val stringId = rawStringPropertyIndex(nodeId, type, property)
+            if (stringId != null && stringMatches(stringTable.get(stringId), mode, expected)) {
+                val matchedNode = node(NodeId(nodeId)) as? T
+                if (matchedNode != null) {
+                    yield(matchedNode)
+                    yielded++
+                    if (yielded >= limit) break
+                }
+            }
+        }
+    }
+
+    private fun admitStringPropertyIndex(key: StringPropertyKey) {
+        synchronized(stringPropertyIndexLock) {
+            if ((stringPropertyAccesses[key] ?: 0) == 0) {
+                stringPropertyAccesses[key] = 1
+            }
+        }
     }
 
     override fun edgeCount(): Long = edgeCount
@@ -249,34 +320,39 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    private fun trimStringPropertyAccesses() {
-        while (stringPropertyAccesses.size > MAX_STRING_PROPERTY_ACCESS_COUNTS) {
-            val oldest = stringPropertyAccesses.entries.iterator()
-            oldest.next()
-            oldest.remove()
-        }
+    internal fun stringPropertyIndexCount(): Int = synchronized(stringPropertyIndexLock) {
+        stringPropertyIndexes.size
     }
 
     private fun buildStringPropertyIndex(
         type: Class<out Node>,
         property: String
-    ): MappedStringPropertyIndex {
-        val capacity = nodeTypeIndex.count(type).toInt()
+    ): MappedStringPropertyIndex? {
+        val nodeCount = nodeTypeIndex.count(type)
+        if (estimatedStringPropertyIndexBytes(nodeCount) > MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES) return null
+        val capacity = nodeCount.toInt()
         val nodeIds = IntArray(capacity)
         val stringIds = IntArray(capacity)
-        val uniqueStringIds = HashSet<Int>()
         var size = 0
         for (nodeId in nodeTypeIndex.ids(type)) {
             val stringId = rawStringPropertyIndex(nodeId, type, property) ?: continue
             nodeIds[size] = nodeId
             stringIds[size] = stringId
-            uniqueStringIds.add(stringId)
             size++
         }
+        val indexedNodeIds = if (size == capacity) nodeIds else nodeIds.copyOf(size)
+        val indexedStringIds = if (size == capacity) stringIds else stringIds.copyOf(size)
+        val uniqueStringIds = indexedStringIds.copyOf().apply(java.util.Arrays::sort)
+        var uniqueSize = 0
+        for (stringId in uniqueStringIds) {
+            if (uniqueSize == 0 || uniqueStringIds[uniqueSize - 1] != stringId) {
+                uniqueStringIds[uniqueSize++] = stringId
+            }
+        }
         return MappedStringPropertyIndex(
-            nodeIds.copyOf(size),
-            stringIds.copyOf(size),
-            uniqueStringIds.toIntArray().sortedArray(),
+            indexedNodeIds,
+            indexedStringIds,
+            uniqueStringIds.copyOf(uniqueSize),
             stringTable
         )
     }
@@ -345,14 +421,27 @@ internal class MappedWebGraphBackedGraph(
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val MAX_STRING_PROPERTY_INDEXES = 4
-private const val MAX_STRING_PROPERTY_ACCESS_COUNTS = 16
-private const val MIN_STRING_PROPERTY_INDEX_ACCESSES = 2
+private const val REJECTED_STRING_PROPERTY_INDEX = -1
+private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
+private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
+private const val STRING_PROPERTY_INDEX_ARRAYS = 3
+private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
 private const val MAX_STRING_MATCH_CACHE_ENTRIES = 32
-private const val MAX_CACHED_MATCHING_STRINGS = 100_000
+private const val MAX_STRING_MATCH_CACHE_BYTES = 2L * 1024 * 1024
+private const val STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 64L
+private const val STRING_HEADER_ESTIMATED_BYTES = 24L
+private const val MAX_TRIGRAM_INDEX_RETAINED_BYTES = 16L * 1024 * 1024
+private const val MAX_TRIGRAM_POSTINGS = 1_000_000
 private const val MAX_TRIGRAM_INDEX_STRINGS = 500_000
+private const val TRIGRAM_ENTRY_ESTIMATED_BYTES = 64L
+private const val TRIGRAM_POSTING_ESTIMATED_BYTES = 12L
 private const val MIN_TRIGRAM_LENGTH = 3
 private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
 private const val STRING_HASH_FACTOR = 31
+
+private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
+    STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
+        nodeCount * STRING_PROPERTY_INDEX_ARRAYS * Int.SIZE_BYTES
 
 private data class StringPropertyKey(
     val type: Class<out Node>,
@@ -364,21 +453,23 @@ private data class StringMatchKey(
     val expected: String
 )
 
-private class MappedStringPropertyIndex(
+internal class MappedStringPropertyIndex(
     private val nodeIds: IntArray,
     private val stringIds: IntArray,
     private val uniqueStringIds: IntArray,
-    private val stringTable: StringTable
+    private val stringTable: StringTable,
+    private val maxTrigramPostings: Int = MAX_TRIGRAM_POSTINGS,
+    private val maxTrigramBytes: Long = MAX_TRIGRAM_INDEX_RETAINED_BYTES,
+    private val maxMatchingStringCacheEntries: Int = MAX_STRING_MATCH_CACHE_ENTRIES,
+    private val maxMatchingStringCacheBytes: Long = MAX_STRING_MATCH_CACHE_BYTES
 ) {
     private val trigramIndex: Int2ObjectOpenHashMap<IntArray>? by lazy(::buildTrigramIndex)
-    private val matchingStrings = object : LinkedHashMap<StringMatchKey, IntArray>(
+    private val matchingStrings = LinkedHashMap<StringMatchKey, IntArray>(
         MAX_STRING_MATCH_CACHE_ENTRIES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
         true
-    ) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<StringMatchKey, IntArray>?): Boolean =
-            size > MAX_STRING_MATCH_CACHE_ENTRIES
-    }
+    )
+    private var matchingStringCacheBytes = 0L
 
     fun matchingNodeIds(mode: StringMatchMode, expected: String): Sequence<Int> {
         val matchedStrings = matchingStringIds(mode, expected)
@@ -398,9 +489,27 @@ private class MappedStringPropertyIndex(
                 matchingContainsStringIds(expected)
             else -> scanMatchingStringIds(mode, expected)
         }
-        if (result.size <= MAX_CACHED_MATCHING_STRINGS) matchingStrings[key] = result
+        cacheMatchingStrings(key, result)
         return result
     }
+
+    private fun cacheMatchingStrings(key: StringMatchKey, result: IntArray) {
+        val resultBytes = estimatedMatchingStringCacheBytes(key, result)
+        if (resultBytes > maxMatchingStringCacheBytes) return
+        matchingStrings[key] = result
+        matchingStringCacheBytes += resultBytes
+        while (matchingStrings.size > maxMatchingStringCacheEntries ||
+            matchingStringCacheBytes > maxMatchingStringCacheBytes
+        ) {
+            val entries = matchingStrings.entries.iterator()
+            val eldest = entries.next()
+            matchingStringCacheBytes -= estimatedMatchingStringCacheBytes(eldest.key, eldest.value)
+            entries.remove()
+        }
+    }
+
+    @Synchronized
+    internal fun matchingStringCacheSize(): Int = matchingStrings.size
 
     @Suppress("ReturnCount")
     private fun matchingContainsStringIds(expected: String): IntArray {
@@ -440,25 +549,62 @@ private class MappedStringPropertyIndex(
 
     private fun buildTrigramIndex(): Int2ObjectOpenHashMap<IntArray>? {
         if (uniqueStringIds.size > MAX_TRIGRAM_INDEX_STRINGS) return null
-        val builders = Int2ObjectOpenHashMap<IntArrayList>()
-        val seenTrigrams = IntOpenHashSet()
-        for (stringId in uniqueStringIds) {
-            val value = stringTable.get(stringId)
-            seenTrigrams.clear()
-            for (position in 0..value.length - MIN_TRIGRAM_LENGTH) {
-                val trigram = trigramHash(value, position)
-                if (seenTrigrams.add(trigram)) {
-                    builders.computeIfAbsent(trigram) { IntArrayList() }.add(stringId)
-                }
-            }
-        }
+        val builder = TrigramIndexBuilder(maxTrigramPostings, maxTrigramBytes)
+        return if (populateTrigramIndex(builder)) builder.build() else null
+    }
 
+    private fun populateTrigramIndex(builder: TrigramIndexBuilder): Boolean {
+        for (stringId in uniqueStringIds) {
+            if (!builder.add(stringId, stringTable.get(stringId))) return false
+        }
+        return true
+    }
+}
+
+private class TrigramIndexBuilder(
+    private val maxPostings: Int,
+    private val maxBytes: Long
+) {
+    private val builders = Int2ObjectOpenHashMap<IntArrayList>()
+    private val seenTrigrams = IntOpenHashSet()
+    private var postings = 0
+    private var estimatedBytes = 0L
+
+    fun add(stringId: Int, value: String): Boolean {
+        seenTrigrams.clear()
+        for (position in 0..value.length - MIN_TRIGRAM_LENGTH) {
+            val trigram = trigramHash(value, position)
+            if (!seenTrigrams.add(trigram)) continue
+            val posting = builders[trigram]
+            val addedBytes = TRIGRAM_POSTING_ESTIMATED_BYTES +
+                if (posting == null) TRIGRAM_ENTRY_ESTIMATED_BYTES else 0L
+            if (postings >= maxPostings || estimatedBytes + addedBytes > maxBytes) return false
+            val target = posting ?: IntArrayList().also { builders.put(trigram, it) }
+            target.add(stringId)
+            postings++
+            estimatedBytes += addedBytes
+        }
+        return true
+    }
+
+    fun build(): Int2ObjectOpenHashMap<IntArray> {
         val result = Int2ObjectOpenHashMap<IntArray>(builders.size)
         builders.int2ObjectEntrySet().forEach { entry ->
             result.put(entry.intKey, entry.value.toIntArray())
         }
         return result
     }
+}
+
+private fun estimatedMatchingStringCacheBytes(key: StringMatchKey, strings: IntArray): Long =
+    STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
+        STRING_HEADER_ESTIMATED_BYTES + key.expected.length.toLong() * Char.SIZE_BYTES +
+        strings.size.toLong() * Int.SIZE_BYTES
+
+private fun stringMatches(actual: String, mode: StringMatchMode, expected: String): Boolean = when (mode) {
+    StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
+    StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
+    StringMatchMode.CONTAINS -> actual.contains(expected)
 }
 
 private fun trigramHash(value: String, position: Int): Int =

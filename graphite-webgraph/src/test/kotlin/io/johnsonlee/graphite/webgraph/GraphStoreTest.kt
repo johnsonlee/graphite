@@ -106,6 +106,8 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir)
             try {
+                val mapped = loaded as MappedWebGraphBackedGraph
+                assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -120,6 +122,7 @@ class GraphStoreTest {
                     StringMatchMode.CONTAINS,
                     "alpha"
                 )?.map { it.value }?.toList()
+                assertEquals(1, mapped.stringPropertyIndexCount())
                 loaded.nodesByStringProperty(
                     CallSiteNode::class.java,
                     "caller_name",
@@ -175,6 +178,112 @@ class GraphStoreTest {
                 assertTrue(loaded.artifactDependencies().isEmpty())
             } finally {
                 (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun assertEarlyLimitedLookupsDoNotBuildIndex(graph: MappedWebGraphBackedGraph) {
+        listOf(
+            StringMatchMode.CONTAINS to "alpha",
+            StringMatchMode.STARTS_WITH to "feature"
+        ).forEach { (mode, expected) ->
+            val early = graph.nodesByStringProperty(
+                StringConstant::class.java,
+                "value",
+                mode,
+                expected,
+                limit = 1
+            )?.map { it.value }?.toList()
+            assertEquals(listOf("feature-alpha"), early)
+        }
+        assertEquals(0, graph.stringPropertyIndexCount())
+    }
+
+    @Test
+    fun `trigram budget exhaustion falls back to dictionary scan`() {
+        val dir = Files.createTempDirectory("webgraph-trigram-budget")
+        try {
+            val values = listOf("alpha-feature", "beta-feature")
+            val strings = StringTable.build(values, dir)
+            val index = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings,
+                maxTrigramPostings = 0,
+                maxTrigramBytes = 0,
+                maxMatchingStringCacheEntries = 1,
+                maxMatchingStringCacheBytes = 128
+            )
+
+            assertEquals(
+                listOf(10),
+                index.matchingNodeIds(StringMatchMode.CONTAINS, "alpha").toList()
+            )
+            assertEquals(1, index.matchingStringCacheSize())
+            assertTrue(index.matchingNodeIds(StringMatchMode.CONTAINS, "missing").none())
+            assertEquals(1, index.matchingStringCacheSize())
+
+            val uncached = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings,
+                maxMatchingStringCacheBytes = 0
+            )
+            assertEquals(listOf(11), uncached.matchingNodeIds(StringMatchMode.STARTS_WITH, "beta").toList())
+            assertEquals(0, uncached.matchingStringCacheSize())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup admits an index only after a long raw scan`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.ENDS_WITH,
+                        "missing",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.ENDS_WITH,
+                        "missing",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(1, loaded.stringPropertyIndexCount())
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol",
+                        limit = 0
+                    ).orEmpty().none()
+                )
+            } finally {
+                loaded.close()
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -1904,7 +2013,7 @@ class GraphStoreTest {
         val dir = Files.createTempDirectory("webgraph-oob-test")
         try {
             GraphStore.save(graph, dir)
-            val loaded = GraphStore.load(dir)
+            val loaded = GraphStore.loadMapped(dir)
 
             // NodeId with value >= numNodes should return empty
             val bigId = NodeId(999999)

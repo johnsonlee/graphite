@@ -30,6 +30,7 @@ private const val MAPPED_CHAIN_DEPTH = 8
 private const val MAPPED_TARGET_GRAPH_INDEX = MAPPED_GRAPH_COUNT - 1
 private const val MAPPED_TARGET_GRAPH_ID = "graph-$MAPPED_TARGET_GRAPH_INDEX"
 private const val MAPPED_TARGET_VALUE = "needle_feature_entry"
+private const val MAPPED_EARLY_VALUE = "early_feature_entry"
 
 /** Production-path counterpart to the in-memory cross-graph Cypher benchmark. */
 @State(Scope.Benchmark)
@@ -51,10 +52,10 @@ open class CrossGraphMappedQueryBenchmark {
         val graphs = (0 until MAPPED_GRAPH_COUNT).map { graphIndex ->
             val builder = DefaultGraph.Builder()
             for (nodeIndex in 0 until MAPPED_NODES_PER_GRAPH) {
-                val value = if (graphIndex == MAPPED_TARGET_GRAPH_INDEX && nodeIndex == 0) {
-                    MAPPED_TARGET_VALUE
-                } else {
-                    "symbol_${graphIndex}_$nodeIndex"
+                val value = when {
+                    graphIndex == 0 && nodeIndex == 0 -> MAPPED_EARLY_VALUE
+                    graphIndex == MAPPED_TARGET_GRAPH_INDEX && nodeIndex == 0 -> MAPPED_TARGET_VALUE
+                    else -> "symbol_${graphIndex}_$nodeIndex"
                 }
                 builder.addNode(StringConstant(NodeId(nodeIndex), value))
             }
@@ -78,10 +79,13 @@ open class CrossGraphMappedQueryBenchmark {
         }
         executor = CrossGraphCypherExecutor(graphs)
 
+        val earlySearch = executor.execute(EARLY_KEYWORD_QUERY)
+        check(earlySearch.rows.size == 1 && earlySearch.rows.single()["id"] == "graph-0:0")
         val search = executor.execute(KEYWORD_QUERY)
         check(search.rows.size == 1 && search.rows.single()["id"] == "$MAPPED_TARGET_GRAPH_ID:0")
         val chain = executor.execute(callChainQuery(search.rows.single().getValue("id") as String))
         check(chain.rows.size == MAPPED_CHAIN_DEPTH)
+        check(executor.execute(MISSING_KEYWORD_QUERY).rows.isEmpty())
     }
 
     @TearDown
@@ -120,6 +124,13 @@ open class CrossGraphMappedQueryBenchmark {
     }
 
     @Benchmark
+    fun coldTwoEarlyHitKeywordSearchesAcrossAllMappedGraphs(): CypherResult {
+        loadedGraphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+        executor.execute(EARLY_KEYWORD_QUERY)
+        return executor.execute(EARLY_KEYWORD_QUERY)
+    }
+
+    @Benchmark
     fun keywordLateHitAcrossAllMappedGraphs(): CypherResult = executor.execute(KEYWORD_QUERY)
 
     @Benchmark
@@ -128,6 +139,9 @@ open class CrossGraphMappedQueryBenchmark {
         val seed = search.rows.single().getValue("id") as String
         return executor.execute(callChainQuery(seed))
     }
+
+    @Benchmark
+    fun retainedStringPropertyIndexFootprint(): Int = loadedGraphs.size
 
     private fun callChainQuery(seed: String): String =
         "MATCH (a:StringConstant) WHERE elementId(a) = '$seed' " +
@@ -142,5 +156,8 @@ open class CrossGraphMappedQueryBenchmark {
         const val MISSING_KEYWORD_QUERY =
             "MATCH (n:StringConstant) WHERE n.value CONTAINS 'missing_feature_keyword' " +
                 "RETURN elementId(n) AS id, n.value AS value LIMIT 20"
+        const val EARLY_KEYWORD_QUERY =
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS '$MAPPED_EARLY_VALUE' " +
+                "RETURN elementId(n) AS id, n.value AS value LIMIT 1"
     }
 }

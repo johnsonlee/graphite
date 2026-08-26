@@ -310,6 +310,81 @@ three virtual properties and for an empty graph namespace.
 **Conclusion:** retained. This restores behavior present on `main`; it does not
 change the indexed raw-property path or its benchmark results.
 
+### 2026-08-27 - Attempt 008: Demand-aware admission and byte budgets
+
+**Review findings:** the second access built a complete property and trigram
+index even when both queries found their `LIMIT 1` result at the first node. A
+100,000-node reproduction took `21.922 ms` and allocated about `39.9 MB`, versus
+`0.029 ms` and `79 KB` on `main`. The 500,000-distinct-string guard also bounded
+dictionary cardinality rather than trigram postings or retained bytes.
+
+**Design:** Cypher now passes its remaining result limit to the storage-aware
+lookup. Before an index exists, a finite query lazily scans raw mmap string IDs
+and materializes matching nodes only. If the consumer satisfies its limit in
+the first 256 nodes, no index access is recorded. A scan that crosses that
+threshold marks the property as worth indexing on its next access. This keeps
+early hits at scan cost while making a one-off late hit or miss cheaper than
+deserializing every node.
+
+Index retention has independent conservative budgets:
+
+| Retained structure | Per-property limit |
+|--------------------|-------------------:|
+| node ID, string ID, and unique-string arrays | `8 MiB` |
+| trigram builders/postings | `16 MiB`, `1,000,000` postings |
+| predicate-result cache | `2 MiB`, 32 entries |
+
+The existing four-property LRU therefore has an estimated upper bound of
+`104 MiB` per mapped graph for these structures, rather than an unbounded size
+hidden behind an entry count. Trigram construction still rejects more than
+500,000 unique strings. Crossing either trigram limit discards the partial
+builder and scans the unique-string dictionary; crossing the base-array budget
+keeps finite Cypher queries on the raw-field scan and unlimited callers on the
+existing fallback. Neither condition throws or changes query results.
+
+The early-hit and cold-query controls use the same 16 persisted graphs and
+80,000 nodes on `main` and this branch:
+
+```shell
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  '.*CrossGraphMappedQueryBenchmark.(coldTwoEarlyHitKeywordSearchesAcrossAllMappedGraphs|coldKeywordLateHitAcrossAllMappedGraphs|coldTwoKeywordSearchesAcrossAllMappedGraphs)' \
+  -wi 2 -i 5 -w 1s -r 1s -f 1 -prof gc
+```
+
+| Mapped benchmark | `main` | Attempt 006 | Attempt 008 |
+|------------------|-------:|------------:|------------:|
+| two early `LIMIT 1` searches | `0.038 ms` | not measured on this fixture | `0.038 ms` |
+| cold late hit | `14.719 ms` | `6.850 ms` | `4.853 ms` |
+| two cold late/miss searches | `29.292 ms` | `21.890 ms` | `18.438 ms` |
+
+Early-hit allocation is `96.860 KB/op` on Attempt 008 versus `96.723 KB/op` on
+the identical `main` fixture. Two cold searches allocate `41.310 MB/op` versus
+`97.225 MB/op` on `main`, a 57.5% reduction. Steady-state unique misses remain
+`0.020 ms/op`, and keyword-then-call-chain remains `0.093 ms/op`.
+
+**Retained-memory control:** setup builds one `StringConstant.value` index in
+each of the 16 mapped graphs, then the measurement method only holds the
+fixture. With Native Memory Tracking enabled, `jcmd GC.run` is followed by
+`GC.heap_info`, `VM.native_memory summary`, and `ps` while the fork remains idle.
+
+| Full-GC footprint | `main` | Attempt 008 | Difference |
+|-------------------|-------:|------------:|-----------:|
+| live Java heap | `11,918 KiB` | `16,949 KiB` | `+5,031 KiB` |
+| RSS | `178,592 KiB` | `233,056 KiB` | `+54,464 KiB` |
+| committed Java heap | `69,632 KiB` | `131,072 KiB` | `+61,440 KiB` |
+
+The live-object increase is about `314 KiB` per graph for this fixture. The
+larger RSS delta tracks G1's committed heap, not live index objects; both raw
+numbers are retained here rather than presenting RSS as heap usage.
+
+Regression tests assert that repeated early limited queries leave the index
+count at zero, a later admitted access builds exactly one index, and forced
+trigram budget exhaustion returns the same matches through dictionary scan.
+
+**Conclusion:** retained. Attempt 008 removes the early-hit regression, improves
+cold and amortized performance beyond Attempt 006, and replaces cardinality-only
+guards with explicit posting and byte budgets plus result-preserving fallback.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
@@ -400,5 +475,5 @@ per-module threshold even though `check` passed locally before coverage was
 printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, and the unsupported `DataInput.readLine` contract. Final application
-line coverage is `98.0017%` for Cypher and `98.0371%` for WebGraph; the complete
+line coverage is `98.0043%` for Cypher and `98.1162%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.

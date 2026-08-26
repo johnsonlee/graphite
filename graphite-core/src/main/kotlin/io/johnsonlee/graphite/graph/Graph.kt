@@ -58,13 +58,15 @@ interface Graph {
      * Return nodes whose string [property] matches [expected] when the graph has
      * a storage-aware access path. Implementations may return null when the type
      * or property is unsupported, or when the access path is not ready, so
-     * callers must fall back to [nodes].
+     * callers must fall back to [nodes]. At most [limit] matching nodes are
+     * returned when a finite limit is supplied.
      */
     fun <T : Node> nodesByStringProperty(
         type: Class<T>,
         property: String,
         mode: StringMatchMode,
-        expected: String
+        expected: String,
+        limit: Int = Int.MAX_VALUE
     ): Sequence<T>? = null
 
     /**

@@ -399,7 +399,8 @@ class QueryPipeline private constructor(
                 nodeClass,
                 filter.property,
                 filter.mode,
-                filter.expected
+                filter.expected,
+                limit - rows.size
             )
             val candidates = indexedNodes ?: source.graph.nodes(nodeClass).filter(filter::matches)
             for (node in candidates) {
