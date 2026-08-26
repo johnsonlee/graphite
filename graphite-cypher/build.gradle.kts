@@ -26,6 +26,14 @@ dependencies {
     jmhAnnotationProcessor(libs.jmh.generator)
 }
 
+jmh {
+    val filter = project.findProperty("jmh.filter") as String?
+    if (filter != null) {
+        includes.set(listOf(filter))
+    }
+    failOnError.set(true)
+}
+
 tasks.generateGrammarSource {
     val outDir = file("${layout.buildDirectory.get().asFile}/generated-src/antlr/main/io/johnsonlee/graphite/cypher/parser")
     arguments = arguments + listOf("-visitor", "-package", "io.johnsonlee.graphite.cypher.parser")

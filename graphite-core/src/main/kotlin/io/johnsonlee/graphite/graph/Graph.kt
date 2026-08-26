@@ -20,6 +20,23 @@ data class ClassOverview(
     val callSiteCount: Int
 )
 
+enum class StringMatchMode {
+    STARTS_WITH,
+    ENDS_WITH,
+    CONTAINS
+}
+
+/** Optional storage capability for graphs that can avoid materializing a full node scan. */
+interface StringPropertyLookup {
+    fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>?
+}
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -179,6 +196,20 @@ interface Graph {
     fun classOverview(limit: Int): ClassOverview? = null
 
 }
+
+/**
+ * Use a storage-aware string lookup when [Graph] also implements
+ * [StringPropertyLookup]. Existing graph implementations remain binary
+ * compatible and return null through this extension.
+ */
+fun <T : Node> Graph.nodesByStringProperty(
+    type: Class<T>,
+    property: String,
+    mode: StringMatchMode,
+    expected: String,
+    limit: Int = Int.MAX_VALUE
+): Sequence<T>? = (this as? StringPropertyLookup)
+    ?.nodesByStringProperty(type, property, mode, expected, limit)
 
 /**
  * Pattern for matching methods.

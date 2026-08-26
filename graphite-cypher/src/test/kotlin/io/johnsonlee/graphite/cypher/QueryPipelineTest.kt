@@ -23,6 +23,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -503,6 +505,143 @@ class QueryPipelineTest {
         val result = pipeline.execute(clauses)
         assertEquals(1, result.rows.size)
         assertEquals(strConstHello.value, result.rows[0]["id"])
+    }
+
+    @Test
+    fun `filtered distinct limit streams generic predicates`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n:IntConstant) WHERE n.value > 0 " +
+                "RETURN DISTINCT n.type AS type LIMIT 1"
+        )
+
+        assertEquals(listOf("IntConstant"), result.rows.map { it["type"] })
+    }
+
+    @Test
+    fun `filtered distinct string disjunction stops after the single graph limit`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n) WHERE " +
+                "(exists(n.caller_class) AND n.caller_class CONTAINS 'Service') OR " +
+                "(exists(n.callee_class) AND n.callee_class CONTAINS 'Service') " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `filtered distinct string disjunction consumes candidates lazily`() {
+        val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
+        val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            repeat(1_000) { index ->
+                addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
+            }
+        }.build()
+        var consumed = 0
+        val lookupGraph = object : Graph by backing, StringPropertyLookup {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> = backing.nodes(type).onEach { consumed++ }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'example' OR n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(1, consumed)
+    }
+
+    @Test
+    fun `filtered distinct string disjunction deduplicates unordered candidate streams`() {
+        val targetCaller = MethodDescriptor(TypeDescriptor("com.example.TargetService"), "call", emptyList(), stringType)
+        val otherCaller = MethodDescriptor(TypeDescriptor("com.example.OtherService"), "call", emptyList(), stringType)
+        val targetCallee = MethodDescriptor(TypeDescriptor("com.example.TargetRepository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), otherCaller, targetCallee, 0, null, emptyList()))
+            addNode(CallSiteNode(NodeId(1), targetCaller, targetCallee, 1, null, emptyList()))
+            addNode(CallSiteNode(NodeId(2), otherCaller, targetCallee, 2, null, emptyList()))
+        }.build()
+        val lookupGraph = object : Graph by backing, StringPropertyLookup {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> {
+                val nodes = backing.nodes(type).associateBy { it.id.value }
+                return when (property) {
+                    "caller_class" -> sequenceOf(nodes.getValue(1))
+                    "callee_class" -> sequenceOf(nodes.getValue(2), nodes.getValue(1), nodes.getValue(0))
+                    else -> emptySequence()
+                }
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.id AS id LIMIT 4"
+        )
+
+        assertEquals(listOf(1, 2, 0), result.rows.map { it["id"] })
+    }
+
+    @Test
+    fun `filtered distinct disjunction keeps unbounded storage lookup semantics`() {
+        val unboundedGraph = object : Graph by graph, StringPropertyLookup {
+            override fun nodeCount(type: Class<out Node>): Long = Int.MAX_VALUE.toLong()
+
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T>? {
+                assertEquals(Int.MAX_VALUE, limit)
+                return null
+            }
+        }
+        val result = CypherExecutor(unboundedGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Service' OR n.callee_class CONTAINS 'Service' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `filtered distinct disjunction with unsupported properties uses generic evaluation`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n:StringConstant) WHERE " +
+                "(exists(n.value) AND n.value CONTAINS 'hello') OR " +
+                "(exists(n.unknown) AND n.unknown CONTAINS 'hello') " +
+                "RETURN DISTINCT n.value AS value LIMIT 1"
+        )
+
+        assertEquals(listOf("hello"), result.rows.map { it["value"] })
+    }
+
+    @Test
+    fun `filtered distinct disjunction with mismatched existence guard uses generic evaluation`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n:StringConstant) WHERE " +
+                "(exists(n.unknown) AND n.value CONTAINS 'hello') OR " +
+                "(exists(n.name) AND n.name CONTAINS 'missing') " +
+                "RETURN DISTINCT n.value AS value LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
     }
 
     // ========================================================================

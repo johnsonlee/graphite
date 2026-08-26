@@ -2,15 +2,25 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.input.ResourceAccessor
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
 import java.io.BufferedInputStream
@@ -21,6 +31,7 @@ import java.io.EOFException
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
+import java.util.LinkedHashMap
 
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
@@ -46,7 +57,7 @@ import java.nio.MappedByteBuffer
  *
  * Created by [GraphStore.loadMapped].
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 internal class MappedWebGraphBackedGraph(
     private val forward: ImmutableGraph,
     private val backward: Lazy<ImmutableGraph>,
@@ -64,7 +75,7 @@ internal class MappedWebGraphBackedGraph(
     private val metadata: Lazy<GraphMetadata>,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
-) : Graph, Closeable {
+) : Graph, StringPropertyLookup, Closeable {
 
     override val resources: ResourceAccessor
         get() = resourceAccessor.value
@@ -79,6 +90,22 @@ internal class MappedWebGraphBackedGraph(
                 falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
             )
         }.groupBy { it.conditionNodeId.value }
+    }
+
+    private val stringPropertyIndexLock = Any()
+    private val stringPropertyAdmissions = StringPropertyAdmissions()
+    private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
+        MAX_STRING_PROPERTY_INDEXES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    ) {
+        override fun removeEldestEntry(
+            eldest: MutableMap.MutableEntry<StringPropertyKey, MappedStringPropertyIndex>?
+        ): Boolean {
+            val remove = size > MAX_STRING_PROPERTY_INDEXES
+            if (remove && eldest != null) stringPropertyAdmissions.clear(eldest.key)
+            return remove
+        }
     }
 
     override fun node(id: NodeId): Node? {
@@ -96,6 +123,97 @@ internal class MappedWebGraphBackedGraph(
 
     override fun nodeCount(type: Class<out Node>): Long =
         nodeTypeIndex.count(type)
+
+    @Suppress("UNCHECKED_CAST", "ReturnCount")
+    override fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>? {
+        if (!supportsRawStringProperty(type, property)) return null
+        if (limit <= 0) return emptySequence()
+        val key = StringPropertyKey(type, property)
+        synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes[key]
+        }?.let { index ->
+            return indexedNodes(index, mode, expected, limit)
+        }
+
+        val admission = StringPropertyAdmissionKey(key, mode, expected, limit)
+        val shouldBuild = synchronized(stringPropertyIndexLock) {
+            stringPropertyAdmissions.shouldBuild(admission, limit == Int.MAX_VALUE)
+        }
+        if (!shouldBuild) {
+            return if (limit == Int.MAX_VALUE) {
+                null
+            } else {
+                rawStringPropertyScan(type, property, mode, expected, limit, admission)
+            }
+        }
+
+        val index = synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes[key] ?: run {
+                buildStringPropertyIndex(type, property)?.also {
+                    stringPropertyIndexes[key] = it
+                    stringPropertyAdmissions.clear(key)
+                } ?: run {
+                    stringPropertyAdmissions.reject(key)
+                    null
+                }
+            }
+        } ?: return if (limit == Int.MAX_VALUE) {
+            null
+        } else {
+            rawStringPropertyScan(type, property, mode, expected, limit, admission)
+        }
+        return indexedNodes(index, mode, expected, limit)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Node> indexedNodes(
+        index: MappedStringPropertyIndex,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T> = index.matchingNodeIds(mode, expected)
+        .take(limit)
+        .mapNotNull { node(NodeId(it)) as? T }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Node> rawStringPropertyScan(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int,
+        admission: StringPropertyAdmissionKey
+    ): Sequence<T> = sequence {
+        var inspected = 0
+        var yielded = 0
+        var admitted = false
+        for (nodeId in nodeTypeIndex.ids(type)) {
+            inspected++
+            if (!admitted && inspected > MAX_STRING_PROPERTY_ADMISSION_NODES) {
+                synchronized(stringPropertyIndexLock) {
+                    if (admission.property !in stringPropertyIndexes) {
+                        stringPropertyAdmissions.admit(admission)
+                    }
+                }
+                admitted = true
+            }
+            val stringId = rawStringPropertyIndex(nodeId, type, property)
+            if (stringId != null && stringMatches(stringTable.get(stringId), mode, expected)) {
+                val matchedNode = node(NodeId(nodeId)) as? T
+                if (matchedNode != null) {
+                    yield(matchedNode)
+                    yielded++
+                    if (yielded >= limit) break
+                }
+            }
+        }
+    }
 
     override fun edgeCount(): Long = edgeCount
 
@@ -192,13 +310,398 @@ internal class MappedWebGraphBackedGraph(
         metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
+        clearStringPropertyIndexes()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
+    }
+
+    internal fun clearStringPropertyIndexes() {
+        synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes.clear()
+            stringPropertyAdmissions.clear()
+        }
+    }
+
+    internal fun stringPropertyIndexCount(
+        type: Class<out Node>? = null,
+        property: String? = null
+    ): Int = synchronized(stringPropertyIndexLock) {
+        stringPropertyIndexes.keys.count { key ->
+            (type == null || key.type == type) && (property == null || key.property == property)
+        }
+    }
+
+    private fun buildStringPropertyIndex(
+        type: Class<out Node>,
+        property: String
+    ): MappedStringPropertyIndex? {
+        val nodeCount = nodeTypeIndex.count(type)
+        if (estimatedStringPropertyIndexBytes(nodeCount) > MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES) return null
+        val capacity = nodeCount.toInt()
+        val nodeIds = IntArray(capacity)
+        val stringIds = IntArray(capacity)
+        var size = 0
+        for (nodeId in nodeTypeIndex.ids(type)) {
+            val stringId = rawStringPropertyIndex(nodeId, type, property) ?: continue
+            nodeIds[size] = nodeId
+            stringIds[size] = stringId
+            size++
+        }
+        val indexedNodeIds = if (size == capacity) nodeIds else nodeIds.copyOf(size)
+        val indexedStringIds = if (size == capacity) stringIds else stringIds.copyOf(size)
+        val uniqueStringIds = indexedStringIds.copyOf().apply(java.util.Arrays::sort)
+        var uniqueSize = 0
+        for (stringId in uniqueStringIds) {
+            if (uniqueSize == 0 || uniqueStringIds[uniqueSize - 1] != stringId) {
+                uniqueStringIds[uniqueSize++] = stringId
+            }
+        }
+        return MappedStringPropertyIndex(
+            indexedNodeIds,
+            indexedStringIds,
+            uniqueStringIds.copyOf(uniqueSize),
+            stringTable
+        )
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun rawStringPropertyIndex(
+        nodeId: Int,
+        type: Class<out Node>,
+        property: String
+    ): Int? {
+        val offset = nodeOffsets.offset(nodeId)
+        if (offset < 0L) return null
+        val fields = offset.toInt() + NODE_HEADER_BYTES
+        return when (type) {
+            StringConstant::class.java -> mappedNodeData.getInt(fields)
+            EnumConstant::class.java -> when (property) {
+                "enum_type" -> mappedNodeData.getInt(fields)
+                "name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                else -> null
+            }
+            LocalVariable::class.java -> when (property) {
+                "name" -> mappedNodeData.getInt(fields)
+                "type" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                else -> null
+            }
+            FieldNode::class.java -> when (property) {
+                "class" -> mappedNodeData.getInt(fields)
+                "name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                "type" -> mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                else -> null
+            }
+            ParameterNode::class.java -> if (property == "type") {
+                mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+            } else {
+                null
+            }
+            ResourceFileNode::class.java -> when (property) {
+                "path" -> mappedNodeData.getInt(fields)
+                "source" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                "format" -> mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                else -> null
+            }
+            CallSiteNode::class.java -> rawCallSiteStringProperty(fields, property)
+            else -> null
+        }
+    }
+
+    private fun rawCallSiteStringProperty(fields: Int, property: String): Int? {
+        val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+        val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
+        return when (property) {
+            "caller_class" -> mappedNodeData.getInt(fields)
+            "caller_name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+            "callee_class" -> mappedNodeData.getInt(calleeFields)
+            "callee_name" -> mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
+            else -> null
+        }
     }
 
     private fun readNodeAt(offset: Long): Node {
         val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
         return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
     }
+}
+
+private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
+private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+private const val MAX_STRING_PROPERTY_INDEXES = 4
+private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
+private const val MAX_STRING_PROPERTY_ADMISSIONS = 32
+private const val MAX_STRING_PROPERTY_ADMISSION_BYTES = 64L * 1024
+private const val STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES = 96L
+private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
+private const val STRING_PROPERTY_INDEX_ARRAYS = 3
+private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
+private const val MAX_STRING_MATCH_CACHE_ENTRIES = 32
+private const val MAX_STRING_MATCH_CACHE_BYTES = 2L * 1024 * 1024
+private const val STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 64L
+private const val STRING_HEADER_ESTIMATED_BYTES = 24L
+private const val MAX_TRIGRAM_INDEX_RETAINED_BYTES = 16L * 1024 * 1024
+private const val MAX_TRIGRAM_POSTINGS = 1_000_000
+private const val MAX_TRIGRAM_INDEX_STRINGS = 500_000
+private const val TRIGRAM_ENTRY_ESTIMATED_BYTES = 64L
+private const val TRIGRAM_POSTING_ESTIMATED_BYTES = 12L
+private const val MIN_TRIGRAM_LENGTH = 3
+private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
+private const val STRING_HASH_FACTOR = 31
+
+private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
+    STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
+        nodeCount * STRING_PROPERTY_INDEX_ARRAYS * Int.SIZE_BYTES
+
+private data class StringPropertyKey(
+    val type: Class<out Node>,
+    val property: String
+)
+
+private data class StringPropertyAdmissionKey(
+    val property: StringPropertyKey,
+    val mode: StringMatchMode,
+    val expected: String,
+    val limit: Int
+)
+
+private class StringPropertyAdmissions {
+    private val predicates = LinkedHashMap<StringPropertyAdmissionKey, Unit>(
+        MAX_STRING_PROPERTY_ADMISSIONS + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
+    private val unboundedProperties = mutableSetOf<StringPropertyKey>()
+    private val rejectedProperties = mutableSetOf<StringPropertyKey>()
+    private var retainedBytes = 0L
+
+    fun shouldBuild(admission: StringPropertyAdmissionKey, unbounded: Boolean): Boolean {
+        if (admission.property in rejectedProperties) return false
+        return if (unbounded) {
+            !unboundedProperties.add(admission.property)
+        } else {
+            predicates[admission] != null
+        }
+    }
+
+    fun admit(admission: StringPropertyAdmissionKey) {
+        if (admission.property in rejectedProperties || predicates[admission] != null) return
+        val bytes = estimatedStringPropertyAdmissionBytes(admission)
+        if (bytes > MAX_STRING_PROPERTY_ADMISSION_BYTES) return
+        predicates[admission] = Unit
+        retainedBytes += bytes
+        while (predicates.size > MAX_STRING_PROPERTY_ADMISSIONS ||
+            retainedBytes > MAX_STRING_PROPERTY_ADMISSION_BYTES
+        ) {
+            val entries = predicates.entries.iterator()
+            val eldest = entries.next().key
+            retainedBytes -= estimatedStringPropertyAdmissionBytes(eldest)
+            entries.remove()
+        }
+    }
+
+    fun reject(property: StringPropertyKey) {
+        clear(property)
+        rejectedProperties.add(property)
+    }
+
+    fun clear(property: StringPropertyKey) {
+        val entries = predicates.entries.iterator()
+        while (entries.hasNext()) {
+            val admission = entries.next().key
+            if (admission.property == property) {
+                retainedBytes -= estimatedStringPropertyAdmissionBytes(admission)
+                entries.remove()
+            }
+        }
+        unboundedProperties.remove(property)
+    }
+
+    fun clear() {
+        predicates.clear()
+        unboundedProperties.clear()
+        rejectedProperties.clear()
+        retainedBytes = 0L
+    }
+}
+
+private data class StringMatchKey(
+    val mode: StringMatchMode,
+    val expected: String
+)
+
+internal class MappedStringPropertyIndex(
+    private val nodeIds: IntArray,
+    private val stringIds: IntArray,
+    private val uniqueStringIds: IntArray,
+    private val stringTable: StringTable,
+    private val maxTrigramPostings: Int = MAX_TRIGRAM_POSTINGS,
+    private val maxTrigramBytes: Long = MAX_TRIGRAM_INDEX_RETAINED_BYTES,
+    private val maxMatchingStringCacheEntries: Int = MAX_STRING_MATCH_CACHE_ENTRIES,
+    private val maxMatchingStringCacheBytes: Long = MAX_STRING_MATCH_CACHE_BYTES
+) {
+    private val trigramIndex: Int2ObjectOpenHashMap<IntArray>? by lazy(::buildTrigramIndex)
+    private val matchingStrings = LinkedHashMap<StringMatchKey, IntArray>(
+        MAX_STRING_MATCH_CACHE_ENTRIES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
+    private var matchingStringCacheBytes = 0L
+
+    fun matchingNodeIds(mode: StringMatchMode, expected: String): Sequence<Int> {
+        val matchedStrings = matchingStringIds(mode, expected)
+        if (matchedStrings.isEmpty()) return emptySequence()
+        return nodeIds.indices.asSequence()
+            .filter { java.util.Arrays.binarySearch(matchedStrings, stringIds[it]) >= 0 }
+            .map { nodeIds[it] }
+    }
+
+    @Synchronized
+    private fun matchingStringIds(mode: StringMatchMode, expected: String): IntArray {
+        val key = StringMatchKey(mode, expected)
+        matchingStrings[key]?.let { return it }
+
+        val result = when {
+            mode == StringMatchMode.CONTAINS && expected.length >= MIN_TRIGRAM_LENGTH ->
+                matchingContainsStringIds(expected)
+            else -> scanMatchingStringIds(mode, expected)
+        }
+        cacheMatchingStrings(key, result)
+        return result
+    }
+
+    private fun cacheMatchingStrings(key: StringMatchKey, result: IntArray) {
+        val resultBytes = estimatedMatchingStringCacheBytes(key, result)
+        if (resultBytes > maxMatchingStringCacheBytes) return
+        matchingStrings[key] = result
+        matchingStringCacheBytes += resultBytes
+        while (matchingStrings.size > maxMatchingStringCacheEntries ||
+            matchingStringCacheBytes > maxMatchingStringCacheBytes
+        ) {
+            val entries = matchingStrings.entries.iterator()
+            val eldest = entries.next()
+            matchingStringCacheBytes -= estimatedMatchingStringCacheBytes(eldest.key, eldest.value)
+            entries.remove()
+        }
+    }
+
+    @Synchronized
+    internal fun matchingStringCacheSize(): Int = matchingStrings.size
+
+    @Suppress("ReturnCount")
+    private fun matchingContainsStringIds(expected: String): IntArray {
+        val index = trigramIndex ?: return scanMatchingStringIds(StringMatchMode.CONTAINS, expected)
+        var candidates: IntArray? = null
+        val seenTrigrams = IntOpenHashSet()
+        for (position in 0..expected.length - MIN_TRIGRAM_LENGTH) {
+            val trigram = trigramHash(expected, position)
+            if (!seenTrigrams.add(trigram)) continue
+            val posting = index[trigram] ?: return IntArray(0)
+            if (candidates == null || posting.size < candidates.size) candidates = posting
+        }
+
+        val shortestPosting = candidates ?: return IntArray(0)
+        val matched = IntArray(shortestPosting.size)
+        var size = 0
+        for (stringId in shortestPosting) {
+            if (stringTable.get(stringId).contains(expected)) matched[size++] = stringId
+        }
+        return matched.copyOf(size).also(java.util.Arrays::sort)
+    }
+
+    private fun scanMatchingStringIds(mode: StringMatchMode, expected: String): IntArray {
+        val matched = IntArray(uniqueStringIds.size)
+        var size = 0
+        for (stringId in uniqueStringIds) {
+            val actual = stringTable.get(stringId)
+            val matches = when (mode) {
+                StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
+                StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
+                StringMatchMode.CONTAINS -> actual.contains(expected)
+            }
+            if (matches) matched[size++] = stringId
+        }
+        return matched.copyOf(size)
+    }
+
+    private fun buildTrigramIndex(): Int2ObjectOpenHashMap<IntArray>? {
+        if (uniqueStringIds.size > MAX_TRIGRAM_INDEX_STRINGS) return null
+        val builder = TrigramIndexBuilder(maxTrigramPostings, maxTrigramBytes)
+        return if (populateTrigramIndex(builder)) builder.build() else null
+    }
+
+    private fun populateTrigramIndex(builder: TrigramIndexBuilder): Boolean {
+        for (stringId in uniqueStringIds) {
+            if (!builder.add(stringId, stringTable.get(stringId))) return false
+        }
+        return true
+    }
+}
+
+private class TrigramIndexBuilder(
+    private val maxPostings: Int,
+    private val maxBytes: Long
+) {
+    private val builders = Int2ObjectOpenHashMap<IntArrayList>()
+    private val seenTrigrams = IntOpenHashSet()
+    private var postings = 0
+    private var estimatedBytes = 0L
+
+    fun add(stringId: Int, value: String): Boolean {
+        seenTrigrams.clear()
+        for (position in 0..value.length - MIN_TRIGRAM_LENGTH) {
+            val trigram = trigramHash(value, position)
+            if (!seenTrigrams.add(trigram)) continue
+            val posting = builders[trigram]
+            val addedBytes = TRIGRAM_POSTING_ESTIMATED_BYTES +
+                if (posting == null) TRIGRAM_ENTRY_ESTIMATED_BYTES else 0L
+            if (postings >= maxPostings || estimatedBytes + addedBytes > maxBytes) return false
+            val target = posting ?: IntArrayList().also { builders.put(trigram, it) }
+            target.add(stringId)
+            postings++
+            estimatedBytes += addedBytes
+        }
+        return true
+    }
+
+    fun build(): Int2ObjectOpenHashMap<IntArray> {
+        val result = Int2ObjectOpenHashMap<IntArray>(builders.size)
+        builders.int2ObjectEntrySet().forEach { entry ->
+            result.put(entry.intKey, entry.value.toIntArray())
+        }
+        return result
+    }
+}
+
+private fun estimatedMatchingStringCacheBytes(key: StringMatchKey, strings: IntArray): Long =
+    STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
+        STRING_HEADER_ESTIMATED_BYTES + key.expected.length.toLong() * Char.SIZE_BYTES +
+        strings.size.toLong() * Int.SIZE_BYTES
+
+private fun estimatedStringPropertyAdmissionBytes(key: StringPropertyAdmissionKey): Long =
+    STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES +
+        key.property.property.length.toLong() * Char.SIZE_BYTES +
+        key.expected.length.toLong() * Char.SIZE_BYTES
+
+private fun stringMatches(actual: String, mode: StringMatchMode, expected: String): Boolean = when (mode) {
+    StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
+    StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
+    StringMatchMode.CONTAINS -> actual.contains(expected)
+}
+
+private fun trigramHash(value: String, position: Int): Int =
+    (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
+        value[position + 2].code
+
+@Suppress("CyclomaticComplexMethod")
+private fun supportsRawStringProperty(type: Class<out Node>, property: String): Boolean = when (type) {
+    StringConstant::class.java -> property == "value"
+    EnumConstant::class.java -> property == "enum_type" || property == "name"
+    LocalVariable::class.java -> property == "name" || property == "type"
+    FieldNode::class.java -> property == "class" || property == "name" || property == "type"
+    ParameterNode::class.java -> property == "type"
+    ResourceFileNode::class.java -> property == "path" || property == "source" || property == "format"
+    CallSiteNode::class.java -> property == "caller_class" || property == "caller_name" ||
+        property == "callee_class" || property == "callee_name"
+    else -> false
 }
 
 /**

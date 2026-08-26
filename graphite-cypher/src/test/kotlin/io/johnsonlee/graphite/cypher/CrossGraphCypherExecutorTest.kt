@@ -1,19 +1,26 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.CallEdge
+import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.MethodDescriptor
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyLookup
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -169,6 +176,126 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `broad discovery query streams distinct rows and merges provenance`() {
+        val caller = MethodDescriptor(
+            TypeDescriptor("com.example.ThankYouService"),
+            "create",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("com.example.Repository"),
+            "save",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val executor = executor(
+            "orders" to graph(CallSiteNode(NodeId(1), caller, callee, 10, null, emptyList())),
+            "billing" to graph(CallSiteNode(NodeId(1), caller, callee, 20, null, emptyList()))
+        )
+
+        val result = executor.execute(
+            """
+            MATCH (n)
+            WHERE (exists(n.class) AND n.class CONTAINS 'ThankYou')
+               OR (exists(n.name) AND n.name CONTAINS 'ThankYou')
+               OR (exists(n.caller_class) AND n.caller_class CONTAINS 'ThankYou')
+               OR (exists(n.caller_name) AND n.caller_name CONTAINS 'ThankYou')
+               OR (exists(n.callee_class) AND n.callee_class CONTAINS 'ThankYou')
+               OR (exists(n.callee_name) AND n.callee_name CONTAINS 'ThankYou')
+            RETURN DISTINCT n.class AS class, n.name AS name,
+                n.caller_class AS caller, n.caller_name AS callerMethod,
+                n.callee_class AS callee, n.callee_name AS calleeMethod
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertEquals(1, result.rows.size)
+        assertEquals("com.example.ThankYouService", result.rows.single()["caller"])
+        assertEquals("create", result.rows.single()["callerMethod"])
+        assertEquals("com.example.Repository", result.rows.single()["callee"])
+        assertEquals("save", result.rows.single()["calleeMethod"])
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `qualified broad discovery drains large matches with bounded deduplication state`() {
+        val matchCount = 5_000
+        val consumed = mutableMapOf("orders" to 0, "billing" to 0)
+        val caller = MethodDescriptor(
+            TypeDescriptor("com.example.TargetService"),
+            "call",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("com.example.TargetRepository"),
+            "load",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+
+        fun indexedGraph(graphId: String): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                repeat(matchCount) { index ->
+                    addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyLookup {
+                override fun <T : Node> nodesByStringProperty(
+                    type: Class<T>,
+                    property: String,
+                    mode: StringMatchMode,
+                    expected: String,
+                    limit: Int
+                ): Sequence<T> = backing.nodes(type).onEach {
+                    consumed[graphId] = consumed.getValue(graphId) + 1
+                }
+            }
+        }
+
+        val result = executor(
+            "orders" to indexedGraph("orders"),
+            "billing" to indexedGraph("billing")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.TargetService"), result.rows.map { it["caller"] })
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+        assertEquals(2 * matchCount, consumed.getValue("orders"))
+        assertEquals(2 * matchCount, consumed.getValue("billing"))
+    }
+
+    @Test
+    fun `broad discovery query preserves dynamic annotation properties`() {
+        val annotation = AnnotationNode(
+            NodeId(1),
+            "com.example.Feature",
+            "com.example.Owner",
+            "create",
+            mapOf("caller_class" to "com.example.ThankYouDynamicOwner")
+        )
+        val executor = executor("orders" to graph(annotation))
+
+        val result = executor.execute(
+            "MATCH (n) WHERE " +
+                "(exists(n.class) AND n.class CONTAINS 'ThankYou') OR " +
+                "(exists(n.name) AND n.name CONTAINS 'ThankYou') OR " +
+                "(exists(n.caller_class) AND n.caller_class CONTAINS 'ThankYou') OR " +
+                "(exists(n.caller_name) AND n.caller_name CONTAINS 'ThankYou') OR " +
+                "(exists(n.callee_class) AND n.callee_class CONTAINS 'ThankYou') OR " +
+                "(exists(n.callee_name) AND n.callee_name CONTAINS 'ThankYou') " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("com.example.ThankYouDynamicOwner"), result.rows.map { it["caller"] })
+        assertEquals(listOf("orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
     fun `supports graph qualified properties functions and fast filtered limits`() {
         val executor = executor(
             "orders" to graph(IntConstant(NodeId(7), 10)),
@@ -185,6 +312,117 @@ class CrossGraphCypherExecutorTest {
         assertEquals("orders:7", row["elementId"])
         assertEquals("orders", (row["properties"] as Map<*, *>)["graphId"])
         assertEquals(listOf("orders"), graphIds(row))
+    }
+
+    @Test
+    fun `fast string filters preserve qualified identity and provenance`() {
+        val executor = executor(
+            "orders" to graph(StringConstant(NodeId(1), "feature-order-handler")),
+            "billing" to graph(StringConstant(NodeId(1), "feature-billing-handler"))
+        )
+
+        val contains = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS 'billing' " +
+                "RETURN elementId(n) AS id, n.value AS value LIMIT 1"
+        )
+        val startsWith = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value STARTS WITH 'feature-order' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+        val endsWith = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value ENDS WITH 'handler' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
+        val missing = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS 'missing' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
+
+        assertEquals("billing:1", contains.rows.single()["id"])
+        assertEquals("feature-billing-handler", contains.rows.single()["value"])
+        assertEquals(listOf("billing"), graphIds(contains.rows.single()))
+        assertEquals("orders:1", startsWith.rows.single()["id"])
+        assertEquals(listOf("orders:1", "billing:1"), endsWith.rows.map { it["id"] })
+        assertEquals(listOf(listOf("orders"), listOf("billing")), endsWith.rows.map(::graphIds))
+        assertTrue(missing.rows.isEmpty())
+    }
+
+    @Test
+    fun `string filters preserve virtual qualified properties`() {
+        val executor = executor(
+            "orders" to graph(StringConstant(NodeId(1), "order")),
+            "billing" to graph(StringConstant(NodeId(1), "billing"))
+        )
+
+        val graphId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.graphId STARTS WITH 'ord' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+        val elementId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.elementId ENDS WITH ':1' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
+        val qualifiedId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.qualifiedId CONTAINS 'billing:' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+
+        assertEquals(listOf("orders:1"), graphId.rows.map { it["id"] })
+        assertEquals(listOf("orders:1", "billing:1"), elementId.rows.map { it["id"] })
+        assertEquals(listOf("billing:1"), qualifiedId.rows.map { it["id"] })
+    }
+
+    @Test
+    fun `element id seek preserves an empty graph namespace`() {
+        val executor = executor("" to graph(IntConstant(NodeId(1), 10)))
+
+        val result = executor.execute(
+            "MATCH (n:IntConstant) WHERE elementId(n) = ':1' RETURN n.value AS value"
+        )
+
+        assertEquals(listOf(10), result.rows.map { it["value"] })
+        assertEquals(listOf(""), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `element id seek seeds a qualified call chain without scanning colliding ids`() {
+        val orders = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 10))
+            .addNode(IntConstant(NodeId(2), 20))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val billing = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 30))
+            .addNode(IntConstant(NodeId(2), 40))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val executor = executor("orders" to orders, "billing" to billing)
+
+        val result = executor.execute(
+            "MATCH (a:IntConstant) WHERE elementId(a) = 'billing:1' " +
+                "WITH a MATCH (a)-[:DATAFLOW*1..2]->(b:IntConstant) " +
+                "RETURN elementId(a) AS source, elementId(b) AS target, b.value AS value LIMIT 2"
+        )
+        val missing = executor.execute(
+            "MATCH (a:IntConstant) WHERE elementId(a) = 'missing:1' RETURN a.value AS value"
+        )
+        val propertySeek = executor.execute(
+            "MATCH (a:IntConstant) WHERE 'orders:1' = a.qualifiedId RETURN a.value AS value"
+        )
+        val unlabeledSeek = executor.execute(
+            "MATCH (a) WHERE elementId(a) = 'billing:1' RETURN a.value AS value"
+        )
+
+        assertEquals(
+            listOf(mapOf("source" to "billing:1", "target" to "billing:2", "value" to 40)),
+            result.rows.map { it.filterKeys { key -> key != RESULT_METADATA_KEY } }
+        )
+        assertEquals(listOf("billing"), graphIds(result.rows.single()))
+        assertEquals(10, propertySeek.rows.single()["value"])
+        assertEquals(listOf("orders"), graphIds(propertySeek.rows.single()))
+        assertEquals(30, unlabeledSeek.rows.single()["value"])
+        assertEquals(listOf("billing"), graphIds(unlabeledSeek.rows.single()))
+        assertTrue(missing.rows.isEmpty())
     }
 
     @Test

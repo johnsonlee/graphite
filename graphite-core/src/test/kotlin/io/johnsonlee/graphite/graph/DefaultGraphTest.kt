@@ -87,6 +87,23 @@ class DefaultGraphTest {
         assertEquals(3L, graph.nodeCount(Node::class.java))
     }
 
+    @Test
+    fun `string property lookup stays outside the Graph binary interface`() {
+        val graph: Graph = DefaultGraph.Builder()
+            .addNode(StringConstant(NodeId.next(), "hello"))
+            .build()
+
+        assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringProperty" })
+        assertNull(
+            graph.nodesByStringProperty(
+                StringConstant::class.java,
+                "value",
+                StringMatchMode.CONTAINS,
+                "hello"
+            )
+        )
+    }
+
     // ========================================================================
     // Edge operations
     // ========================================================================

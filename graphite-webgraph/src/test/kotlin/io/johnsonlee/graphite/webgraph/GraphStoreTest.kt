@@ -37,12 +37,15 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -66,6 +69,645 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
+
+    @Test
+    fun `mapped string property lookup uses raw node fields and falls back when unsupported`() {
+        val owner = TypeDescriptor("example.Owner")
+        val caller = MethodDescriptor(
+            owner,
+            "callerFeature",
+            listOf(TypeDescriptor("java.lang.String"), TypeDescriptor("int")),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("example.Target"),
+            "billingFeature",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addNode(StringConstant(NodeId(0), "feature-alpha"))
+            .addNode(StringConstant(NodeId(1), "feature-beta"))
+            .addNode(CallSiteNode(NodeId(2), caller, callee, 10, null, emptyList()))
+            .addNode(EnumConstant(NodeId(3), TypeDescriptor("example.State"), "READY"))
+            .addNode(LocalVariable(NodeId(4), "request", TypeDescriptor("java.lang.String"), caller))
+            .addNode(
+                FieldNode(
+                    NodeId(5),
+                    FieldDescriptor(owner, "token", TypeDescriptor("java.lang.String")),
+                    false
+                )
+            )
+            .addNode(ParameterNode(NodeId(6), 0, TypeDescriptor("java.lang.String"), caller))
+            .addNode(ResourceFileNode(NodeId(7), "config/app.yml", "resources", "yaml"))
+            .addNode(IntConstant(NodeId(8), 42))
+            .build()
+        val dir = Files.createTempDirectory("webgraph-string-property-index")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                val mapped = loaded as MappedWebGraphBackedGraph
+                assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
+                assertBroadDiscoveryQuery(loaded)
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "alpha"
+                    )
+                )
+                val contains = loaded.nodesByStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringMatchMode.CONTAINS,
+                    "alpha"
+                )?.map { it.value }?.toList()
+                assertEquals(1, mapped.stringPropertyIndexCount())
+                loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "caller_name",
+                    StringMatchMode.STARTS_WITH,
+                    "caller"
+                )
+                val startsWith = loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "caller_name",
+                    StringMatchMode.STARTS_WITH,
+                    "caller"
+                )?.map { it.caller.name }?.toList()
+                loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "callee_name",
+                    StringMatchMode.ENDS_WITH,
+                    "Feature"
+                )
+                val endsWith = loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "callee_name",
+                    StringMatchMode.ENDS_WITH,
+                    "Feature"
+                )?.map { it.callee.name }?.toList()
+                val cypherValues = loaded.query(
+                    "MATCH (n:StringConstant) WHERE n.value CONTAINS 'beta' RETURN n.value AS value"
+                ).rows.map { it["value"] }
+
+                assertEquals(listOf("feature-alpha"), contains)
+                assertEquals(listOf("callerFeature"), startsWith)
+                assertEquals(listOf("billingFeature"), endsWith)
+                assertEquals(listOf("feature-beta"), cypherValues)
+                assertRawStringPropertyLookups(loaded)
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "unknown",
+                        StringMatchMode.CONTAINS,
+                        "feature"
+                    )
+                )
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        IntConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "42"
+                    )
+                )
+                assertTrue(loaded.memberAnnotationIndex().orEmpty().isEmpty())
+                assertNull(loaded.classOrigin("example.Owner"))
+                assertTrue(loaded.classOrigins().isEmpty())
+                assertTrue(loaded.artifactDependencies().isEmpty())
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped broad disjunction deduplicates unordered property streams`() {
+        val nodeIds = listOf(1, 30, 70, 2, 90, 4, 5, 50, 40, 3)
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            nodeIds.forEach { nodeId ->
+                val callerClass = if (nodeId == 4) "example.TargetCaller" else "example.OtherCaller$nodeId"
+                val calleeClass = if (nodeId == 90 || nodeId == 4) {
+                    "example.TargetCallee"
+                } else {
+                    "example.OtherCallee$nodeId"
+                }
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor(callerClass), "call$nodeId", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor(calleeClass), "load$nodeId", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-unordered-string-candidates")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val storedOrder = loaded.nodes(CallSiteNode::class.java).map { it.id.value }.toList()
+                assertTrue(storedOrder.indexOf(90) < storedOrder.indexOf(4), "Mapped fixture must be unordered")
+
+                val rows = loaded.query(
+                    "MATCH (n:CallSiteNode) WHERE " +
+                        "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                        "RETURN DISTINCT n.id AS id, rand() AS nonce LIMIT 3"
+                ).rows
+                val resultIds = rows.map { it["id"] }
+
+                assertEquals(listOf(4, 90), resultIds)
+                assertEquals(resultIds.size, resultIds.distinct().size)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun assertEarlyLimitedLookupsDoNotBuildIndex(graph: MappedWebGraphBackedGraph) {
+        listOf(
+            StringMatchMode.CONTAINS to "alpha",
+            StringMatchMode.STARTS_WITH to "feature"
+        ).forEach { (mode, expected) ->
+            val early = graph.nodesByStringProperty(
+                StringConstant::class.java,
+                "value",
+                mode,
+                expected,
+                limit = 1
+            )?.map { it.value }?.toList()
+            assertEquals(listOf("feature-alpha"), early)
+        }
+        assertEquals(0, graph.stringPropertyIndexCount())
+    }
+
+    private fun assertBroadDiscoveryQuery(graph: Graph) {
+        val rows = graph.query(
+            """
+            MATCH (n)
+            WHERE (exists(n.class) AND n.class CONTAINS 'Owner')
+               OR (exists(n.name) AND n.name CONTAINS 'Owner')
+               OR (exists(n.caller_class) AND n.caller_class CONTAINS 'Owner')
+               OR (exists(n.caller_name) AND n.caller_name CONTAINS 'Owner')
+               OR (exists(n.callee_class) AND n.callee_class CONTAINS 'Owner')
+               OR (exists(n.callee_name) AND n.callee_name CONTAINS 'Owner')
+            RETURN DISTINCT n.class AS class, n.name AS name,
+                n.caller_class AS caller, n.caller_name AS callerMethod,
+                n.callee_class AS callee, n.callee_name AS calleeMethod
+            LIMIT 120
+            """.trimIndent()
+        ).rows
+
+        assertEquals(2, rows.size)
+        assertEquals("token", rows.single { it["class"] == "example.Owner" }["name"])
+        val callSite = rows.single { it["caller"] == "example.Owner" }
+        assertEquals("callerFeature", callSite["callerMethod"])
+        assertEquals("example.Target", callSite["callee"])
+        assertEquals("billingFeature", callSite["calleeMethod"])
+    }
+
+    @Test
+    fun `trigram budget exhaustion falls back to dictionary scan`() {
+        val dir = Files.createTempDirectory("webgraph-trigram-budget")
+        try {
+            val values = listOf("alpha-feature", "beta-feature")
+            val strings = StringTable.build(values, dir)
+            val index = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings,
+                maxTrigramPostings = 0,
+                maxTrigramBytes = 0,
+                maxMatchingStringCacheEntries = 1,
+                maxMatchingStringCacheBytes = 128
+            )
+
+            assertEquals(
+                listOf(10),
+                index.matchingNodeIds(StringMatchMode.CONTAINS, "alpha").toList()
+            )
+            assertEquals(1, index.matchingStringCacheSize())
+            assertTrue(index.matchingNodeIds(StringMatchMode.CONTAINS, "missing").none())
+            assertEquals(1, index.matchingStringCacheSize())
+
+            val uncached = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings,
+                maxMatchingStringCacheBytes = 0
+            )
+            assertEquals(listOf(11), uncached.matchingNodeIds(StringMatchMode.STARTS_WITH, "beta").toList())
+            assertEquals(0, uncached.matchingStringCacheSize())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup admits an index only after a long raw scan`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.ENDS_WITH,
+                        "missing",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.STARTS_WITH,
+                        "symbol-0",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.ENDS_WITH,
+                        "missing",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(1, loaded.stringPropertyIndexCount())
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.STARTS_WITH,
+                        "symbol-0",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol",
+                        limit = 0
+                    ).orEmpty().none()
+                )
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup keeps admission specific to the query limit`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-limit-admission")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    300,
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 300
+                    ).orEmpty().count()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertEquals(
+                    300,
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 300
+                    ).orEmpty().count()
+                )
+                assertEquals(1, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup resets predicate admission after LRU eviction`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(ResourceFileNode(NodeId(index), "path-$index", "source-$index", "format-$index"))
+                addNode(
+                    FieldNode(
+                        NodeId(300 + index),
+                        FieldDescriptor(
+                            TypeDescriptor("example.Owner$index"),
+                            "field-$index",
+                            TypeDescriptor("example.Type$index")
+                        ),
+                        false
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-eviction")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                listOf(
+                    Triple(ResourceFileNode::class.java, "path", "missing-path"),
+                    Triple(ResourceFileNode::class.java, "source", "missing-source"),
+                    Triple(ResourceFileNode::class.java, "format", "missing-format"),
+                    Triple(FieldNode::class.java, "class", "missing-class"),
+                    Triple(FieldNode::class.java, "name", "missing-name")
+                ).forEach { (type, property, expected) ->
+                    repeat(2) {
+                        assertTrue(
+                            loaded.nodesByStringProperty(
+                                type,
+                                property,
+                                StringMatchMode.CONTAINS,
+                                expected,
+                                limit = 1
+                            ).orEmpty().none()
+                        )
+                    }
+                }
+
+                assertEquals(4, loaded.stringPropertyIndexCount())
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        ResourceFileNode::class.java,
+                        "path",
+                        StringMatchMode.CONTAINS,
+                        "missing-path",
+                        limit = 1
+                    ).orEmpty().none()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+                assertEquals(
+                    listOf("path-0"),
+                    loaded.nodesByStringProperty(
+                        ResourceFileNode::class.java,
+                        "path",
+                        StringMatchMode.STARTS_WITH,
+                        "path-0",
+                        limit = 1
+                    ).orEmpty().map { it.path }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount(ResourceFileNode::class.java, "path"))
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string lookup bounds predicate admission state`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission-bounds")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                repeat(33) { index ->
+                    assertTrue(loaded.stringConstantsMissing("short-missing-$index"))
+                }
+                assertTrue(loaded.stringConstantsMissing("short-missing-0"))
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertTrue(loaded.stringConstantsMissing("short-missing-32"))
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+                val largePredicates = List(24) { index -> "large-missing-$index-${"x".repeat(1_500)}" }
+                largePredicates.forEach { expected ->
+                    assertTrue(loaded.stringConstantsMissing(expected))
+                }
+                assertTrue(loaded.stringConstantsMissing(largePredicates.first()))
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertTrue(loaded.stringConstantsMissing(largePredicates.last()))
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+                val oversized = "oversized-${"x".repeat(32_768)}"
+                repeat(2) {
+                    assertTrue(loaded.stringConstantsMissing(oversized))
+                }
+                assertEquals(0, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `clearing mapped string indexes resets unbounded admission`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-admission-clear")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertNull(loaded.unboundedStringConstants("symbol"))
+                assertEquals(300, loaded.unboundedStringConstants("symbol")?.count())
+                assertEquals(1, loaded.stringPropertyIndexCount())
+
+                loaded.clearStringPropertyIndexes()
+
+                assertEquals(0, loaded.stringPropertyIndexCount())
+                assertNull(loaded.unboundedStringConstants("symbol"))
+                assertEquals(300, loaded.unboundedStringConstants("symbol")?.count())
+                assertEquals(1, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    private fun MappedWebGraphBackedGraph.stringConstantsMissing(expected: String): Boolean =
+        nodesByStringProperty(
+            StringConstant::class.java,
+            "value",
+            StringMatchMode.CONTAINS,
+            expected,
+            limit = 1
+        ).orEmpty().none()
+
+    private fun MappedWebGraphBackedGraph.unboundedStringConstants(expected: String): Sequence<StringConstant>? =
+        nodesByStringProperty(
+            StringConstant::class.java,
+            "value",
+            StringMatchMode.CONTAINS,
+            expected
+        )
+
+    private fun assertRawStringPropertyLookups(graph: Graph) {
+        assertEquals(
+            listOf("example.State"),
+            indexedValues(graph, EnumConstant::class.java, "enum_type", StringMatchMode.ENDS_WITH, "State") {
+                it.enumType.className
+            }
+        )
+        assertEquals(
+            listOf("READY"),
+            indexedValues(graph, EnumConstant::class.java, "name", StringMatchMode.STARTS_WITH, "REA") {
+                it.enumName
+            }
+        )
+        assertEquals(
+            listOf("request"),
+            indexedValues(graph, LocalVariable::class.java, "name", StringMatchMode.CONTAINS, "que") { it.name }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, LocalVariable::class.java, "type", StringMatchMode.ENDS_WITH, "String") {
+                it.type.className
+            }
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            indexedValues(graph, FieldNode::class.java, "class", StringMatchMode.CONTAINS, "Owner") {
+                it.descriptor.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("token"),
+            indexedValues(graph, FieldNode::class.java, "name", StringMatchMode.CONTAINS, "oke") {
+                it.descriptor.name
+            }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, FieldNode::class.java, "type", StringMatchMode.ENDS_WITH, "String") {
+                it.descriptor.type.className
+            }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, ParameterNode::class.java, "type", StringMatchMode.CONTAINS, "lang") {
+                it.type.className
+            }
+        )
+        assertResourceStringPropertyLookups(graph)
+    }
+
+    private fun assertResourceStringPropertyLookups(graph: Graph) {
+        assertEquals(
+            listOf("config/app.yml"),
+            indexedValues(graph, ResourceFileNode::class.java, "path", StringMatchMode.STARTS_WITH, "config") {
+                it.path
+            }
+        )
+        assertEquals(
+            listOf("resources"),
+            indexedValues(graph, ResourceFileNode::class.java, "source", StringMatchMode.CONTAINS, "source") {
+                it.source
+            }
+        )
+        assertEquals(
+            listOf("yaml"),
+            indexedValues(graph, ResourceFileNode::class.java, "format", StringMatchMode.ENDS_WITH, "yaml") {
+                it.format
+            }
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            indexedValues(graph, CallSiteNode::class.java, "caller_class", StringMatchMode.CONTAINS, "Owner") {
+                it.caller.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("example.Target"),
+            indexedValues(graph, CallSiteNode::class.java, "callee_class", StringMatchMode.CONTAINS, "Target") {
+                it.callee.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("feature-alpha", "feature-beta"),
+            indexedValues(graph, StringConstant::class.java, "value", StringMatchMode.CONTAINS, "a") { it.value }
+        )
+    }
+
+    private fun <T : Node, R> indexedValues(
+        graph: Graph,
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        transform: (T) -> R
+    ): List<R> {
+        graph.nodesByStringProperty(type, property, mode, expected)
+        return assertNotNull(graph.nodesByStringProperty(type, property, mode, expected))
+            .map(transform)
+            .toList()
+    }
 
     @Test
     fun `round-trip save and load preserves nodes`() {
@@ -1499,6 +2141,7 @@ class GraphStoreTest {
         DataOutputStream(utfOut).use { it.writeUTF("ok") }
         val utfInput = inputCtor.newInstance(ByteBuffer.wrap(utfOut.toByteArray()), 0) as DataInput
         assertEquals("ok", utfInput.readUTF())
+        assertFailsWith<UnsupportedOperationException> { utfInput.readLine() }
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {
@@ -1688,7 +2331,7 @@ class GraphStoreTest {
         val dir = Files.createTempDirectory("webgraph-oob-test")
         try {
             GraphStore.save(graph, dir)
-            val loaded = GraphStore.load(dir)
+            val loaded = GraphStore.loadMapped(dir)
 
             // NodeId with value >= numNodes should return empty
             val bigId = NodeId(999999)
