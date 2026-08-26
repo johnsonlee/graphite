@@ -17,6 +17,7 @@ private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
+private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
 
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
@@ -190,7 +191,7 @@ class QueryPipeline private constructor(
         }
 
         val separator = elementId.lastIndexOf(':')
-        if (separator <= 0 || separator == elementId.lastIndex) return null
+        if (separator < 0 || separator == elementId.lastIndex) return null
         val graphId = elementId.substring(0, separator)
         val nodeId = elementId.substring(separator + 1).toIntOrNull() ?: return null
         val source = sources.firstOrNull { it.id == graphId } ?: return null
@@ -436,6 +437,7 @@ class QueryPipeline private constructor(
                 val literal = stringOp.right as? CypherExpr.Literal ?: return null
                 val expected = literal.value as? String ?: return null
                 if (owner.name != variable) return null
+                if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
                 val mode = when (stringOp.op) {
                     "STARTS WITH" -> StringMatchMode.STARTS_WITH
                     "ENDS WITH" -> StringMatchMode.ENDS_WITH

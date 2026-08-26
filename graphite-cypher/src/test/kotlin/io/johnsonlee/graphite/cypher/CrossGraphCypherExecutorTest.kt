@@ -221,6 +221,43 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `string filters preserve virtual qualified properties`() {
+        val executor = executor(
+            "orders" to graph(StringConstant(NodeId(1), "order")),
+            "billing" to graph(StringConstant(NodeId(1), "billing"))
+        )
+
+        val graphId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.graphId STARTS WITH 'ord' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+        val elementId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.elementId ENDS WITH ':1' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
+        val qualifiedId = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.qualifiedId CONTAINS 'billing:' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+
+        assertEquals(listOf("orders:1"), graphId.rows.map { it["id"] })
+        assertEquals(listOf("orders:1", "billing:1"), elementId.rows.map { it["id"] })
+        assertEquals(listOf("billing:1"), qualifiedId.rows.map { it["id"] })
+    }
+
+    @Test
+    fun `element id seek preserves an empty graph namespace`() {
+        val executor = executor("" to graph(IntConstant(NodeId(1), 10)))
+
+        val result = executor.execute(
+            "MATCH (n:IntConstant) WHERE elementId(n) = ':1' RETURN n.value AS value"
+        )
+
+        assertEquals(listOf(10), result.rows.map { it["value"] })
+        assertEquals(listOf(""), graphIds(result.rows.single()))
+    }
+
+    @Test
     fun `element id seek seeds a qualified call chain without scanning colliding ids`() {
         val orders = DefaultGraph.Builder()
             .addNode(IntConstant(NodeId(1), 10))

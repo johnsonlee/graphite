@@ -294,6 +294,22 @@ mapped graph, and leaves unsupported query shapes on the existing execution
 path. Save format, build behavior, eager graphs, and public Cypher results are
 unchanged.
 
+### 2026-08-26 - Attempt 007: Preserve qualified-property semantics
+
+**Review finding:** the direct string-filter compiler accepted virtual
+cross-graph properties (`graphId`, `elementId`, and `qualifiedId`) but evaluated
+them against a raw node. It also rejected an existing empty graph namespace
+when seeking an element ID such as `:1`.
+
+**Fix:** virtual qualified properties now stay on the generic evaluator, where
+the binding is a `QualifiedNode`. Element-ID parsing accepts a separator at
+offset zero while continuing to reject missing separators and missing local
+IDs. Regression tests assert concrete results for string operations on all
+three virtual properties and for an empty graph namespace.
+
+**Conclusion:** retained. This restores behavior present on `main`; it does not
+change the indexed raw-property path or its benchmark results.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
