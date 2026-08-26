@@ -206,6 +206,10 @@ class CrossGraphCypherExecutorTest {
             "MATCH (n:StringConstant) WHERE n.value ENDS WITH 'handler' " +
                 "RETURN elementId(n) AS id LIMIT 2"
         )
+        val missing = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS 'missing' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
 
         assertEquals("billing:1", contains.rows.single()["id"])
         assertEquals("feature-billing-handler", contains.rows.single()["value"])
@@ -213,6 +217,7 @@ class CrossGraphCypherExecutorTest {
         assertEquals("orders:1", startsWith.rows.single()["id"])
         assertEquals(listOf("orders:1", "billing:1"), endsWith.rows.map { it["id"] })
         assertEquals(listOf(listOf("orders"), listOf("billing")), endsWith.rows.map(::graphIds))
+        assertTrue(missing.rows.isEmpty())
     }
 
     @Test
@@ -240,6 +245,9 @@ class CrossGraphCypherExecutorTest {
         val propertySeek = executor.execute(
             "MATCH (a:IntConstant) WHERE 'orders:1' = a.qualifiedId RETURN a.value AS value"
         )
+        val unlabeledSeek = executor.execute(
+            "MATCH (a) WHERE elementId(a) = 'billing:1' RETURN a.value AS value"
+        )
 
         assertEquals(
             listOf(mapOf("source" to "billing:1", "target" to "billing:2", "value" to 40)),
@@ -248,6 +256,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("billing"), graphIds(result.rows.single()))
         assertEquals(10, propertySeek.rows.single()["value"])
         assertEquals(listOf("orders"), graphIds(propertySeek.rows.single()))
+        assertEquals(30, unlabeledSeek.rows.single()["value"])
+        assertEquals(listOf("billing"), graphIds(unlabeledSeek.rows.single()))
         assertTrue(missing.rows.isEmpty())
     }
 

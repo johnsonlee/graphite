@@ -378,3 +378,11 @@ that task does not apply the repository baselines used by `check`. No new
 finding remains in a changed code path. New complexity and return-count
 findings were resolved or narrowly suppressed following existing project
 practice.
+
+The first PR workflow run exposed coverage below the repository's separate 98%
+per-module threshold even though `check` passed locally before coverage was
+printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
+string-filter results, every supported mapped raw string field, mapped metadata
+access, and the unsupported `DataInput.readLine` contract. Final application
+line coverage is `98.0017%` for Cypher and `98.0371%` for WebGraph; the complete
+CI-equivalent `check` gate passes after these tests.

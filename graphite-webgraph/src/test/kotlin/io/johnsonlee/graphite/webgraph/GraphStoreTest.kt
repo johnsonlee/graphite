@@ -88,6 +88,18 @@ class GraphStoreTest {
             .addNode(StringConstant(NodeId(0), "feature-alpha"))
             .addNode(StringConstant(NodeId(1), "feature-beta"))
             .addNode(CallSiteNode(NodeId(2), caller, callee, 10, null, emptyList()))
+            .addNode(EnumConstant(NodeId(3), TypeDescriptor("example.State"), "READY"))
+            .addNode(LocalVariable(NodeId(4), "request", TypeDescriptor("java.lang.String"), caller))
+            .addNode(
+                FieldNode(
+                    NodeId(5),
+                    FieldDescriptor(owner, "token", TypeDescriptor("java.lang.String")),
+                    false
+                )
+            )
+            .addNode(ParameterNode(NodeId(6), 0, TypeDescriptor("java.lang.String"), caller))
+            .addNode(ResourceFileNode(NodeId(7), "config/app.yml", "resources", "yaml"))
+            .addNode(IntConstant(NodeId(8), 42))
             .build()
         val dir = Files.createTempDirectory("webgraph-string-property-index")
         try {
@@ -140,6 +152,7 @@ class GraphStoreTest {
                 assertEquals(listOf("callerFeature"), startsWith)
                 assertEquals(listOf("billingFeature"), endsWith)
                 assertEquals(listOf("feature-beta"), cypherValues)
+                assertRawStringPropertyLookups(loaded)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -148,12 +161,125 @@ class GraphStoreTest {
                         "feature"
                     )
                 )
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        IntConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "42"
+                    )
+                )
+                assertTrue(loaded.memberAnnotationIndex().orEmpty().isEmpty())
+                assertNull(loaded.classOrigin("example.Owner"))
+                assertTrue(loaded.classOrigins().isEmpty())
+                assertTrue(loaded.artifactDependencies().isEmpty())
             } finally {
                 (loaded as Closeable).close()
             }
         } finally {
             dir.toFile().deleteRecursively()
         }
+    }
+
+    private fun assertRawStringPropertyLookups(graph: Graph) {
+        assertEquals(
+            listOf("example.State"),
+            indexedValues(graph, EnumConstant::class.java, "enum_type", StringMatchMode.ENDS_WITH, "State") {
+                it.enumType.className
+            }
+        )
+        assertEquals(
+            listOf("READY"),
+            indexedValues(graph, EnumConstant::class.java, "name", StringMatchMode.STARTS_WITH, "REA") {
+                it.enumName
+            }
+        )
+        assertEquals(
+            listOf("request"),
+            indexedValues(graph, LocalVariable::class.java, "name", StringMatchMode.CONTAINS, "que") { it.name }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, LocalVariable::class.java, "type", StringMatchMode.ENDS_WITH, "String") {
+                it.type.className
+            }
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            indexedValues(graph, FieldNode::class.java, "class", StringMatchMode.CONTAINS, "Owner") {
+                it.descriptor.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("token"),
+            indexedValues(graph, FieldNode::class.java, "name", StringMatchMode.CONTAINS, "oke") {
+                it.descriptor.name
+            }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, FieldNode::class.java, "type", StringMatchMode.ENDS_WITH, "String") {
+                it.descriptor.type.className
+            }
+        )
+        assertEquals(
+            listOf("java.lang.String"),
+            indexedValues(graph, ParameterNode::class.java, "type", StringMatchMode.CONTAINS, "lang") {
+                it.type.className
+            }
+        )
+        assertResourceStringPropertyLookups(graph)
+    }
+
+    private fun assertResourceStringPropertyLookups(graph: Graph) {
+        assertEquals(
+            listOf("config/app.yml"),
+            indexedValues(graph, ResourceFileNode::class.java, "path", StringMatchMode.STARTS_WITH, "config") {
+                it.path
+            }
+        )
+        assertEquals(
+            listOf("resources"),
+            indexedValues(graph, ResourceFileNode::class.java, "source", StringMatchMode.CONTAINS, "source") {
+                it.source
+            }
+        )
+        assertEquals(
+            listOf("yaml"),
+            indexedValues(graph, ResourceFileNode::class.java, "format", StringMatchMode.ENDS_WITH, "yaml") {
+                it.format
+            }
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            indexedValues(graph, CallSiteNode::class.java, "caller_class", StringMatchMode.CONTAINS, "Owner") {
+                it.caller.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("example.Target"),
+            indexedValues(graph, CallSiteNode::class.java, "callee_class", StringMatchMode.CONTAINS, "Target") {
+                it.callee.declaringClass.className
+            }
+        )
+        assertEquals(
+            listOf("feature-alpha", "feature-beta"),
+            indexedValues(graph, StringConstant::class.java, "value", StringMatchMode.CONTAINS, "a") { it.value }
+        )
+    }
+
+    private fun <T : Node, R> indexedValues(
+        graph: Graph,
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        transform: (T) -> R
+    ): List<R> {
+        graph.nodesByStringProperty(type, property, mode, expected)
+        return assertNotNull(graph.nodesByStringProperty(type, property, mode, expected))
+            .map(transform)
+            .toList()
     }
 
     @Test
@@ -1588,6 +1714,7 @@ class GraphStoreTest {
         DataOutputStream(utfOut).use { it.writeUTF("ok") }
         val utfInput = inputCtor.newInstance(ByteBuffer.wrap(utfOut.toByteArray()), 0) as DataInput
         assertEquals("ok", utfInput.readUTF())
+        assertFailsWith<UnsupportedOperationException> { utfInput.readLine() }
 
         val flushed = mutableListOf<Boolean>()
         val delegate = object : OutputStream() {
