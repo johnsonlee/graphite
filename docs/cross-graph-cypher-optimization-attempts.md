@@ -334,6 +334,8 @@ Index retention has independent conservative budgets:
 | trigram builders/postings | `16 MiB`, `1,000,000` postings |
 | predicate-result cache | `2 MiB`, 32 entries |
 
+The predicate-result estimate includes both matching ID arrays and the retained
+query string, so long agent-generated literals consume the same byte budget.
 The existing four-property LRU therefore has an estimated upper bound of
 `104 MiB` per mapped graph for these structures, rather than an unbounded size
 hidden behind an entry count. Trigram construction still rejects more than
