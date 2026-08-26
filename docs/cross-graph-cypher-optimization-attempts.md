@@ -94,3 +94,34 @@ java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
 provenance removes most allocation from the filtered fast path. The remaining
 keyword cost still creates a qualified node and binding map per candidate, and
 the second workflow query still uses the eager generic `WITH` pipeline.
+
+### 2026-08-26 - Attempt 002: Reuse filtered predicate bindings
+
+**Hypothesis:** after Attempt 001, every candidate still creates a new mutable
+binding map solely so the expression evaluator can read one variable. A single
+map can be reused while scanning because predicate evaluation does not retain
+the input binding. Only successful candidates need a durable binding for
+projection and provenance.
+
+**Semantic boundary:** expressions that create nested bindings remain safe:
+the evaluator copies the input map before adding list or predicate variables.
+The reusable map is never returned or stored in a result row.
+
+**Build/save impact:** none. Results are recorded after running the same tests,
+JMH benchmark, and GC profiler as Attempt 001.
+
+| Benchmark | Baseline | Attempt 001 | Attempt 002 | Speedup vs baseline |
+|-----------|---------:|------------:|------------:|--------------------:|
+| `keywordMissAcrossAllGraphs` | `5.018 ms/op` | `2.809 ms/op` | `2.073 ms/op` | `2.42x` |
+| `keywordLateHitAcrossAllGraphs` | `4.974 ms/op` | `2.794 ms/op` | `2.225 ms/op` | `2.24x` |
+| `keywordThenCallChain` | `13.875 ms/op` | `10.882 ms/op` | `9.599 ms/op` | `1.45x` |
+
+| Allocation | Baseline | Attempt 001 | Attempt 002 | Change vs baseline |
+|------------|---------:|------------:|------------:|-------------------:|
+| `keywordLateHitAcrossAllGraphs` | `35.250 MB/op` | `15.410 MB/op` | `1.970 MB/op` | `-94.4%` |
+| `keywordThenCallChain` | `83.335 MB/op` | `63.495 MB/op` | `48.774 MB/op` | `-41.5%` |
+
+**Conclusion:** effective and retained, but still short of the `10x` target.
+The filtered scan now allocates very little per candidate. Its remaining cost
+is qualified-node construction plus generic expression dispatch. The workflow
+remains dominated by the eager `MATCH -> WHERE -> WITH` seed lookup.

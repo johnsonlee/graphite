@@ -278,12 +278,14 @@ class QueryPipeline private constructor(
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
         val rows = mutableListOf<Map<String, Any?>>()
+        val predicateBindings = mutableMapOf<String, Any?>(variable to null)
         for (candidate in nodeCandidates(nodeClass)) {
             if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
 
-            val bindings = mutableMapOf<String, Any?>(variable to candidate)
-            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            predicateBindings[variable] = candidate
+            if (evaluator.evaluate(where.condition, predicateBindings) != true) continue
 
+            val bindings = mutableMapOf<String, Any?>(variable to candidate)
             addProvenance(bindings, candidate)
             rows.add(projectRow(ret.items, columns, bindings))
             if (rows.size >= limitCount) return CypherResult(columns, rows)
