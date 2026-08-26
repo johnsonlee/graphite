@@ -125,3 +125,35 @@ JMH benchmark, and GC profiler as Attempt 001.
 The filtered scan now allocates very little per candidate. Its remaining cost
 is qualified-node construction plus generic expression dispatch. The workflow
 remains dominated by the eager `MATCH -> WHERE -> WITH` seed lookup.
+
+### 2026-08-26 - Attempt 003: Compile direct string filters
+
+**Hypothesis:** common keyword discovery uses a node property with a literal
+`STARTS WITH`, `ENDS WITH`, or `CONTAINS` predicate. The AST is constant for the
+query, so resolving that shape and dispatching through the generic expression
+evaluator for every candidate is unnecessary. A compiled predicate can inspect
+the raw node and create a graph-qualified value only for matches.
+
+**Semantic boundary:** the direct path is limited to a single node label, no
+inline node properties, one literal string predicate, a non-aggregate return,
+and a literal limit. All other expressions continue through the existing
+evaluator. Tests assert result values, qualified identity, result order, and
+provenance for all three string operators.
+
+**Build/save impact:** none. The graph representation and indexes are unchanged.
+Results are recorded after tests, JMH, and allocation profiling.
+
+| Benchmark | Baseline | Attempt 002 | Attempt 003 | Speedup vs baseline |
+|-----------|---------:|------------:|------------:|--------------------:|
+| `keywordMissAcrossAllGraphs` | `5.018 ms/op` | `2.073 ms/op` | `0.437 ms/op` | `11.48x` |
+| `keywordLateHitAcrossAllGraphs` | `4.974 ms/op` | `2.225 ms/op` | `0.437 ms/op` | `11.38x` |
+| `keywordThenCallChain` | `13.875 ms/op` | `9.599 ms/op` | `8.145 ms/op` | `1.70x` |
+
+`keywordLateHitAcrossAllGraphs` allocation falls from `35.250 MB/op` at
+baseline to `0.048 MB/op`, a `99.86%` reduction, with no measured collections
+during the profiler run.
+
+**Conclusion:** effective and retained. Attempt 003 crosses the `10x` target
+for both worst-case keyword query shapes. It does not yet cross the target for
+the complete agent workflow because the graph-qualified seed query still scans
+and materializes all 80,000 candidates before `WITH`.

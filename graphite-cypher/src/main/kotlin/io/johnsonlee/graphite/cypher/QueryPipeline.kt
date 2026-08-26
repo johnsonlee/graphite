@@ -277,6 +277,18 @@ class QueryPipeline private constructor(
         val nodeClass = nodePattern.labels.firstOrNull()
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
+        val directStringFilter = DirectStringFilter.compile(where.condition, variable)
+        if (directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
+            return executeDirectStringFilter(
+                nodeClass,
+                variable,
+                directStringFilter,
+                ret.items,
+                columns,
+                limitCount
+            )
+        }
+
         val rows = mutableListOf<Map<String, Any?>>()
         val predicateBindings = mutableMapOf<String, Any?>(variable to null)
         for (candidate in nodeCandidates(nodeClass)) {
@@ -292,6 +304,57 @@ class QueryPipeline private constructor(
         }
 
         return CypherResult(columns, rows)
+    }
+
+    private fun executeDirectStringFilter(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringFilter,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int
+    ): CypherResult {
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (source in sources) {
+            for (node in source.graph.nodes(nodeClass)) {
+                if (!filter.matches(node)) continue
+
+                val candidate = nodeValue(source, node)
+                val bindings = mutableMapOf<String, Any?>(variable to candidate)
+                addProvenance(bindings, candidate)
+                rows.add(projectRow(items, columns, bindings))
+                if (rows.size >= limit) return CypherResult(columns, rows)
+            }
+        }
+        return CypherResult(columns, rows)
+    }
+
+    private data class DirectStringFilter(
+        val property: String,
+        val operation: String,
+        val expected: String
+    ) {
+        fun matches(node: Node): Boolean {
+            val actual = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
+            return when (operation) {
+                "STARTS WITH" -> actual.startsWith(expected)
+                "ENDS WITH" -> actual.endsWith(expected)
+                "CONTAINS" -> actual.contains(expected)
+                else -> false
+            }
+        }
+
+        companion object {
+            fun compile(expression: CypherExpr, variable: String): DirectStringFilter? {
+                val stringOp = expression as? CypherExpr.StringOp ?: return null
+                val property = stringOp.left as? CypherExpr.Property ?: return null
+                val owner = property.expression as? CypherExpr.Variable ?: return null
+                val literal = stringOp.right as? CypherExpr.Literal ?: return null
+                val expected = literal.value as? String ?: return null
+                if (owner.name != variable) return null
+                return DirectStringFilter(property.propertyName, stringOp.op, expected)
+            }
+        }
     }
 
     /**

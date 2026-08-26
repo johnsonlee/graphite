@@ -188,6 +188,34 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `fast string filters preserve qualified identity and provenance`() {
+        val executor = executor(
+            "orders" to graph(StringConstant(NodeId(1), "feature-order-handler")),
+            "billing" to graph(StringConstant(NodeId(1), "feature-billing-handler"))
+        )
+
+        val contains = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS 'billing' " +
+                "RETURN elementId(n) AS id, n.value AS value LIMIT 1"
+        )
+        val startsWith = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value STARTS WITH 'feature-order' " +
+                "RETURN elementId(n) AS id LIMIT 1"
+        )
+        val endsWith = executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value ENDS WITH 'handler' " +
+                "RETURN elementId(n) AS id LIMIT 2"
+        )
+
+        assertEquals("billing:1", contains.rows.single()["id"])
+        assertEquals("feature-billing-handler", contains.rows.single()["value"])
+        assertEquals(listOf("billing"), graphIds(contains.rows.single()))
+        assertEquals("orders:1", startsWith.rows.single()["id"])
+        assertEquals(listOf("orders:1", "billing:1"), endsWith.rows.map { it["id"] })
+        assertEquals(listOf(listOf("orders"), listOf("billing")), endsWith.rows.map(::graphIds))
+    }
+
+    @Test
     fun `supports an empty graph set and rejects duplicate graph namespaces`() {
         val empty = CrossGraphCypherExecutor(emptyList()).execute("MATCH (n) RETURN count(n) AS count")
         assertEquals(0L, empty.rows.single()["count"])
