@@ -25,13 +25,23 @@ import java.util.concurrent.TimeUnit
 open class GraphEndToEndBenchmark {
 
     @Benchmark
-    fun elasticsearch_build_save_load_query(): Long {
-        return runEndToEnd(BenchmarkCorpusKind.ELASTICSEARCH)
+    fun android_build_save_load_query(): Long {
+        return runEndToEnd(BenchmarkCorpusKind.ANDROID)
     }
 
     @Benchmark
-    fun android_build_save_load_query(): Long {
-        return runEndToEnd(BenchmarkCorpusKind.ANDROID)
+    fun tika_build_save_load_query(): Long {
+        return runEndToEnd(BenchmarkCorpusKind.TIKA)
+    }
+
+    @Benchmark
+    fun hive_build_save_load_query(): Long {
+        return runEndToEnd(BenchmarkCorpusKind.HIVE)
+    }
+
+    @Benchmark
+    fun kotlinCompiler_build_save_load_query(): Long {
+        return runEndToEnd(BenchmarkCorpusKind.KOTLIN_COMPILER)
     }
 
     private fun runEndToEnd(kind: BenchmarkCorpusKind): Long {

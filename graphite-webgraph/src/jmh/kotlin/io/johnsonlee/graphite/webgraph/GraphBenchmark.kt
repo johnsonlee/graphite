@@ -9,42 +9,8 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 // ============================================================================
-//  Load benchmarks: eager vs mapped on ES and Android graphs
+//  Load benchmarks: eager vs mapped on large real-world graphs
 // ============================================================================
-
-/**
- * Benchmarks eager and mapped loading on the ES graph (968K nodes).
- * The persisted graph is auto-prepared from the fixture JAR if needed.
- */
-@State(Scope.Benchmark)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 2, time = 1)
-@Measurement(iterations = 3, time = 1)
-@Fork(1)
-open class EsLoadBenchmark {
-    private lateinit var graphPath: Path
-
-    @Setup(Level.Trial)
-    fun setup() {
-        graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ELASTICSEARCH)
-    }
-
-    @Benchmark
-    fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
-
-    @Benchmark
-    fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
-
-    private fun loadAndTouch(loader: () -> Graph): Long {
-        val graph = loader()
-        return try {
-            graph.nodes(Node::class.java).take(1).count().toLong()
-        } finally {
-            (graph as? Closeable)?.close()
-        }
-    }
-}
 
 /**
  * Benchmarks eager and mapped loading on Android SDK graph (5.9M nodes).
@@ -81,184 +47,214 @@ open class AndroidLoadBenchmark {
 }
 
 // ============================================================================
-//  Query benchmarks: eager vs mapped on ES graph (968K nodes)
-// ============================================================================
-
-/**
- * Compares query performance between eager-loaded (all nodes in memory) and
- * memory-mapped graphs.
- *
- * ES graph: 968K nodes, ~1M edges.
- */
-@State(Scope.Benchmark)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 3, time = 1)
-@Measurement(iterations = 5, time = 1)
-@Fork(1)
-open class EsQueryBenchmark {
-
-    private lateinit var eagerGraph: Graph
-    private lateinit var mappedGraph: Graph
-
-    @Setup
-    fun setup() {
-        val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ELASTICSEARCH)
-        eagerGraph = GraphStore.load(graphPath)
-        mappedGraph = GraphStore.loadMapped(graphPath)
-    }
-
-    @TearDown
-    fun tearDown() {
-        (mappedGraph as? Closeable)?.close()
-    }
-
-    // --- Eager ---
-
-    @Benchmark
-    fun eager_simpleNodeMatch() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
-
-    @Benchmark
-    fun eager_intConstantFilter() = eagerGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id"
-    )
-
-    @Benchmark
-    fun eager_countStar() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
-
-    @Benchmark
-    fun eager_singleHopRelationship() = eagerGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
-
-    @Benchmark
-    fun eager_returnDistinct() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
-
-    @Benchmark
-    fun eager_regexFilter() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
-    )
-
-    // --- Mapped ---
-
-    @Benchmark
-    fun mapped_simpleNodeMatch() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
-
-    @Benchmark
-    fun mapped_intConstantFilter() = mappedGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id"
-    )
-
-    @Benchmark
-    fun mapped_countStar() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
-
-    @Benchmark
-    fun mapped_singleHopRelationship() = mappedGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
-
-    @Benchmark
-    fun mapped_returnDistinct() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
-
-    @Benchmark
-    fun mapped_regexFilter() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) WHERE n.callee_class =~ 'org\\.elasticsearch\\..*' RETURN n.callee_name LIMIT 50"
-    )
-}
-
-// ============================================================================
-//  Query benchmarks: eager vs mapped on Android SDK graph (5.9M nodes)
+//  Query benchmarks: eager vs mapped on large real-world graphs
 // ============================================================================
 
 /**
  * Compares query performance on Android SDK graph (5.9M nodes, ~6.5M edges).
  */
-@State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 2, time = 1)
 @Measurement(iterations = 3, time = 1)
 @Fork(1, jvmArgs = ["-Xmx8g"])
 open class AndroidQueryBenchmark {
+    @Benchmark
+    fun eager_simpleNodeMatch(state: AndroidEagerQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+    )
 
-    private lateinit var eagerGraph: Graph
-    private lateinit var mappedGraph: Graph
+    @Benchmark
+    fun eager_intConstantFilter(state: AndroidEagerQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
+    )
 
-    @Setup
+    @Benchmark
+    fun eager_countStar(state: AndroidEagerQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN count(*)"
+    )
+
+    @Benchmark
+    fun eager_singleHopRelationship(state: AndroidEagerQueryBenchmarkState) = state.graph.query(
+        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+    )
+
+    @Benchmark
+    fun eager_returnDistinct(state: AndroidEagerQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    )
+
+    @Benchmark
+    fun mapped_simpleNodeMatch(state: AndroidMappedQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+    )
+
+    @Benchmark
+    fun mapped_intConstantFilter(state: AndroidMappedQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
+    )
+
+    @Benchmark
+    fun mapped_countStar(state: AndroidMappedQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN count(*)"
+    )
+
+    @Benchmark
+    fun mapped_singleHopRelationship(state: AndroidMappedQueryBenchmarkState) = state.graph.query(
+        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+    )
+
+    @Benchmark
+    fun mapped_returnDistinct(state: AndroidMappedQueryBenchmarkState) = state.graph.query(
+        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    )
+}
+
+@State(Scope.Benchmark)
+open class AndroidEagerQueryBenchmarkState {
+    lateinit var graph: Graph
+
+    @Setup(Level.Trial)
     fun setup() {
-        val graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
-        eagerGraph = GraphStore.load(graphPath)
-        mappedGraph = GraphStore.loadMapped(graphPath)
+        graph = GraphStore.load(
+            BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID),
+            GraphStore.LoadMode.EAGER
+        )
     }
 
-    @TearDown
-    fun tearDown() {
-        (mappedGraph as? Closeable)?.close()
+    @TearDown(Level.Trial)
+    fun tearDown() = closeGraph(graph)
+}
+
+@State(Scope.Benchmark)
+open class AndroidMappedQueryBenchmarkState {
+    lateinit var graph: Graph
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID))
     }
 
-    // --- Eager ---
+    @TearDown(Level.Trial)
+    fun tearDown() = closeGraph(graph)
+}
+
+/** Applies the Android load benchmark protocol to Tika, Hive, and the Kotlin compiler. */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 1, time = 1)
+@Measurement(iterations = 2, time = 1)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class LargeCorpusLoadBenchmark {
+    @Param("TIKA", "HIVE", "KOTLIN_COMPILER")
+    lateinit var corpus: String
+
+    private lateinit var graphPath: Path
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graphPath = BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.valueOf(corpus))
+    }
 
     @Benchmark
-    fun eager_simpleNodeMatch() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
+    fun eager_load(): Long = loadAndTouch { GraphStore.load(graphPath, GraphStore.LoadMode.EAGER) }
 
     @Benchmark
-    fun eager_intConstantFilter() = eagerGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
-    )
+    fun mapped_load(): Long = loadAndTouch { GraphStore.loadMapped(graphPath) }
+
+    private fun loadAndTouch(loader: () -> Graph): Long {
+        val graph = loader()
+        return try {
+            graph.nodes(Node::class.java).take(1).count().toLong()
+        } finally {
+            (graph as? Closeable)?.close()
+        }
+    }
+}
+
+/** Applies the Android query benchmark protocol to Tika, Hive, and the Kotlin compiler. */
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 2, time = 1)
+@Measurement(iterations = 3, time = 1)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class LargeCorpusQueryBenchmark {
+    @Benchmark
+    fun eager_simpleNodeMatch(state: LargeCorpusEagerQueryBenchmarkState) = state.graph.query(SIMPLE_NODE_QUERY)
 
     @Benchmark
-    fun eager_countStar() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
+    fun eager_intConstantFilter(state: LargeCorpusEagerQueryBenchmarkState) = state.graph.query(INT_CONSTANT_QUERY)
 
     @Benchmark
-    fun eager_singleHopRelationship() = eagerGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
+    fun eager_countStar(state: LargeCorpusEagerQueryBenchmarkState) = state.graph.query(COUNT_QUERY)
 
     @Benchmark
-    fun eager_returnDistinct() = eagerGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
-
-    // --- Mapped ---
+    fun eager_singleHopRelationship(state: LargeCorpusEagerQueryBenchmarkState) = state.graph.query(SINGLE_HOP_QUERY)
 
     @Benchmark
-    fun mapped_simpleNodeMatch() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
-    )
+    fun eager_returnDistinct(state: LargeCorpusEagerQueryBenchmarkState) = state.graph.query(DISTINCT_QUERY)
 
     @Benchmark
-    fun mapped_intConstantFilter() = mappedGraph.query(
-        "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
-    )
+    fun mapped_simpleNodeMatch(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(SIMPLE_NODE_QUERY)
 
     @Benchmark
-    fun mapped_countStar() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN count(*)"
-    )
+    fun mapped_intConstantFilter(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(INT_CONSTANT_QUERY)
 
     @Benchmark
-    fun mapped_singleHopRelationship() = mappedGraph.query(
-        "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
-    )
+    fun mapped_countStar(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(COUNT_QUERY)
 
     @Benchmark
-    fun mapped_returnDistinct() = mappedGraph.query(
-        "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
-    )
+    fun mapped_singleHopRelationship(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(SINGLE_HOP_QUERY)
+
+    @Benchmark
+    fun mapped_returnDistinct(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(DISTINCT_QUERY)
+
+    private companion object {
+        const val SIMPLE_NODE_QUERY = "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
+        const val INT_CONSTANT_QUERY = "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
+        const val COUNT_QUERY = "MATCH (n:CallSiteNode) RETURN count(*)"
+        const val SINGLE_HOP_QUERY =
+            "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
+        const val DISTINCT_QUERY = "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+    }
+}
+
+@State(Scope.Benchmark)
+open class LargeCorpusEagerQueryBenchmarkState {
+    @Param("TIKA", "HIVE", "KOTLIN_COMPILER")
+    lateinit var corpus: String
+
+    lateinit var graph: Graph
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graph = GraphStore.load(
+            BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.valueOf(corpus)),
+            GraphStore.LoadMode.EAGER
+        )
+    }
+
+    @TearDown(Level.Trial)
+    fun tearDown() = closeGraph(graph)
+}
+
+@State(Scope.Benchmark)
+open class LargeCorpusMappedQueryBenchmarkState {
+    @Param("TIKA", "HIVE", "KOTLIN_COMPILER")
+    lateinit var corpus: String
+
+    lateinit var graph: Graph
+
+    @Setup(Level.Trial)
+    fun setup() {
+        graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.valueOf(corpus)))
+    }
+
+    @TearDown(Level.Trial)
+    fun tearDown() = closeGraph(graph)
+}
+
+private fun closeGraph(graph: Graph) {
+    (graph as? Closeable)?.close()
 }

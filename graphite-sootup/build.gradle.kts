@@ -17,6 +17,7 @@ kover {
 }
 
 val integrationFixtures: Configuration by configurations.creating
+integrationFixtures.isTransitive = false
 val asmVersion = libs.versions.asm.get()
 
 dependencies {
@@ -49,8 +50,10 @@ dependencies {
     jmh("org.ow2.asm:asm-util:$asmVersion")
     jmh("org.ow2.asm:asm-commons:$asmVersion")
     jmh("org.ow2.asm:asm-analysis:$asmVersion")
-    add(integrationFixtures.name, libs.elasticsearch)
     add(integrationFixtures.name, libs.android.all)
+    add(integrationFixtures.name, libs.tika.app)
+    add(integrationFixtures.name, libs.hive.exec)
+    add(integrationFixtures.name, libs.kotlin.compiler.embeddable)
 }
 
 configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configureEach {
@@ -64,14 +67,19 @@ configurations.matching { it.name.startsWith("jmh", ignoreCase = true) }.configu
 }
 
 val integrationFixtureJvmArgs = providers.provider {
-    val elasticsearchJar = Regex("""elasticsearch-\d+\.\d+\.\d+\.jar""")
-    integrationFixtures.resolve().mapNotNull { jar ->
-        when {
-            elasticsearchJar.matches(jar.name) -> "-Delasticsearch.jar.path=${jar.absolutePath}"
-            jar.name.startsWith("android-all-") && jar.name.endsWith(".jar") -> "-Dandroid.jar.path=${jar.absolutePath}"
-            else -> null
-        }
+    val fixtures = integrationFixtures.resolve().associateBy { it.name }
+    fun fixturePath(property: String, matcher: (String) -> Boolean): String {
+        return System.getProperty(property)
+            ?: fixtures.entries.single { matcher(it.key) }.value.absolutePath
     }
+    listOf(
+        "-Dandroid.jar.path=${fixturePath("android.jar.path") { it.startsWith("android-all-") }}",
+        "-Dtika.jar.path=${fixturePath("tika.jar.path") { it.startsWith("tika-app-") }}",
+        "-Dhive.jar.path=${fixturePath("hive.jar.path") { it.startsWith("hive-exec-") }}",
+        "-Dkotlin.compiler.jar.path=" + fixturePath("kotlin.compiler.jar.path") {
+            it.startsWith("kotlin-compiler-embeddable-")
+        }
+    )
 }
 
 jmh {

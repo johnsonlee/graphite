@@ -15,6 +15,6 @@
 - The PR body must include both method-level and end-to-end benchmark data.
 - Method-level benchmark data must come from the most relevant JMH class for the touched code. For Cypher query changes, include `CypherBenchmark`.
 - End-to-end benchmark data must include `GraphEndToEndBenchmark`, which covers `JAR -> build -> save -> mapped load -> Cypher query`.
-- If a change touches persisted graph loading or large-corpus query behavior, also include the relevant `GraphBenchmark` load/query benchmark class, such as `EsQueryBenchmark`, `AndroidQueryBenchmark`, `EsLoadBenchmark`, or `AndroidLoadBenchmark`.
+- If a change touches persisted graph loading or large-corpus query behavior, also include the relevant load/query benchmark class, such as `AndroidQueryBenchmark`, `AndroidLoadBenchmark`, `LargeCorpusQueryBenchmark`, or `LargeCorpusLoadBenchmark`.
 - The PR body must explicitly state whether the benchmark comparison indicates a performance regression, including separate conclusions for method-level and end-to-end results.
 - If benchmark results cannot be produced, state the blocker in the PR description rather than leaving performance unaddressed.
