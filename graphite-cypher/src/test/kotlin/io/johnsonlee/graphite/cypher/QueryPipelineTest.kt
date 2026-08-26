@@ -530,6 +530,71 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `filtered distinct string disjunction consumes candidates lazily`() {
+        val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
+        val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            repeat(1_000) { index ->
+                addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
+            }
+        }.build()
+        var consumed = 0
+        val lookupGraph = object : Graph by backing, StringPropertyLookup {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> = backing.nodes(type).onEach { consumed++ }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'example' OR n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(2, consumed)
+    }
+
+    @Test
+    fun `filtered distinct string disjunction merges candidates in node order`() {
+        val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
+        val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(CallSiteNode(NodeId(index), caller, callee, index, null, emptyList()))
+            }
+        }.build()
+        val lookupGraph = object : Graph by backing, StringPropertyLookup {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> {
+                val nodes = backing.nodes(type).toList()
+                return when (property) {
+                    "caller_class" -> sequenceOf(nodes[0], nodes[2])
+                    "callee_class" -> sequenceOf(nodes[0], nodes[1], nodes[2])
+                    else -> emptySequence()
+                }
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'example' OR n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.id AS id LIMIT 4"
+        )
+
+        assertEquals(listOf(0, 1, 2), result.rows.map { it["id"] })
+    }
+
+    @Test
     fun `filtered distinct disjunction keeps unbounded storage lookup semantics`() {
         val unboundedGraph = object : Graph by graph, StringPropertyLookup {
             override fun nodeCount(type: Class<out Node>): Long = Int.MAX_VALUE.toLong()

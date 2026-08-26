@@ -26,7 +26,10 @@ enum class StringMatchMode {
     CONTAINS
 }
 
-/** Optional storage capability for graphs that can avoid materializing a full node scan. */
+/**
+ * Optional storage capability for graphs that can avoid materializing a full node scan.
+ * Matching nodes must be returned in ascending [Node.id] order.
+ */
 interface StringPropertyLookup {
     fun <T : Node> nodesByStringProperty(
         type: Class<T>,

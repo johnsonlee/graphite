@@ -529,13 +529,31 @@ class QueryPipeline private constructor(
             val candidates = if (accelerated.any { it == null }) {
                 graph.nodes(candidateType).filter(disjunction::matches)
             } else {
-                accelerated.asSequence().filterNotNull().flatten()
+                mergeSortedNodes(accelerated.filterNotNull())
             }
-            val unique = LinkedHashMap<Int, Node>()
-            candidates.forEach { node -> unique.putIfAbsent(node.id.value, node) }
-            unique.values.sortedBy { it.id.value }.forEach { yield(it) }
+            for (node in candidates) yield(node)
         }
     }
+
+    private fun <T : Node> mergeSortedNodes(sequences: List<Sequence<T>>): Sequence<Node> = sequence {
+        val iterators = sequences.map { it.iterator() }
+        val heads = iterators.map { iterator -> iterator.nextOrNull() }.toMutableList()
+        while (true) {
+            var next: Node? = null
+            for (head in heads) {
+                if (head != null && (next == null || head.id.value < next.id.value)) next = head
+            }
+            next ?: break
+            yield(next)
+            heads.indices.forEach { index ->
+                while (heads[index]?.id == next.id) {
+                    heads[index] = iterators[index].nextOrNull()
+                }
+            }
+        }
+    }
+
+    private fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
 
     private data class DirectStringFilter(
         val property: String,

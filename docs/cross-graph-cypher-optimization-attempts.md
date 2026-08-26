@@ -387,7 +387,7 @@ trigram budget exhaustion returns the same matches through dictionary scan.
 cold and amortized performance beyond Attempt 006, and replaces cardinality-only
 guards with explicit posting and byte budgets plus result-preserving fallback.
 
-### 2026-08-27 - Attempt 009: Agent broad-discovery query
+### 2026-08-27 - Attempt 009: Production broad-discovery query
 
 **Production evidence:** an agent using Graphite 2.2.2 began feature discovery
 with this query shape over the aggregate server:
@@ -450,9 +450,9 @@ java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
 
 | Broad discovery benchmark | `main` | Attempt 009 | Speedup |
 |---------------------------|-------:|------------:|--------:|
-| repeated query | `59.394 ms/op` | `3.014 ms/op` | `19.71x` |
-| cold hit after index reset | `59.394 ms/op` | `10.855 ms/op` | `5.47x` |
-| cold miss after index reset | not measured | `9.378 ms/op` | n/a |
+| repeated query | `59.394 ms/op` | `3.230 ms/op` | `18.39x` |
+| cold hit after index reset | `59.394 ms/op` | `11.373 ms/op` | `5.22x` |
+| cold miss after index reset | not measured | `8.512 ms/op` | n/a |
 
 The profiler run allocates `137.930 MB/op` on `main` and `25.203 MB/op` on the
 cold branch path, an 81.7% reduction. The corresponding profiler times are
@@ -554,14 +554,37 @@ clear hook is a no-op there because `main` has no mapped string index.
 
 | Android broad discovery | `main` | Branch | Speedup |
 |-------------------------|-------:|-------:|--------:|
-| cold query | `7,426.015 ms/op` | `393.236 ms/op` | `18.89x` |
-| repeated query | `7,433.167 ms/op` | `361.439 ms/op` | `20.57x` |
+| cold query | `7,426.015 ms/op` | `190.103 ms/op` | `39.06x` |
+| repeated query | `7,433.167 ms/op` | `217.750 ms/op` | `34.14x` |
 
-**Conclusion:** retained. The production query shape improves by about 20x on
+**Conclusion:** retained. The production query shape improves by 34-39x on
 the real Android-scale corpus. This replaces the ES query table as the primary
-large-graph performance evidence. The remaining `361-393 ms` cost is a real
+large-graph performance evidence. The remaining `190-218 ms` cost is a real
 raw mapped-field scan across 5.9 million nodes, so request-level CPU budgets and
 concurrency isolation remain valid follow-up work.
+
+### 2026-08-27 - Attempt 012: Lazy ordered candidate union
+
+**Review finding:** the storage-aware disjunction still consumed every matching
+candidate into a `LinkedHashMap` and sorted all unique nodes before yielding the
+first result. A `DISTINCT ... LIMIT 1` reproduction with 1,000 matching nodes
+therefore consumed all 1,000 candidates. This retained `O(matches)` nodes and
+paid `O(matches log matches)` sorting cost before `LIMIT` could stop execution.
+
+**Design:** each storage lookup already yields nodes in ascending node-ID order.
+The query pipeline now performs a lazy k-way merge across the property streams,
+retaining one head per stream and deduplicating equal node IDs as it advances.
+Memory is `O(property filters)`, and a downstream limit can suspend candidate
+production immediately. The lookup capability documents the ordering contract.
+
+A regression test uses two matching property streams over 1,000 nodes and
+asserts that `LIMIT 1` consumes exactly two candidates, one head from each
+stream. The Android results in Attempt 011 include this change; compared with
+the eager-union branch, cold time falls from `393.236` to `190.103 ms/op` and
+repeated time falls from `361.439` to `217.750 ms/op`.
+
+**Conclusion:** retained. The fast path now streams candidates through
+`DISTINCT` and `LIMIT` instead of collecting and sorting every match first.
 
 ## PR verification summary
 
@@ -653,5 +676,5 @@ printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0433%` for Cypher, and `98.0061%` for WebGraph; the complete
+for Core, `98.0944%` for Cypher, and `98.0061%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.
