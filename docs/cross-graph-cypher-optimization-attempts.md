@@ -482,11 +482,13 @@ against 2.2.2 could therefore fail with `AbstractMethodError` when the new
 Cypher fast path called it.
 
 **Design:** finite admission is now keyed by node type, property, match mode,
-and expected string. A costly scan admits only that exact predicate. A
-different early-hit predicate stays on the lazy raw mmap scan. Admission keeps
-at most 32 entries and 64 KiB of estimated retained state. LRU index eviction
-removes every admission for the evicted property. Rejected indexes remain on
-raw scan without repeatedly attempting construction.
+expected string, and lookup limit. A costly scan admits only that exact
+predicate and query budget. A different early-hit predicate stays on the lazy
+raw mmap scan, and a large-limit scan cannot force a later `LIMIT 1` request to
+build the complete index. Admission keeps at most 32 entries and 64 KiB of
+estimated retained state. LRU index eviction removes every admission for the
+evicted property. Rejected indexes remain on raw scan without repeatedly
+attempting construction.
 
 Storage-aware string lookup moved from the `Graph` interface to the optional
 `StringPropertyLookup` capability. A `Graph.nodesByStringProperty` extension
@@ -495,10 +497,10 @@ JVM interface and fall back to `Graph.nodes`. A regression test asserts that
 `Graph.class` has no `nodesByStringProperty` method and verifies the fallback.
 
 **Benchmark fixture:** one persisted mapped graph with 50,000 resource nodes
-and 50,000 field nodes. Invocation setup either performs a full miss before a
-first-node hit, or admits/builds five property keys against the four-entry LRU
-before querying the evicted key. Setup time is excluded from the single-shot
-measurement.
+and 50,000 field nodes. Invocation setup performs either a full miss, a
+large-limit scan of the same predicate, or an admit/build workload over five
+property keys against the four-entry LRU before a first-node `LIMIT 1` query.
+Setup time is excluded from the single-shot measurement.
 
 ```shell
 java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
@@ -507,12 +509,13 @@ java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
 
 | Admission control | `main` | Attempt 010 |
 |-------------------|-------:|------------:|
-| early hit after full miss | `0.555 ms/op` | `0.395 ms/op` |
-| early hit after LRU workload | `0.189 ms/op` | `0.198 ms/op` |
+| early hit after full miss | `0.555 ms/op` | `0.390 ms/op` |
+| early hit after same-predicate large-limit scan | `0.484 ms/op` | `0.465 ms/op` |
+| early hit after LRU workload | `0.189 ms/op` | `0.263 ms/op` |
 
-Both controls are at `main` latency and eliminate the review reproductions'
-index-build spikes. Predicate-specific admission intentionally gives uncached,
-always-changing misses the raw scan instead of a property-level index:
+All controls are at `main` latency and eliminate the review reproductions'
+index-build spikes. Predicate-and-limit-specific admission intentionally gives
+uncached, always-changing misses the raw scan instead of a property-level index:
 `5.155 ms/op` versus `15.080 ms/op` on `main`, rather than the unsafe previous
 branch result of `0.020 ms/op`.
 
@@ -523,8 +526,8 @@ The other cross-graph controls remain improved: cold late hit is
 `32.087 ms/op`. The cold early-hit pair remains at parity (`0.038 ms/op`).
 
 **Conclusion:** retained. Admission now follows observed cost for the exact
-predicate, eviction resets its decision state, and the optimization no longer
-changes the binary contract of `Graph`.
+predicate and query limit, eviction resets its decision state, and the
+optimization no longer changes the binary contract of `Graph`.
 
 ### 2026-08-27 - Attempt 011: Android-scale broad discovery
 
@@ -554,12 +557,12 @@ clear hook is a no-op there because `main` has no mapped string index.
 
 | Android broad discovery | `main` | Branch | Speedup |
 |-------------------------|-------:|-------:|--------:|
-| cold query | `7,426.015 ms/op` | `190.103 ms/op` | `39.06x` |
-| repeated query | `7,433.167 ms/op` | `217.750 ms/op` | `34.14x` |
+| cold query | `7,426.015 ms/op` | `217.354 ms/op` | `34.17x` |
+| repeated query | `7,433.167 ms/op` | `231.419 ms/op` | `32.12x` |
 
-**Conclusion:** retained. The production query shape improves by 34-39x on
+**Conclusion:** retained. The production query shape improves by 32-34x on
 the real Android-scale corpus. This replaces the ES query table as the primary
-large-graph performance evidence. The remaining `190-218 ms` cost is a real
+large-graph performance evidence. The remaining `217-231 ms` cost is a real
 raw mapped-field scan across 5.9 million nodes, so request-level CPU budgets and
 concurrency isolation remain valid follow-up work.
 
@@ -676,5 +679,5 @@ printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
 cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0944%` for Cypher, and `98.0061%` for WebGraph; the complete
+for Core, `98.0944%` for Cypher, and `98.0072%` for WebGraph; the complete
 CI-equivalent `check` gate passes after these tests.

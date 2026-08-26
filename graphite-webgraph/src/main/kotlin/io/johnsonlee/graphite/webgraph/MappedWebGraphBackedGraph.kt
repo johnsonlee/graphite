@@ -141,7 +141,7 @@ internal class MappedWebGraphBackedGraph(
             return indexedNodes(index, mode, expected, limit)
         }
 
-        val admission = StringPropertyAdmissionKey(key, mode, expected)
+        val admission = StringPropertyAdmissionKey(key, mode, expected, limit)
         val shouldBuild = synchronized(stringPropertyIndexLock) {
             stringPropertyAdmissions.shouldBuild(admission, limit == Int.MAX_VALUE)
         }
@@ -459,7 +459,8 @@ private data class StringPropertyKey(
 private data class StringPropertyAdmissionKey(
     val property: StringPropertyKey,
     val mode: StringMatchMode,
-    val expected: String
+    val expected: String,
+    val limit: Int
 )
 
 private class StringPropertyAdmissions {

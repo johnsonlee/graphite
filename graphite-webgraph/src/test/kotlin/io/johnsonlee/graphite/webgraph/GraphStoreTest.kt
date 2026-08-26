@@ -340,6 +340,61 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped string lookup keeps admission specific to the query limit`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(300) { index ->
+                addNode(StringConstant(NodeId(index), "symbol-$index"))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-string-property-limit-admission")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    300,
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 300
+                    ).orEmpty().count()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertEquals(
+                    listOf("symbol-0"),
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 1
+                    ).orEmpty().map { it.value }.toList()
+                )
+                assertEquals(0, loaded.stringPropertyIndexCount())
+
+                assertEquals(
+                    300,
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "symbol-",
+                        limit = 300
+                    ).orEmpty().count()
+                )
+                assertEquals(1, loaded.stringPropertyIndexCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped string lookup resets predicate admission after LRU eviction`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(300) { index ->

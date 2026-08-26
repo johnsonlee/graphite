@@ -40,6 +40,9 @@ open class MappedStringAdmissionBenchmark {
 
     @Benchmark
     fun earlyHitAfterLruEviction(state: EvictedIndexBenchmarkState): CypherResult = state.earlyHit()
+
+    @Benchmark
+    fun earlyHitAfterLargeLimitScan(state: LargeLimitBenchmarkState): CypherResult = state.earlyHit()
 }
 
 @State(Scope.Thread)
@@ -61,6 +64,15 @@ open class EvictedIndexBenchmarkState : MappedStringAdmissionBenchmarkState() {
         }
         check(indexCount() == 4)
         check(indexCount(ResourceFileNode::class.java, "path") == 0)
+    }
+}
+
+@State(Scope.Thread)
+open class LargeLimitBenchmarkState : MappedStringAdmissionBenchmarkState() {
+    @Setup(Level.Invocation)
+    fun admitLargeLimit() {
+        clearIndexes()
+        check(execute(LARGE_LIMIT_PATH_QUERY).rows.size == ADMISSION_RESOURCE_NODES)
     }
 }
 
@@ -121,6 +133,10 @@ open class MappedStringAdmissionBenchmarkState {
 
 private const val MISSING_PATH_QUERY =
     "MATCH (n:ResourceFileNode) WHERE n.path CONTAINS 'missing-path' RETURN n.path AS value LIMIT 1"
+
+private const val LARGE_LIMIT_PATH_QUERY =
+    "MATCH (n:ResourceFileNode) WHERE n.path CONTAINS 'path-' RETURN n.path AS value " +
+        "LIMIT $ADMISSION_RESOURCE_NODES"
 
 private val INDEX_ADMISSION_QUERIES = listOf(
     MISSING_PATH_QUERY,
