@@ -68,16 +68,24 @@ class QueryPipeline private constructor(
         // node scan early instead of materialising all candidates first.
         val earlyLimit = computeEarlyLimit(clauses)
 
-        for (clause in clauses) {
+        var consumedWhereIndex = -1
+        for ((clauseIndex, clause) in clauses.withIndex()) {
             when (clause) {
                 is CypherClause.Match -> {
-                    rows = if (clause.optional) {
+                    val pushedWhere = clauses.getOrNull(clauseIndex + 1) as? CypherClause.Where
+                    val soughtRows = pushedWhere?.let { tryElementIdSeek(clause, it, rows) }
+                    rows = if (soughtRows != null) {
+                        consumedWhereIndex = clauseIndex + 1
+                        soughtRows
+                    } else if (clause.optional) {
                         executeOptionalMatch(clause.patterns, rows)
                     } else {
                         executeMatch(clause.patterns, rows, earlyLimit)
                     }
                 }
-                is CypherClause.Where -> rows = executeWhere(clause, rows)
+                is CypherClause.Where -> {
+                    if (clauseIndex != consumedWhereIndex) rows = executeWhere(clause, rows)
+                }
                 is CypherClause.Return -> {
                     val (newRows, newColumns) = projectAndAggregate(clause.items, rows, clause.distinct)
                     rows = newRows
@@ -117,6 +125,72 @@ class QueryPipeline private constructor(
         }
 
         return CypherResult(columns, rows)
+    }
+
+    private fun tryElementIdSeek(
+        match: CypherClause.Match,
+        where: CypherClause.Where,
+        inputRows: List<Map<String, Any?>>
+    ): List<Map<String, Any?>>? {
+        if (match.optional || match.patterns.size != 1) return null
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        val variable = nodePattern.variable ?: return null
+        if (inputRows.any { variable in it }) return null
+
+        val elementId = elementIdEquality(where.condition, variable) ?: return null
+        val sourceAndNode = seekNode(elementId) ?: return emptyList()
+        val (source, node) = sourceAndNode
+        val nodeClass = nodePattern.labels.firstOrNull()
+            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
+            ?: Node::class.java
+        if (!nodeClass.isInstance(node)) return emptyList()
+
+        val candidate = nodeValue(source, node)
+        val results = mutableListOf<Map<String, Any?>>()
+        for (inputRow in inputRows) {
+            if (!matchesNodeConstraints(candidate, nodePattern, inputRow)) continue
+            val bindings = inputRow.toMutableMap()
+            bindings[variable] = candidate
+            addProvenance(bindings, candidate)
+            if (evaluator.evaluate(where.condition, bindings) == true) results.add(bindings)
+        }
+        return results
+    }
+
+    private fun elementIdEquality(expression: CypherExpr, variable: String): String? {
+        val comparison = expression as? CypherExpr.Comparison ?: return null
+        if (comparison.op != "=") return null
+        return when {
+            isElementIdReference(comparison.left, variable) ->
+                (comparison.right as? CypherExpr.Literal)?.value as? String
+            isElementIdReference(comparison.right, variable) ->
+                (comparison.left as? CypherExpr.Literal)?.value as? String
+            else -> null
+        }
+    }
+
+    private fun isElementIdReference(expression: CypherExpr, variable: String): Boolean = when (expression) {
+        is CypherExpr.FunctionCall -> expression.name.equals("elementId", ignoreCase = true) &&
+            expression.args.singleOrNull() == CypherExpr.Variable(variable)
+        is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable) &&
+            expression.propertyName in setOf(ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
+        else -> false
+    }
+
+    private fun seekNode(elementId: String): Pair<CypherGraph, Node>? {
+        if (!qualified) {
+            val nodeId = elementId.toIntOrNull() ?: return null
+            return sources.single().let { source -> source.graph.node(NodeId(nodeId))?.let { source to it } }
+        }
+
+        val separator = elementId.lastIndexOf(':')
+        if (separator <= 0 || separator == elementId.lastIndex) return null
+        val graphId = elementId.substring(0, separator)
+        val nodeId = elementId.substring(separator + 1).toIntOrNull() ?: return null
+        val source = sources.firstOrNull { it.id == graphId } ?: return null
+        return source.graph.node(NodeId(nodeId))?.let { source to it }
     }
 
     /**

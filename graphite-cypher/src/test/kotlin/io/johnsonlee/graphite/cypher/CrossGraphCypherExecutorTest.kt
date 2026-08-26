@@ -216,6 +216,42 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `element id seek seeds a qualified call chain without scanning colliding ids`() {
+        val orders = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 10))
+            .addNode(IntConstant(NodeId(2), 20))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val billing = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 30))
+            .addNode(IntConstant(NodeId(2), 40))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val executor = executor("orders" to orders, "billing" to billing)
+
+        val result = executor.execute(
+            "MATCH (a:IntConstant) WHERE elementId(a) = 'billing:1' " +
+                "WITH a MATCH (a)-[:DATAFLOW*1..2]->(b:IntConstant) " +
+                "RETURN elementId(a) AS source, elementId(b) AS target, b.value AS value LIMIT 2"
+        )
+        val missing = executor.execute(
+            "MATCH (a:IntConstant) WHERE elementId(a) = 'missing:1' RETURN a.value AS value"
+        )
+        val propertySeek = executor.execute(
+            "MATCH (a:IntConstant) WHERE 'orders:1' = a.qualifiedId RETURN a.value AS value"
+        )
+
+        assertEquals(
+            listOf(mapOf("source" to "billing:1", "target" to "billing:2", "value" to 40)),
+            result.rows.map { it.filterKeys { key -> key != RESULT_METADATA_KEY } }
+        )
+        assertEquals(listOf("billing"), graphIds(result.rows.single()))
+        assertEquals(10, propertySeek.rows.single()["value"])
+        assertEquals(listOf("orders"), graphIds(propertySeek.rows.single()))
+        assertTrue(missing.rows.isEmpty())
+    }
+
+    @Test
     fun `supports an empty graph set and rejects duplicate graph namespaces`() {
         val empty = CrossGraphCypherExecutor(emptyList()).execute("MATCH (n) RETURN count(n) AS count")
         assertEquals(0L, empty.rows.single()["count"])

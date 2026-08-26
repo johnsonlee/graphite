@@ -157,3 +157,35 @@ during the profiler run.
 for both worst-case keyword query shapes. It does not yet cross the target for
 the complete agent workflow because the graph-qualified seed query still scans
 and materializes all 80,000 candidates before `WITH`.
+
+### 2026-08-26 - Attempt 004: Seek graph-qualified element IDs
+
+**Hypothesis:** after keyword discovery, the agent already has a globally unique
+`elementId`, but `MATCH (n) WHERE elementId(n) = 'graph:id' WITH n ...` still
+scans every node. Pushing this equality into `MATCH` can select the owning graph
+and call `Graph.node(NodeId)` directly before the rest of the pipeline runs.
+
+**Semantic boundary:** the seek applies only to a non-optional, single-node
+`MATCH` immediately followed by equality between a literal string and either
+`elementId(variable)`, `variable.elementId`, or `variable.qualifiedId`. The
+resolved candidate is still checked against labels, inline properties, and the
+original complete `WHERE` expression. Missing graphs, malformed IDs, missing
+nodes, and label mismatches produce no rows. Every other shape falls back to
+the existing matcher.
+
+**Build/save impact:** none. The optimization uses the existing graph ID list
+and `Graph.node` lookup. Results are recorded after tests and benchmarks.
+
+| Benchmark | Baseline | Attempt 003 | Attempt 004 | Speedup vs baseline |
+|-----------|---------:|------------:|------------:|--------------------:|
+| `keywordMissAcrossAllGraphs` | `5.018 ms/op` | `0.437 ms/op` | `0.436 ms/op` | `11.51x` |
+| `keywordLateHitAcrossAllGraphs` | `4.974 ms/op` | `0.437 ms/op` | `0.441 ms/op` | `11.28x` |
+| `keywordThenCallChain` | `13.875 ms/op` | `8.145 ms/op` | `0.466 ms/op` | `29.77x` |
+
+Workflow allocation falls from `83.335 MB/op` at baseline to `0.126 MB/op`, a
+`99.85%` reduction.
+
+**Conclusion:** effective and retained. Attempt 004 crosses the `10x` target
+for the complete search-then-expand workflow while preserving the keyword gains.
+The result confirms that direct graph-qualified lookup, rather than parallel
+fan-out, removes the dominant second-stage CPU and allocation cost.
