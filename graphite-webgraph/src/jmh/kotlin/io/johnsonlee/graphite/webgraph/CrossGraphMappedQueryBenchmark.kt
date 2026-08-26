@@ -42,7 +42,8 @@ open class CrossGraphMappedQueryBenchmark {
 
     private lateinit var root: Path
     private lateinit var executor: CrossGraphCypherExecutor
-    private val loadedGraphs = mutableListOf<Closeable>()
+    private val loadedGraphs = mutableListOf<MappedWebGraphBackedGraph>()
+    private var querySequence = 0L
 
     @Setup
     fun setup() {
@@ -72,7 +73,7 @@ open class CrossGraphMappedQueryBenchmark {
             val graphDir = root.resolve("graph-$graphIndex")
             GraphStore.save(builder.build(), graphDir)
             val graph = GraphStore.loadMapped(graphDir)
-            loadedGraphs.add(graph as Closeable)
+            loadedGraphs.add(graph as MappedWebGraphBackedGraph)
             CypherGraph("graph-$graphIndex", graph)
         }
         executor = CrossGraphCypherExecutor(graphs)
@@ -97,6 +98,28 @@ open class CrossGraphMappedQueryBenchmark {
     )
 
     @Benchmark
+    fun uncachedKeywordMissAcrossAllMappedGraphs(): CypherResult {
+        val keyword = "missing_feature_keyword_${querySequence++}"
+        return executor.execute(
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS '$keyword' " +
+                "RETURN elementId(n) AS id, n.value AS value LIMIT 20"
+        )
+    }
+
+    @Benchmark
+    fun coldKeywordLateHitAcrossAllMappedGraphs(): CypherResult {
+        loadedGraphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+        return executor.execute(KEYWORD_QUERY)
+    }
+
+    @Benchmark
+    fun coldTwoKeywordSearchesAcrossAllMappedGraphs(): CypherResult {
+        loadedGraphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+        executor.execute(KEYWORD_QUERY)
+        return executor.execute(MISSING_KEYWORD_QUERY)
+    }
+
+    @Benchmark
     fun keywordLateHitAcrossAllMappedGraphs(): CypherResult = executor.execute(KEYWORD_QUERY)
 
     @Benchmark
@@ -115,6 +138,9 @@ open class CrossGraphMappedQueryBenchmark {
     private companion object {
         const val KEYWORD_QUERY =
             "MATCH (n:StringConstant) WHERE n.value CONTAINS '$MAPPED_TARGET_VALUE' " +
+                "RETURN elementId(n) AS id, n.value AS value LIMIT 20"
+        const val MISSING_KEYWORD_QUERY =
+            "MATCH (n:StringConstant) WHERE n.value CONTAINS 'missing_feature_keyword' " +
                 "RETURN elementId(n) AS id, n.value AS value LIMIT 20"
     }
 }

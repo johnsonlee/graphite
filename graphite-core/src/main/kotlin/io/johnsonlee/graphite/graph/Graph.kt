@@ -20,6 +20,12 @@ data class ClassOverview(
     val callSiteCount: Int
 )
 
+enum class StringMatchMode {
+    STARTS_WITH,
+    ENDS_WITH,
+    CONTAINS
+}
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -47,6 +53,19 @@ interface Graph {
      * to indicate callers should fall back to [nodes].
      */
     fun nodeCount(type: Class<out Node>): Long? = null
+
+    /**
+     * Return nodes whose string [property] matches [expected] when the graph has
+     * a storage-aware access path. Implementations may return null when the type
+     * or property is unsupported, or when the access path is not ready, so
+     * callers must fall back to [nodes].
+     */
+    fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String
+    ): Sequence<T>? = null
 
     /**
      * Return a precomputed edge count when the graph can answer without

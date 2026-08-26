@@ -37,12 +37,14 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
+import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -66,6 +68,93 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
+
+    @Test
+    fun `mapped string property lookup uses raw node fields and falls back when unsupported`() {
+        val owner = TypeDescriptor("example.Owner")
+        val caller = MethodDescriptor(
+            owner,
+            "callerFeature",
+            listOf(TypeDescriptor("java.lang.String"), TypeDescriptor("int")),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("example.Target"),
+            "billingFeature",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val graph = DefaultGraph.Builder()
+            .addNode(StringConstant(NodeId(0), "feature-alpha"))
+            .addNode(StringConstant(NodeId(1), "feature-beta"))
+            .addNode(CallSiteNode(NodeId(2), caller, callee, 10, null, emptyList()))
+            .build()
+        val dir = Files.createTempDirectory("webgraph-string-property-index")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.CONTAINS,
+                        "alpha"
+                    )
+                )
+                val contains = loaded.nodesByStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringMatchMode.CONTAINS,
+                    "alpha"
+                )?.map { it.value }?.toList()
+                loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "caller_name",
+                    StringMatchMode.STARTS_WITH,
+                    "caller"
+                )
+                val startsWith = loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "caller_name",
+                    StringMatchMode.STARTS_WITH,
+                    "caller"
+                )?.map { it.caller.name }?.toList()
+                loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "callee_name",
+                    StringMatchMode.ENDS_WITH,
+                    "Feature"
+                )
+                val endsWith = loaded.nodesByStringProperty(
+                    CallSiteNode::class.java,
+                    "callee_name",
+                    StringMatchMode.ENDS_WITH,
+                    "Feature"
+                )?.map { it.callee.name }?.toList()
+                val cypherValues = loaded.query(
+                    "MATCH (n:StringConstant) WHERE n.value CONTAINS 'beta' RETURN n.value AS value"
+                ).rows.map { it["value"] }
+
+                assertEquals(listOf("feature-alpha"), contains)
+                assertEquals(listOf("callerFeature"), startsWith)
+                assertEquals(listOf("billingFeature"), endsWith)
+                assertEquals(listOf("feature-beta"), cypherValues)
+                assertNull(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "unknown",
+                        StringMatchMode.CONTAINS,
+                        "feature"
+                    )
+                )
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
 
     @Test
     fun `round-trip save and load preserves nodes`() {

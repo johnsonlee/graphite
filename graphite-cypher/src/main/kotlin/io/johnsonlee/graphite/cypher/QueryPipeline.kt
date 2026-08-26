@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringMatchMode
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
@@ -127,6 +128,7 @@ class QueryPipeline private constructor(
         return CypherResult(columns, rows)
     }
 
+    @Suppress("ReturnCount")
     private fun tryElementIdSeek(
         match: CypherClause.Match,
         where: CypherClause.Where,
@@ -159,6 +161,7 @@ class QueryPipeline private constructor(
         return results
     }
 
+    @Suppress("ReturnCount")
     private fun elementIdEquality(expression: CypherExpr, variable: String): String? {
         val comparison = expression as? CypherExpr.Comparison ?: return null
         if (comparison.op != "=") return null
@@ -179,6 +182,7 @@ class QueryPipeline private constructor(
         else -> false
     }
 
+    @Suppress("ReturnCount")
     private fun seekNode(elementId: String): Pair<CypherGraph, Node>? {
         if (!qualified) {
             val nodeId = elementId.toIntOrNull() ?: return null
@@ -390,8 +394,14 @@ class QueryPipeline private constructor(
     ): CypherResult {
         val rows = mutableListOf<Map<String, Any?>>()
         for (source in sources) {
-            for (node in source.graph.nodes(nodeClass)) {
-                if (!filter.matches(node)) continue
+            val indexedNodes = source.graph.nodesByStringProperty(
+                nodeClass,
+                filter.property,
+                filter.mode,
+                filter.expected
+            )
+            val candidates = indexedNodes ?: source.graph.nodes(nodeClass).filter(filter::matches)
+            for (node in candidates) {
 
                 val candidate = nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
@@ -405,20 +415,20 @@ class QueryPipeline private constructor(
 
     private data class DirectStringFilter(
         val property: String,
-        val operation: String,
+        val mode: StringMatchMode,
         val expected: String
     ) {
         fun matches(node: Node): Boolean {
             val actual = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
-            return when (operation) {
-                "STARTS WITH" -> actual.startsWith(expected)
-                "ENDS WITH" -> actual.endsWith(expected)
-                "CONTAINS" -> actual.contains(expected)
-                else -> false
+            return when (mode) {
+                StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
+                StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
+                StringMatchMode.CONTAINS -> actual.contains(expected)
             }
         }
 
         companion object {
+            @Suppress("ReturnCount")
             fun compile(expression: CypherExpr, variable: String): DirectStringFilter? {
                 val stringOp = expression as? CypherExpr.StringOp ?: return null
                 val property = stringOp.left as? CypherExpr.Property ?: return null
@@ -426,7 +436,13 @@ class QueryPipeline private constructor(
                 val literal = stringOp.right as? CypherExpr.Literal ?: return null
                 val expected = literal.value as? String ?: return null
                 if (owner.name != variable) return null
-                return DirectStringFilter(property.propertyName, stringOp.op, expected)
+                val mode = when (stringOp.op) {
+                    "STARTS WITH" -> StringMatchMode.STARTS_WITH
+                    "ENDS WITH" -> StringMatchMode.ENDS_WITH
+                    "CONTAINS" -> StringMatchMode.CONTAINS
+                    else -> return null
+                }
+                return DirectStringFilter(property.propertyName, mode, expected)
             }
         }
     }

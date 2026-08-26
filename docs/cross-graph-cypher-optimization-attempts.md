@@ -205,3 +205,168 @@ asserts the keyword result and complete call-chain row count before measurement.
 The exact same benchmark commit is run on this branch and on an `origin/main`
 worktree so both implementations use an identical fixture and harness. This
 attempt changes benchmark and documentation code only.
+
+| Mapped benchmark | `main` | Attempts 001-004 | Speedup |
+|------------------|-------:|-----------------:|--------:|
+| `keywordMissAcrossAllMappedGraphs` | `14.399 ms/op` | `6.628 ms/op` | `2.17x` |
+| `keywordLateHitAcrossAllMappedGraphs` | `14.719 ms/op` | `6.279 ms/op` | `2.34x` |
+| `keywordThenMappedCallChain` | `32.087 ms/op` | `6.510 ms/op` | `4.93x` |
+
+**Conclusion:** the mapped guardrail disproves completion at Attempt 004. The
+in-memory target is met, but mapped node decoding keeps the production workflow
+below `10x`. Further work must avoid deserializing every mapped node during
+keyword discovery.
+
+### 2026-08-26 - Attempt 006: Lazy mapped string-property index
+
+**Hypothesis:** mapped storage already has node offsets, type IDs, and a shared
+string table. A bounded lazy index of `(nodeId, stringTableId)` can be built from
+raw mmap fields without deserializing nodes. A trigram dictionary over distinct
+property strings can then answer arbitrary `CONTAINS` terms without rescanning
+all strings; only matched nodes are materialized.
+
+**Design:** add an optional `Graph.nodesByStringProperty` capability. Unsupported
+graphs and properties retain the direct scan from Attempt 003. Mapped graphs
+support common string fields on constants, call sites, fields, locals,
+parameters, enum constants, and resource files. They retain at most four
+property indexes and 32 small predicate results. Trigram construction is
+disabled above 500,000 distinct property strings, and large match sets are not
+cached, bounding retained memory.
+
+The mapped benchmark adds a unique keyword miss on every invocation so a fixed
+literal result cache cannot manufacture the reported gain. Results are recorded
+after unit, mapped integration, performance, and memory regression checks.
+
+**Cold-start policy:** the first access to a supported `(type, property)` uses
+the existing direct scan. The second access builds the index. This avoids making
+a one-off query pay the index construction cost. The benchmark therefore covers
+the first query, the first two queries together, repeated fixed queries, and
+repeated queries with a different keyword on every invocation.
+
+An implementation variant using a primitive integer set reduced one-time index
+allocation by 12%, but increased the two-query time from `21.9` to `23.2 ms/op`.
+It was rejected because reducing CPU time is the primary objective.
+
+**Validation commands:**
+
+```shell
+./gradlew :core:test :cypher:test :webgraph:test --no-daemon
+
+./gradlew :webgraph:jmh \
+  -Pjmh.filter='CrossGraphMappedQueryBenchmark' \
+  --no-daemon
+
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  '.*CrossGraphMappedQueryBenchmark.(uncachedKeywordMissAcrossAllMappedGraphs|coldTwoKeywordSearchesAcrossAllMappedGraphs)' \
+  -wi 2 -i 3 -w 1s -r 1s -f 1 -prof gc
+```
+
+The baseline was measured from `main` commit `e4d1c6a` in a separate worktree
+with the same benchmark fixture. For the two new controls, the benchmark source
+was copied to the baseline worktree; the index-reset call was omitted because
+`main` has no index. All other fixture and JMH settings were identical.
+
+| Mapped benchmark | `main` | Attempt 006 | Speedup |
+|------------------|-------:|------------:|--------:|
+| `coldKeywordLateHitAcrossAllMappedGraphs` | `14.719 ms/op` | `6.850 ms/op` | `2.15x` |
+| `coldTwoKeywordSearchesAcrossAllMappedGraphs` | `28.463 ms/op` | `21.890 ms/op` | `1.30x` |
+| `keywordMissAcrossAllMappedGraphs` | `14.399 ms/op` | `0.019 ms/op` | `757.84x` |
+| `keywordLateHitAcrossAllMappedGraphs` | `14.719 ms/op` | `0.060 ms/op` | `245.32x` |
+| `uncachedKeywordMissAcrossAllMappedGraphs` | `15.080 ms/op` | `0.020 ms/op` | `754.00x` |
+| `keywordThenMappedCallChain` | `32.087 ms/op` | `0.091 ms/op` | `352.60x` |
+
+The unique-keyword benchmark proves that the steady-state improvement does not
+come from caching complete query results. It uses the already-built trigram
+dictionary to resolve a new predicate each time. The first query is `2.15x`
+faster due to Attempts 001-003; the first two queries, including full index
+construction, are cumulatively `1.30x` faster than `main`. The target is reached
+for the long-lived mapped graph and agent workflow, not claimed for cold start.
+
+| Allocation benchmark | `main` | Attempt 006 | Change |
+|----------------------|-------:|------------:|-------:|
+| `uncachedKeywordMissAcrossAllMappedGraphs` | `47.333 MB/op` | `0.052 MB/op` | `-99.89%` |
+| `coldTwoKeywordSearchesAcrossAllMappedGraphs` | `94.666 MB/op` | `51.321 MB/op` | `-45.78%` |
+
+**Conclusion:** retained. Mapped steady-state keyword search and the complete
+search-then-expand workflow exceed the `10x` target while cold and amortized
+costs remain below `main`. The index is lazy, bounded to four properties per
+mapped graph, and leaves unsupported query shapes on the existing execution
+path. Save format, build behavior, eager graphs, and public Cypher results are
+unchanged.
+
+## PR verification summary
+
+**Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
+17.0.18, JMH 1.37, one benchmark thread, one fork. Baseline and branch runs
+used the same machine and dependency caches.
+
+### Method-level Cypher regression
+
+```shell
+./gradlew :cypher:jmh \
+  -Pjmh.filter='io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+  --no-daemon
+```
+
+| `CypherBenchmark` | `main` | Branch | Change |
+|-------------------|-------:|-------:|-------:|
+| `aggregationCountGroupBy` | `35.208 us/op` | `34.609 us/op` | `-1.7%` |
+| `countStar` | `2.238 us/op` | `2.268 us/op` | `+1.3%` |
+| `functionCalls` | `24.702 us/op` | `24.269 us/op` | `-1.8%` |
+| `nodeMatchWithWhere` | `57.774 us/op` | `57.605 us/op` | `-0.3%` |
+| `regexFilter` | `23.097 us/op` | `22.926 us/op` | `-0.7%` |
+| `returnDistinct` | `100.328 us/op` | `92.856 us/op` | `-7.4%` |
+| `simpleNodeMatch` | `19.969 us/op` | `19.645 us/op` | `-1.6%` |
+| `singleHopRelationship` | `30.402 us/op` | `29.201 us/op` | `-4.0%` |
+| `variableLengthPath` | `26.319 us/op` | `25.500 us/op` | `-3.1%` |
+| `withPipeline` | `75.915 us/op` | `76.749 us/op` | `+1.1%` |
+
+The two small increases have overlapping confidence intervals. There is no
+measured method-level regression.
+
+### Large mapped graph regression
+
+```shell
+./gradlew :webgraph:jmh \
+  -Pjmh.filter='EsQueryBenchmark.mapped_.*' \
+  --no-daemon
+```
+
+This uses the repository's Elasticsearch corpus with approximately 968,000
+nodes. Values are `ms/op`.
+
+| `EsQueryBenchmark` | `main` | Branch |
+|--------------------|-------:|-------:|
+| `mapped_countStar` | `0.002` | `0.002` |
+| `mapped_intConstantFilter` | `0.300` | `0.295` |
+| `mapped_regexFilter` | `0.076` | `0.078` |
+| `mapped_returnDistinct` | `0.095` | `0.093` |
+| `mapped_simpleNodeMatch` | `0.067` | `0.068` |
+| `mapped_singleHopRelationship` | `0.151` | `0.152` |
+
+`mapped_returnDistinct` was repeated with five warmups and ten measurements
+after an initial noisy result; the repeated branch result is `0.093 ms/op`
+versus `0.095 ms/op` on `main`. The remaining differences are at most
+`0.002 ms/op`; there is no measured large-corpus query regression.
+
+### End-to-end regression
+
+```shell
+./gradlew :webgraph:jmh \
+  -Pjmh.filter='GraphEndToEndBenchmark.android_build_save_load_query$' \
+  --no-daemon
+```
+
+`GraphEndToEndBenchmark` covers Android JAR analysis, graph build, save, mapped
+load, and Cypher count query. The single-shot result was `30,182.415 ms/op` on
+`main` and `24,435.361 ms/op` on the branch. This benchmark is intentionally
+coarse and noisy, but it shows no end-to-end regression. The optimization does
+not change graph building or the persisted format.
+
+### Tests and lint
+
+The core, Cypher, and WebGraph test suites pass. Direct `detektMain` currently
+fails on both `main` and this branch with the same pre-existing totals: 17
+Cypher findings and 11 WebGraph findings. No new finding remains in a changed
+code path; new complexity and return-count findings were resolved or narrowly
+suppressed following existing project practice.

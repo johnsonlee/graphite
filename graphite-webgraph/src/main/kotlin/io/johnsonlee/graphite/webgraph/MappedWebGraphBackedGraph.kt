@@ -2,15 +2,24 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.BranchScope
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.EnumConstant
 import io.johnsonlee.graphite.core.Edge
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.input.ResourceAccessor
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
 import java.io.BufferedInputStream
@@ -21,6 +30,7 @@ import java.io.EOFException
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
+import java.util.LinkedHashMap
 
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
@@ -81,6 +91,17 @@ internal class MappedWebGraphBackedGraph(
         }.groupBy { it.conditionNodeId.value }
     }
 
+    private val stringPropertyIndexLock = Any()
+    private val stringPropertyAccesses = LinkedHashMap<StringPropertyKey, Int>()
+    private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
+        MAX_STRING_PROPERTY_INDEXES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<StringPropertyKey, MappedStringPropertyIndex>?): Boolean =
+            size > MAX_STRING_PROPERTY_INDEXES
+    }
+
     override fun node(id: NodeId): Node? {
         val nodeId = id.value
         if (nodeId < 0 || nodeId >= nodeOffsets.size) return null
@@ -96,6 +117,31 @@ internal class MappedWebGraphBackedGraph(
 
     override fun nodeCount(type: Class<out Node>): Long =
         nodeTypeIndex.count(type)
+
+    @Suppress("UNCHECKED_CAST", "ReturnCount")
+    override fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String
+    ): Sequence<T>? {
+        if (!supportsRawStringProperty(type, property)) return null
+        val key = StringPropertyKey(type, property)
+        val index = synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes[key] ?: run {
+                val accesses = (stringPropertyAccesses[key] ?: 0) + 1
+                stringPropertyAccesses[key] = accesses
+                trimStringPropertyAccesses()
+                if (accesses < MIN_STRING_PROPERTY_INDEX_ACCESSES) {
+                    null
+                } else {
+                    buildStringPropertyIndex(type, property).also { stringPropertyIndexes[key] = it }
+                }
+            }
+        } ?: return null
+        return index.matchingNodeIds(mode, expected)
+            .mapNotNull { node(NodeId(it)) as? T }
+    }
 
     override fun edgeCount(): Long = edgeCount
 
@@ -192,13 +238,244 @@ internal class MappedWebGraphBackedGraph(
         metadata.value.supertypes.keys + metadata.value.subtypes.keys
 
     override fun close() {
+        clearStringPropertyIndexes()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
+    }
+
+    internal fun clearStringPropertyIndexes() {
+        synchronized(stringPropertyIndexLock) {
+            stringPropertyIndexes.clear()
+            stringPropertyAccesses.clear()
+        }
+    }
+
+    private fun trimStringPropertyAccesses() {
+        while (stringPropertyAccesses.size > MAX_STRING_PROPERTY_ACCESS_COUNTS) {
+            val oldest = stringPropertyAccesses.entries.iterator()
+            oldest.next()
+            oldest.remove()
+        }
+    }
+
+    private fun buildStringPropertyIndex(
+        type: Class<out Node>,
+        property: String
+    ): MappedStringPropertyIndex {
+        val capacity = nodeTypeIndex.count(type).toInt()
+        val nodeIds = IntArray(capacity)
+        val stringIds = IntArray(capacity)
+        val uniqueStringIds = HashSet<Int>()
+        var size = 0
+        for (nodeId in nodeTypeIndex.ids(type)) {
+            val stringId = rawStringPropertyIndex(nodeId, type, property) ?: continue
+            nodeIds[size] = nodeId
+            stringIds[size] = stringId
+            uniqueStringIds.add(stringId)
+            size++
+        }
+        return MappedStringPropertyIndex(
+            nodeIds.copyOf(size),
+            stringIds.copyOf(size),
+            uniqueStringIds.toIntArray().sortedArray(),
+            stringTable
+        )
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun rawStringPropertyIndex(
+        nodeId: Int,
+        type: Class<out Node>,
+        property: String
+    ): Int? {
+        val offset = nodeOffsets.offset(nodeId)
+        if (offset < 0L) return null
+        val fields = offset.toInt() + NODE_HEADER_BYTES
+        return when (type) {
+            StringConstant::class.java -> mappedNodeData.getInt(fields)
+            EnumConstant::class.java -> when (property) {
+                "enum_type" -> mappedNodeData.getInt(fields)
+                "name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                else -> null
+            }
+            LocalVariable::class.java -> when (property) {
+                "name" -> mappedNodeData.getInt(fields)
+                "type" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                else -> null
+            }
+            FieldNode::class.java -> when (property) {
+                "class" -> mappedNodeData.getInt(fields)
+                "name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                "type" -> mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                else -> null
+            }
+            ParameterNode::class.java -> if (property == "type") {
+                mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+            } else {
+                null
+            }
+            ResourceFileNode::class.java -> when (property) {
+                "path" -> mappedNodeData.getInt(fields)
+                "source" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                "format" -> mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                else -> null
+            }
+            CallSiteNode::class.java -> rawCallSiteStringProperty(fields, property)
+            else -> null
+        }
+    }
+
+    private fun rawCallSiteStringProperty(fields: Int, property: String): Int? {
+        val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+        val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
+        return when (property) {
+            "caller_class" -> mappedNodeData.getInt(fields)
+            "caller_name" -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+            "callee_class" -> mappedNodeData.getInt(calleeFields)
+            "callee_name" -> mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
+            else -> null
+        }
     }
 
     private fun readNodeAt(offset: Long): Node {
         val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
         return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
     }
+}
+
+private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
+private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+private const val MAX_STRING_PROPERTY_INDEXES = 4
+private const val MAX_STRING_PROPERTY_ACCESS_COUNTS = 16
+private const val MIN_STRING_PROPERTY_INDEX_ACCESSES = 2
+private const val MAX_STRING_MATCH_CACHE_ENTRIES = 32
+private const val MAX_CACHED_MATCHING_STRINGS = 100_000
+private const val MAX_TRIGRAM_INDEX_STRINGS = 500_000
+private const val MIN_TRIGRAM_LENGTH = 3
+private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
+private const val STRING_HASH_FACTOR = 31
+
+private data class StringPropertyKey(
+    val type: Class<out Node>,
+    val property: String
+)
+
+private data class StringMatchKey(
+    val mode: StringMatchMode,
+    val expected: String
+)
+
+private class MappedStringPropertyIndex(
+    private val nodeIds: IntArray,
+    private val stringIds: IntArray,
+    private val uniqueStringIds: IntArray,
+    private val stringTable: StringTable
+) {
+    private val trigramIndex: Int2ObjectOpenHashMap<IntArray>? by lazy(::buildTrigramIndex)
+    private val matchingStrings = object : LinkedHashMap<StringMatchKey, IntArray>(
+        MAX_STRING_MATCH_CACHE_ENTRIES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<StringMatchKey, IntArray>?): Boolean =
+            size > MAX_STRING_MATCH_CACHE_ENTRIES
+    }
+
+    fun matchingNodeIds(mode: StringMatchMode, expected: String): Sequence<Int> {
+        val matchedStrings = matchingStringIds(mode, expected)
+        if (matchedStrings.isEmpty()) return emptySequence()
+        return nodeIds.indices.asSequence()
+            .filter { java.util.Arrays.binarySearch(matchedStrings, stringIds[it]) >= 0 }
+            .map { nodeIds[it] }
+    }
+
+    @Synchronized
+    private fun matchingStringIds(mode: StringMatchMode, expected: String): IntArray {
+        val key = StringMatchKey(mode, expected)
+        matchingStrings[key]?.let { return it }
+
+        val result = when {
+            mode == StringMatchMode.CONTAINS && expected.length >= MIN_TRIGRAM_LENGTH ->
+                matchingContainsStringIds(expected)
+            else -> scanMatchingStringIds(mode, expected)
+        }
+        if (result.size <= MAX_CACHED_MATCHING_STRINGS) matchingStrings[key] = result
+        return result
+    }
+
+    @Suppress("ReturnCount")
+    private fun matchingContainsStringIds(expected: String): IntArray {
+        val index = trigramIndex ?: return scanMatchingStringIds(StringMatchMode.CONTAINS, expected)
+        var candidates: IntArray? = null
+        val seenTrigrams = IntOpenHashSet()
+        for (position in 0..expected.length - MIN_TRIGRAM_LENGTH) {
+            val trigram = trigramHash(expected, position)
+            if (!seenTrigrams.add(trigram)) continue
+            val posting = index[trigram] ?: return IntArray(0)
+            if (candidates == null || posting.size < candidates.size) candidates = posting
+        }
+
+        val shortestPosting = candidates ?: return IntArray(0)
+        val matched = IntArray(shortestPosting.size)
+        var size = 0
+        for (stringId in shortestPosting) {
+            if (stringTable.get(stringId).contains(expected)) matched[size++] = stringId
+        }
+        return matched.copyOf(size).also(java.util.Arrays::sort)
+    }
+
+    private fun scanMatchingStringIds(mode: StringMatchMode, expected: String): IntArray {
+        val matched = IntArray(uniqueStringIds.size)
+        var size = 0
+        for (stringId in uniqueStringIds) {
+            val actual = stringTable.get(stringId)
+            val matches = when (mode) {
+                StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
+                StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
+                StringMatchMode.CONTAINS -> actual.contains(expected)
+            }
+            if (matches) matched[size++] = stringId
+        }
+        return matched.copyOf(size)
+    }
+
+    private fun buildTrigramIndex(): Int2ObjectOpenHashMap<IntArray>? {
+        if (uniqueStringIds.size > MAX_TRIGRAM_INDEX_STRINGS) return null
+        val builders = Int2ObjectOpenHashMap<IntArrayList>()
+        val seenTrigrams = IntOpenHashSet()
+        for (stringId in uniqueStringIds) {
+            val value = stringTable.get(stringId)
+            seenTrigrams.clear()
+            for (position in 0..value.length - MIN_TRIGRAM_LENGTH) {
+                val trigram = trigramHash(value, position)
+                if (seenTrigrams.add(trigram)) {
+                    builders.computeIfAbsent(trigram) { IntArrayList() }.add(stringId)
+                }
+            }
+        }
+
+        val result = Int2ObjectOpenHashMap<IntArray>(builders.size)
+        builders.int2ObjectEntrySet().forEach { entry ->
+            result.put(entry.intKey, entry.value.toIntArray())
+        }
+        return result
+    }
+}
+
+private fun trigramHash(value: String, position: Int): Int =
+    (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
+        value[position + 2].code
+
+@Suppress("CyclomaticComplexMethod")
+private fun supportsRawStringProperty(type: Class<out Node>, property: String): Boolean = when (type) {
+    StringConstant::class.java -> property == "value"
+    EnumConstant::class.java -> property == "enum_type" || property == "name"
+    LocalVariable::class.java -> property == "name" || property == "type"
+    FieldNode::class.java -> property == "class" || property == "name" || property == "type"
+    ParameterNode::class.java -> property == "type"
+    ResourceFileNode::class.java -> property == "path" || property == "source" || property == "format"
+    CallSiteNode::class.java -> property == "caller_class" || property == "caller_name" ||
+        property == "callee_class" || property == "callee_name"
+    else -> false
 }
 
 /**
