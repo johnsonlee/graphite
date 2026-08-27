@@ -173,6 +173,14 @@ class CrossGraphCypherExecutorTest {
         )
         assertEquals(1, union.rows.size)
         assertEquals(listOf("billing", "orders"), graphIds(union.rows.single()))
+
+        val boundedUnion = executor.execute(
+            "MATCH (n:StringConstant) WHERE graphId(n) = 'orders' RETURN n.value AS value " +
+                "UNION MATCH (n:StringConstant) WHERE graphId(n) = 'billing' RETURN n.value AS value",
+            maxRows = 1
+        )
+        assertEquals(listOf("shared"), boundedUnion.rows.map { it["value"] })
+        assertEquals(listOf("billing", "orders"), graphIds(boundedUnion.rows.single()))
     }
 
     @Test
