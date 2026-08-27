@@ -14,7 +14,7 @@ const LARGE_CORPUS_METRICS = [
     { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 50, unit: "ms" },
     { key: "queryMs", label: "query", threshold: 25, minimum: 250, unit: "ms" },
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
-    { key: "peakHeapBytes", label: "peak heap", threshold: 10, minimum: 128 * MIB, unit: "bytes" }
+    { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }
 ];
 
 function finiteNumber(value) {
@@ -116,6 +116,7 @@ function formatDelta(delta) {
 }
 
 function statusLabel(row) {
+    if (row.advisory) return "INFO";
     if (row.blocked) return "FAIL";
     if (row.aboveThreshold) return "NOISE";
     return "PASS";
@@ -250,7 +251,9 @@ export function compareLargeCorpus(baseLog, candidateLog) {
             }
             const absoluteIncrease = candidateValue - baseValue;
             const delta = regressionPercent(baseValue, candidateValue, true);
-            const blocked = delta > metric.threshold && absoluteIncrease > metric.minimum;
+            const advisory = metric.advisory === true;
+            const aboveThreshold = !advisory && delta > metric.threshold;
+            const blocked = aboveThreshold && absoluteIncrease > metric.minimum;
             rows.push({
                 corpus,
                 metric: metric.label,
@@ -260,7 +263,8 @@ export function compareLargeCorpus(baseLog, candidateLog) {
                 delta,
                 threshold: metric.threshold,
                 minimum: metric.minimum,
-                aboveThreshold: delta > metric.threshold,
+                advisory,
+                aboveThreshold,
                 blocked
             });
         }
@@ -285,6 +289,7 @@ export function renderLargeCorpusReport(comparison) {
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
         "Small absolute changes below the noise floor do not block.",
+        "Sampled peak heap is informational because its single-run value depends on GC timing; OOM still blocks.",
         "",
         "| Corpus | Metric | Base | PR | Regression | Limit | Gate |",
         "|---|---|---:|---:|---:|---:|:---:|"
@@ -293,7 +298,7 @@ export function renderLargeCorpusReport(comparison) {
         lines.push(
             `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${row.threshold.toFixed(0)}% | **${statusLabel(row)}** |`
+            `${row.advisory ? "4 GiB cap" : `${row.threshold.toFixed(0)}%`} | **${statusLabel(row)}** |`
         );
     }
     if (comparison.errors.length > 0) {

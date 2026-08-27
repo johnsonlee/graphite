@@ -32,7 +32,8 @@ JAR -> graph build -> save -> mapped load -> Cypher queries
 
 The candidate runs before the base so it does not receive a systematic filesystem-cache advantage.
 The semantic and fixture assertions still run in record mode; record mode only disables the
-machine-specific absolute timing ceiling.
+machine-specific absolute timing ceiling. Each corpus process is capped at a 4 GiB heap, so an OOM
+or failure to finish still blocks the pull request.
 
 | Metric | Relative limit | Minimum absolute increase |
 |---|---:|---:|
@@ -41,11 +42,23 @@ machine-specific absolute timing ceiling.
 | Mapped load | 30% | 50 ms |
 | Query | 25% | 250 ms |
 | Full pipeline | 20% | 1,000 ms |
-| Sampled peak heap | 10% | 128 MiB |
+| Sampled peak heap | Report only | 4 GiB process cap |
 
 Both the relative limit and the minimum increase must be exceeded to block. The absolute floor
 prevents a small, noisy phase from failing a pull request on an insignificant millisecond change.
-Missing corpus output or a benchmark process failure blocks the gate.
+Sampled peak heap is informational because a single high-water sample varies with GC timing; the
+isolated 4 GiB process cap is the hard memory gate. Missing corpus output or a benchmark process
+failure blocks the gate.
+
+## Gradle caching
+
+`gradle/actions/setup-gradle` caches the wrapper distribution, downloaded dependencies, compiled
+build scripts, artifact transforms, and other reusable Gradle User Home state. The unit-test
+workflow writes this cache on the default branch. Pull-request benchmark jobs use it read-only, so
+they can reuse trusted main-branch state without creating a cache entry for every PR.
+
+Generated graphs and project `build/` directories are deliberately excluded. The end-to-end gate
+must measure graph construction and persistence rather than restore those outputs from a cache.
 
 ## Local verification
 

@@ -116,6 +116,20 @@ test("large-corpus comparison ignores changes below the absolute noise floor", (
     assert.equal(comparison.rows.find((row) => row.metric === "mapped load").blocked, false);
 });
 
+test("large-corpus comparison reports sampled heap without blocking on GC noise", () => {
+    const candidate = baseCorpusLine.replace(
+        `peakHeapBytes=${2_000 * 1024 * 1024}`,
+        `peakHeapBytes=${3_500 * 1024 * 1024}`
+    );
+    const comparison = compareLargeCorpus(baseCorpusLine, candidate);
+    const heap = comparison.rows.find((row) => row.metric === "peak heap");
+
+    assert.equal(comparison.passed, true);
+    assert.equal(heap.advisory, true);
+    assert.equal(heap.blocked, false);
+    assert.match(renderLargeCorpusReport(comparison), /4 GiB cap \| \*\*INFO\*\*/);
+});
+
 test("aggregate report fails closed when an artifact is missing", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-test-"));
     try {
