@@ -314,6 +314,40 @@ export function compareLargeCorpus(baseLog, candidateLog) {
     };
 }
 
+export function confirmLargeCorpus(initial, confirmation) {
+    const errors = [
+        ...initial.errors,
+        ...confirmation.errors.map((error) => `confirmation: ${error}`)
+    ];
+    const confirmationRows = new Map(
+        confirmation.rows.map((row) => [`${row.corpus}/${row.metric}`, row])
+    );
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const key = `${row.corpus}/${row.metric}`;
+        const retry = confirmationRows.get(key);
+        if (retry === undefined) {
+            errors.push(`${key}: missing from confirmation results`);
+            return row;
+        }
+        return {
+            ...row,
+            confirmation: {
+                baseValue: retry.baseValue,
+                candidateValue: retry.candidateValue,
+                delta: retry.delta,
+                blocked: retry.blocked
+            },
+            blocked: retry.blocked
+        };
+    });
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
 function formatMeasurement(value, unit) {
     if (unit === "bytes") return `${(value / MIB).toFixed(0)} MiB`;
     return `${Math.round(value).toLocaleString("en-US")} ms`;
@@ -325,16 +359,23 @@ export function renderLargeCorpusReport(comparison) {
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
         "Small absolute changes below the noise floor do not block.",
+        "Suspected timing regressions must repeat in a reverse-order confirmation run.",
         "Sampled peak heap is informational because its single-run value depends on GC timing; OOM still blocks.",
         "",
-        "| Corpus | Metric | Base | PR | Regression | Limit | Gate |",
-        "|---|---|---:|---:|---:|---:|:---:|"
+        "| Corpus | Metric | Base | PR | Regression | Confirmation (base -> PR) | Limit | Gate |",
+        "|---|---|---:|---:|---:|---:|---:|:---:|"
     ];
     for (const row of comparison.rows) {
+        const confirmation = row.confirmation === undefined
+            ? "-"
+            : `${formatMeasurement(row.confirmation.baseValue, row.unit)} -> ` +
+                `${formatMeasurement(row.confirmation.candidateValue, row.unit)} ` +
+                `(${formatDelta(row.confirmation.delta)})`;
         lines.push(
             `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${row.advisory ? "4 GiB cap" : `${row.threshold.toFixed(0)}%`} | **${statusLabel(row)}** |`
+            `${confirmation} | ${row.advisory ? "4 GiB cap" : `${row.threshold.toFixed(0)}%`} | ` +
+            `**${statusLabel(row)}** |`
         );
     }
     if (comparison.errors.length > 0) {
@@ -416,6 +457,18 @@ function confirmJmhCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function confirmLargeCorpusCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const confirmation = compareLargeCorpus(
+        fs.readFileSync(requireArg(args, "base"), "utf8"),
+        fs.readFileSync(requireArg(args, "candidate"), "utf8")
+    );
+    const comparison = confirmLargeCorpus(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderLargeCorpusReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function aggregateCommand(args) {
     const aggregated = aggregateReports(requireArg(args, "directory"), {
         baseSha: requireArg(args, "base-sha"),
@@ -433,6 +486,7 @@ function main(argv) {
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
+    else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);
     else if (command === "aggregate") aggregateCommand(args);
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);
 }

@@ -154,11 +154,28 @@ jobs:
 
     - name: Compare large-corpus results
       run: |
-        node candidate/.github/scripts/benchmark-gate.mjs compare-large-corpus \
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-large-corpus \
           --base benchmark-results/base-large-corpus.log \
           --candidate benchmark-results/candidate-large-corpus.log \
-          --report benchmark-results/large-corpus-report.md \
-          --status benchmark-results/large-corpus-status.json
+          --report benchmark-results/initial-large-corpus-report.md \
+          --status benchmark-results/initial-large-corpus-status.json; then
+          mv benchmark-results/initial-large-corpus-report.md benchmark-results/large-corpus-report.md
+          mv benchmark-results/initial-large-corpus-status.json benchmark-results/large-corpus-status.json
+        else
+          set -o pipefail
+          base/gradlew -p base :webgraph:largeCorpusTest \
+            -Dlarge.corpus.record=true --no-daemon 2>&1 \
+            | tee benchmark-results/base-large-corpus-confirmation.log
+          candidate/gradlew -p candidate :webgraph:largeCorpusTest \
+            -Dlarge.corpus.record=true --no-daemon 2>&1 \
+            | tee benchmark-results/candidate-large-corpus-confirmation.log
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-large-corpus \
+            --initial benchmark-results/initial-large-corpus-status.json \
+            --base benchmark-results/base-large-corpus-confirmation.log \
+            --candidate benchmark-results/candidate-large-corpus-confirmation.log \
+            --report benchmark-results/large-corpus-report.md \
+            --status benchmark-results/large-corpus-status.json
+        fi
 
     - name: Upload large-corpus results
       if: always()

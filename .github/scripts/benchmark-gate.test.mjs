@@ -6,6 +6,7 @@ import test from "node:test";
 import {
     COMMENT_MARKER,
     aggregateReports,
+    confirmLargeCorpus,
     confirmJmh,
     compareJmh,
     compareLargeCorpus,
@@ -165,6 +166,30 @@ test("large-corpus comparison reports sampled heap without blocking on GC noise"
     assert.equal(heap.advisory, true);
     assert.equal(heap.blocked, false);
     assert.match(renderLargeCorpusReport(comparison), /4 GiB cap \| \*\*INFO\*\*/);
+});
+
+test("large-corpus reverse-order confirmation rejects a one-round false positive", () => {
+    const initialCandidate = baseCorpusLine.replace("saveMs=2000", "saveMs=3000");
+    const initial = compareLargeCorpus(baseCorpusLine, initialCandidate);
+    const retryCandidate = baseCorpusLine.replace("saveMs=2000", "saveMs=2100");
+    const retry = compareLargeCorpus(baseCorpusLine, retryCandidate);
+    const confirmed = confirmLargeCorpus(initial, retry);
+
+    assert.equal(initial.passed, false);
+    assert.equal(confirmed.passed, true);
+    assert.equal(confirmed.rows.find((row) => row.metric === "save").blocked, false);
+    assert.match(renderLargeCorpusReport(confirmed), /\*\*NOISE\*\*/);
+});
+
+test("large-corpus reverse-order confirmation blocks a repeated regression", () => {
+    const candidate = baseCorpusLine.replace("saveMs=2000", "saveMs=3000");
+    const initial = compareLargeCorpus(baseCorpusLine, candidate);
+    const retry = compareLargeCorpus(baseCorpusLine, candidate);
+    const confirmed = confirmLargeCorpus(initial, retry);
+
+    assert.equal(confirmed.passed, false);
+    assert.equal(confirmed.rows.find((row) => row.metric === "save").blocked, true);
+    assert.match(renderLargeCorpusReport(confirmed), /\*\*FAIL\*\*/);
 });
 
 test("aggregate report fails closed when an artifact is missing", () => {

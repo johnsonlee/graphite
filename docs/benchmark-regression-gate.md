@@ -47,11 +47,12 @@ or failure to finish still blocks the pull request.
 | Full pipeline | 20% | 1,000 ms |
 | Sampled peak heap | Report only | 4 GiB process cap |
 
-Both the relative limit and the minimum increase must be exceeded to block. The absolute floor
-prevents a small, noisy phase from failing a pull request on an insignificant millisecond change.
-Sampled peak heap is informational because a single high-water sample varies with GC timing; the
-isolated 4 GiB process cap is the hard memory gate. Missing corpus output or a benchmark process
-failure blocks the gate.
+Both the relative limit and the minimum increase must be exceeded to trigger a reverse-order
+confirmation run. The same corpus and phase must exceed both limits again to block. This keeps a
+single GC, CPU, or filesystem stall from becoming a required-check failure while preserving a gate
+for repeatable phase regressions. Sampled peak heap is informational because a single high-water
+sample varies with GC timing; the isolated 4 GiB process cap is the hard memory gate. Missing corpus
+output or a benchmark process failure blocks the gate.
 
 ## Gradle caching
 
