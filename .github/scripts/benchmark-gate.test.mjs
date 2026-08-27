@@ -6,6 +6,7 @@ import test from "node:test";
 import {
     COMMENT_MARKER,
     aggregateReports,
+    confirmJmh,
     compareJmh,
     compareLargeCorpus,
     parseLargeCorpusLog,
@@ -76,6 +77,42 @@ test("JMH comparison fails when a benchmark is missing", () => {
 
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors[0], /missing from candidate/);
+});
+
+test("JMH reverse-order confirmation rejects a one-round false positive", () => {
+    const initial = compareJmh(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 125, confidence: [123, 127] })],
+        15
+    );
+    const retry = compareJmh(
+        [jmhResult({ score: 110, confidence: [108, 112] })],
+        [jmhResult({ score: 111, confidence: [109, 113] })],
+        15
+    );
+    const confirmed = confirmJmh(initial, retry);
+
+    assert.equal(confirmed.passed, true);
+    assert.equal(confirmed.rows[0].blocked, false);
+    assert.match(renderJmhReport(confirmed), /\*\*NOISE\*\*/);
+});
+
+test("JMH reverse-order confirmation blocks a repeated regression", () => {
+    const initial = compareJmh(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 125, confidence: [123, 127] })],
+        15
+    );
+    const retry = compareJmh(
+        [jmhResult({ score: 102, confidence: [100, 104] })],
+        [jmhResult({ score: 128, confidence: [126, 130] })],
+        15
+    );
+    const confirmed = confirmJmh(initial, retry);
+
+    assert.equal(confirmed.passed, false);
+    assert.equal(confirmed.rows[0].blocked, true);
+    assert.match(renderJmhReport(confirmed), /\*\*FAIL\*\*/);
 });
 
 const baseCorpusLine = [

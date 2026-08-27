@@ -185,20 +185,56 @@ export function compareJmh(baseResults, candidateResults, threshold = 15) {
     };
 }
 
+export function confirmJmh(initial, confirmation) {
+    const errors = [
+        ...initial.errors,
+        ...confirmation.errors.map((error) => `confirmation: ${error}`)
+    ];
+    const confirmationRows = new Map(confirmation.rows.map((row) => [row.key, row]));
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const retry = confirmationRows.get(row.key);
+        if (retry === undefined) {
+            errors.push(`${row.key}: missing from confirmation results`);
+            return row;
+        }
+        return {
+            ...row,
+            confirmation: {
+                baseScore: retry.baseScore,
+                candidateScore: retry.candidateScore,
+                delta: retry.delta,
+                blocked: retry.blocked
+            },
+            blocked: retry.blocked
+        };
+    });
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
 export function renderJmhReport(comparison) {
     const lines = [
         "### Method-level JMH",
         "",
-        "A row blocks only when it exceeds the 15% limit and the 99.9% confidence intervals do not overlap.",
+        "A row blocks only when it exceeds the 15% limit, the 99.9% confidence intervals do not overlap,",
+        "and a reverse-order confirmation run fails the same benchmark.",
         "",
-        "| Benchmark | Base | PR | Regression | Limit | Gate |",
-        "|---|---:|---:|---:|---:|:---:|"
+        "| Benchmark | Base | PR | Regression | Confirmation (base -> PR) | Limit | Gate |",
+        "|---|---:|---:|---:|---:|---:|:---:|"
     ];
     for (const row of comparison.rows) {
+        const confirmation = row.confirmation === undefined
+            ? "-"
+            : `${formatScore(row.confirmation.baseScore)} -> ${formatScore(row.confirmation.candidateScore)} ` +
+                `${row.unit} (${formatDelta(row.confirmation.delta)})`;
         lines.push(
             `| \`${shortBenchmarkName(row.key)}\` | ${formatScore(row.baseScore)} ${row.unit} | ` +
             `${formatScore(row.candidateScore)} ${row.unit} | ${formatDelta(row.delta)} | ` +
-            `${row.threshold.toFixed(0)}% | **${statusLabel(row)}** |`
+            `${confirmation} | ${row.threshold.toFixed(0)}% | **${statusLabel(row)}** |`
         );
     }
     if (comparison.errors.length > 0) {
@@ -367,6 +403,19 @@ function compareLargeCorpusCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function confirmJmhCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const confirmation = compareJmh(
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15)
+    );
+    const comparison = confirmJmh(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderJmhReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function aggregateCommand(args) {
     const aggregated = aggregateReports(requireArg(args, "directory"), {
         baseSha: requireArg(args, "base-sha"),
@@ -382,6 +431,7 @@ function main(argv) {
     const args = parseArgs(argv);
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
+    else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "aggregate") aggregateCommand(args);
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);

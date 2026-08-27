@@ -16,10 +16,13 @@ The method-level job runs every `CypherBenchmark` method from both revisions wit
 warmup and measurement protocol. Lower latency is better. A row blocks the pull request only when:
 
 1. candidate latency is more than 15% above the base latency; and
-2. the two JMH 99.9% confidence intervals do not overlap.
+2. the two JMH 99.9% confidence intervals do not overlap; and
+3. the same benchmark fails both the initial base-first run and a PR-first confirmation run.
 
-If JMH cannot produce finite confidence intervals, the 15% threshold is enforced directly. Missing
-benchmarks, invalid scores, changed units, and execution errors fail closed.
+The reverse-order confirmation only runs after a suspected regression. It prevents CPU frequency,
+host contention, or execution order from turning a one-round process-level drift into a required
+check failure. If JMH cannot produce finite confidence intervals, the 15% threshold is enforced
+directly. Missing benchmarks, invalid scores, changed units, and execution errors fail closed.
 
 ## Real-corpus end-to-end gate
 

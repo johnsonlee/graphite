@@ -73,12 +73,31 @@ jobs:
 
     - name: Compare method-level results
       run: |
-        node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-jmh.json \
           --candidate benchmark-results/candidate-jmh.json \
           --threshold 15 \
-          --report benchmark-results/method-report.md \
-          --status benchmark-results/method-status.json
+          --report benchmark-results/initial-method-report.md \
+          --status benchmark-results/initial-method-status.json; then
+          mv benchmark-results/initial-method-report.md benchmark-results/method-report.md
+          mv benchmark-results/initial-method-status.json benchmark-results/method-status.json
+        else
+          CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          java -jar "${CANDIDATE_JAR}" \
+            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh-confirmation.json"
+          java -jar "${BASE_JAR}" \
+            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh-confirmation.json"
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+            --initial benchmark-results/initial-method-status.json \
+            --base benchmark-results/base-jmh-confirmation.json \
+            --candidate benchmark-results/candidate-jmh-confirmation.json \
+            --threshold 15 \
+            --report benchmark-results/method-report.md \
+            --status benchmark-results/method-status.json
+        fi
 
     - name: Upload method-level results
       if: always()
