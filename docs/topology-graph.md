@@ -141,3 +141,59 @@ benchmark with:
 ./gradlew :explore:jmh \
   -Pjmh.filter='TopologyHeapBenchmark.android_buildTopologyHeap'
 ```
+
+## Forty-graph UNION budget regression
+
+The startup regression uses one independently persisted Android-scale graph as
+the fixture and opens 40 mapped instances. Keeping fixture construction outside
+the benchmark fork matters: building the Android graph itself exceeds a 3 GiB
+heap, while opening 40 persisted instances is the behavior under test.
+
+The persisted fixture contains 5,938,827 nodes and 6,675,058 edges, so the 40
+mapped graph instances expose 237,553,080 logical nodes and 267,002,320 logical
+edges to the query layer. That is nearly three times the reported production
+cardinality of 80,158,209 nodes and 91,565,639 edges. The instances map the same
+fixture files, however, so this is a conservative JVM heap and query-cardinality
+regression, not a substitute for measuring RSS with 42 distinct production
+graph directories.
+
+The valid shape has eight `UNION ALL` branches and exactly 100,000 combined
+rows. The oversized shape lets every branch produce 100,000 rows. Before the
+global budget fix, the oversized query retained every branch result and failed
+with `OutOfMemoryError` from `QueryPipeline.copyProvenance` before the topology
+row guard could run. The fixed executor applies the remaining global budget to
+each `UNION ALL` branch and stops executing branches when it is exhausted. A
+distinct `UNION` still scans later branches so duplicate rows retain complete
+cross-graph provenance, but stores at most the configured number of distinct
+rows.
+
+These are one-fork, one-iteration smoke measurements on macOS, OpenJDK 17,
+`-Xmx3g`, using the same persisted fixture for both revisions:
+
+| Scenario | `main` | Fixed | Result |
+|---|---:|---:|---|
+| Valid 40-graph, 100,000-row UNION topology | 6,084.735 ms, 2,754,952,520 B allocated | 6,068.351 ms, 2,762,024,360 B allocated | Completed; time -0.27%, allocation +0.26% |
+| Oversized 40-graph UNION topology | `OutOfMemoryError` | 6,192.009 ms | Rejected with the explicit 100,000-row limit |
+
+The valid-shape timing and allocation deltas are too small to claim a speedup
+or regression from a single observation. The material result is that the legal
+40-graph topology completes within 3 GiB and an oversized query reaches the
+documented row-limit error instead of exhausting the JVM heap.
+
+After preparing a persisted fixture, reproduce both fixed-revision checks with:
+
+```bash
+java -jar graphite-explore/build/libs/*-jmh.jar \
+  'TopologyStartupBenchmark.android_loadAndBuildTopology' \
+  -p graphCount=40 -p topologyShape=union-broad \
+  -wi 0 -i 1 -f 1 \
+  -jvmArgs '-Xmx3g -Dandroid.graph.path=/path/to/persisted-android-graph' \
+  -prof gc -foe true
+
+java -jar graphite-explore/build/libs/*-jmh.jar \
+  'TopologyStartupBenchmark.android_rejectOversizedUnionTopology' \
+  -p graphCount=40 -p topologyShape=bounded \
+  -wi 0 -i 1 -f 1 \
+  -jvmArgs '-Xmx3g -Dandroid.graph.path=/path/to/persisted-android-graph' \
+  -foe true
+```

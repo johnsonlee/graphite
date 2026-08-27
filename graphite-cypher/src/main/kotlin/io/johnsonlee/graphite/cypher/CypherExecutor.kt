@@ -56,7 +56,7 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
     fun execute(cypher: String, maxRows: Int): CypherResult {
         require(maxRows >= 0) { "maxRows must be non-negative" }
         val clauses = CypherDslAdapter.parse(cypher)
-        return executeClauses(applyMaxRows(clauses, maxRows), maxRows)
+        return executeClauses(clauses, maxRows)
     }
 
     private fun executeClauses(clauses: List<CypherClause>, maxRows: Int?): CypherResult {
@@ -67,7 +67,8 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         }
 
         // Execute via pipeline
-        val raw = pipeline.execute(clauses)
+        val boundedClauses = maxRows?.let { applyMaxRows(clauses, it) } ?: clauses
+        val raw = pipeline.execute(boundedClauses)
 
         // Post-process: convert Node values to property maps
         return materializeResult(raw)
@@ -101,12 +102,14 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         } else {
             val limit = segment[limitIndex] as CypherClause.Limit
             val literalLimit = literalLimitCount(limit.count)
-            if (literalLimit != null && literalLimit > maxRows) {
-                segment.toMutableList().apply {
+            when {
+                literalLimit == null -> segment.toMutableList().apply {
+                    add(limitIndex, CypherClause.Limit(CypherExpr.Literal(maxRows)))
+                }
+                literalLimit > maxRows -> segment.toMutableList().apply {
                     this[limitIndex] = CypherClause.Limit(CypherExpr.Literal(maxRows))
                 }
-            } else {
-                segment
+                else -> segment
             }
         }
     }
@@ -140,16 +143,54 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         }
         segments.add(current)
 
-        val results = segments.map { segment -> pipeline.execute(segment) }
+        return if (unionAll) {
+            executeUnionAll(segments, maxRows)
+        } else {
+            executeUnionDistinct(segments, maxRows)
+        }
+    }
 
-        if (results.isEmpty()) return CypherResult(emptyList(), emptyList())
+    private fun executeUnionAll(segments: List<List<CypherClause>>, maxRows: Int?): CypherResult {
+        var columns = emptyList<String>()
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (segment in segments) {
+            val remaining = maxRows?.minus(rows.size)
+            if (remaining != null && remaining <= 0) {
+                if (columns.isEmpty()) {
+                    columns = pipeline.execute(applyMaxRowsToSegment(segment, 0)).columns
+                }
+                break
+            }
 
-        val columns = results.first().columns
-        val combinedRows = results.flatMap { it.rows }
-        val finalRows = if (unionAll) combinedRows else distinctRows(combinedRows)
-        val limitedRows = maxRows?.let { finalRows.take(it) } ?: finalRows
+            val boundedSegment = remaining?.let { applyMaxRowsToSegment(segment, it) } ?: segment
+            val result = pipeline.execute(boundedSegment)
+            if (columns.isEmpty()) columns = result.columns
+            if (remaining == null) {
+                rows.addAll(result.rows)
+            } else {
+                rows.addAll(result.rows.take(remaining))
+            }
+        }
+        return materializeResult(CypherResult(columns, rows))
+    }
 
-        return materializeResult(CypherResult(columns, limitedRows))
+    private fun executeUnionDistinct(segments: List<List<CypherClause>>, maxRows: Int?): CypherResult {
+        if (maxRows == 0) {
+            val columns = segments.firstOrNull()
+                ?.let { pipeline.execute(applyMaxRowsToSegment(it, 0)).columns }
+                .orEmpty()
+            return CypherResult(columns, emptyList())
+        }
+        var columns = emptyList<String>()
+        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        // Later segments can still add provenance to a retained duplicate row.
+        for (segment in segments) {
+            val boundedSegment = maxRows?.let { applyMaxRowsToSegment(segment, it) } ?: segment
+            val result = pipeline.execute(boundedSegment)
+            if (columns.isEmpty()) columns = result.columns
+            result.rows.forEach { row -> addDistinctRow(rows, row, maxRows) }
+        }
+        return materializeResult(CypherResult(columns, rows.values.toList()))
     }
 
     /**
@@ -175,20 +216,20 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun distinctRows(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
-        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-        for (row in rows) {
-            val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-            val existing = byVisibleValues[visible]
-            if (existing == null) {
-                byVisibleValues[visible] = row.toMutableMap()
-            } else {
-                val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
-                    (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
-                if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
-            }
+    private fun addDistinctRow(
+        rows: MutableMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        row: Map<String, Any?>,
+        maxRows: Int?
+    ) {
+        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+        val existing = rows[visible]
+        if (existing != null) {
+            val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+            if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+        } else if (maxRows == null || rows.size < maxRows) {
+            rows[visible] = row.toMutableMap()
         }
-        return byVisibleValues.values.toList()
     }
 
     private fun materializeValue(value: Any?): Any? = when (value) {

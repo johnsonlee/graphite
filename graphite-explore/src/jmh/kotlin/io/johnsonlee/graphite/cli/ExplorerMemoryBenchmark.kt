@@ -516,7 +516,8 @@ open class MultiGraphExplorerBenchmark {
 
 /**
  * Measures the real multi-graph startup path with and without topology materialization.
- * Both variants load the same Android-scale mapped graph instances through GraphRegistry.
+ * Both variants load mapped instances of the same Android-scale graph through GraphRegistry.
+ * This stresses per-graph heap and logical query cardinality, but mapped file pages may be shared.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -528,6 +529,9 @@ open class TopologyStartupBenchmark {
 
     @Param("3")
     var graphCount: Int = 0
+
+    @Param("bounded")
+    lateinit var topologyShape: String
 
     private lateinit var graphPath: Path
 
@@ -542,7 +546,18 @@ open class TopologyStartupBenchmark {
     @Benchmark
     fun android_loadAndBuildTopology(): Long = runStartup(buildTopology = true)
 
-    private fun runStartup(buildTopology: Boolean): Long {
+    @Benchmark
+    fun android_rejectOversizedUnionTopology(): Long = runStartup(
+        buildTopology = true,
+        queryOverride = topologyStartupQuery("union-over-budget"),
+        expectRowLimit = true
+    )
+
+    private fun runStartup(
+        buildTopology: Boolean,
+        queryOverride: TopologyQuery? = null,
+        expectRowLimit: Boolean = false
+    ): Long {
         val root = Files.createTempDirectory("graphite-topology-startup")
         val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
         var topology: TopologyService? = null
@@ -552,11 +567,17 @@ open class TopologyStartupBenchmark {
             }
             topology = TopologyService(
                 registry,
-                if (buildTopology) listOf(TOPOLOGY_BENCHMARK_QUERY) else emptyList(),
+                if (buildTopology) listOf(queryOverride ?: topologyStartupQuery(topologyShape)) else emptyList(),
                 root
             )
-            val summary = topology.rebuild()
-            summary.graphCount.toLong() + summary.relationCount + summary.matchedRows
+            try {
+                val summary = topology.rebuild()
+                check(!expectRowLimit) { "Expected the oversized topology query to be rejected" }
+                summary.graphCount.toLong() + summary.relationCount + summary.matchedRows
+            } catch (error: IllegalArgumentException) {
+                check(expectRowLimit && error.message.orEmpty().contains("100000 row limit")) { throw error }
+                graphCount.toLong()
+            }
         } finally {
             topology?.close()
             registry.close()
@@ -586,7 +607,7 @@ open class TopologyApiBenchmark {
         registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
         val graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
         repeat(3) { index -> registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED) }
-        topology = TopologyService(registry, listOf(TOPOLOGY_BENCHMARK_QUERY), root).also { it.rebuild() }
+        topology = TopologyService(registry, listOf(topologyStartupQuery("bounded")), root).also { it.rebuild() }
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
         }.start(0)
@@ -893,18 +914,45 @@ private const val TOPOLOGY_HEAP_GC_PAUSE_MS = 100L
 private const val TOPOLOGY_HEAP_SAMPLE_INTERVAL_NS = 1_000_000L
 private const val TOPOLOGY_HEAP_SAMPLER_JOIN_MS = 5_000L
 
-private val TOPOLOGY_BENCHMARK_QUERY = TopologyQuery(
-    "android-topology.cypher",
-    """
-    MATCH (call:CallSiteNode)
-    WHERE graphId(call) = 'service-0'
-    RETURN 'service-0' AS source,
-           'service-1' AS target,
-           'benchmark-rpc' AS protocol,
-           call.callee_name AS operation
-    LIMIT 100
-    """.trimIndent()
-)
+private fun topologyStartupQuery(shape: String): TopologyQuery = when (shape) {
+    "bounded" -> TopologyQuery(
+        "android-topology.cypher",
+        """
+        MATCH (call:CallSiteNode)
+        WHERE graphId(call) = 'service-0'
+        RETURN 'service-0' AS source,
+               'service-1' AS target,
+               'benchmark-rpc' AS protocol,
+               call.callee_name AS operation
+        LIMIT 100
+        """.trimIndent()
+    )
+    "union-broad" -> TopologyQuery(
+        "android-topology-union.cypher",
+        topologyUnionQuery(MAX_TOPOLOGY_BENCHMARK_ROWS / TOPOLOGY_UNION_BRANCHES)
+    )
+    "union-over-budget" -> TopologyQuery(
+        "android-topology-union-over-budget.cypher",
+        topologyUnionQuery(MAX_TOPOLOGY_BENCHMARK_ROWS)
+    )
+    else -> error("Unknown topology startup shape: $shape")
+}
+
+private fun topologyUnionQuery(rowsPerBranch: Int): String =
+    List(TOPOLOGY_UNION_BRANCHES) { branch ->
+        """
+        MATCH (call:CallSiteNode)
+        RETURN graphId(call) AS source,
+               CASE graphId(call) WHEN 'service-0' THEN 'service-1' ELSE 'service-0' END AS target,
+               'benchmark-rpc-$branch' AS protocol,
+               call.callee_name AS operation,
+               call.callee_class AS evidence
+        LIMIT $rowsPerBranch
+        """.trimIndent()
+    }.joinToString("\nUNION ALL\n")
+
+private const val TOPOLOGY_UNION_BRANCHES = 8
+private const val MAX_TOPOLOGY_BENCHMARK_ROWS = 100_000
 
 private data class MemorySample(
     val usedHeapBytes: Long,
