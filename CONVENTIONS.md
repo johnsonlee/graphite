@@ -10,11 +10,11 @@
 ## Verification and Benchmarks
 
 - After fixing or tightening unit tests for a performance-sensitive path, rerun the relevant module tests and lint gate.
-- Every PR body must include benchmark testing results.
-- Benchmark evidence in the PR body must include the benchmark command, environment summary, exact benchmark names, result table, and a comparison against `main`.
-- The PR body must include both method-level and end-to-end benchmark data.
+- Every PR must pass the required `benchmark-regression-gate` check. The check runs the base and PR revisions on the same GitHub runner and updates a benchmark result comment on the PR.
+- The benchmark comment is the standard method-level and end-to-end evidence. A PR body may link to it instead of copying the same tables.
+- Additional benchmark evidence in a PR body must include the benchmark command, environment summary, exact benchmark names, result table, and a comparison against `main`.
 - Method-level benchmark data must come from the most relevant JMH class for the touched code. For Cypher query changes, include `CypherBenchmark`.
-- End-to-end benchmark data must include `GraphEndToEndBenchmark`, which covers `JAR -> build -> save -> mapped load -> Cypher query`.
+- Automated end-to-end data comes from `LargeCorpusPerformanceGateTest`, which covers `JAR -> build -> save -> mapped load -> Cypher query`; targeted manual investigations may add `GraphEndToEndBenchmark` data.
 - If a change touches persisted graph loading or large-corpus query behavior, also include the relevant load/query benchmark class, such as `AndroidQueryBenchmark`, `AndroidLoadBenchmark`, `LargeCorpusQueryBenchmark`, or `LargeCorpusLoadBenchmark`.
 - The PR body must explicitly state whether the benchmark comparison indicates a performance regression, including separate conclusions for method-level and end-to-end results.
 - If benchmark results cannot be produced, state the blocker in the PR description rather than leaving performance unaddressed.
