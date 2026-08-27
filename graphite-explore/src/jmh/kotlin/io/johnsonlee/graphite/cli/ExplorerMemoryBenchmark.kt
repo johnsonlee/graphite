@@ -516,7 +516,8 @@ open class MultiGraphExplorerBenchmark {
 
 /**
  * Measures the real multi-graph startup path with and without topology materialization.
- * Both variants load the same Android-scale mapped graph instances through GraphRegistry.
+ * Both variants load mapped instances of the same Android-scale graph through GraphRegistry.
+ * This stresses per-graph heap and logical query cardinality, but mapped file pages may be shared.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)

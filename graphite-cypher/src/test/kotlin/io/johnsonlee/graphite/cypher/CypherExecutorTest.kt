@@ -217,6 +217,12 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execute with maxRows preserves non numeric literal limit semantics`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT true", maxRows = 2)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
     fun `execute with maxRows caps expression limit`() {
         var consumed = 0
         val counting = object : Graph by graph {
@@ -287,6 +293,18 @@ class CypherExecutorTest {
     fun `execute with zero maxRows preserves union columns`() {
         val result = executor.execute(
             "MATCH (n:IntConstant) RETURN n.value AS v UNION ALL " +
+                "MATCH (m:StringConstant) RETURN m.value AS v",
+            maxRows = 0
+        )
+
+        assertEquals(listOf("v"), result.columns)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `execute with zero maxRows preserves distinct union columns`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) RETURN n.value AS v UNION " +
                 "MATCH (m:StringConstant) RETURN m.value AS v",
             maxRows = 0
         )

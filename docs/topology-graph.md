@@ -149,6 +149,14 @@ the fixture and opens 40 mapped instances. Keeping fixture construction outside
 the benchmark fork matters: building the Android graph itself exceeds a 3 GiB
 heap, while opening 40 persisted instances is the behavior under test.
 
+The persisted fixture contains 5,938,827 nodes and 6,675,058 edges, so the 40
+mapped graph instances expose 237,553,080 logical nodes and 267,002,320 logical
+edges to the query layer. That is nearly three times the reported production
+cardinality of 80,158,209 nodes and 91,565,639 edges. The instances map the same
+fixture files, however, so this is a conservative JVM heap and query-cardinality
+regression, not a substitute for measuring RSS with 42 distinct production
+graph directories.
+
 The valid shape has eight `UNION ALL` branches and exactly 100,000 combined
 rows. The oversized shape lets every branch produce 100,000 rows. Before the
 global budget fix, the oversized query retained every branch result and failed
