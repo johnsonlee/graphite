@@ -11,8 +11,10 @@ jackson = "2.17.0"
 guava = "33.0.0-jre"
 snakeyaml = "2.2"
 webgraph = "3.6.12"
-elasticsearch = "8.17.0"
 android-all = "14-robolectric-10818077"
+tika = "2.9.2"
+hive = "4.0.0"
+kotlin-compiler-fixture = "2.0.21"
 javalin = "6.4.0"
 jmh = "1.37"
 [libraries]
@@ -34,8 +36,10 @@ picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 webgraph = { module = "it.unimi.dsi:webgraph", version.ref = "webgraph" }
-elasticsearch = { module = "org.elasticsearch:elasticsearch", version.ref = "elasticsearch" }
 android-all = { module = "org.robolectric:android-all", version.ref = "android-all" }
+tika-app = { module = "org.apache.tika:tika-app", version.ref = "tika" }
+hive-exec = { module = "org.apache.hive:hive-exec", version.ref = "hive" }
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin-compiler-fixture" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }

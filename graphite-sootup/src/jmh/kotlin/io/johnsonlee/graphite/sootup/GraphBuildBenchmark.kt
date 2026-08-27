@@ -11,8 +11,10 @@ import java.util.concurrent.TimeUnit
  * JMH benchmarks for graph building from JAR files.
  *
  * Requires test JARs:
- * - Elasticsearch at path from system property `elasticsearch.jar.path`
  * - Android SDK at path from system property `android.jar.path`
+ * - Apache Tika at path from system property `tika.jar.path`
+ * - Apache Hive at path from system property `hive.jar.path`
+ * - Kotlin compiler at path from system property `kotlin.compiler.jar.path`
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -22,50 +24,71 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 1)
 open class GraphBuildBenchmark {
 
-    private var esJarPath: String? = null
-    private var androidJarPath: String? = null
+    private lateinit var fixturePaths: Map<String, Path>
 
     @Setup
     fun setup() {
-        esJarPath = System.getProperty("elasticsearch.jar.path")
-        androidJarPath = System.getProperty("android.jar.path")
-
-        // Fall back to finding in gradle cache
-        if (esJarPath == null) {
-            val cache = Path.of(System.getProperty("user.home"), ".gradle", "caches")
-            Files.walk(cache).filter { it.fileName.toString() == "elasticsearch-8.17.0.jar" }.findFirst().ifPresent {
-                esJarPath = it.toString()
+        fixturePaths = mapOf(
+            ANDROID_PROPERTY to resolveFixture(ANDROID_PROPERTY) {
+                it.startsWith("android-all-") && it.endsWith(".jar")
+            },
+            TIKA_PROPERTY to resolveFixture(TIKA_PROPERTY) { it == "tika-app-2.9.2.jar" },
+            HIVE_PROPERTY to resolveFixture(HIVE_PROPERTY) { it == "hive-exec-4.0.0.jar" },
+            KOTLIN_COMPILER_PROPERTY to resolveFixture(KOTLIN_COMPILER_PROPERTY) {
+                it == "kotlin-compiler-embeddable-2.0.21.jar"
             }
-        }
-        if (androidJarPath == null) {
-            val cache = Path.of(System.getProperty("user.home"), ".gradle", "caches")
-            Files.walk(cache).filter { it.fileName.toString().startsWith("android-all-") && it.fileName.toString().endsWith(".jar") }.findFirst().ifPresent {
-                androidJarPath = it.toString()
-            }
-        }
-    }
-
-    @Benchmark
-    fun buildElasticsearchGraph(): Graph {
-        val jar = esJarPath ?: throw IllegalStateException("ES JAR not found")
-        return JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(Path.of(jar))
+        )
     }
 
     @Benchmark
     fun buildAndroidSdkGraph(): Graph {
-        val jar = androidJarPath ?: throw IllegalStateException("Android JAR not found")
-        return JavaProjectLoader(LoaderConfig(buildCallGraph = false)).load(Path.of(jar))
+        return buildGraph(ANDROID_PROPERTY, LoaderConfig(buildCallGraph = false))
     }
 
     @Benchmark
     fun buildAndroidSdkGraphEndToEndConfig(): Graph {
-        val jar = androidJarPath ?: throw IllegalStateException("Android JAR not found")
-        return JavaProjectLoader(
-            LoaderConfig(
-                buildCallGraph = false,
-                extractAnnotations = false,
-                trackCrossMethodFunctionalDispatch = false
-            )
-        ).load(Path.of(jar))
+        return buildGraph(ANDROID_PROPERTY, endToEndConfig())
+    }
+
+    @Benchmark
+    fun buildTikaGraphEndToEndConfig(): Graph = buildGraph(TIKA_PROPERTY, endToEndConfig())
+
+    @Benchmark
+    fun buildHiveGraphEndToEndConfig(): Graph = buildGraph(HIVE_PROPERTY, endToEndConfig())
+
+    @Benchmark
+    fun buildKotlinCompilerGraphEndToEndConfig(): Graph = buildGraph(KOTLIN_COMPILER_PROPERTY, endToEndConfig())
+
+    private fun buildGraph(property: String, config: LoaderConfig): Graph {
+        return JavaProjectLoader(config).load(fixturePaths.getValue(property))
+    }
+
+    private fun endToEndConfig(): LoaderConfig = LoaderConfig(
+        buildCallGraph = false,
+        extractAnnotations = false,
+        trackCrossMethodFunctionalDispatch = false
+    )
+
+    private fun resolveFixture(property: String, matcher: (String) -> Boolean): Path {
+        System.getProperty(property)?.let { configured ->
+            return Path.of(configured).also { path ->
+                require(Files.isRegularFile(path)) { "Fixture JAR not found at $path" }
+            }
+        }
+        val cache = Path.of(System.getProperty("user.home"), ".gradle", "caches")
+        require(Files.isDirectory(cache)) { "Gradle cache not found at $cache" }
+        Files.walk(cache).use { entries ->
+            return entries
+                .filter { Files.isRegularFile(it) && matcher(it.fileName.toString()) }
+                .findFirst()
+                .orElseThrow { IllegalStateException("Fixture JAR for -D$property not found") }
+        }
+    }
+
+    private companion object {
+        const val ANDROID_PROPERTY = "android.jar.path"
+        const val TIKA_PROPERTY = "tika.jar.path"
+        const val HIVE_PROPERTY = "hive.jar.path"
+        const val KOTLIN_COMPILER_PROPERTY = "kotlin.compiler.jar.path"
     }
 }

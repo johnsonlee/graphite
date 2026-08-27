@@ -142,9 +142,17 @@ Use both micro and end-to-end benchmarks. A change is not accepted based on synt
 | `SavePhaseBreakdownBenchmark` | Isolate save phases | `./gradlew :webgraph:jmh -Pjmh.filter=SavePhaseBreakdownBenchmark` |
 | `GraphBuildPersistBenchmark` | Synthetic 10M save/load guardrail | `./gradlew :webgraph:jmh -Pjmh.filter=GraphBuildPersistBenchmark` |
 | `GraphEndToEndBenchmark` | Real JAR `build -> save -> load -> query` | `./gradlew :webgraph:jmh -Pjmh.filter=GraphEndToEndBenchmark` |
-| `GraphBenchmark` | Persisted-graph load/query comparisons | `./gradlew :webgraph:jmh -Pjmh.filter='(Es|Android).*(Load|Query)Benchmark'` |
+| `GraphBenchmark` | Persisted-graph load/query comparisons | `./gradlew :webgraph:jmh -Pjmh.filter='(Android|LargeCorpus).*(Load|Query)Benchmark'` |
 
-`GraphEndToEndBenchmark` and `GraphBenchmark` auto-discover fixture JARs from Gradle cache, or accept explicit overrides via `-Delasticsearch.jar.path`, `-Dandroid.jar.path`, `-Delasticsearch.graph.path`, and `-Dandroid.graph.path`.
+`GraphEndToEndBenchmark` and the load/query benchmarks auto-discover fixture JARs from the Gradle
+cache. Explicit `-Dandroid.jar.path`, `-Dtika.jar.path`, `-Dhive.jar.path`, and
+`-Dkotlin.compiler.jar.path` values take precedence over auto-discovery; persisted graph overrides
+use the corresponding `.graph.path` properties and are forwarded to the forked JMH process. A
+persisted override must have the exact node count of its named corpus, preventing mislabeled runs.
+Gradle validates all configured graph overrides before starting any JMH fork, so an invalid override
+fails the documented command instead of producing a partial result table.
+
+The committed fixture fingerprints, 4 GiB performance gates, and initial measurements are documented in [large-corpus-performance-baseline.md](large-corpus-performance-baseline.md).
 
 ### Results Summary
 
