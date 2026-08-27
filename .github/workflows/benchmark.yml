@@ -1,0 +1,271 @@
+name: Benchmark regression
+
+on:
+  pull_request:
+    branches: ['*']
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: benchmark-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+
+jobs:
+  method-level:
+    name: method-level-benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Test benchmark gate logic
+      run: node --test candidate/.github/scripts/benchmark-gate.test.mjs
+
+    - name: Build JMH jars
+      run: |
+        base/gradlew -p base :cypher:jmhJar --no-daemon
+        candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
+
+    - name: Benchmark base
+      run: |
+        mkdir -p benchmark-results
+        JMH_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${JMH_JAR}"
+        java -jar "${JMH_JAR}" \
+          'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+          -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh.json"
+
+    - name: Benchmark PR
+      run: |
+        JMH_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${JMH_JAR}"
+        java -jar "${JMH_JAR}" \
+          'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+          -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh.json"
+
+    - name: Compare method-level results
+      run: |
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          --base benchmark-results/base-jmh.json \
+          --candidate benchmark-results/candidate-jmh.json \
+          --threshold 15 \
+          --report benchmark-results/initial-method-report.md \
+          --status benchmark-results/initial-method-status.json; then
+          mv benchmark-results/initial-method-report.md benchmark-results/method-report.md
+          mv benchmark-results/initial-method-status.json benchmark-results/method-status.json
+        else
+          CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
+          java -jar "${CANDIDATE_JAR}" \
+            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh-confirmation.json"
+          java -jar "${BASE_JAR}" \
+            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh-confirmation.json"
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+            --initial benchmark-results/initial-method-status.json \
+            --base benchmark-results/base-jmh-confirmation.json \
+            --candidate benchmark-results/candidate-jmh-confirmation.json \
+            --threshold 15 \
+            --report benchmark-results/method-report.md \
+            --status benchmark-results/method-status.json
+        fi
+
+    - name: Upload method-level results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-method-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
+  large-corpus:
+    name: large-corpus-benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Benchmark PR large corpora
+      run: |
+        set -o pipefail
+        mkdir -p benchmark-results
+        candidate/gradlew -p candidate :webgraph:largeCorpusTest \
+          -Dlarge.corpus.record=true --no-daemon 2>&1 \
+          | tee benchmark-results/candidate-large-corpus.log
+
+    - name: Benchmark base large corpora
+      run: |
+        set -o pipefail
+        base/gradlew -p base :webgraph:largeCorpusTest \
+          -Dlarge.corpus.record=true --no-daemon 2>&1 \
+          | tee benchmark-results/base-large-corpus.log
+
+    - name: Compare large-corpus results
+      run: |
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-large-corpus \
+          --base benchmark-results/base-large-corpus.log \
+          --candidate benchmark-results/candidate-large-corpus.log \
+          --report benchmark-results/initial-large-corpus-report.md \
+          --status benchmark-results/initial-large-corpus-status.json; then
+          mv benchmark-results/initial-large-corpus-report.md benchmark-results/large-corpus-report.md
+          mv benchmark-results/initial-large-corpus-status.json benchmark-results/large-corpus-status.json
+        else
+          set -o pipefail
+          base/gradlew -p base :webgraph:largeCorpusTest \
+            -Dlarge.corpus.record=true --no-daemon 2>&1 \
+            | tee benchmark-results/base-large-corpus-confirmation.log
+          candidate/gradlew -p candidate :webgraph:largeCorpusTest \
+            -Dlarge.corpus.record=true --no-daemon 2>&1 \
+            | tee benchmark-results/candidate-large-corpus-confirmation.log
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-large-corpus \
+            --initial benchmark-results/initial-large-corpus-status.json \
+            --base benchmark-results/base-large-corpus-confirmation.log \
+            --candidate benchmark-results/candidate-large-corpus-confirmation.log \
+            --report benchmark-results/large-corpus-report.md \
+            --status benchmark-results/large-corpus-status.json
+        fi
+
+    - name: Upload large-corpus results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-large-corpus-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
+  benchmark-regression-gate:
+    name: benchmark-regression-gate
+    if: always()
+    needs: [method-level, large-corpus]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout PR reporting code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Download benchmark results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        pattern: benchmark-*-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results
+        merge-multiple: true
+
+    - name: Build benchmark report
+      if: always()
+      run: |
+        mkdir -p benchmark-results
+        node .github/scripts/benchmark-gate.mjs aggregate \
+          --directory benchmark-results \
+          --base-sha '${{ github.event.pull_request.base.sha }}' \
+          --candidate-sha '${{ github.event.pull_request.head.sha }}' \
+          --runner '${{ runner.os }}-${{ runner.arch }}' \
+          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+          --report benchmark-results/benchmark-report.md \
+          --status benchmark-results/benchmark-status.json
+
+    - name: Attach benchmark report to PR
+      if: always()
+      continue-on-error: true
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const fs = require('fs');
+          const marker = '<!-- graphite-benchmark-regression-gate -->';
+          let body;
+          try {
+            body = fs.readFileSync('benchmark-results/benchmark-report.md', 'utf8');
+          } catch (error) {
+            body = `${marker}\n## Benchmark Regression Gate\n\n**FAIL**\n\nReport generation failed. ` +
+              `[View logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+          }
+
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            per_page: 100
+          });
+          const existing = comments.find((comment) => comment.body.includes(marker));
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existing.id,
+              body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+          }
+
+    - name: Enforce benchmark gate
+      if: always()
+      env:
+        METHOD_JOB: ${{ needs.method-level.result }}
+        LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
+      run: |
+        if [ "${METHOD_JOB}" != success ] || [ "${LARGE_CORPUS_JOB}" != success ]; then
+          echo "::error::Benchmark execution or comparison failed"
+          exit 1
+        fi
+        node -e "const s=require('./benchmark-results/benchmark-status.json'); if(!s.passed) process.exit(1)"
