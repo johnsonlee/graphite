@@ -272,21 +272,21 @@ private val EXPECTED_DISTRIBUTIONS = mapOf(
     BenchmarkCorpusKind.KOTLIN_COMPILER to longArrayOf(265_980, 0, 0, 891_500, 208_763, 1_509)
 )
 
-private data class FixtureQueryCase(
+private data class BenchmarkFixtureQueryCase(
     val name: String,
     val query: String,
     val expectedRows: Int
 )
 
 private val ALL_FIXTURE_QUERIES = listOf(
-    FixtureQueryCase("zeroHitBroadContains", ZERO_HIT_QUERY, 0),
-    FixtureQueryCase("denseDistributedMethodContains", DENSE_DISTRIBUTED_METHOD_QUERY, 50),
-    FixtureQueryCase("earlyGraphClassPrefix", EARLY_GRAPH_PREFIX_QUERY, 1),
-    FixtureQueryCase("middleGraphsClassPrefix", MIDDLE_GRAPHS_PREFIX_QUERY, 250),
-    FixtureQueryCase("lateGraphClassPrefix", LATE_GRAPH_PREFIX_QUERY, 50),
-    FixtureQueryCase("broadlyDistributedClassPrefix", BROADLY_DISTRIBUTED_PREFIX_QUERY, 250),
-    FixtureQueryCase("firstLastGraphBimodalClassPrefix", FIRST_LAST_GRAPH_BIMODAL_QUERY, 250),
-    FixtureQueryCase("skewedMixedClassMethodOperator", SKEWED_MIXED_OPERATOR_QUERY, 250)
+    BenchmarkFixtureQueryCase("zeroHitBroadContains", ZERO_HIT_QUERY, 0),
+    BenchmarkFixtureQueryCase("denseDistributedMethodContains", DENSE_DISTRIBUTED_METHOD_QUERY, 50),
+    BenchmarkFixtureQueryCase("earlyGraphClassPrefix", EARLY_GRAPH_PREFIX_QUERY, 1),
+    BenchmarkFixtureQueryCase("middleGraphsClassPrefix", MIDDLE_GRAPHS_PREFIX_QUERY, 250),
+    BenchmarkFixtureQueryCase("lateGraphClassPrefix", LATE_GRAPH_PREFIX_QUERY, 50),
+    BenchmarkFixtureQueryCase("broadlyDistributedClassPrefix", BROADLY_DISTRIBUTED_PREFIX_QUERY, 250),
+    BenchmarkFixtureQueryCase("firstLastGraphBimodalClassPrefix", FIRST_LAST_GRAPH_BIMODAL_QUERY, 250),
+    BenchmarkFixtureQueryCase("skewedMixedClassMethodOperator", SKEWED_MIXED_OPERATOR_QUERY, 250)
 )
 
 /**
