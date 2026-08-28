@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
+import io.johnsonlee.graphite.cypher.DEFAULT_CYPHER_WORK_BUDGET as DEFAULT_EXECUTION_WORK_BUDGET
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal const val DEFAULT_MAX_CONCURRENT_CYPHER = 2
-internal const val DEFAULT_CYPHER_WORK_BUDGET = 250_000L
+internal const val DEFAULT_CYPHER_WORK_BUDGET = DEFAULT_EXECUTION_WORK_BUDGET
 private const val CYPHER_GUARD_CLOSED = "Cypher query guard is closed"
 
 internal class CypherConcurrencyLimitException(maxConcurrent: Int) : RuntimeException(

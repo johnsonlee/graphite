@@ -97,10 +97,9 @@ open class WrappedDiscoveryLatencyBenchmark {
                 ?.also { it.isAccessible = true }
             CypherGraph("graph-$graphIndex", graph)
         }
-        executor = CrossGraphCypherExecutor(graphs)
+        executor = productionBudgetedExecutor(graphs)
 
-        val result = executor.execute(WRAPPED_DISCOVERY_QUERY)
-        check(result.rows.size == graphCount * EXPECTED_HITS_PER_GRAPH)
+        val result = executeSuccessfulQuery()
         check(result.rows.all { (it["caller"] as? String)?.lowercase()?.contains("voucher") == true })
     }
 
@@ -111,12 +110,19 @@ open class WrappedDiscoveryLatencyBenchmark {
     }
 
     @Benchmark
-    fun wrappedCaseInsensitiveDiscovery(): CypherResult = executor.execute(WRAPPED_DISCOVERY_QUERY)
+    fun wrappedCaseInsensitiveDiscovery(): CypherResult = executeSuccessfulQuery()
 
     @Benchmark
     fun coldWrappedCaseInsensitiveDiscovery(): CypherResult {
         loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
-        return executor.execute(WRAPPED_DISCOVERY_QUERY)
+        return executeSuccessfulQuery()
+    }
+
+    private fun executeSuccessfulQuery(): CypherResult = executor.execute(WRAPPED_DISCOVERY_QUERY).also { result ->
+        check(result.rows.size == graphCount * EXPECTED_HITS_PER_GRAPH) {
+            "Successful query returned ${result.rows.size} rows; " +
+                "expected ${graphCount * EXPECTED_HITS_PER_GRAPH}"
+        }
     }
 
     private companion object {

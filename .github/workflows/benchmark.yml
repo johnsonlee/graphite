@@ -552,7 +552,12 @@ jobs:
         for REVISION in fixed base candidate; do
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
+          LEGACY_BUDGET_ARG=()
+          if [ "${REVISION}" = fixed ]; then
+            LEGACY_BUDGET_ARG=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+          fi
           java -Xmx8g -cp "${JMH_JAR}" \
+            "${LEGACY_BUDGET_ARG[@]}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | tee "benchmark-results/${REVISION}-fixture-correctness.log"
@@ -580,9 +585,11 @@ jobs:
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
         java -jar "${FIXED_JAR}" \
           "${BENCHMARK_FILTER}" \
-          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
           "${BENCHMARK_FILTER}" \
@@ -617,6 +624,8 @@ jobs:
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
           java -jar "${CANDIDATE_JAR}" \
             "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
@@ -627,7 +636,7 @@ jobs:
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
           java -jar "${FIXED_JAR}" \
             "${BENCHMARK_FILTER}" \
-            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
             --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
