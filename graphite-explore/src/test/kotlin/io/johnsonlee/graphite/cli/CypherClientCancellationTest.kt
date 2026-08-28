@@ -67,6 +67,11 @@ class CypherClientCancellationTest {
     }
 
     @Test
+    fun `reset beyond the monitor buffer cap still cancels the active query`() {
+        verifyResetBeyondMonitorCap()
+    }
+
+    @Test
     fun `resetting a client connection stops graph-free query work`() {
         verifyGraphFreeResetDisconnect()
     }
@@ -494,6 +499,63 @@ class CypherClientCancellationTest {
                     assertTrue(response.body.contains("\"x\""), response.body)
                 }
             }
+        } finally {
+            release.countDown()
+            app.stop()
+        }
+    }
+
+    private fun verifyResetBeyondMonitorCap() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val node = IntConstant(NodeId.next(), 1)
+        val backing = DefaultGraph.Builder().addNode(node).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (type.isAssignableFrom(IntConstant::class.java)) {
+                    started.countDown()
+                    release.await()
+                    @Suppress("UNCHECKED_CAST")
+                    yield(node as T)
+                }
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, blockingGraph)
+            val socket = Socket("127.0.0.1", app.port())
+            val query = URLEncoder.encode(
+                "MATCH (n:IntConstant) WHERE n.value + 0 = 1 RETURN n.value LIMIT 1",
+                StandardCharsets.UTF_8
+            )
+            writeRequest(socket, "GET", "/api/cypher?query=$query")
+            assertTrue(started.await(5, TimeUnit.SECONDS), "The first request did not start")
+
+            val body = """{"query":"RETURN 1 AS x","padding":"${"x".repeat(VALID_PIPELINE_PADDING_BYTES)}"}"""
+            val writer = Thread {
+                runCatching {
+                    repeat(VALID_OVERSIZED_PIPELINE_REQUESTS) {
+                        writeRequest(socket, "POST", "/api/cypher", body)
+                    }
+                }
+            }.apply {
+                isDaemon = true
+                start()
+            }
+
+            Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
+            socket.setSoLinger(true, 0)
+            socket.close()
+            writer.join(5_000)
+            assertFalse(writer.isAlive, "The oversized pipeline writer remained blocked after reset")
+            assertTrue(
+                waitUntil(timeoutMillis = MAX_DISCONNECT_LATENCY_MILLIS) { queryCanRun(app.port()) },
+                "The reset query beyond the monitor cap kept the only concurrency permit"
+            )
         } finally {
             release.countDown()
             app.stop()

@@ -371,10 +371,22 @@ object CypherFunctions {
     private fun reverseString(value: String, checkCancelled: (() -> Unit)?): String {
         if (checkCancelled == null) return value.reversed()
         val result = StringBuilder(value.length)
-        for (sourceIndex in value.lastIndex downTo 0) {
-            val copied = value.lastIndex - sourceIndex
+        var sourceIndex = value.length
+        var copied = 0
+        while (sourceIndex > 0) {
             if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-            result.append(value[sourceIndex])
+            val trailing = value[--sourceIndex]
+            if (Character.isLowSurrogate(trailing) && sourceIndex > 0) {
+                val leading = value[sourceIndex - 1]
+                if (Character.isHighSurrogate(leading)) {
+                    result.append(leading).append(trailing)
+                    sourceIndex--
+                    copied += 2
+                    continue
+                }
+            }
+            result.append(trailing)
+            copied++
         }
         checkCancelled()
         return result.toString()
@@ -383,10 +395,12 @@ object CypherFunctions {
     private fun reverseList(value: List<*>, checkCancelled: (() -> Unit)?): List<*> {
         if (checkCancelled == null) return value.reversed()
         val result = ArrayList<Any?>(value.size)
-        for (sourceIndex in value.lastIndex downTo 0) {
-            val copied = value.lastIndex - sourceIndex
+        val iterator = value.listIterator(value.size)
+        var copied = 0
+        while (iterator.hasPrevious()) {
             if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-            result.add(value[sourceIndex])
+            result.add(iterator.previous())
+            copied++
         }
         checkCancelled()
         return result
@@ -400,9 +414,13 @@ object CypherFunctions {
 
     private fun copyTail(list: List<*>, checkCancelled: () -> Unit): List<*> {
         val result = ArrayList<Any?>(maxOf(list.size - 1, 0))
-        for (sourceIndex in 1 until list.size) {
-            if (((sourceIndex - 1) and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-            result.add(list[sourceIndex])
+        val iterator = list.iterator()
+        if (iterator.hasNext()) iterator.next()
+        var copied = 0
+        while (iterator.hasNext()) {
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.add(iterator.next())
+            copied++
         }
         checkCancelled()
         return result

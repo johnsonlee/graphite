@@ -93,6 +93,8 @@ internal class DisconnectMonitor(
     private val endPoint = connection?.endPoint as? AbstractEndPoint
     private val lock = Any()
     private val ownsReadInterest = AtomicBoolean()
+    @Volatile
+    private var backpressured = false
     private var closed = false
     private var scheduled: Scheduler.Task? = null
     private val readCallback = object : Callback {
@@ -102,7 +104,10 @@ internal class DisconnectMonitor(
             if (endPoint == null || !endPoint.isOpen) {
                 cancel()
             } else if (!endPoint.isInputShutdown) {
-                schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
+                schedule(
+                    if (backpressured) DISCONNECT_BACKPRESSURE_PROBE_MILLIS
+                    else DISCONNECT_READ_INTEREST_RETRY_MILLIS
+                )
             }
         }
 
@@ -126,9 +131,20 @@ internal class DisconnectMonitor(
         val bufferedBytes = buffered?.remaining() ?: 0
         val available = ensureRequestBufferCapacity(bufferedBytes)
         buffered?.let(monitoredConnection::onUpgradeTo)
-        // Leave excess pipelined input in the socket so TCP backpressure bounds monitor memory.
-        if (available == 0) return false
+        // Leave excess input in the socket, but keep read interest armed so a later reset is still observed.
+        backpressured = available == 0
+        if (backpressured) return probeBackpressuredSocket(socketEndPoint)
         return readSocket(socketEndPoint, monitoredConnection, ByteBuffer.allocate(available))
+    }
+
+    private fun probeBackpressuredSocket(socketEndPoint: SocketChannelEndPoint): Boolean = try {
+        // OOB data does not enter the HTTP byte stream and forces the socket to surface a pending reset.
+        socketEndPoint.channel.socket().sendUrgentData(DISCONNECT_PROBE_BYTE)
+        true
+    } catch (error: IOException) {
+        socketEndPoint.close(error)
+        cancel()
+        false
     }
 
     private fun readSocket(
@@ -216,6 +232,8 @@ internal class DisconnectMonitor(
 
 private const val DISCONNECT_READ_INTEREST_DELAY_MILLIS = 10L
 private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
+private const val DISCONNECT_BACKPRESSURE_PROBE_MILLIS = 250L
+private const val DISCONNECT_PROBE_BYTE = 0
 private const val MAX_MONITORED_PIPELINE_BYTES = 1_024 * 1_024
 private object DisconnectMonitorClosedException : IOException("Cypher disconnect monitor closed") {
     override fun fillInStackTrace(): Throwable = this

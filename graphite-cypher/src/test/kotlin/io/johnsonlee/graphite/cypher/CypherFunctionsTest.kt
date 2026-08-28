@@ -34,6 +34,8 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import org.junit.Before
 import org.junit.Test
+import java.util.AbstractSequentialList
+import java.util.LinkedList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -1015,6 +1017,24 @@ class CypherFunctionsTest {
         assertTrue(checks > 0)
     }
 
+    @Test
+    fun `tracked reverse preserves supplementary characters`() {
+        val value = "A\uD83D\uDE00B\uD83D\uDE80C"
+
+        assertEquals(value.reversed(), CypherFunctions.call("reverse", listOf(value)) {})
+    }
+
+    @Test
+    fun `tracked reverse and tail stay linear for sequential lists`() {
+        val reverseInput = TrackingSequentialList((0 until 10_000).toList())
+        val tailInput = TrackingSequentialList((0 until 10_000).toList())
+
+        assertEquals((0 until 10_000).reversed().toList(), CypherFunctions.call("reverse", listOf(reverseInput)) {})
+        assertEquals((1 until 10_000).toList(), CypherFunctions.call("tail", listOf(tailInput)) {})
+        assertEquals(1, reverseInput.listIteratorCalls)
+        assertEquals(1, tailInput.listIteratorCalls)
+    }
+
     // ========================================================================
     // nodes and relationships from Path
     // ========================================================================
@@ -1144,6 +1164,20 @@ class CypherFunctionsTest {
 
         val boolNode = BooleanConstant(NodeId.next(), true)
         assertEquals(true, NodePropertyAccessor.getAllProperties(boolNode)["value"])
+    }
+}
+
+private class TrackingSequentialList<T>(values: List<T>) : AbstractSequentialList<T>() {
+    private val delegate = LinkedList(values)
+    var listIteratorCalls = 0
+        private set
+
+    override val size: Int
+        get() = delegate.size
+
+    override fun listIterator(index: Int): MutableListIterator<T> {
+        listIteratorCalls++
+        return delegate.listIterator(index)
     }
 }
 
