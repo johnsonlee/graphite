@@ -75,8 +75,8 @@ The retained implementation:
   cancellation on a clean input half-close so the client can still read the response;
 - replays every probed byte into Jetty's request buffer, expanding that buffer geometrically up to a 1 MiB connection
   cap; at the cap it stops reading and relies on TCP backpressure, preserving valid pipelined requests without
-  unbounded memory instead of buffering without bound or dropping bytes from a live connection, while a 250 ms TCP
-  urgent probe that does not enter the HTTP stream surfaces resets hidden behind the unread valid bytes;
+  unbounded memory instead of buffering without bound or dropping bytes from a live connection, while a 250 ms
+  `SO_ERROR` check surfaces resets hidden behind the unread valid bytes without reading or writing HTTP data;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget, including list concatenation and membership plus `reverse`, `tail`,
   `nodes`, and `relationships` collection copies; tracked string reversal preserves UTF-16 surrogate pairs, and
@@ -94,10 +94,12 @@ The retained implementation:
   graph leases through cancellable JSON response materialization, then stops metrics, releases the permit, and
   publishes final task completion.
 
-The monitor never commits an early HTTP response. Its urgent probe is used only while valid pipeline input is already
-backpressured at the monitor cap. The same signal covers single-graph, cross-graph, and fanout execution, including all
-sequential executors in one request. An ordinary client `close()` that reaches the server as a clean FIN has the same
-deliberate limitation as `SHUT_WR`; only a reset or later response-write error makes abandonment observable.
+The monitor never commits an early HTTP response. It checks the socket's pending error only while valid pipeline input
+is already backpressured at the monitor cap; the check does not consume buffered request bytes and cannot become inline
+response data for an `SO_OOBINLINE` client. The same cancellation signal covers single-graph, cross-graph, and fanout
+execution, including all sequential executors in one request. An ordinary client `close()` that reaches the server as
+a clean FIN has the same deliberate limitation as `SHUT_WR`; only a reset or later response-write error makes
+abandonment observable.
 
 Behavior verification:
 
@@ -113,7 +115,9 @@ HTTP 200. One regression pipelines 150 requests, exceeding Jetty's request buffe
 arrive. A pipeline-then-RST regression proves the monitor continues observing the socket after buffering the next
 request. Two valid 550 KiB POST requests exceed the monitor's 1 MiB buffer cap and still receive ordered HTTP 200
 responses after TCP backpressure is released. A combined regression resets that same valid over-cap pipeline and
-requires permit reuse within 2 seconds. Deterministic barriers prove cancellation occurs inside graph-free loops,
+requires permit reuse within 2 seconds after a deterministic monitor-backpressure barrier. The healthy case enables
+`SO_OOBINLINE` and asserts exact untouched HTTP status lines. Deterministic barriers prove cancellation occurs inside
+graph-free loops,
 collection copies, percentile sorting, regular expression matching, and JSON serialization. Compatibility
 tests preserve Java backreferences, look-around, possessive quantifiers, character-class intersections, and all five
 default line terminators; collection tests additionally preserve supplementary Unicode characters and linear

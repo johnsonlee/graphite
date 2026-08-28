@@ -31,7 +31,9 @@ import java.util.concurrent.CompletionException
 internal class ExploreRoutes(
     private val cypherGuard: CypherQueryGuard = CypherQueryGuard(),
     private val cancellationSignalFactory: () -> CypherCancellationSignal = ::CypherCancellationSignal,
-    private val cypherResponseSerializer: CypherResponseSerializer = GsonCypherResponseSerializer()
+    private val cypherResponseSerializer: CypherResponseSerializer = GsonCypherResponseSerializer(),
+    private val clientCancellationObserver: (Context, CypherCancellationSignal) -> CypherClientCancellation =
+        CypherClientCancellation::observe
 ) {
 
     private val endpointExtractor = EndpointExtractor()
@@ -588,7 +590,7 @@ internal class ExploreRoutes(
         respond: (T, CypherCancellationSignal) -> Unit
     ): CompletableFuture<Unit> {
         val cancellationSignal = cancellationSignalFactory()
-        val clientCancellation = CypherClientCancellation.observe(ctx, cancellationSignal)
+        val clientCancellation = clientCancellationObserver(ctx, cancellationSignal)
         val leases = try {
             acquire()
         } catch (error: RuntimeException) {

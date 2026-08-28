@@ -11,9 +11,15 @@ import org.eclipse.jetty.server.HttpConnection
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.util.Callback
 import org.eclipse.jetty.util.thread.Scheduler
+import sun.misc.Unsafe
 import java.io.Closeable
+import java.io.FileDescriptor
 import java.io.IOException
+import java.lang.invoke.MethodHandle
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.nio.ByteBuffer
+import java.nio.channels.SocketChannel
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -38,6 +44,14 @@ internal class CypherClientCancellation private constructor(
 
     companion object {
         fun observe(ctx: Context, cancellationSignal: CypherCancellationSignal): CypherClientCancellation {
+            return observe(ctx, cancellationSignal) {}
+        }
+
+        internal fun observe(
+            ctx: Context,
+            cancellationSignal: CypherCancellationSignal,
+            onBackpressure: () -> Unit
+        ): CypherClientCancellation {
             val cancelTask = AtomicReference<(() -> Unit)?>(null)
             val cancel: () -> Unit = {
                 cancellationSignal.cancel()
@@ -51,7 +65,8 @@ internal class CypherClientCancellation private constructor(
             val disconnectMonitor = DisconnectMonitor(
                 channel.scheduler,
                 connection as? HttpConnection,
-                cancel
+                cancel,
+                onBackpressure
             )
 
             ctx.req().asyncContext.addListener(asyncListener)
@@ -88,13 +103,15 @@ internal class CypherCancellationConnectionListener(
 internal class DisconnectMonitor(
     private val scheduler: Scheduler,
     private val connection: HttpConnection?,
-    private val cancel: () -> Unit
+    private val cancel: () -> Unit,
+    private val onBackpressure: () -> Unit = {}
 ) : Runnable, Closeable {
     private val endPoint = connection?.endPoint as? AbstractEndPoint
     private val lock = Any()
     private val ownsReadInterest = AtomicBoolean()
     @Volatile
     private var backpressured = false
+    private val backpressureReported = AtomicBoolean()
     private var closed = false
     private var scheduled: Scheduler.Task? = null
     private val readCallback = object : Callback {
@@ -133,18 +150,20 @@ internal class DisconnectMonitor(
         buffered?.let(monitoredConnection::onUpgradeTo)
         // Leave excess input in the socket, but keep read interest armed so a later reset is still observed.
         backpressured = available == 0
-        if (backpressured) return probeBackpressuredSocket(socketEndPoint)
-        return readSocket(socketEndPoint, monitoredConnection, ByteBuffer.allocate(available))
+        return if (backpressured) {
+            probeBackpressuredSocket(socketEndPoint)
+        } else {
+            readSocket(socketEndPoint, monitoredConnection, ByteBuffer.allocate(available))
+        }
     }
 
-    private fun probeBackpressuredSocket(socketEndPoint: SocketChannelEndPoint): Boolean = try {
-        // OOB data does not enter the HTTP byte stream and forces the socket to surface a pending reset.
-        socketEndPoint.channel.socket().sendUrgentData(DISCONNECT_PROBE_BYTE)
-        true
-    } catch (error: IOException) {
+    private fun probeBackpressuredSocket(socketEndPoint: SocketChannelEndPoint): Boolean {
+        if (backpressureReported.compareAndSet(false, true)) onBackpressure()
+        if (!SocketErrorProbe.hasError(socketEndPoint.channel)) return true
+        val error = IOException("Client connection reset while request input was backpressured")
         socketEndPoint.close(error)
         cancel()
-        false
+        return false
     }
 
     private fun readSocket(
@@ -233,8 +252,66 @@ internal class DisconnectMonitor(
 private const val DISCONNECT_READ_INTEREST_DELAY_MILLIS = 10L
 private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
 private const val DISCONNECT_BACKPRESSURE_PROBE_MILLIS = 250L
-private const val DISCONNECT_PROBE_BYTE = 0
 private const val MAX_MONITORED_PIPELINE_BYTES = 1_024 * 1_024
+
+private object SocketErrorProbe {
+    private data class SocketOptionCodes(val level: Int, val error: Int)
+
+    private val optionCodes = when {
+        System.getProperty("os.name").startsWith("Linux", ignoreCase = true) ->
+            SocketOptionCodes(LINUX_SOL_SOCKET, LINUX_SO_ERROR)
+        else -> SocketOptionCodes(BSD_SOL_SOCKET, BSD_SO_ERROR)
+    }
+    private val handles: Pair<MethodHandle, MethodHandle>? = runCatching {
+        val unsafeField = Unsafe::class.java.getDeclaredField("theUnsafe").apply { isAccessible = true }
+        val unsafe = unsafeField.get(null) as Unsafe
+        val lookupField = MethodHandles.Lookup::class.java.getDeclaredField("IMPL_LOOKUP")
+        val lookup = unsafe.getObject(
+            unsafe.staticFieldBase(lookupField),
+            unsafe.staticFieldOffset(lookupField)
+        ) as MethodHandles.Lookup
+        val socketChannelImpl = Class.forName("sun.nio.ch.SocketChannelImpl")
+        val net = Class.forName("sun.nio.ch.Net")
+        val getFileDescriptor = lookup.findVirtual(
+            socketChannelImpl,
+            "getFD",
+            MethodType.methodType(FileDescriptor::class.java)
+        )
+        val getSocketError = lookup.findStatic(
+            net,
+            "getIntOption0",
+            MethodType.methodType(
+                Int::class.javaPrimitiveType,
+                FileDescriptor::class.java,
+                Boolean::class.javaPrimitiveType,
+                Int::class.javaPrimitiveType,
+                Int::class.javaPrimitiveType
+            )
+        )
+        getFileDescriptor to getSocketError
+    }.getOrNull()
+
+    fun hasError(channel: SocketChannel): Boolean {
+        val (getFileDescriptor, getSocketError) = handles ?: return false
+        return runCatching {
+            // SO_ERROR exposes a pending reset without consuming or producing HTTP bytes.
+            val descriptor = getFileDescriptor.invokeWithArguments(channel) as FileDescriptor
+            val error = getSocketError.invokeWithArguments(
+                descriptor,
+                false,
+                optionCodes.level,
+                optionCodes.error
+            ) as Int
+            error != 0
+        }.getOrDefault(false)
+    }
+}
+
+private const val LINUX_SOL_SOCKET = 1
+private const val LINUX_SO_ERROR = 4
+private const val BSD_SOL_SOCKET = 0xffff
+private const val BSD_SO_ERROR = 0x1007
+
 private object DisconnectMonitorClosedException : IOException("Cypher disconnect monitor closed") {
     override fun fillInStackTrace(): Throwable = this
 }

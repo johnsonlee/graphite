@@ -383,7 +383,7 @@ class CypherClientCancellationTest {
                 else -> null
             }
         }
-        val monitor = DisconnectMonitor(scheduler, connection = null) {}
+        val monitor = DisconnectMonitor(scheduler, connection = null, cancel = {})
 
         monitor.start()
         assertEquals(1, scheduled.size)
@@ -445,6 +445,7 @@ class CypherClientCancellationTest {
     private fun verifyValidPipelineBeyondMonitorCap() {
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
+        val backpressured = CountDownLatch(1)
         val node = IntConstant(NodeId.next(), 1)
         val backing = DefaultGraph.Builder().addNode(node).build()
         val blockingGraph = object : Graph by backing {
@@ -457,7 +458,12 @@ class CypherClientCancellationTest {
                 }
             }
         }
-        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val routes = ExploreRoutes(
+            CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE),
+            clientCancellationObserver = { ctx, signal ->
+                CypherClientCancellation.observe(ctx, signal, backpressured::countDown)
+            }
+        )
         val app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
         }.start(0)
@@ -466,6 +472,7 @@ class CypherClientCancellationTest {
             routes.register(app, blockingGraph)
             Socket("127.0.0.1", app.port()).use { socket ->
                 socket.soTimeout = 20_000
+                socket.oobInline = true
                 val query = URLEncoder.encode(
                     "MATCH (n:IntConstant) WHERE n.value + 0 = 1 RETURN n.value LIMIT 1",
                     StandardCharsets.UTF_8
@@ -486,15 +493,17 @@ class CypherClientCancellationTest {
                     start()
                 }
 
-                Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
+                assertTrue(backpressured.await(5, TimeUnit.SECONDS), "The monitor did not reach its buffer cap")
+                pipelineFailure.get()?.let { throw AssertionError("The valid pipeline failed before release", it) }
                 release.countDown()
                 writer.join(5_000)
                 assertFalse(writer.isAlive, "The valid pipelined requests remained blocked")
                 pipelineFailure.get()?.let { throw AssertionError("The valid pipeline was rejected", it) }
 
-                assertEquals(200, readResponse(socket).status)
+                assertEquals("HTTP/1.1 200 OK", readResponse(socket).statusLine)
                 repeat(VALID_OVERSIZED_PIPELINE_REQUESTS) { index ->
                     val response = readResponse(socket)
+                    assertEquals("HTTP/1.1 200 OK", response.statusLine)
                     assertEquals(200, response.status, "Oversized pipelined response ${index + 1}")
                     assertTrue(response.body.contains("\"x\""), response.body)
                 }
@@ -508,6 +517,7 @@ class CypherClientCancellationTest {
     private fun verifyResetBeyondMonitorCap() {
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
+        val backpressured = CountDownLatch(1)
         val node = IntConstant(NodeId.next(), 1)
         val backing = DefaultGraph.Builder().addNode(node).build()
         val blockingGraph = object : Graph by backing {
@@ -520,7 +530,12 @@ class CypherClientCancellationTest {
                 }
             }
         }
-        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val routes = ExploreRoutes(
+            CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE),
+            clientCancellationObserver = { ctx, signal ->
+                CypherClientCancellation.observe(ctx, signal, backpressured::countDown)
+            }
+        )
         val app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
         }.start(0)
@@ -536,18 +551,20 @@ class CypherClientCancellationTest {
             assertTrue(started.await(5, TimeUnit.SECONDS), "The first request did not start")
 
             val body = """{"query":"RETURN 1 AS x","padding":"${"x".repeat(VALID_PIPELINE_PADDING_BYTES)}"}"""
+            val pipelineFailure = AtomicReference<Throwable?>()
             val writer = Thread {
                 runCatching {
                     repeat(VALID_OVERSIZED_PIPELINE_REQUESTS) {
                         writeRequest(socket, "POST", "/api/cypher", body)
                     }
-                }
+                }.onFailure(pipelineFailure::set)
             }.apply {
                 isDaemon = true
                 start()
             }
 
-            Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
+            assertTrue(backpressured.await(5, TimeUnit.SECONDS), "The monitor did not reach its buffer cap")
+            pipelineFailure.get()?.let { throw AssertionError("The pipeline failed before reset", it) }
             socket.setSoLinger(true, 0)
             socket.close()
             writer.join(5_000)
@@ -638,6 +655,7 @@ class CypherClientCancellationTest {
     private fun readResponse(socket: Socket): RawHttpResponse {
         val input = socket.getInputStream()
         val statusLine = readAsciiLine(input) ?: error("Connection closed before HTTP response")
+        require(statusLine.startsWith("HTTP/")) { "Invalid status line prefix: $statusLine" }
         val status = statusLine.split(' ').getOrNull(1)?.toIntOrNull() ?: error("Invalid status line: $statusLine")
         val headers = buildMap {
             while (true) {
@@ -652,7 +670,7 @@ class CypherClientCancellationTest {
             ?: error("Response has no Content-Length: $headers")
         val body = input.readNBytes(contentLength)
         check(body.size == contentLength) { "Connection closed while reading HTTP body" }
-        return RawHttpResponse(status, body.toString(StandardCharsets.UTF_8))
+        return RawHttpResponse(statusLine, status, body.toString(StandardCharsets.UTF_8))
     }
 
     private fun readAsciiLine(input: InputStream): String? {
@@ -701,7 +719,7 @@ class CypherClientCancellationTest {
     } as T
 }
 
-private data class RawHttpResponse(val status: Int, val body: String)
+private data class RawHttpResponse(val statusLine: String, val status: Int, val body: String)
 
 private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
     val started = CountDownLatch(1)
@@ -721,7 +739,6 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
 private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
-private const val PIPELINE_LIMIT_SETTLE_MILLIS = 1_000L
 private const val LARGE_PIPELINE_REQUESTS = 150
 private const val VALID_PIPELINE_PADDING_BYTES = 550_000
 private const val VALID_OVERSIZED_PIPELINE_REQUESTS = 2
