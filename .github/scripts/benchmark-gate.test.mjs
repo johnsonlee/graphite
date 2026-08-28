@@ -67,6 +67,40 @@ test("JMH comparison does not block overlapping confidence intervals", () => {
     assert.match(renderJmhReport(comparison), /\*\*NOISE\*\*/);
 });
 
+test("threshold-only JMH comparison confirms a regression despite overlapping intervals", () => {
+    const comparison = compareJmh(
+        [jmhResult({ score: 100, confidence: [80, 120] })],
+        [jmhResult({ score: 225, confidence: [90, 360] })],
+        15,
+        true
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].confidenceSeparated, false);
+    assert.equal(comparison.rows[0].blocked, true);
+    assert.match(renderJmhReport(comparison), /regardless of confidence/);
+});
+
+test("threshold-only JMH confirmation blocks a repeated score regression", () => {
+    const initial = compareJmh(
+        [jmhResult({ score: 100, confidence: [80, 120] })],
+        [jmhResult({ score: 225, confidence: [90, 360] })],
+        15,
+        true
+    );
+    const retry = compareJmh(
+        [jmhResult({ score: 105, confidence: [70, 140] })],
+        [jmhResult({ score: 220, confidence: [80, 360] })],
+        15,
+        true
+    );
+    const confirmed = confirmJmh(initial, retry);
+
+    assert.equal(confirmed.passed, false);
+    assert.equal(confirmed.rows[0].blocked, true);
+    assert.match(renderJmhReport(confirmed), /\*\*FAIL\*\*/);
+});
+
 test("JMH report accepts a gate-specific title", () => {
     const comparison = compareJmh(
         [jmhResult({ score: 100, confidence: [95, 105] })],

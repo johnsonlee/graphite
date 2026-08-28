@@ -125,9 +125,10 @@ The `budgeted-mapped-string-latency` job protects the budget-aware transformed m
 that regressed after the original latency fix. It compiles the identical
 `MappedStringAdmissionBenchmark.budgetedTransformedZeroHit` harness at fixed commit
 `87c74c2cae0685e40e32fb2eb46b33987ec1a7a0` and at the pull request candidate, then runs both on
-the same runner. A candidate more than 15% slower with separated confidence intervals is rerun in
-reverse order and blocks when the same regression repeats. This fixed baseline keeps a later change
-from normalizing a 2x full-scan regression into the moving base.
+the same runner. Any candidate score more than 15% slower is rerun in reverse order even when the
+SingleShot confidence intervals overlap, and it blocks when the reverse-order score is also more
+than 15% slower. This fixed baseline keeps a later change from normalizing a 2x full-scan regression
+into the moving base.
 
 ## Local verification
 

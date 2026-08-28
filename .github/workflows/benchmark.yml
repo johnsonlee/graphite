@@ -168,6 +168,7 @@ jobs:
           --base benchmark-results/baseline-budgeted-string.json \
           --candidate benchmark-results/candidate-budgeted-string.json \
           --threshold 15 \
+          --threshold-only \
           --title 'Budgeted mapped-string latency' \
           --report benchmark-results/initial-budgeted-string-report.md \
           --status benchmark-results/initial-budgeted-string-status.json; then
@@ -187,6 +188,7 @@ jobs:
             --base benchmark-results/baseline-budgeted-string-confirmation.json \
             --candidate benchmark-results/candidate-budgeted-string-confirmation.json \
             --threshold 15 \
+            --threshold-only \
             --title 'Budgeted mapped-string latency' \
             --report benchmark-results/budgeted-string-report.md \
             --status benchmark-results/budgeted-string-status.json

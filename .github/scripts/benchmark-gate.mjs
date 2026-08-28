@@ -137,7 +137,7 @@ function statusLabel(row) {
     return "PASS";
 }
 
-export function compareJmh(baseResults, candidateResults, threshold = 15) {
+export function compareJmh(baseResults, candidateResults, threshold = 15, thresholdOnly = false) {
     const errors = [];
     const base = new Map();
     const candidate = new Map();
@@ -188,7 +188,7 @@ export function compareJmh(baseResults, candidateResults, threshold = 15) {
             threshold,
             aboveThreshold,
             confidenceSeparated: separated,
-            blocked: aboveThreshold && separated
+            blocked: aboveThreshold && (thresholdOnly || separated)
         });
     }
 
@@ -196,6 +196,7 @@ export function compareJmh(baseResults, candidateResults, threshold = 15) {
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
+        thresholdOnly,
         rows
     };
 }
@@ -227,16 +228,25 @@ export function confirmJmh(initial, confirmation) {
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
+        thresholdOnly: initial.thresholdOnly === true,
         rows
     };
 }
 
 export function renderJmhReport(comparison, title = "Method-level JMH") {
+    const decisionRule = comparison.thresholdOnly === true
+        ? [
+            "A row runs reverse-order confirmation whenever it exceeds the 15% limit, regardless of confidence",
+            "interval overlap, and blocks only when the confirmation also exceeds 15%."
+        ]
+        : [
+            "A row blocks only when it exceeds the 15% limit, the 99.9% confidence intervals do not overlap,",
+            "and a reverse-order confirmation run fails the same benchmark."
+        ];
     const lines = [
         `### ${title}`,
         "",
-        "A row blocks only when it exceeds the 15% limit, the 99.9% confidence intervals do not overlap,",
-        "and a reverse-order confirmation run fails the same benchmark.",
+        ...decisionRule,
         "",
         "| Benchmark | Base | PR | Regression | Confirmation (base -> PR) | Limit | Gate |",
         "|---|---:|---:|---:|---:|---:|:---:|"
@@ -632,7 +642,8 @@ function compareJmhCommand(args) {
     const comparison = compareJmh(
         readJson(requireArg(args, "base")),
         readJson(requireArg(args, "candidate")),
-        Number(args.threshold ?? 15)
+        Number(args.threshold ?? 15),
+        args["threshold-only"] === true
     );
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
@@ -691,7 +702,8 @@ function confirmJmhCommand(args) {
     const confirmation = compareJmh(
         readJson(requireArg(args, "base")),
         readJson(requireArg(args, "candidate")),
-        Number(args.threshold ?? 15)
+        Number(args.threshold ?? 15),
+        args["threshold-only"] === true
     );
     const comparison = confirmJmh(initial, confirmation);
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
