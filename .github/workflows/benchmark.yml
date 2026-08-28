@@ -187,8 +187,82 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  prepare-latency-fixtures:
+    name: prepare-latency-fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Restore or save persisted fixture graphs
+      id: fixture-cache
+      uses: actions/cache@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+
+    - name: Setup Java
+      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Build fixture preparation harness
+      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      run: |
+        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures :webgraph:jmhJar --no-daemon
+
+    - name: Prepare all real fixture graphs with 4 GiB heap
+      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      run: |
+        FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
+        ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
+        TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
+        HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
+        KOTLIN_JAR=$(find "${FIXTURE_DIR}" -name 'kotlin-compiler-embeddable-*.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${ANDROID_JAR}" && test -n "${TIKA_JAR}" && test -n "${HIVE_JAR}" && \
+          test -n "${KOTLIN_JAR}" && test -n "${CANDIDATE_JAR}"
+        mkdir -p "${PWD}/fixture-graphs"
+        for CORPUS in android tika hive kotlin-compiler; do
+          SOURCE_TMP=$(mktemp -d "${RUNNER_TEMP}/graphite-source-${CORPUS}-XXXXXX")
+          java -Xmx4g -Djava.io.tmpdir="${SOURCE_TMP}" \
+            -Dandroid.jar.path="${ANDROID_JAR}" \
+            -Dtika.jar.path="${TIKA_JAR}" \
+            -Dhive.jar.path="${HIVE_JAR}" \
+            -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+            -cp "${CANDIDATE_JAR}" \
+            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkGraphPreparation \
+            "${CORPUS}" "${PWD}/fixture-graphs/${CORPUS}"
+          rm -rf -- "${SOURCE_TMP}"
+        done
+        java -Xmx4g -cp "${CANDIDATE_JAR}" \
+          io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkDistributionCalibration \
+          "${PWD}/fixture-graphs"
+        touch "${PWD}/fixture-graphs/.complete"
+
+    - name: Verify persisted fixture graph cache
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}"
+        done
+
   wrapped-query-latency-shard:
     name: wrapped-query-latency-shard-${{ matrix.shard }}
+    needs: [prepare-latency-fixtures]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -246,6 +320,21 @@ jobs:
       with:
         cache-read-only: true
 
+    - name: Restore persisted fixture graphs
+      if: matrix.real
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+
+    - name: Verify restored fixture graphs
+      if: matrix.real
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}"
+        done
+
     - name: Install identical latency harness in baselines
       run: |
         for HARNESS in \
@@ -262,34 +351,6 @@ jobs:
         fixed/gradlew -p fixed :webgraph:jmhJar --no-daemon
         base/gradlew -p base :webgraph:jmhJar --no-daemon
         candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
-
-    - name: Prepare all real fixture graphs
-      if: matrix.real
-      run: |
-        FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
-        ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
-        TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
-        HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
-        KOTLIN_JAR=$(find "${FIXTURE_DIR}" -name 'kotlin-compiler-embeddable-*.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        test -n "${ANDROID_JAR}" && test -n "${TIKA_JAR}" && test -n "${HIVE_JAR}" && \
-          test -n "${KOTLIN_JAR}" && test -n "${CANDIDATE_JAR}"
-        mkdir -p "${PWD}/fixture-graphs"
-        for CORPUS in android tika hive kotlin-compiler; do
-          SOURCE_TMP=$(mktemp -d "${RUNNER_TEMP}/graphite-source-${CORPUS}-XXXXXX")
-          java -Xmx4g -Djava.io.tmpdir="${SOURCE_TMP}" \
-            -Dandroid.jar.path="${ANDROID_JAR}" \
-            -Dtika.jar.path="${TIKA_JAR}" \
-            -Dhive.jar.path="${HIVE_JAR}" \
-            -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
-            -cp "${CANDIDATE_JAR}" \
-            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkGraphPreparation \
-            "${CORPUS}" "${PWD}/fixture-graphs/${CORPUS}"
-          rm -rf -- "${SOURCE_TMP}"
-        done
-        java -Xmx4g -cp "${CANDIDATE_JAR}" \
-          io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkDistributionCalibration \
-          "${PWD}/fixture-graphs"
 
     - name: Verify all real-fixture query results
       if: matrix.correctness
