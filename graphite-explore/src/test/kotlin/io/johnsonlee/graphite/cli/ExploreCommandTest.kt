@@ -869,10 +869,23 @@ class ExploreCommandTest {
                     """{"query":"$query","graphs":["missing"]}"""
                 )
                 assertEquals(404, missingCode, "Expected 404, body: $missingBody")
-                assertTrue(missingBody.contains("Graph not loaded: missing"), "Expected missing graph error, body: $missingBody")
+                assertEquals(
+                    mapOf(API_FIELD_ERROR to "Graph not loaded: missing"),
+                    parseJson<Map<String, Any?>>(missingBody)
+                )
             }
         } finally {
             root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `scoped cypher preserves missing graph response contract`() {
+        withExploreApp(DefaultGraph.Builder().build()) { targetPort ->
+            val (code, body) = get(targetPort, "/api/graphs/missing/cypher?query=RETURN%201")
+
+            assertEquals(404, code)
+            assertEquals(mapOf(API_FIELD_ERROR to "Graph not loaded"), parseJson<Map<String, Any?>>(body))
         }
     }
 

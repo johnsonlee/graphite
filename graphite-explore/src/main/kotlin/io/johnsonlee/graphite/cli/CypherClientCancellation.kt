@@ -5,12 +5,15 @@ import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import jakarta.servlet.AsyncEvent
 import jakarta.servlet.AsyncListener
 import org.eclipse.jetty.io.AbstractConnection
+import org.eclipse.jetty.io.AbstractEndPoint
 import org.eclipse.jetty.io.Connection
 import org.eclipse.jetty.server.Request
+import org.eclipse.jetty.util.Callback
 import org.eclipse.jetty.util.thread.Scheduler
 import java.io.Closeable
-import java.nio.channels.ReadPendingException
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 internal class CypherClientCancellation private constructor(
@@ -85,9 +88,26 @@ private class DisconnectMonitor(
     private val connection: AbstractConnection?,
     private val cancel: () -> Unit
 ) : Runnable, Closeable {
+    private val endPoint = connection?.endPoint as? AbstractEndPoint
     private val lock = Any()
+    private val ownsReadInterest = AtomicBoolean()
     private var closed = false
     private var scheduled: Scheduler.Task? = null
+    private val readCallback = object : Callback {
+        override fun succeeded() {
+            if (!ownsReadInterest.compareAndSet(true, false) || isClosed()) return
+            connection?.onFillable()
+            if (endPoint == null || !endPoint.isOpen || endPoint.isInputShutdown) {
+                cancel()
+            } else {
+                schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
+            }
+        }
+
+        override fun failed(failure: Throwable) {
+            if (ownsReadInterest.compareAndSet(true, false) && !isClosed()) cancel()
+        }
+    }
 
     fun start() = schedule(DISCONNECT_READ_INTEREST_DELAY_MILLIS)
 
@@ -97,27 +117,34 @@ private class DisconnectMonitor(
             if (closed) return
         }
 
-        val endPoint = connection?.endPoint
         if (endPoint != null && (!endPoint.isOpen || endPoint.isInputShutdown)) {
             cancel()
             return
         }
-        if (connection != null && !connection.isFillInterested) {
-            try {
-                connection.fillInterested()
-            } catch (_: ReadPendingException) {
-                // Jetty won the race and already registered its own read callback.
+
+        val registered = synchronized(lock) {
+            if (closed || connection == null || endPoint == null) {
+                false
+            } else if (ownsReadInterest.get()) {
+                true
+            } else {
+                ownsReadInterest.set(true)
+                endPoint.tryFillInterested(readCallback).also { accepted ->
+                    if (!accepted) ownsReadInterest.set(false)
+                }
             }
         }
-        schedule(DISCONNECT_POLL_INTERVAL_MILLIS)
+        if (!registered) schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
     }
 
     override fun close() {
-        synchronized(lock) {
+        val clearReadInterest = synchronized(lock) {
             closed = true
             scheduled?.cancel()
             scheduled = null
+            ownsReadInterest.compareAndSet(true, false)
         }
+        if (clearReadInterest) endPoint?.fillInterest?.onFail(DISCONNECT_MONITOR_CLOSED)
     }
 
     private fun schedule(delayMillis: Long) {
@@ -127,7 +154,13 @@ private class DisconnectMonitor(
             }
         }
     }
+
+    private fun isClosed(): Boolean = synchronized(lock) { closed }
 }
 
 private const val DISCONNECT_READ_INTEREST_DELAY_MILLIS = 10L
-private const val DISCONNECT_POLL_INTERVAL_MILLIS = 50L
+private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
+private object DisconnectMonitorClosedException : IOException("Cypher disconnect monitor closed") {
+    override fun fillInStackTrace(): Throwable = this
+}
+private val DISCONNECT_MONITOR_CLOSED = DisconnectMonitorClosedException

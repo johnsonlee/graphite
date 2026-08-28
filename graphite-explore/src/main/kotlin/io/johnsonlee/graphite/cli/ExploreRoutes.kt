@@ -545,9 +545,7 @@ internal class ExploreRoutes(
             ctx = ctx,
             acquire = {
                 listOf(
-                    provider.acquire(ctx) ?: throw GraphNotLoadedException(
-                        ctx.pathParamMap()[API_FIELD_GRAPH_ID] ?: STANDALONE_GRAPH_ID
-                    )
+                    provider.acquire(ctx) ?: throw GraphNotLoadedException()
                 )
             },
             execute = { leases, executionContext ->
@@ -762,14 +760,16 @@ internal class ExploreRoutes(
     }
 
     private fun respondCypherError(ctx: Context, error: Throwable) {
+        if (error is GraphNotLoadedException) {
+            ctx.status(HTTP_NOT_FOUND).json(mapOf(API_FIELD_ERROR to error.message))
+            return
+        }
         val code = when (error) {
-            is GraphNotLoadedException -> "graph_not_loaded"
             is CypherConcurrencyLimitException -> "cypher_concurrency_limit"
             is CypherBudgetExceededException -> "cypher_work_budget_exceeded"
             else -> "cypher_query_failed"
         }
         val status = when (code) {
-            "graph_not_loaded" -> HTTP_NOT_FOUND
             "cypher_query_failed" -> HTTP_BAD_REQUEST
             else -> HTTP_TOO_MANY_REQUESTS
         }

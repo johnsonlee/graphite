@@ -97,8 +97,8 @@ class QueryPipeline private constructor(
 
     private val graph: Graph get() = sources.single().graph
 
-    private val evaluator = ExpressionEvaluator()
     private val activeWorkTracker = ThreadLocal<CypherWorkTracker?>()
+    private val evaluator = if (workTrackingEnabled) ExpressionEvaluator(::checkCancelled) else ExpressionEvaluator()
 
     /**
      * Execute a list of clauses and return the final result.
@@ -125,6 +125,7 @@ class QueryPipeline private constructor(
 
     @Suppress("CyclomaticComplexMethod")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
+        checkCancelled()
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
@@ -142,6 +143,7 @@ class QueryPipeline private constructor(
 
         var consumedWhereIndex = -1
         for (clauseIndex in clauses.indices) {
+            checkCancelled()
             val clause = clauses[clauseIndex]
             when (clause) {
                 is CypherClause.Match -> {
@@ -172,7 +174,8 @@ class QueryPipeline private constructor(
                     columns = newColumns
                     // WITH can have an inline WHERE
                     if (clause.where != null) {
-                        rows = rows.filter { row ->
+                        rows = rows.filterIndexed { index, row ->
+                            pollCancellation(index)
                             evaluator.evaluate(clause.where, row) == true
                         }
                     }
@@ -193,12 +196,14 @@ class QueryPipeline private constructor(
                 is CypherClause.Set -> TODO("SET is not supported — graph is immutable")
                 is CypherClause.Remove -> TODO("REMOVE is not supported — graph is immutable")
             }
+            checkCancelled()
         }
 
         if (columns.isEmpty() && rows.isNotEmpty()) {
             columns = rows.first().keys.toList()
         }
 
+        checkCancelled()
         return CypherResult(columns, rows)
     }
 
@@ -1444,7 +1449,8 @@ class QueryPipeline private constructor(
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValues(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
         val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-        for (row in rows) {
+        for ((index, row) in rows.withIndex()) {
+            pollCancellation(index)
             val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
             val existing = byVisibleValues[visible]
             if (existing == null) {
@@ -1455,6 +1461,7 @@ class QueryPipeline private constructor(
                 if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
             }
         }
+        checkCancelled()
         return byVisibleValues.values.toList()
     }
 
@@ -1478,7 +1485,8 @@ class QueryPipeline private constructor(
         clause: CypherClause.Where,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
-        return rows.filter { row ->
+        return rows.filterIndexed { index, row ->
+            pollCancellation(index)
             evaluator.evaluate(clause.condition, row) == true
         }
     }
@@ -1528,11 +1536,17 @@ class QueryPipeline private constructor(
                 listOf(row)
             } else {
                 // Group by non-aggregated columns
-                val groups = rows.groupBy { row ->
-                    groupByIndices.map { i -> evaluator.evaluate(expandedItems[i].expression, row) }
+                val groups = LinkedHashMap<List<Any?>, MutableList<Map<String, Any?>>>()
+                for ((index, inputRow) in rows.withIndex()) {
+                    pollCancellation(index)
+                    val key = groupByIndices.map { i ->
+                        evaluator.evaluate(expandedItems[i].expression, inputRow)
+                    }
+                    groups.getOrPut(key, ::mutableListOf).add(inputRow)
                 }
 
-                groups.map { (_, groupRows) ->
+                groups.values.mapIndexed { index, groupRows ->
+                    pollCancellation(index)
                     val row = mutableMapOf<String, Any?>()
                     for (i in expandedItems.indices) {
                         val col = columns[i]
@@ -1547,7 +1561,8 @@ class QueryPipeline private constructor(
                 }
             }
         } else {
-            rows.map { row ->
+            rows.mapIndexed { rowIndex, row ->
+                pollCancellation(rowIndex)
                 val projected = mutableMapOf<String, Any?>()
                 for (i in expandedItems.indices) {
                     projected[columns[i]] = evaluator.evaluate(expandedItems[i].expression, row)
@@ -1581,7 +1596,8 @@ class QueryPipeline private constructor(
         is CypherExpr.CountStar -> rows.size.toLong()
         is CypherExpr.FunctionCall -> {
             if (CypherFunctions.isAggregation(expr.name)) {
-                val values = rows.map { row ->
+                val values = rows.mapIndexed { index, row ->
+                    pollCancellation(index)
                     if (expr.args.isEmpty()) row
                     else evaluator.evaluate(expr.args[0], row)
                 }
@@ -1604,14 +1620,18 @@ class QueryPipeline private constructor(
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
+        var processed = 0
         for (row in rows) {
+            pollCancellation(processed++)
             val list = evaluator.evaluate(clause.expression, row) as? List<*> ?: continue
             for (element in list) {
+                pollCancellation(processed++)
                 val newRow = row.toMutableMap()
                 newRow[clause.variable] = element
                 results.add(newRow)
             }
         }
+        checkCancelled()
         return results
     }
 
@@ -1623,7 +1643,9 @@ class QueryPipeline private constructor(
         clause: CypherClause.OrderBy,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
+        var comparisons = 0
         return rows.sortedWith(Comparator { a, b ->
+            pollCancellation(comparisons++)
             for (item in clause.items) {
                 val va = evaluator.evaluate(item.expression, a)
                 val vb = evaluator.evaluate(item.expression, b)
@@ -1632,6 +1654,14 @@ class QueryPipeline private constructor(
             }
             0
         })
+    }
+
+    private fun pollCancellation(index: Int) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+    }
+
+    private fun checkCancelled() {
+        if (workTrackingEnabled) activeWorkTracker.get()?.checkCancelled()
     }
 
     private fun compareNullable(a: Any?, b: Any?): Int = when {

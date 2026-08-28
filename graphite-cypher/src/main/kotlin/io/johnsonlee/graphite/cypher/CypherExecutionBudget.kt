@@ -4,6 +4,8 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 
+internal const val CANCELLATION_POLL_MASK = 1_023
+
 /**
  * Bounds graph work performed by one Cypher execution.
  *
@@ -59,8 +61,10 @@ internal class CypherWorkTracker(
 
     override fun consume() = consume(1)
 
+    fun checkCancelled() = cancellationSignal.throwIfCancelled()
+
     fun consume(workUnits: Long) {
-        cancellationSignal.throwIfCancelled()
+        checkCancelled()
         if (workUnits > remaining) {
             remaining = 0
             throw CypherBudgetExceededException(budget.maxWorkUnits)

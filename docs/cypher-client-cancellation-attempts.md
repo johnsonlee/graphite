@@ -42,19 +42,39 @@ behavior.
 
 ## Attempt 2: keep Jetty read interest while a query runs
 
-Status: **accepted**.
+Status: **rejected as unsafe**.
 
 Jetty read the reset as an input shutdown but intentionally kept the output side open for the pending async response,
-so connection-close listeners still did not fire. This attempt adds a request-scoped monitor that:
+so connection-close listeners still did not fire. This attempt added a request-scoped monitor that:
 
 - starts after 10 ms, so normal fast requests usually finish before its first run;
-- keeps Jetty's own HTTP connection read callback registered instead of reading protocol bytes itself;
+- kept Jetty's own HTTP connection read callback registered instead of reading protocol bytes itself;
 - checks the endpoint every 50 ms and cancels when the input is shut down or the endpoint closes;
-- stops with the query, leaving no permanent polling task or extra application thread.
+- stopped its scheduler with the query, leaving no permanent polling task or extra application thread.
 
-The monitor does not write a heartbeat or commit an early `200` response, so query errors retain their existing HTTP
-status and body. The same cancellation signal covers single-graph, cross-graph, and fanout execution, including all
-sequential executors in one request.
+This detected FIN and RST for graph scans, but two correctness gaps remained. Normal request completion did not remove
+the pending Jetty fill callback, so `HttpConnection.onCompleted()` aborted healthy keep-alive connections with
+`IOException("Pending read in onCompleted")`. Cancellation was also only checked while consuming graph work, allowing
+`range()`, `UNWIND`, projection, and result materialization to continue allocating after disconnect.
+
+## Attempt 3: owned read interest and cancellation-only checkpoints
+
+Status: **accepted**.
+
+The retained implementation:
+
+- registers a monitor-owned Jetty read callback after 10 ms and explicitly removes that callback before normal async
+  completion, allowing `HttpConnection` to resume keep-alive reads;
+- delegates readable sockets back to Jetty, then cancels when Jetty observes EOF, input shutdown, or connection error;
+- adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
+  loops without consuming graph work budget;
+- checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
+  result after cancellation;
+- keeps the concurrency permit and graph leases through inline completion callbacks, including JSON response
+  materialization, and releases them only when the worker exits.
+
+The monitor never writes a heartbeat or commits an early response. The same signal covers single-graph, cross-graph,
+and fanout execution, including all sequential executors in one request.
 
 Behavior verification:
 
@@ -62,11 +82,12 @@ Behavior verification:
 ./gradlew :cypher:test :explore:test :cypher:detekt :explore:detekt --no-daemon
 ```
 
-`CypherClientCancellationTest` sends both TCP RST and normal FIN disconnects during an infinite candidate scan. The
-query stops, its only concurrency permit is reusable within 2 seconds, and its visited-candidate counter remains
-unchanged afterward. The complete
-Cypher/Explore suites also retain connected single-graph, cross-graph, fanout, budget, row-limit, and concurrency
-behavior.
+`CypherClientCancellationTest` sends both TCP RST and normal FIN disconnects during an infinite candidate scan and a
+graph-free ten-million-element `range`/`UNWIND` query. Each query stops and its only permit is reusable within 2
+seconds. A separate raw-socket regression runs a slow Cypher query and `/openapi.json` sequentially over the same
+keep-alive connection; both responses are HTTP 200. Guard tests prove cancellation wins after an interrupt-ignoring
+block returns and that a blocking completion callback retains the only permit. Exact response tests preserve the
+pre-existing scoped and multi-graph 404 JSON contracts.
 
 Performance environment: Apple M3 Max, macOS 14.3 (`arm64`), OpenJDK 17.0.18. Base is `v2.4.0`; base and candidate
 JMH jars ran sequentially on the same machine. Lower is better.
@@ -78,8 +99,10 @@ java -jar <cypher-jmh.jar> 'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
   -foe true -rf json -rff <result.json>
 ```
 
-All ten `CypherBenchmark` methods pass the repository's 15% gate. Deltas range from `-5.0%` to `+11.6%`; the class
-uses the unbudgeted path and no measured item exceeds the gate.
+All ten `CypherBenchmark` methods pass the repository's 15% gate. Stable deltas range from `-5.8%` to `+10.5%`.
+One full-suite `singleHopRelationship` sample reported `+23.8%` with overlapping confidence intervals; its isolated
+confirmation was `30.483 us/op` versus `29.865 us/op` on the base (`+2.1%`). The class uses the unbudgeted path, so
+this also verifies that cancellation polling is absent when no execution context is supplied.
 
 Cancellation hot-path command:
 
@@ -91,9 +114,9 @@ java -jar <cypher-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `budgetedNodeScan` | 52.097 us/op | 48.905 us/op | -6.1% |
-| `budgetedRelationship` | 158.963 us/op | 157.294 us/op | -1.0% |
-| `budgetedVariableLengthPath` | 252.135 us/op | 240.992 us/op | -4.4% |
+| `budgetedNodeScan` | 52.097 us/op | 48.733 us/op | -6.5% |
+| `budgetedRelationship` | 158.963 us/op | 149.419 us/op | -6.0% |
+| `budgetedVariableLengthPath` | 252.135 us/op | 228.780 us/op | -9.3% |
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:
 
@@ -105,8 +128,8 @@ java -jar <explore-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `connectedScalarQuery` | 67.921 us/op | 72.286 us/op | +6.4% |
+| `connectedScalarQuery` | 67.921 us/op | 74.273 us/op | +9.4% |
 
-The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 4.365 us to a
+The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 6.352 us to a
 trivial `RETURN 1` request; this is a fixed async ownership cost rather than graph-work amplification. Method-level and
 connected HTTP results therefore show no material performance regression.

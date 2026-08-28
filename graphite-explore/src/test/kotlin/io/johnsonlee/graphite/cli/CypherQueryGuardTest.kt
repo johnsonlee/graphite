@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.cli
 
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
+import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
@@ -85,9 +86,90 @@ class CypherQueryGuardTest {
             assertTrue(started.await(5, TimeUnit.SECONDS))
             task.cancel()
             assertFailsWith<CypherQueryCancelledException> { task.completion.get(5, TimeUnit.SECONDS) }
-            assertEquals(10L, guard.execute { it.executionBudget.maxWorkUnits })
+            assertEquals(10L, executeWhenAvailable(guard) { it.executionBudget.maxWorkUnits })
         } finally {
             guard.close()
         }
+    }
+
+    @Test
+    fun `cancellation wins when work ignores interruption and returns`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        val cancellation = CypherCancellationSignal()
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val task = guard.submit(cancellation) {
+            started.countDown()
+            while (release.count > 0) {
+                try {
+                    release.await()
+                } catch (_: InterruptedException) {
+                    // Deliberately ignore interruption to exercise the post-block cancellation check.
+                }
+            }
+            "completed"
+        }
+
+        try {
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            task.cancel()
+            release.countDown()
+
+            assertFailsWith<CypherQueryCancelledException> { task.completion.get(5, TimeUnit.SECONDS) }
+        } finally {
+            release.countDown()
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `guard retains permit until inline completion callbacks return`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        val workStarted = CountDownLatch(1)
+        val releaseWork = CountDownLatch(1)
+        val callbackStarted = CountDownLatch(1)
+        val releaseCallback = CountDownLatch(1)
+        val task = guard.submit(CypherCancellationSignal()) {
+            workStarted.countDown()
+            releaseWork.await()
+            "completed"
+        }
+
+        try {
+            assertTrue(workStarted.await(5, TimeUnit.SECONDS))
+            task.completion.thenRun {
+                callbackStarted.countDown()
+                releaseCallback.await()
+            }
+            releaseWork.countDown()
+            assertTrue(callbackStarted.await(5, TimeUnit.SECONDS))
+
+            assertFailsWith<CypherConcurrencyLimitException> {
+                guard.execute { error("must not overlap completion callback") }
+            }
+
+            releaseCallback.countDown()
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+            assertEquals("next", executeWhenAvailable(guard) { "next" })
+        } finally {
+            releaseWork.countDown()
+            releaseCallback.countDown()
+            guard.close()
+        }
+    }
+
+    private fun <T> executeWhenAvailable(
+        guard: CypherQueryGuard,
+        block: (CypherExecutionContext) -> T
+    ): T {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+        while (System.nanoTime() < deadline) {
+            try {
+                return guard.execute(block)
+            } catch (_: CypherConcurrencyLimitException) {
+                Thread.sleep(10)
+            }
+        }
+        error("Cypher guard did not release its permit")
     }
 }

@@ -93,7 +93,20 @@ internal val nodeLabelDescriptors = listOf(
  */
 object CypherFunctions {
 
-    fun call(name: String, args: List<Any?>): Any? = when (name.lowercase()) {
+    fun call(name: String, args: List<Any?>): Any? = dispatch(name, args, null)
+
+    internal fun call(
+        name: String,
+        args: List<Any?>,
+        checkCancelled: () -> Unit
+    ): Any? = dispatch(name, args, checkCancelled)
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun dispatch(
+        name: String,
+        args: List<Any?>,
+        checkCancelled: (() -> Unit)?
+    ): Any? = when (name.lowercase()) {
         // Aggregation (must be handled in aggregation pipeline, not inline)
         FUNCTION_COUNT -> throw CypherAggregationException(name)
         FUNCTION_SUM -> throw CypherAggregationException(name)
@@ -140,7 +153,7 @@ object CypherFunctions {
         "head" -> (args[0] as? List<*>)?.firstOrNull()
         "tail" -> (args[0] as? List<*>)?.drop(1)
         "last" -> (args[0] as? List<*>)?.lastOrNull()
-        "range" -> range(args)
+        "range" -> range(args, checkCancelled)
         "nodes" -> nodes(args[0])
         "relationships" -> relationships(args[0])
 
@@ -337,13 +350,24 @@ object CypherFunctions {
         else -> null
     }
 
-    private fun range(args: List<Any?>): List<Long> {
+    private fun range(args: List<Any?>, checkCancelled: (() -> Unit)?): List<Long> {
         val start = (args[0] as Number).toLong()
         val end = (args[1] as Number).toLong()
         val step = if (args.size > 2) (args[2] as Number).toLong() else 1L
         if (step == 0L) throw CypherException("Step cannot be zero in range()")
-        return if (step > 0) (start..end step step).toList()
-        else (start downTo end step -step).toList()
+        if (checkCancelled == null) {
+            return if (step > 0) (start..end step step).toList()
+            else (start downTo end step -step).toList()
+        }
+        val values = ArrayList<Long>()
+        var index = 0
+        for (value in LongProgression.fromClosedRange(start, end, step)) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            values.add(value)
+            index++
+        }
+        checkCancelled()
+        return values
     }
 
     private fun nodes(value: Any?): List<*>? = when (value) {

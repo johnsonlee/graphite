@@ -22,7 +22,9 @@ private const val MAX_REGEX_CACHE_SIZE = 256
  * Supports all openCypher expression types: arithmetic, boolean, comparison,
  * string operators, list operators, CASE, property access, function calls.
  */
-class ExpressionEvaluator {
+class ExpressionEvaluator(
+    private val checkCancelled: (() -> Unit)? = null
+) {
 
     private val regexCache = object : LinkedHashMap<String, Regex>(MAX_REGEX_CACHE_SIZE + 1, LOAD_FACTOR, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Regex>?): Boolean =
@@ -42,8 +44,11 @@ class ExpressionEvaluator {
         }
         is CypherExpr.Parameter -> bindings[expr.name]
         is CypherExpr.FunctionCall -> {
+            checkCancelled?.invoke()
             val args = expr.args.map { evaluate(it, bindings) }
-            CypherFunctions.call(expr.name, args)
+            val result = checkCancelled?.let { CypherFunctions.call(expr.name, args, it) }
+                ?: CypherFunctions.call(expr.name, args)
+            result.also { checkCancelled?.invoke() }
         }
         is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
         is CypherExpr.UnaryOp -> evaluateUnaryOp(expr, bindings)
@@ -57,9 +62,12 @@ class ExpressionEvaluator {
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
         is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
-        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(expr, bindings) { expression, row ->
-            evaluate(expression, row)
-        }
+        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(
+            expr,
+            bindings,
+            { expression, row -> evaluate(expression, row) },
+            checkCancelled
+        )
         is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
         is CypherExpr.Slice -> evaluateSlice(expr, bindings)
         is CypherExpr.Not -> {
@@ -260,7 +268,8 @@ class ExpressionEvaluator {
         val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
         val results = mutableListOf<Any?>()
 
-        for (element in list) {
+        for ((index, element) in list.withIndex()) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
             val innerBindings = bindings.toMutableMap()
             innerBindings[expr.variable] = element
 
@@ -279,6 +288,7 @@ class ExpressionEvaluator {
             results.add(value)
         }
 
+        checkCancelled?.invoke()
         return results
     }
 
@@ -393,14 +403,17 @@ class ExpressionEvaluator {
 private fun evaluatePredicateFunction(
     expr: CypherExpr.PredicateFunction,
     bindings: Map<String, Any?>,
-    evaluate: (CypherExpr, Map<String, Any?>) -> Any?
+    evaluate: (CypherExpr, Map<String, Any?>) -> Any?,
+    checkCancelled: (() -> Unit)?
 ): Any? {
     val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
-    val results = list.map { element ->
+    val results = list.mapIndexed { index, element ->
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
         val innerBindings = bindings + (expr.variable to element)
         val value = expr.predicate?.let { evaluate(it, innerBindings) } ?: element
         value as? Boolean
     }
+    checkCancelled?.invoke()
     return evaluatePredicateResults(expr.name, results)
 }
 
