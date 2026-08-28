@@ -223,6 +223,65 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execution budget rejects non-positive limits`() {
+        assertFailsWith<IllegalArgumentException> { CypherExecutionBudget(0) }
+    }
+
+    @Test
+    fun `execution budget stops a full node scan and resets per query`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 2))
+
+        val error = assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute("MATCH (n) RETURN n.id")
+        }
+        assertEquals(2L, error.maxWorkUnits)
+        assertTrue(error.message.orEmpty().contains("selective label/filter"))
+
+        repeat(2) {
+            val result = budgeted.execute("MATCH (n) RETURN n.id LIMIT 2")
+            assertEquals(2, result.rows.size)
+        }
+    }
+
+    @Test
+    fun `execution budget counts relationship candidates`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute("MATCH (a:ParameterNode)-[r]->(b) RETURN b")
+        }
+    }
+
+    @Test
+    fun `execution budget is shared by union segments`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 3))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (n:IntConstant) RETURN n.value AS value " +
+                    "UNION ALL MATCH (n:CallSiteNode) RETURN n.line AS value"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget does not charge metadata label histogram`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        val result = budgeted.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+
+        assertEquals(9L, result.rows.first { it["label"] == "Constant" }["c"])
+    }
+
+    @Test
     fun `execute with maxRows caps expression limit`() {
         var consumed = 0
         val counting = object : Graph by graph {

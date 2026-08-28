@@ -216,29 +216,42 @@ class ExploreCommandTest {
         return code to body
     }
 
-    private fun withExploreApp(graph: Graph, block: (Int) -> Unit) {
+    private fun withExploreApp(
+        graph: Graph,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
         val localApp = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
         }.start(0)
         try {
-            ExploreRoutes().register(localApp, graph)
+            routes.register(localApp, graph)
             block(localApp.port())
         } finally {
             localApp.stop()
         }
     }
 
-    private fun withRegistryApp(registry: GraphRegistry, block: (Int) -> Unit) {
+    private fun withRegistryApp(
+        registry: GraphRegistry,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
         val topology = TopologyService(registry, emptyList()).also { it.rebuild() }
-        withRegistryApp(registry, topology, block)
+        withRegistryApp(registry, topology, routes, block)
     }
 
-    private fun withRegistryApp(registry: GraphRegistry, topology: TopologyService, block: (Int) -> Unit) {
+    private fun withRegistryApp(
+        registry: GraphRegistry,
+        topology: TopologyService,
+        routes: ExploreRoutes = ExploreRoutes(),
+        block: (Int) -> Unit
+    ) {
         val localApp = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
         }.start(0)
         try {
-            ExploreRoutes().register(localApp, registry, topology)
+            routes.register(localApp, registry, topology)
             block(localApp.port())
         } finally {
             localApp.stop()
@@ -1109,7 +1122,8 @@ class ExploreCommandTest {
             }
             val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
 
-            withRegistryApp(registry) { targetPort ->
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 128, maxWorkUnits = 250_000))
+            withRegistryApp(registry, routes) { targetPort ->
                 repeat(graphCount) { index ->
                     val (loadCode, loadBody) = put(
                         targetPort,
@@ -1505,6 +1519,9 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val post = cypher["post"] as Map<String, Any?>
         assertTrue(post.containsKey("requestBody"))
+        @Suppress("UNCHECKED_CAST")
+        val responses = post["responses"] as Map<String, Any?>
+        assertTrue(responses.containsKey("429"))
     }
 
     @Test
@@ -2067,6 +2084,22 @@ class ExploreCommandTest {
         assertNull(explore.graphId)
         assertNull(explore.topology)
         assertTrue(explore.graphSpecs.isEmpty())
+        assertEquals(DEFAULT_MAX_CONCURRENT_CYPHER, explore.maxConcurrentCypher)
+        assertEquals(DEFAULT_CYPHER_WORK_BUDGET, explore.cypherWorkBudget)
+    }
+
+    @Test
+    fun `serve rejects non-positive cypher limits`() {
+        val concurrency = ServeCommand().apply { maxConcurrentCypher = 0 }
+        val work = ServeCommand().apply { cypherWorkBudget = 0 }
+
+        val (_, concurrencyError, concurrencyCode) = captureOutput { concurrency.call() }
+        val (_, workError, workCode) = captureOutput { work.call() }
+
+        assertEquals(1, concurrencyCode)
+        assertEquals(1, workCode)
+        assertTrue(concurrencyError.contains("must be positive"), concurrencyError)
+        assertTrue(workError.contains("must be positive"), workError)
     }
 
     @Test
@@ -3487,6 +3520,72 @@ class ExploreCommandTest {
         val rows = result["rows"] as List<Map<String, Any?>>
         assertEquals(1, rows.size)
         assertEquals(1.0, result["rowCount"])
+    }
+
+    @Test
+    fun `cypher endpoint returns 429 when work budget is exceeded`() {
+        val budgetGraph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId.next(), 1))
+            .addNode(IntConstant(NodeId.next(), 2))
+            .build()
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1))
+
+        withExploreApp(budgetGraph, routes) { targetPort ->
+            val (limitedCode, limitedBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id"}"""
+            )
+            assertEquals(429, limitedCode, limitedBody)
+            assertTrue(limitedBody.contains("cypher_work_budget_exceeded"), limitedBody)
+
+            val (metadataCode, metadataBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) UNWIND labels(n) AS label RETURN label, count(*) AS c ORDER BY c DESC LIMIT 50"}"""
+            )
+            assertEquals(200, metadataCode, metadataBody)
+        }
+    }
+
+    @Test
+    fun `cypher endpoint rejects excess concurrent queries`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val backing = DefaultGraph.Builder().addNode(IntConstant(NodeId.next(), 1)).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                started.countDown()
+                check(release.await(5, TimeUnit.SECONDS))
+                yieldAll(backing.nodes(type))
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10))
+        val executor = Executors.newSingleThreadExecutor()
+
+        try {
+            withExploreApp(blockingGraph, routes) { targetPort ->
+                val first = executor.submit<Pair<Int, String>> {
+                    post(targetPort, "/api/cypher", """{"query":"MATCH (n) RETURN n.id LIMIT 1"}""")
+                }
+                assertTrue(started.await(5, TimeUnit.SECONDS))
+
+                val (rejectedCode, rejectedBody) = post(
+                    targetPort,
+                    "/api/cypher",
+                    """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+                )
+                assertEquals(429, rejectedCode, rejectedBody)
+                assertTrue(rejectedBody.contains("cypher_concurrency_limit"), rejectedBody)
+
+                release.countDown()
+                val (firstCode, firstBody) = first.get(5, TimeUnit.SECONDS)
+                assertEquals(200, firstCode, firstBody)
+            }
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+        }
     }
 
     @Test

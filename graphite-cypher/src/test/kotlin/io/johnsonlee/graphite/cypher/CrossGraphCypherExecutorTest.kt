@@ -152,6 +152,21 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `cross graph execution shares one work budget`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("orders", graph(IntConstant(NodeId(1), 10), IntConstant(NodeId(2), 20))),
+                CypherGraph("billing", graph(IntConstant(NodeId(1), 30), IntConstant(NodeId(2), 40)))
+            ),
+            CypherExecutionBudget(maxWorkUnits = 3)
+        )
+
+        assertFailsWith<CypherBudgetExceededException> {
+            executor.execute("MATCH (n) RETURN n.id")
+        }
+    }
+
+    @Test
     fun `relationship and named path rows retain graph identity`() {
         val orders = DefaultGraph.Builder()
             .addNode(IntConstant(NodeId(1), 10))

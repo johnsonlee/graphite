@@ -18,6 +18,8 @@ import java.util.concurrent.Callable
 private const val DEFAULT_PORT = 8080
 private const val DEFAULT_PORT_TEXT = "8080"
 private const val DEFAULT_LOAD_MODE_TEXT = "MAPPED"
+private const val DEFAULT_MAX_CONCURRENT_CYPHER_TEXT = "2"
+private const val DEFAULT_CYPHER_WORK_BUDGET_TEXT = "250000"
 
 @Command(
     name = "serve",
@@ -59,10 +61,28 @@ open class ServeCommand : Callable<Int> {
     )
     var topology: Path? = null
 
+    @Option(
+        names = ["--max-concurrent-cypher"],
+        description = ["Maximum number of Cypher queries executing at once"],
+        defaultValue = DEFAULT_MAX_CONCURRENT_CYPHER_TEXT
+    )
+    var maxConcurrentCypher: Int = DEFAULT_MAX_CONCURRENT_CYPHER
+
+    @Option(
+        names = ["--cypher-work-budget"],
+        description = ["Maximum node and relationship visits per Cypher request"],
+        defaultValue = DEFAULT_CYPHER_WORK_BUDGET_TEXT
+    )
+    var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
+
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
+        if (maxConcurrentCypher <= 0 || cypherWorkBudget <= 0) {
+            System.err.println("Error: Cypher concurrency and work budget must be positive")
+            return 1
+        }
         val hasInitialGraphs = graphDir != null || graphSpecs.isNotEmpty()
         if (!hasInitialGraphs && data == null) {
             System.err.println("Error: --data is required when starting without an initial graph")
@@ -101,6 +121,9 @@ open class ServeCommand : Callable<Int> {
                 "Topology: ${topologySummary.graphCount} graphs, " +
                     "${topologySummary.relationCount} relations"
             )
+            System.err.println(
+                "Cypher limits: $maxConcurrentCypher concurrent, $cypherWorkBudget work units per request"
+            )
             System.err.println("Press Ctrl+C to stop")
 
             Thread.currentThread().join()
@@ -113,11 +136,11 @@ open class ServeCommand : Callable<Int> {
     }
 
     internal fun registerApiRoutes(app: Javalin, graph: Graph) {
-        ExploreRoutes().register(app, graph)
+        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget)).register(app, graph)
     }
 
     internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
-        ExploreRoutes().register(app, registry, topology)
+        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget)).register(app, registry, topology)
     }
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =

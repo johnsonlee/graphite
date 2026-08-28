@@ -43,32 +43,44 @@ private const val PROPERTY_NAME = "name"
  * [QueryPipeline] against the graph. Node values in result rows are
  * converted to property maps for interoperability.
  */
-class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
+class CypherExecutor internal constructor(
+    private val pipeline: QueryPipeline,
+    private val executionBudget: CypherExecutionBudget? = null
+) {
 
     constructor(graph: Graph) : this(QueryPipeline(graph))
+
+    constructor(graph: Graph, executionBudget: CypherExecutionBudget) :
+        this(QueryPipeline(graph, workTrackingEnabled = true), executionBudget)
 
     fun execute(cypher: String): CypherResult {
         // 1. Parse Cypher text into internal AST clauses
         val clauses = CypherDslAdapter.parse(cypher)
-        return executeClauses(clauses, maxRows = null)
+        return executeClauses(clauses, maxRows = null, newWorkTracker())
     }
 
     fun execute(cypher: String, maxRows: Int): CypherResult {
         require(maxRows >= 0) { "maxRows must be non-negative" }
         val clauses = CypherDslAdapter.parse(cypher)
-        return executeClauses(clauses, maxRows)
+        return executeClauses(clauses, maxRows, newWorkTracker())
     }
 
-    private fun executeClauses(clauses: List<CypherClause>, maxRows: Int?): CypherResult {
+    private fun newWorkTracker(): CypherWorkTracker? = executionBudget?.let(::CypherWorkTracker)
+
+    private fun executeClauses(
+        clauses: List<CypherClause>,
+        maxRows: Int?,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
         // Handle UNION by splitting into sub-queries
         val unionIndex = clauses.indexOfFirst { it is CypherClause.Union }
         if (unionIndex >= 0) {
-            return executeUnion(clauses, maxRows)
+            return executeUnion(clauses, maxRows, workTracker)
         }
 
         // Execute via pipeline
         val boundedClauses = maxRows?.let { applyMaxRows(clauses, it) } ?: clauses
-        val raw = pipeline.execute(boundedClauses)
+        val raw = pipeline.execute(boundedClauses, workTracker)
 
         // Post-process: convert Node values to property maps
         return materializeResult(raw)
@@ -127,7 +139,11 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
      * Execute a UNION query by splitting into sub-queries, executing each,
      * and combining results.
      */
-    private fun executeUnion(clauses: List<CypherClause>, maxRows: Int?): CypherResult {
+    private fun executeUnion(
+        clauses: List<CypherClause>,
+        maxRows: Int?,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
         val segments = mutableListOf<List<CypherClause>>()
         var current = mutableListOf<CypherClause>()
         var unionAll = false
@@ -144,26 +160,30 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         segments.add(current)
 
         return if (unionAll) {
-            executeUnionAll(segments, maxRows)
+            executeUnionAll(segments, maxRows, workTracker)
         } else {
-            executeUnionDistinct(segments, maxRows)
+            executeUnionDistinct(segments, maxRows, workTracker)
         }
     }
 
-    private fun executeUnionAll(segments: List<List<CypherClause>>, maxRows: Int?): CypherResult {
+    private fun executeUnionAll(
+        segments: List<List<CypherClause>>,
+        maxRows: Int?,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
         var columns = emptyList<String>()
         val rows = mutableListOf<Map<String, Any?>>()
         for (segment in segments) {
             val remaining = maxRows?.minus(rows.size)
             if (remaining != null && remaining <= 0) {
                 if (columns.isEmpty()) {
-                    columns = pipeline.execute(applyMaxRowsToSegment(segment, 0)).columns
+                    columns = pipeline.execute(applyMaxRowsToSegment(segment, 0), workTracker).columns
                 }
                 break
             }
 
             val boundedSegment = remaining?.let { applyMaxRowsToSegment(segment, it) } ?: segment
-            val result = pipeline.execute(boundedSegment)
+            val result = pipeline.execute(boundedSegment, workTracker)
             if (columns.isEmpty()) columns = result.columns
             if (remaining == null) {
                 rows.addAll(result.rows)
@@ -174,10 +194,14 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         return materializeResult(CypherResult(columns, rows))
     }
 
-    private fun executeUnionDistinct(segments: List<List<CypherClause>>, maxRows: Int?): CypherResult {
+    private fun executeUnionDistinct(
+        segments: List<List<CypherClause>>,
+        maxRows: Int?,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
         if (maxRows == 0) {
             val columns = segments.firstOrNull()
-                ?.let { pipeline.execute(applyMaxRowsToSegment(it, 0)).columns }
+                ?.let { pipeline.execute(applyMaxRowsToSegment(it, 0), workTracker).columns }
                 .orEmpty()
             return CypherResult(columns, emptyList())
         }
@@ -186,7 +210,7 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
         // Later segments can still add provenance to a retained duplicate row.
         for (segment in segments) {
             val boundedSegment = maxRows?.let { applyMaxRowsToSegment(segment, it) } ?: segment
-            val result = pipeline.execute(boundedSegment)
+            val result = pipeline.execute(boundedSegment, workTracker)
             if (columns.isEmpty()) columns = result.columns
             result.rows.forEach { row -> addDistinctRow(rows, row, maxRows) }
         }
@@ -348,12 +372,18 @@ class CypherExecutor internal constructor(private val pipeline: QueryPipeline) {
  * traversal never crosses graph boundaries; independent patterns and joins can
  * bind values from different graphs in the same result row.
  */
-class CrossGraphCypherExecutor(graphs: List<CypherGraph>) {
+class CrossGraphCypherExecutor(
+    graphs: List<CypherGraph>,
+    executionBudget: CypherExecutionBudget? = null
+) {
     private val delegate: CypherExecutor
 
     init {
         require(graphs.map { it.id }.distinct().size == graphs.size) { "Graph ids must be unique" }
-        delegate = CypherExecutor(QueryPipeline(graphs))
+        delegate = CypherExecutor(
+            QueryPipeline(graphs, workTrackingEnabled = executionBudget != null),
+            executionBudget
+        )
     }
 
     fun execute(cypher: String): CypherResult = delegate.execute(cypher).withExplicitMetadata()

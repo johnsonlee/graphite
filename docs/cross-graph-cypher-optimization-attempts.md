@@ -725,6 +725,78 @@ Graphite node types and selected graphs rather than the number of nodes. The
 5.9-million-node Android result exceeds the 100x target by more than four orders
 of magnitude, and the already-limited labels/keys sample does not regress.
 
+### 2026-08-28 - Attempt 017: Cypher admission and work budgets
+
+**Remaining risk:** the label histogram fast path cannot cover every query an
+agent can generate. For example, replacing `labels(n)` with `keys(n)` requires
+per-node property inspection. A result `LIMIT` still applies after `UNWIND`,
+aggregation, and ordering, so it does not bound the preceding scan or retained
+match rows.
+
+**Design:** HTTP Cypher endpoints now share a non-queuing semaphore with a
+default of two active queries. Each admitted request also receives a 250,000
+work-unit budget, where one node candidate or relationship candidate is one
+unit. Generic node scans, direct string-filter candidates, relationship scans,
+path reconstruction, UNION segments, and cross-graph sources share the request
+budget. Metadata fast paths consume no units. Fanout divides the request budget
+across selected graphs so its maximum aggregate work stays bounded.
+
+The limits are configurable with `--max-concurrent-cypher` and
+`--cypher-work-budget`. Concurrency and work-budget rejections return HTTP 429
+with machine-readable codes `cypher_concurrency_limit` and
+`cypher_work_budget_exceeded`; only concurrency rejection includes
+`Retry-After`. Syntax and semantic query errors remain HTTP 400. The OpenAPI
+document and README describe both responses and options.
+
+An initial implementation consulted a `ThreadLocal` even when no budget was
+configured. Its first JMH run moved `singleHopRelationship` from `29.230` to
+`30.278 us/op`, with separated confidence intervals. The retained design makes
+work tracking a construction-time pipeline capability: the default library
+executor never sets or reads the tracker, while HTTP creates a budget-enabled
+pipeline.
+
+**Android budget benchmark:** the new SingleShot benchmark runs the unoptimized
+`MATCH (n) UNWIND keys(n) ... count(*) ... LIMIT 50` shape on the persisted
+5,938,827-node Android graph. With a 250,000-unit budget, all three measured
+invocations reject at exactly the configured limit in `109.710 ms/op` and
+allocate `259,665,267 B/op`; no measured invocation triggers GC. The query is
+stopped during `MATCH`, before 5.9 million bindings can be materialized or keys
+expanded.
+
+```shell
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  'AndroidSchemaDiscoveryBenchmark.boundedPropertyKeyHistogram' \
+  -i 3 -r 1s -f 1 -prof gc -foe true
+```
+
+**Method-level regression:** latest `main` (`44b5756`) and the branch were run
+from separate local checkouts on the same machine with the standard JMH task.
+Values are `us/op`; every confidence interval overlaps and every score change
+is below 4%.
+
+| `CypherBenchmark` | `main` | Attempt 017 | Change |
+|-------------------|-------:|------------:|-------:|
+| `aggregationCountGroupBy` | `34.278` | `34.885` | `+1.8%` |
+| `countStar` | `2.340` | `2.425` | `+3.6%` |
+| `functionCalls` | `24.710` | `24.736` | `+0.1%` |
+| `nodeMatchWithWhere` | `57.667` | `57.034` | `-1.1%` |
+| `regexFilter` | `23.387` | `23.885` | `+2.1%` |
+| `returnDistinct` | `101.791` | `103.822` | `+2.0%` |
+| `simpleNodeMatch` | `20.256` | `19.594` | `-3.3%` |
+| `singleHopRelationship` | `29.230` | `29.582` | `+1.2%` |
+| `variableLengthPath` | `26.138` | `25.583` | `-2.1%` |
+| `withPipeline` | `76.788` | `76.558` | `-0.3%` |
+
+Tests verify node, relationship, UNION, cross-graph, reset, and metadata budget
+semantics; HTTP tests verify 429 work rejection, immediate concurrent rejection,
+permit release, and recovery. `:cypher:check` and `:explore:check` pass. Explicit
+application line coverage is `98.108%` for Cypher and `98.0857%` for Explore.
+
+**Conclusion:** retained. Known schema discovery uses an O(type-count) fast
+path, while unknown full-graph shapes now fail within a configurable work and
+concurrency envelope instead of consuming every graph node or every Jetty
+worker. Default non-budgeted Cypher execution shows no measured regression.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
@@ -789,7 +861,7 @@ the primary pressure result.
 
 `GraphEndToEndBenchmark` covers Android JAR analysis, graph build, save, mapped
 load, and Cypher count query. The single-shot result was `30,182.415 ms/op` on
-`main` and `23,877.213 ms/op` on the branch. This benchmark is intentionally
+`main` and `24,165.015 ms/op` on the final branch. This benchmark is intentionally
 coarse and noisy, but it shows no end-to-end regression. The optimization does
 not change graph building or the persisted format.
 

@@ -58,12 +58,17 @@ private val DIRECT_STRING_NODE_PROPERTIES = listOf(
 @Suppress("LargeClass")
 class QueryPipeline private constructor(
     private val sources: List<CypherGraph>,
-    private val qualified: Boolean
+    private val qualified: Boolean,
+    private val workTrackingEnabled: Boolean
 ) {
 
-    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false)
+    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, false)
 
-    internal constructor(graphs: List<CypherGraph>) : this(graphs, true)
+    internal constructor(graph: Graph, workTrackingEnabled: Boolean) :
+        this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, workTrackingEnabled)
+
+    internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean = false) :
+        this(graphs, true, workTrackingEnabled)
 
     init {
         require(sources.map { it.id }.distinct().size == sources.size) { "Graph ids must be unique" }
@@ -72,11 +77,28 @@ class QueryPipeline private constructor(
     private val graph: Graph get() = sources.single().graph
 
     private val evaluator = ExpressionEvaluator()
+    private val activeWorkTracker = ThreadLocal<CypherWorkTracker?>()
 
     /**
      * Execute a list of clauses and return the final result.
      */
-    fun execute(clauses: List<CypherClause>): CypherResult {
+    fun execute(clauses: List<CypherClause>): CypherResult = execute(clauses, null)
+
+    internal fun execute(
+        clauses: List<CypherClause>,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
+        if (workTracker == null) return executeWithActiveBudget(clauses)
+        activeWorkTracker.set(workTracker)
+        return try {
+            executeWithActiveBudget(clauses)
+        } finally {
+            activeWorkTracker.remove()
+        }
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
@@ -560,7 +582,9 @@ class QueryPipeline private constructor(
                 filter.expected,
                 limit - rows.size
             )
-            val candidates = indexedNodes ?: source.graph.nodes(nodeClass).filter(filter::matches)
+            val candidates = indexedNodes
+                ?.let(::trackWork)
+                ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
             for (node in candidates) {
 
                 val candidate = nodeValue(source, node)
@@ -618,9 +642,9 @@ class QueryPipeline private constructor(
                 )
             }
             val candidates = if (accelerated.any { it == null }) {
-                graph.nodes(candidateType).filter(disjunction::matches)
+                trackWork(graph.nodes(candidateType)).filter(disjunction::matches)
             } else {
-                filterOwnedNodes(filters, accelerated.filterNotNull())
+                filterOwnedNodes(filters, accelerated.filterNotNull().map(::trackWork))
             }
             for (node in candidates) yield(node)
         }
@@ -945,9 +969,9 @@ class QueryPipeline private constructor(
                         val prev = nodeCursor(prevValue)
                         val next = nodeCursor(nextValue)
                         if (prev != null && next != null && prev.source.id == next.source.id) {
-                            val foundEdge = prev.source.graph.outgoing(prev.node.id)
+                            val foundEdge = trackWork(prev.source.graph.outgoing(prev.node.id))
                                 .firstOrNull { it.to == next.node.id }
-                                ?: prev.source.graph.incoming(prev.node.id)
+                                ?: trackWork(prev.source.graph.incoming(prev.node.id))
                                     .firstOrNull { it.from == next.node.id }
                             if (foundEdge != null) path.add(edgeValue(prev.source, foundEdge))
                         }
@@ -1216,7 +1240,7 @@ class QueryPipeline private constructor(
             out + inc
         }
         }
-        return edges.map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
+        return trackWork(edges).map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
     }
 
     private fun resolveTargetId(edge: Edge, sourceId: NodeId, direction: Direction): NodeId =
@@ -1238,11 +1262,19 @@ class QueryPipeline private constructor(
     private fun <T : Node> nodeCandidates(type: Class<T>): Sequence<Any> =
         if (qualified) {
             sources.asSequence().flatMap { source ->
-                source.graph.nodes(type).map { node -> QualifiedNode(source.id, source.graph, node) }
+                trackWork(source.graph.nodes(type)).map { node -> QualifiedNode(source.id, source.graph, node) }
             }
         } else {
-            graph.nodes(type).map { it as Any }
+            trackWork(graph.nodes(type)).map { it as Any }
         }
+
+    private fun <T> trackWork(values: Sequence<T>): Sequence<T> {
+        return if (!workTrackingEnabled) {
+            values
+        } else {
+            activeWorkTracker.get()?.let { tracker -> values.onEach { tracker.consume() } } ?: values
+        }
+    }
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {
         is QualifiedNode -> NodeCursor(CypherGraph(value.graphId, value.graph), value.node, value)

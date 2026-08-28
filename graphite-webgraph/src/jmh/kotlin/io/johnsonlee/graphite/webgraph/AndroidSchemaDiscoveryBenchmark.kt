@@ -1,5 +1,8 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
+import io.johnsonlee.graphite.cypher.CypherExecutionBudget
+import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherResult
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.Graph
@@ -25,11 +28,16 @@ import java.util.concurrent.TimeUnit
 @Fork(1, jvmArgs = ["-Xmx16g"])
 open class AndroidSchemaDiscoveryBenchmark {
     private lateinit var mappedGraph: Graph
+    private lateinit var budgetedExecutor: CypherExecutor
 
     @Setup
     fun setup() {
         mappedGraph = GraphStore.loadMapped(
             BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
+        )
+        budgetedExecutor = CypherExecutor(
+            mappedGraph,
+            CypherExecutionBudget(SCHEMA_DISCOVERY_WORK_BUDGET)
         )
         val sample = sampleLabelsAndKeys()
         check(sample.rows.size == SCHEMA_SAMPLE_LIMIT)
@@ -52,10 +60,22 @@ open class AndroidSchemaDiscoveryBenchmark {
 
     @Benchmark
     fun labelHistogram(): CypherResult = mappedGraph.query(LABEL_HISTOGRAM_QUERY)
+
+    @Benchmark
+    @BenchmarkMode(Mode.SingleShotTime)
+    @Warmup(iterations = 1)
+    @Measurement(iterations = 3)
+    fun boundedPropertyKeyHistogram(): Long = try {
+        budgetedExecutor.execute(PROPERTY_KEY_HISTOGRAM_QUERY)
+        error("property-key histogram unexpectedly completed within its work budget")
+    } catch (error: CypherBudgetExceededException) {
+        error.maxWorkUnits
+    }
 }
 
 private const val SCHEMA_SAMPLE_LIMIT = 20
 private const val SCHEMA_COUNT_COLUMN = "c"
+private const val SCHEMA_DISCOVERY_WORK_BUDGET = 250_000L
 
 private const val SAMPLE_LABELS_AND_KEYS_QUERY = """
 MATCH (n)
@@ -67,6 +87,14 @@ private const val LABEL_HISTOGRAM_QUERY = """
 MATCH (n)
 UNWIND labels(n) AS label
 RETURN label, count(*) AS c
+ORDER BY c DESC
+LIMIT 50
+"""
+
+private const val PROPERTY_KEY_HISTOGRAM_QUERY = """
+MATCH (n)
+UNWIND keys(n) AS key
+RETURN key, count(*) AS c
 ORDER BY c DESC
 LIMIT 50
 """
