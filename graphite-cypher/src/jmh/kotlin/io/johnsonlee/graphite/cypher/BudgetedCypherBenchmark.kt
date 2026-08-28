@@ -85,4 +85,4 @@ private const val NODE_SCAN_QUERY = "MATCH (n:IntConstant) RETURN n.value LIMIT 
 private const val RELATIONSHIP_QUERY =
     "MATCH (n:IntConstant)-[:DATAFLOW]->(v:LocalVariable) RETURN n.value, v.name LIMIT 500"
 private const val VARIABLE_PATH_QUERY =
-    "MATCH (n:IntConstant)-[:DATAFLOW*2..2]->(c:CallSiteNode) RETURN n.value, c.callee_name LIMIT 500"
+    "MATCH (n:IntConstant)-[r:DATAFLOW*2..2]->(c:CallSiteNode) RETURN r LIMIT 500"

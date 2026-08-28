@@ -893,7 +893,7 @@ Values and 99.9% confidence errors are `us/op`.
 |------------------|-----------:|---------:|------------------:|
 | 500-node scan | `48.613 +/- 0.240` | `49.312 +/- 0.666` | `+1.4%` |
 | 500 single-hop relationships | `148.846 +/- 0.731` | `157.375 +/- 4.496` | `+5.7%` |
-| 500 two-hop variable paths | `251.880 +/- 1.875` | `255.000 +/- 1.124` | `+1.2%` |
+| 500 materialized two-hop paths | `231.380 +/- 2.436` | `233.829 +/- 4.377` | `+1.1%` |
 
 The budget check has a measurable cost; this is not described as a free change.
 The relationship result is the highest at 5.7%, and its 99.9% confidence
@@ -901,7 +901,9 @@ interval does not overlap the unbudgeted result. Its unbudgeted path now relies
 on the graph's typed traversal without applying a duplicate relationship-type
 filter. The budgeted path still reads the untyped edge sequence so it can charge
 every rejected candidate before filtering; the benchmark includes source-node,
-edge-candidate, and target-node accounting.
+edge-candidate, and target-node accounting. The variable-path query binds and
+returns its relationship variable, so that row also covers concrete path
+materialization and its budget charge.
 
 **Corrected Android rejection evidence:** the benchmark setup now asserts the
 harness identity for Maven fixture `org.robolectric:android-all:14-robolectric-10818077`,
