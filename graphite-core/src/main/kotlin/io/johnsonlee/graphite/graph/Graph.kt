@@ -26,7 +26,17 @@ enum class StringMatchMode {
     CONTAINS
 }
 
-/** Optional storage capability for graphs that can avoid materializing a full node scan. */
+/** Exact value transformation applied before a storage-backed string match. */
+enum class StringValueTransform {
+    LOWERCASE
+}
+
+/**
+ * Optional storage capability for graphs that can avoid materializing a full node scan.
+ *
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
+ * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ */
 interface StringPropertyLookup {
     fun <T : Node> nodesByStringProperty(
         type: Class<T>,
@@ -52,6 +62,45 @@ interface WorkAwareStringPropertyLookup : StringPropertyLookup {
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>?
+}
+
+/**
+ * Optional storage capability for matching a precisely transformed string value.
+ *
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
+ * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ */
+interface TransformedStringPropertyLookup {
+    fun <T : Node> nodesByTransformedStringProperty(
+        type: Class<T>,
+        property: String,
+        transform: StringValueTransform,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>?
+}
+
+/** Transformed string lookup capability that exposes every inspected work item. */
+interface WorkAwareTransformedStringPropertyLookup : TransformedStringPropertyLookup {
+    fun <T : Node> nodesByTransformedStringProperty(
+        type: Class<T>,
+        property: String,
+        transform: StringValueTransform,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): Sequence<T>?
+}
+
+/**
+ * Ordering capability for storage lookups that are emitted in canonical node traversal order.
+ * Implementations must return a stable key and must emit all string-property lookup sequences
+ * monotonically by that key.
+ */
+interface StringPropertyLookupOrder {
+    fun stringPropertyNodeOrder(node: Node): Long
 }
 
 /**
@@ -238,6 +287,29 @@ fun <T : Node> Graph.nodesByStringProperty(
     workConsumer: GraphWorkConsumer
 ): Sequence<T>? = (this as? WorkAwareStringPropertyLookup)
     ?.nodesByStringProperty(type, property, mode, expected, limit, workConsumer)
+
+/** Use a storage-aware transformed string lookup when the graph supports it. */
+fun <T : Node> Graph.nodesByTransformedStringProperty(
+    type: Class<T>,
+    property: String,
+    transform: StringValueTransform,
+    mode: StringMatchMode,
+    expected: String,
+    limit: Int = Int.MAX_VALUE
+): Sequence<T>? = (this as? TransformedStringPropertyLookup)
+    ?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit)
+
+/** Use a transformed lookup only when it can report every inspected work item. */
+fun <T : Node> Graph.nodesByTransformedStringProperty(
+    type: Class<T>,
+    property: String,
+    transform: StringValueTransform,
+    mode: StringMatchMode,
+    expected: String,
+    limit: Int,
+    workConsumer: GraphWorkConsumer
+): Sequence<T>? = (this as? WorkAwareTransformedStringPropertyLookup)
+    ?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit, workConsumer)
 
 /**
  * Pattern for matching methods.

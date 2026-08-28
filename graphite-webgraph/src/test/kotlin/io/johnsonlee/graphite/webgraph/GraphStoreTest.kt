@@ -42,10 +42,13 @@ import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -157,7 +160,9 @@ class GraphStoreTest {
                 assertEquals(listOf("callerFeature"), startsWith)
                 assertEquals(listOf("billingFeature"), endsWith)
                 assertEquals(listOf("feature-beta"), cypherValues)
+                assertWrappedLowercaseQuery(loaded)
                 assertRawStringPropertyLookups(loaded)
+                assertWorkAwareTransformedLookup(mapped)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -187,7 +192,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped broad disjunction deduplicates unordered property streams`() {
+    fun `mapped broad disjunction preserves stored order while deduplicating property streams`() {
         val nodeIds = listOf(1, 30, 70, 2, 90, 4, 5, 50, 40, 3)
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -225,7 +230,7 @@ class GraphStoreTest {
                 ).rows
                 val resultIds = rows.map { it["id"] }
 
-                assertEquals(listOf(4, 90), resultIds)
+                assertEquals(listOf(90, 4), resultIds)
                 assertEquals(resultIds.size, resultIds.distinct().size)
             } finally {
                 loaded.close()
@@ -311,6 +316,38 @@ class GraphStoreTest {
             )
             assertEquals(listOf(11), uncached.matchingNodeIds(StringMatchMode.STARTS_WITH, "beta").toList())
             assertEquals(0, uncached.matchingStringCacheSize())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string index isolates raw and exact lowercase match caches`() {
+        val dir = Files.createTempDirectory("webgraph-lowercase-string-index")
+        try {
+            val values = listOf("Voucher", "voucher", "İVOUCHER")
+            val strings = StringTable.build(values, dir)
+            val index = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11, 12),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings
+            )
+
+            assertEquals(
+                listOf(11),
+                index.matchingNodeIds(StringMatchMode.CONTAINS, "voucher").toList()
+            )
+            assertEquals(
+                listOf(10, 11, 12),
+                index.matchingNodeIds(
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "voucher",
+                    workConsumer = null
+                ).toList()
+            )
+            assertEquals(2, index.matchingStringCacheSize())
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -413,6 +450,106 @@ class GraphStoreTest {
         } finally {
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `mapped raw string scan caches repeated match states and accounts budgeted work`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(261) { index ->
+                val value = when (index) {
+                    256, 257, 260 -> "TaRgEt"
+                    258, 259 -> "other"
+                    else -> "prefix-$index"
+                }
+                addNode(StringConstant(NodeId(index), value))
+            }
+        }.build()
+        val orderedGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).sortedBy { it.id.value }
+        }
+        val dir = Files.createTempDirectory("webgraph-raw-string-match-states")
+        try {
+            GraphStore.save(orderedGraph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val unbudgeted = loaded.nodesByTransformedStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "target",
+                    limit = 3
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(256, 257, 260), unbudgeted)
+                assertEquals(1, loaded.rawStringMatchStateCount())
+                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+
+                loaded.clearStringPropertyIndexes()
+                var consumed = 0
+                val budgeted = loaded.nodesByTransformedStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "target",
+                    limit = 3,
+                    workConsumer = GraphWorkConsumer { consumed++ }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(256, 257, 260), budgeted)
+                assertEquals(261, consumed)
+                assertEquals(1, loaded.rawStringMatchStateCount())
+                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `raw string match states enforce one aggregate graph memory bound`() {
+        val states = RawStringMatchStates(maxRetainedBytes = 512, maxEntries = 8)
+        val property = StringPropertyKey(StringConstant::class.java, "value")
+
+        val first = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
+            stringCount = 40
+        )
+        val second = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "second"),
+            stringCount = 40
+        )
+        val overflow = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "third"),
+            stringCount = 40
+        )
+
+        assertNotNull(first)
+        assertNotNull(second)
+        assertNull(overflow)
+        assertEquals(2, states.size())
+        assertEquals(442L, states.retainedBytes())
+        assertTrue(states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
+            stringCount = 40
+        ) === first)
+
+        val oversizedKeyStates = RawStringMatchStates(maxRetainedBytes = 256, maxEntries = 8)
+        assertNull(oversizedKeyStates.stateFor(
+            RawStringMatchKey(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "x".repeat(128)
+            ),
+            stringCount = 1
+        ))
+        assertEquals(0, oversizedKeyStates.size())
+        assertEquals(0L, oversizedKeyStates.retainedBytes())
     }
 
     @Test
@@ -636,6 +773,25 @@ class GraphStoreTest {
         )
 
     private fun assertRawStringPropertyLookups(graph: Graph) {
+        graph.nodesByTransformedStringProperty(
+            FieldNode::class.java,
+            "class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "owner"
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            assertNotNull(
+                graph.nodesByTransformedStringProperty(
+                    FieldNode::class.java,
+                    "class",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "owner"
+                )
+            ).map { it.descriptor.declaringClass.className }.toList()
+        )
         assertEquals(
             listOf("example.State"),
             indexedValues(graph, EnumConstant::class.java, "enum_type", StringMatchMode.ENDS_WITH, "State") {
@@ -683,6 +839,33 @@ class GraphStoreTest {
             }
         )
         assertResourceStringPropertyLookups(graph)
+    }
+
+    private fun assertWorkAwareTransformedLookup(graph: MappedWebGraphBackedGraph) {
+        var inspected = 0
+        val values = graph.nodesByTransformedStringProperty(
+            FieldNode::class.java,
+            "class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "owner",
+            limit = 1,
+            workConsumer = GraphWorkConsumer { inspected++ }
+        ).orEmpty().map { it.descriptor.declaringClass.className }.toList()
+
+        assertEquals(listOf("example.Owner"), values)
+        assertTrue(inspected > 0)
+    }
+
+    private fun assertWrappedLowercaseQuery(graph: Graph) {
+        val values = graph.query(
+            "MATCH (n) WHERE " +
+                "toLower(coalesce(n.caller_name, '')) CONTAINS 'feature' OR " +
+                "toLower(coalesce(n.callee_name, '')) CONTAINS 'feature' " +
+                "RETURN DISTINCT n.caller_name AS caller, n.callee_name AS callee LIMIT 250"
+        ).rows.map { it["caller"] to it["callee"] }
+
+        assertEquals(listOf("callerFeature" to "billingFeature"), values)
     }
 
     private fun assertResourceStringPropertyLookups(graph: Graph) {

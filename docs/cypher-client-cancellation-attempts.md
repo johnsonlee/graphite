@@ -127,23 +127,23 @@ java -jar <cypher-jmh.jar> 'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
 ```
 
 All ten final `CypherBenchmark` methods pass the repository's 15% local gate.
-Deltas range from `-0.6%` to `+14.6%`; `returnDistinct` is the slowest result at `109.388 us/op` versus
+Deltas range from `-7.7%` to `+6.7%`; `returnDistinct` is the slowest result at `101.893 us/op` versus
 `95.471 us/op` on the base.
 The unbudgeted path invokes the original matcher and query loops without cancellation polling; budgeted execution
 uses the tracked variants.
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `aggregationCountGroupBy` | 34.205 us/op | 35.046 us/op | +2.5% |
-| `countStar` | 2.398 us/op | 2.383 us/op | -0.6% |
-| `functionCalls` | 25.147 us/op | 25.565 us/op | +1.7% |
-| `nodeMatchWithWhere` | 57.628 us/op | 63.103 us/op | +9.5% |
-| `regexFilter` | 25.499 us/op | 25.362 us/op | -0.5% |
-| `returnDistinct` | 95.471 us/op | 109.388 us/op | +14.6% |
-| `simpleNodeMatch` | 20.307 us/op | 21.489 us/op | +5.8% |
-| `singleHopRelationship` | 29.865 us/op | 32.361 us/op | +8.4% |
-| `variableLengthPath` | 26.185 us/op | 27.818 us/op | +6.2% |
-| `withPipeline` | 79.423 us/op | 83.991 us/op | +5.8% |
+| `aggregationCountGroupBy` | 34.205 us/op | 33.949 us/op | -0.7% |
+| `countStar` | 2.398 us/op | 2.414 us/op | +0.7% |
+| `functionCalls` | 25.147 us/op | 24.606 us/op | -2.2% |
+| `nodeMatchWithWhere` | 57.628 us/op | 57.911 us/op | +0.5% |
+| `regexFilter` | 25.499 us/op | 23.540 us/op | -7.7% |
+| `returnDistinct` | 95.471 us/op | 101.893 us/op | +6.7% |
+| `simpleNodeMatch` | 20.307 us/op | 20.581 us/op | +1.3% |
+| `singleHopRelationship` | 29.865 us/op | 30.396 us/op | +1.8% |
+| `variableLengthPath` | 26.185 us/op | 25.663 us/op | -2.0% |
+| `withPipeline` | 79.423 us/op | 76.376 us/op | -3.8% |
 
 The 5,986,673-node Hive corpus also exercises 1,437,647 call sites. On the same machine, the base query took
 `2,901 ms`; candidate observations ranged from `2,679 ms` to a final conservative `3,512 ms`. The slowest delta is
@@ -164,11 +164,11 @@ java -jar <cypher-jmh.jar> \
 | `budgetedNodeScan` | 52.097 us/op | 50.262 us/op | -3.5% |
 | `budgetedRelationship` | 158.963 us/op | 145.894 us/op | -8.2% |
 | `budgetedVariableLengthPath` | 252.135 us/op | 237.207 us/op | -5.9% |
-| `budgetedGeneralRegex` | 902.587 us/op | 885.219 us/op | -1.9% |
+| `budgetedGeneralRegex` | 902.587 us/op | 889.122 us/op | -1.5% |
 
 `budgetedGeneralRegex` executes the reviewed 10,000-row, 114-character `[a-z]+[0-9]+` production path. The same JMH
 harness was copied into the base checkout before both jars were built. The final candidate's 99.9% interval is
-`874.534-895.904 us/op`. Deferring the first internal poll until the 1,024th character access removes the previous
+`882.052-896.193 us/op`. Deferring the first internal poll until the 1,024th character access removes the previous
 normal-match regression while every tracked pattern remains cancellable.
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:

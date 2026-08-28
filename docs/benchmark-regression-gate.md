@@ -10,6 +10,61 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Wrapped case-insensitive latency gate
+
+The `wrapped-query-latency` job protects the production
+`toLower(coalesce(...)) CONTAINS` discovery shape on persisted mapped graphs.
+The same `WrappedDiscoveryLatencyBenchmark` source is compiled at three
+revisions:
+
+1. fixed pre-PR-95 commit `44b57562f2b3d0c88882a9002bdc488e05e5d7a7`;
+2. the pull request's current base SHA; and
+3. the pull request candidate SHA.
+
+The 12 benchmark keys are split across five parallel matrix shards: one for
+the four synthetic keys and four for pairs of real-fixture query cases. Within
+each shard, fixed baseline, current base, and candidate still run sequentially
+on the same runner, so parallelism does not turn cross-runner variance into a
+performance comparison. A prerequisite job restores or builds the persisted
+fixture graphs once with a 4 GiB heap, using a content-addressed cache key over
+the graph-building/serialization sources, fixture harness, dependency catalog,
+and Gradle build files. Real shards restore that immutable cache instead of
+rebuilding 19 million nodes independently. The final `wrapped-query-latency`
+job fails closed unless all five shard reports arrive and their union contains
+every expected key exactly once.
+
+It measures warm and cold queries with `graphCount=1` and `graphCount=17` on
+deterministic persisted graphs. It also builds every repository benchmark
+fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially on a cache miss,
+then each real shard opens the four
+persisted graphs together, and measures the same query over the heterogeneous
+19,091,048-node graph set. Source graphs are never retained together: each is
+closed after persistence, before the next fixture is built.
+
+The real-corpus suite treats target distribution as part of the fixture. Its
+preflight pins per-corpus match counts, then benchmarks zero-hit, dense
+four-corpus, first-graph-only, middle-graphs-only, last-graph-only,
+four-corpus-distributed, first/last bimodal, and highly skewed class/method
+cases. The queries vary caller/callee fields, class/method properties,
+`CONTAINS`/`STARTS WITH`/`ENDS WITH`, and `LIMIT 1/50/250`.
+Before timing, fixed, current-base, and candidate executors must produce the
+same SHA-256 digest over complete columns, ordered rows, values, and graph
+provenance for all eight queries. The comparator separately requires the exact
+four synthetic and eight real-fixture benchmark keys, so a variant cannot
+silently disappear from all three revisions.
+
+Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
+source graph is persisted and that JVM exits, the raw mmap work directory is
+deleted before the next corpus starts. Only the four final persisted graph
+directories remain for the shared query measurements.
+Every row must remain at least 50% faster than the fixed baseline and may not
+regress more than 15% against the current PR base. Missing graph-count or query
+variants, incompatible units, invalid scores, and missing artifacts fail
+closed. A suspected failure reruns candidate, base, and fixed baseline in
+reverse order before it blocks. The fixed baseline prevents the original full-scan behavior from
+becoming an accepted new base after a merge; the moving base comparison catches
+new regressions in later optimizations.
+
 ## Method-level gate
 
 The method-level job runs every `CypherBenchmark` method from both revisions with its normal JMH
@@ -64,6 +119,17 @@ they can reuse trusted main-branch state without creating a cache entry for ever
 Generated graphs and project `build/` directories are deliberately excluded. The end-to-end gate
 must measure graph construction and persistence rather than restore those outputs from a cache.
 
+## Budgeted mapped-string latency gate
+
+The `budgeted-mapped-string-latency` job protects the budget-aware transformed mapped-string scan
+that regressed after the original latency fix. It compiles the identical
+`MappedStringAdmissionBenchmark.budgetedTransformedZeroHit` harness at fixed commit
+`87c74c2cae0685e40e32fb2eb46b33987ec1a7a0` and at the pull request candidate, then runs both on
+the same runner. Any candidate score more than 15% slower is rerun in reverse order even when the
+SingleShot confidence intervals overlap, and it blocks when the reverse-order score is also more
+than 15% slower. This fixed baseline keeps a later change from normalizing a 2x full-scan regression
+into the moving base.
+
 ## Local verification
 
 Test the comparison and report generation logic:
@@ -78,6 +144,8 @@ Run the two benchmark sources directly:
 ```bash
 ./gradlew :cypher:jmhJar --no-daemon
 ./gradlew :webgraph:largeCorpusTest -Dlarge.corpus.record=true --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='WrappedDiscoveryLatencyBenchmark.*' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='AllFixtureWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ```
 
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage

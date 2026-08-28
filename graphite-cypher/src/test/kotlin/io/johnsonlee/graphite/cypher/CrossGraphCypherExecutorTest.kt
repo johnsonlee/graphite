@@ -21,6 +21,8 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
+import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -404,6 +406,65 @@ class CrossGraphCypherExecutorTest {
 
         assertEquals(listOf("com.example.ThankYouDynamicOwner"), result.rows.map { it["caller"] })
         assertEquals(listOf("orders"), graphIds(result.rows.single()))
+
+        val wrapped = executor.execute(
+            "MATCH (n) WHERE " +
+                "toLower(coalesce(n.class, '')) CONTAINS 'thankyou' OR " +
+                "toLower(coalesce(n.name, '')) CONTAINS 'thankyou' OR " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'thankyou' OR " +
+                "toLower(coalesce(n.caller_name, '')) CONTAINS 'thankyou' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'thankyou' OR " +
+                "toLower(coalesce(n.callee_name, '')) CONTAINS 'thankyou' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+        assertEquals(listOf("com.example.ThankYouDynamicOwner"), wrapped.rows.map { it["caller"] })
+        assertEquals(listOf("orders"), graphIds(wrapped.rows.single()))
+    }
+
+    @Test
+    fun `wrapped lowercase distinct limit merges provenance across graphs`() {
+        val caller = MethodDescriptor(
+            TypeDescriptor("com.example.VoucherService"),
+            "create",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        val callee = MethodDescriptor(
+            TypeDescriptor("com.example.Repository"),
+            "load",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+
+        fun indexedGraph(): Graph {
+            val backing = graph(CallSiteNode(NodeId(1), caller, callee, 1, null, emptyList()))
+            return object : Graph by backing, TransformedStringPropertyLookup {
+                override fun <T : Node> nodesByTransformedStringProperty(
+                    type: Class<T>,
+                    property: String,
+                    transform: StringValueTransform,
+                    mode: StringMatchMode,
+                    expected: String,
+                    limit: Int
+                ): Sequence<T> {
+                    assertEquals(StringValueTransform.LOWERCASE, transform)
+                    return backing.nodes(type).filter { node ->
+                        val value = NodePropertyAccessor.getProperty(node, property) as? String
+                        value?.lowercase()?.contains(expected) == true
+                    }.take(limit)
+                }
+            }
+        }
+
+        val result = executor("orders" to indexedGraph(), "billing" to indexedGraph()).execute(
+            "MATCH (n) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'voucher' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'voucher' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.VoucherService"), result.rows.map { it["caller"] })
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
     }
 
     @Test
