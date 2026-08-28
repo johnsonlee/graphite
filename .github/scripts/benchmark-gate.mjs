@@ -231,9 +231,9 @@ export function confirmJmh(initial, confirmation) {
     };
 }
 
-export function renderJmhReport(comparison) {
+export function renderJmhReport(comparison, title = "Method-level JMH") {
     const lines = [
-        "### Method-level JMH",
+        `### ${title}`,
         "",
         "A row blocks only when it exceeds the 15% limit, the 99.9% confidence intervals do not overlap,",
         "and a reverse-order confirmation run fails the same benchmark.",
@@ -586,6 +586,11 @@ export function renderLargeCorpusReport(comparison) {
 export function aggregateReports(directory, metadata) {
     const components = [
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
+        {
+            name: "budgeted-mapped-string",
+            report: "budgeted-string-report.md",
+            status: "budgeted-string-status.json"
+        },
         { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" },
         { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" }
     ];
@@ -629,7 +634,7 @@ function compareJmhCommand(args) {
         readJson(requireArg(args, "candidate")),
         Number(args.threshold ?? 15)
     );
-    writeFile(requireArg(args, "report"), renderJmhReport(comparison));
+    writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
 }
@@ -689,7 +694,7 @@ function confirmJmhCommand(args) {
         Number(args.threshold ?? 15)
     );
     const comparison = confirmJmh(initial, confirmation);
-    writeFile(requireArg(args, "report"), renderJmhReport(comparison));
+    writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
 }

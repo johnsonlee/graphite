@@ -67,6 +67,19 @@ test("JMH comparison does not block overlapping confidence intervals", () => {
     assert.match(renderJmhReport(comparison), /\*\*NOISE\*\*/);
 });
 
+test("JMH report accepts a gate-specific title", () => {
+    const comparison = compareJmh(
+        [jmhResult({ score: 100, confidence: [95, 105] })],
+        [jmhResult({ score: 101, confidence: [96, 106] })],
+        15
+    );
+
+    assert.match(
+        renderJmhReport(comparison, "Budgeted mapped-string latency"),
+        /^### Budgeted mapped-string latency/m
+    );
+});
+
 test("JMH throughput regression uses higher-is-better semantics", () => {
     const comparison = compareJmh(
         [jmhResult({ mode: "thrpt", score: 1_000, confidence: [980, 1_020], unit: "ops/s" })],
@@ -349,6 +362,32 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.equal(aggregate.passed, false);
         assert.match(aggregate.body, new RegExp(COMMENT_MARKER));
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("aggregate report includes the budgeted mapped-string gate", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-complete-"));
+    try {
+        for (const [report, status, body] of [
+            ["method-report.md", "method-status.json", "method report"],
+            ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
+            ["large-corpus-report.md", "large-corpus-status.json", "large report"],
+            ["latency-report.md", "latency-status.json", "latency report"]
+        ]) {
+            fs.writeFileSync(path.join(directory, report), `${body}\n`);
+            fs.writeFileSync(path.join(directory, status), JSON.stringify({ passed: true }));
+        }
+        const aggregate = aggregateReports(directory, {
+            baseSha: "a".repeat(40),
+            candidateSha: "b".repeat(40),
+            runner: "test-runner",
+            runUrl: "https://example.invalid/run"
+        });
+
+        assert.equal(aggregate.passed, true);
+        assert.match(aggregate.body, /budgeted report/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
