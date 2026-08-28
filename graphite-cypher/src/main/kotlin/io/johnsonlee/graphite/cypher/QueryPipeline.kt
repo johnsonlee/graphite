@@ -14,8 +14,12 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
+import java.util.PriorityQueue
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
@@ -604,9 +608,7 @@ class QueryPipeline private constructor(
             val indexedNodes = stringPropertyCandidates(
                 source.graph,
                 nodeClass,
-                filter.property,
-                filter.mode,
-                filter.expected,
+                filter,
                 limit - rows.size
             )
             val candidates = indexedNodes
@@ -648,7 +650,8 @@ class QueryPipeline private constructor(
         graph: Graph,
         nodeClass: Class<out Node>,
         disjunction: DirectStringDisjunction
-    ): Sequence<Node> = sequence {
+    ): Sequence<Node> {
+        val candidateSequences = mutableListOf<Sequence<Node>>()
         for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
             if (!nodeClass.isAssignableFrom(candidateType)) continue
             val filters = disjunction.filters.filter { it.property in properties }
@@ -662,18 +665,23 @@ class QueryPipeline private constructor(
                 stringPropertyCandidates(
                     graph,
                     candidateType,
-                    filter.property,
-                    filter.mode,
-                    filter.expected,
+                    filter,
                     completeScanLimit
                 )
             }
-            val candidates = if (accelerated.any { it == null }) {
+            val candidates: Sequence<Node> = if (accelerated.any { it == null }) {
                 trackWork(graph.nodes(candidateType)).filter(disjunction::matches)
+            } else if (graph is StringPropertyLookupOrder) {
+                mergeNodeSequences(accelerated.filterNotNull(), graph::stringPropertyNodeOrder)
             } else {
                 filterOwnedNodes(filters, accelerated.filterNotNull())
             }
-            for (node in candidates) yield(node)
+            candidateSequences += candidates
+        }
+        return if (graph is StringPropertyLookupOrder) {
+            mergeNodeSequences(candidateSequences, graph::stringPropertyNodeOrder)
+        } else {
+            candidateSequences.asSequence().flatten()
         }
     }
 
@@ -683,25 +691,63 @@ class QueryPipeline private constructor(
     ): Sequence<Node> = sequence {
         for ((index, nodes) in sequences.withIndex()) {
             for (node in nodes) {
-                var ownedByEarlierFilter = false
-                for (earlierIndex in 0 until index) {
-                    if (filters[earlierIndex].matches(node)) {
-                        ownedByEarlierFilter = true
-                        break
-                    }
+                val ownedByEarlierFilter = (0 until index).any { earlierIndex ->
+                    filters[earlierIndex].matches(node)
                 }
                 if (!ownedByEarlierFilter) yield(node)
             }
         }
     }
 
+    private fun mergeNodeSequences(
+        sequences: List<Sequence<Node>>,
+        nodeOrder: (Node) -> Long
+    ): Sequence<Node> = sequence {
+        val cursors = PriorityQueue<NodeSequenceCursor>(
+            compareBy<NodeSequenceCursor> { it.nodeOrder }.thenBy { it.sequenceOrder }
+        )
+        sequences.forEachIndexed { order, nodes ->
+            val iterator = nodes.iterator()
+            if (iterator.hasNext()) {
+                val node = iterator.next()
+                cursors += NodeSequenceCursor(order, iterator, node, nodeOrder(node))
+            }
+        }
+        var lastNodeId: Int? = null
+        while (cursors.isNotEmpty()) {
+            val cursor = cursors.remove()
+            val node = cursor.node
+            if (node.id.value != lastNodeId) {
+                yield(node)
+                lastNodeId = node.id.value
+            }
+            if (cursor.iterator.hasNext()) {
+                cursor.node = cursor.iterator.next()
+                cursor.nodeOrder = nodeOrder(cursor.node)
+                cursors += cursor
+            }
+        }
+    }
+
+    private data class NodeSequenceCursor(
+        val sequenceOrder: Int,
+        val iterator: Iterator<Node>,
+        var node: Node,
+        var nodeOrder: Long
+    )
+
     private data class DirectStringFilter(
         val property: String,
         val mode: StringMatchMode,
-        val expected: String
+        val expected: String,
+        val transform: StringValueTransform? = null
     ) {
         fun matches(node: Node): Boolean {
-            val actual = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
+            val raw = NodePropertyAccessor.getProperty(node, property) as? String ?: return false
+            val actual = when (transform) {
+                null -> raw
+                StringValueTransform.LOWERCASE -> raw.lowercase()
+            }
             return when (mode) {
                 StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
                 StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
@@ -713,20 +759,52 @@ class QueryPipeline private constructor(
             @Suppress("ReturnCount")
             fun compile(expression: CypherExpr, variable: String): DirectStringFilter? {
                 val stringOp = expression as? CypherExpr.StringOp ?: return null
-                val property = stringOp.left as? CypherExpr.Property ?: return null
+                val operand = compileOperand(stringOp.left) ?: return null
+                val property = operand.property
                 val owner = property.expression as? CypherExpr.Variable ?: return null
                 val literal = stringOp.right as? CypherExpr.Literal ?: return null
                 val expected = literal.value as? String ?: return null
                 if (owner.name != variable) return null
                 if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
+                if (operand.coalescesMissingToEmpty && expected.isEmpty()) return null
                 val mode = when (stringOp.op) {
                     "STARTS WITH" -> StringMatchMode.STARTS_WITH
                     "ENDS WITH" -> StringMatchMode.ENDS_WITH
                     "CONTAINS" -> StringMatchMode.CONTAINS
                     else -> return null
                 }
-                return DirectStringFilter(property.propertyName, mode, expected)
+                return DirectStringFilter(property.propertyName, mode, expected, operand.transform)
             }
+
+            @Suppress("ComplexCondition", "ReturnCount")
+            private fun compileOperand(expression: CypherExpr): StringOperand? {
+                if (expression is CypherExpr.Property) return StringOperand(expression)
+                val lower = expression as? CypherExpr.FunctionCall ?: return null
+                if (lower.distinct || lower.args.size != 1 ||
+                    !(lower.name.equals("toLower", ignoreCase = true) ||
+                        lower.name.equals("toLowercase", ignoreCase = true))
+                ) {
+                    return null
+                }
+                val argument = lower.args.single()
+                if (argument is CypherExpr.Property) {
+                    return StringOperand(argument, StringValueTransform.LOWERCASE)
+                }
+                val coalesce = argument as? CypherExpr.FunctionCall ?: return null
+                if (coalesce.distinct || !coalesce.name.equals("coalesce", ignoreCase = true) ||
+                    coalesce.args.size != 2 || coalesce.args[1] != CypherExpr.Literal("")
+                ) {
+                    return null
+                }
+                val property = coalesce.args[0] as? CypherExpr.Property ?: return null
+                return StringOperand(property, StringValueTransform.LOWERCASE, coalescesMissingToEmpty = true)
+            }
+
+            private data class StringOperand(
+                val property: CypherExpr.Property,
+                val transform: StringValueTransform? = null,
+                val coalescesMissingToEmpty: Boolean = false
+            )
         }
     }
 
@@ -1379,16 +1457,33 @@ class QueryPipeline private constructor(
     private fun <T : Node> stringPropertyCandidates(
         graph: Graph,
         type: Class<T>,
-        property: String,
-        mode: StringMatchMode,
-        expected: String,
+        filter: DirectStringFilter,
         limit: Int
     ): Sequence<T>? {
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        return if (tracker != null) {
-            graph.nodesByStringProperty(type, property, mode, expected, limit, tracker)
+        return if (filter.transform == null && tracker != null) {
+            graph.nodesByStringProperty(type, filter.property, filter.mode, filter.expected, limit, tracker)
+        } else if (filter.transform == null) {
+            graph.nodesByStringProperty(type, filter.property, filter.mode, filter.expected, limit)
+        } else if (tracker != null) {
+            graph.nodesByTransformedStringProperty(
+                type,
+                filter.property,
+                filter.transform,
+                filter.mode,
+                filter.expected,
+                limit,
+                tracker
+            )
         } else {
-            graph.nodesByStringProperty(type, property, mode, expected, limit)
+            graph.nodesByTransformedStringProperty(
+                type,
+                filter.property,
+                filter.transform,
+                filter.mode,
+                filter.expected,
+                limit
+            )
         }
     }
 

@@ -15,6 +15,7 @@ concurrency:
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  PRE_PR_95_BASELINE_SHA: 44b57562f2b3d0c88882a9002bdc488e05e5d7a7
 
 jobs:
   method-level:
@@ -186,10 +187,182 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  wrapped-query-latency:
+    name: wrapped-query-latency
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout fixed pre-PR-95 baseline
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ env.PRE_PR_95_BASELINE_SHA }}
+        path: fixed
+
+    - name: Checkout PR base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Install identical latency harness in baselines
+      run: |
+        for HARNESS in \
+          WrappedDiscoveryLatencyBenchmark.kt \
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt; do
+          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          cp "candidate/${SOURCE}" "fixed/${SOURCE}"
+          cp "candidate/${SOURCE}" "base/${SOURCE}"
+        done
+
+    - name: Build latency benchmark jars
+      run: |
+        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures --no-daemon
+        fixed/gradlew -p fixed :webgraph:jmhJar --no-daemon
+        base/gradlew -p base :webgraph:jmhJar --no-daemon
+        candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
+
+    - name: Prepare all real fixture graphs
+      run: |
+        FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
+        ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
+        TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
+        HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
+        KOTLIN_JAR=$(find "${FIXTURE_DIR}" -name 'kotlin-compiler-embeddable-*.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${ANDROID_JAR}" && test -n "${TIKA_JAR}" && test -n "${HIVE_JAR}" && \
+          test -n "${KOTLIN_JAR}" && test -n "${CANDIDATE_JAR}"
+        mkdir -p "${PWD}/fixture-graphs"
+        for CORPUS in android tika hive kotlin-compiler; do
+          SOURCE_TMP=$(mktemp -d "${RUNNER_TEMP}/graphite-source-${CORPUS}-XXXXXX")
+          java -Xmx4g -Djava.io.tmpdir="${SOURCE_TMP}" \
+            -Dandroid.jar.path="${ANDROID_JAR}" \
+            -Dtika.jar.path="${TIKA_JAR}" \
+            -Dhive.jar.path="${HIVE_JAR}" \
+            -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+            -cp "${CANDIDATE_JAR}" \
+            io.johnsonlee.graphite.webgraph.AllFixtureGraphPreparation \
+            "${CORPUS}" "${PWD}/fixture-graphs/${CORPUS}"
+          rm -rf -- "${SOURCE_TMP}"
+        done
+        java -Xmx4g -cp "${CANDIDATE_JAR}" \
+          io.johnsonlee.graphite.webgraph.AllFixtureDistributionCalibration \
+          "${PWD}/fixture-graphs"
+
+    - name: Verify all real-fixture query results
+      run: |
+        mkdir -p benchmark-results
+        for REVISION in fixed base candidate; do
+          JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JMH_JAR}"
+          java -Xmx8g -cp "${JMH_JAR}" \
+            io.johnsonlee.graphite.webgraph.AllFixtureQueryCorrectness \
+            "${PWD}/fixture-graphs" \
+            | grep '^ALL_FIXTURE_QUERY_RESULT' \
+            > "benchmark-results/${REVISION}-fixture-correctness.txt"
+          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 8
+        done
+        cmp benchmark-results/fixed-fixture-correctness.txt \
+          benchmark-results/base-fixture-correctness.txt
+        cmp benchmark-results/fixed-fixture-correctness.txt \
+          benchmark-results/candidate-fixture-correctness.txt
+
+    - name: Benchmark fixed baseline, PR base, and PR
+      run: |
+        mkdir -p benchmark-results
+        FIXED_JAR=$(find fixed/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${FIXED_JAR}" && test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
+        GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        java -jar "${FIXED_JAR}" \
+          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/fixed-latency.json"
+        java -jar "${BASE_JAR}" \
+          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/base-latency.json"
+        java -jar "${CANDIDATE_JAR}" \
+          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/candidate-latency.json"
+
+    - name: Enforce fixed baseline speedup and current-base regression gate
+      run: |
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
+          --fixed benchmark-results/fixed-latency.json \
+          --base benchmark-results/base-latency.json \
+          --candidate benchmark-results/candidate-latency.json \
+          --minimum-speedup 50 \
+          --threshold 15 \
+          --report benchmark-results/initial-latency-report.md \
+          --status benchmark-results/initial-latency-status.json; then
+          mv benchmark-results/initial-latency-report.md benchmark-results/latency-report.md
+          mv benchmark-results/initial-latency-status.json benchmark-results/latency-status.json
+        else
+          CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          FIXED_JAR=$(find fixed/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+            -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+            -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+            -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          java -jar "${CANDIDATE_JAR}" \
+            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/candidate-latency-confirmation.json"
+          java -jar "${BASE_JAR}" \
+            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/base-latency-confirmation.json"
+          java -jar "${FIXED_JAR}" \
+            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/fixed-latency-confirmation.json"
+          node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
+            --fixed benchmark-results/fixed-latency-confirmation.json \
+            --base benchmark-results/base-latency-confirmation.json \
+            --candidate benchmark-results/candidate-latency-confirmation.json \
+            --minimum-speedup 50 \
+            --threshold 15 \
+            --report benchmark-results/latency-report.md \
+            --status benchmark-results/latency-status.json
+        fi
+
+    - name: Upload wrapped-query latency results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [method-level, large-corpus]
+    needs: [method-level, large-corpus, wrapped-query-latency]
     runs-on: ubuntu-latest
 
     steps:
@@ -263,8 +436,10 @@ jobs:
       env:
         METHOD_JOB: ${{ needs.method-level.result }}
         LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
+        LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
       run: |
-        if [ "${METHOD_JOB}" != success ] || [ "${LARGE_CORPUS_JOB}" != success ]; then
+        if [ "${METHOD_JOB}" != success ] || [ "${LARGE_CORPUS_JOB}" != success ] || \
+          [ "${LATENCY_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi

@@ -10,6 +10,48 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Wrapped case-insensitive latency gate
+
+The `wrapped-query-latency` job protects the production
+`toLower(coalesce(...)) CONTAINS` discovery shape on persisted mapped graphs.
+The same `WrappedDiscoveryLatencyBenchmark` source is compiled at three
+revisions:
+
+1. fixed pre-PR-95 commit `44b57562f2b3d0c88882a9002bdc488e05e5d7a7`;
+2. the pull request's current base SHA; and
+3. the pull request candidate SHA.
+
+It measures warm and cold queries with `graphCount=1` and `graphCount=17` on
+deterministic persisted graphs. It also builds every repository benchmark
+fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially, opens the four
+persisted graphs together, and measures the same query over the heterogeneous
+19,091,048-node graph set. Source graphs are never retained together: each is
+closed after persistence, before the next fixture is built.
+
+The real-corpus suite treats target distribution as part of the fixture. Its
+preflight pins per-corpus match counts, then benchmarks zero-hit, dense
+four-corpus, first-graph-only, middle-graphs-only, last-graph-only,
+four-corpus-distributed, first/last bimodal, and highly skewed class/method
+cases. The queries vary caller/callee fields, class/method properties,
+`CONTAINS`/`STARTS WITH`/`ENDS WITH`, and `LIMIT 1/50/250`.
+Before timing, fixed, current-base, and candidate executors must produce the
+same SHA-256 digest over complete columns, ordered rows, values, and graph
+provenance for all eight queries. The comparator separately requires the exact
+four synthetic and eight real-fixture benchmark keys, so a variant cannot
+silently disappear from all three revisions.
+
+Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
+source graph is persisted and that JVM exits, the raw mmap work directory is
+deleted before the next corpus starts. Only the four final persisted graph
+directories remain for the shared query measurements.
+Every row must remain at least 50% faster than the fixed baseline and may not
+regress more than 15% against the current PR base. Missing graph-count or query
+variants, incompatible units, invalid scores, and missing artifacts fail
+closed. A suspected failure reruns candidate, base, and fixed baseline in
+reverse order before it blocks. The fixed baseline prevents the original full-scan behavior from
+becoming an accepted new base after a merge; the moving base comparison catches
+new regressions in later optimizations.
+
 ## Method-level gate
 
 The method-level job runs every `CypherBenchmark` method from both revisions with its normal JMH
@@ -78,6 +120,8 @@ Run the two benchmark sources directly:
 ```bash
 ./gradlew :cypher:jmhJar --no-daemon
 ./gradlew :webgraph:largeCorpusTest -Dlarge.corpus.record=true --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='WrappedDiscoveryLatencyBenchmark.*' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='AllFixtureWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ```
 
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage

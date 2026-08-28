@@ -7,11 +7,14 @@ import {
     COMMENT_MARKER,
     aggregateReports,
     confirmLargeCorpus,
+    LATENCY_EXPECTED_BENCHMARK_KEYS,
     confirmJmh,
     compareJmh,
+    compareLatencyBaseline,
     compareLargeCorpus,
     parseLargeCorpusLog,
     renderJmhReport,
+    renderLatencyBaselineReport,
     renderLargeCorpusReport
 } from "./benchmark-gate.mjs";
 
@@ -20,9 +23,10 @@ function jmhResult({
     mode = "avgt",
     score,
     confidence,
-    unit = "us/op"
+    unit = "us/op",
+    params
 }) {
-    return {
+    const result = {
         benchmark,
         mode,
         primaryMetric: {
@@ -31,6 +35,8 @@ function jmhResult({
             scoreUnit: unit
         }
     };
+    if (params !== undefined) result.params = params;
+    return result;
 }
 
 test("JMH comparison blocks a separated latency regression", () => {
@@ -114,6 +120,61 @@ test("JMH reverse-order confirmation blocks a repeated regression", () => {
     assert.equal(confirmed.passed, false);
     assert.equal(confirmed.rows[0].blocked, true);
     assert.match(renderJmhReport(confirmed), /\*\*FAIL\*\*/);
+});
+
+test("latency baseline requires both fixed-baseline speedup and no base regression", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 20, confidence: [19, 21] })],
+        [jmhResult({ score: 21, confidence: [20, 22] })]
+    );
+
+    assert.equal(comparison.passed, true);
+    assert.equal(Math.round(comparison.rows[0].speedup), 376);
+    assert.match(renderLatencyBaselineReport(comparison), /Pre-PR-95/);
+});
+
+test("latency baseline blocks loss of the fixed-baseline optimization", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 20, confidence: [19, 21] })],
+        [jmhResult({ score: 80, confidence: [78, 82] })]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].improvementBlocked, true);
+    assert.equal(comparison.rows[0].blocked, true);
+});
+
+test("latency baseline fails closed when one graph-count parameter is missing", () => {
+    const fixed = [
+        { ...jmhResult({ score: 100 }), params: { graphCount: "1" } },
+        { ...jmhResult({ score: 1_700 }), params: { graphCount: "17" } }
+    ];
+    const base = fixed.map((result) => ({ ...result, primaryMetric: { ...result.primaryMetric, score: 20 } }));
+    const candidate = base.slice(0, 1);
+    const comparison = compareLatencyBaseline(fixed, base, candidate);
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /graphCount=17/);
+});
+
+test("latency baseline fails when an expected benchmark disappears from all revisions", () => {
+    const key = LATENCY_EXPECTED_BENCHMARK_KEYS[0];
+    const benchmark = key.slice(0, key.indexOf("["));
+    const params = { graphCount: "1" };
+    const result = jmhResult({ benchmark, score: 10, confidence: [9, 11], unit: "ms/op", params });
+    const comparison = compareLatencyBaseline(
+        [result],
+        [result],
+        [jmhResult({ benchmark, score: 1, confidence: [0.9, 1.1], unit: "ms/op", params })],
+        15,
+        50,
+        [key, LATENCY_EXPECTED_BENCHMARK_KEYS[1]]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /missing expected latency benchmark/);
 });
 
 const baseCorpusLine = [

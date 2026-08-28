@@ -8,6 +8,20 @@ import { pathToFileURL } from "node:url";
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
 const MIB = 1024 * 1024;
+export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=1]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.broadlyDistributedClassPrefixCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.denseDistributedMethodContainsCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.earlyGraphClassPrefixCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.lateGraphClassPrefixCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.middleGraphsClassPrefixCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.skewedMixedClassMethodOperatorCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery"
+];
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
@@ -243,6 +257,110 @@ export function renderJmhReport(comparison) {
     return `${lines.join("\n")}\n`;
 }
 
+export function compareLatencyBaseline(
+    fixedResults,
+    baseResults,
+    candidateResults,
+    regressionThreshold = 15,
+    minimumSpeedup = 50,
+    expectedKeys = null
+) {
+    const regression = compareJmh(baseResults, candidateResults, regressionThreshold);
+    const fixed = new Map(fixedResults.map((result) => [benchmarkKey(result), result]));
+    const candidate = new Map(candidateResults.map((result) => [benchmarkKey(result), result]));
+    const errors = [...regression.errors];
+    const regressionRows = new Map(regression.rows.map((row) => [row.key, row]));
+    const rows = [];
+
+    const actualKeys = [...new Set([...fixed.keys(), ...candidate.keys()])].sort();
+    const keys = expectedKeys === null ? actualKeys : [...expectedKeys].sort();
+    if (expectedKeys !== null) {
+        const expected = new Set(expectedKeys);
+        for (const [revision, results] of [
+            ["fixed baseline", fixedResults],
+            ["PR base", baseResults],
+            ["candidate", candidateResults]
+        ]) {
+            const actual = new Set(results.map(benchmarkKey));
+            for (const key of expected) {
+                if (!actual.has(key)) errors.push(`${revision}: missing expected latency benchmark ${key}`);
+            }
+            for (const key of actual) {
+                if (!expected.has(key)) errors.push(`${revision}: unexpected latency benchmark ${key}`);
+            }
+        }
+    }
+
+    for (const key of keys) {
+        const baseline = fixed.get(key);
+        const current = candidate.get(key);
+        const baseRow = regressionRows.get(key);
+        if (baseline === undefined || current === undefined || baseRow === undefined) {
+            errors.push(`${key}: missing from fixed baseline, PR base, or candidate results`);
+            continue;
+        }
+        const fixedScore = finiteNumber(baseline.primaryMetric?.score);
+        const candidateScore = finiteNumber(current.primaryMetric?.score);
+        if (fixedScore === null || candidateScore === null || fixedScore <= 0 || candidateScore <= 0) {
+            errors.push(`${key}: invalid fixed-baseline score`);
+            continue;
+        }
+        if (!isLowerBetter(baseline.mode) || baseline.mode !== current.mode ||
+            baseline.primaryMetric?.scoreUnit !== current.primaryMetric?.scoreUnit
+        ) {
+            errors.push(`${key}: fixed baseline and candidate use incompatible latency metrics`);
+            continue;
+        }
+        const speedup = ((fixedScore / candidateScore) - 1) * 100;
+        const improvementSeparated = confidenceSeparates(
+            confidenceBounds(current.primaryMetric ?? {}),
+            confidenceBounds(baseline.primaryMetric ?? {}),
+            true
+        );
+        const improvementBlocked = speedup < minimumSpeedup || !improvementSeparated;
+        rows.push({
+            ...baseRow,
+            fixedScore,
+            speedup,
+            minimumSpeedup,
+            improvementSeparated,
+            improvementBlocked,
+            blocked: baseRow.blocked || improvementBlocked
+        });
+    }
+
+    if (rows.length === 0) errors.push("No comparable latency benchmarks were found");
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
+export function renderLatencyBaselineReport(comparison) {
+    const lines = [
+        "### Wrapped case-insensitive query latency",
+        "",
+        "The PR must remain at least 50% faster than the fixed pre-PR-95 baseline and must not regress",
+        "more than 15% against the PR base with separated 99.9% confidence intervals.",
+        "",
+        "| Benchmark | Pre-PR-95 | PR base | PR | Speedup vs fixed | Regression vs base | Gate |",
+        "|---|---:|---:|---:|---:|---:|:---:|"
+    ];
+    for (const row of comparison.rows) {
+        lines.push(
+            `| \`${shortBenchmarkName(row.key)}\` | ${formatScore(row.fixedScore)} ${row.unit} | ` +
+            `${formatScore(row.baseScore)} ${row.unit} | ${formatScore(row.candidateScore)} ${row.unit} | ` +
+            `${formatDelta(row.speedup)} | ${formatDelta(row.delta)} | ` +
+            `**${row.blocked ? "FAIL" : "PASS"}** |`
+        );
+    }
+    if (comparison.errors.length > 0) {
+        lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    }
+    return `${lines.join("\n")}\n`;
+}
+
 export function parseLargeCorpusLog(contents) {
     const results = new Map();
     for (const line of contents.split(/\r?\n/)) {
@@ -387,7 +505,8 @@ export function renderLargeCorpusReport(comparison) {
 export function aggregateReports(directory, metadata) {
     const components = [
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
-        { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" }
+        { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" },
+        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" }
     ];
     const errors = [];
     const reports = [];
@@ -444,6 +563,20 @@ function compareLargeCorpusCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareLatencyBaselineCommand(args) {
+    const comparison = compareLatencyBaseline(
+        readJson(requireArg(args, "fixed")),
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args["minimum-speedup"] ?? 50),
+        LATENCY_EXPECTED_BENCHMARK_KEYS
+    );
+    writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function confirmJmhCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareJmh(
@@ -484,6 +617,7 @@ function main(argv) {
     const args = parseArgs(argv);
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
+    else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);

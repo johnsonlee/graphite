@@ -45,7 +45,9 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import it.unimi.dsi.fastutil.io.BinIO
@@ -157,6 +159,7 @@ class GraphStoreTest {
                 assertEquals(listOf("callerFeature"), startsWith)
                 assertEquals(listOf("billingFeature"), endsWith)
                 assertEquals(listOf("feature-beta"), cypherValues)
+                assertWrappedLowercaseQuery(loaded)
                 assertRawStringPropertyLookups(loaded)
                 assertNull(
                     loaded.nodesByStringProperty(
@@ -187,7 +190,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped broad disjunction deduplicates unordered property streams`() {
+    fun `mapped broad disjunction preserves stored order while deduplicating property streams`() {
         val nodeIds = listOf(1, 30, 70, 2, 90, 4, 5, 50, 40, 3)
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -225,7 +228,7 @@ class GraphStoreTest {
                 ).rows
                 val resultIds = rows.map { it["id"] }
 
-                assertEquals(listOf(4, 90), resultIds)
+                assertEquals(listOf(90, 4), resultIds)
                 assertEquals(resultIds.size, resultIds.distinct().size)
             } finally {
                 loaded.close()
@@ -311,6 +314,38 @@ class GraphStoreTest {
             )
             assertEquals(listOf(11), uncached.matchingNodeIds(StringMatchMode.STARTS_WITH, "beta").toList())
             assertEquals(0, uncached.matchingStringCacheSize())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped string index isolates raw and exact lowercase match caches`() {
+        val dir = Files.createTempDirectory("webgraph-lowercase-string-index")
+        try {
+            val values = listOf("Voucher", "voucher", "İVOUCHER")
+            val strings = StringTable.build(values, dir)
+            val index = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10, 11, 12),
+                stringIds = values.map(strings::indexOf).toIntArray(),
+                uniqueStringIds = values.map(strings::indexOf).sorted().toIntArray(),
+                stringTable = strings
+            )
+
+            assertEquals(
+                listOf(11),
+                index.matchingNodeIds(StringMatchMode.CONTAINS, "voucher").toList()
+            )
+            assertEquals(
+                listOf(10, 11, 12),
+                index.matchingNodeIds(
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "voucher",
+                    workConsumer = null
+                ).toList()
+            )
+            assertEquals(2, index.matchingStringCacheSize())
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -636,6 +671,25 @@ class GraphStoreTest {
         )
 
     private fun assertRawStringPropertyLookups(graph: Graph) {
+        graph.nodesByTransformedStringProperty(
+            FieldNode::class.java,
+            "class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "owner"
+        )
+        assertEquals(
+            listOf("example.Owner"),
+            assertNotNull(
+                graph.nodesByTransformedStringProperty(
+                    FieldNode::class.java,
+                    "class",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "owner"
+                )
+            ).map { it.descriptor.declaringClass.className }.toList()
+        )
         assertEquals(
             listOf("example.State"),
             indexedValues(graph, EnumConstant::class.java, "enum_type", StringMatchMode.ENDS_WITH, "State") {
@@ -683,6 +737,17 @@ class GraphStoreTest {
             }
         )
         assertResourceStringPropertyLookups(graph)
+    }
+
+    private fun assertWrappedLowercaseQuery(graph: Graph) {
+        val values = graph.query(
+            "MATCH (n) WHERE " +
+                "toLower(coalesce(n.caller_name, '')) CONTAINS 'feature' OR " +
+                "toLower(coalesce(n.callee_name, '')) CONTAINS 'feature' " +
+                "RETURN DISTINCT n.caller_name AS caller, n.callee_name AS callee LIMIT 250"
+        ).rows.map { it["caller"] to it["callee"] }
+
+        assertEquals(listOf("callerFeature" to "billingFeature"), values)
     }
 
     private fun assertResourceStringPropertyLookups(graph: Graph) {
