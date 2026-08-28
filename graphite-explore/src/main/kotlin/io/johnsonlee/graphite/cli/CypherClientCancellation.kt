@@ -119,33 +119,45 @@ internal class DisconnectMonitor(
         }
 
         val buffered = connection.onUpgradeFrom()
-        val available = connection.inputBufferSize - (buffered?.remaining() ?: 0)
+        val bufferedBytes = buffered?.remaining() ?: 0
+        val available = ensureRequestBufferCapacity(bufferedBytes)
         buffered?.let(connection::onUpgradeTo)
-        return if (available <= 0) {
-            false
-        } else {
-            val probe = ByteBuffer.allocate(available)
-            try {
-                val read = socketEndPoint.channel.read(probe)
-                when {
-                    read > 0 -> {
-                        probe.flip()
-                        // Keep pipelined bytes buffered until Jetty completes the active response.
-                        connection.onUpgradeTo(probe)
-                        read < available
-                    }
-                    read < 0 -> {
-                        connection.onFillable()
-                        true
-                    }
-                    else -> true
+        val probe = ByteBuffer.allocate(minOf(maxOf(available, 1), DISCONNECT_PROBE_MAX_BYTES))
+        return try {
+            val read = socketEndPoint.channel.read(probe)
+            when {
+                read > 0 && available > 0 -> {
+                    probe.flip()
+                    // Keep pipelined bytes buffered until Jetty completes the active response.
+                    connection.onUpgradeTo(probe)
+                    true
                 }
-            } catch (error: IOException) {
-                socketEndPoint.close(error)
-                cancel()
-                false
+                read > 0 -> {
+                    socketEndPoint.close(DISCONNECT_MONITOR_PIPELINE_LIMIT_EXCEEDED)
+                    cancel()
+                    false
+                }
+                read < 0 -> {
+                    connection.onFillable()
+                    true
+                }
+                else -> true
             }
+        } catch (error: IOException) {
+            socketEndPoint.close(error)
+            cancel()
+            false
         }
+    }
+
+    @Suppress("ReturnCount")
+    private fun ensureRequestBufferCapacity(bufferedBytes: Int): Int {
+        val currentCapacity = connection?.inputBufferSize ?: return 0
+        if (bufferedBytes < currentCapacity) return currentCapacity - bufferedBytes
+        if (currentCapacity >= MAX_MONITORED_PIPELINE_BYTES) return 0
+        val expandedCapacity = minOf(currentCapacity * 2, MAX_MONITORED_PIPELINE_BYTES)
+        connection.inputBufferSize = expandedCapacity
+        return expandedCapacity - bufferedBytes
     }
 
     fun start() = schedule(DISCONNECT_READ_INTEREST_DELAY_MILLIS)
@@ -198,7 +210,13 @@ internal class DisconnectMonitor(
 
 private const val DISCONNECT_READ_INTEREST_DELAY_MILLIS = 10L
 private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
+private const val DISCONNECT_PROBE_MAX_BYTES = 8 * 1_024
+private const val MAX_MONITORED_PIPELINE_BYTES = 1_024 * 1_024
 private object DisconnectMonitorClosedException : IOException("Cypher disconnect monitor closed") {
     override fun fillInStackTrace(): Throwable = this
 }
 private val DISCONNECT_MONITOR_CLOSED = DisconnectMonitorClosedException
+private object DisconnectMonitorPipelineLimitExceededException : IOException("Pipelined request buffer limit exceeded") {
+    override fun fillInStackTrace(): Throwable = this
+}
+private val DISCONNECT_MONITOR_PIPELINE_LIMIT_EXCEEDED = DisconnectMonitorPipelineLimitExceededException

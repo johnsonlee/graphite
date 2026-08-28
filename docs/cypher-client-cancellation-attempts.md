@@ -73,9 +73,9 @@ The retained implementation:
   completion, allowing `HttpConnection` to resume keep-alive reads;
 - delegates readable sockets back to Jetty, cancels on reset/connection error, and retires the monitor without
   cancellation on a clean input half-close so the client can still read the response;
-- replays only the currently readable bytes that fit in Jetty's request buffer, leaving any excess in the socket buffer
-  instead of consuming and dropping it, then restores read interest while capacity remains so a later reset is still
-  observed;
+- replays every probed byte into Jetty's request buffer, expanding that buffer geometrically up to a 1 MiB connection
+  cap so a full pipeline cannot retire reset observation; exceeding the cap closes the connection and cancels the query
+  instead of buffering without bound or dropping bytes from a live connection;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
 - polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; literal, prefix, and

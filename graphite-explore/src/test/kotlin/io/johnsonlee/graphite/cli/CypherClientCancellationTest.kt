@@ -48,6 +48,16 @@ class CypherClientCancellationTest {
     }
 
     @Test
+    fun `reset after a pipeline fills the request buffer still cancels the active query`() {
+        verifyResetDisconnect { socket ->
+            repeat(LARGE_PIPELINE_REQUESTS) {
+                writeRequest(socket, "GET", "/openapi.json")
+            }
+            Thread.sleep(PIPELINED_REQUEST_BUFFER_MILLIS)
+        }
+    }
+
+    @Test
     fun `resetting a client connection stops graph-free query work`() {
         verifyGraphFreeResetDisconnect()
     }
