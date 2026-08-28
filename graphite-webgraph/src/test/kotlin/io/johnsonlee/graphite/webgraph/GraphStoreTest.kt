@@ -317,6 +317,33 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped string index retains two argument JVM lookup method`() {
+        val dir = Files.createTempDirectory("webgraph-string-index-abi")
+        try {
+            val strings = StringTable.build(listOf("alpha"), dir)
+            val index = MappedStringPropertyIndex(
+                nodeIds = intArrayOf(10),
+                stringIds = intArrayOf(strings.indexOf("alpha")),
+                uniqueStringIds = intArrayOf(strings.indexOf("alpha")),
+                stringTable = strings
+            )
+            val method = assertNotNull(
+                MappedStringPropertyIndex::class.java.getMethod(
+                    "matchingNodeIds",
+                    StringMatchMode::class.java,
+                    String::class.java
+                )
+            )
+
+            @Suppress("UNCHECKED_CAST")
+            val result = method.invoke(index, StringMatchMode.STARTS_WITH, "alpha") as Sequence<Int>
+            assertEquals(listOf(10), result.toList())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped string lookup admits an index only after a long raw scan`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(300) { index ->

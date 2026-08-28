@@ -840,22 +840,34 @@ falls back to a tracked generic node scan for graph implementations that only
 support the legacy lookup. A custom tracking sequence charges before reading
 the next candidate and avoids the allocation and dispatch cost of `onEach`.
 
+Single-hop traversal uses untyped edge sequences while a tracker is active, so
+every edge is charged before relationship-type filtering; unbudgeted execution
+retains the graph's typed overload. Fast and generic single-hop paths also charge
+the direct target-node load. Direct `elementId` seeks charge their node load in
+both single-graph and qualified execution. Nested execution saves and restores
+the previous thread-local tracker instead of clearing the outer request state.
+
 LIMIT evaluation now saturates out-of-range integer values at the JVM `Int`
 bounds. A large positive library LIMIT therefore preserves all available rows,
 while `execute(query, maxRows)` safely replaces it with the server row cap.
 
-The explicit `CrossGraphCypherExecutor(List)` constructor is restored. A JVM
-reflection regression test resolves and invokes that exact descriptor. Other
+The explicit `CrossGraphCypherExecutor(List)` and `QueryPipeline(List)`
+constructors are restored, as is
+`MappedStringPropertyIndex.matchingNodeIds(StringMatchMode, String)`. JVM
+reflection regressions resolve and invoke those exact descriptors. Other
 tests prove variable-path rejection, mapped miss/build/existing-index charging,
 one-match success without double charging, fanout total-budget enforcement, and
 no fixed-share false rejection. They also cover a label histogram and a
 server-capped query with `LIMIT 2147483648`, path-materialization rejection, a
 1,000-hop graph queried with `*..100000 LIMIT 1` that stops after the first
-outgoing expansion, and a multi-stage pattern whose first branch is a dead end.
+outgoing expansion, a multi-stage pattern whose first branch is a dead end,
+fast/generic target-node reads, 100 rejected relationship candidates before a
+typed match, reentrant execution, and unqualified/qualified `elementId` UNION
+seeks.
 The full
 `./gradlew check -S --no-daemon` gate, including all three large-corpus
 end-to-end tests, passes. Application line
-coverage is `98.2569%` for Core, `98.0623%` for Cypher, `98.0213%` for WebGraph,
+coverage is `98.2569%` for Core, `98.1832%` for Cypher, `98.0213%` for WebGraph,
 and `98.1046%` for Explore.
 
 **Budget-enabled executor cost used by HTTP:** `BudgetedCypherBenchmark`
@@ -876,14 +888,14 @@ benchmark thread. Values and 99.9% confidence errors are `us/op`.
 
 | Successful query | Unbudgeted | Budgeted | Budget-check cost |
 |------------------|-----------:|---------:|------------------:|
-| 500-node scan | `47.346 +/- 0.688` | `47.491 +/- 0.127` | `+0.3%` |
-| 500 single-hop relationships | `135.942 +/- 1.614` | `140.351 +/- 2.536` | `+3.2%` |
-| 500 two-hop variable paths | `243.617 +/- 6.476` | `245.246 +/- 2.213` | `+0.7%` |
+| 500-node scan | `47.002 +/- 0.478` | `47.836 +/- 0.958` | `+1.8%` |
+| 500 single-hop relationships | `142.833 +/- 4.256` | `143.634 +/- 1.466` | `+0.6%` |
+| 500 two-hop variable paths | `243.109 +/- 3.029` | `244.341 +/- 0.970` | `+0.5%` |
 
 The budget check has a measurable cost; this is not described as a free change.
-The relationship result is the highest at 3.2% and is the only pair whose 99.9%
-confidence intervals do not overlap. The node and variable-path intervals
-overlap.
+The node result is the highest at 1.8%, and all three 99.9% confidence intervals
+overlap. The relationship benchmark includes source-node, every untyped edge
+candidate, and target-node accounting.
 
 **Corrected Android rejection evidence:** the benchmark setup now asserts the
 harness identity for Maven fixture `org.robolectric:android-all:14-robolectric-10818077`,
@@ -929,11 +941,13 @@ used the same machine and dependency caches.
 | `variableLengthPath` | `26.878 us/op` | `25.733 us/op` | `-4.3%` |
 | `withPipeline` | `84.302 us/op` | `76.995 us/op` | `-8.7%` |
 
-The slower rows with non-overlapping main/branch 99.9% confidence intervals are
-`aggregationCountGroupBy` (`+5.2%`) and `countStar` (`+8.4%`), both below the
-workflow's 10% regression threshold. `returnDistinct` and `withPipeline` are
-the non-overlapping faster rows. The separate budget-enabled comparison above
-reports the production-path cost.
+The one-fork table's slower rows are `aggregationCountGroupBy` (`+5.2%`) and
+`countStar` (`+8.4%`), both below the workflow's 10% regression threshold. A
+focused five-fork base/head confirmation measured aggregation at
+`34.605 +/- 0.526` versus `35.523 +/- 0.569 us/op` (`+2.7%`) and count at
+`2.344 +/- 0.017` versus `2.363 +/- 0.084 us/op` (`+0.8%`); both confidence
+interval pairs overlap. The separate budget-enabled comparison above reports
+the production-path cost.
 
 ### Android mapped graph regression
 

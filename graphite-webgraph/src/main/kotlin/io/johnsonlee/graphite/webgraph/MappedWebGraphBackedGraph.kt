@@ -574,8 +574,13 @@ internal class MappedStringPropertyIndex(
 
     fun matchingNodeIds(
         mode: StringMatchMode,
+        expected: String
+    ): Sequence<Int> = matchingNodeIds(mode, expected, workConsumer = null)
+
+    fun matchingNodeIds(
+        mode: StringMatchMode,
         expected: String,
-        workConsumer: GraphWorkConsumer? = null
+        workConsumer: GraphWorkConsumer?
     ): Sequence<Int> {
         val matchedStrings = matchingStringIds(mode, expected, workConsumer)
         if (matchedStrings.isEmpty()) return emptySequence()

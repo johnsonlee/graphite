@@ -44,6 +44,32 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `retains QueryPipeline JVM one argument list constructor`() {
+        val constructor = assertNotNull(QueryPipeline::class.java.getConstructor(List::class.java))
+        val pipeline = constructor.newInstance(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10))))
+        ) as QueryPipeline
+
+        val result = pipeline.execute(CypherDslAdapter.parse("MATCH (n:IntConstant) RETURN n.value"))
+        assertEquals(10, result.rows.single()["n.value"])
+    }
+
+    @Test
+    fun `execution budget charges qualified element id seeks across union segments`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10)))),
+            CypherExecutionBudget(maxWorkUnits = 1)
+        )
+
+        assertFailsWith<CypherBudgetExceededException> {
+            executor.execute(
+                "MATCH (n) WHERE elementId(n) = 'orders:1' RETURN n.id AS id " +
+                    "UNION ALL MATCH (n) WHERE elementId(n) = 'orders:1' RETURN n.id AS id"
+            )
+        }
+    }
+
+    @Test
     fun `qualifies colliding local node ids and records row provenance`() {
         val executor = executor(
             "orders" to graph(IntConstant(NodeId(1), 10)),

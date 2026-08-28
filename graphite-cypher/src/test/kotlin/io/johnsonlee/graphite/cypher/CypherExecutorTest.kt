@@ -284,6 +284,81 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execution budget charges single hop target nodes on fast and generic paths`() {
+        val queries = listOf(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1",
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name"
+        )
+
+        for (query in queries) {
+            val budgeted = CypherExecutor(dataFlowChain(length = 1), CypherExecutionBudget(maxWorkUnits = 2))
+            assertFailsWith<CypherBudgetExceededException> { budgeted.execute(query) }
+        }
+    }
+
+    @Test
+    fun `execution budget charges edges before type filtering on fast and generic paths`() {
+        val owner = TypeDescriptor("com.example.MixedEdges")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 0)
+        val target = LocalVariable(NodeId.next(), "target", valueType, method)
+        val builder = DefaultGraph.Builder().addNode(source).addNode(target)
+        repeat(100) {
+            val wrongTarget = ReturnNode(NodeId.next(), method, valueType)
+            builder.addNode(wrongTarget)
+            builder.addEdge(CallEdge(source.id, wrongTarget.id, false))
+        }
+        builder.addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+        val mixedGraph = builder.build()
+        val queries = listOf(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1",
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name"
+        )
+
+        for (query in queries) {
+            val budgeted = CypherExecutor(mixedGraph, CypherExecutionBudget(maxWorkUnits = 3))
+            assertFailsWith<CypherBudgetExceededException> { budgeted.execute(query) }
+        }
+    }
+
+    @Test
+    fun `execution budget survives a nested execution on the same pipeline`() {
+        val chain = dataFlowChain(length = 1)
+        lateinit var budgeted: CypherExecutor
+        var nested = false
+        val reentrantGraph = object : Graph by chain {
+            override fun outgoing(node: NodeId): Sequence<Edge> {
+                if (!nested) {
+                    nested = true
+                    budgeted.execute("RETURN 1")
+                }
+                return chain.outgoing(node)
+            }
+        }
+        budgeted = CypherExecutor(reentrantGraph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget charges element id seeks across union segments`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+        val id = intConst42.value.toString()
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (n) WHERE elementId(n) = '$id' RETURN n.id AS id " +
+                    "UNION ALL MATCH (n) WHERE elementId(n) = '$id' RETURN n.id AS id"
+            )
+        }
+    }
+
+    @Test
     fun `execution budget stops variable length path traversal`() {
         val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 2))
 

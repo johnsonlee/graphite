@@ -86,7 +86,9 @@ class QueryPipeline private constructor(
     internal constructor(graph: Graph, workTrackingEnabled: Boolean) :
         this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, workTrackingEnabled)
 
-    internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean = false) :
+    internal constructor(graphs: List<CypherGraph>) : this(graphs, true, false)
+
+    internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean) :
         this(graphs, true, workTrackingEnabled)
 
     init {
@@ -108,11 +110,16 @@ class QueryPipeline private constructor(
         workTracker: CypherWorkTracker?
     ): CypherResult {
         if (workTracker == null) return executeWithActiveBudget(clauses)
+        val previousTracker = activeWorkTracker.get()
         activeWorkTracker.set(workTracker)
         return try {
             executeWithActiveBudget(clauses)
         } finally {
-            activeWorkTracker.remove()
+            if (previousTracker == null) {
+                activeWorkTracker.remove()
+            } else {
+                activeWorkTracker.set(previousTracker)
+            }
         }
     }
 
@@ -253,7 +260,7 @@ class QueryPipeline private constructor(
     private fun seekNode(elementId: String): Pair<CypherGraph, Node>? {
         if (!qualified) {
             val nodeId = elementId.toIntOrNull() ?: return null
-            return sources.single().let { source -> source.graph.node(NodeId(nodeId))?.let { source to it } }
+            return sources.single().let { source -> trackedNode(source.graph, NodeId(nodeId))?.let { source to it } }
         }
 
         val separator = elementId.lastIndexOf(':')
@@ -261,7 +268,7 @@ class QueryPipeline private constructor(
         val graphId = elementId.substring(0, separator)
         val nodeId = elementId.substring(separator + 1).toIntOrNull() ?: return null
         val source = sources.firstOrNull { it.id == graphId } ?: return null
-        return source.graph.node(NodeId(nodeId))?.let { source to it }
+        return trackedNode(source.graph, NodeId(nodeId))?.let { source to it }
     }
 
     /**
@@ -816,7 +823,7 @@ class QueryPipeline private constructor(
                 if (!matchesRelConstraints(edge.edge, rel, sourceBindings)) continue
 
                 val targetId = resolveTargetId(edge.edge, source.node.id, rel.direction)
-                val target = source.source.graph.node(targetId) ?: continue
+                val target = trackedNode(source.source.graph, targetId) ?: continue
                 val targetValue = nodeValue(source.source, target)
                 val targetBindings = matchTargetNode(targetPattern, targetValue, sourceBindings) ?: continue
 
@@ -1138,7 +1145,7 @@ class QueryPipeline private constructor(
 
         for (edge in edges) {
             val targetId = resolveTargetId(edge.edge, sourceNode.node.id, rel.direction)
-            val targetNode = sourceNode.source.graph.node(targetId) ?: continue
+            val targetNode = trackedNode(sourceNode.source.graph, targetId) ?: continue
             val targetValue = nodeValue(sourceNode.source, targetNode)
 
             // Check relationship property constraints
@@ -1308,18 +1315,23 @@ class QueryPipeline private constructor(
     ): Sequence<EdgeCursor> {
         val graph = node.source.graph
         val nodeId = node.node.id
+        val tracked = workTrackingEnabled && activeWorkTracker.get() != null
         val edges = when (direction) {
-        Direction.OUTGOING ->
-            if (edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
-        Direction.INCOMING ->
-            if (edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
-        Direction.BOTH -> {
-            val out = if (edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
-            val inc = if (edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
-            out + inc
+            Direction.OUTGOING ->
+                if (!tracked && edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
+            Direction.INCOMING ->
+                if (!tracked && edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
+            Direction.BOTH -> {
+                val outgoing =
+                    if (!tracked && edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
+                val incoming =
+                    if (!tracked && edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
+                outgoing + incoming
+            }
         }
-        }
-        return trackWork(edges).map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
+        return trackWork(edges)
+            .filter { edge -> edgeClass == null || edgeClass.isInstance(edge) }
+            .map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
     }
 
     private fun resolveTargetId(edge: Edge, sourceId: NodeId, direction: Direction): NodeId =
@@ -1353,6 +1365,11 @@ class QueryPipeline private constructor(
         } else {
             activeWorkTracker.get()?.let { tracker -> WorkTrackingSequence(values, tracker) } ?: values
         }
+    }
+
+    private fun trackedNode(graph: Graph, nodeId: NodeId): Node? {
+        if (workTrackingEnabled) activeWorkTracker.get()?.consume()
+        return graph.node(nodeId)
     }
 
     private fun <T : Node> stringPropertyCandidates(
