@@ -303,9 +303,16 @@ internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCy
         }
         return CrossGraphCypherExecutor(graphs)
     }
-    val defaultBudget = Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudgetKt")
-        .getField("DEFAULT_CYPHER_WORK_BUDGET")
-        .getLong(null)
+    val defaultBudget = try {
+        Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudgetKt")
+            .getField("DEFAULT_CYPHER_WORK_BUDGET")
+            .getLong(null)
+    } catch (error: ClassNotFoundException) {
+        check(java.lang.Boolean.getBoolean(ALLOW_LEGACY_BUDGET_DEFAULT_PROPERTY)) {
+            "Production Cypher work-budget default is unavailable; refusing an implicit benchmark fallback"
+        }
+        LEGACY_CYPHER_WORK_BUDGET
+    }
     val budget = budgetType.getConstructor(java.lang.Long.TYPE).newInstance(defaultBudget)
     return CrossGraphCypherExecutor::class.java
         .getConstructor(List::class.java, budgetType)
@@ -314,3 +321,6 @@ internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCy
 
 private const val ALLOW_LEGACY_UNBUDGETED_PROPERTY =
     "graphite.benchmark.allowLegacyUnbudgetedExecutor"
+private const val ALLOW_LEGACY_BUDGET_DEFAULT_PROPERTY =
+    "graphite.benchmark.allowLegacyBudgetDefault"
+private const val LEGACY_CYPHER_WORK_BUDGET = 250_000L

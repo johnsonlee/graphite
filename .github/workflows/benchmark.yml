@@ -564,12 +564,14 @@ jobs:
         for REVISION in fixed base candidate; do
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
-          LEGACY_BUDGET_ARG=()
+          LEGACY_BUDGET_ARGS=()
           if [ "${REVISION}" = fixed ]; then
-            LEGACY_BUDGET_ARG=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+          elif [ "${REVISION}" = base ]; then
+            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyBudgetDefault=true)
           fi
           java -Xmx8g -cp "${JMH_JAR}" \
-            "${LEGACY_BUDGET_ARG[@]}" \
+            "${LEGACY_BUDGET_ARGS[@]}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | tee "benchmark-results/${REVISION}-fixture-correctness.log"
@@ -599,13 +601,15 @@ jobs:
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
           -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+        BASE_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyBudgetDefault=true"
         java -jar "${FIXED_JAR}" \
           "${BENCHMARK_FILTER}" \
           -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
           "${BENCHMARK_FILTER}" \
-          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -jvmArgsAppend "${BASE_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/base-latency-${SHARD}.json"
         java -jar "${CANDIDATE_JAR}" \
           "${BENCHMARK_FILTER}" \
@@ -638,13 +642,15 @@ jobs:
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
           FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
             -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+          BASE_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyBudgetDefault=true"
           java -jar "${CANDIDATE_JAR}" \
             "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/candidate-latency-confirmation-${SHARD}.json"
           java -jar "${BASE_JAR}" \
             "${BENCHMARK_FILTER}" \
-            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -jvmArgsAppend "${BASE_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
           java -jar "${FIXED_JAR}" \
             "${BENCHMARK_FILTER}" \
