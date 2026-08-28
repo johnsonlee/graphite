@@ -500,8 +500,8 @@ class GraphStoreTest {
 
                 assertEquals(listOf(256, 257, 260), budgeted)
                 assertEquals(261, consumed)
-                assertEquals(0, loaded.rawStringMatchStateCount())
-                assertEquals(0L, loaded.rawStringMatchStateBytes())
+                assertEquals(1, loaded.rawStringMatchStateCount())
+                assertTrue(loaded.rawStringMatchStateBytes() > 0)
             } finally {
                 loaded.close()
             }
@@ -512,7 +512,7 @@ class GraphStoreTest {
 
     @Test
     fun `raw string match states enforce one aggregate graph memory bound`() {
-        val states = RawStringMatchStates(maxRetainedBytes = 120, maxEntries = 8)
+        val states = RawStringMatchStates(maxRetainedBytes = 512, maxEntries = 8)
         val property = StringPropertyKey(StringConstant::class.java, "value")
 
         val first = states.stateFor(
@@ -532,11 +532,24 @@ class GraphStoreTest {
         assertNotNull(second)
         assertNull(overflow)
         assertEquals(2, states.size())
-        assertEquals(112L, states.retainedBytes())
+        assertEquals(442L, states.retainedBytes())
         assertTrue(states.stateFor(
             RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
             stringCount = 40
         ) === first)
+
+        val oversizedKeyStates = RawStringMatchStates(maxRetainedBytes = 256, maxEntries = 8)
+        assertNull(oversizedKeyStates.stateFor(
+            RawStringMatchKey(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "x".repeat(128)
+            ),
+            stringCount = 1
+        ))
+        assertEquals(0, oversizedKeyStates.size())
+        assertEquals(0L, oversizedKeyStates.retainedBytes())
     }
 
     @Test

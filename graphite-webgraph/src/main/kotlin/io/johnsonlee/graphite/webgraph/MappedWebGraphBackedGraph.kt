@@ -258,12 +258,10 @@ internal class MappedWebGraphBackedGraph(
                     }
                 }
                 admitted = true
-                if (workConsumer == null) {
-                    matchStates = rawStringMatchStates.stateFor(
-                        RawStringMatchKey(admission.property, transform, mode, expected),
-                        stringTable.size()
-                    )
-                }
+                matchStates = rawStringMatchStates.stateFor(
+                    RawStringMatchKey(admission.property, transform, mode, expected),
+                    stringTable.size()
+                )
             }
             val stringId = rawStringPropertyIndex(nodeId, type, property)
             val states = matchStates
@@ -517,6 +515,7 @@ private const val STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES = 96L
 private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATES = 32
+private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
 private const val MAX_STRING_MATCH_CACHE_ENTRIES = 32
@@ -569,7 +568,7 @@ internal class RawStringMatchStates(
     @Synchronized
     fun stateFor(key: RawStringMatchKey, stringCount: Int): ByteArray? {
         val existing = states[key]
-        val requiredBytes = PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES + stringCount.toLong()
+        val requiredBytes = estimatedRawStringMatchStateBytes(key, stringCount)
         return when {
             existing != null -> existing
             states.size >= maxEntries || requiredBytes > maxRetainedBytes - bytes -> null
@@ -592,6 +591,12 @@ internal class RawStringMatchStates(
     @Synchronized
     fun size(): Int = states.size
 }
+
+private fun estimatedRawStringMatchStateBytes(key: RawStringMatchKey, stringCount: Int): Long =
+    RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
+        STRING_HEADER_ESTIMATED_BYTES + key.property.property.length.toLong() * Char.SIZE_BYTES +
+        STRING_HEADER_ESTIMATED_BYTES + key.expected.length.toLong() * Char.SIZE_BYTES +
+        stringCount.toLong()
 
 private class StringPropertyAdmissions {
     private val predicates = LinkedHashMap<StringPropertyAdmissionKey, Unit>(
