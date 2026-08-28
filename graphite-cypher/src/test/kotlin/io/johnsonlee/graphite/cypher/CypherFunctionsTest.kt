@@ -34,6 +34,10 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.abs
@@ -58,6 +62,7 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -762,6 +767,38 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `percentile sort observes cancellation after aggregation starts`() {
+        val values = (10_000 downTo 1).map { it as Any? }
+        val cancellation = CypherCancellationSignal()
+        val sortEntered = CountDownLatch(1)
+        val resumeSort = CountDownLatch(1)
+        val checkpoints = AtomicInteger()
+        val failure = AtomicReference<Throwable?>()
+        val worker = Thread {
+            try {
+                CypherFunctions.aggregate("percentileCont", values) {
+                    if (checkpoints.incrementAndGet() == SORT_PHASE_CHECKPOINT) {
+                        sortEntered.countDown()
+                        resumeSort.await()
+                    }
+                    cancellation.throwIfCancelled()
+                }
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(sortEntered.await(5, TimeUnit.SECONDS), "Percentile aggregation did not enter sorting")
+        cancellation.cancel()
+        resumeSort.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Percentile sorting ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
+    }
+
+    @Test
     fun `aggregate with explicit percentile for percentileCont`() {
         val result = CypherFunctions.aggregate("percentileCont", listOf(10, 20, 30, 40, 50), 0.9) as Double
         // 0.9 * 4 = 3.6 -> interpolate between index 3 (40) and index 4 (50)
@@ -1015,3 +1052,5 @@ class CypherFunctionsTest {
         assertEquals(true, NodePropertyAccessor.getAllProperties(boolNode)["value"])
     }
 }
+
+private const val SORT_PHASE_CHECKPOINT = 15

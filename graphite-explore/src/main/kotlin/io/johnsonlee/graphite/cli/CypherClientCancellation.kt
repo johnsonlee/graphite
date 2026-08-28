@@ -121,13 +121,19 @@ private class DisconnectMonitor(
         val probe = ByteBuffer.allocate(1)
         return try {
             val read = socketEndPoint.channel.read(probe)
-            if (read > 0) {
-                probe.flip()
-                // onUpgradeTo appends bytes to Jetty's request buffer; use it to replay the non-destructive probe.
-                connection.onUpgradeTo(probe)
+            when {
+                read > 0 -> {
+                    probe.flip()
+                    // Keep pipelined bytes buffered until Jetty completes the active response.
+                    connection.onUpgradeTo(probe)
+                    false
+                }
+                read < 0 -> {
+                    connection.onFillable()
+                    true
+                }
+                else -> true
             }
-            connection.onFillable()
-            true
         } catch (error: IOException) {
             socketEndPoint.close(error)
             cancel()

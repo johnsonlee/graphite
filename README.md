@@ -274,10 +274,12 @@ path elements consume work units. Configure these bounds with
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
+The `=~` operator uses RE2/J's linear-time regular expression syntax. Backreferences
+and look-around constructs are rejected instead of running with unbounded backtracking.
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
-Metrics are opt-in, so the default request path has no Micrometer instrumentation cost. The
-metric set prioritizes runtime performance: JVM heap, GC and threads;
+Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.
+The metric set prioritizes runtime performance: JVM heap, GC and threads;
 process CPU, uptime and file descriptors; Jetty connections, thread-pool load
 and route-template HTTP latency; and Cypher active queries, concurrency limit,
 rejections and duration by fixed outcome. Graph ids, query text, keywords,

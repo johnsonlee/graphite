@@ -123,13 +123,19 @@ class CypherQueryGuardTest {
     }
 
     @Test
-    fun `guard retains permit until inline completion callbacks return`() {
+    fun `guard retains permit until registered continuation returns`() {
         val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
         val workStarted = CountDownLatch(1)
         val releaseWork = CountDownLatch(1)
         val callbackStarted = CountDownLatch(1)
         val releaseCallback = CountDownLatch(1)
-        val task = guard.submit(CypherCancellationSignal()) {
+        val task = guard.submit(
+            CypherCancellationSignal(),
+            continuation = {
+                callbackStarted.countDown()
+                releaseCallback.await()
+            }
+        ) {
             workStarted.countDown()
             releaseWork.await()
             "completed"
@@ -137,10 +143,6 @@ class CypherQueryGuardTest {
 
         try {
             assertTrue(workStarted.await(5, TimeUnit.SECONDS))
-            task.completion.thenRun {
-                callbackStarted.countDown()
-                releaseCallback.await()
-            }
             releaseWork.countDown()
             assertTrue(callbackStarted.await(5, TimeUnit.SECONDS))
 
@@ -154,6 +156,20 @@ class CypherQueryGuardTest {
         } finally {
             releaseWork.countDown()
             releaseCallback.countDown()
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `task completion is published after guard teardown`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+
+        try {
+            val task = guard.submit(CypherCancellationSignal()) { "completed" }
+
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+            assertEquals("next", guard.execute { "next" })
+        } finally {
             guard.close()
         }
     }

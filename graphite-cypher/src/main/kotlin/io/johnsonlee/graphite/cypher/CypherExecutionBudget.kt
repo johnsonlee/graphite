@@ -32,7 +32,9 @@ class CypherExecutionContext(
 }
 
 /** Request-scoped signal used to cooperatively stop Cypher execution. */
-class CypherCancellationSignal {
+class CypherCancellationSignal(
+    private val checkObserver: (() -> Unit)? = null
+) {
     private val cancelled = AtomicBoolean()
 
     val isCancelled: Boolean get() = cancelled.get()
@@ -40,6 +42,7 @@ class CypherCancellationSignal {
     fun cancel(): Boolean = cancelled.compareAndSet(false, true)
 
     internal fun throwIfCancelled() {
+        checkObserver?.invoke()
         if (isCancelled) throw CypherQueryCancelledException()
     }
 }

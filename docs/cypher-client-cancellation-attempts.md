@@ -67,12 +67,16 @@ The retained implementation:
   completion, allowing `HttpConnection` to resume keep-alive reads;
 - delegates readable sockets back to Jetty, cancels on reset/connection error, and retires the monitor without
   cancellation on a clean input half-close so the client can still read the response;
+- replays a probed HTTP byte into Jetty's request buffer and leaves it there until the active response completes,
+  preserving safe pipelined requests in arrival order;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
+- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics, and uses RE2/J with
+  a cancellation-aware input for linear-time regular expression matching;
 - checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
   result after cancellation;
-- keeps the concurrency permit and graph leases through inline completion callbacks, including JSON response
-  materialization, and releases them only when the worker exits.
+- registers the route continuation before scheduling work, keeps the concurrency permit and graph leases through JSON
+  response materialization, then stops metrics, releases the permit, and publishes final task completion.
 
 The monitor never writes a heartbeat or commits an early response. The same signal covers single-graph, cross-graph,
 and fanout execution, including all sequential executors in one request.
@@ -85,10 +89,12 @@ Behavior verification:
 
 `CypherClientCancellationTest` sends TCP RST during an infinite candidate scan and a graph-free ten-million-element
 `range`/`UNWIND` query. Each query stops and its only permit is reusable within 2 seconds. A half-close regression sends
-`SHUT_WR` after a complete request and still receives the full HTTP 200 response. A separate raw-socket regression runs
-a slow Cypher query and `/openapi.json` sequentially over the same keep-alive connection; both responses are HTTP 200.
-Guard tests prove cancellation wins after an interrupt-ignoring block returns and that a blocking completion callback
-retains the only permit. Exact response tests preserve the pre-existing scoped and multi-graph 404 JSON contracts.
+`SHUT_WR` after a complete request and still receives the full HTTP 200 response. Raw-socket regressions run a slow
+Cypher query and `/openapi.json` both sequentially and pipelined over the same keep-alive connection; both responses are
+HTTP 200. Deterministic barriers prove cancellation occurs inside graph-free loops, percentile sorting, and regular
+expression matching. Guard tests prove cancellation wins after an interrupt-ignoring block, a registered blocking
+continuation retains the only permit, and task completion is not visible until metrics and permit teardown finish.
+Exact response tests preserve the pre-existing scoped and multi-graph 404 JSON contracts.
 
 Performance environment: Apple M3 Max, macOS 14.3 (`arm64`), OpenJDK 17.0.18. Base is `v2.4.0`; base and candidate
 JMH jars ran sequentially on the same machine. Lower is better.
@@ -100,10 +106,10 @@ java -jar <cypher-jmh.jar> 'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
   -foe true -rf json -rff <result.json>
 ```
 
-All ten `CypherBenchmark` methods pass the repository's 15% gate. Stable deltas range from `-5.8%` to `+10.5%`.
-One full-suite `singleHopRelationship` sample reported `+23.8%` with overlapping confidence intervals; its isolated
-confirmation was `30.483 us/op` versus `29.865 us/op` on the base (`+2.1%`). The class uses the unbudgeted path, so
-this also verifies that cancellation polling is absent when no execution context is supplied.
+All ten `CypherBenchmark` methods pass the repository's 15% gate. Deltas range from `-9.2%` to `+7.2%`.
+`regexFilter` is `23.162 us/op` versus `25.499 us/op` on the base (`-9.2%`): common literal and literal-prefix patterns
+use a semantics-preserving fast path, while other patterns use RE2/J. The class uses the unbudgeted path, so this also
+verifies that cancellation polling is absent when no execution context is supplied.
 
 Cancellation hot-path command:
 
@@ -115,9 +121,9 @@ java -jar <cypher-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `budgetedNodeScan` | 52.097 us/op | 48.733 us/op | -6.5% |
-| `budgetedRelationship` | 158.963 us/op | 149.419 us/op | -6.0% |
-| `budgetedVariableLengthPath` | 252.135 us/op | 228.780 us/op | -9.3% |
+| `budgetedNodeScan` | 52.097 us/op | 48.284 us/op | -7.3% |
+| `budgetedRelationship` | 158.963 us/op | 146.461 us/op | -7.9% |
+| `budgetedVariableLengthPath` | 252.135 us/op | 226.270 us/op | -10.3% |
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:
 
@@ -129,9 +135,9 @@ java -jar <explore-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `connectedScalarQuery` | 67.921 us/op | 68.854 us/op | +1.4% |
+| `connectedScalarQuery` | 67.921 us/op | 68.660 us/op | +1.1% |
 
-The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 0.933 us to a
+The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 0.739 us to a
 trivial `RETURN 1` request. Prometheus instrumentation is opt-in through `--metrics`, so this benchmark also verifies
 that the default request path does not pay Micrometer's measured per-request cost. Method-level and connected HTTP
 results therefore show no material performance regression.

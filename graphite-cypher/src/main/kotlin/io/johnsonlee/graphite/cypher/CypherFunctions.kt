@@ -209,6 +209,24 @@ object CypherFunctions {
         else -> throw CypherException("Unknown aggregation: $name")
     }
 
+    internal fun aggregate(
+        name: String,
+        values: List<Any?>,
+        checkCancelled: () -> Unit
+    ): Any? = when (name.lowercase()) {
+        FUNCTION_COUNT -> values.size.toLong()
+        FUNCTION_SUM -> sum(values, checkCancelled)
+        FUNCTION_AVG -> average(values, checkCancelled)
+        FUNCTION_MIN -> extremum(values, checkCancelled, minimum = true)
+        FUNCTION_MAX -> extremum(values, checkCancelled, minimum = false)
+        FUNCTION_COLLECT -> collect(values, checkCancelled)
+        FUNCTION_PERCENTILE_CONT -> percentileCont(values, DEFAULT_PERCENTILE, checkCancelled)
+        FUNCTION_PERCENTILE_DISC -> percentileDisc(values, DEFAULT_PERCENTILE, checkCancelled)
+        FUNCTION_STDEV -> stdev(values, sample = true, checkCancelled)
+        FUNCTION_STDEVP -> stdev(values, sample = false, checkCancelled)
+        else -> throw CypherException("Unknown aggregation: $name")
+    }
+
     /**
      * Aggregation with an explicit percentile parameter.
      */
@@ -432,6 +450,121 @@ object CypherFunctions {
         val divisor = if (sample) (nums.size - 1) else nums.size
         val variance = nums.sumOf { (it - mean).pow(2) } / divisor
         return sqrt(variance)
+    }
+
+    private fun sum(values: List<Any?>, checkCancelled: () -> Unit): Double {
+        var sum = 0.0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) sum += toDouble(value)
+        }
+        checkCancelled()
+        return sum
+    }
+
+    private fun average(values: List<Any?>, checkCancelled: () -> Unit): Double? {
+        var sum = 0.0
+        var count = 0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) {
+                sum += toDouble(value)
+                count++
+            }
+        }
+        checkCancelled()
+        return if (count == 0) null else sum / count
+    }
+
+    private fun extremum(
+        values: List<Any?>,
+        checkCancelled: () -> Unit,
+        minimum: Boolean
+    ): Any? {
+        var selected: Any? = null
+        var selectedNumber = 0.0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value == null) continue
+            val number = toDouble(value)
+            if (selected == null || if (minimum) number < selectedNumber else number > selectedNumber) {
+                selected = value
+                selectedNumber = number
+            }
+        }
+        checkCancelled()
+        return selected
+    }
+
+    private fun collect(values: List<Any?>, checkCancelled: () -> Unit): List<Any?> {
+        val result = ArrayList<Any?>(values.size)
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            result.add(value)
+        }
+        checkCancelled()
+        return result
+    }
+
+    private fun percentileCont(values: List<Any?>, p: Double, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        sort(nums, checkCancelled)
+        if (nums.isEmpty()) return null
+        val idx = p * (nums.size - 1)
+        val lower = nums[idx.toInt()]
+        val upper = nums[minOf(idx.toInt() + 1, nums.size - 1)]
+        val frac = idx - idx.toInt()
+        return lower + frac * (upper - lower)
+    }
+
+    private fun percentileDisc(values: List<Any?>, p: Double, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        sort(nums, checkCancelled)
+        if (nums.isEmpty()) return null
+        val idx = kotlin.math.ceil(p * nums.size).toInt() - 1
+        return nums[maxOf(0, idx)]
+    }
+
+    private fun stdev(values: List<Any?>, sample: Boolean, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        if (nums.size < 2) return null
+        var sum = 0.0
+        for ((index, number) in nums.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            sum += number
+        }
+        val mean = sum / nums.size
+        var squaredDifferences = 0.0
+        for ((index, number) in nums.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            squaredDifferences += (number - mean).pow(2)
+        }
+        checkCancelled()
+        val divisor = if (sample) nums.size - 1 else nums.size
+        return sqrt(squaredDifferences / divisor)
+    }
+
+    private fun numericValues(values: List<Any?>, checkCancelled: () -> Unit): MutableList<Double> {
+        val numbers = ArrayList<Double>(values.size)
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) numbers.add(toDouble(value))
+        }
+        checkCancelled()
+        return numbers
+    }
+
+    private fun sort(values: MutableList<Double>, checkCancelled: () -> Unit) {
+        var comparisons = 0
+        values.sortWith { left, right ->
+            pollCancellation(comparisons++, checkCancelled)
+            left.compareTo(right)
+        }
+        checkCancelled()
+    }
+
+    private fun pollCancellation(index: Int, checkCancelled: () -> Unit) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
     }
 }
 

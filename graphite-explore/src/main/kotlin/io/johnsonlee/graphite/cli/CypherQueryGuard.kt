@@ -74,6 +74,7 @@ internal class CypherQueryGuard(
 
     fun <T> submit(
         cancellationSignal: CypherCancellationSignal,
+        continuation: (Result<T>) -> Unit = {},
         block: (CypherExecutionContext) -> T
     ): CypherQueryTask<T> {
         check(!closed.get()) { CYPHER_GUARD_CLOSED }
@@ -82,7 +83,7 @@ internal class CypherQueryGuard(
             throw CypherConcurrencyLimitException(maxConcurrent)
         }
 
-        val work = CypherQueryWork(cancellationSignal, block, performance.start())
+        val work = CypherQueryWork(cancellationSignal, block, continuation, performance.start())
         active.add(work)
         try {
             executor.execute(work)
@@ -104,6 +105,7 @@ internal class CypherQueryGuard(
     private inner class CypherQueryWork<T>(
         private val cancellationSignal: CypherCancellationSignal,
         private val block: (CypherExecutionContext) -> T,
+        private val continuation: (Result<T>) -> Unit,
         private val startedAtNanos: Long
     ) : Runnable {
         val completion = CompletableFuture<T>()
@@ -165,13 +167,17 @@ internal class CypherQueryGuard(
                 }
                 completionOutcome to recordedOutcome
             }
+            val publishedOutcome = runCatching { continuation(finalOutcome) }.fold(
+                onSuccess = { finalOutcome },
+                onFailure = { Result.failure(it) }
+            )
             try {
-                finalOutcome.fold(completion::complete, completion::completeExceptionally)
-            } finally {
                 active.remove(this)
                 performance.stop(startedAtNanos, queryOutcome)
+            } finally {
                 permits.release()
             }
+            publishedOutcome.fold(completion::complete, completion::completeExceptionally)
         }
     }
 }

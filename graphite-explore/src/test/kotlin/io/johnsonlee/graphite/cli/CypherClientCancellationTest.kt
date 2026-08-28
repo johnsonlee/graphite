@@ -6,6 +6,7 @@ import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
+import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import jakarta.servlet.AsyncContext
@@ -19,6 +20,7 @@ import java.lang.reflect.Proxy
 import java.net.HttpURLConnection
 import java.net.Socket
 import java.net.URI
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
@@ -97,6 +99,55 @@ class CypherClientCancellationTest {
                 assertTrue(second.body.contains("\"openapi\""), second.body)
             }
         } finally {
+            app.stop()
+        }
+    }
+
+    @Test
+    fun `pipelined safe request is preserved while Cypher response is pending`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val node = IntConstant(NodeId.next(), 1)
+        val backing = DefaultGraph.Builder().addNode(node).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (type.isAssignableFrom(IntConstant::class.java)) {
+                    started.countDown()
+                    release.await()
+                    @Suppress("UNCHECKED_CAST")
+                    yield(node as T)
+                }
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, blockingGraph)
+            Socket("127.0.0.1", app.port()).use { socket ->
+                socket.soTimeout = 5_000
+                val query = URLEncoder.encode(
+                    "MATCH (n:IntConstant) WHERE n.value + 0 = 1 RETURN n.value LIMIT 1",
+                    StandardCharsets.UTF_8
+                )
+                writeRequest(socket, "GET", "/api/cypher?query=$query")
+                assertTrue(started.await(5, TimeUnit.SECONDS), "The first request did not start")
+
+                writeRequest(socket, "GET", "/openapi.json")
+                Thread.sleep(100)
+                release.countDown()
+
+                val first = readResponse(socket)
+                val second = readResponse(socket)
+                assertEquals(200, first.status)
+                assertTrue(first.body.contains("n.value"), first.body)
+                assertEquals(200, second.status)
+                assertTrue(second.body.contains("\"openapi\""), second.body)
+            }
+        } finally {
+            release.countDown()
             app.stop()
         }
     }
@@ -181,8 +232,14 @@ class CypherClientCancellationTest {
 
     private fun verifyGraphFreeResetDisconnect() {
         val performance = DisconnectPerformanceRecorder()
+        val progress = CountDownLatch(1)
+        val checkpoints = AtomicInteger()
+        val cancellationSignal = CypherCancellationSignal {
+            if (checkpoints.incrementAndGet() == GRAPH_FREE_PROGRESS_CHECKPOINTS) progress.countDown()
+        }
         val routes = ExploreRoutes(
-            CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1, performance = performance)
+            CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1, performance = performance),
+            cancellationSignalFactory = { cancellationSignal }
         )
         val app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
@@ -198,6 +255,7 @@ class CypherClientCancellationTest {
                 """{"query":"UNWIND range(1, 10000000) AS x RETURN x LIMIT 1"}"""
             )
             assertTrue(performance.started.await(1, TimeUnit.SECONDS), "The graph-free query was not accepted")
+            assertTrue(progress.await(5, TimeUnit.SECONDS), "The graph-free query did not reach its inner loops")
 
             socket.setSoLinger(true, 0)
             socket.close()
@@ -330,3 +388,4 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 }
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
+private const val GRAPH_FREE_PROGRESS_CHECKPOINTS = 10

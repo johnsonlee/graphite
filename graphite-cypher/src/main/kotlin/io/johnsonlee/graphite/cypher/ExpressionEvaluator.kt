@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cypher
 
+import com.google.re2j.Pattern
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -16,6 +17,8 @@ private const val PREDICATE_SINGLE = "single"
 private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
 private const val LOAD_FACTOR = 0.75f
 private const val MAX_REGEX_CACHE_SIZE = 256
+private const val REGEX_ANY_SUFFIX = ".*"
+private val REGEX_META_CHARACTERS = setOf('\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}')
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
@@ -26,8 +29,12 @@ class ExpressionEvaluator(
     private val checkCancelled: (() -> Unit)? = null
 ) {
 
-    private val regexCache = object : LinkedHashMap<String, Regex>(MAX_REGEX_CACHE_SIZE + 1, LOAD_FACTOR, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Regex>?): Boolean =
+    private val regexCache = object : LinkedHashMap<String, CompiledCypherRegex>(
+        MAX_REGEX_CACHE_SIZE + 1,
+        LOAD_FACTOR,
+        true
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CompiledCypherRegex>?): Boolean =
             size > MAX_REGEX_CACHE_SIZE
     }
 
@@ -230,9 +237,9 @@ class ExpressionEvaluator(
         val value = evaluate(expr.left, bindings) as? String ?: return null
         val pattern = evaluate(expr.right, bindings) as? String ?: return null
         val regex = synchronized(regexCache) {
-            regexCache.getOrPut(pattern) { Regex(pattern) }
+            regexCache.getOrPut(pattern) { compileCypherRegex(pattern) }
         }
-        return regex.matches(value)
+        return regex.matches(value, checkCancelled).also { checkCancelled?.invoke() }
     }
 
     // ========================================================================
@@ -398,6 +405,88 @@ class ExpressionEvaluator(
         is String -> value.toDoubleOrNull() ?: 0.0
         else -> 0.0
     }
+}
+
+private sealed interface CompiledCypherRegex {
+    fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean
+}
+
+private class Re2CypherRegex(pattern: String) : CompiledCypherRegex {
+    private val pattern = Pattern.compile(pattern)
+
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        val input = checkCancelled?.let { CancellationAwareCharSequence(value, it) } ?: value
+        return pattern.matcher(input).matches()
+    }
+}
+
+private class LiteralCypherRegex(
+    private val literal: String,
+    private val prefix: Boolean
+) : CompiledCypherRegex {
+    @Suppress("ReturnCount")
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        if (checkCancelled == null) {
+            return if (prefix) value.startsWith(literal) && value.indexOf('\n', literal.length) < 0 else value == literal
+        }
+        if (value.length < literal.length || !prefix && value.length != literal.length) return false
+        for (index in literal.indices) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            if (value[index] != literal[index]) return false
+        }
+        if (prefix) {
+            for (index in literal.length until value.length) {
+                if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+                if (value[index] == '\n') return false
+            }
+        }
+        return true
+    }
+}
+
+private fun compileCypherRegex(pattern: String): CompiledCypherRegex {
+    val prefix = pattern.endsWith(REGEX_ANY_SUFFIX)
+    val literalPattern = if (prefix) pattern.dropLast(REGEX_ANY_SUFFIX.length) else pattern
+    val literal = parseRegexLiteral(literalPattern) ?: return Re2CypherRegex(pattern)
+    return LiteralCypherRegex(literal, prefix)
+}
+
+@Suppress("ReturnCount")
+private fun parseRegexLiteral(pattern: String): String? {
+    val literal = StringBuilder(pattern.length)
+    var index = 0
+    while (index < pattern.length) {
+        val current = pattern[index++]
+        if (current == '\\') {
+            if (index == pattern.length) return null
+            val escaped = pattern[index++]
+            if (escaped !in REGEX_META_CHARACTERS) return null
+            literal.append(escaped)
+        } else {
+            if (current in REGEX_META_CHARACTERS) return null
+            literal.append(current)
+        }
+    }
+    return literal.toString()
+}
+
+private class CancellationAwareCharSequence(
+    private val value: String,
+    private val checkCancelled: () -> Unit
+) : CharSequence {
+    private var accesses = 0
+
+    override val length: Int get() = value.length
+
+    override fun get(index: Int): Char {
+        if ((accesses++ and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        return value[index]
+    }
+
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        CancellationAwareCharSequence(value.substring(startIndex, endIndex), checkCancelled)
+
+    override fun toString(): String = value
 }
 
 private fun evaluatePredicateFunction(

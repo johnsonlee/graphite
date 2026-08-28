@@ -16,7 +16,11 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -420,6 +424,38 @@ class ExpressionEvaluatorTest {
         val cache = field.get(evaluator) as Map<*, *>
 
         assertTrue(cache.size <= 256)
+    }
+
+    @Test
+    fun `regex matching observes cancellation from inside the matcher`() {
+        val cancellation = CypherCancellationSignal()
+        val matcherEntered = CountDownLatch(1)
+        val resumeMatcher = CountDownLatch(1)
+        val failure = AtomicReference<Throwable?>()
+        val cancellableEvaluator = ExpressionEvaluator {
+            matcherEntered.countDown()
+            resumeMatcher.await()
+            cancellation.throwIfCancelled()
+        }
+        val worker = Thread {
+            try {
+                cancellableEvaluator.evaluate(
+                    CypherExpr.RegexMatch(lit("a".repeat(100_000) + "!"), lit("(a+)+$")),
+                    emptyMap()
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(matcherEntered.await(5, TimeUnit.SECONDS), "Regex matcher did not start reading input")
+        cancellation.cancel()
+        resumeMatcher.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Regex matcher ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
     }
 
     // ========================================================================

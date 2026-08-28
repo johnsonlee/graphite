@@ -29,7 +29,8 @@ import java.util.concurrent.CompletionException
 
 @Suppress("LargeClass", "StringLiteralDuplication", "TooManyFunctions")
 internal class ExploreRoutes(
-    private val cypherGuard: CypherQueryGuard = CypherQueryGuard()
+    private val cypherGuard: CypherQueryGuard = CypherQueryGuard(),
+    private val cancellationSignalFactory: () -> CypherCancellationSignal = ::CypherCancellationSignal
 ) {
 
     private val endpointExtractor = EndpointExtractor()
@@ -583,7 +584,7 @@ internal class ExploreRoutes(
         execute: (List<GraphLease>, CypherExecutionContext) -> T,
         respond: (T) -> Unit
     ): CompletableFuture<Unit> {
-        val cancellationSignal = CypherCancellationSignal()
+        val cancellationSignal = cancellationSignalFactory()
         val clientCancellation = CypherClientCancellation.observe(ctx, cancellationSignal)
         val leases = try {
             acquire()
@@ -594,7 +595,22 @@ internal class ExploreRoutes(
         }
 
         val task = try {
-            cypherGuard.submit(cancellationSignal) { executionContext ->
+            cypherGuard.submit(
+                cancellationSignal,
+                continuation = { outcome ->
+                    clientCancellation.close()
+                    try {
+                        val error = unwrapCompletionFailure(outcome.exceptionOrNull())
+                        if (error == null) {
+                            respond(outcome.getOrThrow())
+                        } else if (error !is CypherQueryCancelledException) {
+                            respondCypherError(ctx, error)
+                        }
+                    } finally {
+                        leases.forEach { it.close() }
+                    }
+                }
+            ) { executionContext ->
                 execute(leases, executionContext)
             }
         } catch (error: RuntimeException) {
@@ -605,17 +621,7 @@ internal class ExploreRoutes(
         }
         clientCancellation.bind(task)
 
-        return task.completion.handle { result, failure ->
-            clientCancellation.close()
-            leases.forEach { it.close() }
-            val error = unwrapCompletionFailure(failure)
-            if (error == null) {
-                respond(requireNotNull(result))
-            } else if (error !is CypherQueryCancelledException) {
-                respondCypherError(ctx, error)
-            }
-            Unit
-        }
+        return task.completion.handle { _, _ -> Unit }
     }
 
     private fun unwrapCompletionFailure(failure: Throwable?): Throwable? {

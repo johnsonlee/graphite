@@ -1601,8 +1601,12 @@ class QueryPipeline private constructor(
                     if (expr.args.isEmpty()) row
                     else evaluator.evaluate(expr.args[0], row)
                 }
-                val filtered = if (expr.distinct) values.distinct() else values
-                CypherFunctions.aggregate(expr.name, filtered)
+                val filtered = if (expr.distinct) distinctAggregationValues(values) else values
+                if (workTrackingEnabled) {
+                    CypherFunctions.aggregate(expr.name, filtered, ::checkCancelled)
+                } else {
+                    CypherFunctions.aggregate(expr.name, filtered)
+                }
             } else {
                 evaluator.evaluate(expr, rows.firstOrNull() ?: emptyMap())
             }
@@ -1633,6 +1637,18 @@ class QueryPipeline private constructor(
         }
         checkCancelled()
         return results
+    }
+
+    private fun distinctAggregationValues(values: List<Any?>): List<Any?> {
+        if (!workTrackingEnabled) return values.distinct()
+        val seen = LinkedHashSet<Any?>()
+        val distinct = ArrayList<Any?>()
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index)
+            if (seen.add(value)) distinct.add(value)
+        }
+        checkCancelled()
+        return distinct
     }
 
     // ========================================================================
