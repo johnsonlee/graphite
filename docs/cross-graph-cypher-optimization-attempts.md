@@ -656,6 +656,40 @@ persisted graphs, remains lazy for single-graph limits, uses memory independent
 of match count for qualified execution, and preserves the Android-scale
 speedup.
 
+### 2026-08-28 - Attempt 015: Android schema-discovery baseline
+
+**Observed query shape:** an agent first samples labels and property keys with
+`MATCH (n) RETURN labels(n), keys(n) LIMIT 20`, then requests a label histogram
+with `MATCH (n) UNWIND labels(n) AS label RETURN label, count(*) AS c ORDER BY c
+DESC LIMIT 50`. The first query inspects only 20 nodes because the generic
+pipeline can push its limit into the match. The second query cannot push its
+limit through `UNWIND`, aggregation, and ordering, so it materializes and
+expands every matched node before retaining the top 50 result rows.
+
+**Benchmark:** `AndroidSchemaDiscoveryBenchmark` runs both unmodified queries
+against the persisted 5,938,827-node Android graph. The benchmark name describes
+the workload rather than the client that generated it, so it remains usable for
+CLI, HTTP, and agent callers.
+
+```shell
+./gradlew :webgraph:jmhJar --no-daemon
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  'AndroidSchemaDiscoveryBenchmark.*' \
+  -wi 1 -i 3 -w 1s -r 1s -f 1 -prof gc -foe true
+```
+
+| Query | Time | Allocation per operation | GC time |
+|-------|-----:|-------------------------:|--------:|
+| `labels/keys LIMIT 20` | `0.018 ms/op` | `56,480 B/op` | `17 ms` total |
+| `UNWIND labels + count` | `8,733.299 ms/op` | `11,211,740,267 B/op` | `12,313 ms` total |
+
+**Conclusion:** retained as the baseline. Calling `labels()` or `keys()` is not
+itself the pressure source when an early limit applies. The full-node scan,
+row expansion, aggregation, and sort in the histogram query allocate roughly
+11.2 GB per execution even at 5.9 million nodes. At the reported 80-million-node
+deployment scale, this execution model is not viable; the histogram must use
+existing type metadata instead of visiting nodes.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
