@@ -867,7 +867,7 @@ seeks.
 The full
 `./gradlew check -S --no-daemon` gate, including all three large-corpus
 end-to-end tests, passes. Application line
-coverage is `98.2569%` for Core, `98.1832%` for Cypher, `98.0213%` for WebGraph,
+coverage is `98.2569%` for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph,
 and `98.1046%` for Explore.
 
 **Budget-enabled executor cost used by HTTP:** `BudgetedCypherBenchmark`
@@ -878,24 +878,30 @@ library API.
 
 ```shell
 ./gradlew :cypher:jmhJar --no-daemon
-java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
-  'BudgetedCypherBenchmark.*' \
-  -wi 3 -i 5 -w 1s -r 1s -f 2 -foe true
+for pair in NodeScan Relationship VariableLengthPath; do
+  java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
+    "BudgetedCypherBenchmark.(budgeted${pair}|unbudgeted${pair})$" \
+    -wi 3 -i 5 -w 1s -r 1s -f 5 -foe true
+done
 ```
 
 Apple M3 Max, 64 GiB RAM, macOS arm64, OpenJDK 17.0.18, JMH 1.37, one
-benchmark thread. Values and 99.9% confidence errors are `us/op`.
+benchmark thread, five forks, and 25 measurement iterations per benchmark.
+Values and 99.9% confidence errors are `us/op`.
 
 | Successful query | Unbudgeted | Budgeted | Budget-check cost |
 |------------------|-----------:|---------:|------------------:|
-| 500-node scan | `47.002 +/- 0.478` | `47.836 +/- 0.958` | `+1.8%` |
-| 500 single-hop relationships | `142.833 +/- 4.256` | `143.634 +/- 1.466` | `+0.6%` |
-| 500 two-hop variable paths | `243.109 +/- 3.029` | `244.341 +/- 0.970` | `+0.5%` |
+| 500-node scan | `48.613 +/- 0.240` | `49.312 +/- 0.666` | `+1.4%` |
+| 500 single-hop relationships | `148.846 +/- 0.731` | `157.375 +/- 4.496` | `+5.7%` |
+| 500 two-hop variable paths | `251.880 +/- 1.875` | `255.000 +/- 1.124` | `+1.2%` |
 
 The budget check has a measurable cost; this is not described as a free change.
-The node result is the highest at 1.8%, and all three 99.9% confidence intervals
-overlap. The relationship benchmark includes source-node, every untyped edge
-candidate, and target-node accounting.
+The relationship result is the highest at 5.7%, and its 99.9% confidence
+interval does not overlap the unbudgeted result. Its unbudgeted path now relies
+on the graph's typed traversal without applying a duplicate relationship-type
+filter. The budgeted path still reads the untyped edge sequence so it can charge
+every rejected candidate before filtering; the benchmark includes source-node,
+edge-candidate, and target-node accounting.
 
 **Corrected Android rejection evidence:** the benchmark setup now asserts the
 harness identity for Maven fixture `org.robolectric:android-all:14-robolectric-10818077`,
@@ -1010,6 +1016,6 @@ per-module threshold even though `check` passed locally before coverage was
 printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
-cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0897%` for Cypher, and `98.0072%` for WebGraph; the complete
-CI-equivalent `check` gate passes after these tests.
+cache clearing or LRU eviction. Final application line coverage is `98.2569%`
+for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph, and `98.1046%` for
+Explore; the complete CI-equivalent `check` gate passes after these tests.

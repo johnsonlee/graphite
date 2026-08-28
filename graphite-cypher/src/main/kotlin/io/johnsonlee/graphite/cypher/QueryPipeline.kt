@@ -1329,9 +1329,13 @@ class QueryPipeline private constructor(
                 outgoing + incoming
             }
         }
-        return trackWork(edges)
-            .filter { edge -> edgeClass == null || edgeClass.isInstance(edge) }
-            .map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
+        val candidates = trackWork(edges)
+        val filtered = if (tracked && edgeClass != null) {
+            candidates.filter(edgeClass::isInstance)
+        } else {
+            candidates
+        }
+        return filtered.map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
     }
 
     private fun resolveTargetId(edge: Edge, sourceId: NodeId, direction: Direction): NodeId =
