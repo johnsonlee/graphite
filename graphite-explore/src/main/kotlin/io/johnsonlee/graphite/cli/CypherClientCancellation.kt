@@ -85,7 +85,7 @@ internal class CypherCancellationConnectionListener(
     override fun onClosed(connection: Connection) = cancel()
 }
 
-private class DisconnectMonitor(
+internal class DisconnectMonitor(
     private val scheduler: Scheduler,
     private val connection: HttpConnection?,
     private val cancel: () -> Unit
@@ -118,7 +118,7 @@ private class DisconnectMonitor(
             return true
         }
 
-        val probe = ByteBuffer.allocate(1)
+        val probe = ByteBuffer.allocate(connection.inputBufferSize)
         return try {
             val read = socketEndPoint.channel.read(probe)
             when {
@@ -126,7 +126,7 @@ private class DisconnectMonitor(
                     probe.flip()
                     // Keep pipelined bytes buffered until Jetty completes the active response.
                     connection.onUpgradeTo(probe)
-                    false
+                    true
                 }
                 read < 0 -> {
                     connection.onFillable()

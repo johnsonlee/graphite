@@ -405,6 +405,49 @@ class ExpressionEvaluatorTest {
     }
 
     @Test
+    fun `regex preserves Java pattern language`() {
+        val matchingCases = listOf(
+            "aa" to "(a)\\1",
+            "foobar" to "foo(?=bar)bar",
+            "aaa" to "a++",
+            "a" to "[a-z&&[^b]]"
+        )
+
+        for ((value, pattern) in matchingCases) {
+            assertEquals(true, eval(CypherExpr.RegexMatch(lit(value), lit(pattern))), pattern)
+        }
+        assertEquals(false, eval(CypherExpr.RegexMatch(lit("b"), lit("[a-z&&[^b]]"))))
+    }
+
+    @Test
+    fun `dot rejects every default Java line terminator`() {
+        val lineTerminators = listOf('\n', '\r', '\u0085', '\u2028', '\u2029')
+
+        for (lineTerminator in lineTerminators) {
+            val value = "foo${lineTerminator}bar"
+            assertEquals(false, eval(CypherExpr.RegexMatch(lit(value), lit("foo.*"))))
+        }
+    }
+
+    @Test
+    fun `tracked regex fast paths preserve matches and poll cancellation`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        fun trackedMatch(value: String, pattern: String): Any? = trackedEvaluator.evaluate(
+            CypherExpr.RegexMatch(lit(value), lit(pattern)),
+            emptyMap()
+        )
+
+        assertEquals(true, trackedMatch("literal", "literal"))
+        assertEquals(false, trackedMatch("short", "shorter"))
+        assertEquals(false, trackedMatch("mismatch", "different"))
+        assertEquals(true, trackedMatch("prefix-suffix", "prefix.*"))
+        assertEquals(false, trackedMatch("prefix\rvalue", "prefix.*"))
+        assertEquals(true, trackedMatch("foobar", "foo(?=bar)bar"))
+        assertTrue(cancellationChecks > 0)
+    }
+
+    @Test
     fun `regex with null returns null`() {
         assertNull(eval(CypherExpr.RegexMatch(lit(null), lit("hel.*"))))
         assertNull(eval(CypherExpr.RegexMatch(lit("hello"), lit(null))))

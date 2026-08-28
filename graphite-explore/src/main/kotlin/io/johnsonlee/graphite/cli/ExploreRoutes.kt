@@ -621,7 +621,11 @@ internal class ExploreRoutes(
         }
         clientCancellation.bind(task)
 
-        return task.completion.handle { _, _ -> Unit }
+        return task.completion.handle { _, failure ->
+            val error = unwrapCompletionFailure(failure)
+            if (error is CypherContinuationException) throw error.cause ?: error
+            Unit
+        }
     }
 
     private fun unwrapCompletionFailure(failure: Throwable?): Throwable? {

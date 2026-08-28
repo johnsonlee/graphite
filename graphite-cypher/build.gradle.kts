@@ -21,7 +21,6 @@ dependencies {
     antlr("org.antlr:antlr4:4.13.2")
     api(project(":core"))
     implementation("org.antlr:antlr4-runtime:4.13.2")
-    implementation("com.google.re2j:re2j:1.8")
 
     jmh(libs.jmh.core)
     jmhAnnotationProcessor(libs.jmh.generator)

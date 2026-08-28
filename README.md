@@ -274,8 +274,10 @@ path elements consume work units. Configure these bounds with
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
-The `=~` operator uses RE2/J's linear-time regular expression syntax. Backreferences
-and look-around constructs are rejected instead of running with unbounded backtracking.
+The `=~` operator preserves Java `Pattern` syntax, including backreferences,
+look-around, possessive quantifiers, character-class intersections, and Java's
+default line-terminator behavior. Budgeted execution polls cancellation through
+the matcher's input without changing the accepted pattern language.
 An executing query is cancelled when the server observes a TCP reset, servlet timeout,
 or Jetty connection error. A clean input FIN is not treated as cancellation: TCP exposes
 both a full client `close()` and a valid request-side `SHUT_WR` as the same input

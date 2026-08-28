@@ -278,6 +278,49 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `budgeted pipeline preserves unbudgeted clause results`() {
+        val budgeted = CypherExecutor(
+            graph,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = Long.MAX_VALUE))
+        )
+        val queries = listOf(
+            "UNWIND [3, 1, 2, 2] AS x WITH x WHERE x > 1 " +
+                "RETURN DISTINCT x + 0 AS value ORDER BY value DESC",
+            "UNWIND [3, 1, 2, 2] AS x RETURN x, count(x) AS occurrences ORDER BY x DESC",
+            "UNWIND [1, 1, 2] AS x RETURN count(DISTINCT x) AS occurrences",
+            "MATCH (n:IntConstant) WHERE n.value >= 0 RETURN n.value ORDER BY n.value LIMIT 3"
+        )
+
+        for (query in queries) {
+            assertEquals(executor.execute(query), budgeted.execute(query), query)
+        }
+    }
+
+    @Test
+    fun `budgeted extrema preserve NaN and signed zero ordering`() {
+        val budgeted = CypherExecutor(
+            graph,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = Long.MAX_VALUE))
+        )
+
+        for (values in listOf("toFloat('NaN'), 1.0", "1.0, toFloat('NaN')")) {
+            val row = budgeted.execute(
+                "UNWIND [$values] AS x RETURN min(x) AS lo, max(x) AS hi"
+            ).rows.single()
+            assertEquals(1.0, row["lo"])
+            assertTrue((row["hi"] as Double).isNaN())
+        }
+
+        for (values in listOf("-0.0, 0.0", "0.0, -0.0")) {
+            val row = budgeted.execute(
+                "UNWIND [$values] AS x RETURN min(x) AS lo, max(x) AS hi"
+            ).rows.single()
+            assertEquals((-0.0).toRawBits(), (row["lo"] as Double).toRawBits())
+            assertEquals(0.0.toRawBits(), (row["hi"] as Double).toRawBits())
+        }
+    }
+
+    @Test
     fun `execution context cancellation stops a graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)

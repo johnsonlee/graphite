@@ -487,7 +487,8 @@ object CypherFunctions {
             pollCancellation(index, checkCancelled)
             if (value == null) continue
             val number = toDouble(value)
-            if (selected == null || if (minimum) number < selectedNumber else number > selectedNumber) {
+            val comparison = number.compareTo(selectedNumber)
+            if (selected == null || if (minimum) comparison < 0 else comparison > 0) {
                 selected = value
                 selectedNumber = number
             }

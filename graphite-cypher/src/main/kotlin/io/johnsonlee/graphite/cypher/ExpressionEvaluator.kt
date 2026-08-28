@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.cypher
 
-import com.google.re2j.Pattern
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -9,6 +8,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import java.util.LinkedHashMap
+import java.util.regex.Pattern
 
 private const val PREDICATE_ANY = "any"
 private const val PREDICATE_ALL = "all"
@@ -411,7 +411,7 @@ private sealed interface CompiledCypherRegex {
     fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean
 }
 
-private class Re2CypherRegex(pattern: String) : CompiledCypherRegex {
+private class JavaCypherRegex(pattern: String) : CompiledCypherRegex {
     private val pattern = Pattern.compile(pattern)
 
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
@@ -427,7 +427,11 @@ private class LiteralCypherRegex(
     @Suppress("ReturnCount")
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
         if (checkCancelled == null) {
-            return if (prefix) value.startsWith(literal) && value.indexOf('\n', literal.length) < 0 else value == literal
+            return if (prefix) {
+                value.startsWith(literal) && value.indexOfJavaRegexLineTerminator(literal.length) < 0
+            } else {
+                value == literal
+            }
         }
         if (value.length < literal.length || !prefix && value.length != literal.length) return false
         for (index in literal.indices) {
@@ -437,7 +441,7 @@ private class LiteralCypherRegex(
         if (prefix) {
             for (index in literal.length until value.length) {
                 if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-                if (value[index] == '\n') return false
+                if (value[index].isJavaRegexLineTerminator()) return false
             }
         }
         return true
@@ -447,7 +451,7 @@ private class LiteralCypherRegex(
 private fun compileCypherRegex(pattern: String): CompiledCypherRegex {
     val prefix = pattern.endsWith(REGEX_ANY_SUFFIX)
     val literalPattern = if (prefix) pattern.dropLast(REGEX_ANY_SUFFIX.length) else pattern
-    val literal = parseRegexLiteral(literalPattern) ?: return Re2CypherRegex(pattern)
+    val literal = parseRegexLiteral(literalPattern) ?: return JavaCypherRegex(pattern)
     return LiteralCypherRegex(literal, prefix)
 }
 
@@ -469,6 +473,16 @@ private fun parseRegexLiteral(pattern: String): String? {
     }
     return literal.toString()
 }
+
+private fun String.indexOfJavaRegexLineTerminator(startIndex: Int): Int {
+    for (index in startIndex until length) {
+        if (this[index].isJavaRegexLineTerminator()) return index
+    }
+    return -1
+}
+
+private fun Char.isJavaRegexLineTerminator(): Boolean =
+    this == '\n' || this == '\r' || this == '\u0085' || this == '\u2028' || this == '\u2029'
 
 private class CancellationAwareCharSequence(
     private val value: String,

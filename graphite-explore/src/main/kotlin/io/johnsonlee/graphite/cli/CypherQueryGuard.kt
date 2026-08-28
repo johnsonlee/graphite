@@ -169,7 +169,7 @@ internal class CypherQueryGuard(
             }
             val publishedOutcome = runCatching { continuation(finalOutcome) }.fold(
                 onSuccess = { finalOutcome },
-                onFailure = { Result.failure(it) }
+                onFailure = { Result.failure(CypherContinuationException(it)) }
             )
             try {
                 active.remove(this)
@@ -181,6 +181,8 @@ internal class CypherQueryGuard(
         }
     }
 }
+
+internal class CypherContinuationException(cause: Throwable) : RuntimeException(cause)
 
 internal class CypherQueryTask<T>(
     val completion: CompletableFuture<T>,

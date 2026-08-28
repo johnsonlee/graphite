@@ -73,12 +73,12 @@ The retained implementation:
   completion, allowing `HttpConnection` to resume keep-alive reads;
 - delegates readable sockets back to Jetty, cancels on reset/connection error, and retires the monitor without
   cancellation on a clean input half-close so the client can still read the response;
-- replays a probed HTTP byte into Jetty's request buffer and leaves it there until the active response completes,
-  preserving safe pipelined requests in arrival order;
+- replays currently readable HTTP bytes into Jetty's request buffer, then restores read interest so a later reset is
+  still observed while preserving safe pipelined requests in arrival order;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
-- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics, and uses RE2/J with
-  a cancellation-aware input for linear-time regular expression matching;
+- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics, and wraps Java
+  `Pattern` input with a cancellation-aware `CharSequence` without changing the existing regex language;
 - checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
   result after cancellation;
 - registers the route continuation before scheduling work, keeps the concurrency permit and graph leases through JSON
@@ -99,9 +99,12 @@ Behavior verification:
 `range`/`UNWIND` query. Each query stops and its only permit is reusable within 2 seconds. A half-close regression sends
 `SHUT_WR` after a complete request and still receives the full HTTP 200 response. Raw-socket regressions run a slow
 Cypher query and `/openapi.json` both sequentially and pipelined over the same keep-alive connection; both responses are
-HTTP 200. Deterministic barriers prove cancellation occurs inside graph-free loops, percentile sorting, and regular
-expression matching. Guard tests prove cancellation wins after an interrupt-ignoring block, a registered blocking
-continuation retains the only permit, and task completion is not visible until metrics and permit teardown finish.
+HTTP 200. A pipeline-then-RST regression proves the monitor continues observing the socket after buffering the next
+request. Deterministic barriers prove cancellation occurs inside graph-free loops, percentile sorting, and regular
+expression matching. Compatibility tests preserve Java backreferences, look-around, possessive quantifiers,
+character-class intersections, and all five default line terminators. Guard tests prove cancellation wins after an
+interrupt-ignoring block, a registered blocking continuation retains the only permit, response failures stay
+exceptional, and task completion is not visible until metrics and permit teardown finish.
 Exact response tests preserve the pre-existing scoped and multi-graph 404 JSON contracts.
 
 Performance environment: Apple M3 Max, macOS 14.3 (`arm64`), OpenJDK 17.0.18. Base is `v2.4.0`; base and candidate
@@ -114,17 +117,29 @@ java -jar <cypher-jmh.jar> 'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
   -foe true -rf json -rff <result.json>
 ```
 
-All ten `CypherBenchmark` methods pass the repository's 15% gate. Deltas range from `-9.2%` to `+7.2%`.
-`regexFilter` is `23.162 us/op` versus `25.499 us/op` on the base (`-9.2%`): common literal and literal-prefix patterns
-use a semantics-preserving fast path, while other patterns use RE2/J. The class uses the unbudgeted path, so this also
-verifies that cancellation polling is absent when no execution context is supplied.
+All ten final `CypherBenchmark` methods pass the repository's 15% gate after restoring Java regex compatibility.
+Deltas range from `-8.8%` to `+7.0%`; `regexFilter` is `23.266 us/op` versus `25.499 us/op` on the base (`-8.8%`).
+The unbudgeted path invokes the original matcher and query loops without cancellation polling; budgeted execution
+uses the tracked variants.
+
+| Benchmark | v2.4.0 | Candidate | Delta |
+|---|---:|---:|---:|
+| `aggregationCountGroupBy` | 34.205 us/op | 35.412 us/op | +3.5% |
+| `countStar` | 2.398 us/op | 2.391 us/op | -0.3% |
+| `functionCalls` | 25.147 us/op | 24.576 us/op | -2.3% |
+| `nodeMatchWithWhere` | 57.628 us/op | 58.613 us/op | +1.7% |
+| `regexFilter` | 25.499 us/op | 23.266 us/op | -8.8% |
+| `returnDistinct` | 95.471 us/op | 102.116 us/op | +7.0% |
+| `simpleNodeMatch` | 20.307 us/op | 20.571 us/op | +1.3% |
+| `singleHopRelationship` | 29.865 us/op | 30.173 us/op | +1.0% |
+| `variableLengthPath` | 26.185 us/op | 25.566 us/op | -2.4% |
+| `withPipeline` | 79.423 us/op | 78.068 us/op | -1.7% |
 
 The 5,986,673-node Hive corpus also exercises 1,437,647 call sites. On the same machine, the base query took
-`2,901 ms`; candidate runs immediately before and after it took `3,226 ms` and `2,679 ms`. The conservative delta is
-`+11.2%`, below the 25% large-corpus gate. Unbudgeted projection, filtering, grouping, deduplication, `UNWIND`, and
-ordering use their original loops without per-row cancellation polls; budgeted HTTP execution retains the tracked
-variants. A final targeted JMH run measured `aggregationCountGroupBy` at `34.817 us/op` (`+1.8%`), `returnDistinct`
-at `104.395 us/op` (`+9.3%`), and `withPipeline` at `78.451 us/op` (`-1.2%`) against the same base.
+`2,901 ms`; candidate observations ranged from `2,679 ms` to a final conservative `3,512 ms`. The slowest delta is
+`+21.1%`, below the 25% large-corpus gate. The final pipeline took `31,731 ms` and peak heap was `4,011,753,472`
+bytes. Unbudgeted projection, filtering, grouping, deduplication, `UNWIND`, and ordering use their original loops
+without per-row cancellation polls; budgeted HTTP execution retains the tracked variants.
 
 Cancellation hot-path command:
 
@@ -136,9 +151,9 @@ java -jar <cypher-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `budgetedNodeScan` | 52.097 us/op | 48.284 us/op | -7.3% |
-| `budgetedRelationship` | 158.963 us/op | 146.461 us/op | -7.9% |
-| `budgetedVariableLengthPath` | 252.135 us/op | 226.270 us/op | -10.3% |
+| `budgetedNodeScan` | 52.097 us/op | 50.262 us/op | -3.5% |
+| `budgetedRelationship` | 158.963 us/op | 145.894 us/op | -8.2% |
+| `budgetedVariableLengthPath` | 252.135 us/op | 237.207 us/op | -5.9% |
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:
 
@@ -148,11 +163,13 @@ java -jar <explore-jmh.jar> \
   -foe true -rf json -rff <result.json>
 ```
 
+The final metrics-disabled result is `73.063 us/op` versus `67.921 us/op` on the base (`+7.6%`). The 99.9%
+confidence intervals overlap, and the result remains below the 15% gate.
+
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `connectedScalarQuery` | 67.921 us/op | 68.660 us/op | +1.1% |
+| `connectedScalarQuery` | 67.921 us/op | 73.063 us/op | +7.6% |
 
-The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 0.739 us to a
-trivial `RETURN 1` request. Prometheus instrumentation is opt-in through `--metrics`, so this benchmark also verifies
-that the default request path does not pay Micrometer's measured per-request cost. Method-level and connected HTTP
-results therefore show no material performance regression.
+The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. Prometheus instrumentation is
+opt-in through `--metrics`, so this benchmark also verifies that the default request path does not pay Micrometer's
+measured per-request cost. Method-level and connected HTTP results therefore show no material performance regression.

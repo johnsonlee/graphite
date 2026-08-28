@@ -13,6 +13,7 @@ import jakarta.servlet.AsyncContext
 import jakarta.servlet.AsyncEvent
 import jakarta.servlet.AsyncListener
 import org.eclipse.jetty.io.Connection
+import org.eclipse.jetty.util.thread.Scheduler
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -36,6 +37,14 @@ class CypherClientCancellationTest {
     @Test
     fun `resetting a client connection stops its query and releases the concurrency permit`() {
         verifyResetDisconnect()
+    }
+
+    @Test
+    fun `reset after a pipelined request still cancels the active query`() {
+        verifyResetDisconnect { socket ->
+            writeRequest(socket, "GET", "/openapi.json")
+            Thread.sleep(PIPELINED_REQUEST_BUFFER_MILLIS)
+        }
     }
 
     @Test
@@ -67,6 +76,33 @@ class CypherClientCancellationTest {
                 assertEquals(200, response.status)
                 assertTrue(response.body.contains("5000000"), response.body)
             }
+        } finally {
+            app.stop()
+        }
+    }
+
+    @Test
+    fun `response serialization failure remains an HTTP error`() {
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, DefaultGraph.Builder().build())
+            val query = URLEncoder.encode("RETURN sqrt(-1) AS x", StandardCharsets.UTF_8)
+            val connection = URI("http://127.0.0.1:${app.port()}/api/cypher?query=$query").toURL()
+                .openConnection() as HttpURLConnection
+            connection.connectTimeout = 1_000
+            connection.readTimeout = 5_000
+
+            try {
+                assertEquals(500, connection.responseCode)
+                assertTrue(connection.errorStream.bufferedReader().use { it.readText() }.isNotBlank())
+            } finally {
+                connection.disconnect()
+            }
+            assertTrue(queryCanRun(app.port()), "The failed response retained the concurrency permit")
         } finally {
             app.stop()
         }
@@ -181,7 +217,28 @@ class CypherClientCancellationTest {
         assertEquals(1, cancellations.get())
     }
 
-    private fun verifyResetDisconnect() {
+    @Test
+    fun `disconnect monitor retries when no Jetty endpoint is available`() {
+        val scheduled = ArrayDeque<Runnable>()
+        val scheduler = proxy<Scheduler> { methodName, arguments ->
+            when (methodName) {
+                "schedule" -> {
+                    scheduled += arguments.first() as Runnable
+                    proxy<Scheduler.Task> { taskMethod, _ -> taskMethod == "cancel" }
+                }
+                else -> null
+            }
+        }
+        val monitor = DisconnectMonitor(scheduler, connection = null) {}
+
+        monitor.start()
+        assertEquals(1, scheduled.size)
+        scheduled.removeFirst().run()
+        assertEquals(1, scheduled.size)
+        monitor.close()
+    }
+
+    private fun verifyResetDisconnect(beforeReset: (Socket) -> Unit = {}) {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
         val node = IntConstant(NodeId.next(), 1)
@@ -209,6 +266,7 @@ class CypherClientCancellationTest {
             assertTrue(started.await(5, TimeUnit.SECONDS), "The broad query did not start")
             assertTrue(waitUntil { visited.get() >= 1_000 }, "The broad query did not scan candidates")
 
+            beforeReset(socket)
             socket.setSoLinger(true, 0)
             val disconnectedAt = System.nanoTime()
             socket.close()
@@ -388,4 +446,5 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 }
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
+private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
 private const val GRAPH_FREE_PROGRESS_CHECKPOINTS = 10

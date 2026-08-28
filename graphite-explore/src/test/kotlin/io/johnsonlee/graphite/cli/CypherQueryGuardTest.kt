@@ -5,6 +5,9 @@ import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertEquals
@@ -168,6 +171,49 @@ class CypherQueryGuardTest {
             val task = guard.submit(CypherCancellationSignal()) { "completed" }
 
             assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+            assertEquals("next", guard.execute { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `continuation failure is published after guard teardown`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        val responseFailure = IllegalStateException("response failed")
+
+        try {
+            val task = guard.submit(
+                CypherCancellationSignal(),
+                continuation = { throw responseFailure }
+            ) { "completed" }
+
+            val executionError = assertFailsWith<ExecutionException> {
+                task.completion.get(5, TimeUnit.SECONDS)
+            }
+            assertTrue(executionError.cause is CypherContinuationException)
+            val error = executionError.cause as CypherContinuationException
+            assertEquals(responseFailure, error.cause)
+            assertEquals("next", guard.execute { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `worker rejection publishes failure and releases permit`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        val executorField = CypherQueryGuard::class.java.getDeclaredField("executor").apply {
+            isAccessible = true
+        }
+        (executorField.get(guard) as ThreadPoolExecutor).shutdownNow()
+
+        try {
+            val task = guard.submit(CypherCancellationSignal()) { "must not run" }
+            val executionError = assertFailsWith<ExecutionException> {
+                task.completion.get(5, TimeUnit.SECONDS)
+            }
+            assertTrue(executionError.cause is RejectedExecutionException)
             assertEquals("next", guard.execute { "next" })
         } finally {
             guard.close()

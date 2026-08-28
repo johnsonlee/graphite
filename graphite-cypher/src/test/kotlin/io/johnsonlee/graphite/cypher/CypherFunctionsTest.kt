@@ -716,6 +716,58 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `tracked aggregates preserve untracked results`() {
+        val values = listOf<Any?>(null, 1.0, 2.0, 3.0)
+        val aggregateNames = listOf(
+            "count",
+            "sum",
+            "avg",
+            "min",
+            "max",
+            "collect",
+            "percentileCont",
+            "percentileDisc",
+            "stdev",
+            "stdevp"
+        )
+        var cancellationChecks = 0
+
+        for (name in aggregateNames) {
+            assertEquals(
+                CypherFunctions.aggregate(name, values),
+                CypherFunctions.aggregate(name, values) { cancellationChecks++ },
+                name
+            )
+        }
+        assertTrue(cancellationChecks > 0)
+        assertNull(CypherFunctions.aggregate("avg", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("min", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("max", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("percentileCont", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("percentileDisc", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("stdev", listOf(1)) {})
+        assertNull(CypherFunctions.aggregate("stdevp", listOf(1)) {})
+        assertFailsWith<CypherException> {
+            CypherFunctions.aggregate("unknown", values) {}
+        }
+    }
+
+    @Test
+    fun `tracked extrema preserve NaN and signed zero ordering`() {
+        for (values in listOf(listOf(Double.NaN, 1.0), listOf(1.0, Double.NaN))) {
+            assertEquals(1.0, CypherFunctions.aggregate("min", values) {})
+            assertTrue((CypherFunctions.aggregate("max", values) {} as Double).isNaN())
+        }
+
+        for (values in listOf(listOf(-0.0, 0.0), listOf(0.0, -0.0))) {
+            val minimum = CypherFunctions.aggregate("min", values) {} as Double
+            val maximum = CypherFunctions.aggregate("max", values) {} as Double
+            assertEquals((-0.0).toRawBits(), minimum.toRawBits())
+            assertEquals(0.0.toRawBits(), maximum.toRawBits())
+        }
+    }
+
+    @Test
     fun `stdev computes sample standard deviation`() {
         val values = listOf(2, 4, 4, 4, 5, 5, 7, 9)
         val result = CypherFunctions.aggregate("stdev", values) as Double
