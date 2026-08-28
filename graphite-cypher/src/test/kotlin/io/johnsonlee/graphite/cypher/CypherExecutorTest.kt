@@ -205,6 +205,12 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execute with maxRows caps literal limit above Int range`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT 2147483648", maxRows = 2)
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
     fun `execute with maxRows preserves smaller literal limit`() {
         val result = executor.execute("MATCH (n) RETURN n.id LIMIT 1", maxRows = 5)
         assertEquals(1, result.rows.size)
@@ -249,6 +255,18 @@ class CypherExecutorTest {
 
         assertFailsWith<CypherBudgetExceededException> {
             budgeted.execute("MATCH (a:ParameterNode)-[r]->(b) RETURN b")
+        }
+    }
+
+    @Test
+    fun `execution budget stops variable length path traversal`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 2))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[:DATAFLOW*2..5]->(b:CallSiteNode) " +
+                    "RETURN a.value, b.callee_name"
+            )
         }
     }
 
@@ -813,6 +831,22 @@ class CypherExecutorTest {
 
         assertEquals(listOf("kind", "total"), result.columns)
         assertEquals(listOf(mapOf("kind" to "Constant", "total" to 9L)), result.rows)
+    }
+
+    @Test
+    fun `label histogram preserves literal limit above Int range`() {
+        val query = """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+        """.trimIndent()
+
+        val expected = executor.execute("$query LIMIT 2147483647")
+        val result = executor.execute("$query LIMIT 2147483648")
+
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals(expected, result)
     }
 
     @Test

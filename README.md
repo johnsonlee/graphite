@@ -267,8 +267,9 @@ and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
 
 Cypher endpoints admit at most two executing queries by default and stop a
-query after 250,000 node or relationship visits. Configure these bounds with
-`--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
+query after 250,000 node, relationship, or storage-index candidate inspections.
+Configure these bounds with `--max-concurrent-cypher` and
+`--cypher-work-budget`. A rejected request returns
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.

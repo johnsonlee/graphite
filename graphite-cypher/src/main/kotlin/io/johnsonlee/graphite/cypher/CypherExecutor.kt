@@ -45,13 +45,18 @@ private const val PROPERTY_NAME = "name"
  */
 class CypherExecutor internal constructor(
     private val pipeline: QueryPipeline,
-    private val executionBudget: CypherExecutionBudget? = null
+    private val workTrackerFactory: () -> CypherWorkTracker?
 ) {
 
-    constructor(graph: Graph) : this(QueryPipeline(graph))
+    internal constructor(pipeline: QueryPipeline) : this(pipeline, { null })
+
+    constructor(graph: Graph) : this(QueryPipeline(graph), { null })
 
     constructor(graph: Graph, executionBudget: CypherExecutionBudget) :
-        this(QueryPipeline(graph, workTrackingEnabled = true), executionBudget)
+        this(QueryPipeline(graph, workTrackingEnabled = true), { CypherWorkTracker(executionBudget) })
+
+    constructor(graph: Graph, executionContext: CypherExecutionContext) :
+        this(QueryPipeline(graph, workTrackingEnabled = true), { executionContext.workTracker })
 
     fun execute(cypher: String): CypherResult {
         // 1. Parse Cypher text into internal AST clauses
@@ -65,7 +70,7 @@ class CypherExecutor internal constructor(
         return executeClauses(clauses, maxRows, newWorkTracker())
     }
 
-    private fun newWorkTracker(): CypherWorkTracker? = executionBudget?.let(::CypherWorkTracker)
+    private fun newWorkTracker(): CypherWorkTracker? = workTrackerFactory()
 
     private fun executeClauses(
         clauses: List<CypherClause>,
@@ -129,8 +134,10 @@ class CypherExecutor internal constructor(
     private fun literalLimitCount(expr: CypherExpr): Int? {
         val literal = expr as? CypherExpr.Literal ?: return null
         return when (val value = literal.value) {
-            is Number -> value.toInt()
-            is String -> value.toIntOrNull()
+            is Number -> value.toLong().coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
+            is String -> value.toLongOrNull()
+                ?.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+                ?.toInt()
             else -> null
         }
     }
@@ -372,17 +379,26 @@ class CypherExecutor internal constructor(
  * traversal never crosses graph boundaries; independent patterns and joins can
  * bind values from different graphs in the same result row.
  */
-class CrossGraphCypherExecutor(
+class CrossGraphCypherExecutor private constructor(
     graphs: List<CypherGraph>,
-    executionBudget: CypherExecutionBudget? = null
+    workTrackingEnabled: Boolean,
+    workTrackerFactory: () -> CypherWorkTracker?
 ) {
     private val delegate: CypherExecutor
+
+    constructor(graphs: List<CypherGraph>) : this(graphs, false, { null })
+
+    constructor(graphs: List<CypherGraph>, executionBudget: CypherExecutionBudget) :
+        this(graphs, true, { CypherWorkTracker(executionBudget) })
+
+    constructor(graphs: List<CypherGraph>, executionContext: CypherExecutionContext) :
+        this(graphs, true, { executionContext.workTracker })
 
     init {
         require(graphs.map { it.id }.distinct().size == graphs.size) { "Graph ids must be unique" }
         delegate = CypherExecutor(
-            QueryPipeline(graphs, workTrackingEnabled = executionBudget != null),
-            executionBudget
+            QueryPipeline(graphs, workTrackingEnabled),
+            workTrackerFactory
         )
     }
 

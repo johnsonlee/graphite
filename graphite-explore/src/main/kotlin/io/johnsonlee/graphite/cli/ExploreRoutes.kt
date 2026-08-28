@@ -11,7 +11,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
-import io.johnsonlee.graphite.cypher.CypherExecutionBudget
+import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.graph.ClassDependency
@@ -540,8 +540,8 @@ internal class ExploreRoutes(
     @Suppress("TooGenericExceptionCaught")
     private fun executeSingleGraphCypher(ctx: Context, graph: Graph, query: String) {
         try {
-            val result = cypherGuard.execute { budget ->
-                CypherExecutor(graph, budget).execute(
+            val result = cypherGuard.execute { executionContext ->
+                CypherExecutor(graph, executionContext).execute(
                     query,
                     boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT)
                 )
@@ -659,10 +659,10 @@ internal class ExploreRoutes(
         val limit = boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT)
         withAllGraphs(ctx, acquire) { leases ->
             try {
-                val result = cypherGuard.execute { budget ->
+                val result = cypherGuard.execute { executionContext ->
                     CrossGraphCypherExecutor(
                         leases.map { lease -> CypherGraph(lease.id, lease.graph) },
-                        budget
+                        executionContext
                     ).execute(query, limit)
                 }
                 ctx.json(
@@ -776,14 +776,14 @@ internal class ExploreRoutes(
             val graphIds = if (request.allGraphs) registry.ids() else request.graphIds
             val leases = registry.acquireAll(graphIds)
             try {
-                cypherGuard.execute { budget ->
+                cypherGuard.execute { executionContext ->
                     when (request.mode) {
                         MultiGraphQueryMode.CROSS_GRAPH -> {
                             require(request.perGraphLimit == null) { "perGraphLimit is only valid in fanout mode" }
                             require(!request.includeGraphRows) { "includeGraphRows is only valid in fanout mode" }
                             val result = CrossGraphCypherExecutor(
                                 leases.map { lease -> CypherGraph(lease.id, lease.graph) },
-                                budget
+                                executionContext
                             ).execute(request.query, request.limit)
                             ctx.json(
                                 mapOf(
@@ -800,7 +800,7 @@ internal class ExploreRoutes(
                         MultiGraphQueryMode.FANOUT -> {
                             val perGraphLimit = request.perGraphLimit
                                 ?: defaultPerGraphLimit(graphIds.size, request.limit)
-                            ctx.json(executeFanoutQuery(request, leases, perGraphLimit, budget))
+                            ctx.json(executeFanoutQuery(request, leases, perGraphLimit, executionContext))
                         }
                     }
                 }
@@ -820,20 +820,17 @@ internal class ExploreRoutes(
         request: MultiGraphCypherRequest,
         leases: List<GraphLease>,
         perGraphLimit: Int,
-        executionBudget: CypherExecutionBudget
+        executionContext: CypherExecutionContext
     ): Map<String, Any?> {
         val results = mutableListOf<MultiGraphCypherResult>()
         var remainingRows = request.limit
         var truncated = false
-        val perGraphWorkBudget = CypherExecutionBudget(
-            maxOf(1L, executionBudget.maxWorkUnits / maxOf(1, leases.size))
-        )
         for (lease in leases) {
             if (remainingRows <= 0) {
                 truncated = true
                 break
             }
-            val result = CypherExecutor(lease.graph, perGraphWorkBudget)
+            val result = CypherExecutor(lease.graph, executionContext)
                 .execute(request.query, minOf(perGraphLimit, remainingRows))
             val rows = result.rows.map { rowWithGraphId(lease.id, it) }
             remainingRows -= rows.size

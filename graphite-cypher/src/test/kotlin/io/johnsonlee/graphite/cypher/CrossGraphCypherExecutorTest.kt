@@ -25,10 +25,23 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CrossGraphCypherExecutorTest {
+
+    @Test
+    fun `retains JVM one argument constructor`() {
+        val constructor = assertNotNull(
+            CrossGraphCypherExecutor::class.java.getConstructor(List::class.java)
+        )
+        val executor = constructor.newInstance(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10))))
+        ) as CrossGraphCypherExecutor
+
+        assertEquals(10, executor.execute("MATCH (n:IntConstant) RETURN n.value").rows.single()["n.value"])
+    }
 
     @Test
     fun `qualifies colliding local node ids and records row provenance`() {

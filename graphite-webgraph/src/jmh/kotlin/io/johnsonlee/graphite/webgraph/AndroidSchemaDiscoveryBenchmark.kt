@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutor
@@ -35,6 +36,7 @@ open class AndroidSchemaDiscoveryBenchmark {
         mappedGraph = GraphStore.loadMapped(
             BenchmarkCorpus.persistedGraph(BenchmarkCorpusKind.ANDROID)
         )
+        check(mappedGraph.nodeCount(Node::class.java) == BenchmarkCorpusKind.ANDROID.expectedNodeCount)
         budgetedExecutor = CypherExecutor(
             mappedGraph,
             CypherExecutionBudget(SCHEMA_DISCOVERY_WORK_BUDGET)

@@ -24,6 +24,25 @@ private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
+
+private class WorkTrackingSequence<T>(
+    private val source: Sequence<T>,
+    private val workTracker: CypherWorkTracker
+) : Sequence<T> {
+    override fun iterator(): Iterator<T> {
+        val sourceIterator = source.iterator()
+        return object : Iterator<T> {
+            override fun hasNext(): Boolean = sourceIterator.hasNext()
+
+            override fun next(): T {
+                if (!sourceIterator.hasNext()) throw NoSuchElementException()
+                workTracker.consume()
+                return sourceIterator.next()
+            }
+        }
+    }
+}
+
 private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
 private val DIRECT_STRING_NODE_PROPERTIES = listOf(
     EnumConstant::class.java to setOf("name"),
@@ -386,7 +405,7 @@ class QueryPipeline private constructor(
                 val sort = orderBy.items.singleOrNull() ?: return null
                 if (sort.expression != CypherExpr.Variable(countColumn)) return null
                 val limitCount = (limit.count as? CypherExpr.Literal)?.value as? Number ?: return null
-                return LabelHistogramQuery(labelColumn, countColumn, sort.ascending, limitCount.toInt())
+                return LabelHistogramQuery(labelColumn, countColumn, sort.ascending, limitCount.toCypherInt())
             }
         }
     }
@@ -575,7 +594,8 @@ class QueryPipeline private constructor(
     ): CypherResult {
         val rows = mutableListOf<Map<String, Any?>>()
         for (source in sources) {
-            val indexedNodes = source.graph.nodesByStringProperty(
+            val indexedNodes = stringPropertyCandidates(
+                source.graph,
                 nodeClass,
                 filter.property,
                 filter.mode,
@@ -583,7 +603,6 @@ class QueryPipeline private constructor(
                 limit - rows.size
             )
             val candidates = indexedNodes
-                ?.let(::trackWork)
                 ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
             for (node in candidates) {
 
@@ -633,7 +652,8 @@ class QueryPipeline private constructor(
                 ?.toInt()
                 ?: Int.MAX_VALUE
             val accelerated = filters.map { filter ->
-                graph.nodesByStringProperty(
+                stringPropertyCandidates(
+                    graph,
                     candidateType,
                     filter.property,
                     filter.mode,
@@ -644,7 +664,7 @@ class QueryPipeline private constructor(
             val candidates = if (accelerated.any { it == null }) {
                 trackWork(graph.nodes(candidateType)).filter(disjunction::matches)
             } else {
-                filterOwnedNodes(filters, accelerated.filterNotNull().map(::trackWork))
+                filterOwnedNodes(filters, accelerated.filterNotNull())
             }
             for (node in candidates) yield(node)
         }
@@ -1101,11 +1121,14 @@ class QueryPipeline private constructor(
         val paths = PathFinder.findPaths(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
-            targets = null,
-            edgeType = edgeClass,
-            minDepth = rel.minHops ?: 1,
-            maxDepth = rel.maxHops ?: 10,
-            direction = direction
+            options = PathFinder.SearchOptions(
+                targets = null,
+                edgeType = edgeClass,
+                minDepth = rel.minHops ?: 1,
+                maxDepth = rel.maxHops ?: 10,
+                direction = direction,
+                workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+            )
         )
 
         for (path in paths) {
@@ -1272,7 +1295,23 @@ class QueryPipeline private constructor(
         return if (!workTrackingEnabled) {
             values
         } else {
-            activeWorkTracker.get()?.let { tracker -> values.onEach { tracker.consume() } } ?: values
+            activeWorkTracker.get()?.let { tracker -> WorkTrackingSequence(values, tracker) } ?: values
+        }
+    }
+
+    private fun <T : Node> stringPropertyCandidates(
+        graph: Graph,
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>? {
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return if (tracker != null) {
+            graph.nodesByStringProperty(type, property, mode, expected, limit, tracker)
+        } else {
+            graph.nodesByStringProperty(type, property, mode, expected, limit)
         }
     }
 
@@ -1570,12 +1609,19 @@ class QueryPipeline private constructor(
     private fun evaluateToInt(expr: CypherExpr, bindings: Map<String, Any?>): Int {
         val value = evaluator.evaluate(expr, bindings)
         return when (value) {
-            is Number -> value.toInt()
-            is String -> value.toIntOrNull() ?: 0
+            is Number -> value.toCypherInt()
+            is String -> value.toLongOrNull()
+                ?.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+                ?.toInt()
+                ?: 0
             else -> 0
         }
     }
 }
+
+private fun Number.toCypherInt(): Int = toLong()
+    .coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+    .toInt()
 
 // ========================================================================
 // Pattern variable extraction

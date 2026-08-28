@@ -12,6 +12,21 @@ object PathFinder {
 
     data class Path(val nodes: List<Node>, val edges: List<Edge>)
 
+    internal data class SearchOptions(
+        val targets: Set<NodeId>?,
+        val edgeType: Class<out Edge>?,
+        val minDepth: Int,
+        val maxDepth: Int,
+        val direction: Direction,
+        val workTracker: CypherWorkTracker? = null
+    )
+
+    private data class State(
+        val nodeId: NodeId,
+        val pathNodes: List<Node>,
+        val pathEdges: List<Edge>
+    )
+
     /**
      * Find all paths from source nodes to target nodes via BFS.
      *
@@ -32,12 +47,22 @@ object PathFinder {
         minDepth: Int = 1,
         maxDepth: Int = 10,
         direction: Direction = Direction.OUTGOING
+    ): List<Path> = findPaths(
+        graph,
+        sources,
+        SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
+    )
+
+    internal fun findPaths(
+        graph: Graph,
+        sources: Set<NodeId>,
+        options: SearchOptions
     ): List<Path> {
         val results = mutableListOf<Path>()
 
         for (source in sources) {
-            val startNode = graph.node(source) ?: continue
-            bfs(graph, startNode, targets, edgeType, minDepth, maxDepth, direction, results)
+            val startNode = loadNode(graph, source, options.workTracker) ?: continue
+            bfs(graph, startNode, options, results)
         }
 
         return results
@@ -46,15 +71,9 @@ object PathFinder {
     private fun bfs(
         graph: Graph,
         startNode: Node,
-        targets: Set<NodeId>?,
-        edgeType: Class<out Edge>?,
-        minDepth: Int,
-        maxDepth: Int,
-        direction: Direction,
+        options: SearchOptions,
         results: MutableList<Path>
     ) {
-        data class State(val nodeId: NodeId, val pathNodes: List<Node>, val pathEdges: List<Edge>)
-
         val visited = mutableSetOf<Int>()
         val queue = ArrayDeque<State>()
         queue.add(State(startNode.id, listOf(startNode), emptyList()))
@@ -63,35 +82,53 @@ object PathFinder {
             val (current, pathNodes, pathEdges) = queue.removeFirst()
             val depth = pathEdges.size
 
-            if (depth >= minDepth && (targets == null || current in targets)) {
+            if (depth >= options.minDepth && (options.targets == null || current in options.targets)) {
                 results.add(Path(pathNodes, pathEdges))
             }
 
-            if (depth >= maxDepth) continue
+            if (depth >= options.maxDepth) continue
             if (!visited.add(current.value)) continue
 
-            val edges = when (direction) {
-                Direction.OUTGOING -> filteredEdges(graph.outgoing(current), edgeType)
-                Direction.INCOMING -> filteredEdges(graph.incoming(current), edgeType)
-                Direction.BOTH -> filteredEdges(graph.outgoing(current), edgeType) +
-                        filteredEdges(graph.incoming(current), edgeType)
-            }
-
+            val edges = edgesForDirection(graph, current, options)
             for (edge in edges) {
-                val nextId = when (direction) {
-                    Direction.OUTGOING -> edge.to
-                    Direction.INCOMING -> edge.from
-                    Direction.BOTH -> if (edge.from == current) edge.to else edge.from
-                }
-                val nextNode = graph.node(nextId) ?: continue
+                val nextId = nextNodeId(edge, current, options.direction)
+                val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
                 queue.add(State(nextId, pathNodes + nextNode, pathEdges + edge))
             }
         }
     }
 
-    private fun filteredEdges(edges: Sequence<Edge>, edgeType: Class<out Edge>?): List<Edge> =
-        if (edgeType != null) edges.filter { edgeType.isInstance(it) }.toList()
-        else edges.toList()
+    private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): List<Edge> =
+        when (options.direction) {
+            Direction.OUTGOING -> filteredEdges(graph.outgoing(nodeId), options.edgeType, options.workTracker)
+            Direction.INCOMING -> filteredEdges(graph.incoming(nodeId), options.edgeType, options.workTracker)
+            Direction.BOTH -> filteredEdges(graph.outgoing(nodeId), options.edgeType, options.workTracker) +
+                filteredEdges(graph.incoming(nodeId), options.edgeType, options.workTracker)
+        }
+
+    private fun nextNodeId(edge: Edge, current: NodeId, direction: Direction): NodeId = when (direction) {
+        Direction.OUTGOING -> edge.to
+        Direction.INCOMING -> edge.from
+        Direction.BOTH -> if (edge.from == current) edge.to else edge.from
+    }
+
+    private fun loadNode(graph: Graph, nodeId: NodeId, workTracker: CypherWorkTracker?): Node? {
+        workTracker?.consume()
+        return graph.node(nodeId)
+    }
+
+    private fun filteredEdges(
+        edges: Sequence<Edge>,
+        edgeType: Class<out Edge>?,
+        workTracker: CypherWorkTracker?
+    ): List<Edge> {
+        val result = mutableListOf<Edge>()
+        for (edge in edges) {
+            workTracker?.consume()
+            if (edgeType == null || edgeType.isInstance(edge)) result.add(edge)
+        }
+        return result
+    }
 
     enum class Direction { OUTGOING, INCOMING, BOTH }
 }

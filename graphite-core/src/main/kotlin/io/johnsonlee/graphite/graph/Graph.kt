@@ -37,6 +37,23 @@ interface StringPropertyLookup {
     ): Sequence<T>?
 }
 
+/** Receives one callback for each storage item inspected by a graph lookup. */
+fun interface GraphWorkConsumer {
+    fun consume()
+}
+
+/** Optional string lookup capability that exposes its internal work to callers. */
+interface WorkAwareStringPropertyLookup : StringPropertyLookup {
+    fun <T : Node> nodesByStringProperty(
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): Sequence<T>?
+}
+
 /**
  * The unified program graph that combines all analysis graphs.
  * This is the central abstraction of Graphite.
@@ -210,6 +227,17 @@ fun <T : Node> Graph.nodesByStringProperty(
     limit: Int = Int.MAX_VALUE
 ): Sequence<T>? = (this as? StringPropertyLookup)
     ?.nodesByStringProperty(type, property, mode, expected, limit)
+
+/** Use a storage lookup only when it can report every inspected work item. */
+fun <T : Node> Graph.nodesByStringProperty(
+    type: Class<T>,
+    property: String,
+    mode: StringMatchMode,
+    expected: String,
+    limit: Int,
+    workConsumer: GraphWorkConsumer
+): Sequence<T>? = (this as? WorkAwareStringPropertyLookup)
+    ?.nodesByStringProperty(type, property, mode, expected, limit, workConsumer)
 
 /**
  * Pattern for matching methods.

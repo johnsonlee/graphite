@@ -926,6 +926,42 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `fanout shares one request work budget without fixed graph shares`() {
+        val root = Files.createTempDirectory("explore-registry-shared-fanout-budget")
+        try {
+            saveConstantGraph(root, "service-a", 101)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1))
+
+            withRegistryApp(registry, routes) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+                val query = "MATCH (n:IntConstant) RETURN n.value"
+
+                val (withinCode, withinBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":1,"perGraphLimit":1}"""
+                )
+                assertEquals(200, withinCode, withinBody)
+                val within: Map<String, Any?> = parseJson(withinBody)
+                assertEquals(1.0, within[API_FIELD_ROW_COUNT])
+
+                val (exceededCode, exceededBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":2,"perGraphLimit":1}"""
+                )
+                assertEquals(429, exceededCode, exceededBody)
+                assertTrue(exceededBody.contains("cypher_work_budget_exceeded"), exceededBody)
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `registry cypher endpoint keeps default limit global across twenty one graphs`() {
         val root = Files.createTempDirectory("explore-registry-21-fanout")
         val graphCount = 21

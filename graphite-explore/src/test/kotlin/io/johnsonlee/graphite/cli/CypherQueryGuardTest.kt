@@ -24,6 +24,6 @@ class CypherQueryGuardTest {
             guard.execute { error("query failed") }
         }
 
-        assertEquals(10L, guard.execute { it.maxWorkUnits })
+        assertEquals(10L, guard.execute { it.executionBudget.maxWorkUnits })
     }
 }

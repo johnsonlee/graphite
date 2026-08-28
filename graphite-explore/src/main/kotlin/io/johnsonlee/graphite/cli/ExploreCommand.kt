@@ -70,7 +70,7 @@ open class ServeCommand : Callable<Int> {
 
     @Option(
         names = ["--cypher-work-budget"],
-        description = ["Maximum node and relationship visits per Cypher request"],
+        description = ["Maximum graph candidate inspections per Cypher request"],
         defaultValue = DEFAULT_CYPHER_WORK_BUDGET_TEXT
     )
     var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
