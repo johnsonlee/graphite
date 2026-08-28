@@ -39,18 +39,10 @@ internal class CypherClientCancellation private constructor(
                 cancelTask.get()?.invoke()
                 Unit
             }
-            val asyncListener = object : AsyncListener {
-                override fun onComplete(event: AsyncEvent) = Unit
-                override fun onStartAsync(event: AsyncEvent) = event.asyncContext.addListener(this)
-                override fun onError(event: AsyncEvent) = cancel()
-                override fun onTimeout(event: AsyncEvent) = cancel()
-            }
+            val asyncListener = CypherCancellationAsyncListener(cancel)
             val channel = Request.getBaseRequest(ctx.req()).httpChannel
             val connection = channel.connection
-            val connectionListener = object : Connection.Listener {
-                override fun onOpened(connection: Connection) = Unit
-                override fun onClosed(connection: Connection) = cancel()
-            }
+            val connectionListener = CypherCancellationConnectionListener(cancel)
             val disconnectMonitor = DisconnectMonitor(
                 channel.scheduler,
                 connection as? AbstractConnection,
@@ -70,6 +62,22 @@ internal class CypherClientCancellation private constructor(
             )
         }
     }
+}
+
+internal class CypherCancellationAsyncListener(
+    private val cancel: () -> Unit
+) : AsyncListener {
+    override fun onComplete(event: AsyncEvent) = Unit
+    override fun onStartAsync(event: AsyncEvent) = event.asyncContext.addListener(this)
+    override fun onError(event: AsyncEvent) = cancel()
+    override fun onTimeout(event: AsyncEvent) = cancel()
+}
+
+internal class CypherCancellationConnectionListener(
+    private val cancel: () -> Unit
+) : Connection.Listener {
+    override fun onOpened(connection: Connection) = Unit
+    override fun onClosed(connection: Connection) = cancel()
 }
 
 private class DisconnectMonitor(

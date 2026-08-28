@@ -58,4 +58,3 @@ open class CypherHttpBenchmark {
     fun connectedScalarQuery(): Int =
         client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode()
 }
-

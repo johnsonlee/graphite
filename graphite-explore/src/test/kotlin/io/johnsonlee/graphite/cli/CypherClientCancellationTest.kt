@@ -8,7 +8,12 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import jakarta.servlet.AsyncContext
+import jakarta.servlet.AsyncEvent
+import jakarta.servlet.AsyncListener
+import org.eclipse.jetty.io.Connection
 import java.io.InputStreamReader
+import java.lang.reflect.Proxy
 import java.net.HttpURLConnection
 import java.net.Socket
 import java.net.URI
@@ -30,6 +35,35 @@ class CypherClientCancellationTest {
     @Test
     fun `closing a client connection stops its query and releases the concurrency permit`() {
         verifyDisconnect(resetConnection = false)
+    }
+
+    @Test
+    fun `servlet failures and timeouts cancel the query`() {
+        val cancellations = AtomicInteger()
+        val listener = CypherCancellationAsyncListener(cancellations::incrementAndGet)
+        val registered = arrayListOf<AsyncListener>()
+        val asyncContext = proxy<AsyncContext> { methodName, arguments ->
+            if (methodName == "addListener") registered += arguments.single() as AsyncListener
+            null
+        }
+        val event = AsyncEvent(asyncContext)
+
+        listener.onStartAsync(event)
+        listener.onError(event)
+        listener.onTimeout(event)
+
+        assertEquals(listOf<AsyncListener>(listener), registered)
+        assertEquals(2, cancellations.get())
+    }
+
+    @Test
+    fun `closing the Jetty connection cancels the query`() {
+        val cancellations = AtomicInteger()
+        val listener = CypherCancellationConnectionListener(cancellations::incrementAndGet)
+
+        listener.onClosed(proxy<Connection> { _, _ -> null })
+
+        assertEquals(1, cancellations.get())
     }
 
     private fun verifyDisconnect(resetConnection: Boolean) {
@@ -123,6 +157,13 @@ class CypherClientCancellationTest {
         }
         return condition()
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private inline fun <reified T> proxy(
+        crossinline invoke: (methodName: String, arguments: List<Any?>) -> Any?
+    ): T = Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java)) { _, method, arguments ->
+        invoke(method.name, arguments?.toList().orEmpty())
+    } as T
 }
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
