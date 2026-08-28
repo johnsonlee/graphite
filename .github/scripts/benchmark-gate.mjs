@@ -311,12 +311,14 @@ export function compareLatencyBaseline(
             errors.push(`${key}: fixed baseline and candidate use incompatible latency metrics`);
             continue;
         }
+        const fixedBounds = confidenceBounds(baseline.primaryMetric ?? {});
+        const candidateBounds = confidenceBounds(current.primaryMetric ?? {});
+        if (fixedBounds === null || candidateBounds === null) {
+            errors.push(`${key}: fixed-baseline speedup requires finite confidence bounds`);
+        }
         const speedup = ((fixedScore / candidateScore) - 1) * 100;
-        const improvementSeparated = confidenceSeparates(
-            confidenceBounds(current.primaryMetric ?? {}),
-            confidenceBounds(baseline.primaryMetric ?? {}),
-            true
-        );
+        const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
+            confidenceSeparates(candidateBounds, fixedBounds, true);
         const improvementBlocked = speedup < minimumSpeedup || !improvementSeparated;
         rows.push({
             ...baseRow,
@@ -337,21 +339,61 @@ export function compareLatencyBaseline(
     };
 }
 
+export function confirmLatencyBaseline(initial, confirmation) {
+    const errors = [
+        ...initial.errors,
+        ...confirmation.errors.map((error) => `confirmation: ${error}`)
+    ];
+    const confirmationRows = new Map(confirmation.rows.map((row) => [row.key, row]));
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const retry = confirmationRows.get(row.key);
+        if (retry === undefined) {
+            errors.push(`${row.key}: missing from confirmation results`);
+            return row;
+        }
+        return {
+            ...row,
+            confirmation: {
+                fixedScore: retry.fixedScore,
+                baseScore: retry.baseScore,
+                candidateScore: retry.candidateScore,
+                speedup: retry.speedup,
+                delta: retry.delta,
+                blocked: retry.blocked
+            },
+            blocked: retry.blocked
+        };
+    });
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
 export function renderLatencyBaselineReport(comparison) {
     const lines = [
         "### Wrapped case-insensitive query latency",
         "",
         "The PR must remain at least 50% faster than the fixed pre-PR-95 baseline and must not regress",
         "more than 15% against the PR base with separated 99.9% confidence intervals.",
+        "A suspected failure blocks only when the same benchmark fails the reverse-order confirmation run.",
         "",
-        "| Benchmark | Pre-PR-95 | PR base | PR | Speedup vs fixed | Regression vs base | Gate |",
-        "|---|---:|---:|---:|---:|---:|:---:|"
+        "| Benchmark | Pre-PR-95 | PR base | PR | Speedup vs fixed | Regression vs base | Confirmation | Gate |",
+        "|---|---:|---:|---:|---:|---:|---:|:---:|"
     ];
     for (const row of comparison.rows) {
+        const confirmation = row.confirmation === undefined
+            ? "-"
+            : `${formatScore(row.confirmation.fixedScore)} / ${formatScore(row.confirmation.baseScore)} / ` +
+                `${formatScore(row.confirmation.candidateScore)} ${row.unit} ` +
+                `(${formatDelta(row.confirmation.speedup)} fixed; ${formatDelta(row.confirmation.delta)} base)`;
         lines.push(
             `| \`${shortBenchmarkName(row.key)}\` | ${formatScore(row.fixedScore)} ${row.unit} | ` +
             `${formatScore(row.baseScore)} ${row.unit} | ${formatScore(row.candidateScore)} ${row.unit} | ` +
             `${formatDelta(row.speedup)} | ${formatDelta(row.delta)} | ` +
+            `${confirmation} | ` +
             `**${row.blocked ? "FAIL" : "PASS"}** |`
         );
     }
@@ -577,6 +619,22 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function confirmLatencyBaselineCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const confirmation = compareLatencyBaseline(
+        readJson(requireArg(args, "fixed")),
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args["minimum-speedup"] ?? 50),
+        LATENCY_EXPECTED_BENCHMARK_KEYS
+    );
+    const comparison = confirmLatencyBaseline(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function confirmJmhCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareJmh(
@@ -618,6 +676,7 @@ function main(argv) {
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
+    else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);

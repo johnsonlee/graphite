@@ -643,6 +643,44 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `ordered string lookup rejects a sequence that violates its monotonic contract`() {
+        val target = MethodDescriptor(TypeDescriptor("com.example.TargetService"), "call", emptyList(), stringType)
+        val callee = MethodDescriptor(TypeDescriptor("com.example.Dependency"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), target, callee, 0, null, emptyList()))
+            addNode(CallSiteNode(NodeId(1), target, callee, 1, null, emptyList()))
+        }.build()
+        val lookupGraph = object : Graph by backing, StringPropertyLookup, StringPropertyLookupOrder {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> {
+                val nodes = backing.nodes(type).associateBy { it.id.value }
+                return if (property == "caller_class") {
+                    sequenceOf(nodes.getValue(1), nodes.getValue(0))
+                } else {
+                    emptySequence()
+                }
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val error = assertFailsWith<IllegalArgumentException> {
+            CypherExecutor(lookupGraph).execute(
+                "MATCH (n:CallSiteNode) WHERE " +
+                    "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                    "RETURN DISTINCT n.id AS id LIMIT 4"
+            )
+        }
+
+        assertTrue(error.message.orEmpty().contains("not monotonic"))
+    }
+
+    @Test
     fun `filtered distinct disjunction keeps unbounded storage lookup semantics`() {
         val unboundedGraph = object : Graph by graph, StringPropertyLookup {
             override fun nodeCount(type: Class<out Node>): Long = Int.MAX_VALUE.toLong()

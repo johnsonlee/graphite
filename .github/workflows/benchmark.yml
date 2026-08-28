@@ -268,6 +268,7 @@ jobs:
 
     - name: Verify all real-fixture query results
       run: |
+        set -o pipefail
         mkdir -p benchmark-results
         for REVISION in fixed base candidate; do
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
@@ -275,7 +276,9 @@ jobs:
           java -Xmx8g -cp "${JMH_JAR}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
-            | grep '^ALL_FIXTURE_QUERY_RESULT' \
+            | tee "benchmark-results/${REVISION}-fixture-correctness.log"
+          grep '^ALL_FIXTURE_QUERY_RESULT' \
+            "benchmark-results/${REVISION}-fixture-correctness.log" \
             > "benchmark-results/${REVISION}-fixture-correctness.txt"
           test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 8
         done
@@ -340,7 +343,8 @@ jobs:
             'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
+            --initial benchmark-results/initial-latency-status.json \
             --fixed benchmark-results/fixed-latency-confirmation.json \
             --base benchmark-results/base-latency-confirmation.json \
             --candidate benchmark-results/candidate-latency-confirmation.json \

@@ -723,7 +723,11 @@ class QueryPipeline private constructor(
             }
             if (cursor.iterator.hasNext()) {
                 cursor.node = cursor.iterator.next()
-                cursor.nodeOrder = nodeOrder(cursor.node)
+                val nextOrder = nodeOrder(cursor.node)
+                require(nextOrder >= cursor.nodeOrder) {
+                    "String property lookup sequence is not monotonic in canonical graph order"
+                }
+                cursor.nodeOrder = nextOrder
                 cursors += cursor
             }
         }

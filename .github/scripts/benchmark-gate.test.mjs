@@ -8,6 +8,7 @@ import {
     aggregateReports,
     confirmLargeCorpus,
     LATENCY_EXPECTED_BENCHMARK_KEYS,
+    confirmLatencyBaseline,
     confirmJmh,
     compareJmh,
     compareLatencyBaseline,
@@ -144,6 +145,60 @@ test("latency baseline blocks loss of the fixed-baseline optimization", () => {
     assert.equal(comparison.passed, false);
     assert.equal(comparison.rows[0].improvementBlocked, true);
     assert.equal(comparison.rows[0].blocked, true);
+});
+
+test("latency baseline fails closed without fixed speedup confidence bounds", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100 })],
+        [jmhResult({ score: 20 })],
+        [jmhResult({ score: 20 })]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].improvementSeparated, false);
+    assert.equal(comparison.rows[0].blocked, true);
+    assert.match(comparison.errors.join("\n"), /requires finite confidence bounds/);
+});
+
+test("latency confirmation blocks only failures repeated by the same benchmark", () => {
+    const first = "example.First.query";
+    const second = "example.Second.query";
+    const initial = compareLatencyBaseline(
+        [
+            jmhResult({ benchmark: first, score: 100, confidence: [98, 102] }),
+            jmhResult({ benchmark: second, score: 100, confidence: [98, 102] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 80, confidence: [78, 82] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ]
+    );
+    const retry = compareLatencyBaseline(
+        [
+            jmhResult({ benchmark: first, score: 100, confidence: [98, 102] }),
+            jmhResult({ benchmark: second, score: 100, confidence: [98, 102] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 80, confidence: [78, 82] })
+        ]
+    );
+    const confirmed = confirmLatencyBaseline(initial, retry);
+
+    assert.equal(initial.passed, false);
+    assert.equal(retry.passed, false);
+    assert.equal(confirmed.passed, true);
+    assert.equal(confirmed.rows.find((row) => row.key === first).blocked, false);
+    assert.equal(confirmed.rows.find((row) => row.key === second).blocked, false);
+    assert.match(renderLatencyBaselineReport(confirmed), /Confirmation/);
 });
 
 test("latency baseline fails closed when one graph-count parameter is missing", () => {

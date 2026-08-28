@@ -31,7 +31,12 @@ enum class StringValueTransform {
     LOWERCASE
 }
 
-/** Optional storage capability for graphs that can avoid materializing a full node scan. */
+/**
+ * Optional storage capability for graphs that can avoid materializing a full node scan.
+ *
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
+ * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ */
 interface StringPropertyLookup {
     fun <T : Node> nodesByStringProperty(
         type: Class<T>,
@@ -59,7 +64,12 @@ interface WorkAwareStringPropertyLookup : StringPropertyLookup {
     ): Sequence<T>?
 }
 
-/** Optional storage capability for matching a precisely transformed string value. */
+/**
+ * Optional storage capability for matching a precisely transformed string value.
+ *
+ * When the same graph also implements [StringPropertyLookupOrder], every non-null sequence
+ * returned by this capability must be monotonic in [StringPropertyLookupOrder.stringPropertyNodeOrder].
+ */
 interface TransformedStringPropertyLookup {
     fun <T : Node> nodesByTransformedStringProperty(
         type: Class<T>,
@@ -84,7 +94,11 @@ interface WorkAwareTransformedStringPropertyLookup : TransformedStringPropertyLo
     ): Sequence<T>?
 }
 
-/** Optional ordering capability used to preserve the graph's canonical node traversal order. */
+/**
+ * Ordering capability for storage lookups that are emitted in canonical node traversal order.
+ * Implementations must return a stable key and must emit all string-property lookup sequences
+ * monotonically by that key.
+ */
 interface StringPropertyLookupOrder {
     fun stringPropertyNodeOrder(node: Node): Long
 }

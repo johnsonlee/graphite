@@ -453,6 +453,93 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped raw string scan caches repeated match states and accounts budgeted work`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(261) { index ->
+                val value = when (index) {
+                    256, 257, 260 -> "TaRgEt"
+                    258, 259 -> "other"
+                    else -> "prefix-$index"
+                }
+                addNode(StringConstant(NodeId(index), value))
+            }
+        }.build()
+        val orderedGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).sortedBy { it.id.value }
+        }
+        val dir = Files.createTempDirectory("webgraph-raw-string-match-states")
+        try {
+            GraphStore.save(orderedGraph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val unbudgeted = loaded.nodesByTransformedStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "target",
+                    limit = 3
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(256, 257, 260), unbudgeted)
+                assertEquals(1, loaded.rawStringMatchStateCount())
+                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+
+                loaded.clearStringPropertyIndexes()
+                var consumed = 0
+                val budgeted = loaded.nodesByTransformedStringProperty(
+                    StringConstant::class.java,
+                    "value",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "target",
+                    limit = 3,
+                    workConsumer = GraphWorkConsumer { consumed++ }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(256, 257, 260), budgeted)
+                assertEquals(261, consumed)
+                assertEquals(0, loaded.rawStringMatchStateCount())
+                assertEquals(0L, loaded.rawStringMatchStateBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `raw string match states enforce one aggregate graph memory bound`() {
+        val states = RawStringMatchStates(maxRetainedBytes = 120, maxEntries = 8)
+        val property = StringPropertyKey(StringConstant::class.java, "value")
+
+        val first = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
+            stringCount = 40
+        )
+        val second = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "second"),
+            stringCount = 40
+        )
+        val overflow = states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "third"),
+            stringCount = 40
+        )
+
+        assertNotNull(first)
+        assertNotNull(second)
+        assertNull(overflow)
+        assertEquals(2, states.size())
+        assertEquals(112L, states.retainedBytes())
+        assertTrue(states.stateFor(
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
+            stringCount = 40
+        ) === first)
+    }
+
+    @Test
     fun `mapped string lookup keeps admission specific to the query limit`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(300) { index ->

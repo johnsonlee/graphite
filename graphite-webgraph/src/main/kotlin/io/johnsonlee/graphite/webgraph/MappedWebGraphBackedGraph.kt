@@ -102,8 +102,7 @@ internal class MappedWebGraphBackedGraph(
 
     private val stringPropertyIndexLock = Any()
     private val stringPropertyAdmissions = StringPropertyAdmissions()
-    @Volatile
-    private var stringPropertyNodeOrders: IntArray? = null
+    private val rawStringMatchStates = RawStringMatchStates()
     private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
         MAX_STRING_PROPERTY_INDEXES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
@@ -134,19 +133,7 @@ internal class MappedWebGraphBackedGraph(
     override fun nodeCount(type: Class<out Node>): Long =
         nodeTypeIndex.count(type)
 
-    override fun stringPropertyNodeOrder(node: Node): Long {
-        val orders = stringPropertyNodeOrders ?: synchronized(this) {
-            stringPropertyNodeOrders ?: buildStringPropertyNodeOrders().also { stringPropertyNodeOrders = it }
-        }
-        return orders.getOrElse(node.id.value) { -1 }.toLong()
-    }
-
-    private fun buildStringPropertyNodeOrders(): IntArray {
-        val orders = IntArray(nodeOffsets.size) { -1 }
-        var order = 0
-        for (nodeId in nodeTypeIndex.ids(Node::class.java)) orders[nodeId] = order++
-        return orders
-    }
+    override fun stringPropertyNodeOrder(node: Node): Long = nodeOffsets.offset(node.id.value)
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     override fun <T : Node> nodesByStringProperty(
@@ -271,9 +258,11 @@ internal class MappedWebGraphBackedGraph(
                     }
                 }
                 admitted = true
-                val stringCount = stringTable.size()
-                if (stringCount <= MAX_RAW_STRING_MATCH_STATE_BYTES) {
-                    matchStates = ByteArray(stringCount)
+                if (workConsumer == null) {
+                    matchStates = rawStringMatchStates.stateFor(
+                        RawStringMatchKey(admission.property, transform, mode, expected),
+                        stringTable.size()
+                    )
                 }
             }
             val stringId = rawStringPropertyIndex(nodeId, type, property)
@@ -398,7 +387,6 @@ internal class MappedWebGraphBackedGraph(
 
     override fun close() {
         clearStringPropertyIndexes()
-        stringPropertyNodeOrders = null
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
 
@@ -406,8 +394,13 @@ internal class MappedWebGraphBackedGraph(
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
+            rawStringMatchStates.clear()
         }
     }
+
+    internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()
+
+    internal fun rawStringMatchStateCount(): Int = rawStringMatchStates.size()
 
     internal fun stringPropertyIndexCount(
         type: Class<out Node>? = null,
@@ -523,6 +516,7 @@ private const val MAX_STRING_PROPERTY_ADMISSION_BYTES = 64L * 1024
 private const val STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES = 96L
 private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
+private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
 private const val MAX_STRING_MATCH_CACHE_ENTRIES = 32
@@ -544,7 +538,7 @@ private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
     STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
         nodeCount * STRING_PROPERTY_INDEX_ARRAYS * Int.SIZE_BYTES
 
-private data class StringPropertyKey(
+internal data class StringPropertyKey(
     val type: Class<out Node>,
     val property: String
 )
@@ -556,6 +550,48 @@ private data class StringPropertyAdmissionKey(
     val expected: String,
     val limit: Int
 )
+
+internal data class RawStringMatchKey(
+    val property: StringPropertyKey,
+    val transform: StringValueTransform?,
+    val mode: StringMatchMode,
+    val expected: String
+)
+
+/** Shares predicate state across iterators and enforces one aggregate retained-memory bound per graph. */
+internal class RawStringMatchStates(
+    private val maxRetainedBytes: Long = MAX_RAW_STRING_MATCH_STATE_BYTES.toLong(),
+    private val maxEntries: Int = MAX_RAW_STRING_MATCH_STATES
+) {
+    private val states = LinkedHashMap<RawStringMatchKey, ByteArray>()
+    private var bytes = 0L
+
+    @Synchronized
+    fun stateFor(key: RawStringMatchKey, stringCount: Int): ByteArray? {
+        val existing = states[key]
+        val requiredBytes = PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES + stringCount.toLong()
+        return when {
+            existing != null -> existing
+            states.size >= maxEntries || requiredBytes > maxRetainedBytes - bytes -> null
+            else -> ByteArray(stringCount).also { state ->
+                states[key] = state
+                bytes += requiredBytes
+            }
+        }
+    }
+
+    @Synchronized
+    fun clear() {
+        states.clear()
+        bytes = 0L
+    }
+
+    @Synchronized
+    fun retainedBytes(): Long = bytes
+
+    @Synchronized
+    fun size(): Int = states.size
+}
 
 private class StringPropertyAdmissions {
     private val predicates = LinkedHashMap<StringPropertyAdmissionKey, Unit>(
