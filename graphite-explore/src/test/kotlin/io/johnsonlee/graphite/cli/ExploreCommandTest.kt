@@ -1762,6 +1762,11 @@ class ExploreCommandTest {
         val spec = ExploreCommand().buildOpenApiSpec()
         assertEquals("3.0.3", spec["openapi"])
         @Suppress("UNCHECKED_CAST")
+        val info = spec["info"] as Map<String, Any?>
+        val buildVersion = requireNotNull(System.getProperty("graphite.version"))
+        assertEquals(buildVersion, info["version"])
+        assertTrue(GraphiteVersionProvider().getVersion().contentEquals(arrayOf("graphite $buildVersion")))
+        @Suppress("UNCHECKED_CAST")
         val paths = spec["paths"] as Map<String, Map<String, Any?>>
         assertTrue(paths.containsKey("/openapi.json"))
         assertTrue(paths.containsKey("/swagger.json"))

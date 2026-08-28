@@ -48,6 +48,12 @@ jmh {
 
 tasks.jar {
     archiveClassifier.set("slim")
+    manifest {
+        attributes(
+            "Implementation-Title" to "Graphite Explore",
+            "Implementation-Version" to project.version.toString(),
+        )
+    }
 }
 
 tasks.shadowJar {
@@ -67,8 +73,16 @@ tasks.shadowJar {
     }
 
     manifest {
-        attributes("Main-Class" to "io.johnsonlee.graphite.cli.ExploreMainKt")
+        attributes(
+            "Main-Class" to "io.johnsonlee.graphite.cli.ExploreMainKt",
+            "Implementation-Title" to "Graphite Explore",
+            "Implementation-Version" to project.version.toString(),
+        )
     }
+}
+
+tasks.named<JavaExec>("run") {
+    systemProperty("graphite.version", project.version.toString())
 }
 
 kover {
@@ -87,6 +101,7 @@ kover {
 }
 
 tasks.test {
+    systemProperty("graphite.version", project.version.toString())
     testLogging {
         events("passed", "skipped", "failed")
         showExceptions = true

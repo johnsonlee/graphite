@@ -329,7 +329,7 @@ internal class OpenApiSpecBuilder {
             "openapi" to "3.0.3",
             "info" to mapOf(
                 "title" to "Graphite Explore API",
-                "version" to "2.0.0",
+                "version" to GraphiteVersionProvider.currentVersion(),
                 "description" to "Graph-qualified single-graph and cross-graph query API for Graphite Explore."
             ),
             "paths" to paths

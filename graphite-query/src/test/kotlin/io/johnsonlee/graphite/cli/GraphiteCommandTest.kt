@@ -52,8 +52,8 @@ class GraphiteCommandTest {
 
         assertEquals(0, code)
         assertEquals("", err)
-        assertEquals("graphite ${GraphiteVersionProvider.currentVersion()}", out.trim())
-        assertTrue(GraphiteVersionProvider.currentVersion() != "unknown")
+        val buildVersion = requireNotNull(System.getProperty("graphite.version"))
+        assertEquals("graphite $buildVersion", out.trim())
     }
 
     // ========================================================================
