@@ -90,6 +90,8 @@ graphite serve --data /data/graphs \
   --graph orders:orders-graph \
   --graph billing:/data/billing-graph \
   --topology /rules/company-topology.cypher \
+  --max-concurrent-cypher 2 \
+  --cypher-work-budget 250000 \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -263,6 +265,25 @@ root-all and graph-scoped REST surface, including the two explicit modes of
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
+
+Cypher endpoints admit at most two executing queries by default and stop a
+query after 250,000 graph work units. Candidate inspections and materialized
+path elements consume work units. Configure these bounds with
+`--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
+HTTP 429 with `code` set to `cypher_concurrency_limit` or
+`cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
+replace this execution budget for aggregations that must scan before limiting.
+
+For label discovery, use the metadata-backed histogram shape below. Graphite
+answers it from node type counts without visiting graph nodes:
+
+```cypher
+MATCH (n)
+UNWIND labels(n) AS label
+RETURN label, count(*) AS count
+ORDER BY count DESC
+LIMIT 50
+```
 
 For multi-graph startup, `--topology` accepts one Cypher file (or a directory
 of `.cypher` files). The configured `--graph` entries are the catalog: Graphite

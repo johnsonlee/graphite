@@ -18,11 +18,31 @@ import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 
 private const val COUNT_QUERY_CLAUSES = 2
+private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
 private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
+
+private class WorkTrackingSequence<T>(
+    private val source: Sequence<T>,
+    private val workTracker: CypherWorkTracker
+) : Sequence<T> {
+    override fun iterator(): Iterator<T> {
+        val sourceIterator = source.iterator()
+        return object : Iterator<T> {
+            override fun hasNext(): Boolean = sourceIterator.hasNext()
+
+            override fun next(): T {
+                if (!sourceIterator.hasNext()) throw NoSuchElementException()
+                workTracker.consume()
+                return sourceIterator.next()
+            }
+        }
+    }
+}
+
 private val QUALIFIED_NODE_PROPERTIES = setOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
 private val DIRECT_STRING_NODE_PROPERTIES = listOf(
     EnumConstant::class.java to setOf("name"),
@@ -57,12 +77,19 @@ private val DIRECT_STRING_NODE_PROPERTIES = listOf(
 @Suppress("LargeClass")
 class QueryPipeline private constructor(
     private val sources: List<CypherGraph>,
-    private val qualified: Boolean
+    private val qualified: Boolean,
+    private val workTrackingEnabled: Boolean
 ) {
 
-    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false)
+    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, false)
 
-    internal constructor(graphs: List<CypherGraph>) : this(graphs, true)
+    internal constructor(graph: Graph, workTrackingEnabled: Boolean) :
+        this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, workTrackingEnabled)
+
+    internal constructor(graphs: List<CypherGraph>) : this(graphs, true, false)
+
+    internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean) :
+        this(graphs, true, workTrackingEnabled)
 
     init {
         require(sources.map { it.id }.distinct().size == sources.size) { "Graph ids must be unique" }
@@ -71,12 +98,35 @@ class QueryPipeline private constructor(
     private val graph: Graph get() = sources.single().graph
 
     private val evaluator = ExpressionEvaluator()
+    private val activeWorkTracker = ThreadLocal<CypherWorkTracker?>()
 
     /**
      * Execute a list of clauses and return the final result.
      */
-    fun execute(clauses: List<CypherClause>): CypherResult {
+    fun execute(clauses: List<CypherClause>): CypherResult = execute(clauses, null)
+
+    internal fun execute(
+        clauses: List<CypherClause>,
+        workTracker: CypherWorkTracker?
+    ): CypherResult {
+        if (workTracker == null) return executeWithActiveBudget(clauses)
+        val previousTracker = activeWorkTracker.get()
+        activeWorkTracker.set(workTracker)
+        return try {
+            executeWithActiveBudget(clauses)
+        } finally {
+            if (previousTracker == null) {
+                activeWorkTracker.remove()
+            } else {
+                activeWorkTracker.set(previousTracker)
+            }
+        }
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         val fastResult = tryFastNodeCount(clauses)
+            ?: tryFastLabelHistogram(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
@@ -210,7 +260,7 @@ class QueryPipeline private constructor(
     private fun seekNode(elementId: String): Pair<CypherGraph, Node>? {
         if (!qualified) {
             val nodeId = elementId.toIntOrNull() ?: return null
-            return sources.single().let { source -> source.graph.node(NodeId(nodeId))?.let { source to it } }
+            return sources.single().let { source -> trackedNode(source.graph, NodeId(nodeId))?.let { source to it } }
         }
 
         val separator = elementId.lastIndexOf(':')
@@ -218,7 +268,7 @@ class QueryPipeline private constructor(
         val graphId = elementId.substring(0, separator)
         val nodeId = elementId.substring(separator + 1).toIntOrNull() ?: return null
         val source = sources.firstOrNull { it.id == graphId } ?: return null
-        return source.graph.node(NodeId(nodeId))?.let { source to it }
+        return trackedNode(source.graph, NodeId(nodeId))?.let { source to it }
     }
 
     /**
@@ -276,6 +326,95 @@ class QueryPipeline private constructor(
             }
         }
         else -> null
+    }
+
+    /**
+     * Fast path for Graphite schema discovery:
+     *
+     *   MATCH (n)
+     *   UNWIND labels(n) AS label
+     *   RETURN label, count(*) AS count
+     *   ORDER BY count DESC
+     *   LIMIT k
+     *
+     * Graphite's labels are derived from concrete node types. Backends with a
+     * type index can therefore answer this histogram without loading nodes.
+     */
+    @Suppress("ReturnCount")
+    private fun tryFastLabelHistogram(clauses: List<CypherClause>): CypherResult? {
+        val query = LabelHistogramQuery.compile(clauses) ?: return null
+        if (query.limit <= 0) return CypherResult(query.columns, emptyList())
+
+        val counts = linkedMapOf<String, Long>()
+        val provenance = if (qualified) mutableMapOf<String, MutableSet<String>>() else null
+        for (source in sources) {
+            for (descriptor in nodeLabelDescriptors) {
+                val count = source.graph.nodeCount(descriptor.type) ?: return null
+                if (count <= 0) continue
+                for (label in descriptor.labels) {
+                    counts[label] = counts.getOrDefault(label, 0L) + count
+                    provenance?.getOrPut(label, ::linkedSetOf)?.add(source.id)
+                }
+            }
+        }
+
+        val comparator = compareBy<Map.Entry<String, Long>> { it.value }
+        val ordered = counts.entries.sortedWith(
+            if (query.ascending) comparator else comparator.reversed()
+        )
+        val rows = ordered.take(query.limit).map { (label, count) ->
+            mutableMapOf<String, Any?>(
+                query.labelColumn to label,
+                query.countColumn to count
+            ).apply {
+                provenance?.get(label)?.takeIf { it.isNotEmpty() }?.let { put(INTERNAL_PROVENANCE_KEY, it) }
+            }
+        }
+        return CypherResult(query.columns, rows)
+    }
+
+    private data class LabelHistogramQuery(
+        val labelColumn: String,
+        val countColumn: String,
+        val ascending: Boolean,
+        val limit: Int
+    ) {
+        val columns: List<String> = listOf(labelColumn, countColumn)
+
+        companion object {
+            @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+            fun compile(clauses: List<CypherClause>): LabelHistogramQuery? {
+                if (clauses.size != LABEL_HISTOGRAM_QUERY_CLAUSES) return null
+                val match = clauses[0] as? CypherClause.Match ?: return null
+                val unwind = clauses[1] as? CypherClause.Unwind ?: return null
+                val ret = clauses[2] as? CypherClause.Return ?: return null
+                val orderBy = clauses[3] as? CypherClause.OrderBy ?: return null
+                val limit = clauses[4] as? CypherClause.Limit ?: return null
+                if (match.optional || match.patterns.size != 1 || ret.distinct || ret.items.size != 2) return null
+
+                val pattern = match.patterns.single()
+                if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+                val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+                val nodeVariable = nodePattern.variable ?: return null
+                if (nodePattern.labels.isNotEmpty() || nodePattern.properties.isNotEmpty()) return null
+
+                val labelsCall = unwind.expression as? CypherExpr.FunctionCall ?: return null
+                if (!labelsCall.name.equals("labels", ignoreCase = true) || labelsCall.distinct) return null
+                if (labelsCall.args.singleOrNull() != CypherExpr.Variable(nodeVariable)) return null
+
+                val labelItem = ret.items[0]
+                if (labelItem.expression != CypherExpr.Variable(unwind.variable)) return null
+                val countItem = ret.items[1]
+                if (countItem.expression != CypherExpr.CountStar) return null
+                val labelColumn = labelItem.alias ?: labelItem.expression.toCypherString()
+                val countColumn = countItem.alias ?: countItem.expression.toCypherString()
+
+                val sort = orderBy.items.singleOrNull() ?: return null
+                if (sort.expression != CypherExpr.Variable(countColumn)) return null
+                val limitCount = (limit.count as? CypherExpr.Literal)?.value as? Number ?: return null
+                return LabelHistogramQuery(labelColumn, countColumn, sort.ascending, limitCount.toCypherInt())
+            }
+        }
     }
 
     /**
@@ -462,14 +601,16 @@ class QueryPipeline private constructor(
     ): CypherResult {
         val rows = mutableListOf<Map<String, Any?>>()
         for (source in sources) {
-            val indexedNodes = source.graph.nodesByStringProperty(
+            val indexedNodes = stringPropertyCandidates(
+                source.graph,
                 nodeClass,
                 filter.property,
                 filter.mode,
                 filter.expected,
                 limit - rows.size
             )
-            val candidates = indexedNodes ?: source.graph.nodes(nodeClass).filter(filter::matches)
+            val candidates = indexedNodes
+                ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
             for (node in candidates) {
 
                 val candidate = nodeValue(source, node)
@@ -518,7 +659,8 @@ class QueryPipeline private constructor(
                 ?.toInt()
                 ?: Int.MAX_VALUE
             val accelerated = filters.map { filter ->
-                graph.nodesByStringProperty(
+                stringPropertyCandidates(
+                    graph,
                     candidateType,
                     filter.property,
                     filter.mode,
@@ -527,7 +669,7 @@ class QueryPipeline private constructor(
                 )
             }
             val candidates = if (accelerated.any { it == null }) {
-                graph.nodes(candidateType).filter(disjunction::matches)
+                trackWork(graph.nodes(candidateType)).filter(disjunction::matches)
             } else {
                 filterOwnedNodes(filters, accelerated.filterNotNull())
             }
@@ -681,7 +823,7 @@ class QueryPipeline private constructor(
                 if (!matchesRelConstraints(edge.edge, rel, sourceBindings)) continue
 
                 val targetId = resolveTargetId(edge.edge, source.node.id, rel.direction)
-                val target = source.source.graph.node(targetId) ?: continue
+                val target = trackedNode(source.source.graph, targetId) ?: continue
                 val targetValue = nodeValue(source.source, target)
                 val targetBindings = matchTargetNode(targetPattern, targetValue, sourceBindings) ?: continue
 
@@ -782,8 +924,31 @@ class QueryPipeline private constructor(
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
 
-        // A pattern is a chain: Node [Rel Node [Rel Node ...]]
-        // Start by matching the first node, then alternate rel+node.
+        val matches = if (limit != null && elements.size > 1) {
+            matchPatternLazily(elements, existingBindings, limit)
+        } else {
+            matchPatternEagerly(elements, existingBindings, limit)
+        }
+
+        // If the pattern has a path variable, bind it to the matched path
+        if (pattern.pathVariable != null) {
+            return matches.map { bindings ->
+                val path = buildPathRepresentation(pattern, bindings)
+                bindings.toMutableMap().apply {
+                    this[pattern.pathVariable] = path
+                    addProvenance(this, path)
+                }
+            }
+        }
+
+        return matches
+    }
+
+    private fun matchPatternEagerly(
+        elements: List<PatternElement>,
+        existingBindings: Map<String, Any?>,
+        limit: Int?
+    ): List<Map<String, Any?>> {
         var currentMatches = matchNodeElement(elements[0] as PatternElement.NodePattern, existingBindings, limit)
 
         var i = 1
@@ -794,28 +959,38 @@ class QueryPipeline private constructor(
 
             val nextMatches = mutableListOf<Map<String, Any?>>()
             for (bindings in currentMatches) {
-                nextMatches.addAll(matchRelationship(rel, targetNode, bindings))
-                if (limit != null && nextMatches.size >= limit) break
+                nextMatches.addAll(matchRelationship(rel, targetNode, bindings, limit = null))
             }
-            currentMatches = if (limit != null && nextMatches.size > limit) {
-                nextMatches.subList(0, limit)
-            } else {
-                nextMatches
-            }
-        }
-
-        // If the pattern has a path variable, bind it to the matched path
-        if (pattern.pathVariable != null) {
-            return currentMatches.map { bindings ->
-                val path = buildPathRepresentation(pattern, bindings)
-                bindings.toMutableMap().apply {
-                    this[pattern.pathVariable] = path
-                    addProvenance(this, path)
-                }
-            }
+            currentMatches = nextMatches
         }
 
         return currentMatches
+    }
+
+    private fun matchPatternLazily(
+        elements: List<PatternElement>,
+        existingBindings: Map<String, Any?>,
+        limit: Int
+    ): List<Map<String, Any?>> {
+        var currentMatches = matchNodeElementLazily(
+            elements[0] as PatternElement.NodePattern,
+            existingBindings
+        )
+
+        var i = 1
+        while (i < elements.size) {
+            val rel = elements[i] as PatternElement.RelationshipPattern
+            val targetNode = elements[i + 1] as PatternElement.NodePattern
+            i += 2
+
+            val relationshipLimit = limit.takeIf { i >= elements.size }
+            val nextMatches = currentMatches.flatMap { bindings ->
+                matchRelationship(rel, targetNode, bindings, relationshipLimit).asSequence()
+            }
+            currentMatches = relationshipLimit?.let(nextMatches::take) ?: nextMatches
+        }
+
+        return currentMatches.toList()
     }
 
     /**
@@ -854,9 +1029,9 @@ class QueryPipeline private constructor(
                         val prev = nodeCursor(prevValue)
                         val next = nodeCursor(nextValue)
                         if (prev != null && next != null && prev.source.id == next.source.id) {
-                            val foundEdge = prev.source.graph.outgoing(prev.node.id)
+                            val foundEdge = trackWork(prev.source.graph.outgoing(prev.node.id))
                                 .firstOrNull { it.to == next.node.id }
-                                ?: prev.source.graph.incoming(prev.node.id)
+                                ?: trackWork(prev.source.graph.incoming(prev.node.id))
                                     .firstOrNull { it.from == next.node.id }
                             if (foundEdge != null) path.add(edgeValue(prev.source, foundEdge))
                         }
@@ -881,13 +1056,29 @@ class QueryPipeline private constructor(
         limit: Int? = null
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
+        for (candidate in nodeElementCandidates(nodePattern, existingBindings)) {
+            val bindings = bindNodeCandidate(candidate, nodePattern, existingBindings) ?: continue
+            results.add(bindings)
+            if (limit != null && results.size >= limit) break
+        }
+        return results
+    }
 
-        // Determine the node class from the first label (if any)
+    private fun matchNodeElementLazily(
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings)
+        .mapNotNull { candidate -> bindNodeCandidate(candidate, nodePattern, existingBindings) }
+
+    private fun nodeElementCandidates(
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Sequence<Any> {
         val nodeClass = nodePattern.labels.firstOrNull()
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
 
-        val candidates: Sequence<Any> = if (nodePattern.variable != null &&
+        return if (nodePattern.variable != null &&
             existingBindings.containsKey(nodePattern.variable)
         ) {
             val existing = existingBindings[nodePattern.variable]
@@ -900,20 +1091,20 @@ class QueryPipeline private constructor(
         } else {
             nodeCandidates(nodeClass)
         }
+    }
 
-        for (candidate in candidates) {
-            if (matchesNodeConstraints(candidate, nodePattern, existingBindings)) {
-                val bindings = existingBindings.toMutableMap()
-                if (nodePattern.variable != null) {
-                    bindings[nodePattern.variable] = candidate
-                    addProvenance(bindings, candidate)
-                }
-                results.add(bindings)
-                if (limit != null && results.size >= limit) break
+    private fun bindNodeCandidate(
+        candidate: Any,
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Map<String, Any?>? {
+        if (!matchesNodeConstraints(candidate, nodePattern, existingBindings)) return null
+        return existingBindings.toMutableMap().apply {
+            if (nodePattern.variable != null) {
+                this[nodePattern.variable] = candidate
+                addProvenance(this, candidate)
             }
         }
-
-        return results
     }
 
     /**
@@ -922,7 +1113,8 @@ class QueryPipeline private constructor(
     private fun matchRelationship(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
-        bindings: Map<String, Any?>
+        bindings: Map<String, Any?>,
+        limit: Int?
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
 
@@ -932,9 +1124,9 @@ class QueryPipeline private constructor(
         val edgeClass = rel.types.firstOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
 
         if (rel.variableLength) {
-            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, results)
+            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
         } else {
-            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, results)
+            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
         }
 
         return results
@@ -946,13 +1138,14 @@ class QueryPipeline private constructor(
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
         edgeClass: Class<out Edge>?,
+        limit: Int?,
         results: MutableList<Map<String, Any?>>
     ) {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
 
         for (edge in edges) {
             val targetId = resolveTargetId(edge.edge, sourceNode.node.id, rel.direction)
-            val targetNode = sourceNode.source.graph.node(targetId) ?: continue
+            val targetNode = trackedNode(sourceNode.source.graph, targetId) ?: continue
             val targetValue = nodeValue(sourceNode.source, targetNode)
 
             // Check relationship property constraints
@@ -966,6 +1159,7 @@ class QueryPipeline private constructor(
                 addProvenance(newBindings, edge.value)
             }
             results.add(newBindings)
+            if (limit != null && results.size >= limit) break
         }
     }
 
@@ -975,6 +1169,7 @@ class QueryPipeline private constructor(
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
         edgeClass: Class<out Edge>?,
+        limit: Int?,
         results: MutableList<Map<String, Any?>>
     ) {
         val direction = when (rel.direction) {
@@ -983,24 +1178,29 @@ class QueryPipeline private constructor(
             Direction.BOTH -> PathFinder.Direction.BOTH
         }
 
-        val paths = PathFinder.findPaths(
+        val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
-            targets = null,
-            edgeType = edgeClass,
-            minDepth = rel.minHops ?: 1,
-            maxDepth = rel.maxHops ?: 10,
-            direction = direction
+            options = PathFinder.SearchOptions(
+                targets = null,
+                edgeType = edgeClass,
+                minDepth = rel.minHops ?: 1,
+                maxDepth = rel.maxHops ?: 10,
+                direction = direction,
+                workTracker = workTracker
+            )
         )
 
-        for (path in paths) {
-            val endNode = path.nodes.last()
-            val endValue = nodeValue(sourceNode.source, endNode)
+        for (pathMatch in paths) {
+            val endValue = nodeValue(sourceNode.source, pathMatch.endNode())
             val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings) ?: continue
 
             val newBindings = targetMatch.toMutableMap()
             if (rel.variable != null) {
+                val path = pathMatch.materialize(workTracker)
                 val pathValue = if (qualified) {
+                    workTracker?.consume(path.nodes.size.toLong() + path.edges.size)
                     QualifiedPath(
                         graphId = sourceNode.source.id,
                         nodes = path.nodes.map { QualifiedNode(sourceNode.source.id, sourceNode.source.graph, it) },
@@ -1013,6 +1213,7 @@ class QueryPipeline private constructor(
                 addProvenance(newBindings, pathValue)
             }
             results.add(newBindings)
+            if (limit != null && results.size >= limit) break
         }
     }
 
@@ -1114,18 +1315,27 @@ class QueryPipeline private constructor(
     ): Sequence<EdgeCursor> {
         val graph = node.source.graph
         val nodeId = node.node.id
+        val tracked = workTrackingEnabled && activeWorkTracker.get() != null
         val edges = when (direction) {
-        Direction.OUTGOING ->
-            if (edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
-        Direction.INCOMING ->
-            if (edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
-        Direction.BOTH -> {
-            val out = if (edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
-            val inc = if (edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
-            out + inc
+            Direction.OUTGOING ->
+                if (!tracked && edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
+            Direction.INCOMING ->
+                if (!tracked && edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
+            Direction.BOTH -> {
+                val outgoing =
+                    if (!tracked && edgeClass != null) graph.outgoing(nodeId, edgeClass) else graph.outgoing(nodeId)
+                val incoming =
+                    if (!tracked && edgeClass != null) graph.incoming(nodeId, edgeClass) else graph.incoming(nodeId)
+                outgoing + incoming
+            }
         }
+        val candidates = trackWork(edges)
+        val filtered = if (tracked && edgeClass != null) {
+            candidates.filter(edgeClass::isInstance)
+        } else {
+            candidates
         }
-        return edges.map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
+        return filtered.map { edge -> EdgeCursor(node.source, edge, edgeValue(node.source, edge)) }
     }
 
     private fun resolveTargetId(edge: Edge, sourceId: NodeId, direction: Direction): NodeId =
@@ -1147,11 +1357,40 @@ class QueryPipeline private constructor(
     private fun <T : Node> nodeCandidates(type: Class<T>): Sequence<Any> =
         if (qualified) {
             sources.asSequence().flatMap { source ->
-                source.graph.nodes(type).map { node -> QualifiedNode(source.id, source.graph, node) }
+                trackWork(source.graph.nodes(type)).map { node -> QualifiedNode(source.id, source.graph, node) }
             }
         } else {
-            graph.nodes(type).map { it as Any }
+            trackWork(graph.nodes(type)).map { it as Any }
         }
+
+    private fun <T> trackWork(values: Sequence<T>): Sequence<T> {
+        return if (!workTrackingEnabled) {
+            values
+        } else {
+            activeWorkTracker.get()?.let { tracker -> WorkTrackingSequence(values, tracker) } ?: values
+        }
+    }
+
+    private fun trackedNode(graph: Graph, nodeId: NodeId): Node? {
+        if (workTrackingEnabled) activeWorkTracker.get()?.consume()
+        return graph.node(nodeId)
+    }
+
+    private fun <T : Node> stringPropertyCandidates(
+        graph: Graph,
+        type: Class<T>,
+        property: String,
+        mode: StringMatchMode,
+        expected: String,
+        limit: Int
+    ): Sequence<T>? {
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return if (tracker != null) {
+            graph.nodesByStringProperty(type, property, mode, expected, limit, tracker)
+        } else {
+            graph.nodesByStringProperty(type, property, mode, expected, limit)
+        }
+    }
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {
         is QualifiedNode -> NodeCursor(CypherGraph(value.graphId, value.graph), value.node, value)
@@ -1447,12 +1686,19 @@ class QueryPipeline private constructor(
     private fun evaluateToInt(expr: CypherExpr, bindings: Map<String, Any?>): Int {
         val value = evaluator.evaluate(expr, bindings)
         return when (value) {
-            is Number -> value.toInt()
-            is String -> value.toIntOrNull() ?: 0
+            is Number -> value.toCypherInt()
+            is String -> value.toLongOrNull()
+                ?.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+                ?.toInt()
+                ?: 0
             else -> 0
         }
     }
 }
+
+private fun Number.toCypherInt(): Int = toLong()
+    .coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+    .toInt()
 
 // ========================================================================
 // Pattern variable extraction

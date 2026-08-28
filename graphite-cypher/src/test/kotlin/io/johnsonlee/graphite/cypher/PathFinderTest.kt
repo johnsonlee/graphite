@@ -81,6 +81,28 @@ class PathFinderTest {
     }
 
     @Test
+    fun `budgeted lazy match materializes its parent linked path`() {
+        val tracker = CypherWorkTracker(CypherExecutionBudget(maxWorkUnits = 20))
+        val match = PathFinder.findPathMatches(
+            graph,
+            setOf(nodeA),
+            PathFinder.SearchOptions(
+                targets = setOf(nodeD),
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 1,
+                maxDepth = 5,
+                direction = PathFinder.Direction.OUTGOING,
+                workTracker = tracker
+            )
+        ).single()
+
+        assertEquals(nodeD, match.endNode().id)
+        val path = match.materialize(tracker)
+        assertEquals(listOf(nodeA, nodeB, nodeC, nodeD), path.nodes.map(Node::id))
+        assertEquals(3, path.edges.size)
+    }
+
+    @Test
     fun `depth limit prevents finding distant nodes`() {
         val paths = PathFinder.findPaths(
             graph, setOf(nodeA), setOf(nodeD),

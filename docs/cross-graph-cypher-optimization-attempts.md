@@ -656,6 +656,272 @@ persisted graphs, remains lazy for single-graph limits, uses memory independent
 of match count for qualified execution, and preserves the Android-scale
 speedup.
 
+### 2026-08-28 - Attempt 015: Android schema-discovery baseline
+
+**Observed query shape:** an agent first samples labels and property keys with
+`MATCH (n) RETURN labels(n), keys(n) LIMIT 20`, then requests a label histogram
+with `MATCH (n) UNWIND labels(n) AS label RETURN label, count(*) AS c ORDER BY c
+DESC LIMIT 50`. The first query inspects only 20 nodes because the generic
+pipeline can push its limit into the match. The second query cannot push its
+limit through `UNWIND`, aggregation, and ordering, so it materializes and
+expands every matched node before retaining the top 50 result rows.
+
+**Benchmark:** `AndroidSchemaDiscoveryBenchmark` runs both unmodified queries
+against the persisted 5,938,826-node Android graph. The benchmark name describes
+the workload rather than the client that generated it, so it remains usable for
+CLI, HTTP, and agent callers.
+
+```shell
+./gradlew :webgraph:jmhJar --no-daemon
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  'AndroidSchemaDiscoveryBenchmark.*' \
+  -wi 1 -i 3 -w 1s -r 1s -f 1 -prof gc -foe true
+```
+
+| Query | Time | Allocation per operation | GC time |
+|-------|-----:|-------------------------:|--------:|
+| `labels/keys LIMIT 20` | `0.018 ms/op` | `56,480 B/op` | `17 ms` total |
+| `UNWIND labels + count` | `8,733.299 ms/op` | `11,211,740,267 B/op` | `12,313 ms` total |
+
+**Conclusion:** retained as the baseline. Calling `labels()` or `keys()` is not
+itself the pressure source when an early limit applies. The full-node scan,
+row expansion, aggregation, and sort in the histogram query allocate roughly
+11.2 GB per execution even at 5.9 million nodes. At the reported 80-million-node
+deployment scale, this execution model is not viable; the histogram must use
+existing type metadata instead of visiting nodes.
+
+### 2026-08-28 - Attempt 016: Type-index label histogram
+
+**Design:** recognize the exact schema-discovery shape from Attempt 015 and
+derive its counts from `Graph.nodeCount(concreteType)`. Graphite labels are a
+fixed projection of concrete node types, including aggregate labels such as
+`Constant`, `Resource`, and `Annotation`. The executor sums each type count into
+those labels, sorts the small metadata result, and retains cross-graph
+provenance. It does not load or materialize a node.
+
+The optimization is deliberately narrow. It requires an unlabeled single-node
+`MATCH`, `UNWIND labels()` of that node, a label plus `count(*)` projection,
+ordering by the count alias, and a literal limit. Unsupported shapes use the
+generic pipeline. A graph that cannot provide an indexed `nodeCount` also falls
+back to the generic implementation.
+
+Tests prove that the optimized query never calls `Graph.nodes`, returns concrete
+and aggregate label counts, supports aliases and limits, sums counts across
+graphs, and preserves every contributing graph ID. A separate fallback test
+uses a graph with no count metadata and verifies the original scan result.
+
+The same Android benchmark and JVM settings from Attempt 015 produce:
+
+| Query | Baseline | Attempt 016 | Change |
+|-------|---------:|------------:|-------:|
+| `labels/keys LIMIT 20` | `0.018 ms/op`, `56,480 B/op` | `0.014 ms/op`, `52,944 B/op` | no regression |
+| `UNWIND labels + count` | `8,733.299 ms/op`, `11,211,740,267 B/op` | `0.010 ms/op`, `35,768 B/op` | `873,330x` faster, `313,456x` less allocation |
+
+`./gradlew :cypher:check --no-daemon` passes, including tests, detekt, and Kover
+verification. Explicit application line coverage is `98.1245%`.
+
+**Conclusion:** retained. The production query is now bounded by the number of
+Graphite node types and selected graphs rather than the number of nodes. The
+5.9-million-node Android result exceeds the 100x target by more than four orders
+of magnitude, and the already-limited labels/keys sample does not regress.
+
+### 2026-08-28 - Attempt 017: Cypher admission and work budgets
+
+**Remaining risk:** the label histogram fast path cannot cover every query an
+agent can generate. For example, replacing `labels(n)` with `keys(n)` requires
+per-node property inspection. A result `LIMIT` still applies after `UNWIND`,
+aggregation, and ordering, so it does not bound the preceding scan or retained
+match rows.
+
+**Design:** HTTP Cypher endpoints now share a non-queuing semaphore with a
+default of two active queries. Each admitted request also receives a 250,000
+work-unit budget. The intended accounting covers generic node scans, direct
+string-filter candidates, relationship scans, path reconstruction, UNION
+segments, and cross-graph sources. Metadata fast paths consume no units. This
+attempt divides the request budget evenly across fanout graphs.
+
+The limits are configurable with `--max-concurrent-cypher` and
+`--cypher-work-budget`. Concurrency and work-budget rejections return HTTP 429
+with machine-readable codes `cypher_concurrency_limit` and
+`cypher_work_budget_exceeded`; only concurrency rejection includes
+`Retry-After`. Syntax and semantic query errors remain HTTP 400. The OpenAPI
+document and README describe both responses and options.
+
+An initial implementation consulted a `ThreadLocal` even when no budget was
+configured. Its first JMH run moved `singleHopRelationship` from `29.230` to
+`30.278 us/op`, with separated confidence intervals. The retained design makes
+work tracking a construction-time pipeline capability: the default library
+executor never sets or reads the tracker, while HTTP creates a budget-enabled
+pipeline.
+
+**Android budget benchmark:** the new SingleShot benchmark runs the unoptimized
+`MATCH (n) UNWIND keys(n) ... count(*) ... LIMIT 50` shape on the persisted
+5,938,826-node Android graph. The original run reported `109.710 ms/op` and
+`259,665,267 B/op`, but did not retain enough fixture evidence to support its
+node-count and GC claims. An independent harness run measured `108.846 ms/op`,
+`298,504,171 B/op`, and one or two collections per measured invocation. Attempt
+018 reruns the final implementation against the fixture-validated corpus and
+replaces these resource conclusions.
+
+```shell
+java -jar graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  'AndroidSchemaDiscoveryBenchmark.boundedPropertyKeyHistogram' \
+  -i 3 -r 1s -f 1 -prof gc -foe true
+```
+
+**Method-level regression:** latest `main` (`44b5756`) and the branch were run
+from separate local checkouts on the same machine with the standard JMH task.
+Values are `us/op`; every confidence interval overlaps and every score change
+is below 4%.
+
+| `CypherBenchmark` | `main` | Attempt 017 | Change |
+|-------------------|-------:|------------:|-------:|
+| `aggregationCountGroupBy` | `34.278` | `34.885` | `+1.8%` |
+| `countStar` | `2.340` | `2.425` | `+3.6%` |
+| `functionCalls` | `24.710` | `24.736` | `+0.1%` |
+| `nodeMatchWithWhere` | `57.667` | `57.034` | `-1.1%` |
+| `regexFilter` | `23.387` | `23.885` | `+2.1%` |
+| `returnDistinct` | `101.791` | `103.822` | `+2.0%` |
+| `simpleNodeMatch` | `20.256` | `19.594` | `-3.3%` |
+| `singleHopRelationship` | `29.230` | `29.582` | `+1.2%` |
+| `variableLengthPath` | `26.138` | `25.583` | `-2.1%` |
+| `withPipeline` | `76.788` | `76.558` | `-0.3%` |
+
+Tests verify node, relationship, UNION, cross-graph, reset, and metadata budget
+semantics; HTTP tests verify 429 work rejection, immediate concurrent rejection,
+permit release, and recovery. `:cypher:check` and `:explore:check` pass. Explicit
+application line coverage is `98.108%` for Cypher and `98.0857%` for Explore.
+
+**Conclusion:** superseded by Attempt 018. Review found uncharged variable-length
+path traversal and storage-internal string scans, fanout could exceed or reject
+before the request-level budget, and the changed cross-graph constructor removed
+the released JVM one-argument descriptor. The default non-budgeted benchmark
+evidence remains valid, but it does not measure the HTTP budget-enabled path.
+
+### 2026-08-28 - Attempt 018: Complete request-level work accounting
+
+**Review findings reproduced:** a two-unit budget completed a four-hop variable
+path because `PathFinder` did not receive the tracker. Mapped string misses and
+index construction inspected hundreds of values while charging only returned
+matches. Fanout created one tracker per graph, so a one-unit request could read
+two one-node graphs, while fixed shares also rejected a first graph needing six
+of a ten-unit request. `javap` confirmed that the released
+`CrossGraphCypherExecutor(List)` constructor was absent.
+
+A valid integer `LIMIT` above `Int.MAX_VALUE` was also narrowed with `toInt()`.
+That wrapped `2147483648` to a negative value, causing the label-histogram fast
+path to return an empty result and preventing the HTTP row cap from replacing
+the oversized literal.
+
+The first path-budget fix still copied each state's complete node and edge lists
+and collected all paths before the caller could apply `LIMIT`. A long explicit
+`*..N` chain therefore retained O(N^2) path references even though traversal
+candidates were counted.
+
+**Retained design:** `CypherExecutionContext` owns the mutable tracker for one
+HTTP request. Single-graph, cross-graph, UNION, and fanout execution all use that
+same context; the existing `CypherExecutor(graph, budget)` API still creates a
+fresh tracker per `execute` call. Fanout no longer divides the budget and stops
+opening graphs once the global row limit is full.
+
+`PathFinder` now stores one parent link per BFS state and exposes an internal
+lazy sequence. The pattern pipeline stays eager for ordinary unbounded queries
+but streams relationship patterns when a safe early `LIMIT` is available, so
+the limit stops sequence consumption without discarding a later branch that can
+complete a longer pattern. Source-node reads, every edge candidate before type
+filtering, and every target-node read are charged; when a relationship variable
+requires a concrete path, its full node-and-edge materialization cost is charged
+before allocating the path containers. Mapped string
+lookup implements a new optional `WorkAwareStringPropertyLookup` without
+changing the existing `StringPropertyLookup` ABI. It reports raw node scans,
+first index construction,
+unique-string/posting inspection, and indexed node-ID scans. Budgeted execution
+falls back to a tracked generic node scan for graph implementations that only
+support the legacy lookup. A custom tracking sequence charges before reading
+the next candidate and avoids the allocation and dispatch cost of `onEach`.
+
+Single-hop traversal uses untyped edge sequences while a tracker is active, so
+every edge is charged before relationship-type filtering; unbudgeted execution
+retains the graph's typed overload. Fast and generic single-hop paths also charge
+the direct target-node load. Direct `elementId` seeks charge their node load in
+both single-graph and qualified execution. Nested execution saves and restores
+the previous thread-local tracker instead of clearing the outer request state.
+
+LIMIT evaluation now saturates out-of-range integer values at the JVM `Int`
+bounds. A large positive library LIMIT therefore preserves all available rows,
+while `execute(query, maxRows)` safely replaces it with the server row cap.
+
+The explicit `CrossGraphCypherExecutor(List)` and `QueryPipeline(List)`
+constructors are restored, as is
+`MappedStringPropertyIndex.matchingNodeIds(StringMatchMode, String)`. JVM
+reflection regressions resolve and invoke those exact descriptors. Other
+tests prove variable-path rejection, mapped miss/build/existing-index charging,
+one-match success without double charging, fanout total-budget enforcement, and
+no fixed-share false rejection. They also cover a label histogram and a
+server-capped query with `LIMIT 2147483648`, path-materialization rejection, a
+1,000-hop graph queried with `*..100000 LIMIT 1` that stops after the first
+outgoing expansion, a multi-stage pattern whose first branch is a dead end,
+fast/generic target-node reads, 100 rejected relationship candidates before a
+typed match, reentrant execution, and unqualified/qualified `elementId` UNION
+seeks.
+The full
+`./gradlew check -S --no-daemon` gate, including all three large-corpus
+end-to-end tests, passes. Application line
+coverage is `98.2569%` for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph,
+and `98.1046%` for Explore.
+
+**Budget-enabled executor cost used by HTTP:** `BudgetedCypherBenchmark`
+isolates successful unbudgeted and budgeted executor calls against the same 500
+two-hop chains. It does not include Jetty or network time. This is separate from
+`CypherBenchmark`, which remains the base/PR regression gate for the default
+library API.
+
+```shell
+./gradlew :cypher:jmhJar --no-daemon
+for pair in NodeScan Relationship VariableLengthPath; do
+  java -jar graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT-jmh.jar \
+    "BudgetedCypherBenchmark.(budgeted${pair}|unbudgeted${pair})$" \
+    -wi 3 -i 5 -w 1s -r 1s -f 5 -foe true
+done
+```
+
+Apple M3 Max, 64 GiB RAM, macOS arm64, OpenJDK 17.0.18, JMH 1.37, one
+benchmark thread, five forks, and 25 measurement iterations per benchmark.
+Values and 99.9% confidence errors are `us/op`.
+
+| Successful query | Unbudgeted | Budgeted | Budget-check cost |
+|------------------|-----------:|---------:|------------------:|
+| 500-node scan | `48.613 +/- 0.240` | `49.312 +/- 0.666` | `+1.4%` |
+| 500 single-hop relationships | `148.846 +/- 0.731` | `157.375 +/- 4.496` | `+5.7%` |
+| 500 materialized two-hop paths | `231.380 +/- 2.436` | `233.829 +/- 4.377` | `+1.1%` |
+
+The budget check has a measurable cost; this is not described as a free change.
+The relationship result is the highest at 5.7%, and its 99.9% confidence
+interval does not overlap the unbudgeted result. Its unbudgeted path now relies
+on the graph's typed traversal without applying a duplicate relationship-type
+filter. The budgeted path still reads the untyped edge sequence so it can charge
+every rejected candidate before filtering; the benchmark includes source-node,
+edge-candidate, and target-node accounting. The variable-path query binds and
+returns its relationship variable, so that row also covers concrete path
+materialization and its budget charge.
+
+**Corrected Android rejection evidence:** the benchmark setup now asserts the
+harness identity for Maven fixture `org.robolectric:android-all:14-robolectric-10818077`,
+which persists exactly 5,938,826 nodes. The exact command from Attempt 017 on
+the final implementation, with its declared `-Xmx16g` fork, measured
+`116.334 ms/op`, `363,221,955 B/op`, and `gc.count ~= 0` over three invocations.
+The independent review run measured lower allocation and one or two collections,
+so allocation and GC count are explicitly environment-sensitive observations,
+not a no-GC guarantee. The invariant is that every invocation rejects at the
+250,000-unit boundary before scanning the complete corpus.
+
+**Conclusion:** retained. All known graph traversal and mapped string lookup
+paths now consume the same request counter, fanout enforces exactly one global
+budget, and the released JVM constructor remains linkable. The safety bound is
+complete for the reviewed paths, including path materialization rather than only
+candidate reads, while the measured successful-query cost is reported instead
+of being hidden behind unbudgeted benchmark results.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK
@@ -672,19 +938,26 @@ used the same machine and dependency caches.
 
 | `CypherBenchmark` | `main` | Branch | Change |
 |-------------------|-------:|-------:|-------:|
-| `aggregationCountGroupBy` | `34.443 us/op` | `34.449 us/op` | `+0.0%` |
-| `countStar` | `2.263 us/op` | `2.284 us/op` | `+0.9%` |
-| `functionCalls` | `24.868 us/op` | `24.683 us/op` | `-0.7%` |
-| `nodeMatchWithWhere` | `58.748 us/op` | `57.674 us/op` | `-1.8%` |
-| `regexFilter` | `23.571 us/op` | `24.045 us/op` | `+2.0%` |
-| `returnDistinct` | `103.294 us/op` | `102.030 us/op` | `-1.2%` |
-| `simpleNodeMatch` | `20.418 us/op` | `20.417 us/op` | `+0.0%` |
-| `singleHopRelationship` | `30.085 us/op` | `29.920 us/op` | `-0.5%` |
-| `variableLengthPath` | `26.093 us/op` | `26.071 us/op` | `-0.1%` |
-| `withPipeline` | `76.079 us/op` | `76.587 us/op` | `+0.7%` |
+| `aggregationCountGroupBy` | `34.390 us/op` | `36.163 us/op` | `+5.2%` |
+| `countStar` | `2.257 us/op` | `2.447 us/op` | `+8.4%` |
+| `functionCalls` | `24.502 us/op` | `24.137 us/op` | `-1.5%` |
+| `nodeMatchWithWhere` | `57.823 us/op` | `57.595 us/op` | `-0.4%` |
+| `regexFilter` | `24.107 us/op` | `23.643 us/op` | `-1.9%` |
+| `returnDistinct` | `102.087 us/op` | `96.102 us/op` | `-5.9%` |
+| `simpleNodeMatch` | `19.335 us/op` | `19.243 us/op` | `-0.5%` |
+| `singleHopRelationship` | `30.458 us/op` | `29.534 us/op` | `-3.0%` |
+| `variableLengthPath` | `26.878 us/op` | `25.733 us/op` | `-4.3%` |
+| `withPipeline` | `84.302 us/op` | `76.995 us/op` | `-8.7%` |
 
-The noisier regex and distinct rows were repeated across three forks; their
-confidence intervals overlap. There is no measured method-level regression.
+The one-fork table's slower rows are `aggregationCountGroupBy` (`+5.2%`) and
+`countStar` (`+8.4%`), both below the workflow's configured 15% regression
+threshold. These are local measurements, separate from the same-runner CI
+artifact. A
+focused five-fork base/head confirmation measured aggregation at
+`34.605 +/- 0.526` versus `35.523 +/- 0.569 us/op` (`+2.7%`) and count at
+`2.344 +/- 0.017` versus `2.363 +/- 0.084 us/op` (`+0.8%`); both confidence
+interval pairs overlap. The separate budget-enabled comparison above reports
+the production-path cost.
 
 ### Android mapped graph regression
 
@@ -720,7 +993,7 @@ the primary pressure result.
 
 `GraphEndToEndBenchmark` covers Android JAR analysis, graph build, save, mapped
 load, and Cypher count query. The single-shot result was `30,182.415 ms/op` on
-`main` and `23,877.213 ms/op` on the branch. This benchmark is intentionally
+`main` and `24,165.015 ms/op` on the final branch. This benchmark is intentionally
 coarse and noisy, but it shows no end-to-end regression. The optimization does
 not change graph building or the persisted format.
 
@@ -745,6 +1018,6 @@ per-module threshold even though `check` passed locally before coverage was
 printed. Follow-up behavior tests cover unlabeled element-ID seeks, empty direct
 string-filter results, every supported mapped raw string field, mapped metadata
 access, ABI fallback, predicate admission bounds, and admission reset after
-cache clearing or LRU eviction. Final application line coverage is `98.3471%`
-for Core, `98.0897%` for Cypher, and `98.0072%` for WebGraph; the complete
-CI-equivalent `check` gate passes after these tests.
+cache clearing or LRU eviction. Final application line coverage is `98.2569%`
+for Core, `98.1846%` for Cypher, `98.0213%` for WebGraph, and `98.1046%` for
+Explore; the complete CI-equivalent `check` gate passes after these tests.

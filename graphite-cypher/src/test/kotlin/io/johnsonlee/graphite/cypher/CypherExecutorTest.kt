@@ -205,6 +205,12 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execute with maxRows caps literal limit above Int range`() {
+        val result = executor.execute("MATCH (n) RETURN n.id LIMIT 2147483648", maxRows = 2)
+        assertEquals(2, result.rows.size)
+    }
+
+    @Test
     fun `execute with maxRows preserves smaller literal limit`() {
         val result = executor.execute("MATCH (n) RETURN n.id LIMIT 1", maxRows = 5)
         assertEquals(1, result.rows.size)
@@ -220,6 +226,252 @@ class CypherExecutorTest {
     fun `execute with maxRows preserves non numeric literal limit semantics`() {
         val result = executor.execute("MATCH (n) RETURN n.id LIMIT true", maxRows = 2)
         assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `bound variable element id predicate uses normal match semantics`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) MATCH (n) " +
+                "WHERE elementId(n) = '${intConst42.value}' RETURN n.value"
+        )
+
+        assertEquals(listOf(mapOf("n.value" to 42)), result.rows)
+    }
+
+    @Test
+    fun `execution budget rejects non-positive limits`() {
+        assertFailsWith<IllegalArgumentException> { CypherExecutionBudget(0) }
+    }
+
+    @Test
+    fun `execution budget stops a full node scan and resets per query`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 2))
+
+        val error = assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute("MATCH (n) RETURN n.id")
+        }
+        assertEquals(2L, error.maxWorkUnits)
+        assertTrue(error.message.orEmpty().contains("selective label/filter"))
+
+        repeat(2) {
+            val result = budgeted.execute("MATCH (n) RETURN n.id LIMIT 2")
+            assertEquals(2, result.rows.size)
+        }
+    }
+
+    @Test
+    fun `execution context shares one budget across executors`() {
+        val chain = dataFlowChain(length = 1)
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+
+        val first = CypherExecutor(chain, context).execute(
+            "MATCH (n:IntConstant) RETURN n.value LIMIT 1"
+        )
+        assertEquals(listOf(mapOf("n.value" to 0)), first.rows)
+
+        assertFailsWith<CypherBudgetExceededException> {
+            CypherExecutor(chain, context).execute("MATCH (n:IntConstant) RETURN n.value LIMIT 1")
+        }
+    }
+
+    @Test
+    fun `execution budget counts relationship candidates`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute("MATCH (a:ParameterNode)-[r]->(b) RETURN b")
+        }
+    }
+
+    @Test
+    fun `execution budget charges single hop target nodes on fast and generic paths`() {
+        val queries = listOf(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1",
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name"
+        )
+
+        for (query in queries) {
+            val budgeted = CypherExecutor(dataFlowChain(length = 1), CypherExecutionBudget(maxWorkUnits = 2))
+            assertFailsWith<CypherBudgetExceededException> { budgeted.execute(query) }
+        }
+    }
+
+    @Test
+    fun `execution budget charges edges before type filtering on fast and generic paths`() {
+        val owner = TypeDescriptor("com.example.MixedEdges")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 0)
+        val target = LocalVariable(NodeId.next(), "target", valueType, method)
+        val builder = DefaultGraph.Builder().addNode(source).addNode(target)
+        repeat(100) {
+            val wrongTarget = ReturnNode(NodeId.next(), method, valueType)
+            builder.addNode(wrongTarget)
+            builder.addEdge(CallEdge(source.id, wrongTarget.id, false))
+        }
+        builder.addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+        val mixedGraph = builder.build()
+        val queries = listOf(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1",
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name"
+        )
+
+        for (query in queries) {
+            val budgeted = CypherExecutor(mixedGraph, CypherExecutionBudget(maxWorkUnits = 3))
+            assertFailsWith<CypherBudgetExceededException> { budgeted.execute(query) }
+        }
+    }
+
+    @Test
+    fun `execution budget survives a nested execution on the same pipeline`() {
+        val chain = dataFlowChain(length = 1)
+        lateinit var budgeted: CypherExecutor
+        var nested = false
+        val reentrantGraph = object : Graph by chain {
+            override fun outgoing(node: NodeId): Sequence<Edge> {
+                if (!nested) {
+                    nested = true
+                    budgeted.execute("RETURN 1")
+                }
+                return chain.outgoing(node)
+            }
+        }
+        budgeted = CypherExecutor(reentrantGraph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable) RETURN b.name LIMIT 1"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget charges element id seeks across union segments`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+        val id = intConst42.value.toString()
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (n) WHERE elementId(n) = '$id' RETURN n.id AS id " +
+                    "UNION ALL MATCH (n) WHERE elementId(n) = '$id' RETURN n.id AS id"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget stops variable length path traversal`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 2))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[:DATAFLOW*2..5]->(b:CallSiteNode) " +
+                    "RETURN a.value, b.callee_name"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget charges variable path materialization`() {
+        val budgeted = CypherExecutor(dataFlowChain(length = 1), CypherExecutionBudget(maxWorkUnits = 4))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[r:DATAFLOW*1..10000]->(b:LocalVariable) RETURN r LIMIT 1"
+            )
+        }
+    }
+
+    @Test
+    fun `variable path limit stops a high max hops traversal lazily`() {
+        val chain = dataFlowChain(length = 1_000)
+        var outgoingCalls = 0
+        val countingGraph = object : Graph by chain {
+            override fun outgoing(node: NodeId): Sequence<Edge> {
+                outgoingCalls++
+                return chain.outgoing(node)
+            }
+        }
+
+        val result = CypherExecutor(countingGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..100000]->(b:LocalVariable) RETURN b.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("b.name" to "local-0")), result.rows)
+        assertEquals(1, outgoingCalls)
+    }
+
+    @Test
+    fun `untyped variable path follows available relationships`() {
+        val result = CypherExecutor(dataFlowChain(length = 1)).execute(
+            "MATCH (a:IntConstant)-[*1..100]->(b:LocalVariable) RETURN b.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("b.name" to "local-0")), result.rows)
+    }
+
+    @Test
+    fun `single hop limit skips a target with the wrong type`() {
+        val result = CypherExecutor(dataFlowChain(length = 1)).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:CallSiteNode) RETURN b.callee_name LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `limit does not discard a later branch that completes the pattern`() {
+        val owner = TypeDescriptor("com.example.BranchLimit")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 0)
+        val deadEnd = LocalVariable(NodeId.next(), "dead-end", valueType, method)
+        val liveMiddle = LocalVariable(NodeId.next(), "live-middle", valueType, method)
+        val target = LocalVariable(NodeId.next(), "target", valueType, method)
+        val branchGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(deadEnd)
+            .addNode(liveMiddle)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, deadEnd.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, liveMiddle.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(liveMiddle.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = CypherExecutor(branchGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable)" +
+                "-[:DATAFLOW]->(c:LocalVariable) RETURN c.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("c.name" to "target")), result.rows)
+    }
+
+    @Test
+    fun `execution budget is shared by union segments`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 3))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (n:IntConstant) RETURN n.value AS value " +
+                    "UNION ALL MATCH (n:CallSiteNode) RETURN n.line AS value"
+            )
+        }
+    }
+
+    @Test
+    fun `execution budget does not charge metadata label histogram`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
+
+        val result = budgeted.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+
+        assertEquals(9L, result.rows.first { it["label"] == "Constant" }["c"])
     }
 
     @Test
@@ -487,6 +739,16 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `match with STARTS WITH filter and limit`() {
+        val result = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.callee_name STARTS WITH 'sa' " +
+                "RETURN n.callee_name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("n.callee_name" to "save")), result.rows)
+    }
+
+    @Test
     fun `match with CONTAINS filter`() {
         val result = executor.execute("MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'av' RETURN n.callee_name")
         assertEquals(1, result.rows.size)
@@ -705,6 +967,111 @@ class CypherExecutorTest {
         val result = executor.execute("MATCH (n:IntConstant) RETURN count(*) AS cnt")
         assertEquals(1, result.rows.size)
         assertEquals(2L, result.rows[0]["cnt"])
+    }
+
+    @Test
+    fun `label histogram uses node count metadata without scanning nodes`() {
+        var countCalls = 0
+        val metadataGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("label histogram must not scan nodes")
+
+            override fun nodeCount(type: Class<out Node>): Long? {
+                countCalls++
+                return graph.nodeCount(type)
+            }
+        }
+
+        val result = CypherExecutor(metadataGraph).execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+        val counts = result.rows.associate { it["label"] as String to it["c"] as Long }
+
+        assertEquals(listOf("label", "c"), result.columns)
+        assertEquals("Constant", result.rows.first()["label"])
+        assertEquals(9L, counts["Constant"])
+        assertEquals(2L, counts["CallSiteNode"])
+        assertEquals(2L, counts["Annotation"])
+        assertEquals(1L, counts["Resource"])
+        assertEquals(nodeLabelDescriptors.size, countCalls)
+    }
+
+    @Test
+    fun `label histogram supports aliases and limit`() {
+        val result = executor.execute(
+            """
+            MATCH (node)
+            UNWIND labels(node) AS rawLabel
+            RETURN rawLabel AS kind, count(*) AS total
+            ORDER BY total DESC
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertEquals(listOf("kind", "total"), result.columns)
+        assertEquals(listOf(mapOf("kind" to "Constant", "total" to 9L)), result.rows)
+    }
+
+    @Test
+    fun `label histogram with label ordering falls back without changing results`() {
+        val result = executor.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY label
+            LIMIT 50
+            """.trimIndent()
+        )
+
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals(result.rows.map { it["label"] }.sortedBy(Any?::toString), result.rows.map { it["label"] })
+    }
+
+    @Test
+    fun `label histogram preserves literal limit above Int range`() {
+        val query = """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+        """.trimIndent()
+
+        val expected = executor.execute("$query LIMIT 2147483647")
+        val result = executor.execute("$query LIMIT 2147483648")
+
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `label histogram falls back when node counts are unavailable`() {
+        var scanned = false
+        val scanningGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).onEach { scanned = true }
+
+            override fun nodeCount(type: Class<out Node>): Long? = null
+        }
+
+        val result = CypherExecutor(scanningGraph).execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertTrue(scanned)
+        assertEquals(listOf(mapOf("label" to "Constant", "c" to 9L)), result.rows)
     }
 
     // --- EXISTS function ---
@@ -1817,5 +2184,20 @@ class CypherExecutorTest {
         val constant = IntConstant(NodeId.next(), 42)
         assertTrue(PropertyFilter("value", FilterOperator.EQUALS, 42L, emptySet(), "n").matches(constant))
         assertFalse(PropertyFilter("value", FilterOperator.LESS_THAN, "x", emptySet(), "n").matches(constant))
+    }
+
+    private fun dataFlowChain(length: Int): Graph {
+        val owner = TypeDescriptor("com.example.PathBudget")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val builder = DefaultGraph.Builder()
+        var previous: Node = IntConstant(NodeId.next(), 0).also(builder::addNode)
+        repeat(length) { index ->
+            val next = LocalVariable(NodeId.next(), "local-$index", valueType, method)
+            builder.addNode(next)
+            builder.addEdge(DataFlowEdge(previous.id, next.id, DataFlowKind.ASSIGN))
+            previous = next
+        }
+        return builder.build()
     }
 }

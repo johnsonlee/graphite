@@ -25,10 +25,49 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CrossGraphCypherExecutorTest {
+
+    @Test
+    fun `retains JVM one argument constructor`() {
+        val constructor = assertNotNull(
+            CrossGraphCypherExecutor::class.java.getConstructor(List::class.java)
+        )
+        val executor = constructor.newInstance(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10))))
+        ) as CrossGraphCypherExecutor
+
+        assertEquals(10, executor.execute("MATCH (n:IntConstant) RETURN n.value").rows.single()["n.value"])
+    }
+
+    @Test
+    fun `retains QueryPipeline JVM one argument list constructor`() {
+        val constructor = assertNotNull(QueryPipeline::class.java.getConstructor(List::class.java))
+        val pipeline = constructor.newInstance(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10))))
+        ) as QueryPipeline
+
+        val result = pipeline.execute(CypherDslAdapter.parse("MATCH (n:IntConstant) RETURN n.value"))
+        assertEquals(10, result.rows.single()["n.value"])
+    }
+
+    @Test
+    fun `execution budget charges qualified element id seeks across union segments`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf(CypherGraph("orders", graph(IntConstant(NodeId(1), 10)))),
+            CypherExecutionBudget(maxWorkUnits = 1)
+        )
+
+        assertFailsWith<CypherBudgetExceededException> {
+            executor.execute(
+                "MATCH (n) WHERE elementId(n) = 'orders:1' RETURN n.id AS id " +
+                    "UNION ALL MATCH (n) WHERE elementId(n) = 'orders:1' RETURN n.id AS id"
+            )
+        }
+    }
 
     @Test
     fun `qualifies colliding local node ids and records row provenance`() {
@@ -123,6 +162,50 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `label histogram sums type counts and retains contributors`() {
+        val executor = executor(
+            "orders" to graph(
+                IntConstant(NodeId(1), 10),
+                IntConstant(NodeId(2), 20),
+                StringConstant(NodeId(3), "shared")
+            ),
+            "billing" to graph(IntConstant(NodeId(1), 30))
+        )
+
+        val result = executor.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+        val constant = result.rows.first { it["label"] == "Constant" }
+        val string = result.rows.first { it["label"] == "StringConstant" }
+
+        assertEquals(4L, constant["c"])
+        assertEquals(listOf("billing", "orders"), graphIds(constant))
+        assertEquals(1L, string["c"])
+        assertEquals(listOf("orders"), graphIds(string))
+    }
+
+    @Test
+    fun `cross graph execution shares one work budget`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("orders", graph(IntConstant(NodeId(1), 10), IntConstant(NodeId(2), 20))),
+                CypherGraph("billing", graph(IntConstant(NodeId(1), 30), IntConstant(NodeId(2), 40)))
+            ),
+            CypherExecutionBudget(maxWorkUnits = 3)
+        )
+
+        assertFailsWith<CypherBudgetExceededException> {
+            executor.execute("MATCH (n) RETURN n.id")
+        }
+    }
+
+    @Test
     fun `relationship and named path rows retain graph identity`() {
         val orders = DefaultGraph.Builder()
             .addNode(IntConstant(NodeId(1), 10))
@@ -152,6 +235,12 @@ class CrossGraphCypherExecutorTest {
             "MATCH (a:IntConstant)-[r:DATAFLOW*1..2]->(b:IntConstant) RETURN r"
         )
         assertEquals("orders", (variablePath.rows.single()["r"] as Map<*, *>)["graphId"])
+
+        val budgetedVariablePath = CrossGraphCypherExecutor(
+            listOf(CypherGraph("orders", orders)),
+            CypherExecutionBudget(maxWorkUnits = 20)
+        ).execute("MATCH (a:IntConstant)-[r:DATAFLOW*1..2]->(b:IntConstant) RETURN r")
+        assertEquals("orders", (budgetedVariablePath.rows.single()["r"] as Map<*, *>)["graphId"])
     }
 
     @Test

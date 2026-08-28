@@ -61,6 +61,30 @@ private const val FUNCTION_STDEVP = "stdevp"
 private const val DEFAULT_PERCENTILE = 0.5
 private const val CONSTANT_LABEL = "Constant"
 
+internal data class NodeLabelDescriptor(
+    val type: Class<out Node>,
+    val labels: List<String>
+)
+
+internal val nodeLabelDescriptors = listOf(
+    NodeLabelDescriptor(CallSiteNode::class.java, listOf("CallSiteNode")),
+    NodeLabelDescriptor(IntConstant::class.java, listOf("IntConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(StringConstant::class.java, listOf("StringConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(LongConstant::class.java, listOf("LongConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(FloatConstant::class.java, listOf("FloatConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(DoubleConstant::class.java, listOf("DoubleConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(BooleanConstant::class.java, listOf("BooleanConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(NullConstant::class.java, listOf("NullConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(EnumConstant::class.java, listOf("EnumConstant", CONSTANT_LABEL)),
+    NodeLabelDescriptor(LocalVariable::class.java, listOf("LocalVariable")),
+    NodeLabelDescriptor(FieldNode::class.java, listOf("FieldNode")),
+    NodeLabelDescriptor(ParameterNode::class.java, listOf("ParameterNode")),
+    NodeLabelDescriptor(ReturnNode::class.java, listOf("ReturnNode")),
+    NodeLabelDescriptor(ResourceFileNode::class.java, listOf("ResourceFileNode", "ResourceFile")),
+    NodeLabelDescriptor(ResourceValueNode::class.java, listOf("ResourceValueNode", "ResourceValue", "Resource")),
+    NodeLabelDescriptor(AnnotationNode::class.java, listOf("AnnotationNode", "Annotation"))
+)
+
 /**
  * Complete openCypher function library.
  *

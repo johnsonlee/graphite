@@ -10,6 +10,8 @@ import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
+import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
+import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.graph.ClassDependency
@@ -22,7 +24,9 @@ import java.io.IOException
 import java.nio.file.Path
 
 @Suppress("LargeClass", "StringLiteralDuplication", "TooManyFunctions")
-internal class ExploreRoutes {
+internal class ExploreRoutes(
+    private val cypherGuard: CypherQueryGuard = CypherQueryGuard()
+) {
 
     private val endpointExtractor = EndpointExtractor()
     private val openApiSpecBuilder = OpenApiSpecBuilder()
@@ -518,18 +522,7 @@ internal class ExploreRoutes {
                         return@withGraph
                     }
                 }
-                try {
-                    val result = CypherExecutor(graph).execute(query, boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT))
-                    ctx.json(
-                        mapOf(
-                            API_FIELD_COLUMNS to result.columns,
-                            API_FIELD_ROWS to result.rows,
-                            API_FIELD_ROW_COUNT to result.rows.size
-                        )
-                    )
-                } catch (e: Exception) {
-                    ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to (e.message ?: "Query execution failed")))
-                }
+                executeSingleGraphCypher(ctx, graph, query)
             }
         }
 
@@ -539,19 +532,29 @@ internal class ExploreRoutes {
                     ctx.status(HTTP_BAD_REQUEST).result("Missing 'query' parameter")
                     return@withGraph
                 }
-                try {
-                    val result = CypherExecutor(graph).execute(query, boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT))
-                    ctx.json(
-                        mapOf(
-                            API_FIELD_COLUMNS to result.columns,
-                            API_FIELD_ROWS to result.rows,
-                            API_FIELD_ROW_COUNT to result.rows.size
-                        )
-                    )
-                } catch (e: Exception) {
-                    ctx.status(HTTP_BAD_REQUEST).json(mapOf(API_FIELD_ERROR to (e.message ?: "Query execution failed")))
-                }
+                executeSingleGraphCypher(ctx, graph, query)
             }
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun executeSingleGraphCypher(ctx: Context, graph: Graph, query: String) {
+        try {
+            val result = cypherGuard.execute { executionContext ->
+                CypherExecutor(graph, executionContext).execute(
+                    query,
+                    boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT)
+                )
+            }
+            ctx.json(
+                mapOf(
+                    API_FIELD_COLUMNS to result.columns,
+                    API_FIELD_ROWS to result.rows,
+                    API_FIELD_ROW_COUNT to result.rows.size
+                )
+            )
+        } catch (error: RuntimeException) {
+            respondCypherError(ctx, error)
         }
     }
 
@@ -656,9 +659,12 @@ internal class ExploreRoutes {
         val limit = boundedLimit(ctx, DEFAULT_CYPHER_ROW_LIMIT, MAX_CYPHER_ROW_LIMIT)
         withAllGraphs(ctx, acquire) { leases ->
             try {
-                val result = CrossGraphCypherExecutor(
-                    leases.map { lease -> CypherGraph(lease.id, lease.graph) }
-                ).execute(query, limit)
+                val result = cypherGuard.execute { executionContext ->
+                    CrossGraphCypherExecutor(
+                        leases.map { lease -> CypherGraph(lease.id, lease.graph) },
+                        executionContext
+                    ).execute(query, limit)
+                }
                 ctx.json(
                     mapOf(
                         API_FIELD_COLUMNS to result.columns,
@@ -668,9 +674,7 @@ internal class ExploreRoutes {
                     )
                 )
             } catch (error: RuntimeException) {
-                ctx.status(HTTP_BAD_REQUEST).json(
-                    mapOf(API_FIELD_ERROR to (error.message ?: "Query execution failed"))
-                )
+                respondCypherError(ctx, error)
             }
         }
     }
@@ -687,6 +691,22 @@ internal class ExploreRoutes {
             return null
         }
         return query.trim()
+    }
+
+    private fun respondCypherError(ctx: Context, error: Throwable) {
+        val code = when (error) {
+            is CypherConcurrencyLimitException -> "cypher_concurrency_limit"
+            is CypherBudgetExceededException -> "cypher_work_budget_exceeded"
+            else -> "cypher_query_failed"
+        }
+        val status = if (code == "cypher_query_failed") HTTP_BAD_REQUEST else HTTP_TOO_MANY_REQUESTS
+        if (error is CypherConcurrencyLimitException) ctx.header("Retry-After", "1")
+        ctx.status(status).json(
+            mapOf(
+                API_FIELD_ERROR to (error.message ?: "Query execution failed"),
+                "code" to code
+            )
+        )
     }
 
     private fun registerAllC4Response(ctx: Context, acquire: (Context) -> List<GraphLease>) {
@@ -756,44 +776,51 @@ internal class ExploreRoutes {
             val graphIds = if (request.allGraphs) registry.ids() else request.graphIds
             val leases = registry.acquireAll(graphIds)
             try {
-                when (request.mode) {
-                    MultiGraphQueryMode.CROSS_GRAPH -> {
-                        require(request.perGraphLimit == null) { "perGraphLimit is only valid in fanout mode" }
-                        require(!request.includeGraphRows) { "includeGraphRows is only valid in fanout mode" }
-                        val result = CrossGraphCypherExecutor(
-                            leases.map { lease -> CypherGraph(lease.id, lease.graph) }
-                        ).execute(request.query, request.limit)
-                        ctx.json(
-                            mapOf(
-                                API_PARAM_MODE to request.mode.wireName,
-                                API_FIELD_GRAPHS to graphIds,
-                                "graphCount" to graphIds.size,
-                                API_FIELD_COLUMNS to result.columns,
-                                API_FIELD_ROWS to result.rows,
-                                API_FIELD_ROW_COUNT to result.rows.size,
-                                API_PARAM_LIMIT to request.limit
+                cypherGuard.execute { executionContext ->
+                    when (request.mode) {
+                        MultiGraphQueryMode.CROSS_GRAPH -> {
+                            require(request.perGraphLimit == null) { "perGraphLimit is only valid in fanout mode" }
+                            require(!request.includeGraphRows) { "includeGraphRows is only valid in fanout mode" }
+                            val result = CrossGraphCypherExecutor(
+                                leases.map { lease -> CypherGraph(lease.id, lease.graph) },
+                                executionContext
+                            ).execute(request.query, request.limit)
+                            ctx.json(
+                                mapOf(
+                                    API_PARAM_MODE to request.mode.wireName,
+                                    API_FIELD_GRAPHS to graphIds,
+                                    "graphCount" to graphIds.size,
+                                    API_FIELD_COLUMNS to result.columns,
+                                    API_FIELD_ROWS to result.rows,
+                                    API_FIELD_ROW_COUNT to result.rows.size,
+                                    API_PARAM_LIMIT to request.limit
+                                )
                             )
-                        )
-                    }
-                    MultiGraphQueryMode.FANOUT -> {
-                        val perGraphLimit = request.perGraphLimit
-                            ?: defaultPerGraphLimit(graphIds.size, request.limit)
-                        ctx.json(executeFanoutQuery(request, leases, perGraphLimit))
+                        }
+                        MultiGraphQueryMode.FANOUT -> {
+                            val perGraphLimit = request.perGraphLimit
+                                ?: defaultPerGraphLimit(graphIds.size, request.limit)
+                            ctx.json(executeFanoutQuery(request, leases, perGraphLimit, executionContext))
+                        }
                     }
                 }
             } finally {
                 leases.forEach { it.close() }
             }
         }.onFailure { error ->
-            val status = if (error is GraphNotLoadedException) HTTP_NOT_FOUND else HTTP_BAD_REQUEST
-            ctx.status(status).json(mapOf(API_FIELD_ERROR to (error.message ?: "Query execution failed")))
+            if (error is GraphNotLoadedException) {
+                ctx.status(HTTP_NOT_FOUND).json(mapOf(API_FIELD_ERROR to error.message))
+            } else {
+                respondCypherError(ctx, error)
+            }
         }
     }
 
     private fun executeFanoutQuery(
         request: MultiGraphCypherRequest,
         leases: List<GraphLease>,
-        perGraphLimit: Int
+        perGraphLimit: Int,
+        executionContext: CypherExecutionContext
     ): Map<String, Any?> {
         val results = mutableListOf<MultiGraphCypherResult>()
         var remainingRows = request.limit
@@ -803,7 +830,8 @@ internal class ExploreRoutes {
                 truncated = true
                 break
             }
-            val result = CypherExecutor(lease.graph).execute(request.query, minOf(perGraphLimit, remainingRows))
+            val result = CypherExecutor(lease.graph, executionContext)
+                .execute(request.query, minOf(perGraphLimit, remainingRows))
             val rows = result.rows.map { rowWithGraphId(lease.id, it) }
             remainingRows -= rows.size
             truncated = truncated || remainingRows <= 0
@@ -1133,6 +1161,7 @@ internal class ExploreRoutes {
         private const val HTTP_BAD_REQUEST = 400
         private const val HTTP_NOT_FOUND = 404
         private const val HTTP_PAYLOAD_TOO_LARGE = 413
+        private const val HTTP_TOO_MANY_REQUESTS = 429
 
         private const val DEFAULT_ENTITY_LIMIT = 50
         private const val DEFAULT_EDGE_LIMIT = 200
