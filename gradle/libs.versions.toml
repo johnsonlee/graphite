@@ -16,6 +16,7 @@ tika = "2.9.2"
 hive = "4.0.0"
 kotlin-compiler-fixture = "2.0.21"
 javalin = "6.4.0"
+micrometer = "1.13.4"
 jmh = "1.37"
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -41,5 +42,8 @@ tika-app = { module = "org.apache.tika:tika-app", version.ref = "tika" }
 hive-exec = { module = "org.apache.hive:hive-exec", version.ref = "hive" }
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin-compiler-fixture" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+javalin-micrometer = { module = "io.javalin:javalin-micrometer", version.ref = "javalin" }
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }

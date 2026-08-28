@@ -11,6 +11,7 @@ import org.openjdk.jmh.annotations.Level
 import org.openjdk.jmh.annotations.Measurement
 import org.openjdk.jmh.annotations.Mode
 import org.openjdk.jmh.annotations.OutputTimeUnit
+import org.openjdk.jmh.annotations.Param
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.Setup
 import org.openjdk.jmh.annotations.State
@@ -29,17 +30,27 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 1)
 @Fork(1)
 open class CypherHttpBenchmark {
+    @Param("false", "true")
+    var metricsEnabled: Boolean = false
+
     private lateinit var app: Javalin
     private lateinit var client: HttpClient
     private lateinit var request: HttpRequest
+    private var performanceMetrics: ServerPerformanceMetrics? = null
 
     @Setup(Level.Trial)
     fun setup() {
+        performanceMetrics = if (metricsEnabled) ServerPerformanceMetrics() else null
         app = Javalin.create { config ->
             config.showJavalinBanner = false
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
-        }.start(0)
-        ExploreRoutes().register(app, DefaultGraph.Builder().build())
+            performanceMetrics?.configure(config)
+        }
+        performanceMetrics?.registerRoutes(app)
+        val recorder = performanceMetrics?.cypherRecorder(DEFAULT_MAX_CONCURRENT_CYPHER)
+            ?: NoOpCypherPerformanceRecorder
+        ExploreRoutes(CypherQueryGuard(performance = recorder)).register(app, DefaultGraph.Builder().build())
+        app.start(0)
         client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .build()
@@ -52,6 +63,7 @@ open class CypherHttpBenchmark {
     @TearDown(Level.Trial)
     fun tearDown() {
         app.stop()
+        performanceMetrics?.close()
     }
 
     @Benchmark

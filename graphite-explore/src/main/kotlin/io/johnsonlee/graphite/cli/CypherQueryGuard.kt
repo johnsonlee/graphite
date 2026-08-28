@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.cli
 
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
+import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
@@ -27,7 +28,8 @@ internal class CypherConcurrencyLimitException(maxConcurrent: Int) : RuntimeExce
 
 internal class CypherQueryGuard(
     private val maxConcurrent: Int = DEFAULT_MAX_CONCURRENT_CYPHER,
-    maxWorkUnits: Long = DEFAULT_CYPHER_WORK_BUDGET
+    maxWorkUnits: Long = DEFAULT_CYPHER_WORK_BUDGET,
+    private val performance: CypherPerformanceRecorder = NoOpCypherPerformanceRecorder
 ) : Closeable {
     private val permits: Semaphore
     private val executionBudget = CypherExecutionBudget(maxWorkUnits)
@@ -48,12 +50,24 @@ internal class CypherQueryGuard(
         )
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun <T> execute(block: (CypherExecutionContext) -> T): T {
         check(!closed.get()) { CYPHER_GUARD_CLOSED }
-        if (!permits.tryAcquire()) throw CypherConcurrencyLimitException(maxConcurrent)
+        if (!permits.tryAcquire()) {
+            performance.reject()
+            throw CypherConcurrencyLimitException(maxConcurrent)
+        }
+        val startedAtNanos = performance.start()
+        var outcome = CypherQueryOutcome.FAILED
         return try {
-            block(CypherExecutionContext(executionBudget))
+            block(CypherExecutionContext(executionBudget)).also {
+                outcome = CypherQueryOutcome.SUCCESS
+            }
+        } catch (error: RuntimeException) {
+            outcome = error.toQueryOutcome()
+            throw error
         } finally {
+            performance.stop(startedAtNanos, outcome)
             permits.release()
         }
     }
@@ -63,13 +77,17 @@ internal class CypherQueryGuard(
         block: (CypherExecutionContext) -> T
     ): CypherQueryTask<T> {
         check(!closed.get()) { CYPHER_GUARD_CLOSED }
-        if (!permits.tryAcquire()) throw CypherConcurrencyLimitException(maxConcurrent)
+        if (!permits.tryAcquire()) {
+            performance.reject()
+            throw CypherConcurrencyLimitException(maxConcurrent)
+        }
 
-        val work = CypherQueryWork(cancellationSignal, block)
+        val work = CypherQueryWork(cancellationSignal, block, performance.start())
         active.add(work)
         try {
             executor.execute(work)
         } catch (error: RejectedExecutionException) {
+            performance.reject()
             work.reject(error)
         }
         return CypherQueryTask(work.completion, work::cancel)
@@ -85,7 +103,8 @@ internal class CypherQueryGuard(
 
     private inner class CypherQueryWork<T>(
         private val cancellationSignal: CypherCancellationSignal,
-        private val block: (CypherExecutionContext) -> T
+        private val block: (CypherExecutionContext) -> T,
+        private val startedAtNanos: Long
     ) : Runnable {
         val completion = CompletableFuture<T>()
         private val runner = AtomicReference<Thread?>()
@@ -120,6 +139,12 @@ internal class CypherQueryGuard(
         private fun finish(outcome: Result<T>) {
             if (!finished.compareAndSet(false, true)) return
             active.remove(this)
+            val queryOutcome = if (cancellationSignal.isCancelled) {
+                CypherQueryOutcome.CANCELLED
+            } else {
+                outcome.exceptionOrNull()?.toQueryOutcome() ?: CypherQueryOutcome.SUCCESS
+            }
+            performance.stop(startedAtNanos, queryOutcome)
             permits.release()
             outcome.fold(completion::complete, completion::completeExceptionally)
         }
@@ -143,3 +168,9 @@ private class CypherThreadFactory : ThreadFactory {
 }
 
 private val NEXT_CYPHER_THREAD = AtomicInteger()
+
+private fun Throwable.toQueryOutcome(): CypherQueryOutcome = when (this) {
+    is CypherQueryCancelledException -> CypherQueryOutcome.CANCELLED
+    is CypherBudgetExceededException -> CypherQueryOutcome.BUDGET_EXCEEDED
+    else -> CypherQueryOutcome.FAILED
+}

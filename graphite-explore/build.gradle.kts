@@ -20,6 +20,9 @@ dependencies {
     implementation(libs.picocli)
     implementation(libs.gson)
     implementation(libs.javalin)
+    implementation(libs.javalin.micrometer)
+    implementation(libs.micrometer.core)
+    implementation(libs.micrometer.registry.prometheus)
 
     add(integrationFixtures.name, libs.android.all)
 
