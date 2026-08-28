@@ -73,12 +73,14 @@ The retained implementation:
   completion, allowing `HttpConnection` to resume keep-alive reads;
 - delegates readable sockets back to Jetty, cancels on reset/connection error, and retires the monitor without
   cancellation on a clean input half-close so the client can still read the response;
-- replays currently readable HTTP bytes into Jetty's request buffer, then restores read interest so a later reset is
-  still observed while preserving safe pipelined requests in arrival order;
+- replays only the currently readable bytes that fit in Jetty's request buffer, leaving any excess in the socket buffer
+  instead of consuming and dropping it, then restores read interest while capacity remains so a later reset is still
+  observed;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
-- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics, and wraps Java
-  `Pattern` input with a cancellation-aware `CharSequence` without changing the existing regex language;
+- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; Java `Pattern`
+  receives a cancellation-aware `CharSequence` for long inputs and high-backtracking-risk patterns, while ordinary
+  short patterns keep the native `String` path;
 - checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
   result after cancellation;
 - registers the route continuation before scheduling work, keeps the concurrency permit and graph leases through JSON
@@ -98,8 +100,9 @@ Behavior verification:
 `CypherClientCancellationTest` sends TCP RST during an infinite candidate scan and a graph-free ten-million-element
 `range`/`UNWIND` query. Each query stops and its only permit is reusable within 2 seconds. A half-close regression sends
 `SHUT_WR` after a complete request and still receives the full HTTP 200 response. Raw-socket regressions run a slow
-Cypher query and `/openapi.json` both sequentially and pipelined over the same keep-alive connection; both responses are
-HTTP 200. A pipeline-then-RST regression proves the monitor continues observing the socket after buffering the next
+Cypher query and `/openapi.json` both sequentially and pipelined over the same keep-alive connection; all responses are
+HTTP 200. One regression pipelines 150 requests, exceeding Jetty's request buffer, and verifies that all 151 responses
+arrive. A pipeline-then-RST regression proves the monitor continues observing the socket after buffering the next
 request. Deterministic barriers prove cancellation occurs inside graph-free loops, percentile sorting, and regular
 expression matching. Compatibility tests preserve Java backreferences, look-around, possessive quantifiers,
 character-class intersections, and all five default line terminators. Guard tests prove cancellation wins after an
@@ -154,6 +157,12 @@ java -jar <cypher-jmh.jar> \
 | `budgetedNodeScan` | 52.097 us/op | 50.262 us/op | -3.5% |
 | `budgetedRelationship` | 158.963 us/op | 145.894 us/op | -8.2% |
 | `budgetedVariableLengthPath` | 252.135 us/op | 237.207 us/op | -5.9% |
+| `budgetedGeneralRegex` | 1,117.394 us/op | 921.847 us/op | -17.5% |
+
+`budgetedGeneralRegex` executes the reviewed 10,000-row, 114-character `[a-z]+[0-9]+` production path. The same JMH
+harness was copied into the base checkout before both jars were built. Its 99.9% intervals are `1,103.873-1,130.915`
+us/op for `v2.4.0` and `890.616-953.078` us/op for the candidate. The candidate removes the previous per-character
+wrapper cost for ordinary short patterns while retaining matcher-internal cancellation for long or risky inputs.
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:
 

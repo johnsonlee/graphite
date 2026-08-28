@@ -77,6 +77,9 @@ open class BudgetedCypherBenchmark {
 
     @Benchmark
     fun budgetedVariableLengthPath(): CypherResult = budgeted.execute(VARIABLE_PATH_QUERY)
+
+    @Benchmark
+    fun budgetedGeneralRegex(): CypherResult = budgeted.execute(GENERAL_REGEX_QUERY)
 }
 
 private const val GRAPH_WIDTH = 500
@@ -86,3 +89,6 @@ private const val RELATIONSHIP_QUERY =
     "MATCH (n:IntConstant)-[:DATAFLOW]->(v:LocalVariable) RETURN n.value, v.name LIMIT 500"
 private const val VARIABLE_PATH_QUERY =
     "MATCH (n:IntConstant)-[r:DATAFLOW*2..2]->(c:CallSiteNode) RETURN r LIMIT 500"
+private val GENERAL_REGEX_QUERY =
+    "UNWIND range(1, 10000) AS x WITH '${"a".repeat(100)}12345678901234' AS s " +
+        "WHERE s =~ '[a-z]+[0-9]+' RETURN count(*) AS n"

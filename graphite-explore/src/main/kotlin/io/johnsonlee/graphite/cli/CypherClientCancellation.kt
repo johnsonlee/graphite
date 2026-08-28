@@ -118,26 +118,33 @@ internal class DisconnectMonitor(
             return true
         }
 
-        val probe = ByteBuffer.allocate(connection.inputBufferSize)
-        return try {
-            val read = socketEndPoint.channel.read(probe)
-            when {
-                read > 0 -> {
-                    probe.flip()
-                    // Keep pipelined bytes buffered until Jetty completes the active response.
-                    connection.onUpgradeTo(probe)
-                    true
-                }
-                read < 0 -> {
-                    connection.onFillable()
-                    true
-                }
-                else -> true
-            }
-        } catch (error: IOException) {
-            socketEndPoint.close(error)
-            cancel()
+        val buffered = connection.onUpgradeFrom()
+        val available = connection.inputBufferSize - (buffered?.remaining() ?: 0)
+        buffered?.let(connection::onUpgradeTo)
+        return if (available <= 0) {
             false
+        } else {
+            val probe = ByteBuffer.allocate(available)
+            try {
+                val read = socketEndPoint.channel.read(probe)
+                when {
+                    read > 0 -> {
+                        probe.flip()
+                        // Keep pipelined bytes buffered until Jetty completes the active response.
+                        connection.onUpgradeTo(probe)
+                        read < available
+                    }
+                    read < 0 -> {
+                        connection.onFillable()
+                        true
+                    }
+                    else -> true
+                }
+            } catch (error: IOException) {
+                socketEndPoint.close(error)
+                cancel()
+                false
+            }
         }
     }
 

@@ -189,6 +189,56 @@ class CypherClientCancellationTest {
     }
 
     @Test
+    fun `pipelined requests larger than the Jetty request buffer are preserved`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val node = IntConstant(NodeId.next(), 1)
+        val backing = DefaultGraph.Builder().addNode(node).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (type.isAssignableFrom(IntConstant::class.java)) {
+                    started.countDown()
+                    release.await()
+                    @Suppress("UNCHECKED_CAST")
+                    yield(node as T)
+                }
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, blockingGraph)
+            Socket("127.0.0.1", app.port()).use { socket ->
+                socket.soTimeout = 20_000
+                val query = URLEncoder.encode(
+                    "MATCH (n:IntConstant) WHERE n.value + 0 = 1 RETURN n.value LIMIT 1",
+                    StandardCharsets.UTF_8
+                )
+                writeRequest(socket, "GET", "/api/cypher?query=$query")
+                assertTrue(started.await(5, TimeUnit.SECONDS), "The first request did not start")
+
+                repeat(LARGE_PIPELINE_REQUESTS) {
+                    writeRequest(socket, "GET", "/openapi.json")
+                }
+                release.countDown()
+
+                assertEquals(200, readResponse(socket).status)
+                repeat(LARGE_PIPELINE_REQUESTS) { index ->
+                    val response = readResponse(socket)
+                    assertEquals(200, response.status, "Pipelined response ${index + 1}")
+                    assertTrue(response.body.contains("\"openapi\""), "Pipelined response ${index + 1}")
+                }
+            }
+        } finally {
+            release.countDown()
+            app.stop()
+        }
+    }
+
+    @Test
     fun `servlet failures and timeouts cancel the query`() {
         val cancellations = AtomicInteger()
         val listener = CypherCancellationAsyncListener(cancellations::incrementAndGet)
@@ -447,4 +497,5 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
 private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
+private const val LARGE_PIPELINE_REQUESTS = 150
 private const val GRAPH_FREE_PROGRESS_CHECKPOINTS = 10

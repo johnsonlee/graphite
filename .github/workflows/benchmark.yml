@@ -51,6 +51,8 @@ jobs:
 
     - name: Build JMH jars
       run: |
+        cp candidate/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt \
+          base/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt
         base/gradlew -p base :cypher:jmhJar --no-daemon
         candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
 
@@ -60,7 +62,7 @@ jobs:
         JMH_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${JMH_JAR}"
         java -jar "${JMH_JAR}" \
-          'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
           -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh.json"
 
     - name: Benchmark PR
@@ -68,7 +70,7 @@ jobs:
         JMH_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${JMH_JAR}"
         java -jar "${JMH_JAR}" \
-          'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
           -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh.json"
 
     - name: Compare method-level results
@@ -85,10 +87,10 @@ jobs:
           CANDIDATE_JAR=$(find candidate/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
           BASE_JAR=$(find base/graphite-cypher/build/libs -name '*-jmh.jar' -print -quit)
           java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
             -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh-confirmation.json"
           java -jar "${BASE_JAR}" \
-            'io.johnsonlee.graphite.cypher.CypherBenchmark.*' \
+            'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
             -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh-confirmation.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
             --initial benchmark-results/initial-method-status.json \

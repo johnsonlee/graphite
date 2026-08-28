@@ -448,6 +448,37 @@ class ExpressionEvaluatorTest {
     }
 
     @Test
+    fun `tracked ordinary regex avoids per-character cancellation polling`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        val value = "a".repeat(100) + "12345678901234"
+
+        assertEquals(
+            true,
+            trackedEvaluator.evaluate(
+                CypherExpr.RegexMatch(lit(value), lit("[a-z]+[0-9]+")),
+                emptyMap()
+            )
+        )
+        assertEquals(1, cancellationChecks)
+    }
+
+    @Test
+    fun `tracked risky regex polls cancellation inside the matcher for short input`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+
+        assertEquals(
+            false,
+            trackedEvaluator.evaluate(
+                CypherExpr.RegexMatch(lit("a".repeat(20) + "!"), lit("(a+)+$")),
+                emptyMap()
+            )
+        )
+        assertTrue(cancellationChecks > 1)
+    }
+
+    @Test
     fun `regex with null returns null`() {
         assertNull(eval(CypherExpr.RegexMatch(lit(null), lit("hel.*"))))
         assertNull(eval(CypherExpr.RegexMatch(lit("hello"), lit(null))))

@@ -285,9 +285,10 @@ half-close until the server attempts to write the response.
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
 Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.
-The metric set prioritizes runtime performance: JVM heap, GC and threads;
-process CPU, uptime and file descriptors; Jetty connections, thread-pool load
-and route-template HTTP latency; and Cypher active queries, concurrency limit,
+Runtime and HTTP performance metrics are the primary surface: JVM heap, GC and
+threads; process CPU, uptime and file descriptors; and Jetty connections,
+thread-pool load and route-template HTTP latency. Graphite-specific metrics are
+secondary and currently cover Cypher active queries, concurrency limit,
 rejections and duration by fixed outcome. Graph ids, query text, keywords,
 classes and methods are never used as metric labels. HTTP URI labels are route
 templates and are capped at 64 distinct values.
