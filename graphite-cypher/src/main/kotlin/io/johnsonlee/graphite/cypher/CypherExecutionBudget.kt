@@ -41,7 +41,7 @@ class CypherCancellationSignal(
 
     fun cancel(): Boolean = cancelled.compareAndSet(false, true)
 
-    internal fun throwIfCancelled() {
+    fun throwIfCancelled() {
         checkObserver?.invoke()
         if (isCancelled) throw CypherQueryCancelledException()
     }

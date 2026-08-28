@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.cli
 
-import com.google.gson.GsonBuilder
 import io.javalin.Javalin
 import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.cli.c4.C4ArchitectureService
@@ -81,8 +80,6 @@ open class ServeCommand : Callable<Int> {
     )
     var metricsEnabled: Boolean = false
 
-    private val gson = GsonBuilder().setPrettyPrinting().create()
-
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
         if (maxConcurrentCypher <= 0 || cypherWorkBudget <= 0) {
@@ -114,7 +111,7 @@ open class ServeCommand : Callable<Int> {
         var app: Javalin? = null
         try {
             app = Javalin.create { config ->
-                config.jsonMapper(JavalinGson(gson))
+                config.jsonMapper(JavalinGson(GRAPHITE_GSON))
                 config.staticFiles.add("/web")
                 performanceMetrics?.configure(config)
             }

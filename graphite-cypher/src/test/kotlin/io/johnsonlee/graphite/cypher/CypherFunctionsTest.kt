@@ -973,6 +973,48 @@ class CypherFunctionsTest {
         assertNull(CypherFunctions.call("relationships", listOf("not a list")))
     }
 
+    @Test
+    fun `tracked list functions observe cancellation during collection copies`() {
+        val node = IntConstant(NodeId.next(), 42)
+        val edge = DataFlowEdge(NodeId.next(), NodeId.next(), DataFlowKind.ASSIGN)
+        val cases = listOf(
+            "reverse" to listOf((0 until 10_000).toList()),
+            "tail" to listOf((0 until 10_000).toList()),
+            "nodes" to listOf(List(10_000) { node }),
+            "relationships" to listOf(List(10_000) { edge })
+        )
+
+        for ((name, args) in cases) {
+            val checks = AtomicInteger()
+            assertFailsWith<CollectionFunctionCancelled>(name) {
+                CypherFunctions.call(name, args) {
+                    if (checks.incrementAndGet() == 2) throw CollectionFunctionCancelled()
+                }
+            }
+            assertEquals(2, checks.get(), name)
+        }
+    }
+
+    @Test
+    fun `tracked collection functions preserve completed results`() {
+        val node = IntConstant(NodeId.next(), 42)
+        val edge = DataFlowEdge(NodeId.next(), NodeId.next(), DataFlowKind.ASSIGN)
+        var checks = 0
+        val checkCancelled: () -> Unit = {
+            checks++
+        }
+
+        assertEquals("cba", CypherFunctions.call("reverse", listOf("abc"), checkCancelled))
+        assertEquals(listOf(3, 2, 1), CypherFunctions.call("reverse", listOf(listOf(1, 2, 3)), checkCancelled))
+        assertEquals(listOf(2, 3), CypherFunctions.call("tail", listOf(listOf(1, 2, 3)), checkCancelled))
+        assertEquals(listOf(node), CypherFunctions.call("nodes", listOf(listOf(node, "value")), checkCancelled))
+        assertEquals(
+            listOf(edge),
+            CypherFunctions.call("relationships", listOf(listOf(edge, "value")), checkCancelled)
+        )
+        assertTrue(checks > 0)
+    }
+
     // ========================================================================
     // nodes and relationships from Path
     // ========================================================================
@@ -1104,5 +1146,7 @@ class CypherFunctionsTest {
         assertEquals(true, NodePropertyAccessor.getAllProperties(boolNode)["value"])
     }
 }
+
+private class CollectionFunctionCancelled : RuntimeException()
 
 private const val SORT_PHASE_CHECKPOINT = 15

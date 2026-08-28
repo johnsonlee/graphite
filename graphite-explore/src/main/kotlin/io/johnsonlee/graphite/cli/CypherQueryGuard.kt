@@ -111,6 +111,7 @@ internal class CypherQueryGuard(
         val completion = CompletableFuture<T>()
         private val lifecycleLock = Any()
         private val runner = AtomicReference<Thread?>()
+        private val finishStarted = AtomicBoolean()
         private val finished = AtomicBoolean()
 
         override fun run() {
@@ -152,25 +153,32 @@ internal class CypherQueryGuard(
         }
 
         private fun finish(outcome: Result<T>) {
-            val (finalOutcome, queryOutcome) = synchronized(lifecycleLock) {
-                if (!finished.compareAndSet(false, true)) return
-                val cancelled = cancellationSignal.isCancelled
-                val recordedOutcome = if (cancelled) {
-                    CypherQueryOutcome.CANCELLED
-                } else {
-                    outcome.exceptionOrNull()?.toQueryOutcome() ?: CypherQueryOutcome.SUCCESS
-                }
-                val completionOutcome = if (cancelled && outcome.isSuccess) {
+            if (!finishStarted.compareAndSet(false, true)) return
+            val continuationOutcome = synchronized(lifecycleLock) {
+                if (cancellationSignal.isCancelled && outcome.isSuccess) {
                     Result.failure(CypherQueryCancelledException())
                 } else {
                     outcome
                 }
-                completionOutcome to recordedOutcome
             }
-            val publishedOutcome = runCatching { continuation(finalOutcome) }.fold(
-                onSuccess = { finalOutcome },
+            val continuationResult = runCatching { continuation(continuationOutcome) }.fold(
+                onSuccess = { continuationOutcome },
                 onFailure = { Result.failure(CypherContinuationException(it)) }
             )
+            val (publishedOutcome, queryOutcome) = synchronized(lifecycleLock) {
+                val cancellationWon = cancellationSignal.isCancelled && (
+                    outcome.isSuccess ||
+                        outcome.exceptionOrNull() is CypherQueryCancelledException ||
+                        continuationResult.exceptionOrNull().isCancellationFailure()
+                    )
+                val finalOutcome = if (cancellationWon) {
+                    Result.failure(CypherQueryCancelledException())
+                } else {
+                    continuationResult
+                }
+                finished.set(true)
+                finalOutcome to (finalOutcome.exceptionOrNull()?.toQueryOutcome() ?: CypherQueryOutcome.SUCCESS)
+            }
             try {
                 active.remove(this)
                 performance.stop(startedAtNanos, queryOutcome)
@@ -201,6 +209,15 @@ private class CypherThreadFactory : ThreadFactory {
 }
 
 private val NEXT_CYPHER_THREAD = AtomicInteger()
+
+private fun Throwable?.isCancellationFailure(): Boolean {
+    var current = this
+    while (current != null) {
+        if (current is CypherQueryCancelledException || current is InterruptedException) return true
+        current = current.cause
+    }
+    return false
+}
 
 private fun Throwable.toQueryOutcome(): CypherQueryOutcome = when (this) {
     is CypherQueryCancelledException -> CypherQueryOutcome.CANCELLED

@@ -164,6 +164,36 @@ class CypherQueryGuardTest {
     }
 
     @Test
+    fun `cancelling during continuation interrupts it and publishes cancellation`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        val callbackStarted = CountDownLatch(1)
+        val callbackInterrupted = CountDownLatch(1)
+        val task = guard.submit(
+            CypherCancellationSignal(),
+            continuation = {
+                callbackStarted.countDown()
+                try {
+                    CountDownLatch(1).await()
+                } catch (error: InterruptedException) {
+                    callbackInterrupted.countDown()
+                    throw error
+                }
+            }
+        ) { "completed" }
+
+        try {
+            assertTrue(callbackStarted.await(5, TimeUnit.SECONDS))
+            task.cancel()
+
+            assertTrue(callbackInterrupted.await(5, TimeUnit.SECONDS))
+            assertFailsWith<CypherQueryCancelledException> { task.completion.get(5, TimeUnit.SECONDS) }
+            assertEquals("next", executeWhenAvailable(guard) { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
     fun `task completion is published after guard teardown`() {
         val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
 

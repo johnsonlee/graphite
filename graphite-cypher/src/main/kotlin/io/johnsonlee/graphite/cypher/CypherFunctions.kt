@@ -147,15 +147,15 @@ object CypherFunctions {
         "length" -> size(args[0])
         "left" -> (args[0] as? String)?.take((args[1] as Number).toInt())
         "right" -> (args[0] as? String)?.takeLast((args[1] as Number).toInt())
-        "reverse" -> reverse(args[0])
+        "reverse" -> reverse(args[0], checkCancelled)
 
         // List
         "head" -> (args[0] as? List<*>)?.firstOrNull()
-        "tail" -> (args[0] as? List<*>)?.drop(1)
+        "tail" -> tail(args[0], checkCancelled)
         "last" -> (args[0] as? List<*>)?.lastOrNull()
         "range" -> range(args, checkCancelled)
-        "nodes" -> nodes(args[0])
-        "relationships" -> relationships(args[0])
+        "nodes" -> nodes(args[0], checkCancelled)
+        "relationships" -> relationships(args[0], checkCancelled)
 
         // Math - basic
         "abs" -> abs(args[0])
@@ -362,10 +362,50 @@ object CypherFunctions {
         }
     }
 
-    private fun reverse(value: Any?): Any? = when (value) {
-        is String -> value.reversed()
-        is List<*> -> value.reversed()
+    private fun reverse(value: Any?, checkCancelled: (() -> Unit)?): Any? = when (value) {
+        is String -> reverseString(value, checkCancelled)
+        is List<*> -> reverseList(value, checkCancelled)
         else -> null
+    }
+
+    private fun reverseString(value: String, checkCancelled: (() -> Unit)?): String {
+        if (checkCancelled == null) return value.reversed()
+        val result = StringBuilder(value.length)
+        for (sourceIndex in value.lastIndex downTo 0) {
+            val copied = value.lastIndex - sourceIndex
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.append(value[sourceIndex])
+        }
+        checkCancelled()
+        return result.toString()
+    }
+
+    private fun reverseList(value: List<*>, checkCancelled: (() -> Unit)?): List<*> {
+        if (checkCancelled == null) return value.reversed()
+        val result = ArrayList<Any?>(value.size)
+        for (sourceIndex in value.lastIndex downTo 0) {
+            val copied = value.lastIndex - sourceIndex
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.add(value[sourceIndex])
+        }
+        checkCancelled()
+        return result
+    }
+
+    private fun tail(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when {
+        value !is List<*> -> null
+        checkCancelled == null -> value.drop(1)
+        else -> copyTail(value, checkCancelled)
+    }
+
+    private fun copyTail(list: List<*>, checkCancelled: () -> Unit): List<*> {
+        val result = ArrayList<Any?>(maxOf(list.size - 1, 0))
+        for (sourceIndex in 1 until list.size) {
+            if (((sourceIndex - 1) and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.add(list[sourceIndex])
+        }
+        checkCancelled()
+        return result
     }
 
     private fun range(args: List<Any?>, checkCancelled: (() -> Unit)?): List<Long> {
@@ -388,18 +428,33 @@ object CypherFunctions {
         return values
     }
 
-    private fun nodes(value: Any?): List<*>? = when (value) {
+    private fun nodes(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when (value) {
         is QualifiedPath -> value.nodes
         is PathFinder.Path -> value.nodes
-        is List<*> -> value.filter { it is Node || it is QualifiedNode }
+        is List<*> -> filterList(value, checkCancelled) { it is Node || it is QualifiedNode }
         else -> null
     }
 
-    private fun relationships(value: Any?): List<*>? = when (value) {
+    private fun relationships(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when (value) {
         is QualifiedPath -> value.edges
         is PathFinder.Path -> value.edges
-        is List<*> -> value.filter { it is Edge || it is QualifiedEdge }
+        is List<*> -> filterList(value, checkCancelled) { it is Edge || it is QualifiedEdge }
         else -> null
+    }
+
+    private fun filterList(
+        values: List<*>,
+        checkCancelled: (() -> Unit)?,
+        predicate: (Any?) -> Boolean
+    ): List<*> {
+        if (checkCancelled == null) return values.filter(predicate)
+        val result = ArrayList<Any?>()
+        for ((index, value) in values.withIndex()) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            if (predicate(value)) result.add(value)
+        }
+        checkCancelled()
+        return result
     }
 
     private fun abs(value: Any?): Any? = when (value) {

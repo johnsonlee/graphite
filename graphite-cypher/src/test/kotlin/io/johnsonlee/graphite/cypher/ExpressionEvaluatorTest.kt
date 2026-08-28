@@ -18,6 +18,7 @@ import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -206,6 +207,42 @@ class ExpressionEvaluatorTest {
         assertEquals(listOf(1, 2, 3, 4), eval(expr))
     }
 
+    @Test
+    fun `tracked list concatenation observes cancellation during copy`() {
+        val values = (0 until 10_000).toList()
+        val checks = AtomicInteger()
+        val tracked = ExpressionEvaluator {
+            if (checks.incrementAndGet() == 2) throw CollectionOperationCancelled()
+        }
+
+        assertFailsWith<CollectionOperationCancelled> {
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(values), lit(values)), emptyMap())
+        }
+        assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `tracked list operations preserve completed results`() {
+        var checks = 0
+        val tracked = ExpressionEvaluator { checks++ }
+
+        assertEquals(
+            listOf(1, 2, 3, 4),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(listOf(1, 2)), lit(listOf(3, 4))), emptyMap())
+        )
+        assertEquals(
+            listOf(1, 2, 3),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(listOf(1, 2)), lit(3)), emptyMap())
+        )
+        assertEquals(
+            listOf(1, 2, 3),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(1), lit(listOf(2, 3))), emptyMap())
+        )
+        assertEquals(true, tracked.evaluate(CypherExpr.ListOp("IN", lit(2), lit(listOf(1, 2, 3))), emptyMap()))
+        assertEquals(false, tracked.evaluate(CypherExpr.ListOp("IN", lit(4), lit(listOf(1, 2, 3))), emptyMap()))
+        assertTrue(checks > 0)
+    }
+
     // ========================================================================
     // 7. Comparisons
     // ========================================================================
@@ -392,6 +429,19 @@ class ExpressionEvaluatorTest {
     @Test
     fun `IN - null list returns null`() {
         assertNull(eval(CypherExpr.ListOp("IN", lit(1), lit(null))))
+    }
+
+    @Test
+    fun `tracked IN observes cancellation during membership scan`() {
+        val checks = AtomicInteger()
+        val tracked = ExpressionEvaluator {
+            if (checks.incrementAndGet() == 2) throw CollectionOperationCancelled()
+        }
+
+        assertFailsWith<CollectionOperationCancelled> {
+            tracked.evaluate(CypherExpr.ListOp("IN", lit(-1), lit((0 until 10_000).toList())), emptyMap())
+        }
+        assertEquals(2, checks.get())
     }
 
     // ========================================================================
@@ -1345,3 +1395,5 @@ class ExpressionEvaluatorTest {
         assertEquals("count(*)", CypherExpr.CountStar.toCypherString())
     }
 }
+
+private class CollectionOperationCancelled : RuntimeException()

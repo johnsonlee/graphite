@@ -30,7 +30,8 @@ import java.util.concurrent.CompletionException
 @Suppress("LargeClass", "StringLiteralDuplication", "TooManyFunctions")
 internal class ExploreRoutes(
     private val cypherGuard: CypherQueryGuard = CypherQueryGuard(),
-    private val cancellationSignalFactory: () -> CypherCancellationSignal = ::CypherCancellationSignal
+    private val cancellationSignalFactory: () -> CypherCancellationSignal = ::CypherCancellationSignal,
+    private val cypherResponseSerializer: CypherResponseSerializer = GsonCypherResponseSerializer()
 ) {
 
     private val endpointExtractor = EndpointExtractor()
@@ -552,13 +553,15 @@ internal class ExploreRoutes(
             execute = { leases, executionContext ->
                 CypherExecutor(leases.single().graph, executionContext).execute(query, limit)
             },
-            respond = { result ->
-                ctx.json(
+            respond = { result, cancellationSignal ->
+                cypherResponseSerializer.write(
+                    ctx,
                     mapOf(
                         API_FIELD_COLUMNS to result.columns,
                         API_FIELD_ROWS to result.rows,
                         API_FIELD_ROW_COUNT to result.rows.size
-                    )
+                    ),
+                    cancellationSignal
                 )
             }
         )
@@ -572,7 +575,7 @@ internal class ExploreRoutes(
         ctx: Context,
         acquire: () -> List<GraphLease>,
         execute: (List<GraphLease>, CypherExecutionContext) -> T,
-        respond: (T) -> Unit
+        respond: (T, CypherCancellationSignal) -> Unit
     ) {
         ctx.future { createCypherFuture(ctx, acquire, execute, respond) }
     }
@@ -582,7 +585,7 @@ internal class ExploreRoutes(
         ctx: Context,
         acquire: () -> List<GraphLease>,
         execute: (List<GraphLease>, CypherExecutionContext) -> T,
-        respond: (T) -> Unit
+        respond: (T, CypherCancellationSignal) -> Unit
     ): CompletableFuture<Unit> {
         val cancellationSignal = cancellationSignalFactory()
         val clientCancellation = CypherClientCancellation.observe(ctx, cancellationSignal)
@@ -598,16 +601,19 @@ internal class ExploreRoutes(
             cypherGuard.submit(
                 cancellationSignal,
                 continuation = { outcome ->
-                    clientCancellation.close()
                     try {
                         val error = unwrapCompletionFailure(outcome.exceptionOrNull())
                         if (error == null) {
-                            respond(outcome.getOrThrow())
+                            respond(outcome.getOrThrow(), cancellationSignal)
                         } else if (error !is CypherQueryCancelledException) {
                             respondCypherError(ctx, error)
                         }
                     } finally {
-                        leases.forEach { it.close() }
+                        try {
+                            leases.forEach { it.close() }
+                        } finally {
+                            clientCancellation.close()
+                        }
                     }
                 }
             ) { executionContext ->
@@ -742,14 +748,16 @@ internal class ExploreRoutes(
                 ).execute(query, limit)
                 leases.size to result
             },
-            respond = { (graphCount, result) ->
-                ctx.json(
+            respond = { (graphCount, result), cancellationSignal ->
+                cypherResponseSerializer.write(
+                    ctx,
                     mapOf(
                         API_FIELD_COLUMNS to result.columns,
                         API_FIELD_ROWS to result.rows,
                         API_FIELD_ROW_COUNT to result.rows.size,
                         "graphCount" to graphCount
-                    )
+                    ),
+                    cancellationSignal
                 )
             }
         )
@@ -891,7 +899,9 @@ internal class ExploreRoutes(
                     }
                 }
             },
-            respond = { response -> ctx.json(response) }
+            respond = { response, cancellationSignal ->
+                cypherResponseSerializer.write(ctx, response, cancellationSignal)
+            }
         )
     }
 

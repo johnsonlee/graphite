@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
+import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import jakarta.servlet.AsyncContext
@@ -15,13 +16,12 @@ import jakarta.servlet.AsyncListener
 import org.eclipse.jetty.io.Connection
 import org.eclipse.jetty.util.thread.Scheduler
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.StringWriter
 import java.lang.reflect.Proxy
 import java.net.HttpURLConnection
 import java.net.Socket
-import java.net.SocketException
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -29,8 +29,10 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -60,16 +62,8 @@ class CypherClientCancellationTest {
     }
 
     @Test
-    fun `pipeline beyond the monitor buffer cap cancels the active query`() {
-        verifyResetDisconnect(serverMayCloseFirst = true) { socket ->
-            try {
-                socket.getOutputStream().write(ByteArray(OVERSIZED_PIPELINE_BYTES) { 'x'.code.toByte() })
-                socket.getOutputStream().flush()
-            } catch (_: IOException) {
-                // The server may reset the socket before the client finishes writing the over-limit pipeline.
-            }
-            Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
-        }
+    fun `valid pipeline beyond the monitor buffer cap is preserved`() {
+        verifyValidPipelineBeyondMonitorCap()
     }
 
     @Test
@@ -129,6 +123,86 @@ class CypherClientCancellationTest {
             }
             assertTrue(queryCanRun(app.port()), "The failed response retained the concurrency permit")
         } finally {
+            app.stop()
+        }
+    }
+
+    @Test
+    fun `response serializer observes cancellation while writing JSON`() {
+        val checks = AtomicInteger()
+        lateinit var cancellationSignal: CypherCancellationSignal
+        cancellationSignal = CypherCancellationSignal {
+            if (checks.incrementAndGet() == 2) cancellationSignal.cancel()
+        }
+
+        assertFailsWith<CypherQueryCancelledException> {
+            GsonCypherResponseSerializer().serialize(
+                mapOf("rows" to listOf(mapOf("value" to "x".repeat(5_000)))),
+                cancellationSignal
+            )
+        }
+        assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `cancellation writer preserves every Writer input form`() {
+        val sink = StringWriter()
+        val checks = AtomicInteger()
+        val writer = CancellationCheckingWriter(sink, CypherCancellationSignal(), checks::incrementAndGet)
+        val characters = "a".repeat(2_049).toCharArray()
+
+        writer.write(characters, 0, characters.size)
+        writer.write('b'.code)
+        writer.flush()
+        writer.close()
+
+        assertEquals("${"a".repeat(2_049)}b", sink.toString())
+        assertEquals(3, checks.get())
+    }
+
+    @Test
+    fun `reset during response serialization cancels continuation and releases permit`() {
+        val serializationStarted = CountDownLatch(1)
+        val releaseSerialization = CountDownLatch(1)
+        val performance = DisconnectPerformanceRecorder()
+        val serializer = GsonCypherResponseSerializer {
+            serializationStarted.countDown()
+            releaseSerialization.await()
+        }
+        val routes = ExploreRoutes(
+            CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1, performance = performance),
+            cypherResponseSerializer = serializer
+        )
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, DefaultGraph.Builder().build())
+            val socket = Socket("127.0.0.1", app.port())
+            writeRequest(
+                socket,
+                "POST",
+                "/api/cypher",
+                """{"query":"RETURN range(1, 10000) AS values"}"""
+            )
+            assertTrue(serializationStarted.await(5, TimeUnit.SECONDS), "Response serialization did not start")
+
+            socket.setSoLinger(true, 0)
+            socket.close()
+
+            assertEquals(
+                CypherQueryOutcome.CANCELLED,
+                performance.outcomes.poll(MAX_DISCONNECT_LATENCY_MILLIS, TimeUnit.MILLISECONDS),
+                "Serialization continued after the client reset"
+            )
+            releaseSerialization.countDown()
+            assertTrue(
+                waitUntil(timeoutMillis = MAX_DISCONNECT_LATENCY_MILLIS) { queryCanRun(app.port()) },
+                "Response serialization retained the only concurrency permit"
+            )
+        } finally {
+            releaseSerialization.countDown()
             app.stop()
         }
     }
@@ -313,10 +387,7 @@ class CypherClientCancellationTest {
         monitor.close()
     }
 
-    private fun verifyResetDisconnect(
-        serverMayCloseFirst: Boolean = false,
-        beforeReset: (Socket) -> Unit = {}
-    ) {
+    private fun verifyResetDisconnect(beforeReset: (Socket) -> Unit = {}) {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
         val node = IntConstant(NodeId.next(), 1)
@@ -346,13 +417,8 @@ class CypherClientCancellationTest {
 
             beforeReset(socket)
             val disconnectedAt = System.nanoTime()
-            try {
-                socket.setSoLinger(true, 0)
-                socket.close()
-            } catch (error: SocketException) {
-                if (!serverMayCloseFirst) throw error
-                socket.close()
-            }
+            socket.setSoLinger(true, 0)
+            socket.close()
 
             assertTrue(
                 waitUntil(timeoutMillis = MAX_DISCONNECT_LATENCY_MILLIS) { queryCanRun(app.port()) },
@@ -367,6 +433,69 @@ class CypherClientCancellationTest {
             Thread.sleep(100)
             assertEquals(stoppedAt, visited.get(), "The disconnected query kept scanning graph candidates")
         } finally {
+            app.stop()
+        }
+    }
+
+    private fun verifyValidPipelineBeyondMonitorCap() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val node = IntConstant(NodeId.next(), 1)
+        val backing = DefaultGraph.Builder().addNode(node).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (type.isAssignableFrom(IntConstant::class.java)) {
+                    started.countDown()
+                    release.await()
+                    @Suppress("UNCHECKED_CAST")
+                    yield(node as T)
+                }
+            }
+        }
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = Long.MAX_VALUE))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, blockingGraph)
+            Socket("127.0.0.1", app.port()).use { socket ->
+                socket.soTimeout = 20_000
+                val query = URLEncoder.encode(
+                    "MATCH (n:IntConstant) WHERE n.value + 0 = 1 RETURN n.value LIMIT 1",
+                    StandardCharsets.UTF_8
+                )
+                writeRequest(socket, "GET", "/api/cypher?query=$query")
+                assertTrue(started.await(5, TimeUnit.SECONDS), "The first request did not start")
+
+                val pipelineFailure = AtomicReference<Throwable?>()
+                val body = """{"query":"RETURN 1 AS x","padding":"${"x".repeat(VALID_PIPELINE_PADDING_BYTES)}"}"""
+                val writer = Thread {
+                    runCatching {
+                        repeat(VALID_OVERSIZED_PIPELINE_REQUESTS) {
+                            writeRequest(socket, "POST", "/api/cypher", body)
+                        }
+                    }.onFailure(pipelineFailure::set)
+                }.apply {
+                    isDaemon = true
+                    start()
+                }
+
+                Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
+                release.countDown()
+                writer.join(5_000)
+                assertFalse(writer.isAlive, "The valid pipelined requests remained blocked")
+                pipelineFailure.get()?.let { throw AssertionError("The valid pipeline was rejected", it) }
+
+                assertEquals(200, readResponse(socket).status)
+                repeat(VALID_OVERSIZED_PIPELINE_REQUESTS) { index ->
+                    val response = readResponse(socket)
+                    assertEquals(200, response.status, "Oversized pipelined response ${index + 1}")
+                    assertTrue(response.body.contains("\"x\""), response.body)
+                }
+            }
+        } finally {
+            release.countDown()
             app.stop()
         }
     }
@@ -532,5 +661,6 @@ private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
 private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
 private const val PIPELINE_LIMIT_SETTLE_MILLIS = 1_000L
 private const val LARGE_PIPELINE_REQUESTS = 150
-private const val OVERSIZED_PIPELINE_BYTES = 1_100_000
+private const val VALID_PIPELINE_PADDING_BYTES = 550_000
+private const val VALID_OVERSIZED_PIPELINE_REQUESTS = 2
 private const val GRAPH_FREE_PROGRESS_CHECKPOINTS = 10

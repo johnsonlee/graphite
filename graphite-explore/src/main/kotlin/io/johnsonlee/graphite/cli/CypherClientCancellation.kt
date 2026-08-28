@@ -113,41 +113,47 @@ internal class DisconnectMonitor(
 
     private fun probeReadableEndpoint(): Boolean {
         val socketEndPoint = endPoint as? SocketChannelEndPoint
-        if (socketEndPoint == null || connection == null) {
-            connection?.onFillable()
+        val monitoredConnection = connection
+        if (socketEndPoint == null || monitoredConnection == null) {
+            monitoredConnection?.onFillable()
             return true
         }
+        return probeSocket(socketEndPoint, monitoredConnection)
+    }
 
-        val buffered = connection.onUpgradeFrom()
+    private fun probeSocket(socketEndPoint: SocketChannelEndPoint, monitoredConnection: HttpConnection): Boolean {
+        val buffered = monitoredConnection.onUpgradeFrom()
         val bufferedBytes = buffered?.remaining() ?: 0
         val available = ensureRequestBufferCapacity(bufferedBytes)
-        buffered?.let(connection::onUpgradeTo)
-        val probe = ByteBuffer.allocate(maxOf(available, 1))
-        return try {
-            val read = socketEndPoint.channel.read(probe)
-            when {
-                read > 0 && available > 0 -> {
-                    probe.flip()
-                    // Keep pipelined bytes buffered until Jetty completes the active response.
-                    connection.onUpgradeTo(probe)
-                    true
-                }
-                read > 0 -> {
-                    socketEndPoint.close(DISCONNECT_MONITOR_PIPELINE_LIMIT_EXCEEDED)
-                    cancel()
-                    false
-                }
-                read < 0 -> {
-                    connection.onFillable()
-                    true
-                }
-                else -> true
+        buffered?.let(monitoredConnection::onUpgradeTo)
+        // Leave excess pipelined input in the socket so TCP backpressure bounds monitor memory.
+        if (available == 0) return false
+        return readSocket(socketEndPoint, monitoredConnection, ByteBuffer.allocate(available))
+    }
+
+    private fun readSocket(
+        socketEndPoint: SocketChannelEndPoint,
+        monitoredConnection: HttpConnection,
+        probe: ByteBuffer
+    ): Boolean = try {
+        val read = socketEndPoint.channel.read(probe)
+        when {
+            read > 0 -> {
+                probe.flip()
+                // Keep pipelined bytes buffered until Jetty completes the active response.
+                monitoredConnection.onUpgradeTo(probe)
+                true
             }
-        } catch (error: IOException) {
-            socketEndPoint.close(error)
-            cancel()
-            false
+            read < 0 -> {
+                monitoredConnection.onFillable()
+                true
+            }
+            else -> true
         }
+    } catch (error: IOException) {
+        socketEndPoint.close(error)
+        cancel()
+        false
     }
 
     @Suppress("ReturnCount")
@@ -215,7 +221,3 @@ private object DisconnectMonitorClosedException : IOException("Cypher disconnect
     override fun fillInStackTrace(): Throwable = this
 }
 private val DISCONNECT_MONITOR_CLOSED = DisconnectMonitorClosedException
-private object DisconnectMonitorPipelineLimitExceededException : IOException("Pipelined request buffer limit exceeded") {
-    override fun fillInStackTrace(): Throwable = this
-}
-private val DISCONNECT_MONITOR_PIPELINE_LIMIT_EXCEEDED = DisconnectMonitorPipelineLimitExceededException

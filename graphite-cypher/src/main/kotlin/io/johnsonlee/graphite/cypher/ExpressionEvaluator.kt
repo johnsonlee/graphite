@@ -111,7 +111,7 @@ class ExpressionEvaluator(
         if (left == null || right == null) return null
 
         return when (expr.op) {
-            "+" -> add(left, right)
+            "+" -> add(left, right, checkCancelled)
             "-" -> arithmetic(left, right) { a, b -> a - b }
             "*" -> arithmetic(left, right) { a, b -> a * b }
             "/" -> arithmetic(left, right) { a, b ->
@@ -138,11 +138,11 @@ class ExpressionEvaluator(
         }
     }
 
-    private fun add(left: Any, right: Any): Any = when {
+    private fun add(left: Any, right: Any, checkCancelled: (() -> Unit)?): Any = when {
         left is String || right is String -> "$left$right"
-        left is List<*> && right is List<*> -> left + right
-        left is List<*> -> left + right
-        right is List<*> -> listOf(left) + right
+        left is List<*> && right is List<*> -> concatenateLists(left, right, checkCancelled)
+        left is List<*> -> concatenateLists(left, listOf(right), checkCancelled)
+        right is List<*> -> concatenateLists(listOf(left), right, checkCancelled)
         else -> arithmetic(left, right) { a, b -> a + b }
     }
 
@@ -224,7 +224,7 @@ class ExpressionEvaluator(
             "IN" -> {
                 val element = evaluate(expr.left, bindings)
                 val list = evaluate(expr.right, bindings) as? List<*> ?: return null
-                element in list
+                containsWithCancellation(list, element, checkCancelled)
             }
             else -> throw CypherException("Unknown list op: ${expr.op}")
         }
@@ -406,6 +406,47 @@ class ExpressionEvaluator(
         is String -> value.toDoubleOrNull() ?: 0.0
         else -> 0.0
     }
+}
+
+private fun concatenateLists(
+    left: List<*>,
+    right: List<*>,
+    checkCancelled: (() -> Unit)?
+): List<Any?> {
+    if (checkCancelled == null) return left + right
+    val result = ArrayList<Any?>(left.size + right.size)
+    var index = 0
+    for (value in left) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        result.add(value)
+        index++
+    }
+    for (value in right) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        result.add(value)
+        index++
+    }
+    checkCancelled()
+    return result
+}
+
+private fun containsWithCancellation(
+    list: List<*>,
+    element: Any?,
+    checkCancelled: (() -> Unit)?
+): Boolean = if (checkCancelled == null) {
+    element in list
+} else {
+    var found = false
+    for ((index, candidate) in list.withIndex()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        if (candidate == element) {
+            found = true
+            break
+        }
+    }
+    if (!found) checkCancelled()
+    found
 }
 
 private sealed interface CompiledCypherRegex {
