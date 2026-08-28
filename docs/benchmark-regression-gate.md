@@ -21,9 +21,18 @@ revisions:
 2. the pull request's current base SHA; and
 3. the pull request candidate SHA.
 
+The 12 benchmark keys are split across five parallel matrix shards: one for
+the four synthetic keys and four for pairs of real-fixture query cases. Within
+each shard, fixed baseline, current base, and candidate still run sequentially
+on the same runner, so parallelism does not turn cross-runner variance into a
+performance comparison. The final `wrapped-query-latency` job fails closed
+unless all five shard reports arrive and their union contains every expected
+key exactly once.
+
 It measures warm and cold queries with `graphCount=1` and `graphCount=17` on
 deterministic persisted graphs. It also builds every repository benchmark
-fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially, opens the four
+fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially in each real
+shard, opens the four
 persisted graphs together, and measures the same query over the heterogeneous
 19,091,048-node graph set. Source graphs are never retained together: each is
 closed after persistence, before the next fixture is built.
