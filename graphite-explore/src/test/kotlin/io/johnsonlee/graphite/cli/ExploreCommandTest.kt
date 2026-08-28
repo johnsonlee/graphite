@@ -962,6 +962,37 @@ class ExploreCommandTest {
     }
 
     @Test
+    fun `fanout lets the first graph use the remaining request budget`() {
+        val root = Files.createTempDirectory("explore-registry-fanout-budget-remainder")
+        try {
+            saveConstantGraph(root, "service-a", 101, 102, 103, 104, 105, 106)
+            saveConstantGraph(root, "service-b", 202)
+            val registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
+            val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10))
+
+            withRegistryApp(registry, routes) { targetPort ->
+                registry.load("service-a", Path.of("service-a"))
+                registry.load("service-b", Path.of("service-b"))
+                val query = "MATCH (n:IntConstant) WHERE n.value = 106 RETURN n.value"
+                val (code, body) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","allGraphs":true,"mode":"fanout","limit":1,"perGraphLimit":1}"""
+                )
+
+                assertEquals(200, code, body)
+                val result: Map<String, Any?> = parseJson(body)
+                assertEquals(1.0, result[API_FIELD_ROW_COUNT])
+                @Suppress("UNCHECKED_CAST")
+                val rows = result[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(106.0, rows.single()["n.value"])
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `registry cypher endpoint keeps default limit global across twenty one graphs`() {
         val root = Files.createTempDirectory("explore-registry-21-fanout")
         val graphCount = 21
