@@ -62,8 +62,9 @@ Behavior verification:
 ./gradlew :cypher:test :explore:test :cypher:detekt :explore:detekt --no-daemon
 ```
 
-`CypherClientCancellationTest` sends a TCP RST during an infinite candidate scan. The query stops, its only concurrency
-permit is reusable within 2 seconds, and its visited-candidate counter remains unchanged afterward. The complete
+`CypherClientCancellationTest` sends both TCP RST and normal FIN disconnects during an infinite candidate scan. The
+query stops, its only concurrency permit is reusable within 2 seconds, and its visited-candidate counter remains
+unchanged afterward. The complete
 Cypher/Explore suites also retain connected single-graph, cross-graph, fanout, budget, row-limit, and concurrency
 behavior.
 

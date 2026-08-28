@@ -286,6 +286,22 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `execution context cancellation remains active across sequential executors`() {
+        val cancellation = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
+        assertEquals(
+            listOf(mapOf("value" to 1)),
+            CypherExecutor(graph, context).execute("RETURN 1 AS value").rows
+        )
+
+        cancellation.cancel()
+
+        assertFailsWith<CypherQueryCancelledException> {
+            CypherExecutor(graph, context).execute("MATCH (n) RETURN n.id LIMIT 1")
+        }
+    }
+
+    @Test
     fun `execution budget counts relationship candidates`() {
         val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
 

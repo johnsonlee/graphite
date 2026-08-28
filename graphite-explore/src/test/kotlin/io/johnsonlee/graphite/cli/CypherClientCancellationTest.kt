@@ -23,7 +23,16 @@ import kotlin.test.assertTrue
 class CypherClientCancellationTest {
 
     @Test
-    fun `disconnecting a client stops its query and releases the concurrency permit`() {
+    fun `resetting a client connection stops its query and releases the concurrency permit`() {
+        verifyDisconnect(resetConnection = true)
+    }
+
+    @Test
+    fun `closing a client connection stops its query and releases the concurrency permit`() {
+        verifyDisconnect(resetConnection = false)
+    }
+
+    private fun verifyDisconnect(resetConnection: Boolean) {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
         val node = IntConstant(NodeId.next(), 1)
@@ -51,7 +60,7 @@ class CypherClientCancellationTest {
             assertTrue(started.await(5, TimeUnit.SECONDS), "The broad query did not start")
             assertTrue(waitUntil { visited.get() >= 1_000 }, "The broad query did not scan candidates")
 
-            socket.setSoLinger(true, 0)
+            if (resetConnection) socket.setSoLinger(true, 0)
             val disconnectedAt = System.nanoTime()
             socket.close()
 
