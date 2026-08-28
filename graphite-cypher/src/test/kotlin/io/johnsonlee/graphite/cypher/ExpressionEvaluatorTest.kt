@@ -464,18 +464,36 @@ class ExpressionEvaluatorTest {
     }
 
     @Test
-    fun `tracked risky regex polls cancellation inside the matcher for short input`() {
-        var cancellationChecks = 0
-        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+    fun `tracked regex without risky syntax still cancels inside the matcher`() {
+        val cancellation = CypherCancellationSignal()
+        val matcherEntered = CountDownLatch(1)
+        val resumeMatcher = CountDownLatch(1)
+        val failure = AtomicReference<Throwable?>()
+        val cancellableEvaluator = ExpressionEvaluator {
+            matcherEntered.countDown()
+            resumeMatcher.await()
+            cancellation.throwIfCancelled()
+        }
+        val worker = Thread {
+            try {
+                val optionalPrefix = "a?".repeat(30)
+                cancellableEvaluator.evaluate(
+                    CypherExpr.RegexMatch(lit("a".repeat(29)), lit(optionalPrefix + "a".repeat(30))),
+                    emptyMap()
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
 
-        assertEquals(
-            false,
-            trackedEvaluator.evaluate(
-                CypherExpr.RegexMatch(lit("a".repeat(20) + "!"), lit("(a+)+$")),
-                emptyMap()
-            )
-        )
-        assertTrue(cancellationChecks > 1)
+        worker.start()
+        assertTrue(matcherEntered.await(5, TimeUnit.SECONDS), "Regex matcher did not reach an internal checkpoint")
+        cancellation.cancel()
+        resumeMatcher.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Regex matcher ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
     }
 
     @Test

@@ -18,13 +18,7 @@ private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
 private const val LOAD_FACTOR = 0.75f
 private const val MAX_REGEX_CACHE_SIZE = 256
 private const val REGEX_ANY_SUFFIX = ".*"
-private const val REGEX_CANCELLATION_INPUT_THRESHOLD = 4_096
 private val REGEX_META_CHARACTERS = setOf('\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}')
-private val REGEX_BACK_REFERENCE = Pattern.compile("""\\(?:[1-9][0-9]*|k<)""")
-private val REGEX_QUANTIFIED_GROUP = Pattern.compile("""(?<!\\)\)(?:[*+?]|\{\d+(?:,\d*)?})""")
-private val REGEX_QUANTIFIER = Pattern.compile("""(?<!\\)(?:[*+?]|\{\d+(?:,\d*)?})""")
-private val REGEX_ALTERNATION = Pattern.compile("""(?<!\\)\|""")
-private val REGEX_LOOKAROUND_TOKENS = listOf("(?=", "(?!", "(?<=", "(?<!")
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
@@ -419,17 +413,9 @@ private sealed interface CompiledCypherRegex {
 
 private class JavaCypherRegex(pattern: String) : CompiledCypherRegex {
     private val pattern = Pattern.compile(pattern)
-    private val mayBacktrackExpensively = pattern.mayBacktrackExpensively()
 
     override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
-        val input = if (
-            checkCancelled != null &&
-            (mayBacktrackExpensively || value.length >= REGEX_CANCELLATION_INPUT_THRESHOLD)
-        ) {
-            CancellationAwareCharSequence(value, checkCancelled)
-        } else {
-            value
-        }
+        val input = checkCancelled?.let { CancellationAwareCharSequence(value, it) } ?: value
         return pattern.matcher(input).matches()
     }
 }
@@ -498,20 +484,6 @@ private fun String.indexOfJavaRegexLineTerminator(startIndex: Int): Int {
 private fun Char.isJavaRegexLineTerminator(): Boolean =
     this == '\n' || this == '\r' || this == '\u0085' || this == '\u2028' || this == '\u2029'
 
-private fun String.mayBacktrackExpensively(): Boolean {
-    val hasLookaround = REGEX_LOOKAROUND_TOKENS.any(::contains)
-    val hasBackReference = REGEX_BACK_REFERENCE.matcher(this).find()
-    val hasQuantifiedGroup = REGEX_QUANTIFIED_GROUP.matcher(this).find()
-    val hasRiskyQuantifiedGroup = if (hasQuantifiedGroup) {
-        val quantifiers = REGEX_QUANTIFIER.matcher(this)
-        val hasNestedQuantifier = quantifiers.find() && quantifiers.find()
-        hasNestedQuantifier || REGEX_ALTERNATION.matcher(this).find()
-    } else {
-        false
-    }
-    return hasLookaround || hasBackReference || hasRiskyQuantifiedGroup
-}
-
 private class CancellationAwareCharSequence(
     private val value: String,
     private val checkCancelled: () -> Unit
@@ -521,7 +493,8 @@ private class CancellationAwareCharSequence(
     override val length: Int get() = value.length
 
     override fun get(index: Int): Char {
-        if ((accesses++ and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        accesses++
+        if ((accesses and CANCELLATION_POLL_MASK) == 0) checkCancelled()
         return value[index]
     }
 
