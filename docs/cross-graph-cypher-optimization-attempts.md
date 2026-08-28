@@ -813,16 +813,28 @@ That wrapped `2147483648` to a negative value, causing the label-histogram fast
 path to return an empty result and preventing the HTTP row cap from replacing
 the oversized literal.
 
+The first path-budget fix still copied each state's complete node and edge lists
+and collected all paths before the caller could apply `LIMIT`. A long explicit
+`*..N` chain therefore retained O(N^2) path references even though traversal
+candidates were counted.
+
 **Retained design:** `CypherExecutionContext` owns the mutable tracker for one
 HTTP request. Single-graph, cross-graph, UNION, and fanout execution all use that
 same context; the existing `CypherExecutor(graph, budget)` API still creates a
 fresh tracker per `execute` call. Fanout no longer divides the budget and stops
 opening graphs once the global row limit is full.
 
-`PathFinder` now charges source-node reads, every edge candidate before type
-filtering, and every target-node read. Mapped string lookup implements a new
-optional `WorkAwareStringPropertyLookup` without changing the existing
-`StringPropertyLookup` ABI. It reports raw node scans, first index construction,
+`PathFinder` now stores one parent link per BFS state and exposes an internal
+lazy sequence. The pattern pipeline stays eager for ordinary unbounded queries
+but streams relationship patterns when a safe early `LIMIT` is available, so
+the limit stops sequence consumption without discarding a later branch that can
+complete a longer pattern. Source-node reads, every edge candidate before type
+filtering, and every target-node read are charged; when a relationship variable
+requires a concrete path, its full node-and-edge materialization cost is charged
+before allocating the path containers. Mapped string
+lookup implements a new optional `WorkAwareStringPropertyLookup` without
+changing the existing `StringPropertyLookup` ABI. It reports raw node scans,
+first index construction,
 unique-string/posting inspection, and indexed node-ID scans. Budgeted execution
 falls back to a tracked generic node scan for graph implementations that only
 support the legacy lookup. A custom tracking sequence charges before reading
@@ -837,10 +849,13 @@ reflection regression test resolves and invokes that exact descriptor. Other
 tests prove variable-path rejection, mapped miss/build/existing-index charging,
 one-match success without double charging, fanout total-budget enforcement, and
 no fixed-share false rejection. They also cover a label histogram and a
-server-capped query with `LIMIT 2147483648`. The full
+server-capped query with `LIMIT 2147483648`, path-materialization rejection, a
+1,000-hop graph queried with `*..100000 LIMIT 1` that stops after the first
+outgoing expansion, and a multi-stage pattern whose first branch is a dead end.
+The full
 `./gradlew check -S --no-daemon` gate, including all three large-corpus
 end-to-end tests, passes. Application line
-coverage is `98.2569%` for Core, `97.9167%` for Cypher, `98.0213%` for WebGraph,
+coverage is `98.2569%` for Core, `98.0623%` for Cypher, `98.0213%` for WebGraph,
 and `98.1046%` for Explore.
 
 **Budget-enabled executor cost used by HTTP:** `BudgetedCypherBenchmark`
@@ -861,15 +876,14 @@ benchmark thread. Values and 99.9% confidence errors are `us/op`.
 
 | Successful query | Unbudgeted | Budgeted | Budget-check cost |
 |------------------|-----------:|---------:|------------------:|
-| 500-node scan | `48.482 +/- 0.762` | `49.821 +/- 0.602` | `+2.8%` |
-| 500 single-hop relationships | `134.041 +/- 0.705` | `143.314 +/- 3.539` | `+6.9%` |
-| 500 two-hop variable paths | `238.680 +/- 2.788` | `239.933 +/- 4.472` | `+0.5%` |
+| 500-node scan | `47.346 +/- 0.688` | `47.491 +/- 0.127` | `+0.3%` |
+| 500 single-hop relationships | `135.942 +/- 1.614` | `140.351 +/- 2.536` | `+3.2%` |
+| 500 two-hop variable paths | `243.617 +/- 6.476` | `245.246 +/- 2.213` | `+0.7%` |
 
 The budget check has a measurable cost; this is not described as a free change.
-The two-fork relationship result is the highest at 6.9%. A five-fork
-confirmation measured `135.500 +/- 0.879` unbudgeted and
-`143.276 +/- 2.465` budgeted (`+5.7%`), confirming that this path carries a
-stable overhead rather than only fork noise.
+The relationship result is the highest at 3.2% and is the only pair whose 99.9%
+confidence intervals do not overlap. The node and variable-path intervals
+overlap.
 
 **Corrected Android rejection evidence:** the benchmark setup now asserts the
 harness identity for Maven fixture `org.robolectric:android-all:14-robolectric-10818077`,
@@ -884,8 +898,9 @@ not a no-GC guarantee. The invariant is that every invocation rejects at the
 **Conclusion:** retained. All known graph traversal and mapped string lookup
 paths now consume the same request counter, fanout enforces exactly one global
 budget, and the released JVM constructor remains linkable. The safety bound is
-complete for the reviewed paths, while the measured successful-query cost is
-0.5% to 6.9% instead of being hidden behind unbudgeted benchmark results.
+complete for the reviewed paths, including path materialization rather than only
+candidate reads, while the measured successful-query cost is reported instead
+of being hidden behind unbudgeted benchmark results.
 
 ## PR verification summary
 
@@ -903,20 +918,22 @@ used the same machine and dependency caches.
 
 | `CypherBenchmark` | `main` | Branch | Change |
 |-------------------|-------:|-------:|-------:|
-| `aggregationCountGroupBy` | `34.390 us/op` | `34.883 us/op` | `+1.4%` |
-| `countStar` | `2.257 us/op` | `2.092 us/op` | `-7.3%` |
-| `functionCalls` | `24.502 us/op` | `24.626 us/op` | `+0.5%` |
-| `nodeMatchWithWhere` | `57.823 us/op` | `57.137 us/op` | `-1.2%` |
-| `regexFilter` | `24.107 us/op` | `24.221 us/op` | `+0.5%` |
-| `returnDistinct` | `102.087 us/op` | `103.817 us/op` | `+1.7%` |
-| `simpleNodeMatch` | `19.335 us/op` | `19.708 us/op` | `+1.9%` |
-| `singleHopRelationship` | `30.458 us/op` | `30.615 us/op` | `+0.5%` |
-| `variableLengthPath` | `26.878 us/op` | `25.188 us/op` | `-6.3%` |
-| `withPipeline` | `84.302 us/op` | `76.503 us/op` | `-9.3%` |
+| `aggregationCountGroupBy` | `34.390 us/op` | `36.163 us/op` | `+5.2%` |
+| `countStar` | `2.257 us/op` | `2.447 us/op` | `+8.4%` |
+| `functionCalls` | `24.502 us/op` | `24.137 us/op` | `-1.5%` |
+| `nodeMatchWithWhere` | `57.823 us/op` | `57.595 us/op` | `-0.4%` |
+| `regexFilter` | `24.107 us/op` | `23.643 us/op` | `-1.9%` |
+| `returnDistinct` | `102.087 us/op` | `96.102 us/op` | `-5.9%` |
+| `simpleNodeMatch` | `19.335 us/op` | `19.243 us/op` | `-0.5%` |
+| `singleHopRelationship` | `30.458 us/op` | `29.534 us/op` | `-3.0%` |
+| `variableLengthPath` | `26.878 us/op` | `25.733 us/op` | `-4.3%` |
+| `withPipeline` | `84.302 us/op` | `76.995 us/op` | `-8.7%` |
 
-Every main/branch 99.9% confidence interval overlaps. There is no measured
-method-level regression on the default unbudgeted executor; the separate
-budget-enabled comparison above reports its production-path cost.
+The slower rows with non-overlapping main/branch 99.9% confidence intervals are
+`aggregationCountGroupBy` (`+5.2%`) and `countStar` (`+8.4%`), both below the
+workflow's 10% regression threshold. `returnDistinct` and `withPipeline` are
+the non-overlapping faster rows. The separate budget-enabled comparison above
+reports the production-path cost.
 
 ### Android mapped graph regression
 

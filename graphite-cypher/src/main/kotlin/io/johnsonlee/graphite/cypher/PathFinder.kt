@@ -21,11 +21,33 @@ object PathFinder {
         val workTracker: CypherWorkTracker? = null
     )
 
-    private data class State(
-        val nodeId: NodeId,
-        val pathNodes: List<Node>,
-        val pathEdges: List<Edge>
+    internal class SearchState(
+        val node: Node,
+        val incomingEdge: Edge?,
+        val parent: SearchState?,
+        val depth: Int
     )
+
+    internal class PathMatch(private val state: SearchState) {
+        fun endNode(): Node = state.node
+
+        fun materialize(workTracker: CypherWorkTracker?): Path {
+            workTracker?.consume(state.depth.toLong() * 2 + 1)
+            val nodes = ArrayList<Node>(state.depth + 1)
+            val edges = ArrayList<Edge>(state.depth)
+            var cursor: SearchState? = state
+            while (cursor != null) {
+                nodes.add(cursor.node)
+                cursor.incomingEdge?.let { edge ->
+                    edges.add(edge)
+                }
+                cursor = cursor.parent
+            }
+            nodes.reverse()
+            edges.reverse()
+            return Path(nodes, edges)
+        }
+    }
 
     /**
      * Find all paths from source nodes to target nodes via BFS.
@@ -47,53 +69,48 @@ object PathFinder {
         minDepth: Int = 1,
         maxDepth: Int = 10,
         direction: Direction = Direction.OUTGOING
-    ): List<Path> = findPaths(
+    ): List<Path> = findPathMatches(
         graph,
         sources,
         SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
-    )
+    ).map { it.materialize(workTracker = null) }.toList()
 
-    internal fun findPaths(
+    internal fun findPathMatches(
         graph: Graph,
         sources: Set<NodeId>,
         options: SearchOptions
-    ): List<Path> {
-        val results = mutableListOf<Path>()
-
+    ): Sequence<PathMatch> = sequence {
         for (source in sources) {
             val startNode = loadNode(graph, source, options.workTracker) ?: continue
-            bfs(graph, startNode, options, results)
+            yieldAll(bfs(graph, startNode, options))
         }
-
-        return results
     }
 
     private fun bfs(
         graph: Graph,
         startNode: Node,
-        options: SearchOptions,
-        results: MutableList<Path>
-    ) {
+        options: SearchOptions
+    ): Sequence<PathMatch> = sequence {
         val visited = mutableSetOf<Int>()
-        val queue = ArrayDeque<State>()
-        queue.add(State(startNode.id, listOf(startNode), emptyList()))
+        val queue = ArrayDeque<SearchState>()
+        queue.add(SearchState(startNode, incomingEdge = null, parent = null, depth = 0))
 
         while (queue.isNotEmpty()) {
-            val (current, pathNodes, pathEdges) = queue.removeFirst()
-            val depth = pathEdges.size
+            val state = queue.removeFirst()
+            val current = state.node.id
 
-            if (depth >= options.minDepth && (options.targets == null || current in options.targets)) {
-                results.add(Path(pathNodes, pathEdges))
+            if (state.depth >= options.minDepth && (options.targets == null || current in options.targets)) {
+                yield(PathMatch(state))
             }
 
-            if (depth >= options.maxDepth) continue
+            if (state.depth >= options.maxDepth) continue
             if (!visited.add(current.value)) continue
 
             val edges = edgesForDirection(graph, current, options)
             for (edge in edges) {
                 val nextId = nextNodeId(edge, current, options.direction)
                 val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
-                queue.add(State(nextId, pathNodes + nextNode, pathEdges + edge))
+                queue.add(SearchState(nextNode, edge, state, state.depth + 1))
             }
         }
     }

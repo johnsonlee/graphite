@@ -229,6 +229,16 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `bound variable element id predicate uses normal match semantics`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant) MATCH (n) " +
+                "WHERE elementId(n) = '${intConst42.value}' RETURN n.value"
+        )
+
+        assertEquals(listOf(mapOf("n.value" to 42)), result.rows)
+    }
+
+    @Test
     fun `execution budget rejects non-positive limits`() {
         assertFailsWith<IllegalArgumentException> { CypherExecutionBudget(0) }
     }
@@ -246,6 +256,21 @@ class CypherExecutorTest {
         repeat(2) {
             val result = budgeted.execute("MATCH (n) RETURN n.id LIMIT 2")
             assertEquals(2, result.rows.size)
+        }
+    }
+
+    @Test
+    fun `execution context shares one budget across executors`() {
+        val chain = dataFlowChain(length = 1)
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+
+        val first = CypherExecutor(chain, context).execute(
+            "MATCH (n:IntConstant) RETURN n.value LIMIT 1"
+        )
+        assertEquals(listOf(mapOf("n.value" to 0)), first.rows)
+
+        assertFailsWith<CypherBudgetExceededException> {
+            CypherExecutor(chain, context).execute("MATCH (n:IntConstant) RETURN n.value LIMIT 1")
         }
     }
 
@@ -268,6 +293,81 @@ class CypherExecutorTest {
                     "RETURN a.value, b.callee_name"
             )
         }
+    }
+
+    @Test
+    fun `execution budget charges variable path materialization`() {
+        val budgeted = CypherExecutor(dataFlowChain(length = 1), CypherExecutionBudget(maxWorkUnits = 4))
+
+        assertFailsWith<CypherBudgetExceededException> {
+            budgeted.execute(
+                "MATCH (a:IntConstant)-[r:DATAFLOW*1..10000]->(b:LocalVariable) RETURN r LIMIT 1"
+            )
+        }
+    }
+
+    @Test
+    fun `variable path limit stops a high max hops traversal lazily`() {
+        val chain = dataFlowChain(length = 1_000)
+        var outgoingCalls = 0
+        val countingGraph = object : Graph by chain {
+            override fun outgoing(node: NodeId): Sequence<Edge> {
+                outgoingCalls++
+                return chain.outgoing(node)
+            }
+        }
+
+        val result = CypherExecutor(countingGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..100000]->(b:LocalVariable) RETURN b.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("b.name" to "local-0")), result.rows)
+        assertEquals(1, outgoingCalls)
+    }
+
+    @Test
+    fun `untyped variable path follows available relationships`() {
+        val result = CypherExecutor(dataFlowChain(length = 1)).execute(
+            "MATCH (a:IntConstant)-[*1..100]->(b:LocalVariable) RETURN b.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("b.name" to "local-0")), result.rows)
+    }
+
+    @Test
+    fun `single hop limit skips a target with the wrong type`() {
+        val result = CypherExecutor(dataFlowChain(length = 1)).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:CallSiteNode) RETURN b.callee_name LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `limit does not discard a later branch that completes the pattern`() {
+        val owner = TypeDescriptor("com.example.BranchLimit")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 0)
+        val deadEnd = LocalVariable(NodeId.next(), "dead-end", valueType, method)
+        val liveMiddle = LocalVariable(NodeId.next(), "live-middle", valueType, method)
+        val target = LocalVariable(NodeId.next(), "target", valueType, method)
+        val branchGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(deadEnd)
+            .addNode(liveMiddle)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, deadEnd.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, liveMiddle.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(liveMiddle.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = CypherExecutor(branchGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable)" +
+                "-[:DATAFLOW]->(c:LocalVariable) RETURN c.name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("c.name" to "target")), result.rows)
     }
 
     @Test
@@ -564,6 +664,16 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `match with STARTS WITH filter and limit`() {
+        val result = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.callee_name STARTS WITH 'sa' " +
+                "RETURN n.callee_name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("n.callee_name" to "save")), result.rows)
+    }
+
+    @Test
     fun `match with CONTAINS filter`() {
         val result = executor.execute("MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'av' RETURN n.callee_name")
         assertEquals(1, result.rows.size)
@@ -831,6 +941,22 @@ class CypherExecutorTest {
 
         assertEquals(listOf("kind", "total"), result.columns)
         assertEquals(listOf(mapOf("kind" to "Constant", "total" to 9L)), result.rows)
+    }
+
+    @Test
+    fun `label histogram with label ordering falls back without changing results`() {
+        val result = executor.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY label
+            LIMIT 50
+            """.trimIndent()
+        )
+
+        assertTrue(result.rows.isNotEmpty())
+        assertEquals(result.rows.map { it["label"] }.sortedBy(Any?::toString), result.rows.map { it["label"] })
     }
 
     @Test
@@ -1983,5 +2109,20 @@ class CypherExecutorTest {
         val constant = IntConstant(NodeId.next(), 42)
         assertTrue(PropertyFilter("value", FilterOperator.EQUALS, 42L, emptySet(), "n").matches(constant))
         assertFalse(PropertyFilter("value", FilterOperator.LESS_THAN, "x", emptySet(), "n").matches(constant))
+    }
+
+    private fun dataFlowChain(length: Int): Graph {
+        val owner = TypeDescriptor("com.example.PathBudget")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val builder = DefaultGraph.Builder()
+        var previous: Node = IntConstant(NodeId.next(), 0).also(builder::addNode)
+        repeat(length) { index ->
+            val next = LocalVariable(NodeId.next(), "local-$index", valueType, method)
+            builder.addNode(next)
+            builder.addEdge(DataFlowEdge(previous.id, next.id, DataFlowKind.ASSIGN))
+            previous = next
+        }
+        return builder.build()
     }
 }

@@ -5,7 +5,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 /**
  * Bounds graph work performed by one Cypher execution.
  *
- * A work unit is one node, relationship, or storage-index candidate inspected
+ * A work unit is one graph candidate inspected or one path element materialized
  * by the query pipeline. Metadata fast paths do not consume work units.
  */
 data class CypherExecutionBudget(val maxWorkUnits: Long) {
@@ -25,7 +25,7 @@ class CypherExecutionContext(val executionBudget: CypherExecutionBudget) {
 class CypherBudgetExceededException(
     val maxWorkUnits: Long
 ) : RuntimeException(
-    "Cypher work budget exceeded after $maxWorkUnits graph candidate inspections; " +
+    "Cypher work budget exceeded after $maxWorkUnits graph work units; " +
         "add a selective label/filter or use a metadata-backed query"
 )
 
@@ -34,10 +34,13 @@ internal class CypherWorkTracker(
 ) : GraphWorkConsumer {
     private var remaining = budget.maxWorkUnits
 
-    override fun consume() {
-        if (remaining == 0L) {
+    override fun consume() = consume(1)
+
+    fun consume(workUnits: Long) {
+        if (workUnits > remaining) {
+            remaining = 0
             throw CypherBudgetExceededException(budget.maxWorkUnits)
         }
-        remaining--
+        remaining -= workUnits
     }
 }

@@ -917,8 +917,31 @@ class QueryPipeline private constructor(
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
 
-        // A pattern is a chain: Node [Rel Node [Rel Node ...]]
-        // Start by matching the first node, then alternate rel+node.
+        val matches = if (limit != null && elements.size > 1) {
+            matchPatternLazily(elements, existingBindings, limit)
+        } else {
+            matchPatternEagerly(elements, existingBindings, limit)
+        }
+
+        // If the pattern has a path variable, bind it to the matched path
+        if (pattern.pathVariable != null) {
+            return matches.map { bindings ->
+                val path = buildPathRepresentation(pattern, bindings)
+                bindings.toMutableMap().apply {
+                    this[pattern.pathVariable] = path
+                    addProvenance(this, path)
+                }
+            }
+        }
+
+        return matches
+    }
+
+    private fun matchPatternEagerly(
+        elements: List<PatternElement>,
+        existingBindings: Map<String, Any?>,
+        limit: Int?
+    ): List<Map<String, Any?>> {
         var currentMatches = matchNodeElement(elements[0] as PatternElement.NodePattern, existingBindings, limit)
 
         var i = 1
@@ -929,28 +952,38 @@ class QueryPipeline private constructor(
 
             val nextMatches = mutableListOf<Map<String, Any?>>()
             for (bindings in currentMatches) {
-                nextMatches.addAll(matchRelationship(rel, targetNode, bindings))
-                if (limit != null && nextMatches.size >= limit) break
+                nextMatches.addAll(matchRelationship(rel, targetNode, bindings, limit = null))
             }
-            currentMatches = if (limit != null && nextMatches.size > limit) {
-                nextMatches.subList(0, limit)
-            } else {
-                nextMatches
-            }
-        }
-
-        // If the pattern has a path variable, bind it to the matched path
-        if (pattern.pathVariable != null) {
-            return currentMatches.map { bindings ->
-                val path = buildPathRepresentation(pattern, bindings)
-                bindings.toMutableMap().apply {
-                    this[pattern.pathVariable] = path
-                    addProvenance(this, path)
-                }
-            }
+            currentMatches = nextMatches
         }
 
         return currentMatches
+    }
+
+    private fun matchPatternLazily(
+        elements: List<PatternElement>,
+        existingBindings: Map<String, Any?>,
+        limit: Int
+    ): List<Map<String, Any?>> {
+        var currentMatches = matchNodeElementLazily(
+            elements[0] as PatternElement.NodePattern,
+            existingBindings
+        )
+
+        var i = 1
+        while (i < elements.size) {
+            val rel = elements[i] as PatternElement.RelationshipPattern
+            val targetNode = elements[i + 1] as PatternElement.NodePattern
+            i += 2
+
+            val relationshipLimit = limit.takeIf { i >= elements.size }
+            val nextMatches = currentMatches.flatMap { bindings ->
+                matchRelationship(rel, targetNode, bindings, relationshipLimit).asSequence()
+            }
+            currentMatches = relationshipLimit?.let(nextMatches::take) ?: nextMatches
+        }
+
+        return currentMatches.toList()
     }
 
     /**
@@ -1016,13 +1049,29 @@ class QueryPipeline private constructor(
         limit: Int? = null
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
+        for (candidate in nodeElementCandidates(nodePattern, existingBindings)) {
+            val bindings = bindNodeCandidate(candidate, nodePattern, existingBindings) ?: continue
+            results.add(bindings)
+            if (limit != null && results.size >= limit) break
+        }
+        return results
+    }
 
-        // Determine the node class from the first label (if any)
+    private fun matchNodeElementLazily(
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings)
+        .mapNotNull { candidate -> bindNodeCandidate(candidate, nodePattern, existingBindings) }
+
+    private fun nodeElementCandidates(
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Sequence<Any> {
         val nodeClass = nodePattern.labels.firstOrNull()
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
             ?: Node::class.java
 
-        val candidates: Sequence<Any> = if (nodePattern.variable != null &&
+        return if (nodePattern.variable != null &&
             existingBindings.containsKey(nodePattern.variable)
         ) {
             val existing = existingBindings[nodePattern.variable]
@@ -1035,20 +1084,20 @@ class QueryPipeline private constructor(
         } else {
             nodeCandidates(nodeClass)
         }
+    }
 
-        for (candidate in candidates) {
-            if (matchesNodeConstraints(candidate, nodePattern, existingBindings)) {
-                val bindings = existingBindings.toMutableMap()
-                if (nodePattern.variable != null) {
-                    bindings[nodePattern.variable] = candidate
-                    addProvenance(bindings, candidate)
-                }
-                results.add(bindings)
-                if (limit != null && results.size >= limit) break
+    private fun bindNodeCandidate(
+        candidate: Any,
+        nodePattern: PatternElement.NodePattern,
+        existingBindings: Map<String, Any?>
+    ): Map<String, Any?>? {
+        if (!matchesNodeConstraints(candidate, nodePattern, existingBindings)) return null
+        return existingBindings.toMutableMap().apply {
+            if (nodePattern.variable != null) {
+                this[nodePattern.variable] = candidate
+                addProvenance(this, candidate)
             }
         }
-
-        return results
     }
 
     /**
@@ -1057,7 +1106,8 @@ class QueryPipeline private constructor(
     private fun matchRelationship(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
-        bindings: Map<String, Any?>
+        bindings: Map<String, Any?>,
+        limit: Int?
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
 
@@ -1067,9 +1117,9 @@ class QueryPipeline private constructor(
         val edgeClass = rel.types.firstOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
 
         if (rel.variableLength) {
-            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, results)
+            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
         } else {
-            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, results)
+            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
         }
 
         return results
@@ -1081,6 +1131,7 @@ class QueryPipeline private constructor(
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
         edgeClass: Class<out Edge>?,
+        limit: Int?,
         results: MutableList<Map<String, Any?>>
     ) {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
@@ -1101,6 +1152,7 @@ class QueryPipeline private constructor(
                 addProvenance(newBindings, edge.value)
             }
             results.add(newBindings)
+            if (limit != null && results.size >= limit) break
         }
     }
 
@@ -1110,6 +1162,7 @@ class QueryPipeline private constructor(
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
         edgeClass: Class<out Edge>?,
+        limit: Int?,
         results: MutableList<Map<String, Any?>>
     ) {
         val direction = when (rel.direction) {
@@ -1118,7 +1171,8 @@ class QueryPipeline private constructor(
             Direction.BOTH -> PathFinder.Direction.BOTH
         }
 
-        val paths = PathFinder.findPaths(
+        val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
             options = PathFinder.SearchOptions(
@@ -1127,18 +1181,19 @@ class QueryPipeline private constructor(
                 minDepth = rel.minHops ?: 1,
                 maxDepth = rel.maxHops ?: 10,
                 direction = direction,
-                workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+                workTracker = workTracker
             )
         )
 
-        for (path in paths) {
-            val endNode = path.nodes.last()
-            val endValue = nodeValue(sourceNode.source, endNode)
+        for (pathMatch in paths) {
+            val endValue = nodeValue(sourceNode.source, pathMatch.endNode())
             val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings) ?: continue
 
             val newBindings = targetMatch.toMutableMap()
             if (rel.variable != null) {
+                val path = pathMatch.materialize(workTracker)
                 val pathValue = if (qualified) {
+                    workTracker?.consume(path.nodes.size.toLong() + path.edges.size)
                     QualifiedPath(
                         graphId = sourceNode.source.id,
                         nodes = path.nodes.map { QualifiedNode(sourceNode.source.id, sourceNode.source.graph, it) },
@@ -1151,6 +1206,7 @@ class QueryPipeline private constructor(
                 addProvenance(newBindings, pathValue)
             }
             results.add(newBindings)
+            if (limit != null && results.size >= limit) break
         }
     }
 
