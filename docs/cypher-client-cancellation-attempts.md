@@ -78,9 +78,9 @@ The retained implementation:
   observed;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
-- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; every tracked Java
-  `Pattern` receives a cancellation-aware `CharSequence` that checks after each 1,024 character accesses, while normal
-  short matches retain the query-level check after `matches()` without an extra matcher callback;
+- polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; literal, prefix, and
+  pairwise-disjoint ASCII range sequences use semantics-preserving cancellable scanners, while every remaining tracked
+  Java `Pattern` receives a cancellation-aware `CharSequence` that checks after each 1,024 character accesses;
 - checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
   result after cancellation;
 - registers the route continuation before scheduling work, keeps the concurrency permit and graph leases through JSON

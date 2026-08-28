@@ -410,13 +410,29 @@ class ExpressionEvaluatorTest {
             "aa" to "(a)\\1",
             "foobar" to "foo(?=bar)bar",
             "aaa" to "a++",
-            "a" to "[a-z&&[^b]]"
+            "a" to "[a-z&&[^b]]",
+            "abcXYZ_123" to "[a-z]+[A-Z_]+[0-9]+",
+            "azm" to "[a-z]+[a-m]+"
         )
 
         for ((value, pattern) in matchingCases) {
             assertEquals(true, eval(CypherExpr.RegexMatch(lit(value), lit(pattern))), pattern)
         }
         assertEquals(false, eval(CypherExpr.RegexMatch(lit("b"), lit("[a-z&&[^b]]"))))
+        assertEquals(false, eval(CypherExpr.RegexMatch(lit("abc123def"), lit("[a-z]+[0-9]+"))))
+    }
+
+    @Test
+    fun `ASCII range fast path matches Java regex semantics`() {
+        val patterns = listOf("[a-z]+[0-9]+", "[a-a]+[b-d]+", "[A-Z]+[_]+[0-9]+", "[0]+")
+        val values = listOf("", "a", "abc123", "aaaa", "aaab", "aad", "XYZ_12", "XYZ__12", "0", "00", "é1")
+
+        for (pattern in patterns) {
+            for (value in values) {
+                val expected = pattern.toRegex().matches(value)
+                assertEquals(expected, eval(CypherExpr.RegexMatch(lit(value), lit(pattern))), "$pattern / $value")
+            }
+        }
     }
 
     @Test
@@ -448,7 +464,7 @@ class ExpressionEvaluatorTest {
     }
 
     @Test
-    fun `tracked ordinary regex avoids per-character cancellation polling`() {
+    fun `tracked short ASCII range sequence avoids per-character cancellation polling`() {
         var cancellationChecks = 0
         val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
         val value = "a".repeat(100) + "12345678901234"
@@ -461,6 +477,22 @@ class ExpressionEvaluatorTest {
             )
         )
         assertEquals(1, cancellationChecks)
+    }
+
+    @Test
+    fun `tracked long ASCII range sequence polls cancellation`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        val value = "a".repeat(2_048) + "1234"
+
+        assertEquals(
+            true,
+            trackedEvaluator.evaluate(
+                CypherExpr.RegexMatch(lit(value), lit("[a-z]+[0-9]+")),
+                emptyMap()
+            )
+        )
+        assertTrue(cancellationChecks >= 3)
     }
 
     @Test

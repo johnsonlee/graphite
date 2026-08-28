@@ -19,6 +19,7 @@ private const val LOAD_FACTOR = 0.75f
 private const val MAX_REGEX_CACHE_SIZE = 256
 private const val REGEX_ANY_SUFFIX = ".*"
 private val REGEX_META_CHARACTERS = setOf('\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}')
+private val ASCII_RANGE_SEQUENCE_TOKEN = Pattern.compile("\\[([A-Za-z0-9_])(?:-([A-Za-z0-9_]))?]\\+")
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
@@ -448,11 +449,80 @@ private class LiteralCypherRegex(
     }
 }
 
+private class AsciiRangeSequenceCypherRegex(
+    private val ranges: IntArray
+) : CompiledCypherRegex {
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        return if (checkCancelled == null || value.length <= CANCELLATION_POLL_MASK) {
+            matchesUnchecked(value)
+        } else {
+            matchesWithCancellation(value, checkCancelled)
+        }
+    }
+
+    private fun matchesUnchecked(value: String): Boolean {
+        var index = 0
+        var rangeIndex = 0
+        while (rangeIndex < ranges.size) {
+            val startIndex = index
+            val rangeStart = ranges[rangeIndex++]
+            val rangeEnd = ranges[rangeIndex++]
+            while (index < value.length && value[index].code in rangeStart..rangeEnd) {
+                index++
+            }
+            if (index == startIndex) return false
+        }
+        return index == value.length
+    }
+
+    private fun matchesWithCancellation(value: String, checkCancelled: () -> Unit): Boolean {
+        var accesses = 0
+        var index = 0
+        var rangeIndex = 0
+        while (rangeIndex < ranges.size) {
+            val startIndex = index
+            val rangeStart = ranges[rangeIndex++]
+            val rangeEnd = ranges[rangeIndex++]
+            while (index < value.length && value[index].code in rangeStart..rangeEnd) {
+                if (++accesses > CANCELLATION_POLL_MASK) {
+                    accesses = 0
+                    checkCancelled()
+                }
+                index++
+            }
+            if (index == startIndex) return false
+        }
+        return index == value.length
+    }
+}
+
 private fun compileCypherRegex(pattern: String): CompiledCypherRegex {
     val prefix = pattern.endsWith(REGEX_ANY_SUFFIX)
     val literalPattern = if (prefix) pattern.dropLast(REGEX_ANY_SUFFIX.length) else pattern
-    val literal = parseRegexLiteral(literalPattern) ?: return JavaCypherRegex(pattern)
-    return LiteralCypherRegex(literal, prefix)
+    val literal = parseRegexLiteral(literalPattern)
+    val ranges = if (literal == null) parseAsciiRangeSequence(pattern) else null
+    return when {
+        literal != null -> LiteralCypherRegex(literal, prefix)
+        ranges != null -> AsciiRangeSequenceCypherRegex(ranges)
+        else -> JavaCypherRegex(pattern)
+    }
+}
+
+@Suppress("ReturnCount")
+private fun parseAsciiRangeSequence(pattern: String): IntArray? {
+    val ranges = mutableListOf<Int>()
+    val matcher = ASCII_RANGE_SEQUENCE_TOKEN.matcher(pattern)
+    var endIndex = 0
+    while (matcher.find()) {
+        if (matcher.start() != endIndex) return null
+        val rangeStart = matcher.group(1)[0].code
+        val rangeEnd = matcher.group(2)?.get(0)?.code ?: rangeStart
+        if (rangeStart > rangeEnd || ranges.chunked(2).any { rangeStart <= it[1] && rangeEnd >= it[0] }) return null
+        ranges += rangeStart
+        ranges += rangeEnd
+        endIndex = matcher.end()
+    }
+    return ranges.takeIf { endIndex == pattern.length && it.isNotEmpty() }?.toIntArray()
 }
 
 @Suppress("ReturnCount")
@@ -493,8 +563,10 @@ private class CancellationAwareCharSequence(
     override val length: Int get() = value.length
 
     override fun get(index: Int): Char {
-        accesses++
-        if ((accesses and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        if (++accesses > CANCELLATION_POLL_MASK) {
+            accesses = 0
+            checkCancelled()
+        }
         return value[index]
     }
 
