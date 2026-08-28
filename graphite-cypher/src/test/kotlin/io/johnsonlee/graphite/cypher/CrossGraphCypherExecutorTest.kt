@@ -123,6 +123,35 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `label histogram sums type counts and retains contributors`() {
+        val executor = executor(
+            "orders" to graph(
+                IntConstant(NodeId(1), 10),
+                IntConstant(NodeId(2), 20),
+                StringConstant(NodeId(3), "shared")
+            ),
+            "billing" to graph(IntConstant(NodeId(1), 30))
+        )
+
+        val result = executor.execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+        val constant = result.rows.first { it["label"] == "Constant" }
+        val string = result.rows.first { it["label"] == "StringConstant" }
+
+        assertEquals(4L, constant["c"])
+        assertEquals(listOf("billing", "orders"), graphIds(constant))
+        assertEquals(1L, string["c"])
+        assertEquals(listOf("orders"), graphIds(string))
+    }
+
+    @Test
     fun `relationship and named path rows retain graph identity`() {
         val orders = DefaultGraph.Builder()
             .addNode(IntConstant(NodeId(1), 10))

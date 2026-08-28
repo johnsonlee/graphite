@@ -690,6 +690,41 @@ row expansion, aggregation, and sort in the histogram query allocate roughly
 deployment scale, this execution model is not viable; the histogram must use
 existing type metadata instead of visiting nodes.
 
+### 2026-08-28 - Attempt 016: Type-index label histogram
+
+**Design:** recognize the exact schema-discovery shape from Attempt 015 and
+derive its counts from `Graph.nodeCount(concreteType)`. Graphite labels are a
+fixed projection of concrete node types, including aggregate labels such as
+`Constant`, `Resource`, and `Annotation`. The executor sums each type count into
+those labels, sorts the small metadata result, and retains cross-graph
+provenance. It does not load or materialize a node.
+
+The optimization is deliberately narrow. It requires an unlabeled single-node
+`MATCH`, `UNWIND labels()` of that node, a label plus `count(*)` projection,
+ordering by the count alias, and a literal limit. Unsupported shapes use the
+generic pipeline. A graph that cannot provide an indexed `nodeCount` also falls
+back to the generic implementation.
+
+Tests prove that the optimized query never calls `Graph.nodes`, returns concrete
+and aggregate label counts, supports aliases and limits, sums counts across
+graphs, and preserves every contributing graph ID. A separate fallback test
+uses a graph with no count metadata and verifies the original scan result.
+
+The same Android benchmark and JVM settings from Attempt 015 produce:
+
+| Query | Baseline | Attempt 016 | Change |
+|-------|---------:|------------:|-------:|
+| `labels/keys LIMIT 20` | `0.018 ms/op`, `56,480 B/op` | `0.014 ms/op`, `52,944 B/op` | no regression |
+| `UNWIND labels + count` | `8,733.299 ms/op`, `11,211,740,267 B/op` | `0.010 ms/op`, `35,768 B/op` | `873,330x` faster, `313,456x` less allocation |
+
+`./gradlew :cypher:check --no-daemon` passes, including tests, detekt, and Kover
+verification. Explicit application line coverage is `98.1245%`.
+
+**Conclusion:** retained. The production query is now bounded by the number of
+Graphite node types and selected graphs rather than the number of nodes. The
+5.9-million-node Android result exceeds the 100x target by more than four orders
+of magnitude, and the already-limited labels/keys sample does not regress.
+
 ## PR verification summary
 
 **Environment:** Apple M3 Max, 64 GiB RAM, macOS 14.3 arm64, OpenJDK

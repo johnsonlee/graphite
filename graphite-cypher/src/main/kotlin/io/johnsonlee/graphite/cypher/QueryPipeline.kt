@@ -18,6 +18,7 @@ import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 
 private const val COUNT_QUERY_CLAUSES = 2
+private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
 private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
@@ -77,6 +78,7 @@ class QueryPipeline private constructor(
      */
     fun execute(clauses: List<CypherClause>): CypherResult {
         val fastResult = tryFastNodeCount(clauses)
+            ?: tryFastLabelHistogram(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
@@ -276,6 +278,95 @@ class QueryPipeline private constructor(
             }
         }
         else -> null
+    }
+
+    /**
+     * Fast path for Graphite schema discovery:
+     *
+     *   MATCH (n)
+     *   UNWIND labels(n) AS label
+     *   RETURN label, count(*) AS count
+     *   ORDER BY count DESC
+     *   LIMIT k
+     *
+     * Graphite's labels are derived from concrete node types. Backends with a
+     * type index can therefore answer this histogram without loading nodes.
+     */
+    @Suppress("ReturnCount")
+    private fun tryFastLabelHistogram(clauses: List<CypherClause>): CypherResult? {
+        val query = LabelHistogramQuery.compile(clauses) ?: return null
+        if (query.limit <= 0) return CypherResult(query.columns, emptyList())
+
+        val counts = linkedMapOf<String, Long>()
+        val provenance = if (qualified) mutableMapOf<String, MutableSet<String>>() else null
+        for (source in sources) {
+            for (descriptor in nodeLabelDescriptors) {
+                val count = source.graph.nodeCount(descriptor.type) ?: return null
+                if (count <= 0) continue
+                for (label in descriptor.labels) {
+                    counts[label] = counts.getOrDefault(label, 0L) + count
+                    provenance?.getOrPut(label, ::linkedSetOf)?.add(source.id)
+                }
+            }
+        }
+
+        val comparator = compareBy<Map.Entry<String, Long>> { it.value }
+        val ordered = counts.entries.sortedWith(
+            if (query.ascending) comparator else comparator.reversed()
+        )
+        val rows = ordered.take(query.limit).map { (label, count) ->
+            mutableMapOf<String, Any?>(
+                query.labelColumn to label,
+                query.countColumn to count
+            ).apply {
+                provenance?.get(label)?.takeIf { it.isNotEmpty() }?.let { put(INTERNAL_PROVENANCE_KEY, it) }
+            }
+        }
+        return CypherResult(query.columns, rows)
+    }
+
+    private data class LabelHistogramQuery(
+        val labelColumn: String,
+        val countColumn: String,
+        val ascending: Boolean,
+        val limit: Int
+    ) {
+        val columns: List<String> = listOf(labelColumn, countColumn)
+
+        companion object {
+            @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+            fun compile(clauses: List<CypherClause>): LabelHistogramQuery? {
+                if (clauses.size != LABEL_HISTOGRAM_QUERY_CLAUSES) return null
+                val match = clauses[0] as? CypherClause.Match ?: return null
+                val unwind = clauses[1] as? CypherClause.Unwind ?: return null
+                val ret = clauses[2] as? CypherClause.Return ?: return null
+                val orderBy = clauses[3] as? CypherClause.OrderBy ?: return null
+                val limit = clauses[4] as? CypherClause.Limit ?: return null
+                if (match.optional || match.patterns.size != 1 || ret.distinct || ret.items.size != 2) return null
+
+                val pattern = match.patterns.single()
+                if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+                val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+                val nodeVariable = nodePattern.variable ?: return null
+                if (nodePattern.labels.isNotEmpty() || nodePattern.properties.isNotEmpty()) return null
+
+                val labelsCall = unwind.expression as? CypherExpr.FunctionCall ?: return null
+                if (!labelsCall.name.equals("labels", ignoreCase = true) || labelsCall.distinct) return null
+                if (labelsCall.args.singleOrNull() != CypherExpr.Variable(nodeVariable)) return null
+
+                val labelItem = ret.items[0]
+                if (labelItem.expression != CypherExpr.Variable(unwind.variable)) return null
+                val countItem = ret.items[1]
+                if (countItem.expression != CypherExpr.CountStar) return null
+                val labelColumn = labelItem.alias ?: labelItem.expression.toCypherString()
+                val countColumn = countItem.alias ?: countItem.expression.toCypherString()
+
+                val sort = orderBy.items.singleOrNull() ?: return null
+                if (sort.expression != CypherExpr.Variable(countColumn)) return null
+                val limitCount = (limit.count as? CypherExpr.Literal)?.value as? Number ?: return null
+                return LabelHistogramQuery(labelColumn, countColumn, sort.ascending, limitCount.toInt())
+            }
+        }
     }
 
     /**

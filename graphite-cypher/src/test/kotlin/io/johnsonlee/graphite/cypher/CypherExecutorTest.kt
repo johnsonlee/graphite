@@ -707,6 +707,79 @@ class CypherExecutorTest {
         assertEquals(2L, result.rows[0]["cnt"])
     }
 
+    @Test
+    fun `label histogram uses node count metadata without scanning nodes`() {
+        var countCalls = 0
+        val metadataGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("label histogram must not scan nodes")
+
+            override fun nodeCount(type: Class<out Node>): Long? {
+                countCalls++
+                return graph.nodeCount(type)
+            }
+        }
+
+        val result = CypherExecutor(metadataGraph).execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 50
+            """.trimIndent()
+        )
+        val counts = result.rows.associate { it["label"] as String to it["c"] as Long }
+
+        assertEquals(listOf("label", "c"), result.columns)
+        assertEquals("Constant", result.rows.first()["label"])
+        assertEquals(9L, counts["Constant"])
+        assertEquals(2L, counts["CallSiteNode"])
+        assertEquals(2L, counts["Annotation"])
+        assertEquals(1L, counts["Resource"])
+        assertEquals(nodeLabelDescriptors.size, countCalls)
+    }
+
+    @Test
+    fun `label histogram supports aliases and limit`() {
+        val result = executor.execute(
+            """
+            MATCH (node)
+            UNWIND labels(node) AS rawLabel
+            RETURN rawLabel AS kind, count(*) AS total
+            ORDER BY total DESC
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertEquals(listOf("kind", "total"), result.columns)
+        assertEquals(listOf(mapOf("kind" to "Constant", "total" to 9L)), result.rows)
+    }
+
+    @Test
+    fun `label histogram falls back when node counts are unavailable`() {
+        var scanned = false
+        val scanningGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).onEach { scanned = true }
+
+            override fun nodeCount(type: Class<out Node>): Long? = null
+        }
+
+        val result = CypherExecutor(scanningGraph).execute(
+            """
+            MATCH (n)
+            UNWIND labels(n) AS label
+            RETURN label, count(*) AS c
+            ORDER BY c DESC
+            LIMIT 1
+            """.trimIndent()
+        )
+
+        assertTrue(scanned)
+        assertEquals(listOf(mapOf("label" to "Constant", "c" to 9L)), result.rows)
+    }
+
     // --- EXISTS function ---
 
     @Test
