@@ -122,7 +122,7 @@ internal class DisconnectMonitor(
         val bufferedBytes = buffered?.remaining() ?: 0
         val available = ensureRequestBufferCapacity(bufferedBytes)
         buffered?.let(connection::onUpgradeTo)
-        val probe = ByteBuffer.allocate(minOf(maxOf(available, 1), DISCONNECT_PROBE_MAX_BYTES))
+        val probe = ByteBuffer.allocate(maxOf(available, 1))
         return try {
             val read = socketEndPoint.channel.read(probe)
             when {
@@ -210,7 +210,6 @@ internal class DisconnectMonitor(
 
 private const val DISCONNECT_READ_INTEREST_DELAY_MILLIS = 10L
 private const val DISCONNECT_READ_INTEREST_RETRY_MILLIS = 50L
-private const val DISCONNECT_PROBE_MAX_BYTES = 8 * 1_024
 private const val MAX_MONITORED_PIPELINE_BYTES = 1_024 * 1_024
 private object DisconnectMonitorClosedException : IOException("Cypher disconnect monitor closed") {
     override fun fillInStackTrace(): Throwable = this

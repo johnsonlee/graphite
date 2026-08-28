@@ -15,11 +15,13 @@ import jakarta.servlet.AsyncListener
 import org.eclipse.jetty.io.Connection
 import org.eclipse.jetty.util.thread.Scheduler
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.lang.reflect.Proxy
 import java.net.HttpURLConnection
 import java.net.Socket
+import java.net.SocketException
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -54,6 +56,19 @@ class CypherClientCancellationTest {
                 writeRequest(socket, "GET", "/openapi.json")
             }
             Thread.sleep(PIPELINED_REQUEST_BUFFER_MILLIS)
+        }
+    }
+
+    @Test
+    fun `pipeline beyond the monitor buffer cap cancels the active query`() {
+        verifyResetDisconnect(serverMayCloseFirst = true) { socket ->
+            try {
+                socket.getOutputStream().write(ByteArray(OVERSIZED_PIPELINE_BYTES) { 'x'.code.toByte() })
+                socket.getOutputStream().flush()
+            } catch (_: IOException) {
+                // The server may reset the socket before the client finishes writing the over-limit pipeline.
+            }
+            Thread.sleep(PIPELINE_LIMIT_SETTLE_MILLIS)
         }
     }
 
@@ -298,7 +313,10 @@ class CypherClientCancellationTest {
         monitor.close()
     }
 
-    private fun verifyResetDisconnect(beforeReset: (Socket) -> Unit = {}) {
+    private fun verifyResetDisconnect(
+        serverMayCloseFirst: Boolean = false,
+        beforeReset: (Socket) -> Unit = {}
+    ) {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
         val node = IntConstant(NodeId.next(), 1)
@@ -327,9 +345,14 @@ class CypherClientCancellationTest {
             assertTrue(waitUntil { visited.get() >= 1_000 }, "The broad query did not scan candidates")
 
             beforeReset(socket)
-            socket.setSoLinger(true, 0)
             val disconnectedAt = System.nanoTime()
-            socket.close()
+            try {
+                socket.setSoLinger(true, 0)
+                socket.close()
+            } catch (error: SocketException) {
+                if (!serverMayCloseFirst) throw error
+                socket.close()
+            }
 
             assertTrue(
                 waitUntil(timeoutMillis = MAX_DISCONNECT_LATENCY_MILLIS) { queryCanRun(app.port()) },
@@ -507,5 +530,7 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
 private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
+private const val PIPELINE_LIMIT_SETTLE_MILLIS = 1_000L
 private const val LARGE_PIPELINE_REQUESTS = 150
+private const val OVERSIZED_PIPELINE_BYTES = 1_100_000
 private const val GRAPH_FREE_PROGRESS_CHECKPOINTS = 10
