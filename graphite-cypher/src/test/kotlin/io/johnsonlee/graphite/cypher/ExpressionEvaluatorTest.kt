@@ -16,6 +16,8 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import org.junit.Before
 import org.junit.Test
+import java.util.AbstractSequentialList
+import java.util.LinkedList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -219,6 +221,20 @@ class ExpressionEvaluatorTest {
             tracked.evaluate(CypherExpr.BinaryOp("+", lit(values), lit(values)), emptyMap())
         }
         assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `tracked list concatenation traverses sequential inputs once`() {
+        val left = EvaluatorTrackingSequentialList(listOf(1, 2))
+        val right = EvaluatorTrackingSequentialList(listOf(3, 4))
+        val tracked = ExpressionEvaluator {}
+
+        assertEquals(
+            listOf(1, 2, 3, 4),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(left), lit(right)), emptyMap())
+        )
+        assertEquals(1, left.listIteratorCalls)
+        assertEquals(1, right.listIteratorCalls)
     }
 
     @Test
@@ -442,6 +458,15 @@ class ExpressionEvaluatorTest {
             tracked.evaluate(CypherExpr.ListOp("IN", lit(-1), lit((0 until 10_000).toList())), emptyMap())
         }
         assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `tracked IN traverses a sequential input once`() {
+        val values = EvaluatorTrackingSequentialList(listOf(1, 2, 3))
+        val tracked = ExpressionEvaluator {}
+
+        assertFalse(tracked.evaluate(CypherExpr.ListOp("IN", lit(4), lit(values)), emptyMap()) as Boolean)
+        assertEquals(1, values.listIteratorCalls)
     }
 
     // ========================================================================
@@ -1397,3 +1422,17 @@ class ExpressionEvaluatorTest {
 }
 
 private class CollectionOperationCancelled : RuntimeException()
+
+private class EvaluatorTrackingSequentialList<T>(values: Collection<T>) : AbstractSequentialList<T>() {
+    private val delegate = LinkedList(values)
+    var listIteratorCalls: Int = 0
+        private set
+
+    override val size: Int
+        get() = delegate.size
+
+    override fun listIterator(index: Int): MutableListIterator<T> {
+        listIteratorCalls++
+        return delegate.listIterator(index)
+    }
+}

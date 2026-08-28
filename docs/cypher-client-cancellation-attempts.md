@@ -80,7 +80,9 @@ The retained implementation:
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget, including list concatenation and membership plus `reverse`, `tail`,
   `nodes`, and `relationships` collection copies; tracked string reversal preserves UTF-16 surrogate pairs, and
-  tracked list reversal/tail use iterators so sequential lists remain O(n);
+  tracked list concatenation and membership copy/search random-access lists in 4,096-element chunks and traverse
+  sequential lists through one `listIterator`, while tracked list reversal/tail also use iterators so sequential lists
+  remain O(n);
 - polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; literal, prefix, and
   pairwise-disjoint ASCII range sequences use semantics-preserving cancellable scanners, while every remaining tracked
   Java `Pattern` receives a cancellation-aware `CharSequence` that checks after each 1,024 character accesses;
@@ -174,6 +176,26 @@ java -jar <cypher-jmh.jar> \
 harness was copied into the base checkout before both jars were built. The final candidate's 99.9% interval is
 `909.500-939.040 us/op`. Deferring the first internal poll until the 1,024th character access removes the previous
 normal-match regression while every tracked pattern remains cancellable.
+
+The collection hot paths have a separate required gate against `e070eb8183b55665863a4f8496b9515163575560`, the
+parent used to isolate the per-element Kotlin-loop regression during review. The workflow copies the exact candidate
+JMH harness into that checkout before building either jar and runs:
+
+```text
+java -jar <cypher-jmh.jar> \
+  'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
+  -foe true -rf json -rff <result.json>
+```
+
+On the same local environment, the optimized candidate is `+1.3%` for concatenation and `+5.6%` for membership,
+both below the 15% gate. This replaces the isolated `+37.0%` and `+31.9%` regressions reported for the earlier
+per-element loops. The fixed baseline deliberately measures that implementation regression without mixing in the
+cost of the full cancellation feature relative to an untracked `main` path.
+
+| Budgeted collection benchmark | Fixed baseline | Candidate | Delta |
+|---|---:|---:|---:|
+| `budgetedListConcatenation` | 268.633 us/op | 272.230 us/op | +1.3% |
+| `budgetedListMembership` | 403.584 us/op | 426.013 us/op | +5.6% |
 
 Connected HTTP fixed-cost command, using the same `CypherHttpBenchmark` source in both checkouts:
 

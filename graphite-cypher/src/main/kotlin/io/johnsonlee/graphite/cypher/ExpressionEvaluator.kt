@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import java.util.LinkedHashMap
+import java.util.RandomAccess
 import java.util.regex.Pattern
 
 private const val PREDICATE_ANY = "any"
@@ -415,39 +416,73 @@ private fun concatenateLists(
 ): List<Any?> {
     if (checkCancelled == null) return left + right
     val result = ArrayList<Any?>(left.size + right.size)
-    var index = 0
-    for (value in left) {
-        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-        result.add(value)
-        index++
-    }
-    for (value in right) {
-        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-        result.add(value)
-        index++
-    }
+    appendWithCancellation(result, left, checkCancelled)
+    appendWithCancellation(result, right, checkCancelled)
     checkCancelled()
     return result
+}
+
+private fun appendWithCancellation(
+    target: MutableList<Any?>,
+    source: List<*>,
+    checkCancelled: () -> Unit
+) {
+    if (source is RandomAccess) {
+        var start = 0
+        while (start < source.size) {
+            checkCancelled()
+            val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, source.size)
+            target.addAll(source.subList(start, end))
+            start = end
+        }
+        return
+    }
+
+    var index = 0
+    val iterator = source.listIterator()
+    while (iterator.hasNext()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        target.add(iterator.next())
+        index++
+    }
 }
 
 private fun containsWithCancellation(
     list: List<*>,
     element: Any?,
     checkCancelled: (() -> Unit)?
-): Boolean = if (checkCancelled == null) {
-    element in list
-} else {
-    var found = false
-    for ((index, candidate) in list.withIndex()) {
-        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-        if (candidate == element) {
-            found = true
-            break
-        }
-    }
-    if (!found) checkCancelled()
-    found
+): Boolean = when {
+    checkCancelled == null -> element in list
+    list is RandomAccess -> containsRandomAccessList(list, element, checkCancelled)
+    else -> containsSequentialList(list, element, checkCancelled)
 }
+
+private fun containsRandomAccessList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+    var start = 0
+    while (start < list.size) {
+        checkCancelled()
+        val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
+        if (list.subList(start, end).contains(element)) return true
+        start = end
+    }
+    checkCancelled()
+    return false
+}
+
+private fun containsSequentialList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+    var index = 0
+    val iterator = list.listIterator()
+    while (iterator.hasNext()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        val candidate = iterator.next()
+        if (element == candidate) return true
+        index++
+    }
+    checkCancelled()
+    return false
+}
+
+private const val CANCELLABLE_COLLECTION_CHUNK_SIZE = 4 * (CANCELLATION_POLL_MASK + 1)
 
 private sealed interface CompiledCypherRegex {
     fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean

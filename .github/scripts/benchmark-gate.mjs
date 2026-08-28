@@ -597,6 +597,11 @@ export function aggregateReports(directory, metadata) {
     const components = [
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
         {
+            name: "budgeted-collection",
+            report: "budgeted-collection-report.md",
+            status: "budgeted-collection-status.json"
+        },
+        {
             name: "budgeted-mapped-string",
             report: "budgeted-string-report.md",
             status: "budgeted-string-status.json"
