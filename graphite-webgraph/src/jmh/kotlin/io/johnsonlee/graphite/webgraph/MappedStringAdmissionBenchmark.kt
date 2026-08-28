@@ -9,6 +9,9 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherResult
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringValueTransform
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -43,6 +46,9 @@ open class MappedStringAdmissionBenchmark {
 
     @Benchmark
     fun earlyHitAfterLargeLimitScan(state: LargeLimitBenchmarkState): CypherResult = state.earlyHitWithoutIndexBuild()
+
+    @Benchmark
+    fun budgetedTransformedZeroHit(state: BudgetedTransformedScanBenchmarkState): Int = state.zeroHit()
 }
 
 @State(Scope.Thread)
@@ -80,6 +86,14 @@ open class LargeLimitBenchmarkState : MappedStringAdmissionBenchmarkState() {
 }
 
 @State(Scope.Thread)
+open class BudgetedTransformedScanBenchmarkState : MappedStringAdmissionBenchmarkState() {
+    @Setup(Level.Invocation)
+    fun resetMatchState() = clearIndexes()
+
+    fun zeroHit(): Int = budgetedTransformedZeroHit()
+}
+
+@State(Scope.Thread)
 open class MappedStringAdmissionBenchmarkState {
     private lateinit var root: Path
     private lateinit var mapped: MappedWebGraphBackedGraph
@@ -89,7 +103,7 @@ open class MappedStringAdmissionBenchmarkState {
     fun setupGraph() {
         val graph = DefaultGraph.Builder().apply {
             repeat(ADMISSION_RESOURCE_NODES) { index ->
-                addNode(ResourceFileNode(NodeId(index), "path-$index", "source-$index", "format-$index"))
+                addNode(ResourceFileNode(NodeId(index), "path-$index", "source-${index % 100}", "format-$index"))
             }
             repeat(ADMISSION_FIELD_NODES) { index ->
                 addNode(
@@ -123,6 +137,22 @@ open class MappedStringAdmissionBenchmarkState {
     protected fun clearIndexes() = mapped.clearStringPropertyIndexes()
 
     protected fun execute(query: String): CypherResult = executor.execute(query)
+
+    protected fun budgetedTransformedZeroHit(): Int {
+        var inspected = 0
+        val matches = mapped.nodesByTransformedStringProperty(
+            ResourceFileNode::class.java,
+            "source",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "absent",
+            limit = 1,
+            workConsumer = GraphWorkConsumer { inspected++ }
+        ).orEmpty().count()
+        check(matches == 0)
+        check(inspected == ADMISSION_RESOURCE_NODES)
+        return inspected
+    }
 
     protected fun indexCount(type: Class<out Node>? = null, property: String? = null): Int =
         mapped.stringPropertyIndexCount(type, property)

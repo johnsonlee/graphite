@@ -6,12 +6,18 @@ import test from "node:test";
 import {
     COMMENT_MARKER,
     aggregateReports,
+    combineLatencyShards,
     confirmLargeCorpus,
+    LATENCY_EXPECTED_BENCHMARK_KEYS,
+    LATENCY_EXPECTED_SHARDS,
+    confirmLatencyBaseline,
     confirmJmh,
     compareJmh,
+    compareLatencyBaseline,
     compareLargeCorpus,
     parseLargeCorpusLog,
     renderJmhReport,
+    renderLatencyBaselineReport,
     renderLargeCorpusReport
 } from "./benchmark-gate.mjs";
 
@@ -20,9 +26,10 @@ function jmhResult({
     mode = "avgt",
     score,
     confidence,
-    unit = "us/op"
+    unit = "us/op",
+    params
 }) {
-    return {
+    const result = {
         benchmark,
         mode,
         primaryMetric: {
@@ -31,6 +38,8 @@ function jmhResult({
             scoreUnit: unit
         }
     };
+    if (params !== undefined) result.params = params;
+    return result;
 }
 
 test("JMH comparison blocks a separated latency regression", () => {
@@ -56,6 +65,53 @@ test("JMH comparison does not block overlapping confidence intervals", () => {
     assert.equal(comparison.rows[0].aboveThreshold, true);
     assert.equal(comparison.rows[0].blocked, false);
     assert.match(renderJmhReport(comparison), /\*\*NOISE\*\*/);
+});
+
+test("threshold-only JMH comparison confirms a regression despite overlapping intervals", () => {
+    const comparison = compareJmh(
+        [jmhResult({ score: 100, confidence: [80, 120] })],
+        [jmhResult({ score: 225, confidence: [90, 360] })],
+        15,
+        true
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].confidenceSeparated, false);
+    assert.equal(comparison.rows[0].blocked, true);
+    assert.match(renderJmhReport(comparison), /regardless of confidence/);
+});
+
+test("threshold-only JMH confirmation blocks a repeated score regression", () => {
+    const initial = compareJmh(
+        [jmhResult({ score: 100, confidence: [80, 120] })],
+        [jmhResult({ score: 225, confidence: [90, 360] })],
+        15,
+        true
+    );
+    const retry = compareJmh(
+        [jmhResult({ score: 105, confidence: [70, 140] })],
+        [jmhResult({ score: 220, confidence: [80, 360] })],
+        15,
+        true
+    );
+    const confirmed = confirmJmh(initial, retry);
+
+    assert.equal(confirmed.passed, false);
+    assert.equal(confirmed.rows[0].blocked, true);
+    assert.match(renderJmhReport(confirmed), /\*\*FAIL\*\*/);
+});
+
+test("JMH report accepts a gate-specific title", () => {
+    const comparison = compareJmh(
+        [jmhResult({ score: 100, confidence: [95, 105] })],
+        [jmhResult({ score: 101, confidence: [96, 106] })],
+        15
+    );
+
+    assert.match(
+        renderJmhReport(comparison, "Budgeted mapped-string latency"),
+        /^### Budgeted mapped-string latency/m
+    );
 });
 
 test("JMH throughput regression uses higher-is-better semantics", () => {
@@ -114,6 +170,139 @@ test("JMH reverse-order confirmation blocks a repeated regression", () => {
     assert.equal(confirmed.passed, false);
     assert.equal(confirmed.rows[0].blocked, true);
     assert.match(renderJmhReport(confirmed), /\*\*FAIL\*\*/);
+});
+
+test("latency baseline requires both fixed-baseline speedup and no base regression", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 20, confidence: [19, 21] })],
+        [jmhResult({ score: 21, confidence: [20, 22] })]
+    );
+
+    assert.equal(comparison.passed, true);
+    assert.equal(Math.round(comparison.rows[0].speedup), 376);
+    assert.match(renderLatencyBaselineReport(comparison), /Pre-PR-95/);
+});
+
+test("latency baseline blocks loss of the fixed-baseline optimization", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100, confidence: [98, 102] })],
+        [jmhResult({ score: 20, confidence: [19, 21] })],
+        [jmhResult({ score: 80, confidence: [78, 82] })]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].improvementBlocked, true);
+    assert.equal(comparison.rows[0].blocked, true);
+});
+
+test("latency baseline fails closed without fixed speedup confidence bounds", () => {
+    const comparison = compareLatencyBaseline(
+        [jmhResult({ score: 100 })],
+        [jmhResult({ score: 20 })],
+        [jmhResult({ score: 20 })]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].improvementSeparated, false);
+    assert.equal(comparison.rows[0].blocked, true);
+    assert.match(comparison.errors.join("\n"), /requires finite confidence bounds/);
+});
+
+test("latency confirmation blocks only failures repeated by the same benchmark", () => {
+    const first = "example.First.query";
+    const second = "example.Second.query";
+    const initial = compareLatencyBaseline(
+        [
+            jmhResult({ benchmark: first, score: 100, confidence: [98, 102] }),
+            jmhResult({ benchmark: second, score: 100, confidence: [98, 102] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 80, confidence: [78, 82] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ]
+    );
+    const retry = compareLatencyBaseline(
+        [
+            jmhResult({ benchmark: first, score: 100, confidence: [98, 102] }),
+            jmhResult({ benchmark: second, score: 100, confidence: [98, 102] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 20, confidence: [19, 21] })
+        ],
+        [
+            jmhResult({ benchmark: first, score: 20, confidence: [19, 21] }),
+            jmhResult({ benchmark: second, score: 80, confidence: [78, 82] })
+        ]
+    );
+    const confirmed = confirmLatencyBaseline(initial, retry);
+
+    assert.equal(initial.passed, false);
+    assert.equal(retry.passed, false);
+    assert.equal(confirmed.passed, true);
+    assert.equal(confirmed.rows.find((row) => row.key === first).blocked, false);
+    assert.equal(confirmed.rows.find((row) => row.key === second).blocked, false);
+    assert.match(renderLatencyBaselineReport(confirmed), /Confirmation/);
+});
+
+test("latency baseline fails closed when one graph-count parameter is missing", () => {
+    const fixed = [
+        { ...jmhResult({ score: 100 }), params: { graphCount: "1" } },
+        { ...jmhResult({ score: 1_700 }), params: { graphCount: "17" } }
+    ];
+    const base = fixed.map((result) => ({ ...result, primaryMetric: { ...result.primaryMetric, score: 20 } }));
+    const candidate = base.slice(0, 1);
+    const comparison = compareLatencyBaseline(fixed, base, candidate);
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /graphCount=17/);
+});
+
+test("latency baseline fails when an expected benchmark disappears from all revisions", () => {
+    const key = LATENCY_EXPECTED_BENCHMARK_KEYS[0];
+    const benchmark = key.slice(0, key.indexOf("["));
+    const params = { graphCount: "1" };
+    const result = jmhResult({ benchmark, score: 10, confidence: [9, 11], unit: "ms/op", params });
+    const comparison = compareLatencyBaseline(
+        [result],
+        [result],
+        [jmhResult({ benchmark, score: 1, confidence: [0.9, 1.1], unit: "ms/op", params })],
+        15,
+        50,
+        [key, LATENCY_EXPECTED_BENCHMARK_KEYS[1]]
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /missing expected latency benchmark/);
+});
+
+test("latency shard aggregation requires every shard and the complete benchmark key set", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-latency-shards-"));
+    try {
+        LATENCY_EXPECTED_SHARDS.forEach((shard, index) => {
+            const rows = LATENCY_EXPECTED_BENCHMARK_KEYS
+                .filter((_, keyIndex) => keyIndex % LATENCY_EXPECTED_SHARDS.length === index)
+                .map((key) => ({ key, blocked: false }));
+            fs.writeFileSync(
+                path.join(directory, `latency-status-${shard}.json`),
+                JSON.stringify({ passed: true, errors: [], rows })
+            );
+        });
+
+        assert.equal(combineLatencyShards(directory).passed, true);
+        fs.rmSync(path.join(directory, "latency-status-real-d.json"));
+        const incomplete = combineLatencyShards(directory);
+        assert.equal(incomplete.passed, false);
+        assert.match(incomplete.errors.join("\n"), /real-d: latency shard status is missing/);
+        assert.match(incomplete.errors.join("\n"), /missing expected benchmark/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
 });
 
 const baseCorpusLine = [
@@ -207,6 +396,32 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.equal(aggregate.passed, false);
         assert.match(aggregate.body, new RegExp(COMMENT_MARKER));
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("aggregate report includes the budgeted mapped-string gate", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-complete-"));
+    try {
+        for (const [report, status, body] of [
+            ["method-report.md", "method-status.json", "method report"],
+            ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
+            ["large-corpus-report.md", "large-corpus-status.json", "large report"],
+            ["latency-report.md", "latency-status.json", "latency report"]
+        ]) {
+            fs.writeFileSync(path.join(directory, report), `${body}\n`);
+            fs.writeFileSync(path.join(directory, status), JSON.stringify({ passed: true }));
+        }
+        const aggregate = aggregateReports(directory, {
+            baseSha: "a".repeat(40),
+            candidateSha: "b".repeat(40),
+            runner: "test-runner",
+            runUrl: "https://example.invalid/run"
+        });
+
+        assert.equal(aggregate.passed, true);
+        assert.match(aggregate.body, /budgeted report/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }

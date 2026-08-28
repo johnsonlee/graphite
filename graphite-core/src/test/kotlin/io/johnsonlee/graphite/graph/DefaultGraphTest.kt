@@ -94,10 +94,20 @@ class DefaultGraphTest {
             .build()
 
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringProperty" })
+        assertTrue(Graph::class.java.methods.none { it.name == "nodesByTransformedStringProperty" })
         assertNull(
             graph.nodesByStringProperty(
                 StringConstant::class.java,
                 "value",
+                StringMatchMode.CONTAINS,
+                "hello"
+            )
+        )
+        assertNull(
+            graph.nodesByTransformedStringProperty(
+                StringConstant::class.java,
+                "value",
+                StringValueTransform.LOWERCASE,
                 StringMatchMode.CONTAINS,
                 "hello"
             )

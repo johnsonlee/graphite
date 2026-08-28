@@ -85,6 +85,14 @@ val integrationFixtureJvmArgs = providers.provider {
     }
 }
 
+val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
+    description = "Resolves all real-corpus JARs for external benchmark harnesses"
+    group = "benchmark"
+    from(androidIntegrationFixture)
+    from(largeCorpusFixtures)
+    into(layout.buildDirectory.dir("benchmark-fixtures"))
+}
+
 jmh {
     val filter = project.findProperty("jmh.filter") as String?
     if (filter != null) {
