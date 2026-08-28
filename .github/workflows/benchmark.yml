@@ -187,10 +187,34 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
-  wrapped-query-latency:
-    name: wrapped-query-latency
+  wrapped-query-latency-shard:
+    name: wrapped-query-latency-shard-${{ matrix.shard }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - shard: synthetic
+          real: false
+          correctness: false
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: real-a
+          real: true
+          correctness: true
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(zeroHitBroadContainsCaseInsensitiveDiscovery|denseDistributedMethodContainsCaseInsensitiveDiscovery)'
+        - shard: real-b
+          real: true
+          correctness: false
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(earlyGraphClassPrefixCaseInsensitiveDiscovery|middleGraphsClassPrefixCaseInsensitiveDiscovery)'
+        - shard: real-c
+          real: true
+          correctness: false
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(lateGraphClassPrefixCaseInsensitiveDiscovery|broadlyDistributedClassPrefixCaseInsensitiveDiscovery)'
+        - shard: real-d
+          real: true
+          correctness: false
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery|skewedMixedClassMethodOperatorCaseInsensitiveDiscovery)'
 
     steps:
     - name: Checkout fixed pre-PR-95 baseline
@@ -240,6 +264,7 @@ jobs:
         candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
 
     - name: Prepare all real fixture graphs
+      if: matrix.real
       run: |
         FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
         ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
@@ -267,6 +292,7 @@ jobs:
           "${PWD}/fixture-graphs"
 
     - name: Verify all real-fixture query results
+      if: matrix.correctness
       run: |
         set -o pipefail
         mkdir -p benchmark-results
@@ -288,6 +314,8 @@ jobs:
           benchmark-results/candidate-fixture-correctness.txt
 
     - name: Benchmark fixed baseline, PR base, and PR
+      env:
+        BENCHMARK_FILTER: ${{ matrix.filter }}
       run: |
         mkdir -p benchmark-results
         FIXED_JAR=$(find fixed/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
@@ -299,19 +327,22 @@ jobs:
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         java -jar "${FIXED_JAR}" \
-          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          "${BENCHMARK_FILTER}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency.json"
         java -jar "${BASE_JAR}" \
-          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          "${BENCHMARK_FILTER}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/base-latency.json"
         java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+          "${BENCHMARK_FILTER}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/candidate-latency.json"
 
     - name: Enforce fixed baseline speedup and current-base regression gate
+      env:
+        BENCHMARK_FILTER: ${{ matrix.filter }}
+        SHARD: ${{ matrix.shard }}
       run: |
         if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
           --fixed benchmark-results/fixed-latency.json \
@@ -319,10 +350,11 @@ jobs:
           --candidate benchmark-results/candidate-latency.json \
           --minimum-speedup 50 \
           --threshold 15 \
+          --allow-subset \
           --report benchmark-results/initial-latency-report.md \
           --status benchmark-results/initial-latency-status.json; then
-          mv benchmark-results/initial-latency-report.md benchmark-results/latency-report.md
-          mv benchmark-results/initial-latency-status.json benchmark-results/latency-status.json
+          mv benchmark-results/initial-latency-report.md "benchmark-results/latency-report-${SHARD}.md"
+          mv benchmark-results/initial-latency-status.json "benchmark-results/latency-status-${SHARD}.json"
         else
           CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
           BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
@@ -332,15 +364,15 @@ jobs:
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
           java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/candidate-latency-confirmation.json"
           java -jar "${BASE_JAR}" \
-            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-confirmation.json"
           java -jar "${FIXED_JAR}" \
-            'io.johnsonlee.graphite.webgraph.(WrappedDiscoveryLatencyBenchmark|AllFixtureWrappedDiscoveryLatencyBenchmark).*CaseInsensitiveDiscovery' \
+            "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
@@ -350,18 +382,65 @@ jobs:
             --candidate benchmark-results/candidate-latency-confirmation.json \
             --minimum-speedup 50 \
             --threshold 15 \
-            --report benchmark-results/latency-report.md \
-            --status benchmark-results/latency-status.json
+            --allow-subset \
+            --report "benchmark-results/latency-report-${SHARD}.md" \
+            --status "benchmark-results/latency-status-${SHARD}.json"
         fi
 
     - name: Upload wrapped-query latency results
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: benchmark-latency-shard-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
         retention-days: 14
+
+  wrapped-query-latency:
+    name: wrapped-query-latency
+    if: always()
+    needs: [wrapped-query-latency-shard]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout PR reporting code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Download latency shard results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        pattern: benchmark-latency-shard-*-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results
+        merge-multiple: true
+
+    - name: Combine latency shard results
+      if: always()
+      run: |
+        mkdir -p benchmark-results
+        node .github/scripts/benchmark-gate.mjs combine-latency-shards \
+          --directory benchmark-results \
+          --report benchmark-results/latency-report.md \
+          --status benchmark-results/latency-status.json
+
+    - name: Upload combined wrapped-query latency results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce latency shards
+      if: always()
+      env:
+        SHARD_JOB: ${{ needs.wrapped-query-latency-shard.result }}
+      run: |
+        test "${SHARD_JOB}" = success
+        node -e "const s=require('./benchmark-results/latency-status.json'); if(!s.passed) process.exit(1)"
 
   benchmark-regression-gate:
     name: benchmark-regression-gate

@@ -6,8 +6,10 @@ import test from "node:test";
 import {
     COMMENT_MARKER,
     aggregateReports,
+    combineLatencyShards,
     confirmLargeCorpus,
     LATENCY_EXPECTED_BENCHMARK_KEYS,
+    LATENCY_EXPECTED_SHARDS,
     confirmLatencyBaseline,
     confirmJmh,
     compareJmh,
@@ -230,6 +232,30 @@ test("latency baseline fails when an expected benchmark disappears from all revi
 
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /missing expected latency benchmark/);
+});
+
+test("latency shard aggregation requires every shard and the complete benchmark key set", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-latency-shards-"));
+    try {
+        LATENCY_EXPECTED_SHARDS.forEach((shard, index) => {
+            const rows = LATENCY_EXPECTED_BENCHMARK_KEYS
+                .filter((_, keyIndex) => keyIndex % LATENCY_EXPECTED_SHARDS.length === index)
+                .map((key) => ({ key, blocked: false }));
+            fs.writeFileSync(
+                path.join(directory, `latency-status-${shard}.json`),
+                JSON.stringify({ passed: true, errors: [], rows })
+            );
+        });
+
+        assert.equal(combineLatencyShards(directory).passed, true);
+        fs.rmSync(path.join(directory, "latency-status-real-d.json"));
+        const incomplete = combineLatencyShards(directory);
+        assert.equal(incomplete.passed, false);
+        assert.match(incomplete.errors.join("\n"), /real-d: latency shard status is missing/);
+        assert.match(incomplete.errors.join("\n"), /missing expected benchmark/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
 });
 
 const baseCorpusLine = [

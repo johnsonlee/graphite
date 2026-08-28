@@ -22,6 +22,7 @@ export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.skewedMixedClassMethodOperatorCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery"
 ];
+export const LATENCY_EXPECTED_SHARDS = ["synthetic", "real-a", "real-b", "real-c", "real-d"];
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
@@ -403,6 +404,44 @@ export function renderLatencyBaselineReport(comparison) {
     return `${lines.join("\n")}\n`;
 }
 
+export function combineLatencyShards(directory) {
+    const errors = [];
+    const rows = [];
+    const seenKeys = new Set();
+    for (const shard of LATENCY_EXPECTED_SHARDS) {
+        const statusFile = path.join(directory, `latency-status-${shard}.json`);
+        if (!fs.existsSync(statusFile)) {
+            errors.push(`${shard}: latency shard status is missing`);
+            continue;
+        }
+        const status = readJson(statusFile);
+        for (const error of status.errors ?? []) errors.push(`${shard}: ${error}`);
+        for (const row of status.rows ?? []) {
+            if (seenKeys.has(row.key)) {
+                errors.push(`${shard}: duplicate latency benchmark ${row.key}`);
+            } else {
+                seenKeys.add(row.key);
+                rows.push(row);
+            }
+        }
+        if (status.passed !== true) errors.push(`${shard}: latency shard failed`);
+    }
+
+    const expected = new Set(LATENCY_EXPECTED_BENCHMARK_KEYS);
+    for (const key of expected) {
+        if (!seenKeys.has(key)) errors.push(`combined latency results: missing expected benchmark ${key}`);
+    }
+    for (const key of seenKeys) {
+        if (!expected.has(key)) errors.push(`combined latency results: unexpected benchmark ${key}`);
+    }
+    rows.sort((left, right) => left.key.localeCompare(right.key));
+    return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
 export function parseLargeCorpusLog(contents) {
     const results = new Map();
     for (const line of contents.split(/\r?\n/)) {
@@ -612,7 +651,7 @@ function compareLatencyBaselineCommand(args) {
         readJson(requireArg(args, "candidate")),
         Number(args.threshold ?? 15),
         Number(args["minimum-speedup"] ?? 50),
-        LATENCY_EXPECTED_BENCHMARK_KEYS
+        args["allow-subset"] === true ? null : LATENCY_EXPECTED_BENCHMARK_KEYS
     );
     writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
@@ -627,9 +666,16 @@ function confirmLatencyBaselineCommand(args) {
         readJson(requireArg(args, "candidate")),
         Number(args.threshold ?? 15),
         Number(args["minimum-speedup"] ?? 50),
-        LATENCY_EXPECTED_BENCHMARK_KEYS
+        args["allow-subset"] === true ? null : LATENCY_EXPECTED_BENCHMARK_KEYS
     );
     const comparison = confirmLatencyBaseline(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
+function combineLatencyShardsCommand(args) {
+    const comparison = combineLatencyShards(requireArg(args, "directory"));
     writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
@@ -677,6 +723,7 @@ function main(argv) {
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
+    else if (command === "combine-latency-shards") combineLatencyShardsCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);
