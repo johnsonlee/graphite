@@ -243,7 +243,7 @@ Generic JDK resource linking currently covers:
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
 | `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
 | `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
-| `/metrics` | Prometheus performance metrics for the JVM, process, Jetty HTTP server, and Cypher execution |
+| `/metrics` | Prometheus performance metrics when the server starts with `--metrics` |
 | `/openapi.json` | Machine-readable OpenAPI document for the explore server |
 | `/swagger.json` | Swagger-compatible alias of the same API document |
 
@@ -275,8 +275,9 @@ HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
 
-Prometheus can scrape `/metrics` without additional server configuration. The
-default metric set prioritizes runtime performance: JVM heap, GC and threads;
+Start the server with `--metrics` to expose Prometheus output at `/metrics`.
+Metrics are opt-in, so the default request path has no Micrometer instrumentation cost. The
+metric set prioritizes runtime performance: JVM heap, GC and threads;
 process CPU, uptime and file descriptors; Jetty connections, thread-pool load
 and route-template HTTP latency; and Cypher active queries, concurrency limit,
 rejections and duration by fixed outcome. Graph ids, query text, keywords,

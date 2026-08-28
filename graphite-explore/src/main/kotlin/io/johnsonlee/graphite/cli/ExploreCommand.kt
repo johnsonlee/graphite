@@ -75,6 +75,12 @@ open class ServeCommand : Callable<Int> {
     )
     var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
 
+    @Option(
+        names = ["--metrics"],
+        description = ["Expose Prometheus performance metrics at $METRICS_PATH"]
+    )
+    var metricsEnabled: Boolean = false
+
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
@@ -104,21 +110,23 @@ open class ServeCommand : Callable<Int> {
             return 1
         }
 
-        val performanceMetrics = ServerPerformanceMetrics()
+        val performanceMetrics = if (metricsEnabled) ServerPerformanceMetrics() else null
         var app: Javalin? = null
         try {
             app = Javalin.create { config ->
                 config.jsonMapper(JavalinGson(gson))
                 config.staticFiles.add("/web")
-                performanceMetrics.configure(config)
+                performanceMetrics?.configure(config)
             }
 
-            performanceMetrics.registerRoutes(app)
+            performanceMetrics?.registerRoutes(app)
             registerApiRoutes(app, registry, topologyService, performanceMetrics)
             app.start(port)
 
             System.err.println("Web UI: http://localhost:${app.port()}")
-            System.err.println("Metrics: http://localhost:${app.port()}$METRICS_PATH")
+            if (performanceMetrics != null) {
+                System.err.println("Metrics: http://localhost:${app.port()}$METRICS_PATH")
+            }
             System.err.println("Data: $root")
             System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
             val topologySummary = topologyService.summary()
@@ -135,7 +143,7 @@ open class ServeCommand : Callable<Int> {
             return 0
         } finally {
             app?.stop()
-            performanceMetrics.close()
+            performanceMetrics?.close()
             topologyService.close()
             registry.close()
         }

@@ -33,22 +33,41 @@ class CypherClientCancellationTest {
 
     @Test
     fun `resetting a client connection stops its query and releases the concurrency permit`() {
-        verifyDisconnect(resetConnection = true)
-    }
-
-    @Test
-    fun `closing a client connection stops its query and releases the concurrency permit`() {
-        verifyDisconnect(resetConnection = false)
+        verifyResetDisconnect()
     }
 
     @Test
     fun `resetting a client connection stops graph-free query work`() {
-        verifyGraphFreeDisconnect(resetConnection = true)
+        verifyGraphFreeResetDisconnect()
     }
 
     @Test
-    fun `closing a client connection stops graph-free query work`() {
-        verifyGraphFreeDisconnect(resetConnection = false)
+    fun `input half-close still receives the complete Cypher response`() {
+        val routes = ExploreRoutes(CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1))
+        val app = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().create()))
+        }.start(0)
+
+        try {
+            routes.register(app, DefaultGraph.Builder().build())
+            Socket("127.0.0.1", app.port()).use { socket ->
+                socket.soTimeout = 5_000
+                writeRequest(
+                    socket,
+                    "POST",
+                    "/api/cypher",
+                    """{"query":"RETURN size(range(1, 5000000)) AS n"}""",
+                    connection = "close"
+                )
+                socket.shutdownOutput()
+
+                val response = readResponse(socket)
+                assertEquals(200, response.status)
+                assertTrue(response.body.contains("5000000"), response.body)
+            }
+        } finally {
+            app.stop()
+        }
     }
 
     @Test
@@ -111,7 +130,7 @@ class CypherClientCancellationTest {
         assertEquals(1, cancellations.get())
     }
 
-    private fun verifyDisconnect(resetConnection: Boolean) {
+    private fun verifyResetDisconnect() {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
         val node = IntConstant(NodeId.next(), 1)
@@ -139,7 +158,7 @@ class CypherClientCancellationTest {
             assertTrue(started.await(5, TimeUnit.SECONDS), "The broad query did not start")
             assertTrue(waitUntil { visited.get() >= 1_000 }, "The broad query did not scan candidates")
 
-            if (resetConnection) socket.setSoLinger(true, 0)
+            socket.setSoLinger(true, 0)
             val disconnectedAt = System.nanoTime()
             socket.close()
 
@@ -160,7 +179,7 @@ class CypherClientCancellationTest {
         }
     }
 
-    private fun verifyGraphFreeDisconnect(resetConnection: Boolean) {
+    private fun verifyGraphFreeResetDisconnect() {
         val performance = DisconnectPerformanceRecorder()
         val routes = ExploreRoutes(
             CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1, performance = performance)
@@ -180,7 +199,7 @@ class CypherClientCancellationTest {
             )
             assertTrue(performance.started.await(1, TimeUnit.SECONDS), "The graph-free query was not accepted")
 
-            if (resetConnection) socket.setSoLinger(true, 0)
+            socket.setSoLinger(true, 0)
             socket.close()
 
             assertEquals(
@@ -204,7 +223,13 @@ class CypherClientCancellationTest {
         }
     }
 
-    private fun writeRequest(socket: Socket, method: String, path: String, body: String? = null) {
+    private fun writeRequest(
+        socket: Socket,
+        method: String,
+        path: String,
+        body: String? = null,
+        connection: String = "keep-alive"
+    ) {
         val bodyBytes = body?.toByteArray(StandardCharsets.UTF_8) ?: ByteArray(0)
         socket.getOutputStream().write(
             buildString {
@@ -212,7 +237,7 @@ class CypherClientCancellationTest {
                 append("Host: 127.0.0.1:${socket.port}\r\n")
                 if (body != null) append("Content-Type: application/json\r\n")
                 append("Content-Length: ${bodyBytes.size}\r\n")
-                append("Connection: keep-alive\r\n")
+                append("Connection: $connection\r\n")
                 append("\r\n")
             }.toByteArray(StandardCharsets.US_ASCII)
         )

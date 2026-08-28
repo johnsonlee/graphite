@@ -4,14 +4,16 @@ import io.javalin.http.Context
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import jakarta.servlet.AsyncEvent
 import jakarta.servlet.AsyncListener
-import org.eclipse.jetty.io.AbstractConnection
 import org.eclipse.jetty.io.AbstractEndPoint
 import org.eclipse.jetty.io.Connection
+import org.eclipse.jetty.io.SocketChannelEndPoint
+import org.eclipse.jetty.server.HttpConnection
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.util.Callback
 import org.eclipse.jetty.util.thread.Scheduler
 import java.io.Closeable
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -48,7 +50,7 @@ internal class CypherClientCancellation private constructor(
             val connectionListener = CypherCancellationConnectionListener(cancel)
             val disconnectMonitor = DisconnectMonitor(
                 channel.scheduler,
-                connection as? AbstractConnection,
+                connection as? HttpConnection,
                 cancel
             )
 
@@ -85,7 +87,7 @@ internal class CypherCancellationConnectionListener(
 
 private class DisconnectMonitor(
     private val scheduler: Scheduler,
-    private val connection: AbstractConnection?,
+    private val connection: HttpConnection?,
     private val cancel: () -> Unit
 ) : Runnable, Closeable {
     private val endPoint = connection?.endPoint as? AbstractEndPoint
@@ -96,16 +98,40 @@ private class DisconnectMonitor(
     private val readCallback = object : Callback {
         override fun succeeded() {
             if (!ownsReadInterest.compareAndSet(true, false) || isClosed()) return
-            connection?.onFillable()
-            if (endPoint == null || !endPoint.isOpen || endPoint.isInputShutdown) {
+            if (!probeReadableEndpoint()) return
+            if (endPoint == null || !endPoint.isOpen) {
                 cancel()
-            } else {
+            } else if (!endPoint.isInputShutdown) {
                 schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
             }
         }
 
         override fun failed(failure: Throwable) {
             if (ownsReadInterest.compareAndSet(true, false) && !isClosed()) cancel()
+        }
+    }
+
+    private fun probeReadableEndpoint(): Boolean {
+        val socketEndPoint = endPoint as? SocketChannelEndPoint
+        if (socketEndPoint == null || connection == null) {
+            connection?.onFillable()
+            return true
+        }
+
+        val probe = ByteBuffer.allocate(1)
+        return try {
+            val read = socketEndPoint.channel.read(probe)
+            if (read > 0) {
+                probe.flip()
+                // onUpgradeTo appends bytes to Jetty's request buffer; use it to replay the non-destructive probe.
+                connection.onUpgradeTo(probe)
+            }
+            connection.onFillable()
+            true
+        } catch (error: IOException) {
+            socketEndPoint.close(error)
+            cancel()
+            false
         }
     }
 
@@ -117,24 +143,23 @@ private class DisconnectMonitor(
             if (closed) return
         }
 
-        if (endPoint != null && (!endPoint.isOpen || endPoint.isInputShutdown)) {
+        if (endPoint != null && !endPoint.isOpen) {
             cancel()
-            return
-        }
-
-        val registered = synchronized(lock) {
-            if (closed || connection == null || endPoint == null) {
-                false
-            } else if (ownsReadInterest.get()) {
-                true
-            } else {
-                ownsReadInterest.set(true)
-                endPoint.tryFillInterested(readCallback).also { accepted ->
-                    if (!accepted) ownsReadInterest.set(false)
+        } else if (endPoint?.isInputShutdown != true) {
+            val registered = synchronized(lock) {
+                if (closed || connection == null || endPoint == null) {
+                    false
+                } else if (ownsReadInterest.get()) {
+                    true
+                } else {
+                    ownsReadInterest.set(true)
+                    endPoint.tryFillInterested(readCallback).also { accepted ->
+                        if (!accepted) ownsReadInterest.set(false)
+                    }
                 }
             }
+            if (!registered) schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
         }
-        if (!registered) schedule(DISCONNECT_READ_INTEREST_RETRY_MILLIS)
     }
 
     override fun close() {

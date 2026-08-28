@@ -65,7 +65,8 @@ The retained implementation:
 
 - registers a monitor-owned Jetty read callback after 10 ms and explicitly removes that callback before normal async
   completion, allowing `HttpConnection` to resume keep-alive reads;
-- delegates readable sockets back to Jetty, then cancels when Jetty observes EOF, input shutdown, or connection error;
+- delegates readable sockets back to Jetty, cancels on reset/connection error, and retires the monitor without
+  cancellation on a clean input half-close so the client can still read the response;
 - adds cancellation-only checkpoints to graph-free expression, clause, aggregation, ordering, and result-materializing
   loops without consuming graph work budget;
 - checks cancellation again after the query block returns, so an interrupt-ignoring block cannot publish a successful
@@ -82,12 +83,12 @@ Behavior verification:
 ./gradlew :cypher:test :explore:test :cypher:detekt :explore:detekt --no-daemon
 ```
 
-`CypherClientCancellationTest` sends both TCP RST and normal FIN disconnects during an infinite candidate scan and a
-graph-free ten-million-element `range`/`UNWIND` query. Each query stops and its only permit is reusable within 2
-seconds. A separate raw-socket regression runs a slow Cypher query and `/openapi.json` sequentially over the same
-keep-alive connection; both responses are HTTP 200. Guard tests prove cancellation wins after an interrupt-ignoring
-block returns and that a blocking completion callback retains the only permit. Exact response tests preserve the
-pre-existing scoped and multi-graph 404 JSON contracts.
+`CypherClientCancellationTest` sends TCP RST during an infinite candidate scan and a graph-free ten-million-element
+`range`/`UNWIND` query. Each query stops and its only permit is reusable within 2 seconds. A half-close regression sends
+`SHUT_WR` after a complete request and still receives the full HTTP 200 response. A separate raw-socket regression runs
+a slow Cypher query and `/openapi.json` sequentially over the same keep-alive connection; both responses are HTTP 200.
+Guard tests prove cancellation wins after an interrupt-ignoring block returns and that a blocking completion callback
+retains the only permit. Exact response tests preserve the pre-existing scoped and multi-graph 404 JSON contracts.
 
 Performance environment: Apple M3 Max, macOS 14.3 (`arm64`), OpenJDK 17.0.18. Base is `v2.4.0`; base and candidate
 JMH jars ran sequentially on the same machine. Lower is better.
@@ -128,8 +129,9 @@ java -jar <explore-jmh.jar> \
 
 | Benchmark | v2.4.0 | Candidate | Delta |
 |---|---:|---:|---:|
-| `connectedScalarQuery` | 67.921 us/op | 74.273 us/op | +9.4% |
+| `connectedScalarQuery` | 67.921 us/op | 68.854 us/op | +1.4% |
 
-The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 6.352 us to a
-trivial `RETURN 1` request; this is a fixed async ownership cost rather than graph-work amplification. Method-level and
-connected HTTP results therefore show no material performance regression.
+The HTTP comparison passes the 15% gate and its 99.9% confidence intervals overlap. The candidate adds 0.933 us to a
+trivial `RETURN 1` request. Prometheus instrumentation is opt-in through `--metrics`, so this benchmark also verifies
+that the default request path does not pay Micrometer's measured per-request cost. Method-level and connected HTTP
+results therefore show no material performance regression.

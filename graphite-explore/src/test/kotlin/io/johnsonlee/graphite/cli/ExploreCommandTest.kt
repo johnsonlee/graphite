@@ -50,6 +50,7 @@ import io.johnsonlee.graphite.input.ResourceEntry
 import io.johnsonlee.graphite.webgraph.GraphStore
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import picocli.CommandLine
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -2171,6 +2172,16 @@ class ExploreCommandTest {
         assertTrue(explore.graphSpecs.isEmpty())
         assertEquals(DEFAULT_MAX_CONCURRENT_CYPHER, explore.maxConcurrentCypher)
         assertEquals(DEFAULT_CYPHER_WORK_BUDGET, explore.cypherWorkBudget)
+        assertFalse(explore.metricsEnabled)
+    }
+
+    @Test
+    fun `server metrics require explicit opt in`() {
+        val serve = ServeCommand()
+
+        CommandLine(serve).parseArgs("--metrics")
+
+        assertTrue(serve.metricsEnabled)
     }
 
     @Test
