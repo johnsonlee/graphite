@@ -1,12 +1,18 @@
 # Cypher Client Cancellation Attempts
 
-This log records each implementation attempt to stop server-side Cypher work after the HTTP client disconnects.
+This log records each implementation attempt to stop server-side Cypher work after an observable HTTP connection
+failure.
 Each attempt is isolated in one commit. The acceptance criteria are:
 
 - a real HTTP/1.1 client reset stops an active broad graph scan promptly;
 - the query releases its concurrency permit and graph leases only after execution exits;
 - single-graph, cross-graph, and fanout queries retain their existing results and limits;
 - normal connected-query throughput does not regress materially against `main`.
+
+The contract deliberately excludes a clean input FIN. Before response I/O, the server cannot distinguish a client
+that called `close()` from one that sent a valid `SHUT_WR` after its complete request and is still waiting to read the
+response. Cancelling either would break HTTP input half-close. Cancellation therefore requires a TCP reset, servlet
+timeout, or Jetty/connection error.
 
 ## Baseline
 
@@ -79,7 +85,9 @@ The retained implementation:
   response materialization, then stops metrics, releases the permit, and publishes final task completion.
 
 The monitor never writes a heartbeat or commits an early response. The same signal covers single-graph, cross-graph,
-and fanout execution, including all sequential executors in one request.
+and fanout execution, including all sequential executors in one request. An ordinary client `close()` that reaches
+the server as a clean FIN has the same deliberate limitation as `SHUT_WR`; only a reset or later response-write error
+makes abandonment observable.
 
 Behavior verification:
 
@@ -110,6 +118,13 @@ All ten `CypherBenchmark` methods pass the repository's 15% gate. Deltas range f
 `regexFilter` is `23.162 us/op` versus `25.499 us/op` on the base (`-9.2%`): common literal and literal-prefix patterns
 use a semantics-preserving fast path, while other patterns use RE2/J. The class uses the unbudgeted path, so this also
 verifies that cancellation polling is absent when no execution context is supplied.
+
+The 5,986,673-node Hive corpus also exercises 1,437,647 call sites. On the same machine, the base query took
+`2,901 ms`; candidate runs immediately before and after it took `3,226 ms` and `2,679 ms`. The conservative delta is
+`+11.2%`, below the 25% large-corpus gate. Unbudgeted projection, filtering, grouping, deduplication, `UNWIND`, and
+ordering use their original loops without per-row cancellation polls; budgeted HTTP execution retains the tracked
+variants. A final targeted JMH run measured `aggregationCountGroupBy` at `34.817 us/op` (`+1.8%`), `returnDistinct`
+at `104.395 us/op` (`+9.3%`), and `withPipeline` at `78.451 us/op` (`-1.2%`) against the same base.
 
 Cancellation hot-path command:
 

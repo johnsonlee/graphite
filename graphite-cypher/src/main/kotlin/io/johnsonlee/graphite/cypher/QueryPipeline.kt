@@ -174,10 +174,7 @@ class QueryPipeline private constructor(
                     columns = newColumns
                     // WITH can have an inline WHERE
                     if (clause.where != null) {
-                        rows = rows.filterIndexed { index, row ->
-                            pollCancellation(index)
-                            evaluator.evaluate(clause.where, row) == true
-                        }
+                        rows = executeInlineWhere(clause.where, rows)
                     }
                 }
                 is CypherClause.Unwind -> rows = executeUnwind(clause, rows)
@@ -1448,6 +1445,7 @@ class QueryPipeline private constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValues(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
+        if (!workTrackingEnabled) return distinctByVisibleValuesUntracked(rows)
         val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for ((index, row) in rows.withIndex()) {
             pollCancellation(index)
@@ -1462,6 +1460,23 @@ class QueryPipeline private constructor(
             }
         }
         checkCancelled()
+        return byVisibleValues.values.toList()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun distinctByVisibleValuesUntracked(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
+        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        for (row in rows) {
+            val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+            val existing = byVisibleValues[visible]
+            if (existing == null) {
+                byVisibleValues[visible] = row.toMutableMap()
+            } else {
+                val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                    (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+            }
+        }
         return byVisibleValues.values.toList()
     }
 
@@ -1485,9 +1500,21 @@ class QueryPipeline private constructor(
         clause: CypherClause.Where,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
+        if (!workTrackingEnabled) return rows.filter { row -> evaluator.evaluate(clause.condition, row) == true }
         return rows.filterIndexed { index, row ->
             pollCancellation(index)
             evaluator.evaluate(clause.condition, row) == true
+        }
+    }
+
+    private fun executeInlineWhere(
+        condition: CypherExpr,
+        rows: List<Map<String, Any?>>
+    ): List<Map<String, Any?>> {
+        if (!workTrackingEnabled) return rows.filter { row -> evaluator.evaluate(condition, row) == true }
+        return rows.filterIndexed { index, row ->
+            pollCancellation(index)
+            evaluator.evaluate(condition, row) == true
         }
     }
 
@@ -1536,44 +1563,86 @@ class QueryPipeline private constructor(
                 listOf(row)
             } else {
                 // Group by non-aggregated columns
-                val groups = LinkedHashMap<List<Any?>, MutableList<Map<String, Any?>>>()
-                for ((index, inputRow) in rows.withIndex()) {
-                    pollCancellation(index)
-                    val key = groupByIndices.map { i ->
-                        evaluator.evaluate(expandedItems[i].expression, inputRow)
+                if (!workTrackingEnabled) {
+                    val groups = rows.groupBy { inputRow ->
+                        groupByIndices.map { i -> evaluator.evaluate(expandedItems[i].expression, inputRow) }
                     }
-                    groups.getOrPut(key, ::mutableListOf).add(inputRow)
-                }
-
-                groups.values.mapIndexed { index, groupRows ->
-                    pollCancellation(index)
-                    val row = mutableMapOf<String, Any?>()
-                    for (i in expandedItems.indices) {
-                        val col = columns[i]
-                        row[col] = if (i in aggIndices) {
-                            evaluateAggregation(expandedItems[i].expression, groupRows)
-                        } else {
-                            evaluator.evaluate(expandedItems[i].expression, groupRows.first())
+                    groups.map { (_, groupRows) ->
+                        val row = mutableMapOf<String, Any?>()
+                        for (i in expandedItems.indices) {
+                            val col = columns[i]
+                            row[col] = if (i in aggIndices) {
+                                evaluateAggregation(expandedItems[i].expression, groupRows)
+                            } else {
+                                evaluator.evaluate(expandedItems[i].expression, groupRows.first())
+                            }
                         }
+                        copyProvenance(row, groupRows)
+                        row
                     }
-                    copyProvenance(row, groupRows)
-                    row
+                } else {
+                    projectTrackedGroups(expandedItems, columns, groupByIndices, aggIndices, rows)
                 }
             }
         } else {
-            rows.mapIndexed { rowIndex, row ->
-                pollCancellation(rowIndex)
-                val projected = mutableMapOf<String, Any?>()
-                for (i in expandedItems.indices) {
-                    projected[columns[i]] = evaluator.evaluate(expandedItems[i].expression, row)
+            if (!workTrackingEnabled) {
+                rows.map { row ->
+                    val projected = mutableMapOf<String, Any?>()
+                    for (i in expandedItems.indices) {
+                        projected[columns[i]] = evaluator.evaluate(expandedItems[i].expression, row)
+                    }
+                    copyProvenance(projected, listOf(row))
+                    projected
                 }
-                copyProvenance(projected, listOf(row))
-                projected
+            } else {
+                projectTrackedRows(expandedItems, columns, rows)
             }
         }
 
         val finalRows = if (distinct) distinctByVisibleValues(resultRows) else resultRows
         return finalRows to columns
+    }
+
+    private fun projectTrackedGroups(
+        items: List<ReturnItem>,
+        columns: List<String>,
+        groupByIndices: List<Int>,
+        aggregateIndices: Set<Int>,
+        rows: List<Map<String, Any?>>
+    ): List<Map<String, Any?>> {
+        val groups = LinkedHashMap<List<Any?>, MutableList<Map<String, Any?>>>()
+        for ((index, inputRow) in rows.withIndex()) {
+            pollCancellation(index)
+            val key = groupByIndices.map { i -> evaluator.evaluate(items[i].expression, inputRow) }
+            groups.getOrPut(key, ::mutableListOf).add(inputRow)
+        }
+        return groups.values.mapIndexed { index, groupRows ->
+            pollCancellation(index)
+            val row = mutableMapOf<String, Any?>()
+            for (i in items.indices) {
+                row[columns[i]] = if (i in aggregateIndices) {
+                    evaluateAggregation(items[i].expression, groupRows)
+                } else {
+                    evaluator.evaluate(items[i].expression, groupRows.first())
+                }
+            }
+            copyProvenance(row, groupRows)
+            row
+        }
+    }
+
+    private fun projectTrackedRows(
+        items: List<ReturnItem>,
+        columns: List<String>,
+        rows: List<Map<String, Any?>>
+    ): List<Map<String, Any?>> = rows.mapIndexed { rowIndex, row ->
+        pollCancellation(rowIndex)
+        val projected = mutableMapOf<String, Any?>()
+        for (i in items.indices) {
+            projected[columns[i]] = evaluator.evaluate(items[i].expression, row)
+        }
+        copyProvenance(projected, listOf(row))
+        projected
     }
 
     private fun containsAggregation(expr: CypherExpr): Boolean = when (expr) {
@@ -1596,10 +1665,15 @@ class QueryPipeline private constructor(
         is CypherExpr.CountStar -> rows.size.toLong()
         is CypherExpr.FunctionCall -> {
             if (CypherFunctions.isAggregation(expr.name)) {
-                val values = rows.mapIndexed { index, row ->
-                    pollCancellation(index)
-                    if (expr.args.isEmpty()) row
-                    else evaluator.evaluate(expr.args[0], row)
+                val values = if (workTrackingEnabled) {
+                    rows.mapIndexed { index, row ->
+                        pollCancellation(index)
+                        if (expr.args.isEmpty()) row else evaluator.evaluate(expr.args[0], row)
+                    }
+                } else {
+                    rows.map { row ->
+                        if (expr.args.isEmpty()) row else evaluator.evaluate(expr.args[0], row)
+                    }
                 }
                 val filtered = if (expr.distinct) distinctAggregationValues(values) else values
                 if (workTrackingEnabled) {
@@ -1623,6 +1697,7 @@ class QueryPipeline private constructor(
         clause: CypherClause.Unwind,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
+        if (!workTrackingEnabled) return executeUnwindUntracked(clause, rows)
         val results = mutableListOf<Map<String, Any?>>()
         var processed = 0
         for (row in rows) {
@@ -1636,6 +1711,22 @@ class QueryPipeline private constructor(
             }
         }
         checkCancelled()
+        return results
+    }
+
+    private fun executeUnwindUntracked(
+        clause: CypherClause.Unwind,
+        rows: List<Map<String, Any?>>
+    ): List<Map<String, Any?>> {
+        val results = mutableListOf<Map<String, Any?>>()
+        for (row in rows) {
+            val list = evaluator.evaluate(clause.expression, row) as? List<*> ?: continue
+            for (element in list) {
+                val newRow = row.toMutableMap()
+                newRow[clause.variable] = element
+                results.add(newRow)
+            }
+        }
         return results
     }
 
@@ -1659,14 +1750,25 @@ class QueryPipeline private constructor(
         clause: CypherClause.OrderBy,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
+        if (!workTrackingEnabled) {
+            return rows.sortedWith(Comparator { left, right ->
+                for (item in clause.items) {
+                    val leftValue = evaluator.evaluate(item.expression, left)
+                    val rightValue = evaluator.evaluate(item.expression, right)
+                    val comparison = compareNullable(leftValue, rightValue)
+                    if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
+                }
+                0
+            })
+        }
         var comparisons = 0
-        return rows.sortedWith(Comparator { a, b ->
+        return rows.sortedWith(Comparator { left, right ->
             pollCancellation(comparisons++)
             for (item in clause.items) {
-                val va = evaluator.evaluate(item.expression, a)
-                val vb = evaluator.evaluate(item.expression, b)
-                val cmp = compareNullable(va, vb)
-                if (cmp != 0) return@Comparator if (item.ascending) cmp else -cmp
+                val leftValue = evaluator.evaluate(item.expression, left)
+                val rightValue = evaluator.evaluate(item.expression, right)
+                val comparison = compareNullable(leftValue, rightValue)
+                if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
             }
             0
         })

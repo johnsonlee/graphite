@@ -276,6 +276,10 @@ HTTP 429 with `code` set to `cypher_concurrency_limit` or
 replace this execution budget for aggregations that must scan before limiting.
 The `=~` operator uses RE2/J's linear-time regular expression syntax. Backreferences
 and look-around constructs are rejected instead of running with unbounded backtracking.
+An executing query is cancelled when the server observes a TCP reset, servlet timeout,
+or Jetty connection error. A clean input FIN is not treated as cancellation: TCP exposes
+both a full client `close()` and a valid request-side `SHUT_WR` as the same input
+half-close until the server attempts to write the response.
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
 Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.
