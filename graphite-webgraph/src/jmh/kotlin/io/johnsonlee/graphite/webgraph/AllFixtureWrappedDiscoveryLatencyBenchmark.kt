@@ -100,10 +100,10 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
  * next one. The resulting persisted graphs can then be shared by every JMH
  * revision in the same CI job.
  */
-internal object AllFixtureGraphPreparation {
+internal object AllFixtureBenchmarkGraphPreparation {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 2) { "Usage: AllFixtureGraphPreparation <corpus-id> <output-directory>" }
+        require(args.size == 2) { "Usage: AllFixtureBenchmarkGraphPreparation <corpus-id> <output-directory>" }
         val kind = BenchmarkCorpusKind.entries.single { it.id == args[0] }
         prepare(kind, Path.of(args[1]).toAbsolutePath().normalize())
     }
@@ -130,10 +130,10 @@ internal object AllFixtureGraphPreparation {
  * Hashes complete columns, rows, values, and provenance for every timed query.
  * CI compares these markers across fixed, base, and candidate revisions.
  */
-internal object AllFixtureQueryCorrectness {
+internal object AllFixtureBenchmarkQueryCorrectness {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 1) { "Usage: AllFixtureQueryCorrectness <graph-directory>" }
+        require(args.size == 1) { "Usage: AllFixtureBenchmarkQueryCorrectness <graph-directory>" }
         val root = Path.of(args.single()).toAbsolutePath().normalize()
         val graphs = mutableListOf<Graph>()
         try {
@@ -172,10 +172,10 @@ internal object AllFixtureQueryCorrectness {
 }
 
 /** Prints per-corpus match counts used to pin the distribution cases below. */
-internal object AllFixtureDistributionCalibration {
+internal object AllFixtureBenchmarkDistributionCalibration {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 1) { "Usage: AllFixtureDistributionCalibration <graph-directory>" }
+        require(args.size == 1) { "Usage: AllFixtureBenchmarkDistributionCalibration <graph-directory>" }
         val root = Path.of(args.single()).toAbsolutePath().normalize()
         BenchmarkCorpusKind.entries.forEach { kind ->
             val graph = GraphStore.loadMapped(root.resolve(kind.id))

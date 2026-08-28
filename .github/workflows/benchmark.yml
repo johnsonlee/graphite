@@ -258,12 +258,12 @@ jobs:
             -Dhive.jar.path="${HIVE_JAR}" \
             -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
             -cp "${CANDIDATE_JAR}" \
-            io.johnsonlee.graphite.webgraph.AllFixtureGraphPreparation \
+            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkGraphPreparation \
             "${CORPUS}" "${PWD}/fixture-graphs/${CORPUS}"
           rm -rf -- "${SOURCE_TMP}"
         done
         java -Xmx4g -cp "${CANDIDATE_JAR}" \
-          io.johnsonlee.graphite.webgraph.AllFixtureDistributionCalibration \
+          io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkDistributionCalibration \
           "${PWD}/fixture-graphs"
 
     - name: Verify all real-fixture query results
@@ -273,7 +273,7 @@ jobs:
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
           java -Xmx8g -cp "${JMH_JAR}" \
-            io.johnsonlee.graphite.webgraph.AllFixtureQueryCorrectness \
+            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | grep '^ALL_FIXTURE_QUERY_RESULT' \
             > "benchmark-results/${REVISION}-fixture-correctness.txt"

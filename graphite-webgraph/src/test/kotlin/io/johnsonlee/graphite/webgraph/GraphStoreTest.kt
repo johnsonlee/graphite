@@ -42,6 +42,7 @@ import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -161,6 +162,7 @@ class GraphStoreTest {
                 assertEquals(listOf("feature-beta"), cypherValues)
                 assertWrappedLowercaseQuery(loaded)
                 assertRawStringPropertyLookups(loaded)
+                assertWorkAwareTransformedLookup(mapped)
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -737,6 +739,22 @@ class GraphStoreTest {
             }
         )
         assertResourceStringPropertyLookups(graph)
+    }
+
+    private fun assertWorkAwareTransformedLookup(graph: MappedWebGraphBackedGraph) {
+        var inspected = 0
+        val values = graph.nodesByTransformedStringProperty(
+            FieldNode::class.java,
+            "class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "owner",
+            limit = 1,
+            workConsumer = GraphWorkConsumer { inspected++ }
+        ).orEmpty().map { it.descriptor.declaringClass.className }.toList()
+
+        assertEquals(listOf("example.Owner"), values)
+        assertTrue(inspected > 0)
     }
 
     private fun assertWrappedLowercaseQuery(graph: Graph) {

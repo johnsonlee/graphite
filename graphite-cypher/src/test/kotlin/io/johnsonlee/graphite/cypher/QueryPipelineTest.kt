@@ -23,10 +23,13 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
+import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
+import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -598,6 +601,48 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `filtered distinct string disjunction merges lookup streams in graph order`() {
+        val targetCaller = MethodDescriptor(TypeDescriptor("com.example.TargetService"), "call", emptyList(), stringType)
+        val otherCaller = MethodDescriptor(TypeDescriptor("com.example.OtherService"), "call", emptyList(), stringType)
+        val targetCallee = MethodDescriptor(TypeDescriptor("com.example.TargetRepository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), otherCaller, targetCallee, 0, null, emptyList()))
+            addNode(CallSiteNode(NodeId(1), targetCaller, targetCallee, 1, null, emptyList()))
+            addNode(CallSiteNode(NodeId(2), otherCaller, targetCallee, 2, null, emptyList()))
+        }.build()
+        val lookupGraph = object : Graph by backing, StringPropertyLookup, StringPropertyLookupOrder {
+            override fun <T : Node> nodesByStringProperty(
+                type: Class<T>,
+                property: String,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> {
+                val nodes = backing.nodes(type).associateBy { it.id.value }
+                return when (property) {
+                    "caller_class" -> sequenceOf(nodes.getValue(1))
+                    "callee_class" -> sequenceOf(nodes.getValue(2), nodes.getValue(1), nodes.getValue(0))
+                    else -> emptySequence()
+                }
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = when (node.id.value) {
+                2 -> 0
+                1 -> 1
+                else -> 2
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.id AS id LIMIT 4"
+        )
+
+        assertEquals(listOf(2, 1, 0), result.rows.map { it["id"] })
+    }
+
+    @Test
     fun `filtered distinct disjunction keeps unbounded storage lookup semantics`() {
         val unboundedGraph = object : Graph by graph, StringPropertyLookup {
             override fun nodeCount(type: Class<out Node>): Long = Int.MAX_VALUE.toLong()
@@ -685,6 +730,52 @@ class QueryPipelineTest {
         assertEquals(listOf("Com.Example.VoucherService"), result.rows.map { it["caller"] })
         assertTrue(lookups.contains("caller_class" to "voucher"))
         assertTrue(lookups.contains("callee_class" to "voucher"))
+    }
+
+    @Test
+    fun `budgeted wrapped lowercase disjunction accounts for transformed lookup work`() {
+        val caller = MethodDescriptor(TypeDescriptor("Com.Example.VoucherService"), "Create", emptyList(), stringType)
+        val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
+        val backing = DefaultGraph.Builder().apply {
+            addNode(CallSiteNode(NodeId(0), caller, callee, 0, null, emptyList()))
+        }.build()
+        var consumed = 0
+        val lookupGraph = object : Graph by backing, WorkAwareTransformedStringPropertyLookup {
+            override fun <T : Node> nodesByTransformedStringProperty(
+                type: Class<T>,
+                property: String,
+                transform: StringValueTransform,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int
+            ): Sequence<T> = error("budgeted query did not use the work-aware transformed lookup")
+
+            override fun <T : Node> nodesByTransformedStringProperty(
+                type: Class<T>,
+                property: String,
+                transform: StringValueTransform,
+                mode: StringMatchMode,
+                expected: String,
+                limit: Int,
+                workConsumer: GraphWorkConsumer
+            ): Sequence<T> = backing.nodes(type).onEach {
+                consumed++
+                workConsumer.consume()
+            }.filter { node ->
+                val actual = NodePropertyAccessor.getProperty(node, property) as? String
+                actual?.lowercase()?.contains(expected) == true
+            }.take(limit)
+        }
+
+        val result = CypherExecutor(lookupGraph, CypherExecutionBudget(maxWorkUnits = 10)).execute(
+            "MATCH (n) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'voucher' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'voucher' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("Com.Example.VoucherService"), result.rows.map { it["caller"] })
+        assertEquals(1, consumed)
     }
 
     @Test
