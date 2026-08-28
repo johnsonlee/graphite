@@ -17,14 +17,12 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
-import org.junit.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CypherClientCancellationTest {
 
     @Test
-    @Ignore("Attempt 1: Jetty does not observe an idle async HTTP/1.1 disconnect")
     fun `disconnecting a client stops its query and releases the concurrency permit`() {
         val started = CountDownLatch(1)
         val visited = AtomicInteger()
@@ -54,11 +52,17 @@ class CypherClientCancellationTest {
             assertTrue(waitUntil { visited.get() >= 1_000 }, "The broad query did not scan candidates")
 
             socket.setSoLinger(true, 0)
+            val disconnectedAt = System.nanoTime()
             socket.close()
 
             assertTrue(
-                waitUntil(timeoutMillis = 5_000) { queryCanRun(app.port()) },
+                waitUntil(timeoutMillis = MAX_DISCONNECT_LATENCY_MILLIS) { queryCanRun(app.port()) },
                 "The disconnected query kept the only concurrency permit"
+            )
+            val cancellationLatencyMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - disconnectedAt)
+            assertTrue(
+                cancellationLatencyMillis < MAX_DISCONNECT_LATENCY_MILLIS,
+                "Cancellation took ${cancellationLatencyMillis}ms"
             )
             val stoppedAt = visited.get()
             Thread.sleep(100)
@@ -111,3 +115,5 @@ class CypherClientCancellationTest {
         return condition()
     }
 }
+
+private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
