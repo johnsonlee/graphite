@@ -396,28 +396,40 @@ jobs:
       uses: actions/cache@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-a7ddb452997f5699a3233189a81be5020d3d8dd2f52b6cabee950de13689ed10
+
+    - name: Detect complete persisted fixture cache
+      id: fixture-cache-state
+      run: |
+        READY=true
+        test -f fixture-graphs/.complete || READY=false
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}" || READY=false
+        done
+        echo "ready=${READY}" >> "${GITHUB_OUTPUT}"
 
     - name: Setup Java
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: '17'
 
     - name: Setup Gradle
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-read-only: true
 
     - name: Build fixture preparation harness
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
         candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures :webgraph:jmhJar --no-daemon
 
     - name: Prepare all real fixture graphs
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
         FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
         ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
@@ -517,7 +529,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored fixture graphs
       if: matrix.real

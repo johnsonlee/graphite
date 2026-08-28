@@ -5,8 +5,6 @@ import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.CypherResult
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.input.LoaderConfig
-import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -20,7 +18,6 @@ import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
 import java.lang.reflect.Method
-import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -95,37 +92,6 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
             check(result.rows.size == expectedRows) {
                 "Successful query returned ${result.rows.size} rows; expected $expectedRows"
             }
-        }
-    }
-}
-
-/**
- * Builds each eager source graph in sequence and closes it before building the
- * next one. The resulting persisted graphs can then be shared by every JMH
- * revision in the same CI job.
- */
-internal object AllFixtureBenchmarkGraphPreparation {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        require(args.size == 2) { "Usage: AllFixtureBenchmarkGraphPreparation <corpus-id> <output-directory>" }
-        val kind = BenchmarkCorpusKind.entries.single { it.id == args[0] }
-        prepare(kind, Path.of(args[1]).toAbsolutePath().normalize())
-    }
-
-    private fun prepare(kind: BenchmarkCorpusKind, output: Path) {
-        require(Files.notExists(output)) { "Fixture graph output already exists: $output" }
-        val graph = JavaProjectLoader(
-            LoaderConfig(
-                buildCallGraph = false,
-                extractAnnotations = false,
-                trackCrossMethodFunctionalDispatch = false
-            )
-        ).load(BenchmarkCorpus.resolveJar(kind))
-        try {
-            GraphStore.save(graph, output)
-            check(graph.nodes(Node::class.java).count().toLong() == kind.expectedNodeCount)
-        } finally {
-            (graph as? Closeable)?.close()
         }
     }
 }
