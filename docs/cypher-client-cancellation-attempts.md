@@ -83,6 +83,8 @@ The retained implementation:
   tracked list concatenation and membership copy/search random-access lists in 4,096-element chunks and traverse
   sequential lists through one `listIterator`, while tracked list reversal/tail also use iterators so sequential lists
   remain O(n);
+- keeps direct-property `ORDER BY ... LIMIT k` queries (`k <= 10,000`) in a stable bounded top-k heap, avoiding full
+  projected-row materialization and sorting while retaining work-budget cancellation during the complete node scan;
 - polls through aggregation deduplication, numeric conversion, sorting, and multi-pass statistics; literal, prefix, and
   pairwise-disjoint ASCII range sequences use semantics-preserving cancellable scanners, while every remaining tracked
   Java `Pattern` receives a cancellation-aware `CharSequence` that checks after each 1,024 character accesses;
@@ -152,10 +154,11 @@ uses the tracked variants.
 | `withPipeline` | 79.423 us/op | 75.871 us/op | -4.5% |
 
 The 5,986,673-node Hive corpus also exercises 1,437,647 call sites. On the same machine, the base query took
-`2,901 ms`; candidate observations ranged from `2,679 ms` to a final conservative `3,512 ms`. The slowest delta is
-`+21.1%`, below the 25% large-corpus gate. The final pipeline took `31,731 ms` and peak heap was `4,011,753,472`
-bytes. Unbudgeted projection, filtering, grouping, deduplication, `UNWIND`, and ordering use their original loops
-without per-row cancellation polls; budgeted HTTP execution retains the tracked variants.
+`2,978 ms`; the final candidate took `1,455 ms` (`-51.1%`). The complete candidate pipeline took `28,621 ms` and
+peak heap was `3,865,875,896` bytes. The direct-property `ORDER BY ... LIMIT 20` query keeps only its best 20 stable
+rows instead of materializing and sorting 1,437,647 projected call-site rows. Kotlin compiler and Tika query times
+were `986 ms` and `1,159 ms`. Unbudgeted projection, filtering, grouping, deduplication, and `UNWIND` retain their
+original loops without per-row cancellation polls; budgeted HTTP execution retains the tracked variants.
 
 Cancellation hot-path command:
 

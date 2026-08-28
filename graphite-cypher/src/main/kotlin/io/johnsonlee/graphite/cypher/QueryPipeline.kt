@@ -28,6 +28,7 @@ private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
+private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
 
 private class WorkTrackingSequence<T>(
     private val source: Sequence<T>,
@@ -132,6 +133,7 @@ class QueryPipeline private constructor(
         checkCancelled()
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
+            ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
@@ -422,6 +424,108 @@ class QueryPipeline private constructor(
             }
         }
     }
+
+    /**
+     * Keeps only the best k rows for a direct property projection instead of
+     * materializing and sorting every matching node.
+     */
+    @Suppress("ReturnCount")
+    private fun tryFastOrderedPropertyLimit(clauses: List<CypherClause>): CypherResult? {
+        val query = OrderedPropertyLimitQuery.compile(clauses) ?: return null
+        if (query.limit <= 0) return CypherResult(query.columns, emptyList())
+
+        var comparisons = 0
+        val comparator = Comparator<RankedProjectedRow> { left, right ->
+            if (workTrackingEnabled) pollCancellation(comparisons++)
+            for (sort in query.sortItems) {
+                val comparison = compareNullable(left.row[sort.column], right.row[sort.column])
+                if (comparison != 0) {
+                    return@Comparator if (sort.ascending) comparison else -comparison
+                }
+            }
+            left.encounterOrder.compareTo(right.encounterOrder)
+        }
+        val topRows = PriorityQueue(query.limit, comparator.reversed())
+        var encounterOrder = 0L
+        for (candidate in nodeCandidates(query.nodeClass)) {
+            val row = linkedMapOf<String, Any?>()
+            for (projection in query.projections) {
+                row[projection.column] = nodeProperty(candidate, projection.property)
+            }
+            val provenance = provenanceOf(candidate)
+            if (provenance.isNotEmpty()) row[INTERNAL_PROVENANCE_KEY] = provenance
+
+            val ranked = RankedProjectedRow(row, encounterOrder++)
+            if (topRows.size < query.limit) {
+                topRows.add(ranked)
+            } else if (comparator.compare(ranked, topRows.peek()) < 0) {
+                topRows.poll()
+                topRows.add(ranked)
+            }
+        }
+        checkCancelled()
+        return CypherResult(
+            columns = query.columns,
+            rows = topRows.toList().sortedWith(comparator).map(RankedProjectedRow::row)
+        )
+    }
+
+    private data class RankedProjectedRow(
+        val row: MutableMap<String, Any?>,
+        val encounterOrder: Long
+    )
+
+    private data class OrderedPropertyLimitQuery(
+        val nodeClass: Class<out Node>,
+        val projections: List<PropertyProjection>,
+        val sortItems: List<OrderedColumn>,
+        val limit: Int
+    ) {
+        val columns: List<String> = projections.map(PropertyProjection::column)
+
+        companion object {
+            @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+            fun compile(clauses: List<CypherClause>): OrderedPropertyLimitQuery? {
+                if (clauses.size != 4) return null
+                val match = clauses[0] as? CypherClause.Match ?: return null
+                val ret = clauses[1] as? CypherClause.Return ?: return null
+                val orderBy = clauses[2] as? CypherClause.OrderBy ?: return null
+                val limit = clauses[3] as? CypherClause.Limit ?: return null
+                if (match.optional || match.patterns.size != 1 || ret.distinct || ret.items.isEmpty()) return null
+
+                val pattern = match.patterns.single()
+                if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+                val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+                val variable = nodePattern.variable ?: return null
+                if (nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+
+                val projections = ret.items.map { item ->
+                    val property = item.expression as? CypherExpr.Property ?: return null
+                    val owner = property.expression as? CypherExpr.Variable ?: return null
+                    if (owner.name != variable) return null
+                    PropertyProjection(property.propertyName, item.alias ?: item.expression.toCypherString())
+                }
+                val columns = projections.map(PropertyProjection::column)
+                if (columns.toSet().size != columns.size) return null
+                val sortItems = orderBy.items.map { item ->
+                    val column = (item.expression as? CypherExpr.Variable)?.name ?: return null
+                    if (column !in columns) return null
+                    OrderedColumn(column, item.ascending)
+                }
+                if (sortItems.isEmpty()) return null
+                val limitCount = ((limit.count as? CypherExpr.Literal)?.value as? Number)?.toCypherInt() ?: return null
+                if (limitCount > MAX_ORDERED_PROPERTY_TOP_K) return null
+                val nodeClass = nodePattern.labels.firstOrNull()
+                    ?.let(NodePropertyAccessor::resolveNodeLabel)
+                    ?: Node::class.java
+                return OrderedPropertyLimitQuery(nodeClass, projections, sortItems, limitCount)
+            }
+        }
+    }
+
+    private data class PropertyProjection(val property: String, val column: String)
+
+    private data class OrderedColumn(val column: String, val ascending: Boolean)
 
     /**
      * Fast path for:
@@ -1852,8 +1956,8 @@ class QueryPipeline private constructor(
         if (!workTrackingEnabled) {
             return rows.sortedWith(Comparator { left, right ->
                 for (item in clause.items) {
-                    val leftValue = evaluator.evaluate(item.expression, left)
-                    val rightValue = evaluator.evaluate(item.expression, right)
+                    val leftValue = evaluateOrderValue(item.expression, left)
+                    val rightValue = evaluateOrderValue(item.expression, right)
                     val comparison = compareNullable(leftValue, rightValue)
                     if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
                 }
@@ -1864,14 +1968,17 @@ class QueryPipeline private constructor(
         return rows.sortedWith(Comparator { left, right ->
             pollCancellation(comparisons++)
             for (item in clause.items) {
-                val leftValue = evaluator.evaluate(item.expression, left)
-                val rightValue = evaluator.evaluate(item.expression, right)
+                val leftValue = evaluateOrderValue(item.expression, left)
+                val rightValue = evaluateOrderValue(item.expression, right)
                 val comparison = compareNullable(leftValue, rightValue)
                 if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
             }
             0
         })
     }
+
+    private fun evaluateOrderValue(expression: CypherExpr, row: Map<String, Any?>): Any? =
+        if (expression is CypherExpr.Variable) row[expression.name] else evaluator.evaluate(expression, row)
 
     private fun pollCancellation(index: Int) {
         if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
