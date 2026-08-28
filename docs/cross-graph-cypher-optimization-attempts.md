@@ -942,7 +942,9 @@ used the same machine and dependency caches.
 | `withPipeline` | `84.302 us/op` | `76.995 us/op` | `-8.7%` |
 
 The one-fork table's slower rows are `aggregationCountGroupBy` (`+5.2%`) and
-`countStar` (`+8.4%`), both below the workflow's 10% regression threshold. A
+`countStar` (`+8.4%`), both below the workflow's configured 15% regression
+threshold. These are local measurements, separate from the same-runner CI
+artifact. A
 focused five-fork base/head confirmation measured aggregation at
 `34.605 +/- 0.526` versus `35.523 +/- 0.569 us/op` (`+2.7%`) and count at
 `2.344 +/- 0.017` versus `2.363 +/- 0.084 us/op` (`+0.8%`); both confidence
