@@ -335,3 +335,20 @@ projection therefore could not materially change the total.
 
 **Conclusion:** rejected and implementation removed. The next attempt targets
 the cold lowercase predicate itself while retaining exact Unicode behavior.
+
+### 2026-08-29 - Attempt 012: Direct ASCII lowercase matching
+
+Tested matching decoded all-ASCII strings by lowercasing each character during
+comparison, avoiding the second `String` allocated by `lowercase()`. Any
+non-ASCII input retained the existing Kotlin lowercase path, including Unicode
+expansion behavior and the rule that the expected literal is not normalized.
+
+The allocation reduction was small because front-coded string decoding still
+allocates the source string. Early remained `1.213 s/op`, bimodal measured
+`1.822 s/op`, and broad regressed to `1.430 s/op`; zero-hit remained
+`0.529 s/op`. This repeated Attempt 008's conclusion without its mutable-buffer
+decode overhead: lowercase allocation alone is not the remaining bottleneck.
+
+**Conclusion:** rejected and implementation removed. Phase-two scheduling has
+a clearer avoidable stall: fixed-size waves leave a worker idle while waiting
+for the slowest graph in the current wave.
