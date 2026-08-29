@@ -544,14 +544,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
             "legacy methods ${case.name}"
         )
         val methods = JsonParser.parseString(response.body.decodeToString()).asJsonArray.map { element ->
-            val value = element.asJsonObject
-            MethodCompatibilityRecord(
-                className = value.get("class").asString,
-                name = value.get("name").asString,
-                parameterTypes = value.getAsJsonArray("parameterTypes").map { it.asString },
-                returnType = value.get("returnType").asString,
-                signature = value.get("signature").asString
-            )
+            parseLegacyRecord(element.asJsonObject)
         }
         val normalized = normalize(case, methods.filter(case.predicate))
         return normalized.copy(bytes = response.body.size.toLong())
@@ -588,14 +581,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
             val grouped = result.asJsonObject
             val graphId = grouped.get("graphId").asString
             val methods = grouped.getAsJsonArray("data").map { element ->
-                val value = element.asJsonObject
-                MethodCompatibilityRecord(
-                    className = value.get("class").asString,
-                    name = value.get("name").asString,
-                    parameterTypes = value.getAsJsonArray("parameterTypes").map { it.asString },
-                    returnType = value.get("returnType").asString,
-                    signature = value.get("signature").asString
-                )
+                parseLegacyRecord(element.asJsonObject)
             }
             graphId to normalize(case, methods.filter(case.predicate))
         }
@@ -718,6 +704,22 @@ open class MethodDiscoveryCompatibilityBenchmark {
             returnType = value.get("return_type").asString,
             signature = value.get("signature").asString
         )
+
+    private fun parseLegacyRecord(value: com.google.gson.JsonObject): MethodCompatibilityRecord {
+        val signature = value.get("signature").asString
+        val parameters = value.get("parameterTypes")?.takeUnless { it.isJsonNull }?.asJsonArray
+            ?.map { it.asString }
+            ?: signature.substringAfterLast('(').substringBeforeLast(')').let { encoded ->
+                if (encoded.isBlank()) emptyList() else encoded.split(',')
+            }
+        return MethodCompatibilityRecord(
+            className = value.get("class").asString,
+            name = value.get("name").asString,
+            parameterTypes = parameters,
+            returnType = value.get("returnType").asString,
+            signature = signature
+        )
+    }
 
     private fun normalize(
         case: MethodCompatibilityCase,
