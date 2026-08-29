@@ -307,7 +307,7 @@ internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCy
         Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudgetKt")
             .getField("DEFAULT_CYPHER_WORK_BUDGET")
             .getLong(null)
-    } catch (error: ClassNotFoundException) {
+    } catch (error: ReflectiveOperationException) {
         check(java.lang.Boolean.getBoolean(ALLOW_LEGACY_BUDGET_DEFAULT_PROPERTY)) {
             "Production Cypher work-budget default is unavailable; refusing an implicit benchmark fallback"
         }
