@@ -17,13 +17,14 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
-import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
@@ -86,6 +87,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
     WorkAwareStringPropertyDisjunctionLookup,
+    StringPropertyDisjunctionLookupStrategy,
     StringPropertyLookupOrder,
     Closeable {
 
@@ -198,19 +200,7 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
-        val nodeCount = nodeTypeIndex.count(type)
-        val propertyIndexesFit = estimatedStringPropertyIndexBytes(nodeCount) <=
-            MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
-        var predicateStatesAreWarm = true
-        predicates.forEachIndexed { index, predicate ->
-            val duplicate = (0 until index).any { earlier ->
-                val previous = predicates[earlier]
-                previous.transform == predicate.transform && previous.mode == predicate.mode &&
-                    previous.expected == predicate.expected
-            }
-            if (!duplicate && !rawStringMatchStates.contains(type, predicate)) predicateStatesAreWarm = false
-        }
-        if (propertyIndexesFit && predicateStatesAreWarm) return null
+        if (prefersSerialStringPropertyDisjunction(type)) return null
         return sequence {
             val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
             val matchStates = predicates.map { predicate ->
@@ -273,6 +263,10 @@ internal class MappedWebGraphBackedGraph(
             }
         }
     }
+
+    override fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean =
+        estimatedStringPropertyIndexBytes(nodeTypeIndex.count(type)) <= MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES &&
+            rawStringMatchStates.contains(type)
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     private fun <T : Node> lookupStringProperty(
@@ -689,10 +683,7 @@ internal class RawStringMatchStates(
     }
 
     @Synchronized
-    fun contains(type: Class<out Node>, predicate: StringPropertyPredicate): Boolean = states.keys.any { key ->
-        key.property.type == type && key.transform == predicate.transform && key.mode == predicate.mode &&
-            key.expected == predicate.expected
-    }
+    fun contains(type: Class<out Node>): Boolean = states.keys.any { it.property.type == type }
 
     @Synchronized
     fun clear() {

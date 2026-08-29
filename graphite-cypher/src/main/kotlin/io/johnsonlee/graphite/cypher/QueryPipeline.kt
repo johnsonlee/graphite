@@ -14,6 +14,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -44,7 +45,6 @@ private const val SINGLE_GRAPH_ID = "single"
 private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
-private const val MIN_PARALLEL_DIRECT_STRING_NODES = 100_000L
 
 private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
@@ -800,7 +800,7 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int
     ): CypherResult {
-        if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, items)) {
+        if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
             return executeDirectStringDisjunctionInParallel(
                 nodeClass,
                 variable,
@@ -837,9 +837,10 @@ class QueryPipeline private constructor(
     private fun canExecuteDirectStringDisjunctionInParallel(
         nodeClass: Class<out Node>,
         variable: String,
+        filter: DirectStringDisjunction,
         items: List<ReturnItem>
     ): Boolean = qualified && sources.size > 1 && directStringParallelism > 1 &&
-        !directStringWorkerActive.get() && hasParallelStringScanScale(nodeClass) && items.all { item ->
+        !directStringWorkerActive.get() && shouldParallelizeStringScan(nodeClass, filter) && items.all { item ->
         when (val expression = item.expression) {
             is CypherExpr.Literal -> true
             is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable)
@@ -847,13 +848,16 @@ class QueryPipeline private constructor(
         }
     }
 
-    private fun hasParallelStringScanScale(nodeClass: Class<out Node>): Boolean {
-        if (sources.any { it.graph !is StringPropertyLookupOrder }) return true
-        return sources.any { source ->
-            DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, _) ->
-                nodeClass.isAssignableFrom(candidateType) &&
-                    (source.graph.nodeCount(candidateType) ?: Long.MAX_VALUE) >= MIN_PARALLEL_DIRECT_STRING_NODES
-            }
+    private fun shouldParallelizeStringScan(
+        nodeClass: Class<out Node>,
+        filter: DirectStringDisjunction
+    ): Boolean = sources.any { source ->
+        DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
+            if (!nodeClass.isAssignableFrom(candidateType) ||
+                filter.filters.none { it.property in properties } || source.graph.nodeCount(candidateType) == 0L
+            ) return@any false
+            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
+            strategy?.prefersSerialStringPropertyDisjunction(candidateType) != true
         }
     }
 

@@ -124,6 +124,11 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
     ): Sequence<T>?
 }
 
+/** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
+interface StringPropertyDisjunctionLookupStrategy {
+    fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean
+}
+
 /**
  * Ordering capability for storage lookups that are emitted in canonical node traversal order.
  * Implementations must return a stable key and must emit all string-property lookup sequences

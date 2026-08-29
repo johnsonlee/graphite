@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
@@ -556,7 +557,10 @@ class CrossGraphCypherExecutorTest {
                     )
                 )
                 .build()
-            return object : Graph by backing, StringPropertyDisjunctionLookup, StringPropertyLookupOrder {
+            return object : Graph by backing,
+                StringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionLookupStrategy,
+                StringPropertyLookupOrder {
                 override fun <T : Node> nodesByStringPropertyDisjunction(
                     type: Class<T>,
                     predicates: List<StringPropertyPredicate>,
@@ -573,6 +577,8 @@ class CrossGraphCypherExecutorTest {
                 }
 
                 override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+                override fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean = true
             }
         }
 
