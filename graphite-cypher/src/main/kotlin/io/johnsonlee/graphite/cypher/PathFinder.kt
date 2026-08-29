@@ -99,7 +99,7 @@ object PathFinder {
             val state = queue.removeFirst()
             val current = state.node.id
 
-            if (state.depth >= options.minDepth && (options.targets == null || current in options.targets)) {
+            if (state.depth == 0 && matchesTarget(state, options)) {
                 yield(PathMatch(state))
             }
 
@@ -110,12 +110,17 @@ object PathFinder {
             for (edge in edges) {
                 val nextId = nextNodeId(edge, current, options.direction)
                 val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
-                queue.add(SearchState(nextNode, edge, state, state.depth + 1))
+                val nextState = SearchState(nextNode, edge, state, state.depth + 1)
+                if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
+                queue.add(nextState)
             }
         }
     }
 
-    private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): List<Edge> =
+    private fun matchesTarget(state: SearchState, options: SearchOptions): Boolean =
+        state.depth >= options.minDepth && (options.targets == null || state.node.id in options.targets)
+
+    private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): Sequence<Edge> =
         when (options.direction) {
             Direction.OUTGOING -> filteredEdges(graph.outgoing(nodeId), options.edgeType, options.workTracker)
             Direction.INCOMING -> filteredEdges(graph.incoming(nodeId), options.edgeType, options.workTracker)
@@ -138,13 +143,11 @@ object PathFinder {
         edges: Sequence<Edge>,
         edgeType: Class<out Edge>?,
         workTracker: CypherWorkTracker?
-    ): List<Edge> {
-        val result = mutableListOf<Edge>()
+    ): Sequence<Edge> = sequence {
         for (edge in edges) {
             workTracker?.consume()
-            if (edgeType == null || edgeType.isInstance(edge)) result.add(edge)
+            if (edgeType == null || edgeType.isInstance(edge)) yield(edge)
         }
-        return result
     }
 
     enum class Direction { OUTGOING, INCOMING, BOTH }

@@ -104,6 +104,14 @@ open class CypherBenchmark {
     }
 
     @Benchmark
+    fun filteredSingleHopRelationship(): CypherResult {
+        return graph.query(
+            "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) " +
+                "WHERE c.value > 250 RETURN c.value, cs.callee_name LIMIT 50"
+        )
+    }
+
+    @Benchmark
     fun aggregationCountGroupBy(): CypherResult {
         return graph.query("MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS cnt")
     }

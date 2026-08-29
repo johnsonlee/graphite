@@ -197,6 +197,7 @@ class QueryPipeline private constructor(
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryStreamingFilteredMatchLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
         if (fastResult != null) return fastResult
 
@@ -1360,16 +1361,82 @@ class QueryPipeline private constructor(
     }
 
     /**
+     * Streams a filtered MATCH pattern through projection and pagination so
+     * LIMIT bounds retained rows instead of being applied after eager
+     * materialization. DISTINCT retains at most SKIP + LIMIT visible values.
+     */
+    @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+    private fun tryStreamingFilteredMatchLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size !in 4..5) return null
+        val match = clauses.getOrNull(0) as? CypherClause.Match ?: return null
+        val where = clauses.getOrNull(1) as? CypherClause.Where ?: return null
+        val ret = clauses.getOrNull(2) as? CypherClause.Return ?: return null
+        val skip = clauses.getOrNull(clauses.lastIndex - 1) as? CypherClause.Skip
+        val limit = clauses.lastOrNull() as? CypherClause.Limit ?: return null
+        if (clauses.size == 5 && skip == null) return null
+        if (clauses.size == 4 && skip != null) return null
+        if (match.optional || match.patterns.size != 1 || match.patterns.single().pathVariable != null ||
+            ret.items.any { containsAggregation(it.expression) } ||
+            ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }
+        ) {
+            return null
+        }
+
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        val skipCount = skip?.count?.let(::literalLimitCount) ?: 0
+        if (skipCount < 0) return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+        val retainedCount = skipCount.toLong() + limitCount
+        if (retainedCount > Int.MAX_VALUE) return null
+
+        val pattern = match.patterns.single()
+        val firstNode = pattern.elements.firstOrNull() as? PatternElement.NodePattern
+        val candidateSources = firstNode?.variable
+            ?.let { variable -> graphIdEquality(where.condition, variable) }
+            ?.let { graphId -> sources.filter { it.id == graphId } }
+            ?: sources
+
+        val matches = matchPatternLazily(pattern, emptyMap(), candidateSources)
+        if (ret.distinct) {
+            return projectDistinctFilteredRows(matches, where, ret, columns, skipCount, retainedCount.toInt())
+        }
+
+        val rows = mutableListOf<Map<String, Any?>>()
+        var matchedRows = 0
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            if (matchedRows++ < skipCount) continue
+            rows.add(projectRow(ret.items, columns, bindings))
+            if (rows.size >= limitCount) break
+        }
+        return CypherResult(columns, rows)
+    }
+
+    private fun projectDistinctFilteredRows(
+        matches: Sequence<Map<String, Any?>>,
+        where: CypherClause.Where,
+        ret: CypherClause.Return,
+        columns: List<String>,
+        skipCount: Int,
+        retainedCount: Int
+    ): CypherResult {
+        val distinctRows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            val projected = projectRow(ret.items, columns, bindings)
+            addDistinctRow(distinctRows, projected, retainedCount)
+            if (!qualified && distinctRows.size >= retainedCount) break
+        }
+        return CypherResult(columns, distinctRows.values.drop(skipCount))
+    }
+
+    /**
      * Fast path for:
      *
      *   MATCH (a:Source)-[:TYPE]->(b:Target) RETURN ... LIMIT k
-     *
-     * The generic pipeline materializes node and relationship intermediates.
-     * For a single non-variable-length hop without filtering/reordering clauses,
-     * we can stream complete relationship matches and stop once LIMIT rows have
-     * been projected.
      */
-    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
+    @Suppress("ComplexCondition", "CyclomaticComplexMethod", "ReturnCount")
     private fun tryFastSingleHopRelationshipLimit(clauses: List<CypherClause>): CypherResult? {
         if (clauses.size != SINGLE_HOP_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
@@ -1413,13 +1480,39 @@ class QueryPipeline private constructor(
                 val targetBindings = matchTargetNode(targetPattern, targetValue, sourceBindings) ?: continue
 
                 val bindings = targetBindings.toMutableMap()
-                if (rel.variable != null) bindings[rel.variable] = edge.value
+                if (rel.variable != null) {
+                    bindings[rel.variable] = edge.value
+                    addProvenance(bindings, edge.value)
+                }
                 rows.add(projectRow(ret.items, columns, bindings))
                 if (rows.size >= limitCount) return CypherResult(columns, rows)
             }
         }
 
         return CypherResult(columns, rows)
+    }
+
+    private fun graphIdEquality(expression: CypherExpr, variable: String): String? = when (expression) {
+        is CypherExpr.And -> graphIdEquality(expression.left, variable)
+            ?: graphIdEquality(expression.right, variable)
+        is CypherExpr.Comparison -> if (expression.op == "=") {
+            when {
+                isGraphIdReference(expression.left, variable) ->
+                    (expression.right as? CypherExpr.Literal)?.value as? String
+                isGraphIdReference(expression.right, variable) ->
+                    (expression.left as? CypherExpr.Literal)?.value as? String
+                else -> null
+            }
+        } else null
+        else -> null
+    }
+
+    private fun isGraphIdReference(expression: CypherExpr, variable: String): Boolean = when (expression) {
+        is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable) &&
+            expression.propertyName == GRAPH_ID_PROPERTY
+        is CypherExpr.FunctionCall -> expression.name.equals("graphId", ignoreCase = true) &&
+            !expression.distinct && expression.args.singleOrNull() == CypherExpr.Variable(variable)
+        else -> false
     }
 
     private fun projectRow(
@@ -1508,12 +1601,19 @@ class QueryPipeline private constructor(
     ): List<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
-
-        val matches = if (limit != null && elements.size > 1) {
-            matchPatternLazily(elements, existingBindings, limit)
-        } else {
-            matchPatternEagerly(elements, existingBindings, limit)
+        if (limit != null) {
+            val matches = matchPatternLazily(pattern.copy(pathVariable = null), existingBindings).take(limit)
+            val pathVariable = pattern.pathVariable ?: return matches.toList()
+            return matches.map { bindings ->
+                val path = buildPathRepresentation(pattern, bindings)
+                bindings.toMutableMap().apply {
+                    this[pathVariable] = path
+                    addProvenance(this, path)
+                }
+            }.toList()
         }
+
+        val matches = matchPatternEagerly(elements, existingBindings, limit = null)
 
         // If the pattern has a path variable, bind it to the matched path
         if (pattern.pathVariable != null) {
@@ -1529,6 +1629,34 @@ class QueryPipeline private constructor(
         return matches
     }
 
+    @Suppress("ReturnCount")
+    private fun matchPatternLazily(
+        pattern: CypherPattern,
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources
+    ): Sequence<Map<String, Any?>> {
+        val elements = pattern.elements
+        if (elements.isEmpty()) return sequenceOf(existingBindings)
+        require(pattern.pathVariable == null) { "Named paths require materialized path reconstruction" }
+
+        var currentMatches: Sequence<Map<String, Any?>> = matchNodeElementLazily(
+            elements[0] as PatternElement.NodePattern,
+            existingBindings,
+            candidateSources
+        )
+        var i = 1
+        while (i < elements.size) {
+            val sourceNode = elements[i - 1] as PatternElement.NodePattern
+            val rel = elements[i] as PatternElement.RelationshipPattern
+            val targetNode = elements[i + 1] as PatternElement.NodePattern
+            currentMatches = currentMatches.flatMap { bindings ->
+                matchRelationshipLazily(sourceNode, rel, targetNode, bindings)
+            }
+            i += 2
+        }
+        return currentMatches
+    }
+
     private fun matchPatternEagerly(
         elements: List<PatternElement>,
         existingBindings: Map<String, Any?>,
@@ -1538,44 +1666,19 @@ class QueryPipeline private constructor(
 
         var i = 1
         while (i < elements.size) {
+            val sourceNode = elements[i - 1] as PatternElement.NodePattern
             val rel = elements[i] as PatternElement.RelationshipPattern
             val targetNode = elements[i + 1] as PatternElement.NodePattern
             i += 2
 
             val nextMatches = mutableListOf<Map<String, Any?>>()
             for (bindings in currentMatches) {
-                nextMatches.addAll(matchRelationship(rel, targetNode, bindings, limit = null))
+                nextMatches.addAll(matchRelationship(sourceNode, rel, targetNode, bindings, limit = null))
             }
             currentMatches = nextMatches
         }
 
         return currentMatches
-    }
-
-    private fun matchPatternLazily(
-        elements: List<PatternElement>,
-        existingBindings: Map<String, Any?>,
-        limit: Int
-    ): List<Map<String, Any?>> {
-        var currentMatches = matchNodeElementLazily(
-            elements[0] as PatternElement.NodePattern,
-            existingBindings
-        )
-
-        var i = 1
-        while (i < elements.size) {
-            val rel = elements[i] as PatternElement.RelationshipPattern
-            val targetNode = elements[i + 1] as PatternElement.NodePattern
-            i += 2
-
-            val relationshipLimit = limit.takeIf { i >= elements.size }
-            val nextMatches = currentMatches.flatMap { bindings ->
-                matchRelationship(rel, targetNode, bindings, relationshipLimit).asSequence()
-            }
-            currentMatches = relationshipLimit?.let(nextMatches::take) ?: nextMatches
-        }
-
-        return currentMatches.toList()
     }
 
     /**
@@ -1651,13 +1754,15 @@ class QueryPipeline private constructor(
 
     private fun matchNodeElementLazily(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
-    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings)
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources
+    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings, candidateSources)
         .mapNotNull { candidate -> bindNodeCandidate(candidate, nodePattern, existingBindings) }
 
     private fun nodeElementCandidates(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources
     ): Sequence<Any> {
         val nodeClass = nodePattern.labels.firstOrNull()
             ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
@@ -1674,7 +1779,7 @@ class QueryPipeline private constructor(
                 emptySequence()
             }
         } else {
-            nodeCandidates(nodeClass)
+            nodeCandidates(nodeClass, candidateSources)
         }
     }
 
@@ -1696,36 +1801,42 @@ class QueryPipeline private constructor(
      * Match a relationship + target node from the current source node binding.
      */
     private fun matchRelationship(
+        sourceNodePattern: PatternElement.NodePattern,
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         bindings: Map<String, Any?>,
         limit: Int?
     ): List<Map<String, Any?>> {
-        val results = mutableListOf<Map<String, Any?>>()
-
-        // The source node is the last-bound node in the current bindings.
-        val sourceNode = findLastBoundNode(bindings) ?: return results
-
-        val edgeClass = rel.types.firstOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
-
-        if (rel.variableLength) {
-            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
-        } else {
-            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
-        }
-
-        return results
+        val matches = matchRelationshipLazily(sourceNodePattern, rel, targetNodePattern, bindings)
+        return (limit?.let(matches::take) ?: matches).toList()
     }
 
-    private fun matchSingleHop(
+    private fun matchRelationshipLazily(
+        sourceNodePattern: PatternElement.NodePattern,
+        rel: PatternElement.RelationshipPattern,
+        targetNodePattern: PatternElement.NodePattern,
+        bindings: Map<String, Any?>
+    ): Sequence<Map<String, Any?>> {
+        val sourceNode = sourceNodePattern.variable
+            ?.let(bindings::get)
+            ?.let(::nodeCursor)
+            ?: findLastBoundNode(bindings)
+            ?: return emptySequence()
+        val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
+        return if (rel.variableLength) {
+            matchVariableLengthPathLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+        } else {
+            matchSingleHopLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+        }
+    }
+
+    private fun matchSingleHopLazily(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
-        edgeClass: Class<out Edge>?,
-        limit: Int?,
-        results: MutableList<Map<String, Any?>>
-    ) {
+        edgeClass: Class<out Edge>?
+    ): Sequence<Map<String, Any?>> = sequence {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
 
         for (edge in edges) {
@@ -1743,20 +1854,17 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = edge.value
                 addProvenance(newBindings, edge.value)
             }
-            results.add(newBindings)
-            if (limit != null && results.size >= limit) break
+            yield(newBindings)
         }
     }
 
-    private fun matchVariableLengthPath(
+    private fun matchVariableLengthPathLazily(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
-        edgeClass: Class<out Edge>?,
-        limit: Int?,
-        results: MutableList<Map<String, Any?>>
-    ) {
+        edgeClass: Class<out Edge>?
+    ): Sequence<Map<String, Any?>> = sequence {
         val direction = when (rel.direction) {
             Direction.OUTGOING -> PathFinder.Direction.OUTGOING
             Direction.INCOMING -> PathFinder.Direction.INCOMING
@@ -1797,8 +1905,7 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = pathValue
                 addProvenance(newBindings, pathValue)
             }
-            results.add(newBindings)
-            if (limit != null && results.size >= limit) break
+            yield(newBindings)
         }
     }
 
@@ -1939,9 +2046,12 @@ class QueryPipeline private constructor(
         return last
     }
 
-    private fun <T : Node> nodeCandidates(type: Class<T>): Sequence<Any> =
+    private fun <T : Node> nodeCandidates(
+        type: Class<T>,
+        candidateSources: List<CypherGraph> = sources
+    ): Sequence<Any> =
         if (qualified) {
-            sources.asSequence().flatMap { source ->
+            candidateSources.asSequence().flatMap { source ->
                 trackWork(source.graph.nodes(type)).map { node -> QualifiedNode(source.id, source.graph, node) }
             }
         } else {

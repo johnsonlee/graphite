@@ -560,6 +560,162 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `filtered single hop limit streams complete matches before stopping`() {
+        var outgoingCalls = 0
+        val orderedGraph = object : Graph by graph {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                if (type == IntConstant::class.java) {
+                    sequenceOf(
+                        graph.node(intConst42) as IntConstant,
+                        graph.node(intConst7) as IntConstant
+                    ) as Sequence<T>
+                } else {
+                    graph.nodes(type)
+                }
+
+            override fun outgoing(id: NodeId): Sequence<Edge> {
+                outgoingCalls++
+                check(outgoingCalls == 1) { "LIMIT must stop before scanning the next source node" }
+                return graph.outgoing(id)
+            }
+
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> {
+                outgoingCalls++
+                check(outgoingCalls == 1) { "LIMIT must stop before scanning the next source node" }
+                return sequence {
+                    yieldAll(graph.outgoing(id, type))
+                    error("LIMIT must stop before consuming the source adjacency tail")
+                }
+            }
+        }
+
+        val result = CypherExecutor(orderedGraph).execute(
+            "MATCH (a:IntConstant)-[r:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 AND b.index = 0 AND r.kind = 'PARAMETER_PASS' " +
+                "RETURN a.value AS value, b.index AS parameter LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("value" to 42, "parameter" to 0)), result.rows)
+        assertEquals(1, outgoingCalls)
+    }
+
+    @Test
+    fun `filtered multi hop limit keeps intermediate relationships lazy`() {
+        val owner = TypeDescriptor("com.example.StreamingMultiHop")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 1)
+        val middle = LocalVariable(NodeId.next(), "middle", valueType, method)
+        val target = LocalVariable(NodeId.next(), "target", valueType, method)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(middle)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, middle.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(middle.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+        val guarded = object : Graph by base {
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
+                if (id == source.id) {
+                    sequence {
+                        yieldAll(base.outgoing(id, type))
+                        error("Intermediate relationship fanout was materialized eagerly")
+                    }
+                } else {
+                    base.outgoing(id, type)
+                }
+        }
+
+        val result = CypherExecutor(guarded).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable)-[:DATAFLOW]->(c:LocalVariable) " +
+                "WHERE c.name = 'target' RETURN c.name AS name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("name" to "target")), result.rows)
+    }
+
+    @Test
+    fun `filtered variable path limit stops before consuming adjacency tail`() {
+        val chain = dataFlowChain(length = 1)
+        val source = chain.nodes(IntConstant::class.java).single()
+        val guarded = object : Graph by chain {
+            override fun outgoing(id: NodeId): Sequence<Edge> =
+                if (id == source.id) {
+                    sequence {
+                        yieldAll(chain.outgoing(id))
+                        error("Variable path traversal consumed beyond LIMIT")
+                    }
+                } else {
+                    chain.outgoing(id)
+                }
+        }
+
+        val result = CypherExecutor(guarded).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..100]->(b:LocalVariable) " +
+                "WHERE b.name = 'local-0' RETURN b.name AS name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("name" to "local-0")), result.rows)
+    }
+
+    @Test
+    fun `filtered distinct relationship pagination retains only the requested window`() {
+        val owner = TypeDescriptor("com.example.StreamingDistinct")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 42)
+        val first = ParameterNode(NodeId.next(), 0, valueType, method)
+        val second = ParameterNode(NodeId.next(), 1, valueType, method)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(first)
+            .addNode(second)
+            .build()
+        val guarded = object : Graph by base {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> = sequence {
+                yield(DataFlowEdge(source.id, first.id, DataFlowKind.PARAMETER_PASS) as T)
+                yield(DataFlowEdge(source.id, first.id, DataFlowKind.PARAMETER_PASS) as T)
+                yield(DataFlowEdge(source.id, second.id, DataFlowKind.PARAMETER_PASS) as T)
+                error("DISTINCT SKIP LIMIT consumed beyond the requested visible values")
+            }
+        }
+
+        val result = CypherExecutor(guarded).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN DISTINCT b.index AS index SKIP 1 LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("index" to 1)), result.rows)
+    }
+
+    @Test
+    fun `a later pattern expands from its declared source variable`() {
+        val owner = TypeDescriptor("com.example.PatternSource")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 1)
+        val middle = LocalVariable(NodeId.next(), "middle", valueType, method)
+        val target = ParameterNode(NodeId.next(), 0, valueType, method)
+        val patternGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(middle)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, middle.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.PARAMETER_PASS))
+            .build()
+
+        val result = CypherExecutor(patternGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:LocalVariable), " +
+                "(a)-[:DATAFLOW]->(c:ParameterNode) " +
+                "WHERE b.name = 'middle' RETURN c.index AS index LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("index" to 0)), result.rows)
+    }
+
+    @Test
     fun `limit does not discard a later branch that completes the pattern`() {
         val owner = TypeDescriptor("com.example.BranchLimit")
         val valueType = TypeDescriptor("int")
@@ -1734,6 +1890,28 @@ class CypherExecutorTest {
         assertTrue(path is List<*>, "Path should be a list")
         val pathList = path as List<*>
         assertTrue(pathList.size >= 3, "Path should contain at least 3 elements")
+    }
+
+    @Test
+    fun `named path limit stops before consuming adjacency tail`() {
+        val guarded = object : Graph by graph {
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
+                if (id == intConst42) {
+                    sequence {
+                        yieldAll(graph.outgoing(id, type))
+                        error("Named path matching consumed beyond LIMIT")
+                    }
+                } else {
+                    graph.outgoing(id, type)
+                }
+        }
+
+        val result = CypherExecutor(guarded).execute(
+            "MATCH p = (c:IntConstant)-[:DATAFLOW]->(ps:ParameterNode) RETURN p LIMIT 1"
+        )
+
+        val path = result.rows.single()["p"] as List<*>
+        assertTrue(path.size >= 3, "Path should contain the matched node, edge, and node")
     }
 
     // --- NOT CONTAINS / NOT STARTS WITH / NOT ENDS WITH ---
