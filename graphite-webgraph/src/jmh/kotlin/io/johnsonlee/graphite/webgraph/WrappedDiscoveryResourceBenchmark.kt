@@ -37,7 +37,7 @@ import java.util.concurrent.locks.LockSupport
 /** Resource counters are sampled outside the timed latency benchmarks. */
 @State(Scope.Thread)
 @AuxCounters(AuxCounters.Type.EVENTS)
-open class WrappedDiscoveryResourceCounters {
+open class WrappedDiscoveryBenchmarkResourceCounters {
     @JvmField var maxHeapBytes: Long = 0
     @JvmField var loadedHeapBytes: Long = 0
     @JvmField var peakUsedHeapBytes: Long = 0
@@ -47,19 +47,19 @@ open class WrappedDiscoveryResourceCounters {
     @JvmField var queryGcTimeMs: Long = 0
 }
 
-abstract class WrappedDiscoveryResourceState {
+abstract class WrappedDiscoveryBenchmarkResourceState {
     protected lateinit var executor: CrossGraphCypherExecutor
     protected val loadedGraphs = mutableListOf<Graph>()
     protected val clearIndexMethods = mutableListOf<Method?>()
-    private lateinit var sampler: WrappedDiscoveryHeapSampler
+    private lateinit var sampler: WrappedDiscoveryBenchmarkHeapSampler
     private var loadedHeapBytes = 0L
     private var gcCountBefore = 0L
     private var gcTimeBefore = 0L
-    private var activeCounters: WrappedDiscoveryResourceCounters? = null
+    private var activeCounters: WrappedDiscoveryBenchmarkResourceCounters? = null
 
     protected fun finishSetup(graphs: List<CypherGraph>) {
         executor = budgetedLatencyExecutor(graphs)
-        sampler = WrappedDiscoveryHeapSampler()
+        sampler = WrappedDiscoveryBenchmarkHeapSampler()
     }
 
     @Setup(Level.Invocation)
@@ -72,7 +72,7 @@ abstract class WrappedDiscoveryResourceState {
         sampler.start(loadedHeapBytes)
     }
 
-    protected fun finishQuery(counters: WrappedDiscoveryResourceCounters) {
+    protected fun finishQuery(counters: WrappedDiscoveryBenchmarkResourceCounters) {
         activeCounters = counters
         counters.maxHeapBytes = Runtime.getRuntime().maxMemory()
         counters.loadedHeapBytes = loadedHeapBytes
@@ -105,7 +105,7 @@ abstract class WrappedDiscoveryResourceState {
 @Warmup(iterations = 1)
 @Measurement(iterations = 3)
 @Fork(1, jvmArgs = ["-Xmx4g"])
-open class SingleGraphWrappedDiscoveryResourceBenchmark : WrappedDiscoveryResourceState() {
+open class SingleGraphWrappedDiscoveryResourceBenchmark : WrappedDiscoveryBenchmarkResourceState() {
     private lateinit var root: Path
 
     @Setup(Level.Trial)
@@ -140,7 +140,7 @@ open class SingleGraphWrappedDiscoveryResourceBenchmark : WrappedDiscoveryResour
     fun tearDownTrial() = closeResources(root)
 
     @Benchmark
-    fun singleGraphFootprint(counters: WrappedDiscoveryResourceCounters): CypherResult =
+    fun singleGraphFootprint(counters: WrappedDiscoveryBenchmarkResourceCounters): CypherResult =
         executor.execute(WRAPPED_DISCOVERY_QUERY).also { result ->
             check(result.rows.size == 2)
             finishQuery(counters)
@@ -153,7 +153,7 @@ open class SingleGraphWrappedDiscoveryResourceBenchmark : WrappedDiscoveryResour
 @Warmup(iterations = 1)
 @Measurement(iterations = 3)
 @Fork(1, jvmArgs = ["-Xmx8g"])
-open class AllFixtureWrappedDiscoveryResourceBenchmark : WrappedDiscoveryResourceState() {
+open class AllFixtureWrappedDiscoveryResourceBenchmark : WrappedDiscoveryBenchmarkResourceState() {
     @Setup(Level.Trial)
     fun setupTrial() {
         val kinds = BenchmarkCorpusKind.entries
@@ -173,7 +173,7 @@ open class AllFixtureWrappedDiscoveryResourceBenchmark : WrappedDiscoveryResourc
     fun tearDownTrial() = closeResources()
 
     @Benchmark
-    fun allFixtureThirtySixGraphFootprint(counters: WrappedDiscoveryResourceCounters): CypherResult =
+    fun allFixtureThirtySixGraphFootprint(counters: WrappedDiscoveryBenchmarkResourceCounters): CypherResult =
         executor.execute(ZERO_HIT_QUERY).also { result ->
             check(result.rows.isEmpty())
             finishQuery(counters)
@@ -184,7 +184,7 @@ private fun clearMethod(graph: Graph): Method? = graph.javaClass.declaredMethods
     .firstOrNull { it.name.startsWith("clearStringPropertyIndexes") }
     ?.also { it.isAccessible = true }
 
-private class WrappedDiscoveryHeapSampler : Closeable {
+private class WrappedDiscoveryBenchmarkHeapSampler : Closeable {
     private val running = AtomicBoolean(true)
     private val sampling = AtomicBoolean(false)
     private val maximum = AtomicLong(0)
