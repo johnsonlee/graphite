@@ -82,6 +82,28 @@ class MethodPatternTest {
         assertFalse(pattern.matches(method()))
     }
 
+    @Test
+    fun `quoted regexes use exact matching including quote terminators`() {
+        val className = "com.example.\\EQuoted"
+        val parameterType = "java.lang.\\EString"
+        val descriptor = method(
+            className = className,
+            name = "find\\EExact",
+            params = listOf(parameterType),
+            returnType = "result\\EType"
+        )
+        val pattern = MethodPattern(
+            declaringClass = java.util.regex.Pattern.quote(className),
+            name = java.util.regex.Pattern.quote(descriptor.name),
+            parameterTypes = descriptor.parameterTypes.map { java.util.regex.Pattern.quote(it.className) },
+            returnType = java.util.regex.Pattern.quote(descriptor.returnType.className),
+            useRegex = true
+        )
+
+        assertTrue(pattern.matches(descriptor))
+        assertFalse(pattern.matches(descriptor.copy(name = "findOther")))
+    }
+
     // ========================================================================
     // Parameter types filter
     // ========================================================================

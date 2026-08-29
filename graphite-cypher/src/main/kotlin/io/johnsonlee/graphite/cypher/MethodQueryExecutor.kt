@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
+private const val MAX_PARALLEL_METHOD_ROWS = 1_024
 
 internal val METHOD_GRAPH_SCAN_PARALLELISM: Int =
     Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
@@ -207,7 +208,7 @@ internal object MethodQueryExecutor {
     ): List<Map<String, Any?>> = if (
         execution.sources.size == 1 ||
         saturatedAdd(skipCount, limitCount) <= METHOD_GRAPH_SCAN_PARALLELISM ||
-        saturatedAdd(skipCount, limitCount) > MAX_ORDERED_TOP_K_ROWS
+        saturatedAdd(skipCount, limitCount) > MAX_PARALLEL_METHOD_ROWS
     ) {
         executeSequentialRows(execution, skipCount, limitCount)
     } else {
@@ -290,6 +291,9 @@ internal object MethodQueryExecutor {
         requested: Int,
         comparator: Comparator<Map<String, Any?>>
     ): List<Map<String, Any?>> {
+        if (execution.sources.size == 1 || requested > MAX_PARALLEL_METHOD_ROWS) {
+            return executeOrderedRowsSequential(execution, skipCount, limitCount, requested, comparator)
+        }
         val topRows = PriorityQueue<Map<String, Any?>>(requested, comparator.reversed())
         for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
             execution.checkCancelled()
@@ -300,6 +304,27 @@ internal object MethodQueryExecutor {
             })
             for (batch in batches) {
                 batch.forEach { row -> addOrderedRow(topRows, row, requested, comparator) }
+            }
+        }
+        return topRows.sortedWith(comparator).drop(skipCount).take(limitCount)
+    }
+
+    private fun executeOrderedRowsSequential(
+        execution: MethodExecution,
+        skipCount: Int,
+        limitCount: Int,
+        requested: Int,
+        comparator: Comparator<Map<String, Any?>>
+    ): List<Map<String, Any?>> {
+        val topRows = PriorityQueue<Map<String, Any?>>(requested, comparator.reversed())
+        val evaluator = execution.newEvaluator()
+        for (source in execution.sources) {
+            execution.checkCancelled()
+            for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+                execution.checkCancelled()
+                val binding = execution.binding(source, method)
+                if (!execution.matches(binding, evaluator)) continue
+                addOrderedRow(topRows, execution.project(binding, evaluator), requested, comparator)
             }
         }
         return topRows.sortedWith(comparator).drop(skipCount).take(limitCount)

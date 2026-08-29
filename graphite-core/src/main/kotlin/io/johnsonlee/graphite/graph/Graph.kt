@@ -428,24 +428,43 @@ data class MethodPattern(
     val useRegex: Boolean = false              // when true, declaringClass and name are treated as regex patterns
 ) {
     @Transient
-    private val declaringClassRegex = compileRegex(declaringClass)
+    private val declaringClassExactRegex = exactRegex(declaringClass)
 
     @Transient
-    private val nameRegex = compileRegex(name)
+    private val declaringClassRegex = compileRegex(declaringClass, declaringClassExactRegex)
 
     @Transient
-    private val parameterTypeRegexes = parameterTypes?.map(::compileRegex)
+    private val nameExactRegex = exactRegex(name)
 
     @Transient
-    private val returnTypeRegex = compileRegex(returnType)
+    private val nameRegex = compileRegex(name, nameExactRegex)
+
+    @Transient
+    private val parameterTypeExactRegexes = parameterTypes?.map(::exactRegex)
+
+    @Transient
+    private val parameterTypeRegexes = parameterTypes?.mapIndexed { index, pattern ->
+        compileRegex(pattern, parameterTypeExactRegexes?.get(index))
+    }
+
+    @Transient
+    private val returnTypeExactRegex = exactRegex(returnType)
+
+    @Transient
+    private val returnTypeRegex = compileRegex(returnType, returnTypeExactRegex)
 
     fun matches(method: MethodDescriptor): Boolean {
         if (declaringClass != null &&
-            !matchesPattern(method.declaringClass.className, declaringClass, declaringClassRegex)
+            !matchesPattern(
+                method.declaringClass.className,
+                declaringClass,
+                declaringClassExactRegex,
+                declaringClassRegex
+            )
         ) {
             return false
         }
-        if (name != null && !matchesPattern(method.name, name, nameRegex)) {
+        if (name != null && !matchesPattern(method.name, name, nameExactRegex, nameRegex)) {
             return false
         }
         if (parameterTypes != null) {
@@ -454,22 +473,33 @@ data class MethodPattern(
                     matchesPattern(
                         method.parameterTypes[index].className,
                         parameterTypes[index],
+                        parameterTypeExactRegexes?.get(index),
                         parameterTypeRegexes?.get(index)
                     )
                 }) return false
         }
-        if (returnType != null && !matchesPattern(method.returnType.className, returnType, returnTypeRegex)) {
+        if (returnType != null &&
+            !matchesPattern(method.returnType.className, returnType, returnTypeExactRegex, returnTypeRegex)
+        ) {
             return false
         }
         return true
     }
 
-    private fun compileRegex(pattern: String?): Pattern? =
-        pattern?.takeIf { useRegex }?.let(Pattern::compile)
+    private fun exactRegex(pattern: String?): String? {
+        if (!useRegex || pattern == null) return null
+        return pattern.takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
+            ?.substring(2, pattern.length - 2)
+            ?.replace("\\E\\\\E\\Q", "\\E")
+            ?.takeIf { Pattern.quote(it) == pattern }
+    }
 
-    private fun matchesPattern(actual: String, pattern: String, regex: Pattern?): Boolean {
+    private fun compileRegex(pattern: String?, exact: String?): Pattern? =
+        pattern?.takeIf { useRegex && exact == null }?.let(Pattern::compile)
+
+    private fun matchesPattern(actual: String, pattern: String, exactRegex: String?, regex: Pattern?): Boolean {
         return if (useRegex) {
-            requireNotNull(regex).matcher(actual).matches()
+            exactRegex?.let(actual::equals) ?: requireNotNull(regex).matcher(actual).matches()
         } else if (pattern.endsWith("*")) {
             actual.startsWith(pattern.dropLast(1))
         } else {

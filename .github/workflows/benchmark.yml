@@ -342,6 +342,99 @@ jobs:
           test "$(sort -u "benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
         done
 
+        gate_metric() {
+          local SLUG="$1"
+          local METRIC="$2"
+          local TITLE="$3"
+          local METRIC_ARG=()
+          if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
+          node .github/scripts/benchmark-gate.mjs compare-jmh \
+            --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json" \
+            --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json" \
+            "${METRIC_ARG[@]}" \
+            --threshold 15 \
+            --threshold-only \
+            --title "Method discovery ${GRAPH_COUNT}-graph ${TITLE}" \
+            --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-report.md" \
+            --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json"
+        }
+
+        NEED_CONFIRMATION=0
+        gate_metric wall '' 'wall time' || NEED_CONFIRMATION=1
+        gate_metric cpu processCpuNanos 'CPU time' || NEED_CONFIRMATION=1
+        gate_metric rss-after residentSetAfterBytes 'RSS after query' || NEED_CONFIRMATION=1
+        gate_metric rss-delta residentSetDeltaBytes 'RSS query delta' || NEED_CONFIRMATION=1
+
+        if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
+          BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
+          GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+            -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+            -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+            -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json -p "graphCount=${GRAPH_COUNT}")
+          java -jar "${CANDIDATE_JAR}" \
+            'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
+            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt" \
+            -rff "${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json"
+          java -jar "${BASE_JAR}" \
+            'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
+            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt" \
+            -rff "${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json"
+          test "$(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
+          test "$(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
+          diff -u \
+            <(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt") \
+            <(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt")
+        fi
+
+        FINAL_FAILURE=0
+        for SPEC in \
+          'wall::wall time' \
+          'cpu:processCpuNanos:CPU time' \
+          'rss-after:residentSetAfterBytes:RSS after query' \
+          'rss-delta:residentSetDeltaBytes:RSS query delta'; do
+          IFS=: read -r SLUG METRIC TITLE <<< "${SPEC}"
+          if [ "${NEED_CONFIRMATION}" -eq 0 ]; then
+            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-report.md" \
+              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-report.md"
+            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
+              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-status.json"
+          else
+            METRIC_ARG=()
+            if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
+            node .github/scripts/benchmark-gate.mjs confirm-jmh \
+              --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
+              --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json" \
+              --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json" \
+              "${METRIC_ARG[@]}" \
+              --threshold 15 \
+              --threshold-only \
+              --title "Method discovery ${GRAPH_COUNT}-graph ${TITLE}" \
+              --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-report.md" \
+              --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-status.json" || FINAL_FAILURE=1
+          fi
+        done
+        cat \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-wall-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-cpu-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-after-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-delta-report.md" \
+          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-report.md"
+        jq -s '{
+          passed: all(.[]; .passed == true),
+          errors: [.[].errors[]],
+          rows: [.[].rows[]]
+        }' \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-wall-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-cpu-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-after-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-delta-status.json" \
+          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-status.json"
+        test "${FINAL_FAILURE}" -eq 0
+        jq -e '.passed == true' "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-status.json" >/dev/null
+
     - name: Upload Method shard
       if: always()
       uses: actions/upload-artifact@v7
@@ -366,9 +459,14 @@ jobs:
     - name: Download Method shards
       uses: actions/download-artifact@v8
       with:
-        pattern: benchmark-method-compatibility-shard-*-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
-        path: benchmark-results
-        merge-multiple: true
+        pattern: benchmark-method-compatibility-shard-*-${{ github.event.pull_request.number }}-*
+        path: downloaded-method-shards
+
+    - name: Select latest successful Method shard artifacts
+      run: |
+        node .github/scripts/benchmark-gate.mjs stage-artifacts \
+          --directory downloaded-method-shards \
+          --output benchmark-results
 
     - name: Aggregate and gate 33 Method cases
       env:
@@ -415,14 +513,16 @@ jobs:
           benchmark-results/base-method-compatibility.sorted.txt \
           benchmark-results/candidate-method-compatibility.sorted.txt
 
-        node .github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/base-method-compatibility.json \
-          --candidate benchmark-results/candidate-method-compatibility.json \
-          --threshold 15 \
-          --threshold-only \
-          --title 'Method discovery REST-to-Cypher migration' \
-          --report benchmark-results/method-compatibility-report.md \
-          --status benchmark-results/method-compatibility-status.json
+        test "$(find benchmark-results -name 'method-compatibility-shard-*-status.json' | wc -l)" -eq 3
+        cat benchmark-results/method-compatibility-shard-*-report.md \
+          > benchmark-results/method-compatibility-report.md
+        jq -s '{
+          passed: all(.[]; .passed == true),
+          errors: [.[].errors[]],
+          rows: [.[].rows[]]
+        }' benchmark-results/method-compatibility-shard-*-status.json \
+          > benchmark-results/method-compatibility-status.json
+        jq -e '.passed == true' benchmark-results/method-compatibility-status.json >/dev/null
 
     - name: Upload Method compatibility results
       if: always()
@@ -1346,9 +1446,15 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v8
       with:
-        pattern: benchmark-*-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
-        path: benchmark-results
-        merge-multiple: true
+        pattern: benchmark-*-${{ github.event.pull_request.number }}-*
+        path: downloaded-benchmark-results
+
+    - name: Select latest successful benchmark artifacts
+      continue-on-error: true
+      run: |
+        node .github/scripts/benchmark-gate.mjs stage-artifacts \
+          --directory downloaded-benchmark-results \
+          --output benchmark-results
 
     - name: Build benchmark report
       if: always()

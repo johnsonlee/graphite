@@ -328,7 +328,9 @@ class MethodQueryExecutorTest {
             assertFailsWith<TimeoutException> { query.get(100, TimeUnit.MILLISECONDS) }
             assertFalse(query.isDone)
             coordinator.get().interrupt()
-            Thread.sleep(50)
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+            while (coordinator.get().isInterrupted && System.nanoTime() < deadline) Thread.yield()
+            assertFalse(coordinator.get().isInterrupted, "coordinator did not consume the second interrupt")
             release.countDown()
             val error = assertFailsWith<ExecutionException> { query.get(5, TimeUnit.SECONDS) }
             assertTrue(error.cause is CypherQueryCancelledException)
@@ -460,6 +462,35 @@ class MethodQueryExecutorTest {
 
         assertEquals(listOf("graph-0"), result.rows.map { it["graph"] })
         assertEquals(1, sliceCalls.get())
+    }
+
+    @Test
+    fun `large Method result limits scan graph sources serially`() {
+        val active = AtomicInteger()
+        val peak = AtomicInteger()
+        val sources = (0 until 4).map { index ->
+            val indexedMethod = method("com.example.Large", "method$index", emptyList(), "void")
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+                    val current = active.incrementAndGet()
+                    peak.updateAndGet { previous -> maxOf(previous, current) }
+                    return try {
+                        listOf(indexedMethod).filter(pattern::matches).take(limit)
+                    } finally {
+                        active.decrementAndGet()
+                    }
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Large' " +
+                "RETURN graphId(m) AS graph LIMIT 5000"
+        )
+
+        assertEquals((0 until 4).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertEquals(1, peak.get())
     }
 
     @Test

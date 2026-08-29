@@ -21,7 +21,9 @@ import {
     parseLargeCorpusLog,
     renderJmhReport,
     renderLatencyBaselineReport,
-    renderLargeCorpusReport
+    renderLargeCorpusReport,
+    selectJmhMetric,
+    stageLatestArtifacts
 } from "./benchmark-gate.mjs";
 
 function jmhResult({
@@ -174,6 +176,55 @@ test("JMH comparison fails when a benchmark is missing", () => {
 
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors[0], /missing from candidate/);
+});
+
+test("JMH comparison gates a selected secondary metric", () => {
+    const base = jmhResult({
+        score: 100,
+        secondaryMetrics: { processCpuNanos: metric(100, "ns/op") }
+    });
+    const candidate = jmhResult({
+        score: 50,
+        secondaryMetrics: { processCpuNanos: metric(130, "ns/op") }
+    });
+    const comparison = compareJmh(
+        selectJmhMetric([base], "processCpuNanos"),
+        selectJmhMetric([candidate], "processCpuNanos"),
+        15,
+        true
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.equal(Math.round(comparison.rows[0].delta), 30);
+});
+
+test("JMH comparison fails closed when a selected secondary metric is missing", () => {
+    const comparison = compareJmh(
+        selectJmhMetric([jmhResult({ score: 100 })], "residentSetAfterBytes"),
+        selectJmhMetric([jmhResult({ score: 90 })], "residentSetAfterBytes"),
+        15,
+        true
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /invalid score/);
+});
+
+test("JMH secondary metric comparison accepts a stable zero baseline", () => {
+    const comparison = compareJmh(
+        selectJmhMetric([
+            jmhResult({ score: 100, secondaryMetrics: { residentSetDeltaBytes: metric(0, "bytes") } })
+        ], "residentSetDeltaBytes"),
+        selectJmhMetric([
+            jmhResult({ score: 90, secondaryMetrics: { residentSetDeltaBytes: metric(0, "bytes") } })
+        ], "residentSetDeltaBytes"),
+        15,
+        true,
+        true
+    );
+
+    assert.equal(comparison.passed, true);
+    assert.equal(comparison.rows[0].delta, 0);
 });
 
 test("JMH reverse-order confirmation rejects a one-round false positive", () => {
@@ -573,6 +624,34 @@ test("aggregate report includes every independent benchmark gate", () => {
         assert.match(aggregate.body, /Method migration report/);
         assert.match(aggregate.body, /capacity report/);
         assert.match(aggregate.body, /budgeted report/);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("artifact staging keeps successful jobs and overlays the latest rerun attempt", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-artifacts-"));
+    const output = path.join(directory, "staged");
+    try {
+        const method = path.join(directory, "benchmark-method-101-1");
+        const resourceFirst = path.join(directory, "benchmark-resource-101-1");
+        const resourceRetry = path.join(directory, "benchmark-resource-101-2");
+        fs.mkdirSync(method);
+        fs.mkdirSync(resourceFirst);
+        fs.mkdirSync(resourceRetry);
+        fs.writeFileSync(path.join(method, "method-status.json"), JSON.stringify({ passed: true }));
+        fs.writeFileSync(path.join(resourceFirst, "resource-status.json"), JSON.stringify({ passed: false }));
+        fs.writeFileSync(path.join(resourceRetry, "resource-status.json"), JSON.stringify({ passed: true }));
+
+        const staged = stageLatestArtifacts(directory, output);
+
+        assert.deepEqual(staged, [
+            "benchmark-method-101-1",
+            "benchmark-resource-101-1",
+            "benchmark-resource-101-2"
+        ]);
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "method-status.json"))), { passed: true });
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "resource-status.json"))), { passed: true });
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
