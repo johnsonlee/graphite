@@ -19,7 +19,8 @@ object PathFinder {
         val maxDepth: Int,
         val direction: Direction,
         val workTracker: CypherWorkTracker? = null,
-        val edgePredicate: ((Edge) -> Boolean)? = null
+        val edgePredicate: ((Edge) -> Boolean)? = null,
+        val nodePredicate: ((Node) -> Boolean)? = null
     )
 
     internal class SearchState(
@@ -121,11 +122,11 @@ object PathFinder {
      * Traverse one branch at a time so suspended lazy consumers retain at most [SearchOptions.maxDepth]
      * search states instead of a complete breadth-first frontier.
      * Nodes already present on the current branch are not expanded again, so cycles terminate without
-     * retaining a traversal-wide visited set. A fixed-size memo suppresses reconvergent expansion while
-     * recording the ancestors that actually blocked each completed suffix. A revisit is suppressed only
-     * when its ancestor set still contains every prior blocker. This keeps acyclic reconvergence cheap
-     * without dropping a suffix that becomes legal under a different branch. Eviction can only cause safe
-     * re-expansion. Only the stack's O(maxDepth) frames retain nodes and parent paths.
+     * retaining a traversal-wide visited set. A fixed-size memo suppresses only suffixes that completed
+     * without producing a match or encountering an ancestor back-edge. Result-producing suffixes are
+     * always replayed for every prefix, preserving Cypher row multiplicity; cycle-dependent suffixes are
+     * never memoized, preserving paths that become legal under a different ancestor set. Eviction can only
+     * cause safe re-expansion. Only the stack's O(maxDepth) frames retain nodes and parent paths.
      *
      * Matches keep the graph's edge order within each branch. Cypher does not define a global result
      * order without ORDER BY, so depth-first traversal is safe for the lazy query pipeline while allowing
@@ -136,17 +137,12 @@ object PathFinder {
         startNode: Node,
         options: SearchOptions
     ): Sequence<PathMatch> = sequence {
-        val expansionMemo = LinkedHashMap<Int, ExpansionRecord>()
+        val deadSuffixMemo = LinkedHashMap<ExpansionKey, Unit>()
         val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
         if (matchesTarget(start, options)) yield(PathMatch(start))
         if (options.maxDepth <= 0) return@sequence
         if (options.maxDepth == 1) {
-            for (edge in edgesForDirection(graph, startNode.id, options)) {
-                val nextId = nextNodeId(edge, startNode.id, options.direction)
-                val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
-                val nextState = SearchState(nextNode, edge, start, depth = 1)
-                if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
-            }
+            yieldAll(singleHop(graph, start, options))
             return@sequence
         }
 
@@ -159,12 +155,17 @@ object PathFinder {
             val frame = stack.last()
             if (!frame.edges.hasNext()) {
                 val completed = stack.removeLast()
-                rememberBounded(
-                    expansionMemo,
-                    completed.state.node.id.value,
-                    ExpansionRecord(completed.state.depth, completed.blockedAncestors.toSet())
-                )
-                stack.lastOrNull()?.blockedAncestors?.addAll(completed.blockedAncestors)
+                if (!completed.foundMatch && !completed.cycleBlocked) {
+                    rememberBounded(
+                        deadSuffixMemo,
+                        ExpansionKey(completed.state.node.id.value, completed.state.depth),
+                        Unit
+                    )
+                }
+                stack.lastOrNull()?.let { parent ->
+                    parent.foundMatch = parent.foundMatch || completed.foundMatch
+                    parent.cycleBlocked = parent.cycleBlocked || completed.cycleBlocked
+                }
                 continue
             }
 
@@ -173,7 +174,10 @@ object PathFinder {
             val nextId = nextNodeId(edge, current, options.direction)
             val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
             val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
-            if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
+            if (matchesTarget(nextState, options)) {
+                frame.foundMatch = true
+                yield(PathMatch(nextState))
+            }
 
             if (nextState.depth < options.maxDepth) {
                 expandableFrame(
@@ -181,10 +185,23 @@ object PathFinder {
                     nextId,
                     nextState,
                     options,
-                    expansionMemo,
-                    frame.blockedAncestors
+                    deadSuffixMemo,
+                    frame
                 )?.let(stack::addLast)
             }
+        }
+    }
+
+    private fun singleHop(
+        graph: Graph,
+        start: SearchState,
+        options: SearchOptions
+    ): Sequence<PathMatch> = sequence {
+        for (edge in edgesForDirection(graph, start.node.id, options)) {
+            val nextId = nextNodeId(edge, start.node.id, options.direction)
+            val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+            val nextState = SearchState(nextNode, edge, start, depth = 1)
+            if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
         }
     }
 
@@ -194,39 +211,22 @@ object PathFinder {
         nodeId: NodeId,
         state: SearchState,
         options: SearchOptions,
-        expansionMemo: LinkedHashMap<Int, ExpansionRecord>,
-        blockedAncestors: MutableSet<Int>
+        deadSuffixMemo: LinkedHashMap<ExpansionKey, Unit>,
+        parentFrame: SearchFrame
     ): SearchFrame? {
         if (hasAncestor(state.parent, nodeId)) {
-            blockedAncestors.add(nodeId.value)
+            parentFrame.cycleBlocked = true
             return null
         }
 
+        if (ExpansionKey(nodeId.value, state.depth) in deadSuffixMemo) return null
         val edges = edgesForDirection(graph, nodeId, options).iterator()
         if (!edges.hasNext()) return null
-        val previous = expansionMemo[nodeId.value]
-        if (previous != null &&
-            previous.depth == state.depth &&
-            ancestorIds(state.parent).containsAll(previous.blockedAncestors)
-        ) {
-            blockedAncestors.addAll(previous.blockedAncestors)
-            return null
-        }
         return SearchFrame(state, edges)
     }
 
-    private fun ancestorIds(state: SearchState?): Set<Int> {
-        val ids = mutableSetOf<Int>()
-        var cursor = state
-        while (cursor != null) {
-            ids.add(cursor.node.id.value)
-            cursor = cursor.parent
-        }
-        return ids
-    }
-
     private fun <K, V> rememberBounded(memo: LinkedHashMap<K, V>, key: K, value: V) {
-        if (!memo.containsKey(key) && memo.size >= EXPANSION_MEMO_CAPACITY) {
+        if (!memo.containsKey(key) && memo.size >= DEAD_SUFFIX_MEMO_CAPACITY) {
             val eldest = memo.entries.iterator()
             if (eldest.hasNext()) {
                 eldest.next()
@@ -248,16 +248,19 @@ object PathFinder {
     private data class SearchFrame(
         val state: SearchState,
         val edges: Iterator<Edge>,
-        val blockedAncestors: MutableSet<Int> = mutableSetOf()
+        var foundMatch: Boolean = false,
+        var cycleBlocked: Boolean = false
     )
 
-    private data class ExpansionRecord(
-        val depth: Int,
-        val blockedAncestors: Set<Int>
+    private data class ExpansionKey(
+        val nodeId: Int,
+        val depth: Int
     )
 
     private fun matchesTarget(state: SearchState, options: SearchOptions): Boolean =
-        state.depth >= options.minDepth && (options.targets == null || state.node.id in options.targets)
+        state.depth >= options.minDepth &&
+            (options.targets == null || state.node.id in options.targets) &&
+            (options.nodePredicate?.invoke(state.node) != false)
 
     private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): Sequence<Edge> =
         when (options.direction) {
@@ -292,5 +295,5 @@ object PathFinder {
 
     enum class Direction { OUTGOING, INCOMING, BOTH }
 
-    private const val EXPANSION_MEMO_CAPACITY = 16_384
+    private const val DEAD_SUFFIX_MEMO_CAPACITY = 16_384
 }

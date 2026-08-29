@@ -1400,7 +1400,12 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
-        val matches = matchPatternLazily(pattern, emptyMap(), candidateSources)
+        val matches = matchPatternLazily(
+            pattern,
+            emptyMap(),
+            candidateSources,
+            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true }
+        )
         if (orderBy != null) {
             return projectOrderedFilteredRows(
                 matches,
@@ -1728,7 +1733,8 @@ class QueryPipeline private constructor(
     private fun matchPatternLazily(
         pattern: CypherPattern,
         existingBindings: Map<String, Any?>,
-        candidateSources: List<CypherGraph> = sources
+        candidateSources: List<CypherGraph> = sources,
+        finalResultPredicate: ((Map<String, Any?>) -> Boolean)? = null
     ): Sequence<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return sequenceOf(existingBindings)
@@ -1744,8 +1750,9 @@ class QueryPipeline private constructor(
             val sourceNode = elements[i - 1] as PatternElement.NodePattern
             val rel = elements[i] as PatternElement.RelationshipPattern
             val targetNode = elements[i + 1] as PatternElement.NodePattern
+            val resultPredicate = finalResultPredicate.takeIf { i + 1 == elements.lastIndex }
             currentMatches = currentMatches.flatMap { bindings ->
-                matchRelationshipLazily(sourceNode, rel, targetNode, bindings)
+                matchRelationshipLazily(sourceNode, rel, targetNode, bindings, resultPredicate)
             }
             i += 2
         }
@@ -1910,7 +1917,8 @@ class QueryPipeline private constructor(
         sourceNodePattern: PatternElement.NodePattern,
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
-        bindings: Map<String, Any?>
+        bindings: Map<String, Any?>,
+        resultPredicate: ((Map<String, Any?>) -> Boolean)? = null
     ): Sequence<Map<String, Any?>> {
         val sourceNode = sourceNodePattern.variable
             ?.let(bindings::get)
@@ -1922,7 +1930,14 @@ class QueryPipeline private constructor(
         return when {
             rel.types.isNotEmpty() && resolvedEdgeTypes.isEmpty() -> emptySequence()
             rel.variableLength ->
-                matchVariableLengthPathLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+                matchVariableLengthPathLazily(
+                    rel,
+                    targetNodePattern,
+                    sourceNode,
+                    bindings,
+                    edgeClass,
+                    resultPredicate
+                )
             else -> matchSingleHopLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
         }
     }
@@ -1960,7 +1975,8 @@ class QueryPipeline private constructor(
         targetNodePattern: PatternElement.NodePattern,
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
-        edgeClass: Class<out Edge>?
+        edgeClass: Class<out Edge>?,
+        resultPredicate: ((Map<String, Any?>) -> Boolean)?
     ): Sequence<Map<String, Any?>> = sequence {
         val direction = when (rel.direction) {
             Direction.OUTGOING -> PathFinder.Direction.OUTGOING
@@ -1969,6 +1985,15 @@ class QueryPipeline private constructor(
         }
 
         val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val nodePredicate = if (resultPredicate != null && rel.variable == null) {
+            { node: Node ->
+                val endValue = nodeValue(sourceNode.source, node)
+                val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings)
+                targetMatch != null && resultPredicate(targetMatch)
+            }
+        } else {
+            null
+        }
         val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
@@ -1979,7 +2004,8 @@ class QueryPipeline private constructor(
                 maxDepth = rel.maxHops ?: 10,
                 direction = direction,
                 workTracker = workTracker,
-                edgePredicate = { edge -> matchesRelConstraints(edge, rel, bindings) }
+                edgePredicate = { edge -> matchesRelConstraints(edge, rel, bindings) },
+                nodePredicate = nodePredicate
             )
         )
 

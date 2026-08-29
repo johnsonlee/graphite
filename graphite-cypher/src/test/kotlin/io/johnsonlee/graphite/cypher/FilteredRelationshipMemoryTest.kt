@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.IntConstant
+import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
@@ -132,12 +133,56 @@ class FilteredRelationshipMemoryTest {
         assertTrue(result.rows.isEmpty())
     }
 
+    @Test
+    fun `deep cyclic path does not retain quadratic blocker state`() {
+        val source = IntConstant(NodeId(DEEP_CYCLE_ID_OFFSET), 0)
+        val terminalId = NodeId(DEEP_CYCLE_ID_OFFSET + DEEP_CYCLE_NODE_COUNT - 1)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .build()
+        val virtualGraph = object : Graph by base {
+            override fun node(id: NodeId): Node? =
+                if (id.value in DEEP_CYCLE_ID_OFFSET until DEEP_CYCLE_ID_OFFSET + DEEP_CYCLE_NODE_COUNT) {
+                    IntConstant(id, id.value - DEEP_CYCLE_ID_OFFSET)
+                } else {
+                    null
+                }
+
+            override fun outgoing(id: NodeId): Sequence<Edge> = when {
+                id.value in DEEP_CYCLE_ID_OFFSET until terminalId.value -> sequenceOf(
+                    DataFlowEdge(id, NodeId(id.value + 1), DataFlowKind.ASSIGN)
+                )
+                id == terminalId -> (0 until DEEP_CYCLE_NODE_COUNT - 1).asSequence().map { index ->
+                    DataFlowEdge(id, NodeId(DEEP_CYCLE_ID_OFFSET + index), DataFlowKind.ASSIGN)
+                }
+                else -> emptySequence()
+            }
+        }
+
+        val matches = PathFinder.findPathMatches(
+            virtualGraph,
+            setOf(source.id),
+            PathFinder.SearchOptions(
+                targets = emptySet(),
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 1,
+                maxDepth = DEEP_CYCLE_NODE_COUNT + 1,
+                direction = PathFinder.Direction.OUTGOING,
+                workTracker = CypherWorkTracker(CypherExecutionBudget(DEFAULT_SERVER_WORK_BUDGET))
+            )
+        ).count()
+
+        assertEquals(0, matches)
+    }
+
     private companion object {
         const val EDGE_COUNT = 4_000_000
         const val VARIABLE_PATH_EDGE_COUNT = 10_000_000
         const val TARGET_ID_OFFSET = 1_000_000
         const val RECONVERGENT_LAYER_COUNT = 8
         const val RECONVERGENT_LAYER_WIDTH = 8
+        const val DEEP_CYCLE_NODE_COUNT = 3_000
+        const val DEEP_CYCLE_ID_OFFSET = 300_000
         const val DEFAULT_SERVER_WORK_BUDGET = 250_000L
     }
 }

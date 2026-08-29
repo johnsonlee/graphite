@@ -234,11 +234,12 @@ class PathFinderTest {
                 edgeType = DataFlowEdge::class.java,
                 minDepth = 2,
                 maxDepth = 2,
-                direction = PathFinder.Direction.OUTGOING
+                direction = PathFinder.Direction.OUTGOING,
+                nodePredicate = { false }
             )
         ).count()
 
-        assertEquals(width, matches)
+        assertEquals(0, matches)
     }
 
     @Test
@@ -341,6 +342,36 @@ class PathFinderTest {
         )
 
         assertEquals(listOf(mapOf("id" to target.id.value)), result.rows)
+    }
+
+    @Test
+    fun `reconvergent prefixes preserve distinct relationship path rows`() {
+        val source = BooleanConstant(NodeId.next(), true)
+        val left = BooleanConstant(NodeId.next(), true)
+        val right = BooleanConstant(NodeId.next(), true)
+        val junction = BooleanConstant(NodeId.next(), true)
+        val target = IntConstant(NodeId.next(), 43)
+        val graph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(left)
+            .addNode(right)
+            .addNode(junction)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, left.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, right.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(left.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(right.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(junction.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = CypherExecutor(graph).execute(
+            "MATCH (a:BooleanConstant)-[:DATAFLOW*3..3]->(b:IntConstant) RETURN b.id AS id"
+        )
+
+        assertEquals(
+            listOf(mapOf("id" to target.id.value), mapOf("id" to target.id.value)),
+            result.rows
+        )
     }
 
     @Test
