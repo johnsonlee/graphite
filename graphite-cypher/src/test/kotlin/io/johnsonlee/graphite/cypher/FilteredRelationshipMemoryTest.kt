@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class FilteredRelationshipMemoryTest {
@@ -32,14 +33,32 @@ class FilteredRelationshipMemoryTest {
         }
 
         val result = CypherExecutor(virtualGraph).execute(
-            "MATCH (a:IntConstant)-[r:DATA_FLOW]->(b:IntConstant) " +
+            "MATCH (a:IntConstant)-[r:DATAFLOW]->(b:IntConstant) " +
                 "WHERE b.value = -1 RETURN r LIMIT 1"
         )
 
         assertTrue(result.rows.isEmpty())
     }
 
+    @Test
+    fun `data flow alias produces a matching relationship binding`() {
+        val source = IntConstant(NodeId(3), 3)
+        val target = IntConstant(NodeId(4), 4)
+        val graph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = CypherExecutor(graph).execute(
+            "MATCH (a:IntConstant)-[r:DATA_FLOW]->(b:IntConstant) " +
+                "WHERE b.value = 4 RETURN r.kind AS kind LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("kind" to "ASSIGN")), result.rows)
+    }
+
     private companion object {
-        const val EDGE_COUNT = 1_000_000
+        const val EDGE_COUNT = 4_000_000
     }
 }

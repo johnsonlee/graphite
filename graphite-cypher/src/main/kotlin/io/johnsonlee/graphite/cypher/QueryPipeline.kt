@@ -1970,8 +1970,7 @@ class QueryPipeline private constructor(
         if (rel.types.isNotEmpty()) {
             val edgeTypeName = CypherFunctions.type(edge)
             val typeMatches = rel.types.any { requested ->
-                requested.equals(edgeTypeName, ignoreCase = true) ||
-                    (edge is ResourceEdge && requested.equals("RESOURCE", ignoreCase = true))
+                matchesRelationshipType(edge, edgeTypeName, requested)
             }
             if (!typeMatches) {
                 return false
@@ -1995,6 +1994,11 @@ class QueryPipeline private constructor(
             edgeValue == exprValue
         }
     }
+
+    private fun matchesRelationshipType(edge: Edge, actual: String?, requested: String): Boolean =
+        requested.equals(actual, ignoreCase = true) ||
+            requested.replace("_", "").equals(actual?.replace("_", ""), ignoreCase = true) ||
+            (edge is ResourceEdge && requested.equals("RESOURCE", ignoreCase = true))
 
     // ========================================================================
     // Graph traversal helpers
