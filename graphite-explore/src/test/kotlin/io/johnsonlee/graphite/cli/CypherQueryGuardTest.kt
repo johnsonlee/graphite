@@ -234,6 +234,23 @@ class CypherQueryGuardTest {
     }
 
     @Test
+    fun `cancelling a completed task preserves its result`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+
+        try {
+            val task = guard.submit(CypherCancellationSignal()) { "completed" }
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+
+            task.cancel()
+
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+            assertEquals("next", guard.execute { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
     fun `continuation failure is published after guard teardown`() {
         val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
         val responseFailure = IllegalStateException("response failed")
