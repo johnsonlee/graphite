@@ -232,7 +232,7 @@ class CypherExecutor internal constructor(
             return CypherResult(columns, emptyList())
         }
         var columns = emptyList<String>()
-        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val rows = LinkedHashMap<Any, MutableMap<String, Any?>>()
         // Later segments can still add provenance to a retained duplicate row.
         for ((segmentIndex, segment) in segments.withIndex()) {
             if ((segmentIndex and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
@@ -290,18 +290,19 @@ class CypherExecutor internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun addDistinctRow(
-        rows: MutableMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        rows: MutableMap<Any, MutableMap<String, Any?>>,
         row: Map<String, Any?>,
         maxRows: Int?
     ) {
         val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-        val existing = rows[visible]
+        val key = cypherValueKey(visible)
+        val existing = rows[key]
         if (existing != null) {
             val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                 (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
             if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
         } else if (maxRows == null || rows.size < maxRows) {
-            rows[visible] = row.toMutableMap()
+            rows[key] = row.toMutableMap()
         }
     }
 

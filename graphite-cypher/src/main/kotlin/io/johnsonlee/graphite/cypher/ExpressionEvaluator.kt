@@ -261,10 +261,10 @@ class ExpressionEvaluator private constructor(
         val testValue = expr.test?.let { evaluate(it, bindings) }
 
         for ((condition, result) in expr.whenClauses) {
-            if (testValue != null) {
+            if (expr.test != null) {
                 // Simple CASE: compare test value with each when
                 val whenValue = evaluate(condition, bindings)
-                if (testValue == whenValue) return evaluate(result, bindings)
+                if (cypherEquals(testValue, whenValue) == true) return evaluate(result, bindings)
             } else {
                 // Generic CASE: evaluate each when as boolean
                 val condResult = evaluate(condition, bindings)
@@ -456,42 +456,6 @@ private fun appendWithCancellation(
     }
 }
 
-private fun cypherEquals(left: Any?, right: Any?): Boolean? = when {
-    left == null || right == null -> null
-    left is Number && right is Number -> left == right || left.toDouble() == right.toDouble()
-    left is List<*> && right is List<*> -> cypherListsEqual(left, right)
-    left is Map<*, *> && right is Map<*, *> -> cypherMapsEqual(left, right)
-    else -> left == right
-}
-
-@Suppress("ReturnCount")
-private fun cypherListsEqual(left: List<*>, right: List<*>): Boolean? {
-    if (left.size != right.size) return false
-    var containsNullComparison = false
-    for (index in left.indices) {
-        when (cypherEquals(left[index], right[index])) {
-            false -> return false
-            null -> containsNullComparison = true
-            true -> Unit
-        }
-    }
-    return if (containsNullComparison) null else true
-}
-
-@Suppress("ReturnCount")
-private fun cypherMapsEqual(left: Map<*, *>, right: Map<*, *>): Boolean? {
-    if (left.keys != right.keys) return false
-    var containsNullComparison = false
-    for (key in left.keys) {
-        when (cypherEquals(left[key], right[key])) {
-            false -> return false
-            null -> containsNullComparison = true
-            true -> Unit
-        }
-    }
-    return if (containsNullComparison) null else true
-}
-
 @Suppress("ReturnCount")
 private fun evaluateMembership(
     list: List<*>,
@@ -521,8 +485,8 @@ private fun evaluateRangeMembership(
     element: Number,
     checkCancelled: (() -> Unit)?
 ): Boolean {
-    val target = element.toLong()
-    if (element.toDouble() != target.toDouble()) {
+    val target = element.toExactLongOrNull()
+    if (target == null) {
         checkCancelled?.invoke()
         return false
     }
@@ -597,15 +561,7 @@ private fun evaluateSequentialMembership(
     return if (containsNullComparison) null else false
 }
 
-private fun cypherMembershipEquals(element: Any, candidate: Any?): Boolean? = when {
-    candidate == null -> null
-    element is List<*> && candidate is List<*> -> cypherListsEqual(element, candidate)
-    element is Map<*, *> && candidate is Map<*, *> -> cypherMapsEqual(element, candidate)
-    element == candidate -> true
-    element is Number && candidate is Number && element.javaClass === candidate.javaClass -> false
-    element is Number && candidate is Number -> element.toDouble() == candidate.toDouble()
-    else -> false
-}
+private fun cypherMembershipEquals(element: Any, candidate: Any?): Boolean? = cypherEquals(element, candidate)
 
 private const val CANCELLABLE_COLLECTION_CHUNK_SIZE = 4 * (CANCELLATION_POLL_MASK + 1)
 

@@ -348,6 +348,7 @@ object CypherFunctions {
         is String -> value.length
         is List<*> -> value.size
         is QualifiedPath -> value.edges.size
+        is PathFinder.Path -> value.edges.size
         else -> null
     }
 

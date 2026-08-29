@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 class CypherValueSemanticsTest {
@@ -55,5 +56,35 @@ class CypherValueSemanticsTest {
 
         assertEquals(2L, result.rows.single()["count"])
         assertEquals(listOf(1, 2), result.rows.single()["values"])
+    }
+
+    @Test
+    fun `structural equality is recursive exact and three valued`() {
+        assertEquals(true, cypherEquals(listOf(1), listOf(1.0)))
+        assertEquals(false, cypherEquals(listOf(1), listOf(2)))
+        assertNull(cypherEquals(listOf(null), listOf(null)))
+        assertEquals(true, cypherEquals(mapOf("value" to 1), mapOf("value" to 1.0)))
+        assertEquals(false, cypherEquals(mapOf("value" to 1), mapOf("other" to 1)))
+        assertNull(cypherEquals(mapOf("value" to null), mapOf("value" to null)))
+        assertEquals(true, cypherEquals(Double.POSITIVE_INFINITY, Float.POSITIVE_INFINITY))
+        assertEquals(false, cypherEquals(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY))
+    }
+
+    @Test
+    fun `value keys normalize numbers recursively without losing precision`() {
+        assertEquals(cypherValueKey(1), cypherValueKey(1.0))
+        assertEquals(cypherValueKey(listOf(mapOf("value" to 1))), cypherValueKey(listOf(mapOf("value" to 1.0))))
+        assertNotEquals(cypherValueKey(9007199254740993L), cypherValueKey(9007199254740992.0))
+        assertEquals(cypherValueKey(Double.POSITIVE_INFINITY), cypherValueKey(Float.POSITIVE_INFINITY))
+        assertNotEquals(cypherValueKey(Double.POSITIVE_INFINITY), cypherValueKey(Double.NEGATIVE_INFINITY))
+    }
+
+    @Test
+    fun `exact long conversion rejects fractional nonfinite and out of range values`() {
+        assertEquals(2L, 2.toExactLongOrNull())
+        assertEquals(2L, 2.0.toExactLongOrNull())
+        assertNull(2.5.toExactLongOrNull())
+        assertNull(Double.POSITIVE_INFINITY.toExactLongOrNull())
+        assertNull(9223372036854775808.0.toExactLongOrNull())
     }
 }

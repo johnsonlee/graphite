@@ -48,10 +48,17 @@ private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
 private const val INTERNAL_MATCHED_PATH_SEGMENTS_KEY = "\u0000graphite.matchedPathSegments"
 private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
+private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relationshipMatchState"
+private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
 
 private data class MatchedPathSegment(
     val tail: List<Any>,
     val relationships: List<Edge>
+)
+
+private data class RelationshipMatchState(
+    val reserved: Set<Edge>,
+    val used: Set<Edge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
@@ -268,12 +275,14 @@ class QueryPipeline private constructor(
                     if (clauseIndex != consumedWhereIndex) rows = executeWhere(clause, rows)
                 }
                 is CypherClause.Return -> {
-                    val (newRows, newColumns) = projectAndAggregate(clause.items, rows, clause.distinct)
+                    val orderBy = clauses.getOrNull(clauseIndex + 1) as? CypherClause.OrderBy
+                    val (newRows, newColumns) = projectAndAggregate(clause.items, rows, clause.distinct, orderBy)
                     rows = newRows
                     columns = newColumns
                 }
                 is CypherClause.With -> {
-                    val (newRows, newColumns) = projectAndAggregate(clause.items, rows, clause.distinct)
+                    val orderBy = clauses.getOrNull(clauseIndex + 1) as? CypherClause.OrderBy
+                    val (newRows, newColumns) = projectAndAggregate(clause.items, rows, clause.distinct, orderBy)
                     rows = newRows
                     columns = newColumns
                     // WITH can have an inline WHERE
@@ -659,7 +668,7 @@ class QueryPipeline private constructor(
         val column = returnItem.alias ?: returnItem.expression.toCypherString()
         val nodeClass = resolveNodeClass(nodePattern.labels)
             ?: return CypherResult(listOf(column), emptyList())
-        val seen = LinkedHashMap<Any?, Set<String>>()
+        val seen = LinkedHashMap<Any, Pair<Any?, Set<String>>>()
         for (candidate in nodeCandidates(nodeClass)) {
             val variable = nodePattern.variable
             val value = evaluator.evaluate(
@@ -667,10 +676,12 @@ class QueryPipeline private constructor(
                 mapOf(variable to candidate)
             )
             val provenance = provenanceOf(candidate)
-            if (value in seen) {
-                seen[value] = seen.getValue(value) + provenance
+            val valueKey = cypherValueKey(value)
+            if (valueKey in seen) {
+                val (firstValue, existingProvenance) = seen.getValue(valueKey)
+                seen[valueKey] = firstValue to (existingProvenance + provenance)
             } else if (seen.size < limitCount) {
-                seen[value] = provenance
+                seen[valueKey] = value to provenance
             }
             // A qualified query must keep scanning so duplicate values in
             // later graphs contribute to the row's complete provenance.
@@ -678,7 +689,7 @@ class QueryPipeline private constructor(
         }
         return CypherResult(
             columns = listOf(column),
-            rows = seen.map { (value, provenance) ->
+            rows = seen.values.map { (value, provenance) ->
                 mutableMapOf<String, Any?>(column to value).apply {
                     if (provenance.isNotEmpty()) put(INTERNAL_PROVENANCE_KEY, provenance)
                 }
@@ -750,7 +761,7 @@ class QueryPipeline private constructor(
 
         val rows = mutableListOf<Map<String, Any?>>()
         val distinctRows = if (ret.distinct) {
-            LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+            LinkedHashMap<Any, MutableMap<String, Any?>>()
         } else {
             null
         }
@@ -768,7 +779,7 @@ class QueryPipeline private constructor(
                 rows.add(projected)
                 if (rows.size >= limitCount) return CypherResult(columns, rows)
             } else {
-                addDistinctRow(distinctRows, projected, limitCount)
+                addCypherDistinctRow(distinctRows, projected, limitCount)
                 if (!qualified && distinctRows.size >= limitCount) {
                     return CypherResult(columns, distinctRows.values.toList())
                 }
@@ -792,6 +803,24 @@ class QueryPipeline private constructor(
             if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
         } else if (rows.size < limit) {
             rows[visible] = row.toMutableMap()
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun addCypherDistinctRow(
+        rows: LinkedHashMap<Any, MutableMap<String, Any?>>,
+        row: Map<String, Any?>,
+        limit: Int
+    ) {
+        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+        val key = cypherValueKey(visible)
+        val existing = rows[key]
+        if (existing != null) {
+            val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+            if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+        } else if (rows.size < limit) {
+            rows[key] = row.toMutableMap()
         }
     }
 
@@ -1470,11 +1499,11 @@ class QueryPipeline private constructor(
         skipCount: Int,
         retainedCount: Int
     ): CypherResult {
-        val distinctRows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val distinctRows = LinkedHashMap<Any, MutableMap<String, Any?>>()
         for (bindings in matches) {
             if (evaluator.evaluate(where.condition, bindings) != true) continue
             val projected = projectRow(ret.items, columns, bindings)
-            addDistinctRow(distinctRows, projected, retainedCount)
+            addCypherDistinctRow(distinctRows, projected, retainedCount)
             if (!qualified && distinctRows.size >= retainedCount) break
         }
         return CypherResult(columns, distinctRows.values.drop(skipCount))
@@ -1493,7 +1522,7 @@ class QueryPipeline private constructor(
         val comparator = rankedRowComparator(orderBy)
         val topRows = PriorityQueue<RankedProjectedRow>(comparator.reversed())
         val selectedDistinctRows = if (ret.distinct) {
-            HashMap<Map<String, Any?>, RankedProjectedRow>()
+            HashMap<Any, RankedProjectedRow>()
         } else {
             null
         }
@@ -1502,7 +1531,9 @@ class QueryPipeline private constructor(
         for (bindings in matches) {
             if (evaluator.evaluate(where.condition, bindings) != true) continue
             val projected = projectRow(ret.items, columns, bindings)
-            val visible = selectedDistinctRows?.let { projected.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY } }
+            val visible = selectedDistinctRows?.let {
+                cypherValueKey(projected.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY })
+            }
             val existing = visible?.let { selectedDistinctRows?.get(it) }
             if (existing != null) {
                 val graphIds = (existing.row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
@@ -1522,7 +1553,9 @@ class QueryPipeline private constructor(
                 if (visible != null) selectedDistinctRows?.put(visible, ranked)
             } else if (comparator.compare(ranked, topRows.peek()) < 0) {
                 val removed = topRows.poll()
-                selectedDistinctRows?.remove(removed.row.filterKeys { it != INTERNAL_PROVENANCE_KEY })
+                selectedDistinctRows?.remove(
+                    cypherValueKey(removed.row.filterKeys { it != INTERNAL_PROVENANCE_KEY })
+                )
                 topRows.add(ranked)
                 if (visible != null) selectedDistinctRows?.put(visible, ranked)
             }
@@ -1668,7 +1701,7 @@ class QueryPipeline private constructor(
         inputRows: List<Map<String, Any?>>,
         limit: Int? = null
     ): List<Map<String, Any?>> {
-        var rows = inputRows
+        var rows = if (patterns.size > 1) inputRows.map(::startRelationshipMatchState) else inputRows
         for (pattern in patterns) {
             val nextRows = mutableListOf<Map<String, Any?>>()
             for (inputRow in rows) {
@@ -1677,7 +1710,7 @@ class QueryPipeline private constructor(
             }
             rows = if (limit != null && nextRows.size > limit) nextRows.subList(0, limit) else nextRows
         }
-        return rows
+        return rows.map(::removeRelationshipMatchState)
     }
 
     private fun executeOptionalMatch(
@@ -1688,7 +1721,9 @@ class QueryPipeline private constructor(
         val results = mutableListOf<Map<String, Any?>>()
 
         for (inputRow in inputRows) {
-            var currentMatches = listOf(inputRow)
+            var currentMatches = listOf(
+                if (patterns.size > 1) startRelationshipMatchState(inputRow) else inputRow
+            )
 
             for (pattern in patterns) {
                 val nextMatches = mutableListOf<Map<String, Any?>>()
@@ -1714,7 +1749,7 @@ class QueryPipeline private constructor(
                 val nullBindings = newVars.associateWith { null as Any? }
                 results.add(inputRow + nullBindings)
             } else {
-                results.addAll(currentMatches)
+                results.addAll(currentMatches.map(::removeRelationshipMatchState))
             }
         }
 
@@ -1745,11 +1780,7 @@ class QueryPipeline private constructor(
                 trackSegments = trackSegments
             ).take(limit).toList()
         } else {
-            val initialBindings = if (relationshipCount > 1) {
-                reserveBoundRelationships(pattern, existingBindings)
-            } else {
-                existingBindings
-            }
+            val initialBindings = prepareRelationshipMatchState(pattern, existingBindings)
             matchPatternEagerly(
                 elements,
                 initialBindings,
@@ -1779,19 +1810,34 @@ class QueryPipeline private constructor(
             INTERNAL_CURRENT_NODE_KEY in bindings ||
             INTERNAL_PATH_START_NODE_KEY in bindings
 
-    private fun reserveBoundRelationships(
+    private fun prepareRelationshipMatchState(
         pattern: CypherPattern,
         bindings: Map<String, Any?>
     ): Map<String, Any?> {
+        val relationshipCount = pattern.elements.count { it is PatternElement.RelationshipPattern }
+        if (relationshipCount <= 1 && INTERNAL_RELATIONSHIP_MATCH_STATE_KEY !in bindings) return bindings
         val reserved = pattern.elements.asSequence()
             .filterIsInstance<PatternElement.RelationshipPattern>()
             .mapNotNull(PatternElement.RelationshipPattern::variable)
             .flatMap { variable -> relationshipBinding(bindings[variable]).asSequence() }
             .toSet()
-        if (reserved.isEmpty()) return bindings
+        val previous = bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] as? RelationshipMatchState
         return bindings.toMutableMap().apply {
-            addMatchedPathSegment(this, MatchedPathSegment(emptyList(), reserved.toList()))
+            this[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] = RelationshipMatchState(
+                reserved = reserved,
+                used = previous?.used.orEmpty()
+            )
         }
+    }
+
+    private fun startRelationshipMatchState(bindings: Map<String, Any?>): Map<String, Any?> =
+        bindings.toMutableMap().apply {
+            this[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] = RelationshipMatchState(emptySet(), emptySet())
+        }
+
+    private fun removeRelationshipMatchState(bindings: Map<String, Any?>): Map<String, Any?> {
+        if (INTERNAL_RELATIONSHIP_MATCH_STATE_KEY !in bindings) return bindings
+        return bindings.toMutableMap().apply { remove(INTERNAL_RELATIONSHIP_MATCH_STATE_KEY) }
     }
 
     @Suppress("ReturnCount")
@@ -1805,12 +1851,7 @@ class QueryPipeline private constructor(
     ): Sequence<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return sequenceOf(existingBindings)
-        val relationshipCount = elements.count { it is PatternElement.RelationshipPattern }
-        val initialBindings = if (relationshipCount > 1) {
-            reserveBoundRelationships(pattern, existingBindings)
-        } else {
-            existingBindings
-        }
+        val initialBindings = prepareRelationshipMatchState(pattern, existingBindings)
 
         var currentMatches: Sequence<Map<String, Any?>> = matchNodeElementLazily(
             elements[0] as PatternElement.NodePattern,
@@ -2048,6 +2089,7 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = edge.value
                 addProvenance(newBindings, edge.value)
             }
+            addUsedRelationshipsIfTracked(newBindings, listOf(edge.edge))
             addMatchedPathSegmentIfTracked(
                 newBindings,
                 MatchedPathSegment(listOf(edge.value, targetValue), listOf(edge.edge))
@@ -2101,7 +2143,7 @@ class QueryPipeline private constructor(
             val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings) ?: continue
 
             val newBindings = targetMatch.toMutableMap()
-            val mustMaterialize = rel.variable != null || INTERNAL_PATH_START_NODE_KEY in bindings
+            val mustMaterialize = mustMaterializePath(rel, bindings)
             if (mustMaterialize) {
                 val path = pathMatch.materialize(workTracker)
                 val relationshipValues = path.edges.map { edgeValue(sourceNode.source, it) }
@@ -2110,6 +2152,7 @@ class QueryPipeline private constructor(
                     newBindings[rel.variable] = relationshipValues
                     addProvenance(newBindings, relationshipValues)
                 }
+                addUsedRelationshipsIfTracked(newBindings, path.edges)
                 if (INTERNAL_PATH_START_NODE_KEY in bindings) {
                     val pathTail = buildList {
                         path.edges.indices.forEach { index ->
@@ -2123,6 +2166,13 @@ class QueryPipeline private constructor(
             yield(newBindings)
         }
     }
+
+    private fun mustMaterializePath(
+        rel: PatternElement.RelationshipPattern,
+        bindings: Map<String, Any?>
+    ): Boolean = rel.variable != null ||
+        INTERNAL_PATH_START_NODE_KEY in bindings ||
+        INTERNAL_RELATIONSHIP_MATCH_STATE_KEY in bindings
 
     private fun variablePathNodePredicate(
         rel: PatternElement.RelationshipPattern,
@@ -2147,16 +2197,18 @@ class QueryPipeline private constructor(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun matchedRelationships(bindings: Map<String, Any?>): Set<Edge> =
-        (bindings[INTERNAL_MATCHED_PATH_SEGMENTS_KEY] as? List<MatchedPathSegment>)
-            .orEmpty()
-            .flatMapTo(linkedSetOf()) { it.relationships }
-
     private fun unavailableRelationships(
         rel: PatternElement.RelationshipPattern,
         bindings: Map<String, Any?>
-    ): Set<Edge> = matchedRelationships(bindings) - relationshipBinding(rel.variable?.let(bindings::get))
+    ): Set<Edge> {
+        val state = bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] as? RelationshipMatchState ?: return emptySet()
+        return state.used + (state.reserved - relationshipBinding(rel.variable?.let(bindings::get)))
+    }
+
+    private fun addUsedRelationshipsIfTracked(bindings: MutableMap<String, Any?>, edges: Collection<Edge>) {
+        val state = bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] as? RelationshipMatchState ?: return
+        bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] = state.copy(used = state.used + edges)
+    }
 
     private fun matchesRelationshipBinding(
         rel: PatternElement.RelationshipPattern,
@@ -2234,7 +2286,7 @@ class QueryPipeline private constructor(
         // Check inline property constraints
         return pattern.properties.all { (key, expression) ->
             val exprValue = evaluator.evaluate(expression, bindings)
-            nodeProperty(value, key) == exprValue
+            cypherEquals(nodeProperty(value, key), exprValue) == true
         }
     }
 
@@ -2266,7 +2318,7 @@ class QueryPipeline private constructor(
                 is ControlFlowEdge -> if (key == "kind") edge.kind.name else null
                 is ResourceEdge -> if (key == "kind") edge.kind.name else null
             }
-            edgeValue == exprValue
+            cypherEquals(edgeValue, exprValue) == true
         }
     }
 
@@ -2471,13 +2523,14 @@ class QueryPipeline private constructor(
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValues(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
         if (!workTrackingEnabled) return distinctByVisibleValuesUntracked(rows)
-        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val byVisibleValues = LinkedHashMap<Any, MutableMap<String, Any?>>()
         for ((index, row) in rows.withIndex()) {
             pollCancellation(index)
             val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-            val existing = byVisibleValues[visible]
+            val key = cypherValueKey(visible)
+            val existing = byVisibleValues[key]
             if (existing == null) {
-                byVisibleValues[visible] = row.toMutableMap()
+                byVisibleValues[key] = row.toMutableMap()
             } else {
                 val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                     (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
@@ -2490,12 +2543,13 @@ class QueryPipeline private constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValuesUntracked(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
-        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val byVisibleValues = LinkedHashMap<Any, MutableMap<String, Any?>>()
         for (row in rows) {
             val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-            val existing = byVisibleValues[visible]
+            val key = cypherValueKey(visible)
+            val existing = byVisibleValues[key]
             if (existing == null) {
-                byVisibleValues[visible] = row.toMutableMap()
+                byVisibleValues[key] = row.toMutableMap()
             } else {
                 val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                     (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
@@ -2547,10 +2601,12 @@ class QueryPipeline private constructor(
     // RETURN / WITH (projection + optional aggregation)
     // ========================================================================
 
+    @Suppress("NestedBlockDepth")
     private fun projectAndAggregate(
         items: List<ReturnItem>,
         rows: List<Map<String, Any?>>,
-        distinct: Boolean
+        distinct: Boolean,
+        orderBy: CypherClause.OrderBy? = null
     ): Pair<List<Map<String, Any?>>, List<String>> {
         // Expand RETURN * into individual variable references for all bound names
         val expandedItems = if (items.size == 1 &&
@@ -2589,9 +2645,7 @@ class QueryPipeline private constructor(
             } else {
                 // Group by non-aggregated columns
                 if (!workTrackingEnabled) {
-                    val groups = rows.groupBy { inputRow ->
-                        groupByIndices.map { i -> evaluator.evaluate(expandedItems[i].expression, inputRow) }
-                    }
+                    val groups = rows.groupBy { inputRow -> groupKey(expandedItems, groupByIndices, inputRow) }
                     groups.map { (_, groupRows) ->
                         val row = mutableMapOf<String, Any?>()
                         for (i in expandedItems.indices) {
@@ -2617,10 +2671,11 @@ class QueryPipeline private constructor(
                         projected[columns[i]] = evaluator.evaluate(expandedItems[i].expression, row)
                     }
                     copyProvenance(projected, listOf(row))
+                    attachOrderValues(projected, row, distinct, orderBy)
                     projected
                 }
             } else {
-                projectTrackedRows(expandedItems, columns, rows)
+                projectTrackedRows(expandedItems, columns, rows, distinct, orderBy)
             }
         }
 
@@ -2635,10 +2690,10 @@ class QueryPipeline private constructor(
         aggregateIndices: Set<Int>,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
-        val groups = LinkedHashMap<List<Any?>, MutableList<Map<String, Any?>>>()
+        val groups = LinkedHashMap<Any, MutableList<Map<String, Any?>>>()
         for ((index, inputRow) in rows.withIndex()) {
             pollCancellation(index)
-            val key = groupByIndices.map { i -> evaluator.evaluate(items[i].expression, inputRow) }
+            val key = groupKey(items, groupByIndices, inputRow)
             groups.getOrPut(key, ::mutableListOf).add(inputRow)
         }
         return groups.values.mapIndexed { index, groupRows ->
@@ -2656,10 +2711,18 @@ class QueryPipeline private constructor(
         }
     }
 
+    private fun groupKey(
+        items: List<ReturnItem>,
+        groupByIndices: List<Int>,
+        row: Map<String, Any?>
+    ): Any = cypherValueKey(groupByIndices.map { index -> evaluator.evaluate(items[index].expression, row) })
+
     private fun projectTrackedRows(
         items: List<ReturnItem>,
         columns: List<String>,
-        rows: List<Map<String, Any?>>
+        rows: List<Map<String, Any?>>,
+        distinct: Boolean,
+        orderBy: CypherClause.OrderBy?
     ): List<Map<String, Any?>> = rows.mapIndexed { rowIndex, row ->
         pollCancellation(rowIndex)
         val projected = mutableMapOf<String, Any?>()
@@ -2667,7 +2730,27 @@ class QueryPipeline private constructor(
             projected[columns[i]] = evaluator.evaluate(items[i].expression, row)
         }
         copyProvenance(projected, listOf(row))
+        attachOrderValues(projected, row, distinct, orderBy)
         projected
+    }
+
+    private fun attachOrderValues(
+        projected: MutableMap<String, Any?>,
+        source: Map<String, Any?>,
+        distinct: Boolean,
+        orderBy: CypherClause.OrderBy?
+    ) {
+        if (!distinct && orderBy != null && requiresPreProjectionOrderValues(orderBy, projected.keys)) {
+            projected[INTERNAL_ORDER_VALUES_KEY] = evaluateOrderValues(orderBy, source, projected)
+        }
+    }
+
+    private fun requiresPreProjectionOrderValues(
+        orderBy: CypherClause.OrderBy,
+        projectedColumns: Set<String>
+    ): Boolean = orderBy.items.any { item ->
+        val variable = item.expression as? CypherExpr.Variable
+        variable == null || variable.name !in projectedColumns
     }
 
     private fun containsAggregation(expr: CypherExpr): Boolean = when (expr) {
@@ -2756,12 +2839,12 @@ class QueryPipeline private constructor(
     }
 
     private fun distinctAggregationValues(values: List<Any?>): List<Any?> {
-        if (!workTrackingEnabled) return values.distinct()
-        val seen = LinkedHashSet<Any?>()
+        if (!workTrackingEnabled) return values.distinctBy(::cypherValueKey)
+        val seen = LinkedHashSet<Any>()
         val distinct = ArrayList<Any?>()
         for ((index, value) in values.withIndex()) {
             pollCancellation(index)
-            if (seen.add(value)) distinct.add(value)
+            if (seen.add(cypherValueKey(value))) distinct.add(value)
         }
         checkCancelled()
         return distinct
@@ -2775,28 +2858,41 @@ class QueryPipeline private constructor(
         clause: CypherClause.OrderBy,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
-        if (!workTrackingEnabled) {
-            return rows.sortedWith(Comparator { left, right ->
-                for (item in clause.items) {
-                    val leftValue = evaluateOrderValue(item.expression, left)
-                    val rightValue = evaluateOrderValue(item.expression, right)
+        val sorted = if (!workTrackingEnabled) {
+            rows.sortedWith(Comparator { left, right ->
+                for ((itemIndex, item) in clause.items.withIndex()) {
+                    val leftValue = orderValue(left, item, itemIndex)
+                    val rightValue = orderValue(right, item, itemIndex)
+                    val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
+                    if (comparison != 0) return@Comparator comparison
+                }
+                0
+            })
+        } else {
+            var comparisons = 0
+            rows.sortedWith(Comparator { left, right ->
+                pollCancellation(comparisons++)
+                for ((itemIndex, item) in clause.items.withIndex()) {
+                    val leftValue = orderValue(left, item, itemIndex)
+                    val rightValue = orderValue(right, item, itemIndex)
                     val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
                     if (comparison != 0) return@Comparator comparison
                 }
                 0
             })
         }
-        var comparisons = 0
-        return rows.sortedWith(Comparator { left, right ->
-            pollCancellation(comparisons++)
-            for (item in clause.items) {
-                val leftValue = evaluateOrderValue(item.expression, left)
-                val rightValue = evaluateOrderValue(item.expression, right)
-                val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
-                if (comparison != 0) return@Comparator comparison
-            }
-            0
-        })
+        return sorted.map(::removeOrderValues)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun orderValue(row: Map<String, Any?>, item: SortItem, index: Int): Any? {
+        val orderValues = row[INTERNAL_ORDER_VALUES_KEY] as? List<Any?>
+        return if (orderValues != null) orderValues[index] else evaluateOrderValue(item.expression, row)
+    }
+
+    private fun removeOrderValues(row: Map<String, Any?>): Map<String, Any?> {
+        if (INTERNAL_ORDER_VALUES_KEY !in row) return row
+        return row.toMutableMap().apply { remove(INTERNAL_ORDER_VALUES_KEY) }
     }
 
     private fun evaluateOrderValue(expression: CypherExpr, row: Map<String, Any?>): Any? =
