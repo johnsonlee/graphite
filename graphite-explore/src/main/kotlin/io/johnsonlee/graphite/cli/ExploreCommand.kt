@@ -18,7 +18,7 @@ private const val DEFAULT_PORT = 8080
 private const val DEFAULT_PORT_TEXT = "8080"
 private const val DEFAULT_LOAD_MODE_TEXT = "MAPPED"
 private const val DEFAULT_MAX_CONCURRENT_CYPHER_TEXT = "2"
-private const val DEFAULT_CYPHER_WORK_BUDGET_TEXT = "25000000"
+private const val DEFAULT_CYPHER_WORK_BUDGET_TEXT = "250000"
 
 @Command(
     name = "serve",

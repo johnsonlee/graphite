@@ -6,9 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val CANCELLATION_POLL_MASK = 1_023
 
-/** Default per-request work limit used by the production Cypher endpoint. */
-const val DEFAULT_CYPHER_WORK_BUDGET = 25_000_000L
-
 /**
  * Bounds graph work performed by one Cypher execution.
  *

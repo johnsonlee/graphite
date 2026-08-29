@@ -97,7 +97,7 @@ open class WrappedDiscoveryLatencyBenchmark {
                 ?.also { it.isAccessible = true }
             CypherGraph("graph-$graphIndex", graph)
         }
-        executor = productionBudgetedExecutor(graphs)
+        executor = budgetedLatencyExecutor(graphs)
 
         val result = executeSuccessfulQuery()
         check(result.rows.all { (it["caller"] as? String)?.lowercase()?.contains("voucher") == true })

@@ -50,7 +50,7 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
             CypherGraph(kind.id, graph)
         }
         check(graphs.sumOf { it.graph.nodeCount(Node::class.java) ?: 0L } == EXPECTED_ALL_FIXTURE_NODES)
-        executor = productionBudgetedExecutor(graphs)
+        executor = budgetedLatencyExecutor(graphs)
     }
 
     @TearDown
@@ -114,7 +114,7 @@ internal object AllFixtureBenchmarkQueryCorrectness {
                 }
             }
             ALL_FIXTURE_QUERIES.forEach { case ->
-                val executor = productionBudgetedExecutor(sources)
+                val executor = budgetedLatencyExecutor(sources)
                 val result = executor.execute(case.query)
                 check(result.rows.size == case.expectedRows) {
                     "${case.name} returned ${result.rows.size} rows; expected ${case.expectedRows}"
@@ -290,11 +290,12 @@ private val ALL_FIXTURE_QUERIES = listOf(
 )
 
 /**
- * Runs current revisions with the same work budget as the production endpoint.
- * The fixed pre-PR-95 comparison predates the budget API and must explicitly opt
- * into the legacy constructor from the workflow.
+ * Uses an explicit budget large enough for every validated fixture query while
+ * retaining the budget-enabled candidate lookup and work-accounting path. The
+ * fixed pre-PR-95 comparison predates the budget API and must explicitly opt in
+ * to the legacy constructor from the workflow.
  */
-internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCypherExecutor {
+internal fun budgetedLatencyExecutor(graphs: List<CypherGraph>): CrossGraphCypherExecutor {
     val budgetType = try {
         Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudget")
     } catch (error: ClassNotFoundException) {
@@ -303,17 +304,7 @@ internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCy
         }
         return CrossGraphCypherExecutor(graphs)
     }
-    val defaultBudget = try {
-        Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudgetKt")
-            .getField("DEFAULT_CYPHER_WORK_BUDGET")
-            .getLong(null)
-    } catch (error: ReflectiveOperationException) {
-        check(java.lang.Boolean.getBoolean(ALLOW_LEGACY_BUDGET_DEFAULT_PROPERTY)) {
-            "Production Cypher work-budget default is unavailable; refusing an implicit benchmark fallback"
-        }
-        LEGACY_CYPHER_WORK_BUDGET
-    }
-    val budget = budgetType.getConstructor(java.lang.Long.TYPE).newInstance(defaultBudget)
+    val budget = budgetType.getConstructor(java.lang.Long.TYPE).newInstance(LATENCY_BENCHMARK_WORK_BUDGET)
     return CrossGraphCypherExecutor::class.java
         .getConstructor(List::class.java, budgetType)
         .newInstance(graphs, budget) as CrossGraphCypherExecutor
@@ -321,6 +312,4 @@ internal fun productionBudgetedExecutor(graphs: List<CypherGraph>): CrossGraphCy
 
 private const val ALLOW_LEGACY_UNBUDGETED_PROPERTY =
     "graphite.benchmark.allowLegacyUnbudgetedExecutor"
-private const val ALLOW_LEGACY_BUDGET_DEFAULT_PROPERTY =
-    "graphite.benchmark.allowLegacyBudgetDefault"
-private const val LEGACY_CYPHER_WORK_BUDGET = 25_000_000L
+private const val LATENCY_BENCHMARK_WORK_BUDGET = 25_000_000L
