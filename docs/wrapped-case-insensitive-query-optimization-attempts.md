@@ -248,7 +248,7 @@ default on this mmap/allocation-bound workload:
 The default is therefore two workers, still bounded by available processors;
 `graphite.cypher.directStringParallelism` remains available for controlled
 deployment and benchmark experiments. On the four real fixtures, two workers
-produce `0.535–2.081 s/op`. Six of eight distributions clear the fixed-baseline
+produce `0.535–2.081 s/op`. Five of eight distributions clear the fixed-baseline
 10x target; first-only (`9.26x`), last-only (`8.84x`), and first/last bimodal
 (`7.83x`) show that concurrency alone cannot satisfy the gate.
 
@@ -275,3 +275,28 @@ materializing and projecting matching call-site nodes, not lowercase strings.
 **Conclusion:** rejected and implementation removed. The Unicode/exactness test
 is retained. The next attempt avoids materializing matches whose projected
 visible values cannot contribute to the already selected global LIMIT rows.
+
+### 2026-08-29 - Attempt 009: Selected-row projection matcher
+
+Once ordered merging establishes the global `DISTINCT ... LIMIT` rows, later
+graph scans no longer build a projected map and provenance set for every match.
+They compute the selected projection's map hash directly, then perform exact
+column equality only within the matching hash bucket. Each scanner reuses its
+projection-value array, and duplicate return aliases retain the normal
+last-write projection semantics. Hash collisions therefore affect lookup cost,
+not correctness.
+
+At parallelism two, allocation fell by `15–24%` on every real hit-bearing
+distribution: dense from `4.36` to `3.36 GB/op`, early from `3.68` to
+`2.80 GB/op`, broad from `4.63` to `3.50 GB/op`, and bimodal from `5.99` to
+`4.97 GB/op`; the zero-hit case remained `0.98 GB/op`. A follow-up cursor that
+computes each projection value once per match reduced bimodal further to
+`4.62 GB/op`. One-fork spot checks measured early, bimodal, and late at
+`1.214`, `1.798`, and `1.175 s/op`, respectively. Late now clears the fixed
+10x baseline, while early and bimodal remain just below it.
+
+**Conclusion:** retained. It removes allocation proportional to the number of
+non-selected matches without changing row order, distinctness, provenance, or
+fallback behavior. The remaining work must avoid matched-node materialization
+or use distribution-aware scheduling; a larger default worker pool is not
+supported by the 36-graph data.

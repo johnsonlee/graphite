@@ -851,9 +851,10 @@ class QueryPipeline private constructor(
 
         if (rows.size >= limit) {
             val selected = rows.keys.toSet()
+            val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
             scanners.chunked(directStringParallelism).forEach { wave ->
                 val hits = runDirectStringTasks(wave.map { scanner ->
-                    { scanner.collectRemainingSelectedRows(selected) }
+                    { scanner.collectRemainingSelectedRows(selectedMatcher) }
                 })
                 hits.forEachIndexed { index, visibleRows ->
                     val graphId = wave[index].source.id
@@ -970,17 +971,18 @@ class QueryPipeline private constructor(
             DirectStringScanBatch(rows, exhausted)
         }
 
-        fun collectRemainingSelectedRows(selected: Set<Map<String, Any?>>): Set<Map<String, Any?>> =
+        fun collectRemainingSelectedRows(
+            selected: DirectStringSelectedRowMatcher
+        ): Set<Map<String, Any?>> =
             synchronized(source.graph) {
                 val hits = mutableSetOf<Map<String, Any?>>()
+                val matcher = selected.cursor(source)
                 while (!exhausted) {
                     if (!iterator.hasNext()) {
                         exhausted = true
                         break
                     }
-                    val visible = projectParallelSafeNode(iterator.next())
-                        .filterKeys { it != INTERNAL_PROVENANCE_KEY }
-                    if (visible in selected) hits += visible
+                    matcher.match(iterator.next())?.let(hits::add)
                     pollInterrupted()
                 }
                 hits
@@ -1012,6 +1014,45 @@ class QueryPipeline private constructor(
         val rows: List<Map<String, Any?>>,
         val exhausted: Boolean
     )
+
+    private inner class DirectStringSelectedRowMatcher(
+        selected: Set<Map<String, Any?>>,
+        items: List<ReturnItem>,
+        columns: List<String>
+    ) {
+        private val rowsByHash = selected.groupBy { it.hashCode() }
+        private val projections = LinkedHashMap<String, CypherExpr>().apply {
+            items.indices.forEach { index -> this[columns[index]] = items[index].expression }
+        }.entries.map { (column, expression) -> column to expression }
+
+        fun cursor(source: CypherGraph): Cursor = Cursor(source)
+
+        inner class Cursor(private val source: CypherGraph) {
+            private val values = arrayOfNulls<Any?>(projections.size)
+
+            fun match(node: Node): Map<String, Any?>? {
+                val candidate = nodeValue(source, node)
+                var hash = 0
+                projections.indices.forEach { index ->
+                    val (column, expression) = projections[index]
+                    val value = projectionValue(candidate, expression)
+                    values[index] = value
+                    hash += column.hashCode() xor (value?.hashCode() ?: 0)
+                }
+                return rowsByHash[hash]?.firstOrNull { row ->
+                    projections.indices.all { index ->
+                        row[projections[index].first] == values[index]
+                    }
+                }
+            }
+
+            private fun projectionValue(candidate: Any, expression: CypherExpr): Any? = when (expression) {
+                is CypherExpr.Literal -> expression.value
+                is CypherExpr.Property -> nodeProperty(candidate, expression.propertyName)
+                else -> error("Unsafe expression reached selected-row matcher")
+            }
+        }
+    }
 
     private fun directStringCandidates(
         graph: Graph,
