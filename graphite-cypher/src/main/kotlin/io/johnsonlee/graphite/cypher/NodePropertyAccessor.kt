@@ -162,6 +162,10 @@ object NodePropertyAccessor {
 
     private fun getReturnNodeProperty(node: ReturnNode, prop: String) = when (prop) {
         PROPERTY_METHOD -> node.method.signature
+        PROPERTY_CLASS -> node.method.declaringClass.className
+        PROPERTY_NAME -> node.method.name
+        "parameter_types" -> node.method.parameterTypes.map { it.className }
+        "return_type" -> node.method.returnType.className
         "actual_type" -> node.actualType?.className
         else -> null
     }
@@ -240,6 +244,10 @@ object NodePropertyAccessor {
         is ReturnNode -> mapOf(
             PROPERTY_ID to node.id.value,
             PROPERTY_METHOD to node.method.signature,
+            PROPERTY_CLASS to node.method.declaringClass.className,
+            PROPERTY_NAME to node.method.name,
+            "parameter_types" to node.method.parameterTypes.map { it.className },
+            "return_type" to node.method.returnType.className,
             "actual_type" to node.actualType?.className
         )
         is ResourceFileNode -> mapOf(

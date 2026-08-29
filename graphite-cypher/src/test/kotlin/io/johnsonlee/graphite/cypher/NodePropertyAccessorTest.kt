@@ -167,7 +167,11 @@ class NodePropertyAccessorTest {
     @Test
     fun `ReturnNode properties`() {
         val node = ReturnNode(NodeId.next(), method, stringType)
-        assertTrue((NodePropertyAccessor.getProperty(node, "method") as String).contains("process"))
+        assertEquals(method.signature, NodePropertyAccessor.getProperty(node, "method"))
+        assertEquals("com.example.Service", NodePropertyAccessor.getProperty(node, "class"))
+        assertEquals("process", NodePropertyAccessor.getProperty(node, "name"))
+        assertEquals(listOf("int"), NodePropertyAccessor.getProperty(node, "parameter_types"))
+        assertEquals("java.lang.String", NodePropertyAccessor.getProperty(node, "return_type"))
         assertEquals("java.lang.String", NodePropertyAccessor.getProperty(node, "actual_type"))
         assertNull(NodePropertyAccessor.getProperty(node, "unknown"))
     }

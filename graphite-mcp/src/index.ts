@@ -199,26 +199,6 @@ server.tool(
   }
 );
 
-// List declared methods
-server.tool(
-  "methods",
-  "List declared methods, including indexed methods without nodes and declared return types, across all graphs or in one explicit graph",
-  {
-    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
-    class_pattern: z.string().optional().describe("Declaring class pattern"),
-    name_pattern: z.string().optional().describe("Method name pattern"),
-    limit: z.number().optional().default(50).describe("Max results"),
-  },
-  async ({ graph_id, class_pattern, name_pattern, limit }) => {
-    const params: Record<string, string> = {};
-    if (class_pattern) params.class = class_pattern;
-    if (name_pattern) params.name = name_pattern;
-    if (limit) params.limit = String(limit);
-    const data = await graphiteGet(graphApiPath(graph_id, "/methods"), params);
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  }
-);
-
 // Get annotations
 server.tool(
   "annotations",

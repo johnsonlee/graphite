@@ -239,7 +239,6 @@ Generic JDK resource linking currently covers:
 | `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
-| `/api/methods` | List declared methods, including declared return types and indexed methods without graph nodes |
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
 | `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
 | `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
@@ -259,11 +258,18 @@ one graph. Every root non-Cypher result is grouped by `graphId`, while every
 cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
 qualified identities such as `elementId = "orders:42"`.
 
-Use Cypher for agent-driven node and call-site discovery. The legacy
-`/api/nodes` and `/api/call-sites` search routes are not available. The
-`/api/methods` route remains because its structured result preserves declared
-return types and indexed methods that do not have corresponding graph nodes.
-`/openapi.json` describes the complete supported surface.
+Use Cypher for agent-driven node, call-site, and method discovery. The legacy
+`/api/nodes`, `/api/call-sites`, and `/api/methods` search routes are not
+available. `/openapi.json` describes the complete supported surface.
+
+Declared method metadata is available on `ReturnNode`:
+
+```cypher
+MATCH (method:ReturnNode)
+RETURN method.method, method.class, method.name,
+       method.parameter_types, method.return_type
+LIMIT 50
+```
 
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
@@ -466,10 +472,9 @@ providing `graph_id` selects exactly one graph. The `cypher` tool can also use
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 
-LLMs can use tools such as openapi, graphs, cypher, methods, resources,
-resource, endpoints, c4, and annotations. Node and call-site discovery goes
-through the `cypher` tool; declared method metadata remains available through
-the dedicated `methods` tool.
+LLMs can use tools such as openapi, graphs, cypher, resources, resource,
+endpoints, c4, and annotations. Node, call-site, and method discovery goes
+through the `cypher` tool.
 
 The explore server also exposes a single C4 architecture endpoint:
 

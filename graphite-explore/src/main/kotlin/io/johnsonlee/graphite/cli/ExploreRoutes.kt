@@ -19,7 +19,6 @@ import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceEntry
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.IOException
@@ -179,21 +178,6 @@ internal class ExploreRoutes(
         app: Javalin,
         acquire: (Context) -> List<GraphLease>
     ) {
-        app.get("$API_ROOT/methods") { ctx ->
-            val pattern = MethodPattern(
-                declaringClass = ctx.queryParam(API_PARAM_CLASS),
-                name = ctx.queryParam(API_PARAM_NAME)
-            )
-            val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
-            withAllGraphs(ctx, acquire) { leases ->
-                respondGroupedLimited(ctx, leases, limit) { lease, graphLimit ->
-                    (lease.graph.methodSlice(pattern, graphLimit)
-                        ?: lease.graph.methods(pattern).take(graphLimit).toList())
-                        .map(::methodToMap)
-                }
-            }
-        }
-
         app.get("$API_ROOT/annotations") { ctx ->
             val className = requiredQueryParam(ctx, API_PARAM_CLASS) ?: return@get
             val memberName = requiredQueryParam(ctx, API_PARAM_MEMBER) ?: return@get
@@ -338,18 +322,6 @@ internal class ExploreRoutes(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun registerGraphRoutes(app: Javalin, prefix: String, provider: GraphProvider) {
-        app.get("$prefix/methods") { ctx ->
-            withGraph(ctx, provider) { graph ->
-                val pattern = MethodPattern(
-                    declaringClass = ctx.queryParam(API_PARAM_CLASS),
-                    name = ctx.queryParam(API_PARAM_NAME)
-                )
-                val limit = boundedLimit(ctx, DEFAULT_ENTITY_LIMIT, MAX_ENTITY_LIMIT)
-                val methods = graph.methodSlice(pattern, limit) ?: graph.methods(pattern).take(limit).toList()
-                ctx.json(methods.map(::methodToMap))
-            }
-        }
-
         app.get("$prefix/annotations") { ctx ->
             withGraph(ctx, provider) { graph ->
                 val className = ctx.queryParam(API_PARAM_CLASS) ?: run {
@@ -585,13 +557,6 @@ internal class ExploreRoutes(
         while (current is CompletionException && current.cause != null) current = current.cause
         return current
     }
-
-    private fun methodToMap(method: io.johnsonlee.graphite.core.MethodDescriptor): Map<String, Any?> = mapOf(
-        "signature" to method.signature,
-        API_FIELD_CLASS to method.declaringClass.className,
-        API_FIELD_NAME to method.name,
-        "returnType" to method.returnType.className
-    )
 
     private fun requiredQueryParam(ctx: Context, name: String): String? =
         ctx.queryParam(name) ?: run {
@@ -1191,14 +1156,12 @@ internal class ExploreRoutes(
         private const val HTTP_PAYLOAD_TOO_LARGE = 413
         private const val HTTP_TOO_MANY_REQUESTS = 429
 
-        private const val DEFAULT_ENTITY_LIMIT = 50
         private const val DEFAULT_EDGE_LIMIT = 200
         private const val DEFAULT_RESOURCE_LIMIT = 100
         private const val DEFAULT_ENDPOINT_LIMIT = 200
         private const val DEFAULT_OVERVIEW_LIMIT = 200
         private const val DEFAULT_CYPHER_ROW_LIMIT = 1_000
         private const val DEFAULT_SUBGRAPH_DEPTH = 2
-        private const val MAX_ENTITY_LIMIT = 5_000
         private const val MAX_EDGE_LIMIT = 2_000
         private const val MAX_RESOURCE_LIMIT = 1_000
         private const val MAX_ENDPOINT_LIMIT = 2_000

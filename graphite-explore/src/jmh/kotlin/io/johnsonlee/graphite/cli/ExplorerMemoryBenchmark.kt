@@ -103,7 +103,7 @@ open class ExplorerMemoryBenchmark {
         measureRetainedHeap(counters) {
             request("/api/graphs") +
                 request("/api/overview?limit=200") +
-                request("/api/methods?limit=200")
+                request(cypherPath("MATCH (n:ReturnNode) RETURN n LIMIT 200", 200))
         }
 
     @Benchmark
@@ -172,7 +172,7 @@ open class ExplorerMemoryBenchmark {
         val before = record()
         issue("/api/graphs")
         issue("/api/overview?limit=200")
-        issue("/api/methods?limit=200")
+        issue(cypherPath("MATCH (n:ReturnNode) RETURN n LIMIT 200", 200))
 
         repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle, ::issue) }
         forceGc()
@@ -242,8 +242,8 @@ open class ExplorerMemoryBenchmark {
         return sampled.toIntArray().takeIf { it.isNotEmpty() } ?: intArrayOf(centerNodeId)
     }
 
-    private fun cypherPath(query: String): String =
-        "/api/cypher?limit=10&query=${URLEncoder.encode(query, StandardCharsets.UTF_8)}"
+    private fun cypherPath(query: String, limit: Int = 10): String =
+        "/api/cypher?limit=$limit&query=${URLEncoder.encode(query, StandardCharsets.UTF_8)}"
 
     private fun request(path: String): Long {
         val connection = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection

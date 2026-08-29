@@ -1104,7 +1104,11 @@ class CypherFunctionsTest {
         val node = ReturnNode(NodeId.next(), method, stringType)
         val props = NodePropertyAccessor.getAllProperties(node)
         assertEquals(node.id.value, props["id"])
-        assertNotNull(props["method"])
+        assertEquals(method.signature, props["method"])
+        assertEquals("com.example.Service", props["class"])
+        assertEquals("process", props["name"])
+        assertEquals(listOf("int"), props["parameter_types"])
+        assertEquals("java.lang.String", props["return_type"])
         assertEquals("java.lang.String", props["actual_type"])
     }
 

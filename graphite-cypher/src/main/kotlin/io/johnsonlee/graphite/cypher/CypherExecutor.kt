@@ -23,6 +23,7 @@ private const val PROPERTY_ID = "id"
 private const val PROPERTY_TYPE = "type"
 private const val PROPERTY_VALUE = "value"
 private const val PROPERTY_NAME = "name"
+private const val PROPERTY_CLASS = "class"
 
 /**
  * Executes Cypher queries against a Graphite [Graph].
@@ -392,7 +393,7 @@ class CypherExecutor internal constructor(
             is FieldNode -> {
                 map[PROPERTY_NAME] = node.descriptor.name
                 map[PROPERTY_TYPE] = node.descriptor.type.className
-                map["class"] = node.descriptor.declaringClass.className
+                map[PROPERTY_CLASS] = node.descriptor.declaringClass.className
                 map["static"] = node.isStatic
             }
             is ParameterNode -> {
@@ -402,6 +403,10 @@ class CypherExecutor internal constructor(
             }
             is ReturnNode -> {
                 map["method"] = node.method.signature
+                map[PROPERTY_CLASS] = node.method.declaringClass.className
+                map[PROPERTY_NAME] = node.method.name
+                map["parameter_types"] = node.method.parameterTypes.map { it.className }
+                map["return_type"] = node.method.returnType.className
                 map["actual_type"] = node.actualType?.className
             }
             is ResourceFileNode -> {
@@ -419,7 +424,7 @@ class CypherExecutor internal constructor(
             }
             is AnnotationNode -> {
                 map[PROPERTY_NAME] = node.name
-                map["class"] = node.className
+                map[PROPERTY_CLASS] = node.className
                 map["member"] = node.memberName
                 for ((k, v) in node.values) {
                     map[k] = v
