@@ -401,6 +401,9 @@ class MethodQueryExecutorTest {
 
     @Test
     fun `parallel Method scan propagates a source failure after workers finish`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
         val finished = CountDownLatch(1)
         val goodMethod = method("com.example.Parallel", "good", emptyList(), "void")
         val good = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
@@ -413,8 +416,11 @@ class MethodQueryExecutorTest {
                 pattern: MethodPattern,
                 limit: Int,
                 scanConsumer: MethodMetadataScanConsumer
-            ): List<MethodDescriptor> =
-                listOf(goodMethod).also { finished.countDown() }.filter(pattern::matches).take(limit)
+            ): List<MethodDescriptor> {
+                started.countDown()
+                check(release.await(5, TimeUnit.SECONDS)) { "failed Method source did not run" }
+                return listOf(goodMethod).also { finished.countDown() }.filter(pattern::matches).take(limit)
+            }
         }
         val failed = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
             override fun methods(
@@ -426,8 +432,11 @@ class MethodQueryExecutorTest {
                 pattern: MethodPattern,
                 limit: Int,
                 scanConsumer: MethodMetadataScanConsumer
-            ): List<MethodDescriptor> =
+            ): List<MethodDescriptor> {
+                check(started.await(5, TimeUnit.SECONDS)) { "good Method source did not start" }
+                release.countDown()
                 error("failed Method source")
+            }
         }
 
         val error = assertFailsWith<IllegalStateException> {
