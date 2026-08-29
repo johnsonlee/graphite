@@ -578,7 +578,10 @@ class CrossGraphCypherExecutorTest {
 
                 override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
 
-                override fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean = true
+                override fun prefersSerialStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = true
             }
         }
 

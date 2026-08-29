@@ -857,7 +857,10 @@ class QueryPipeline private constructor(
                 filter.filters.none { it.property in properties } || source.graph.nodeCount(candidateType) == 0L
             ) return@any false
             val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
-            strategy?.prefersSerialStringPropertyDisjunction(candidateType) != true
+            val predicates = filter.filters.filter { it.property in properties }.map { direct ->
+                StringPropertyPredicate(direct.property, direct.transform, direct.mode, direct.expected)
+            }
+            strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
         }
     }
 

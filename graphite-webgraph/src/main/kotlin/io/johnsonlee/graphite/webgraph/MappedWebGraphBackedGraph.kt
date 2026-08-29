@@ -200,7 +200,7 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
-        if (prefersSerialStringPropertyDisjunction(type)) return null
+        if (prefersSerialStringPropertyDisjunction(type, predicates)) return null
         return sequence {
             val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
             val matchStates = predicates.map { predicate ->
@@ -264,9 +264,23 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    override fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean =
-        estimatedStringPropertyIndexBytes(nodeTypeIndex.count(type)) <= MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES &&
-            rawStringMatchStates.contains(type)
+    override fun prefersSerialStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean {
+        if (estimatedStringPropertyIndexBytes(nodeTypeIndex.count(type)) >
+            MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
+        ) return false
+        return predicates.indices.all { index ->
+            val predicate = predicates[index]
+            val duplicate = (0 until index).any { earlier ->
+                val previous = predicates[earlier]
+                previous.transform == predicate.transform && previous.mode == predicate.mode &&
+                    previous.expected == predicate.expected
+            }
+            duplicate || rawStringMatchStates.contains(type, predicate)
+        }
+    }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     private fun <T : Node> lookupStringProperty(
@@ -683,7 +697,10 @@ internal class RawStringMatchStates(
     }
 
     @Synchronized
-    fun contains(type: Class<out Node>): Boolean = states.keys.any { it.property.type == type }
+    fun contains(type: Class<out Node>, predicate: StringPropertyPredicate): Boolean = states.keys.any { key ->
+        key.property.type == type && key.transform == predicate.transform && key.mode == predicate.mode &&
+            key.expected == predicate.expected
+    }
 
     @Synchronized
     fun clear() {

@@ -126,7 +126,10 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
 
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
 interface StringPropertyDisjunctionLookupStrategy {
-    fun prefersSerialStringPropertyDisjunction(type: Class<out Node>): Boolean
+    fun prefersSerialStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
 }
 
 /**
