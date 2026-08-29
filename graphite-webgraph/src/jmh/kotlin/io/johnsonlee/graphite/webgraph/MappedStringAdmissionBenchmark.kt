@@ -48,6 +48,9 @@ open class MappedStringAdmissionBenchmark {
     fun earlyHitAfterLargeLimitScan(state: LargeLimitBenchmarkState): CypherResult = state.earlyHitWithoutIndexBuild()
 
     @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
     fun budgetedTransformedZeroHit(state: BudgetedTransformedScanBenchmarkState): Int = state.zeroHit()
 }
 
