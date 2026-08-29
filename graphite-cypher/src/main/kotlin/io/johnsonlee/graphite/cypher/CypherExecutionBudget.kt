@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.cypher
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 internal const val CANCELLATION_POLL_MASK = 1_023
 
@@ -60,18 +61,24 @@ internal class CypherWorkTracker(
     private val budget: CypherExecutionBudget,
     private val cancellationSignal: CypherCancellationSignal = CypherCancellationSignal()
 ) : GraphWorkConsumer {
-    private var remaining = budget.maxWorkUnits
+    private val remaining = AtomicLong(budget.maxWorkUnits)
 
     override fun consume() = consume(1)
 
     fun checkCancelled() = cancellationSignal.throwIfCancelled()
 
     fun consume(workUnits: Long) {
+        require(workUnits >= 0) { "workUnits must be non-negative" }
         checkCancelled()
-        if (workUnits > remaining) {
-            remaining = 0
-            throw CypherBudgetExceededException(budget.maxWorkUnits)
+        while (true) {
+            val available = remaining.get()
+            if (workUnits > available) {
+                if (remaining.compareAndSet(available, 0)) {
+                    throw CypherBudgetExceededException(budget.maxWorkUnits)
+                }
+                continue
+            }
+            if (remaining.compareAndSet(available, available - workUnits)) return
         }
-        remaining -= workUnits
     }
 }

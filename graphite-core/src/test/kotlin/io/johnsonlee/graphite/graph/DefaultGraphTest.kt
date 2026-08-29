@@ -95,6 +95,7 @@ class DefaultGraphTest {
 
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringProperty" })
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByTransformedStringProperty" })
+        assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringPropertyDisjunction" })
         assertNull(
             graph.nodesByStringProperty(
                 StringConstant::class.java,
@@ -112,6 +113,52 @@ class DefaultGraphTest {
                 "hello"
             )
         )
+        val predicate = StringPropertyPredicate(
+            "value",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "hello"
+        )
+        assertNull(graph.nodesByStringPropertyDisjunction(StringConstant::class.java, listOf(predicate)))
+        assertNull(
+            graph.nodesByStringPropertyDisjunction(
+                StringConstant::class.java,
+                listOf(predicate),
+                Int.MAX_VALUE,
+                GraphWorkConsumer {}
+            )
+        )
+
+        val lookup = object : Graph by graph, WorkAwareStringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T>? = graph.nodes(type).take(limit)
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer
+            ): Sequence<T>? = graph.nodes(type).onEach { workConsumer.consume() }.take(limit)
+        }
+        assertEquals(
+            listOf("hello"),
+            lookup.nodesByStringPropertyDisjunction(StringConstant::class.java, listOf(predicate))
+                .orEmpty().map { it.value }.toList()
+        )
+        var work = 0
+        assertEquals(
+            listOf("hello"),
+            lookup.nodesByStringPropertyDisjunction(
+                StringConstant::class.java,
+                listOf(predicate),
+                Int.MAX_VALUE,
+                GraphWorkConsumer { work++ }
+            ).orEmpty().map { it.value }.toList()
+        )
+        assertEquals(1, work)
     }
 
     // ========================================================================

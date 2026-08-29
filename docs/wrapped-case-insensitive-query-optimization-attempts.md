@@ -194,3 +194,256 @@ adjacent regression: Android mapped load is `149.418 -> 139.761 ms/op`, the
 five mapped query benchmarks range from `-12.6%` to `+6.7%`, and
 `GraphEndToEndBenchmark.android_build_save_load_query` is
 `25,294.562 -> 24,900.711 ms/op` (`-1.6%`).
+
+### 2026-08-29 - Attempt 006: Fuse same-node string-property disjunctions
+
+The mapped backend previously evaluated the four caller/callee predicates as
+four independent storage lookups (or fell back to deserializing a complete
+node stream when a cold unbounded lookup was not admitted). It now exposes an
+optional exact disjunction capability. The Cypher fast path uses it only when
+the backend supports every property, preserving the existing ordered fallback
+for dynamic and unsupported properties. One fused scan inspects each candidate
+node ID once, emits each matching node once in canonical order, and charges one
+work unit per inspected candidate. Predicates with the same transform, operator,
+and literal share their string-ID match state even when they target different
+properties.
+
+Preliminary same-machine, cold single-shot checks on the four real fixtures:
+
+| Distribution | `main` | Fused scan | Speedup | Allocation reduction |
+|---|---:|---:|---:|---:|
+| dense method `CONTAINS` | `2.050 s` | `1.703 s` | `1.20x` | `10.8%` |
+| first/last bimodal prefix | `3.352 s` | `2.279 s` | `1.47x` | `29.1%` |
+| zero-hit broad `CONTAINS` | `0.831 s` | `0.537 s` | `1.55x` | `21.6%` |
+
+**Conclusion:** retained. The capability removes redundant storage work and
+reduces allocation without changing query semantics, but it is not sufficient
+for the 10x multi-graph objective. The next attempt adds bounded cross-graph
+execution around this fused primitive while retaining ordered global merge,
+budget, cancellation, and provenance semantics.
+
+### 2026-08-29 - Attempt 007: Bounded ordered cross-graph scans
+
+The direct disjunction path now scans independent graph instances on a private
+bounded executor, while the caller merges rows strictly by source ordinal. A
+worker pauses after at most `LIMIT` local distinct rows. After the global rows
+are known, it drains its remaining candidates only to add provenance for those
+selected visible values. This preserves first-seen row order and complete
+cross-graph provenance without retaining every matching row. Unsupported or
+non-deterministic projections stay serial; the same graph instance is locked
+across workers; work accounting uses one atomic CAS counter; and the first
+failure interrupts and joins every submitted scan.
+
+The real 36-graph zero-hit case established why logical CPU count is not a safe
+default on this mmap/allocation-bound workload:
+
+| Parallelism | Latency | Relative to serial | Allocation |
+|---:|---:|---:|---:|
+| 1 | `3.038 s` | `1.00x` | `11.24 GB/op` |
+| 2 | `2.708 s` | `1.12x` | `11.51 GB/op` |
+| 4 | `4.988 s` | `0.61x` | `11.52 GB/op` |
+| 8 | `10.207 s` | `0.30x` | `11.44 GB/op` |
+| 16 (`NCPU`) | `19.697 s` | `0.15x` | `12.16 GB/op` |
+
+The default is therefore two workers, still bounded by available processors;
+`graphite.cypher.directStringParallelism` remains available for controlled
+deployment and benchmark experiments. On the four real fixtures, two workers
+produce `0.535–2.081 s/op`. Five of eight distributions clear the fixed-baseline
+10x target; first-only (`9.26x`), last-only (`8.84x`), and first/last bimodal
+(`7.83x`) show that concurrency alone cannot satisfy the gate.
+
+**Conclusion:** retained at parallelism two. It improves the dense case from
+`1.707` to `1.169 s/op` and reduces its allocation from `5.23` to `4.36 GB/op`,
+while higher fan-out is decisively rejected. The remaining work targets
+per-graph string decode/lowercase allocation rather than adding threads.
+
+### 2026-08-29 - Attempt 008: Reusable ASCII lowercase comparison buffer
+
+Tested decoding front-coded strings into one reusable `MutableString` and
+performing exact allocation-free ASCII lowercase `STARTS WITH`/`ENDS WITH`/
+`CONTAINS` comparisons, with the existing Kotlin `String.lowercase()` path for
+non-ASCII values. A new persisted-graph test pins mixed ASCII, Unicode `İ`, and
+the rule that the expected literal itself is not normalized.
+
+Against Attempt 007 at parallelism two, zero-hit improved from `0.535` to
+`0.489 s/op` and allocation fell from `0.980` to `0.902 GB/op`. Dense improved
+only from `1.169` to `1.120 s/op`; early, first/last bimodal, broad, and skewed
+cases regressed to `1.392`, `2.450`, `1.399`, and `1.554 s/op` respectively.
+Their multi-gigabyte allocation barely changed because it is dominated by
+materializing and projecting matching call-site nodes, not lowercase strings.
+
+**Conclusion:** rejected and implementation removed. The Unicode/exactness test
+is retained. The next attempt avoids materializing matches whose projected
+visible values cannot contribute to the already selected global LIMIT rows.
+
+### 2026-08-29 - Attempt 009: Selected-row projection matcher
+
+Once ordered merging establishes the global `DISTINCT ... LIMIT` rows, later
+graph scans no longer build a projected map and provenance set for every match.
+They compute the selected projection's map hash directly, then perform exact
+column equality only within the matching hash bucket. Each scanner reuses its
+projection-value array, and duplicate return aliases retain the normal
+last-write projection semantics. Hash collisions therefore affect lookup cost,
+not correctness.
+
+At parallelism two, allocation fell by `15–24%` on every real hit-bearing
+distribution: dense from `4.36` to `3.36 GB/op`, early from `3.68` to
+`2.80 GB/op`, broad from `4.63` to `3.50 GB/op`, and bimodal from `5.99` to
+`4.97 GB/op`; the zero-hit case remained `0.98 GB/op`. A follow-up cursor that
+computes each projection value once per match reduced bimodal further to
+`4.62 GB/op`. One-fork spot checks measured early, bimodal, and late at
+`1.214`, `1.798`, and `1.175 s/op`, respectively. Late now clears the fixed
+10x baseline, while early and bimodal remain just below it.
+
+**Conclusion:** retained. It removes allocation proportional to the number of
+non-selected matches without changing row order, distinctness, provenance, or
+fallback behavior. The remaining work must avoid matched-node materialization
+or use distribution-aware scheduling; a larger default worker pool is not
+supported by the 36-graph data.
+
+### 2026-08-29 - Attempt 010: Raw storage projection
+
+Tested a mapped-store capability that returned only the raw string properties
+needed by `RETURN`, bypassing complete `CallSiteNode` deserialization. The
+parallel scanner consumed these projected arrays directly and retained the
+materialized-node fallback for every other graph implementation and expression.
+
+This did not remove the dominant work. At parallelism two, early regressed from
+`1.214` to `1.785 s/op`, bimodal moved from `1.798` to `1.857 s/op`, and late
+from `1.175` to `1.202 s/op`. Allocation was still `2.84`, `4.58`, and
+`2.90 GB/op`: phase-two provenance completion continued creating and decoding
+a four-column array for every filter match, even though nearly every match was
+not one of the globally selected rows.
+
+**Conclusion:** rejected and implementation removed. The next storage
+primitive should test selected projections during the raw scan and return only
+which selected rows occurred, rather than projecting every filter match.
+
+### 2026-08-29 - Attempt 011: Selected-projection storage pushdown
+
+Tested the narrower primitive proposed by Attempt 010. It resumed after the
+last yielded canonical node ID, compared raw string IDs against only the global
+selected rows, and returned a boolean hit vector. Focused tests covered resume
+position, exact selected/missing values, source order, and provenance.
+
+The real fixture result showed that phase-two projection was still not the
+dominant cold cost. Early, bimodal, and late measured `1.242`, `1.885`, and
+`1.332 s/op`, with `2.87`, `5.06`, and `2.90 GB/op` allocated. Every remaining
+node still had to evaluate the cold lowercase filter, which decodes and
+lowercases each previously unseen string-table value. Avoiding matched-node
+projection therefore could not materially change the total.
+
+**Conclusion:** rejected and implementation removed. The next attempt targets
+the cold lowercase predicate itself while retaining exact Unicode behavior.
+
+### 2026-08-29 - Attempt 012: Direct ASCII lowercase matching
+
+Tested matching decoded all-ASCII strings by lowercasing each character during
+comparison, avoiding the second `String` allocated by `lowercase()`. Any
+non-ASCII input retained the existing Kotlin lowercase path, including Unicode
+expansion behavior and the rule that the expected literal is not normalized.
+
+The allocation reduction was small because front-coded string decoding still
+allocates the source string. Early remained `1.213 s/op`, bimodal measured
+`1.822 s/op`, and broad regressed to `1.430 s/op`; zero-hit remained
+`0.529 s/op`. This repeated Attempt 008's conclusion without its mutable-buffer
+decode overhead: lowercase allocation alone is not the remaining bottleneck.
+
+**Conclusion:** rejected and implementation removed. Phase-two scheduling has
+a clearer avoidable stall: fixed-size waves leave a worker idle while waiting
+for the slowest graph in the current wave.
+
+### 2026-08-29 - Attempt 013: Work-conserving provenance join
+
+Phase one remains source-ordered and wave-bounded because later graph work can
+become unnecessary once the global limit is known. Phase two is different:
+every graph must finish provenance discovery. It now submits all remaining
+graph tasks to the same fixed two-worker executor at once. Completion of any
+task immediately admits the next graph, eliminating the barrier between fixed
+`[0,1]`, `[2,3]` waves without increasing concurrency. A deterministic test
+holds one provenance task open and proves that a third graph starts as soon as
+the other worker becomes free.
+
+One-fork cold real-fixture checks now clear the fixed pre-PR-95 10x baseline in
+all eight distributions:
+
+| Distribution | Candidate | Fixed-baseline speedup |
+|---|---:|---:|
+| broad | `1.062 s` | `13.11x` |
+| dense | `0.919 s` | `15.25x` |
+| early | `1.102 s` | `10.44x` |
+| bimodal | `1.139 s` | `14.30x` |
+| late | `1.181 s` | `10.75x` |
+| middle | `1.190 s` | `12.03x` |
+| skewed | `1.072 s` | `14.90x` |
+| zero hit | `0.536 s` | `28.37x` |
+
+**Conclusion:** retained. This is a bounded fork/join schedule with parallelism
+two, not an `NCPU` pool. It improves load balance while preserving exact work
+accounting, cancellation joins, source-selected row order, and complete
+provenance.
+
+### 2026-08-29 - Attempt 014: Fair and reentrant work-conserving join
+
+Attempt 013 removed the phase-two wave barrier, but its first implementation
+queued every graph in the shared two-worker executor. One large request could
+therefore place all of its graph tasks ahead of a later request. A graph lookup
+callback that recursively executed another qualifying cross-graph query could
+also make both workers wait for nested work in the same pool.
+
+The retained scheduler now keeps at most two tasks from each request in flight
+and admits one replacement whenever a task completes. Nested queries detected
+on a scan worker use the existing serial path. Per-graph exclusion uses a weak,
+identity-stable interruptible lock instead of the graph monitor, so sibling
+failure can cancel and join a task waiting behind another request. Raw fallback
+node scans also poll interruption before filtering zero-hit candidates. Tests
+cover nested parallel callbacks, rolling admission beyond two graphs, and
+failure while another thread holds the same graph. The shared budget CAS loop
+now retries a raced exhaustion update before reporting the limit exceeded.
+
+Formal one-warmup/three-measurement real-fixture results stayed comfortably
+above the fixed pre-PR-95 10x floor:
+
+| Distribution | Candidate | Fixed-baseline speedup |
+|---|---:|---:|
+| broad | `0.659 s/op` | `21.12x` |
+| dense | `0.742 s/op` | `18.90x` |
+| early | `0.900 s/op` | `12.78x` |
+| bimodal | `0.939 s/op` | `17.34x` |
+| late | `0.888 s/op` | `14.30x` |
+| middle | `0.787 s/op` | `18.18x` |
+| skewed | `0.892 s/op` | `17.91x` |
+| zero hit | `0.296 s/op` | `51.33x` |
+
+The independent 36-real-graph zero-hit gate measured `2.401 s/op`. Its setup
+also runs a positive query that returns the exact 36 ordered graph identities,
+preventing an empty-result shortcut from masquerading as a latency win.
+
+**Conclusion:** retained and supersedes Attempt 013's submit-all queue. It keeps
+two-way scan parallelism without cross-request FIFO monopolization or nested
+pool deadlock.
+
+### 2026-08-29 - Attempt 015: Lookup-state-driven parallel admission
+
+The first GitHub Actions run showed that executor overhead is material on tiny
+warm graphs: the four-graph synthetic cache-hit case moved from `0.194 ms/op`
+on `main` to `0.753 ms/op`, even though the cold path improved. Those fixtures
+contain only 2,000 relevant call-site nodes per graph and are not representative
+of the production scans that motivated parallel execution.
+
+Mapped graphs now expose whether the relevant string state is warm and the
+property index fits within its retained-memory budget. If every relevant graph
+prefers that indexed path, the pipeline stays serial and avoids worker setup.
+Cold, oversized, unknown, and unordered lookups remain eligible for fused
+storage scans and bounded two-worker parallelism. The decision follows actual
+lookup state instead of a graph-count or CPU-count heuristic.
+
+The synthetic gate now samples the geometric `1/4/16/64` curve with the normal
+50% fixed-baseline floor and a 15% moving-base guard. Because every warm result
+is sub-millisecond, changes below an independent 0.5 ms absolute floor are
+reported as noise; the original +0.559 ms four-graph regression would still
+fail. The 10x requirement remains on heterogeneous real fixtures and the
+independent 36-real-graph row.
+
+**Conclusion:** retained. Small cached queries avoid fused and fork-join setup,
+while real multi-graph searches keep bounded parallel scans.

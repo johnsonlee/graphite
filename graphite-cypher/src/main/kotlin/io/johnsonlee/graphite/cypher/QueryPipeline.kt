@@ -14,12 +14,26 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import java.util.PriorityQueue
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
+import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorCompletionService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
@@ -29,6 +43,53 @@ private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
 private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
+private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
+private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
+
+private val directStringWorkerNumber = AtomicInteger()
+private val directStringWorkerActive = ThreadLocal.withInitial { false }
+private val directStringGraphReferenceQueue = ReferenceQueue<Graph>()
+private val directStringGraphLocks = mutableMapOf<IdentityWeakGraphReference, ReentrantLock>()
+
+internal fun directStringGraphLock(graph: Graph): ReentrantLock = synchronized(directStringGraphLocks) {
+    while (true) {
+        val expired = directStringGraphReferenceQueue.poll() as? IdentityWeakGraphReference ?: break
+        directStringGraphLocks.remove(expired)
+    }
+    directStringGraphLocks[IdentityWeakGraphReference(graph)] ?: ReentrantLock().also { lock ->
+        directStringGraphLocks[IdentityWeakGraphReference(graph, directStringGraphReferenceQueue)] = lock
+    }
+}
+
+private class IdentityWeakGraphReference(
+    graph: Graph,
+    queue: ReferenceQueue<Graph>? = null
+) : WeakReference<Graph>(graph, queue) {
+    private val identityHash = System.identityHashCode(graph)
+
+    override fun hashCode(): Int = identityHash
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        val graph = get() ?: return false
+        return other is IdentityWeakGraphReference && graph === other.get()
+    }
+}
+
+private val directStringParallelism: Int by lazy {
+    val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+        ?.toIntOrNull()
+        ?.coerceIn(1, processors)
+        ?: minOf(DEFAULT_DIRECT_STRING_PARALLELISM, processors)
+}
+private val directStringExecutor by lazy {
+    Executors.newFixedThreadPool(directStringParallelism) { runnable ->
+        Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
+            isDaemon = true
+        }
+    }
+}
 
 private class WorkTrackingSequence<T>(
     private val source: Sequence<T>,
@@ -739,6 +800,27 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int
     ): CypherResult {
+        if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
+            return executeDirectStringDisjunctionInParallel(
+                nodeClass,
+                variable,
+                filter,
+                items,
+                columns,
+                limit
+            )
+        }
+        return executeDirectStringDisjunctionSerial(nodeClass, variable, filter, items, columns, limit)
+    }
+
+    private fun executeDirectStringDisjunctionSerial(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int
+    ): CypherResult {
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in sources) {
             for (node in directStringCandidates(source.graph, nodeClass, filter)) {
@@ -752,10 +834,303 @@ class QueryPipeline private constructor(
         return CypherResult(columns, rows.values.toList())
     }
 
+    private fun canExecuteDirectStringDisjunctionInParallel(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>
+    ): Boolean = qualified && sources.size > 1 && directStringParallelism > 1 &&
+        !directStringWorkerActive.get() && shouldParallelizeStringScan(nodeClass, filter) && items.all { item ->
+        when (val expression = item.expression) {
+            is CypherExpr.Literal -> true
+            is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable)
+            else -> false
+        }
+    }
+
+    private fun shouldParallelizeStringScan(
+        nodeClass: Class<out Node>,
+        filter: DirectStringDisjunction
+    ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
+        if (!nodeClass.isAssignableFrom(candidateType)) return@any false
+        val predicates = filter.filters
+            .filter { it.property in properties }
+            .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
+        predicates.isNotEmpty() && sources.any { source ->
+            if (source.graph.nodeCount(candidateType) == 0L) return@any false
+            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
+            strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
+        }
+    }
+
+    /**
+     * Scans independent graphs concurrently but merges rows in source order.
+     * Each scanner pauses after a bounded batch of local distinct rows. Once
+     * the global LIMIT is known, workers drain only for those selected values
+     * so later occurrences can add complete provenance without retaining an
+     * unbounded per-graph result set.
+     */
+    private fun executeDirectStringDisjunctionInParallel(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int
+    ): CypherResult {
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val scanners = sources.map { source ->
+            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker)
+        }
+        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        var waveStart = 0
+        while (waveStart < scanners.size && rows.size < limit) {
+            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + directStringParallelism))
+            val initial = runDirectStringTasks(wave.map { scanner ->
+                { scanner.nextDistinctRows(limit) }
+            })
+            for (index in wave.indices) {
+                var batch = initial[index]
+                mergeDirectStringBatch(rows, batch.rows, limit)
+                while (rows.size < limit && !batch.exhausted) {
+                    batch = wave[index].nextDistinctRows(limit)
+                    mergeDirectStringBatch(rows, batch.rows, limit)
+                }
+            }
+            waveStart += wave.size
+        }
+
+        if (rows.size >= limit) {
+            val selected = rows.keys.toSet()
+            val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
+            val hits = runDirectStringTasks(scanners.map { scanner ->
+                { scanner.collectRemainingSelectedRows(selectedMatcher) }
+            })
+            hits.forEachIndexed { index, visibleRows ->
+                val graphId = scanners[index].source.id
+                visibleRows.forEach { visible ->
+                    val row = rows.getValue(visible)
+                    @Suppress("UNCHECKED_CAST")
+                    val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
+                    row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
+                }
+            }
+        }
+        return CypherResult(columns, rows.values.toList())
+    }
+
+    private fun mergeDirectStringBatch(
+        target: LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        rows: List<Map<String, Any?>>,
+        limit: Int
+    ) {
+        rows.forEach { row -> addDistinctRow(target, row, limit) }
+    }
+
+    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
+    private fun <T> runDirectStringTasks(tasks: List<() -> T>): List<T> {
+        if (tasks.size == 1) return listOf(tasks.single().invoke())
+        val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
+        val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
+        val completions = arrayOfNulls<CountDownLatch>(tasks.size)
+        val started = arrayOfNulls<AtomicBoolean>(tasks.size)
+        fun submit(index: Int) {
+            val completion = CountDownLatch(1)
+            val taskStarted = AtomicBoolean()
+            completions[index] = completion
+            started[index] = taskStarted
+            futures[index] = completionService.submit(Callable {
+                if (!taskStarted.compareAndSet(false, true)) {
+                    throw java.util.concurrent.CancellationException()
+                }
+                val previouslyActive = directStringWorkerActive.get()
+                directStringWorkerActive.set(true)
+                try {
+                    IndexedValue(index, tasks[index]())
+                } finally {
+                    if (previouslyActive) directStringWorkerActive.set(true) else directStringWorkerActive.remove()
+                    completion.countDown()
+                }
+            })
+        }
+        return try {
+            var nextTask = 0
+            repeat(minOf(tasks.size, directStringParallelism)) { submit(nextTask++) }
+            val results = arrayOfNulls<Any?>(tasks.size)
+            repeat(tasks.size) {
+                val result = completionService.take().get()
+                results[result.index] = result.value
+                if (nextTask < tasks.size) submit(nextTask++)
+            }
+            @Suppress("UNCHECKED_CAST")
+            results.map { it as T }
+        } catch (error: Throwable) {
+            futures.forEachIndexed { index, future ->
+                val taskStarted = started[index]
+                val completion = completions[index]
+                if (future != null && taskStarted != null && completion != null) {
+                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
+                }
+            }
+            awaitDirectStringTasks(completions.filterNotNull())
+            val cause = (error as? ExecutionException)?.cause ?: error
+            when (cause) {
+                is RuntimeException -> throw cause
+                is Error -> throw cause
+                else -> throw IllegalStateException("Parallel graph scan failed", cause)
+            }
+        }
+    }
+
+    private fun awaitDirectStringTasks(completions: List<CountDownLatch>) {
+        var interrupted = false
+        completions.forEach { completion ->
+            while (true) {
+                try {
+                    completion.await()
+                    break
+                } catch (_: InterruptedException) {
+                    interrupted = true
+                }
+            }
+        }
+        if (interrupted) Thread.currentThread().interrupt()
+    }
+
+    private inner class DirectStringSourceScanner(
+        val source: CypherGraph,
+        private val nodeClass: Class<out Node>,
+        private val filter: DirectStringDisjunction,
+        private val variable: String,
+        private val items: List<ReturnItem>,
+        private val columns: List<String>,
+        private val tracker: CypherWorkTracker?
+    ) {
+        private val graphLock = directStringGraphLock(source.graph)
+        private val localRows = HashSet<Map<String, Any?>>()
+        private val iterator by lazy {
+            directStringCandidates(source.graph, nodeClass, filter, tracker).iterator()
+        }
+        private var exhausted = false
+        private var inspected = 0
+
+        fun nextDistinctRows(maxRows: Int): DirectStringScanBatch = withGraphLock {
+            val rows = mutableListOf<Map<String, Any?>>()
+            while (!exhausted && rows.size < maxRows) {
+                if (!iterator.hasNext()) {
+                    exhausted = true
+                    break
+                }
+                val row = projectParallelSafeNode(iterator.next())
+                val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+                if (localRows.add(visible)) rows += row
+                pollInterrupted()
+            }
+            DirectStringScanBatch(rows, exhausted)
+        }
+
+        fun collectRemainingSelectedRows(
+            selected: DirectStringSelectedRowMatcher
+        ): Set<Map<String, Any?>> =
+            withGraphLock {
+                val hits = mutableSetOf<Map<String, Any?>>()
+                val matcher = selected.cursor(source)
+                while (!exhausted) {
+                    if (!iterator.hasNext()) {
+                        exhausted = true
+                        break
+                    }
+                    matcher.match(iterator.next())?.let(hits::add)
+                    pollInterrupted()
+                }
+                hits
+            }
+
+        private fun <T> withGraphLock(action: () -> T): T {
+            try {
+                graphLock.lockInterruptibly()
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw CypherQueryCancelledException()
+            }
+            return try {
+                action()
+            } finally {
+                graphLock.unlock()
+            }
+        }
+
+        private fun projectParallelSafeNode(node: Node): Map<String, Any?> {
+            val candidate = nodeValue(source, node)
+            return mutableMapOf<String, Any?>().apply {
+                items.indices.forEach { index ->
+                    this[columns[index]] = when (val expression = items[index].expression) {
+                        is CypherExpr.Literal -> expression.value
+                        is CypherExpr.Property -> nodeProperty(candidate, expression.propertyName)
+                        else -> error("Unsafe expression reached parallel string projection")
+                    }
+                }
+                put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+            }
+        }
+
+        private fun pollInterrupted() {
+            inspected++
+            if ((inspected and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CypherQueryCancelledException()
+            }
+        }
+    }
+
+    private data class DirectStringScanBatch(
+        val rows: List<Map<String, Any?>>,
+        val exhausted: Boolean
+    )
+
+    private inner class DirectStringSelectedRowMatcher(
+        selected: Set<Map<String, Any?>>,
+        items: List<ReturnItem>,
+        columns: List<String>
+    ) {
+        private val rowsByHash = selected.groupBy { it.hashCode() }
+        private val projections = LinkedHashMap<String, CypherExpr>().apply {
+            items.indices.forEach { index -> this[columns[index]] = items[index].expression }
+        }.entries.map { (column, expression) -> column to expression }
+
+        fun cursor(source: CypherGraph): Cursor = Cursor(source)
+
+        inner class Cursor(private val source: CypherGraph) {
+            private val values = arrayOfNulls<Any?>(projections.size)
+
+            fun match(node: Node): Map<String, Any?>? {
+                val candidate = nodeValue(source, node)
+                var hash = 0
+                projections.indices.forEach { index ->
+                    val (column, expression) = projections[index]
+                    val value = projectionValue(candidate, expression)
+                    values[index] = value
+                    hash += column.hashCode() xor (value?.hashCode() ?: 0)
+                }
+                return rowsByHash[hash]?.firstOrNull { row ->
+                    projections.indices.all { index ->
+                        row[projections[index].first] == values[index]
+                    }
+                }
+            }
+
+            private fun projectionValue(candidate: Any, expression: CypherExpr): Any? = when (expression) {
+                is CypherExpr.Literal -> expression.value
+                is CypherExpr.Property -> nodeProperty(candidate, expression.propertyName)
+                else -> error("Unsafe expression reached selected-row matcher")
+            }
+        }
+    }
+
     private fun directStringCandidates(
         graph: Graph,
         nodeClass: Class<out Node>,
-        disjunction: DirectStringDisjunction
+        disjunction: DirectStringDisjunction,
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
     ): Sequence<Node> {
         val candidateSequences = mutableListOf<Sequence<Node>>()
         for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
@@ -767,16 +1142,28 @@ class QueryPipeline private constructor(
                 ?.takeIf { it < Int.MAX_VALUE }
                 ?.toInt()
                 ?: Int.MAX_VALUE
+            val fused = stringPropertyDisjunctionCandidates(
+                graph,
+                candidateType,
+                filters,
+                completeScanLimit,
+                tracker
+            )
+            if (fused != null) {
+                candidateSequences += fused
+                continue
+            }
             val accelerated = filters.map { filter ->
                 stringPropertyCandidates(
                     graph,
                     candidateType,
                     filter,
-                    completeScanLimit
+                    completeScanLimit,
+                    tracker
                 )
             }
             val candidates: Sequence<Node> = if (accelerated.any { it == null }) {
-                trackWork(graph.nodes(candidateType)).filter(disjunction::matches)
+                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter(disjunction::matches)
             } else if (graph is StringPropertyLookupOrder) {
                 mergeNodeSequences(accelerated.filterNotNull(), graph::stringPropertyNodeOrder)
             } else {
@@ -788,6 +1175,16 @@ class QueryPipeline private constructor(
             mergeNodeSequences(candidateSequences, graph::stringPropertyNodeOrder)
         } else {
             candidateSequences.asSequence().flatten()
+        }
+    }
+
+    private fun <T> interruptible(values: Sequence<T>): Sequence<T> = sequence {
+        var inspected = 0
+        for (value in values) {
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CypherQueryCancelledException()
+            }
+            yield(value)
         }
     }
 
@@ -1551,11 +1948,14 @@ class QueryPipeline private constructor(
             trackWork(graph.nodes(type)).map { it as Any }
         }
 
-    private fun <T> trackWork(values: Sequence<T>): Sequence<T> {
+    private fun <T> trackWork(
+        values: Sequence<T>,
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
+    ): Sequence<T> {
         return if (!workTrackingEnabled) {
             values
         } else {
-            activeWorkTracker.get()?.let { tracker -> WorkTrackingSequence(values, tracker) } ?: values
+            tracker?.let { WorkTrackingSequence(values, it) } ?: values
         }
     }
 
@@ -1568,9 +1968,9 @@ class QueryPipeline private constructor(
         graph: Graph,
         type: Class<T>,
         filter: DirectStringFilter,
-        limit: Int
+        limit: Int,
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
     ): Sequence<T>? {
-        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         return if (filter.transform == null && tracker != null) {
             graph.nodesByStringProperty(type, filter.property, filter.mode, filter.expected, limit, tracker)
         } else if (filter.transform == null) {
@@ -1594,6 +1994,23 @@ class QueryPipeline private constructor(
                 filter.expected,
                 limit
             )
+        }
+    }
+
+    private fun <T : Node> stringPropertyDisjunctionCandidates(
+        graph: Graph,
+        type: Class<T>,
+        filters: List<DirectStringFilter>,
+        limit: Int,
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
+    ): Sequence<T>? {
+        val predicates = filters.map { filter ->
+            StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
+        }
+        return if (tracker == null) {
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit)
+        } else {
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit, tracker)
         }
     }
 

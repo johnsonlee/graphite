@@ -17,10 +17,13 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
@@ -36,6 +39,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.util.LinkedHashMap
+import java.util.concurrent.CancellationException
 
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
@@ -82,6 +86,8 @@ internal class MappedWebGraphBackedGraph(
 ) : Graph,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
+    WorkAwareStringPropertyDisjunctionLookup,
+    StringPropertyDisjunctionLookupStrategy,
     StringPropertyLookupOrder,
     Closeable {
 
@@ -171,6 +177,110 @@ internal class MappedWebGraphBackedGraph(
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>? = lookupStringProperty(type, property, transform, mode, expected, limit, workConsumer)
+
+    override fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int
+    ): Sequence<T>? = lookupStringPropertyDisjunction(type, predicates, limit, workConsumer = null)
+
+    override fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): Sequence<T>? = lookupStringPropertyDisjunction(type, predicates, limit, workConsumer)
+
+    @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")
+    private fun <T : Node> lookupStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
+        if (limit <= 0) return emptySequence()
+        if (prefersSerialStringPropertyDisjunction(type, predicates)) return null
+        return sequence {
+            val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
+            val matchStates = predicates.map { predicate ->
+                val predicateKey = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                sharedStates.getOrPut(predicateKey) {
+                    rawStringMatchStates.stateFor(
+                        RawStringMatchKey(
+                            StringPropertyKey(type, predicate.property),
+                            predicate.transform,
+                            predicate.mode,
+                            predicate.expected
+                        ),
+                        stringTable.size()
+                    )
+                }
+            }
+            var yielded = 0
+            var inspected = 0
+            for (nodeId in nodeTypeIndex.ids(type)) {
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException("Mapped string-property scan interrupted")
+                }
+                workConsumer?.consume()
+                val matches = predicates.indices.any { index ->
+                    val predicate = predicates[index]
+                    val stringId = rawStringPropertyIndex(nodeId, type, predicate.property) ?: return@any false
+                    val states = matchStates[index]
+                    if (states == null) {
+                        stringMatches(
+                            stringTable.get(stringId),
+                            predicate.transform,
+                            predicate.mode,
+                            predicate.expected
+                        )
+                    } else {
+                        when (states[stringId]) {
+                            RAW_STRING_MATCH -> true
+                            RAW_STRING_MISS -> false
+                            else -> stringMatches(
+                                stringTable.get(stringId),
+                                predicate.transform,
+                                predicate.mode,
+                                predicate.expected
+                            ).also { matched ->
+                                states[stringId] = if (matched) RAW_STRING_MATCH else RAW_STRING_MISS
+                            }
+                        }
+                    }
+                }
+                if (matches) {
+                    val matchedNode = node(NodeId(nodeId)) as? T
+                    if (matchedNode != null) {
+                        yield(matchedNode)
+                        yielded++
+                        if (yielded >= limit) break
+                    }
+                }
+            }
+        }
+    }
+
+    override fun prefersSerialStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean {
+        if (estimatedStringPropertyIndexBytes(nodeTypeIndex.count(type)) >
+            MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
+        ) return false
+        return predicates.indices.all { index ->
+            val predicate = predicates[index]
+            val duplicate = (0 until index).any { earlier ->
+                val previous = predicates[earlier]
+                previous.transform == predicate.transform && previous.mode == predicate.mode &&
+                    previous.expected == predicate.expected
+            }
+            duplicate || rawStringMatchStates.contains(type, predicate)
+        }
+    }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     private fun <T : Node> lookupStringProperty(
@@ -532,6 +642,7 @@ private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
 private const val STRING_HASH_FACTOR = 31
 private const val RAW_STRING_MISS: Byte = 1
 private const val RAW_STRING_MATCH: Byte = 2
+private const val RAW_SCAN_INTERRUPTION_POLL_MASK = 1_023
 
 private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
     STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +
@@ -557,6 +668,12 @@ internal data class RawStringMatchKey(
     val expected: String
 )
 
+private data class StringPredicateKey(
+    val transform: StringValueTransform?,
+    val mode: StringMatchMode,
+    val expected: String
+)
+
 /** Shares predicate state across iterators and enforces one aggregate retained-memory bound per graph. */
 internal class RawStringMatchStates(
     private val maxRetainedBytes: Long = MAX_RAW_STRING_MATCH_STATE_BYTES.toLong(),
@@ -577,6 +694,12 @@ internal class RawStringMatchStates(
                 bytes += requiredBytes
             }
         }
+    }
+
+    @Synchronized
+    fun contains(type: Class<out Node>, predicate: StringPropertyPredicate): Boolean = states.keys.any { key ->
+        key.property.type == type && key.transform == predicate.transform && key.mode == predicate.mode &&
+            key.expected == predicate.expected
     }
 
     @Synchronized

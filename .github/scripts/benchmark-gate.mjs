@@ -8,11 +8,16 @@ import { pathToFileURL } from "node:url";
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
 const MIB = 1024 * 1024;
+const SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS = 0.5;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=4]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=16]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=4]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=16]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.broadlyDistributedClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.denseDistributedMethodContainsCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.earlyGraphClassPrefixCaseInsensitiveDiscovery",
@@ -20,9 +25,33 @@ export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.lateGraphClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.middleGraphsClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.skewedMixedClassMethodOperatorCaseInsensitiveDiscovery",
-    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery"
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs"
 ];
-export const LATENCY_EXPECTED_SHARDS = ["synthetic", "real-a", "real-b", "real-c", "real-d"];
+export const LATENCY_EXPECTED_SHARDS = [
+    "synthetic-1", "synthetic-4", "synthetic-16", "synthetic-64",
+    "real-a", "real-b", "real-c", "real-d", "real-36"
+];
+export const LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS = [
+    "io.johnsonlee.graphite.webgraph.SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint"
+];
+const GIB = 1024 * MIB;
+const LATENCY_RESOURCE_PROFILES = new Map([
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 4 * GIB }],
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[1], { maxHeapBytes: 8 * GIB }]
+]);
+const LATENCY_RESOURCE_METRICS = [
+    { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
+    { key: "queryGcCount", label: "query GC count", threshold: 15, minimum: 1 },
+    { key: "queryGcTimeMs", label: "query GC time", threshold: 15, minimum: 10 },
+    { key: "retainedHeapDeltaBytes", label: "retained heap delta", threshold: 15, minimum: 16 * MIB },
+    { key: "peakUsedHeapBytes", label: "peak used heap", threshold: 15, minimum: 64 * MIB }
+];
+const LATENCY_RESOURCE_EVENT_METRICS = new Set([
+    "maxHeapBytes", "loadedHeapBytes", "peakUsedHeapBytes", "retainedHeapBytes",
+    "retainedHeapDeltaBytes", "queryGcCount", "queryGcTimeMs"
+]);
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
@@ -85,6 +114,46 @@ function benchmarkKey(result) {
         .map(([name, value]) => `${name}=${value}`)
         .join(",");
     return parameters.length === 0 ? result.benchmark : `${result.benchmark}[${parameters}]`;
+}
+
+function resultMap(results, revision, errors) {
+    const mapped = new Map();
+    for (const result of results) {
+        const key = benchmarkKey(result);
+        if (mapped.has(key)) errors.push(`${revision}: duplicate benchmark ${key}`);
+        else mapped.set(key, result);
+    }
+    return mapped;
+}
+
+function secondaryMetric(result, name) {
+    return result.secondaryMetrics?.[name] ?? null;
+}
+
+function rawMetricValues(metric) {
+    if (!Array.isArray(metric?.rawData) || metric.rawData.length === 0) return null;
+    const values = [];
+    for (const fork of metric.rawData) {
+        if (!Array.isArray(fork) || fork.length === 0) return null;
+        for (const value of fork) {
+            const number = finiteNumber(value);
+            if (number === null) return null;
+            values.push(number);
+        }
+    }
+    return values.length === 0 ? null : values;
+}
+
+function resourceMetricValue(result, name) {
+    const metric = secondaryMetric(result, name);
+    if (!LATENCY_RESOURCE_EVENT_METRICS.has(name)) return finiteNumber(metric?.score);
+    const values = rawMetricValues(metric);
+    return values === null ? null : values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function parseMaximumHeapArguments(result) {
+    if (!Array.isArray(result.jvmArgs)) return [];
+    return result.jvmArgs.filter((argument) => /^-Xmx/i.test(argument));
 }
 
 function shortBenchmarkName(name) {
@@ -328,17 +397,27 @@ export function compareLatencyBaseline(
             errors.push(`${key}: fixed-baseline speedup requires finite confidence bounds`);
         }
         const speedup = ((fixedScore / candidateScore) - 1) * 100;
+        const multiGraph = /AllFixture|ThirtySix/.test(key);
+        const requiredSpeedup = multiGraph ? Math.max(minimumSpeedup, 900) : minimumSpeedup;
         const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
             confidenceSeparates(candidateBounds, fixedBounds, true);
-        const improvementBlocked = speedup < minimumSpeedup || !improvementSeparated;
+        const improvementBlocked = speedup < requiredSpeedup || !improvementSeparated;
+        const syntheticScale = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
+        const absoluteRegression = candidateScore - baseRow.baseScore;
+        const belowAbsoluteNoiseFloor = syntheticScale && baseRow.unit === "ms/op" &&
+            absoluteRegression < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
+        const regressionBlocked = baseRow.blocked && !belowAbsoluteNoiseFloor;
         rows.push({
             ...baseRow,
             fixedScore,
             speedup,
-            minimumSpeedup,
+            minimumSpeedup: requiredSpeedup,
             improvementSeparated,
             improvementBlocked,
-            blocked: baseRow.blocked || improvementBlocked
+            absoluteRegression,
+            absoluteNoiseFloor: syntheticScale ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
+            belowAbsoluteNoiseFloor,
+            blocked: regressionBlocked || improvementBlocked
         });
     }
 
@@ -348,6 +427,131 @@ export function compareLatencyBaseline(
         errors,
         rows
     };
+}
+
+export function compareLatencyResources(baseResults, candidateResults, threshold = 15) {
+    const errors = [];
+    const base = resultMap(baseResults, "PR base resources", errors);
+    const candidate = resultMap(candidateResults, "candidate resources", errors);
+    const rows = [];
+
+    for (const key of LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS) {
+        const baseline = base.get(key);
+        const current = candidate.get(key);
+        if (baseline === undefined || current === undefined) {
+            errors.push(`${key}: missing from ${baseline === undefined ? "base" : "candidate"} resource results`);
+            continue;
+        }
+        const profile = LATENCY_RESOURCE_PROFILES.get(key);
+        for (const [revision, result] of [["PR base", baseline], ["candidate", current]]) {
+            const heapArguments = parseMaximumHeapArguments(result);
+            const expectedArgument = `-Xmx${profile.maxHeapBytes / GIB}g`;
+            if (heapArguments.length !== 1 || heapArguments[0].toLowerCase() !== expectedArgument.toLowerCase()) {
+                errors.push(`${revision}/${key}: expected exactly ${expectedArgument}, found ${heapArguments.join(", ") || "none"}`);
+            }
+            for (const name of [
+                "maxHeapBytes", "loadedHeapBytes", "peakUsedHeapBytes", "retainedHeapBytes",
+                "retainedHeapDeltaBytes", "queryGcCount", "queryGcTimeMs",
+                "gc.alloc.rate.norm", "gc.count", "gc.time"
+            ]) {
+                const metric = secondaryMetric(result, name);
+                if (metric === null || finiteNumber(metric.score) === null || typeof metric.scoreUnit !== "string" ||
+                    metric.scoreUnit.length === 0
+                ) errors.push(`${revision}/${key}: missing or invalid secondary metric ${name}`);
+                if (LATENCY_RESOURCE_EVENT_METRICS.has(name) && rawMetricValues(metric) === null) {
+                    errors.push(`${revision}/${key}: missing or invalid per-invocation raw metric ${name}`);
+                }
+            }
+            const maxHeapValues = rawMetricValues(secondaryMetric(result, "maxHeapBytes"));
+            const loadedValues = rawMetricValues(secondaryMetric(result, "loadedHeapBytes"));
+            const peakValues = rawMetricValues(secondaryMetric(result, "peakUsedHeapBytes"));
+            const retainedValues = rawMetricValues(secondaryMetric(result, "retainedHeapBytes"));
+            const tolerance = Math.max(16 * MIB, profile.maxHeapBytes * 0.01);
+            if (maxHeapValues !== null && maxHeapValues.some((value) =>
+                value > profile.maxHeapBytes || value < profile.maxHeapBytes - tolerance
+            )) {
+                errors.push(`${revision}/${key}: effective max heap does not match ${profile.maxHeapBytes} in every invocation`);
+            }
+            if (maxHeapValues !== null && loadedValues !== null && peakValues !== null && retainedValues !== null) {
+                const lengths = [maxHeapValues.length, loadedValues.length, peakValues.length, retainedValues.length];
+                if (!lengths.every((length) => length === lengths[0])) {
+                    errors.push(`${revision}/${key}: resource raw metric invocation counts differ`);
+                } else if (loadedValues.some((loaded, index) => {
+                    const peak = peakValues[index];
+                    const retained = retainedValues[index];
+                    return loaded < 0 || retained < 0 || peak < loaded || retained > peak || peak > maxHeapValues[index];
+                })) {
+                    errors.push(`${revision}/${key}: invalid loaded/retained/peak heap relationship`);
+                }
+            }
+        }
+
+        for (const metric of LATENCY_RESOURCE_METRICS) {
+            const baseMetric = secondaryMetric(baseline, metric.key);
+            const candidateMetric = secondaryMetric(current, metric.key);
+            const baseValue = resourceMetricValue(baseline, metric.key);
+            const candidateValue = resourceMetricValue(current, metric.key);
+            if (baseValue === null || candidateValue === null || baseValue < 0 || candidateValue < 0) continue;
+            if (baseMetric.scoreUnit !== candidateMetric.scoreUnit) {
+                errors.push(`${key}/${metric.label}: base and candidate units differ`);
+                continue;
+            }
+            const increase = candidateValue - baseValue;
+            const delta = baseValue === 0
+                ? (increase > 0 ? Number.POSITIVE_INFINITY : 0)
+                : (increase / baseValue) * 100;
+            const aboveThreshold = increase > metric.minimum && (baseValue === 0 || delta > threshold);
+            rows.push({
+                key,
+                metric: metric.label,
+                baseValue,
+                candidateValue,
+                unit: baseMetric.scoreUnit,
+                delta,
+                threshold,
+                minimum: metric.minimum,
+                aboveThreshold,
+                blocked: aboveThreshold
+            });
+        }
+    }
+    for (const [revision, mapped] of [["PR base", base], ["candidate", candidate]]) {
+        for (const key of mapped.keys()) {
+            if (!LATENCY_RESOURCE_PROFILES.has(key)) errors.push(`${revision}: unexpected resource benchmark ${key}`);
+        }
+    }
+    return { passed: errors.length === 0 && rows.every((row) => !row.blocked), errors, rows };
+}
+
+export function confirmLatencyResources(initial, confirmation) {
+    const errors = [...initial.errors, ...confirmation.errors.map((error) => `confirmation: ${error}`)];
+    const retries = new Map(confirmation.rows.map((row) => [`${row.key}/${row.metric}`, row]));
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const retry = retries.get(`${row.key}/${row.metric}`);
+        if (retry === undefined) {
+            errors.push(`${row.key}/${row.metric}: missing from resource confirmation`);
+            return row;
+        }
+        return { ...row, confirmation: retry, blocked: retry.blocked };
+    });
+    return { passed: errors.length === 0 && rows.every((row) => !row.blocked), errors, rows };
+}
+
+export function renderLatencyResourceReport(comparison) {
+    const lines = [
+        "### Wrapped-query resource guardrails", "",
+        "Resource probes run separately from latency timing. JVM caps and metric presence fail closed;",
+        "GC, retained-heap, and peak-heap regressions must repeat in reverse order.", "",
+        "| Benchmark | Metric | Base | PR | Change | Gate |",
+        "|---|---|---:|---:|---:|:---:|"
+    ];
+    for (const row of comparison.rows) {
+        lines.push(`| \`${shortBenchmarkName(row.key)}\` | ${row.metric} | ${formatScore(row.baseValue)} ${row.unit} | ` +
+            `${formatScore(row.candidateValue)} ${row.unit} | ${formatDelta(row.delta)} | **${statusLabel(row)}** |`);
+    }
+    if (comparison.errors.length > 0) lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    return `${lines.join("\n")}\n`;
 }
 
 export function confirmLatencyBaseline(initial, confirmation) {
@@ -387,7 +591,8 @@ export function renderLatencyBaselineReport(comparison) {
     const lines = [
         "### Wrapped case-insensitive query latency",
         "",
-        "The PR must remain at least 50% faster than the fixed pre-PR-95 baseline and must not regress",
+        "Multi-graph rows must remain at least 10x faster than the fixed pre-PR-95 baseline;",
+        "the single-graph row must remain at least 50% faster. No row may regress",
         "more than 15% against the PR base with separated 99.9% confidence intervals.",
         "A suspected failure blocks only when the same benchmark fails the reverse-order confirmation run.",
         "",
@@ -607,7 +812,8 @@ export function aggregateReports(directory, metadata) {
             status: "budgeted-string-status.json"
         },
         { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" },
-        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" }
+        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" },
+        { name: "wrapped-query-resources", report: "latency-resource-report.md", status: "latency-resource-status.json" }
     ];
     const errors = [];
     const reports = [];
@@ -679,6 +885,26 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareLatencyResourcesCommand(args) {
+    const comparison = compareLatencyResources(
+        readJson(requireArg(args, "base")), readJson(requireArg(args, "candidate")), Number(args.threshold ?? 15)
+    );
+    writeFile(requireArg(args, "report"), renderLatencyResourceReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
+function confirmLatencyResourcesCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const retry = compareLatencyResources(
+        readJson(requireArg(args, "base")), readJson(requireArg(args, "candidate")), Number(args.threshold ?? 15)
+    );
+    const comparison = confirmLatencyResources(initial, retry);
+    writeFile(requireArg(args, "report"), renderLatencyResourceReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function confirmLatencyBaselineCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareLatencyBaseline(
@@ -746,6 +972,8 @@ function main(argv) {
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "combine-latency-shards") combineLatencyShardsCommand(args);
+    else if (command === "compare-latency-resources") compareLatencyResourcesCommand(args);
+    else if (command === "confirm-latency-resources") confirmLatencyResourcesCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);

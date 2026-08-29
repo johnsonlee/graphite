@@ -471,26 +471,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - shard: synthetic
+        - shard: synthetic-1
           real: false
           correctness: false
+          parameters: '-p graphCount=1'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-4
+          real: false
+          correctness: false
+          parameters: '-p graphCount=4'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-16
+          real: false
+          correctness: false
+          parameters: '-p graphCount=16'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-64
+          real: false
+          correctness: false
+          parameters: '-p graphCount=64'
           filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
         - shard: real-a
           real: true
           correctness: true
+          parameters: ''
           filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(zeroHitBroadContainsCaseInsensitiveDiscovery|denseDistributedMethodContainsCaseInsensitiveDiscovery)'
         - shard: real-b
           real: true
           correctness: false
+          parameters: ''
           filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(earlyGraphClassPrefixCaseInsensitiveDiscovery|middleGraphsClassPrefixCaseInsensitiveDiscovery)'
         - shard: real-c
           real: true
           correctness: false
+          parameters: ''
           filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(lateGraphClassPrefixCaseInsensitiveDiscovery|broadlyDistributedClassPrefixCaseInsensitiveDiscovery)'
         - shard: real-d
           real: true
           correctness: false
+          parameters: ''
           filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery|skewedMixedClassMethodOperatorCaseInsensitiveDiscovery)'
+        - shard: real-36
+          real: true
+          correctness: false
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs'
 
     steps:
     - name: Checkout fixed pre-PR-95 baseline
@@ -541,7 +566,8 @@ jobs:
       run: |
         for HARNESS in \
           WrappedDiscoveryLatencyBenchmark.kt \
-          AllFixtureWrappedDiscoveryLatencyBenchmark.kt; do
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
+          WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
           cp "candidate/${SOURCE}" "fixed/${SOURCE}"
           cp "candidate/${SOURCE}" "base/${SOURCE}"
@@ -574,7 +600,7 @@ jobs:
           grep '^ALL_FIXTURE_QUERY_RESULT' \
             "benchmark-results/${REVISION}-fixture-correctness.log" \
             > "benchmark-results/${REVISION}-fixture-correctness.txt"
-          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 8
+          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 9
         done
         cmp benchmark-results/fixed-fixture-correctness.txt \
           benchmark-results/base-fixture-correctness.txt
@@ -584,6 +610,7 @@ jobs:
     - name: Benchmark fixed baseline, PR base, and PR
       env:
         BENCHMARK_FILTER: ${{ matrix.filter }}
+        BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
         SHARD: ${{ matrix.shard }}
       run: |
         mkdir -p benchmark-results
@@ -597,22 +624,27 @@ jobs:
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
           -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+        PARAM_ARGS=()
+        if [ -n "${BENCHMARK_PARAMETERS}" ]; then
+          read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
+        fi
         java -jar "${FIXED_JAR}" \
-          "${BENCHMARK_FILTER}" \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
           -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
-          "${BENCHMARK_FILTER}" \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/base-latency-${SHARD}.json"
         java -jar "${CANDIDATE_JAR}" \
-          "${BENCHMARK_FILTER}" \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/candidate-latency-${SHARD}.json"
 
     - name: Enforce fixed baseline speedup and current-base regression gate
       env:
         BENCHMARK_FILTER: ${{ matrix.filter }}
+        BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
         SHARD: ${{ matrix.shard }}
       run: |
         if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
@@ -636,16 +668,20 @@ jobs:
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
           FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
             -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+          PARAM_ARGS=()
+          if [ -n "${BENCHMARK_PARAMETERS}" ]; then
+            read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
+          fi
           java -jar "${CANDIDATE_JAR}" \
-            "${BENCHMARK_FILTER}" \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/candidate-latency-confirmation-${SHARD}.json"
           java -jar "${BASE_JAR}" \
-            "${BENCHMARK_FILTER}" \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
           java -jar "${FIXED_JAR}" \
-            "${BENCHMARK_FILTER}" \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
             -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
@@ -715,10 +751,125 @@ jobs:
         test "${SHARD_JOB}" = success
         node -e "const s=require('./benchmark-results/latency-status.json'); if(!s.passed) process.exit(1)"
 
+  wrapped-query-resources:
+    name: wrapped-query-resources
+    needs: [prepare-latency-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout PR base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Restore persisted fixture graphs
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Verify restored fixture graphs
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}"
+        done
+
+    - name: Install identical resource harness in PR base
+      run: |
+        for HARNESS in \
+          WrappedDiscoveryLatencyBenchmark.kt \
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
+          WrappedDiscoveryResourceBenchmark.kt; do
+          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          cp "candidate/${SOURCE}" "base/${SOURCE}"
+        done
+
+    - name: Build resource benchmark jars
+      run: |
+        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures --no-daemon
+        base/gradlew -p base :webgraph:jmhJar --no-daemon
+        candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
+
+    - name: Benchmark PR base then PR resources
+      run: |
+        mkdir -p benchmark-results
+        BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
+        FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+        GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        java -jar "${BASE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
+          -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/base-latency-resources.json"
+        java -jar "${CANDIDATE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
+          -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/candidate-latency-resources.json"
+
+    - name: Enforce resource guardrails
+      run: |
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-resources \
+          --base benchmark-results/base-latency-resources.json \
+          --candidate benchmark-results/candidate-latency-resources.json \
+          --report benchmark-results/initial-latency-resource-report.md \
+          --status benchmark-results/initial-latency-resource-status.json; then
+          mv benchmark-results/initial-latency-resource-report.md benchmark-results/latency-resource-report.md
+          mv benchmark-results/initial-latency-resource-status.json benchmark-results/latency-resource-status.json
+        else
+          BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+          GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+            -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+            -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+            -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          java -jar "${CANDIDATE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
+            -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/candidate-latency-resources-confirmation.json"
+          java -jar "${BASE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
+            -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/base-latency-resources-confirmation.json"
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-resources \
+            --initial benchmark-results/initial-latency-resource-status.json \
+            --base benchmark-results/base-latency-resources-confirmation.json \
+            --candidate benchmark-results/candidate-latency-resources-confirmation.json \
+            --report benchmark-results/latency-resource-report.md \
+            --status benchmark-results/latency-resource-status.json
+        fi
+
+    - name: Upload resource results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-latency-resources-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [method-level, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency]
+    needs: [method-level, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
     runs-on: ubuntu-latest
 
     steps:
@@ -795,11 +946,12 @@ jobs:
         BUDGETED_STRING_JOB: ${{ needs.budgeted-mapped-string.result }}
         LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
+        LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
       run: |
         if [ "${METHOD_JOB}" != success ] || [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_JOB}" != success ]; then
+          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi

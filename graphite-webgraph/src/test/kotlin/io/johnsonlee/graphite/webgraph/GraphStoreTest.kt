@@ -46,7 +46,9 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -63,6 +65,7 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -74,6 +77,7 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
+    @Suppress("LongMethod")
     fun `mapped string property lookup uses raw node fields and falls back when unsupported`() {
         val owner = TypeDescriptor("example.Owner")
         val caller = MethodDescriptor(
@@ -163,6 +167,41 @@ class GraphStoreTest {
                 assertWrappedLowercaseQuery(loaded)
                 assertRawStringPropertyLookups(loaded)
                 assertWorkAwareTransformedLookup(mapped)
+                var disjunctionWork = 0
+                val disjunction = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "owner"
+                        ),
+                        StringPropertyPredicate(
+                            "callee_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "target"
+                        )
+                    ),
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { disjunctionWork++ }
+                )?.map { it.id.value }?.toList()
+                assertEquals(listOf(2), disjunction)
+                assertEquals(1, disjunctionWork)
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "unknown",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "feature"
+                            )
+                        )
+                    )
+                )
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,
@@ -232,6 +271,153 @@ class GraphStoreTest {
 
                 assertEquals(listOf(90, 4), resultIds)
                 assertEquals(resultIds.size, resultIds.distinct().size)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped disjunction hands warm small graphs back to property indexes`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                val marker = if (index == 1) "Voucher" else "Feature"
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.${marker}Caller$index"),
+                            "create$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index"),
+                            "invoke$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            "caller_class",
+            "caller_name",
+            "callee_class",
+            "callee_name"
+        ).map { property ->
+            StringPropertyPredicate(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "voucher"
+            )
+        }
+        val dir = Files.createTempDirectory("webgraph-warm-disjunction-handoff")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val cold = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(1), cold)
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates
+                    )
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        limit = 0
+                    ).orEmpty().none()
+                )
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        emptyList()
+                    )
+                )
+
+                loaded.clearStringPropertyIndexes()
+                var consumed = 0
+                val reset = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { consumed++ }
+                ).orEmpty().map { it.id.value }.toList()
+                assertEquals(listOf(1), reset)
+                assertEquals(3, consumed)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped disjunction tolerates disabled match cache and observes interruption`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.VoucherCaller"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                    0,
+                    null,
+                    emptyList()
+                )
+            )
+            .build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "voucher"
+        )
+        val dir = Files.createTempDirectory("webgraph-disjunction-no-match-cache")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                loaded.javaClass.getDeclaredField("rawStringMatchStates").apply {
+                    isAccessible = true
+                    set(loaded, RawStringMatchStates(maxRetainedBytes = 0, maxEntries = 0))
+                }
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate)
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<CancellationException> {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate)
+                        ).orEmpty().toList()
+                    }
+                } finally {
+                    Thread.interrupted()
+                }
             } finally {
                 loaded.close()
             }
@@ -348,6 +534,45 @@ class GraphStoreTest {
                 ).toList()
             )
             assertEquals(2, index.matchingStringCacheSize())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped fused lowercase scan preserves ASCII and Unicode string semantics`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            listOf("Example.VoucherService", "Example.İVOUCHERService").forEachIndexed { index, owner ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor(owner), "Create", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("Example.Repository"), "Load", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-fused-lowercase-semantics")
+        try {
+            GraphStore.save(graph, dir)
+            val mapped = GraphStore.loadMapped(dir)
+            try {
+                fun owners(expected: String): List<Any?> = mapped.query(
+                    "MATCH (n:CallSiteNode) WHERE " +
+                        "toLower(coalesce(n.caller_class, '')) CONTAINS '$expected' OR " +
+                        "toLower(coalesce(n.callee_class, '')) CONTAINS '$expected' " +
+                        "RETURN DISTINCT n.caller_class AS owner LIMIT 10"
+                ).rows.map { it["owner"] }
+
+                assertEquals(listOf("Example.VoucherService", "Example.İVOUCHERService"), owners("voucher"))
+                assertTrue(owners("Voucher").isEmpty(), "The expected literal must not be normalized")
+            } finally {
+                (mapped as Closeable).close()
+            }
         } finally {
             dir.toFile().deleteRecursively()
         }

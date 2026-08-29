@@ -97,6 +97,58 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
 }
 
 /**
+ * Production-sized 36-graph latency guard. The four immutable real fixtures are
+ * opened round-robin so every executor entry has an independent graph identity
+ * without rebuilding or copying roughly 200 million nodes.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 1)
+@Measurement(iterations = 3)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
+
+    private lateinit var executor: CrossGraphCypherExecutor
+    private val loadedGraphs = mutableListOf<Graph>()
+    private val clearIndexMethods = mutableListOf<Method?>()
+
+    @Setup
+    fun setup() {
+        val kinds = BenchmarkCorpusKind.entries
+        val graphs = (0 until REAL_GRAPH_COUNT).map { graphIndex ->
+            val kind = kinds[graphIndex % kinds.size]
+            val graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(kind))
+            check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
+            loadedGraphs += graph
+            clearIndexMethods += graph.javaClass.declaredMethods
+                .firstOrNull { it.name.startsWith("clearStringPropertyIndexes") }
+                ?.also { it.isAccessible = true }
+            CypherGraph("fixture-$graphIndex-${kind.id}", graph)
+        }
+        check(graphs.size == REAL_GRAPH_COUNT)
+        executor = budgetedLatencyExecutor(graphs)
+        checkThirtySixGraphCoverage(executor.execute(REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY))
+        check(executor.execute(ZERO_HIT_QUERY).rows.isEmpty())
+    }
+
+    @TearDown
+    fun tearDown() {
+        loadedGraphs.forEach { (it as? Closeable)?.close() }
+    }
+
+    @Benchmark
+    fun zeroHitBroadContainsAcrossThirtySixRealGraphs(): CypherResult {
+        loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
+        return executor.execute(ZERO_HIT_QUERY).also { result -> check(result.rows.isEmpty()) }
+    }
+
+    private companion object {
+        const val REAL_GRAPH_COUNT = 36
+    }
+}
+
+/**
  * Hashes complete columns, rows, values, and provenance for every timed query.
  * CI compares these markers across fixed, base, and candidate revisions.
  */
@@ -105,6 +157,11 @@ internal object AllFixtureBenchmarkQueryCorrectness {
     fun main(args: Array<String>) {
         require(args.size == 1) { "Usage: AllFixtureBenchmarkQueryCorrectness <graph-directory>" }
         val root = Path.of(args.single()).toAbsolutePath().normalize()
+        verifyFourFixtureQueries(root)
+        verifyThirtySixGraphCoverage(root)
+    }
+
+    private fun verifyFourFixtureQueries(root: Path) {
         val graphs = mutableListOf<Graph>()
         try {
             val sources = BenchmarkCorpusKind.entries.map { kind ->
@@ -119,14 +176,37 @@ internal object AllFixtureBenchmarkQueryCorrectness {
                 check(result.rows.size == case.expectedRows) {
                     "${case.name} returned ${result.rows.size} rows; expected ${case.expectedRows}"
                 }
-                val digest = MessageDigest.getInstance("SHA-256")
-                    .digest(canonical(result.columns to result.rows).toByteArray(Charsets.UTF_8))
-                    .joinToString("") { byte -> "%02x".format(byte) }
-                println("ALL_FIXTURE_QUERY_RESULT\t${case.name}\trows=${result.rows.size}\tsha256=$digest")
+                printDigest(case.name, result)
             }
         } finally {
             graphs.asReversed().forEach { (it as? Closeable)?.close() }
         }
+    }
+
+    private fun verifyThirtySixGraphCoverage(root: Path) {
+        val graphs = mutableListOf<Graph>()
+        try {
+            val kinds = BenchmarkCorpusKind.entries
+            val sources = (0 until REAL_THIRTY_SIX_GRAPH_COUNT).map { graphIndex ->
+                val kind = kinds[graphIndex % kinds.size]
+                GraphStore.loadMapped(root.resolve(kind.id)).also(graphs::add).let { graph ->
+                    check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
+                    CypherGraph("fixture-$graphIndex-${kind.id}", graph)
+                }
+            }
+            val result = budgetedLatencyExecutor(sources).execute(REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY)
+            checkThirtySixGraphCoverage(result)
+            printDigest("realThirtySixGraphCoverage", result)
+        } finally {
+            graphs.asReversed().forEach { (it as? Closeable)?.close() }
+        }
+    }
+
+    private fun printDigest(name: String, result: CypherResult) {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(canonical(result.columns to result.rows).toByteArray(Charsets.UTF_8))
+            .joinToString("") { byte -> "%02x".format(byte) }
+        println("ALL_FIXTURE_QUERY_RESULT\t$name\trows=${result.rows.size}\tsha256=$digest")
     }
 
     private fun canonical(value: Any?): String = when (value) {
@@ -141,6 +221,16 @@ internal object AllFixtureBenchmarkQueryCorrectness {
         is Set<*> -> value.map(::canonical).sorted().joinToString(prefix = "set:[", postfix = "]")
         is Iterable<*> -> value.joinToString(prefix = "list:[", postfix = "]", transform = ::canonical)
         else -> "object:${value::class.java.name}:${value}"
+    }
+}
+
+private fun checkThirtySixGraphCoverage(result: CypherResult) {
+    val expected = (0 until REAL_THIRTY_SIX_GRAPH_COUNT).map { graphIndex ->
+        val kind = BenchmarkCorpusKind.entries[graphIndex % BenchmarkCorpusKind.entries.size]
+        "fixture-$graphIndex-${kind.id}"
+    }
+    check(result.rows.map { it["graphId"] } == expected) {
+        "36-graph coverage query returned ${result.rows.map { it["graphId"] }}; expected $expected"
     }
 }
 
@@ -185,7 +275,7 @@ internal object AllFixtureBenchmarkDistributionCalibration {
 
 private const val EXPECTED_ALL_FIXTURE_NODES = 19_091_048L
 
-private const val ZERO_HIT_QUERY = """
+internal const val ZERO_HIT_QUERY = """
 MATCH (n)
 WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'
    OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'
@@ -194,6 +284,16 @@ WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_s
 RETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,
     n.callee_class AS callee, n.callee_name AS calleeMethod
 LIMIT 250
+"""
+
+internal const val REAL_THIRTY_SIX_GRAPH_COUNT = 36
+
+internal const val REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY = """
+MATCH (n:CallSiteNode)
+WHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'java.'
+   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'java.'
+RETURN DISTINCT n.graphId AS graphId
+LIMIT 36
 """
 
 private const val DENSE_DISTRIBUTED_METHOD_QUERY = """
@@ -312,4 +412,4 @@ internal fun budgetedLatencyExecutor(graphs: List<CypherGraph>): CrossGraphCyphe
 
 private const val ALLOW_LEGACY_UNBUDGETED_PROPERTY =
     "graphite.benchmark.allowLegacyUnbudgetedExecutor"
-private const val LATENCY_BENCHMARK_WORK_BUDGET = 25_000_000L
+private const val LATENCY_BENCHMARK_WORK_BUDGET = 500_000_000L

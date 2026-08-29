@@ -31,6 +31,14 @@ enum class StringValueTransform {
     LOWERCASE
 }
 
+/** One exact predicate in a storage-backed disjunction lookup. */
+data class StringPropertyPredicate(
+    val property: String,
+    val transform: StringValueTransform?,
+    val mode: StringMatchMode,
+    val expected: String
+)
+
 /**
  * Optional storage capability for graphs that can avoid materializing a full node scan.
  *
@@ -92,6 +100,36 @@ interface WorkAwareTransformedStringPropertyLookup : TransformedStringPropertyLo
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>?
+}
+
+/**
+ * Optional capability for matching several string properties in one canonical node scan.
+ * Returned nodes must match at least one predicate and must not contain duplicates.
+ */
+interface StringPropertyDisjunctionLookup {
+    fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int
+    ): Sequence<T>?
+}
+
+/** Disjunction lookup capability that exposes each inspected node as one work item. */
+interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLookup {
+    fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): Sequence<T>?
+}
+
+/** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
+interface StringPropertyDisjunctionLookupStrategy {
+    fun prefersSerialStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
 }
 
 /**
@@ -310,6 +348,23 @@ fun <T : Node> Graph.nodesByTransformedStringProperty(
     workConsumer: GraphWorkConsumer
 ): Sequence<T>? = (this as? WorkAwareTransformedStringPropertyLookup)
     ?.nodesByTransformedStringProperty(type, property, transform, mode, expected, limit, workConsumer)
+
+/** Use a fused storage lookup when the graph can evaluate the complete disjunction exactly. */
+fun <T : Node> Graph.nodesByStringPropertyDisjunction(
+    type: Class<T>,
+    predicates: List<StringPropertyPredicate>,
+    limit: Int = Int.MAX_VALUE
+): Sequence<T>? = (this as? StringPropertyDisjunctionLookup)
+    ?.nodesByStringPropertyDisjunction(type, predicates, limit)
+
+/** Use a fused disjunction lookup only when it can report every inspected node. */
+fun <T : Node> Graph.nodesByStringPropertyDisjunction(
+    type: Class<T>,
+    predicates: List<StringPropertyPredicate>,
+    limit: Int,
+    workConsumer: GraphWorkConsumer
+): Sequence<T>? = (this as? WorkAwareStringPropertyDisjunctionLookup)
+    ?.nodesByStringPropertyDisjunction(type, predicates, limit, workConsumer)
 
 /**
  * Pattern for matching methods.
