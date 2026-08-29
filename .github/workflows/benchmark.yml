@@ -397,8 +397,6 @@ jobs:
       with:
         path: fixture-graphs
         key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-a7ddb452997f5699a3233189a81be5020d3d8dd2f52b6cabee950de13689ed10
 
     - name: Detect complete persisted fixture cache
       id: fixture-cache-state
@@ -564,7 +562,14 @@ jobs:
         for REVISION in fixed base candidate; do
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
+          LEGACY_BUDGET_ARGS=()
+          if [ "${REVISION}" = fixed ]; then
+            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+          elif [ "${REVISION}" = base ]; then
+            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyBudgetDefault=true)
+          fi
           java -Xmx8g -cp "${JMH_JAR}" \
+            "${LEGACY_BUDGET_ARGS[@]}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | tee "benchmark-results/${REVISION}-fixture-correctness.log"
@@ -592,13 +597,17 @@ jobs:
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+        BASE_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyBudgetDefault=true"
         java -jar "${FIXED_JAR}" \
           "${BENCHMARK_FILTER}" \
-          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
           "${BENCHMARK_FILTER}" \
-          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -jvmArgsAppend "${BASE_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/base-latency-${SHARD}.json"
         java -jar "${CANDIDATE_JAR}" \
           "${BENCHMARK_FILTER}" \
@@ -629,17 +638,21 @@ jobs:
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+          BASE_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyBudgetDefault=true"
           java -jar "${CANDIDATE_JAR}" \
             "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/candidate-latency-confirmation-${SHARD}.json"
           java -jar "${BASE_JAR}" \
             "${BENCHMARK_FILTER}" \
-            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -jvmArgsAppend "${BASE_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
           java -jar "${FIXED_JAR}" \
             "${BENCHMARK_FILTER}" \
-            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
             --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
