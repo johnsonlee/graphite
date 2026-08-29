@@ -12,6 +12,7 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
@@ -225,6 +226,7 @@ class QueryPipeline private constructor(
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryStreamingFilteredMatchLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
         if (fastResult != null) return fastResult
 
@@ -566,7 +568,8 @@ class QueryPipeline private constructor(
 
     private data class RankedProjectedRow(
         val row: MutableMap<String, Any?>,
-        val encounterOrder: Long
+        val encounterOrder: Long,
+        val sortValues: List<Any?> = emptyList()
     )
 
     private data class OrderedPropertyLimitQuery(
@@ -1393,16 +1396,180 @@ class QueryPipeline private constructor(
     }
 
     /**
+     * Streams a filtered MATCH pattern through projection, ordering, and pagination so
+     * LIMIT bounds retained rows instead of being applied after eager materialization.
+     * DISTINCT and ORDER BY retain at most SKIP + LIMIT visible values.
+     */
+    @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+    private fun tryStreamingFilteredMatchLimit(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size !in 4..6) return null
+        val match = clauses.getOrNull(0) as? CypherClause.Match ?: return null
+        val where = clauses.getOrNull(1) as? CypherClause.Where ?: return null
+        val ret = clauses.getOrNull(2) as? CypherClause.Return ?: return null
+        var suffixIndex = 3
+        val orderBy = (clauses.getOrNull(suffixIndex) as? CypherClause.OrderBy)?.also { suffixIndex++ }
+        val skip = (clauses.getOrNull(suffixIndex) as? CypherClause.Skip)?.also { suffixIndex++ }
+        val limit = clauses.getOrNull(suffixIndex) as? CypherClause.Limit ?: return null
+        if (suffixIndex != clauses.lastIndex) return null
+        if (match.optional || match.patterns.size != 1 || match.patterns.single().pathVariable != null ||
+            ret.items.any { containsAggregation(it.expression) } ||
+            ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }
+        ) {
+            return null
+        }
+
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        val skipCount = skip?.count?.let(::literalLimitCount) ?: 0
+        if (skipCount < 0) return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        if (limitCount <= 0) return CypherResult(columns, emptyList())
+        val retainedCount = skipCount.toLong() + limitCount
+        if (retainedCount > Int.MAX_VALUE) return null
+
+        val pattern = match.patterns.single()
+        val firstNode = pattern.elements.firstOrNull() as? PatternElement.NodePattern
+        val candidateSources = firstNode?.variable
+            ?.let { variable -> graphIdEquality(where.condition, variable) }
+            ?.let { graphId -> sources.filter { it.id == graphId } }
+            ?: sources
+
+        val matches = matchPatternLazily(
+            pattern,
+            emptyMap(),
+            candidateSources,
+            finalResultPredicate = { bindings -> evaluator.evaluate(where.condition, bindings) == true }
+        )
+        if (orderBy != null) {
+            return projectOrderedFilteredRows(
+                matches,
+                where,
+                ret,
+                orderBy,
+                columns,
+                skipCount,
+                retainedCount.toInt()
+            )
+        }
+        if (ret.distinct) {
+            return projectDistinctFilteredRows(matches, where, ret, columns, skipCount, retainedCount.toInt())
+        }
+
+        val rows = mutableListOf<Map<String, Any?>>()
+        var matchedRows = 0
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            if (matchedRows++ < skipCount) continue
+            rows.add(projectRow(ret.items, columns, bindings))
+            if (rows.size >= limitCount) break
+        }
+        return CypherResult(columns, rows)
+    }
+
+    private fun projectDistinctFilteredRows(
+        matches: Sequence<Map<String, Any?>>,
+        where: CypherClause.Where,
+        ret: CypherClause.Return,
+        columns: List<String>,
+        skipCount: Int,
+        retainedCount: Int
+    ): CypherResult {
+        val distinctRows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            val projected = projectRow(ret.items, columns, bindings)
+            addDistinctRow(distinctRows, projected, retainedCount)
+            if (!qualified && distinctRows.size >= retainedCount) break
+        }
+        return CypherResult(columns, distinctRows.values.drop(skipCount))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun projectOrderedFilteredRows(
+        matches: Sequence<Map<String, Any?>>,
+        where: CypherClause.Where,
+        ret: CypherClause.Return,
+        orderBy: CypherClause.OrderBy,
+        columns: List<String>,
+        skipCount: Int,
+        retainedCount: Int
+    ): CypherResult {
+        val comparator = rankedRowComparator(orderBy)
+        val topRows = PriorityQueue<RankedProjectedRow>(comparator.reversed())
+        val selectedDistinctRows = if (ret.distinct) {
+            HashMap<Map<String, Any?>, RankedProjectedRow>()
+        } else {
+            null
+        }
+        var encounterOrder = 0L
+
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            val projected = projectRow(ret.items, columns, bindings)
+            val visible = selectedDistinctRows?.let { projected.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY } }
+            val existing = visible?.let { selectedDistinctRows?.get(it) }
+            if (existing != null) {
+                val graphIds = (existing.row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                    (projected[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                if (graphIds.isNotEmpty()) existing.row[INTERNAL_PROVENANCE_KEY] = graphIds
+                encounterOrder++
+                continue
+            }
+
+            val ranked = RankedProjectedRow(
+                row = projected,
+                encounterOrder = encounterOrder++,
+                sortValues = evaluateOrderValues(orderBy, bindings, projected)
+            )
+            if (topRows.size < retainedCount) {
+                topRows.add(ranked)
+                if (visible != null) selectedDistinctRows?.put(visible, ranked)
+            } else if (comparator.compare(ranked, topRows.peek()) < 0) {
+                val removed = topRows.poll()
+                selectedDistinctRows?.remove(removed.row.filterKeys { it != INTERNAL_PROVENANCE_KEY })
+                topRows.add(ranked)
+                if (visible != null) selectedDistinctRows?.put(visible, ranked)
+            }
+        }
+        checkCancelled()
+
+        val rows = topRows.toList()
+            .sortedWith(comparator)
+            .drop(skipCount)
+            .map(RankedProjectedRow::row)
+        return CypherResult(columns, rows)
+    }
+
+    private fun rankedRowComparator(orderBy: CypherClause.OrderBy): Comparator<RankedProjectedRow> {
+        var comparisons = 0
+        return Comparator { left, right ->
+            if (workTrackingEnabled) pollCancellation(comparisons++)
+            for ((index, item) in orderBy.items.withIndex()) {
+                val leftValue = left.sortValues[index]
+                val rightValue = right.sortValues[index]
+                val comparison = compareNullable(leftValue, rightValue)
+                if (comparison != 0) {
+                    return@Comparator if (item.ascending) comparison else -comparison
+                }
+            }
+            left.encounterOrder.compareTo(right.encounterOrder)
+        }
+    }
+
+    private fun evaluateOrderValues(
+        orderBy: CypherClause.OrderBy,
+        bindings: Map<String, Any?>,
+        projected: Map<String, Any?>
+    ): List<Any?> {
+        val orderContext = bindings.toMutableMap().apply { putAll(projected) }
+        return orderBy.items.map { item -> evaluateOrderValue(item.expression, orderContext) }
+    }
+
+    /**
      * Fast path for:
      *
      *   MATCH (a:Source)-[:TYPE]->(b:Target) RETURN ... LIMIT k
-     *
-     * The generic pipeline materializes node and relationship intermediates.
-     * For a single non-variable-length hop without filtering/reordering clauses,
-     * we can stream complete relationship matches and stop once LIMIT rows have
-     * been projected.
      */
-    @Suppress("CyclomaticComplexMethod", "ComplexCondition", "ReturnCount")
+    @Suppress("ComplexCondition", "CyclomaticComplexMethod", "ReturnCount")
     private fun tryFastSingleHopRelationshipLimit(clauses: List<CypherClause>): CypherResult? {
         if (clauses.size != SINGLE_HOP_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
@@ -1446,7 +1613,10 @@ class QueryPipeline private constructor(
                 val targetBindings = matchTargetNode(targetPattern, targetValue, sourceBindings) ?: continue
 
                 val bindings = targetBindings.toMutableMap()
-                if (rel.variable != null) bindings[rel.variable] = edge.value
+                if (rel.variable != null) {
+                    bindings[rel.variable] = edge.value
+                    addProvenance(bindings, edge.value)
+                }
                 rows.add(projectRow(ret.items, columns, bindings))
                 if (rows.size >= limitCount) return CypherResult(columns, rows)
             }
@@ -1455,11 +1625,34 @@ class QueryPipeline private constructor(
         return CypherResult(columns, rows)
     }
 
+    private fun graphIdEquality(expression: CypherExpr, variable: String): String? = when (expression) {
+        is CypherExpr.And -> graphIdEquality(expression.left, variable)
+            ?: graphIdEquality(expression.right, variable)
+        is CypherExpr.Comparison -> if (expression.op == "=") {
+            when {
+                isGraphIdReference(expression.left, variable) ->
+                    (expression.right as? CypherExpr.Literal)?.value as? String
+                isGraphIdReference(expression.right, variable) ->
+                    (expression.left as? CypherExpr.Literal)?.value as? String
+                else -> null
+            }
+        } else null
+        else -> null
+    }
+
+    private fun isGraphIdReference(expression: CypherExpr, variable: String): Boolean = when (expression) {
+        is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable) &&
+            expression.propertyName == GRAPH_ID_PROPERTY
+        is CypherExpr.FunctionCall -> expression.name.equals("graphId", ignoreCase = true) &&
+            !expression.distinct && expression.args.singleOrNull() == CypherExpr.Variable(variable)
+        else -> false
+    }
+
     private fun projectRow(
         items: List<ReturnItem>,
         columns: List<String>,
         bindings: Map<String, Any?>
-    ): Map<String, Any?> {
+    ): MutableMap<String, Any?> {
         val projected = mutableMapOf<String, Any?>()
         for (i in items.indices) {
             projected[columns[i]] = evaluator.evaluate(items[i].expression, bindings)
@@ -1541,12 +1734,19 @@ class QueryPipeline private constructor(
     ): List<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
-
-        val matches = if (limit != null && elements.size > 1) {
-            matchPatternLazily(elements, existingBindings, limit)
-        } else {
-            matchPatternEagerly(elements, existingBindings, limit)
+        if (limit != null) {
+            val matches = matchPatternLazily(pattern.copy(pathVariable = null), existingBindings).take(limit)
+            val pathVariable = pattern.pathVariable ?: return matches.toList()
+            return matches.map { bindings ->
+                val path = buildPathRepresentation(pattern, bindings)
+                bindings.toMutableMap().apply {
+                    this[pathVariable] = path
+                    addProvenance(this, path)
+                }
+            }.toList()
         }
+
+        val matches = matchPatternEagerly(elements, existingBindings, limit = null)
 
         // If the pattern has a path variable, bind it to the matched path
         if (pattern.pathVariable != null) {
@@ -1562,6 +1762,36 @@ class QueryPipeline private constructor(
         return matches
     }
 
+    @Suppress("ReturnCount")
+    private fun matchPatternLazily(
+        pattern: CypherPattern,
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources,
+        finalResultPredicate: ((Map<String, Any?>) -> Boolean)? = null
+    ): Sequence<Map<String, Any?>> {
+        val elements = pattern.elements
+        if (elements.isEmpty()) return sequenceOf(existingBindings)
+        require(pattern.pathVariable == null) { "Named paths require materialized path reconstruction" }
+
+        var currentMatches: Sequence<Map<String, Any?>> = matchNodeElementLazily(
+            elements[0] as PatternElement.NodePattern,
+            existingBindings,
+            candidateSources
+        )
+        var i = 1
+        while (i < elements.size) {
+            val sourceNode = elements[i - 1] as PatternElement.NodePattern
+            val rel = elements[i] as PatternElement.RelationshipPattern
+            val targetNode = elements[i + 1] as PatternElement.NodePattern
+            val resultPredicate = finalResultPredicate.takeIf { i + 1 == elements.lastIndex }
+            currentMatches = currentMatches.flatMap { bindings ->
+                matchRelationshipLazily(sourceNode, rel, targetNode, bindings, resultPredicate)
+            }
+            i += 2
+        }
+        return currentMatches
+    }
+
     private fun matchPatternEagerly(
         elements: List<PatternElement>,
         existingBindings: Map<String, Any?>,
@@ -1571,44 +1801,19 @@ class QueryPipeline private constructor(
 
         var i = 1
         while (i < elements.size) {
+            val sourceNode = elements[i - 1] as PatternElement.NodePattern
             val rel = elements[i] as PatternElement.RelationshipPattern
             val targetNode = elements[i + 1] as PatternElement.NodePattern
             i += 2
 
             val nextMatches = mutableListOf<Map<String, Any?>>()
             for (bindings in currentMatches) {
-                nextMatches.addAll(matchRelationship(rel, targetNode, bindings, limit = null))
+                nextMatches.addAll(matchRelationship(sourceNode, rel, targetNode, bindings, limit = null))
             }
             currentMatches = nextMatches
         }
 
         return currentMatches
-    }
-
-    private fun matchPatternLazily(
-        elements: List<PatternElement>,
-        existingBindings: Map<String, Any?>,
-        limit: Int
-    ): List<Map<String, Any?>> {
-        var currentMatches = matchNodeElementLazily(
-            elements[0] as PatternElement.NodePattern,
-            existingBindings
-        )
-
-        var i = 1
-        while (i < elements.size) {
-            val rel = elements[i] as PatternElement.RelationshipPattern
-            val targetNode = elements[i + 1] as PatternElement.NodePattern
-            i += 2
-
-            val relationshipLimit = limit.takeIf { i >= elements.size }
-            val nextMatches = currentMatches.flatMap { bindings ->
-                matchRelationship(rel, targetNode, bindings, relationshipLimit).asSequence()
-            }
-            currentMatches = relationshipLimit?.let(nextMatches::take) ?: nextMatches
-        }
-
-        return currentMatches.toList()
     }
 
     /**
@@ -1684,13 +1889,15 @@ class QueryPipeline private constructor(
 
     private fun matchNodeElementLazily(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
-    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings)
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources
+    ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings, candidateSources)
         .mapNotNull { candidate -> bindNodeCandidate(candidate, nodePattern, existingBindings) }
 
     private fun nodeElementCandidates(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        candidateSources: List<CypherGraph> = sources
     ): Sequence<Any> {
         val methodSource = nodePattern.labels.any(MethodQueryExecutor::isMethodLabel)
         val nodeClass = nodePattern.labels.firstOrNull()
@@ -1714,7 +1921,7 @@ class QueryPipeline private constructor(
         } else if (methodSource) {
             methodCandidates()
         } else {
-            nodeCandidates(nodeClass)
+            nodeCandidates(nodeClass, candidateSources)
         }
     }
 
@@ -1736,36 +1943,52 @@ class QueryPipeline private constructor(
      * Match a relationship + target node from the current source node binding.
      */
     private fun matchRelationship(
+        sourceNodePattern: PatternElement.NodePattern,
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         bindings: Map<String, Any?>,
         limit: Int?
     ): List<Map<String, Any?>> {
-        val results = mutableListOf<Map<String, Any?>>()
-
-        // The source node is the last-bound node in the current bindings.
-        val sourceNode = findLastBoundNode(bindings) ?: return results
-
-        val edgeClass = rel.types.firstOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
-
-        if (rel.variableLength) {
-            matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
-        } else {
-            matchSingleHop(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
-        }
-
-        return results
+        val matches = matchRelationshipLazily(sourceNodePattern, rel, targetNodePattern, bindings)
+        return (limit?.let(matches::take) ?: matches).toList()
     }
 
-    private fun matchSingleHop(
+    private fun matchRelationshipLazily(
+        sourceNodePattern: PatternElement.NodePattern,
+        rel: PatternElement.RelationshipPattern,
+        targetNodePattern: PatternElement.NodePattern,
+        bindings: Map<String, Any?>,
+        resultPredicate: ((Map<String, Any?>) -> Boolean)? = null
+    ): Sequence<Map<String, Any?>> {
+        val sourceNode = sourceNodePattern.variable
+            ?.let(bindings::get)
+            ?.let(::nodeCursor)
+            ?: findLastBoundNode(bindings)
+            ?: return emptySequence()
+        val resolvedEdgeTypes = rel.types.mapNotNull(NodePropertyAccessor::resolveEdgeType).distinct()
+        val edgeClass = resolvedEdgeTypes.singleOrNull()
+        return when {
+            rel.types.isNotEmpty() && resolvedEdgeTypes.isEmpty() -> emptySequence()
+            rel.variableLength ->
+                matchVariableLengthPathLazily(
+                    rel,
+                    targetNodePattern,
+                    sourceNode,
+                    bindings,
+                    edgeClass,
+                    resultPredicate
+                )
+            else -> matchSingleHopLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+        }
+    }
+
+    private fun matchSingleHopLazily(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
-        edgeClass: Class<out Edge>?,
-        limit: Int?,
-        results: MutableList<Map<String, Any?>>
-    ) {
+        edgeClass: Class<out Edge>?
+    ): Sequence<Map<String, Any?>> = sequence {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
 
         for (edge in edges) {
@@ -1783,20 +2006,18 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = edge.value
                 addProvenance(newBindings, edge.value)
             }
-            results.add(newBindings)
-            if (limit != null && results.size >= limit) break
+            yield(newBindings)
         }
     }
 
-    private fun matchVariableLengthPath(
+    private fun matchVariableLengthPathLazily(
         rel: PatternElement.RelationshipPattern,
         targetNodePattern: PatternElement.NodePattern,
         sourceNode: NodeCursor,
         bindings: Map<String, Any?>,
         edgeClass: Class<out Edge>?,
-        limit: Int?,
-        results: MutableList<Map<String, Any?>>
-    ) {
+        resultPredicate: ((Map<String, Any?>) -> Boolean)?
+    ): Sequence<Map<String, Any?>> = sequence {
         val direction = when (rel.direction) {
             Direction.OUTGOING -> PathFinder.Direction.OUTGOING
             Direction.INCOMING -> PathFinder.Direction.INCOMING
@@ -1804,6 +2025,13 @@ class QueryPipeline private constructor(
         }
 
         val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val nodePredicate = variablePathNodePredicate(
+            rel,
+            targetNodePattern,
+            sourceNode,
+            bindings,
+            resultPredicate
+        )
         val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
@@ -1813,7 +2041,9 @@ class QueryPipeline private constructor(
                 minDepth = rel.minHops ?: 1,
                 maxDepth = rel.maxHops ?: 10,
                 direction = direction,
-                workTracker = workTracker
+                workTracker = workTracker,
+                edgePredicate = { edge -> matchesRelConstraints(edge, rel, bindings) },
+                nodePredicate = nodePredicate
             )
         )
 
@@ -1837,8 +2067,30 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = pathValue
                 addProvenance(newBindings, pathValue)
             }
-            results.add(newBindings)
-            if (limit != null && results.size >= limit) break
+            yield(newBindings)
+        }
+    }
+
+    private fun variablePathNodePredicate(
+        rel: PatternElement.RelationshipPattern,
+        targetNodePattern: PatternElement.NodePattern,
+        sourceNode: NodeCursor,
+        bindings: Map<String, Any?>,
+        resultPredicate: ((Map<String, Any?>) -> Boolean)?
+    ): ((Node) -> Boolean)? {
+        val targetNeedsFiltering = targetNodePattern.labels.isNotEmpty() ||
+            targetNodePattern.properties.isNotEmpty() ||
+            targetNodePattern.variable?.let(bindings::containsKey) == true
+        val canPushResultPredicate = resultPredicate != null && rel.variable == null
+        return if (targetNeedsFiltering || canPushResultPredicate) {
+            { node: Node ->
+                val endValue = nodeValue(sourceNode.source, node)
+                val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings)
+                targetMatch != null &&
+                    (!canPushResultPredicate || resultPredicate?.invoke(targetMatch) == true)
+            }
+        } else {
+            null
         }
     }
 
@@ -1907,10 +2159,8 @@ class QueryPipeline private constructor(
         bindings: Map<String, Any?>
     ): Boolean {
         if (rel.types.isNotEmpty()) {
-            val edgeTypeName = CypherFunctions.type(edge)
             val typeMatches = rel.types.any { requested ->
-                requested.equals(edgeTypeName, ignoreCase = true) ||
-                    (edge is ResourceEdge && requested.equals("RESOURCE", ignoreCase = true))
+                matchesRelationshipType(edge, requested)
             }
             if (!typeMatches) {
                 return false
@@ -1933,6 +2183,33 @@ class QueryPipeline private constructor(
             }
             edgeValue == exprValue
         }
+    }
+
+    /**
+     * Matches only the relationship spellings that are part of the Cypher surface.
+     *
+     * Keep the aliases explicit: removing every underscore made malformed names
+     * such as `D_A_T_A_F_L_O_W` indistinguishable from `DATAFLOW` and allocated
+     * normalized strings for every candidate edge.
+     */
+    private fun matchesRelationshipType(edge: Edge, requested: String): Boolean = when (edge) {
+        is DataFlowEdge ->
+            requested.equals("DATAFLOW", ignoreCase = true) ||
+                requested.equals("DATA_FLOW", ignoreCase = true)
+        is CallEdge -> requested.equals("CALL", ignoreCase = true)
+        is TypeEdge -> requested.equals("TYPE", ignoreCase = true)
+        is ControlFlowEdge ->
+            requested.equals("CONTROL_FLOW", ignoreCase = true) ||
+                requested.equals("CONTROLFLOW", ignoreCase = true)
+        is ResourceEdge ->
+            requested.equals("RESOURCE", ignoreCase = true) || when (edge.kind) {
+                ResourceRelation.OPENS -> requested.equals("RESOURCE_OPEN", ignoreCase = true)
+                ResourceRelation.LOADS -> requested.equals("RESOURCE_LOAD", ignoreCase = true)
+                ResourceRelation.BUNDLE_CANDIDATE ->
+                    requested.equals("RESOURCE_BUNDLE_CANDIDATE", ignoreCase = true)
+                ResourceRelation.LOOKUP -> requested.equals("RESOURCE_LOOKUP", ignoreCase = true)
+                ResourceRelation.ENUMERATES -> requested.equals("RESOURCE_KEYS", ignoreCase = true)
+            }
     }
 
     // ========================================================================
@@ -1985,9 +2262,12 @@ class QueryPipeline private constructor(
         return last
     }
 
-    private fun <T : Node> nodeCandidates(type: Class<T>): Sequence<Any> =
+    private fun <T : Node> nodeCandidates(
+        type: Class<T>,
+        candidateSources: List<CypherGraph> = sources
+    ): Sequence<Any> =
         if (qualified) {
-            sources.asSequence().flatMap { source ->
+            candidateSources.asSequence().flatMap { source ->
                 trackWork(source.graph.nodes(type)).map { node -> QualifiedNode(source.id, source.graph, node) }
             }
         } else {

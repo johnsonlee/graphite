@@ -56,6 +56,8 @@ jobs:
       run: |
         cp candidate/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt \
           base/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt
+        cp candidate/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt \
+          base/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt
         base/gradlew -p base :cypher:jmhJar --no-daemon
         candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
 
