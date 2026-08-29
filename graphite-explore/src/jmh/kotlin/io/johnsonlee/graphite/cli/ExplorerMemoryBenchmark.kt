@@ -102,7 +102,8 @@ open class ExplorerMemoryBenchmark {
     fun android_initialExplorerSession(counters: ExplorerMemoryCounters): Long =
         measureRetainedHeap(counters) {
             request("/api/graphs") +
-                request("/api/overview?limit=200")
+                request("/api/overview?limit=200") +
+                request("/api/methods?limit=200")
         }
 
     @Benchmark
@@ -171,6 +172,7 @@ open class ExplorerMemoryBenchmark {
         val before = record()
         issue("/api/graphs")
         issue("/api/overview?limit=200")
+        issue("/api/methods?limit=200")
 
         repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle, ::issue) }
         forceGc()

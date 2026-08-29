@@ -2,6 +2,7 @@ let cy;
 let dashboardInfo;
 let activeGraphId;
 let resizeTimer;
+const cypherNeighborhoodRunner = GraphiteUiState.createLatestTaskRunner();
 
 const NODE_COLORS = {
     Graph: '#58a6ff', Class: '#58a6ff',
@@ -69,7 +70,7 @@ function initCytoscape() {
     cy.on('tap', 'node', e => {
         const nodeId = e.target.data('nodeId');
         if (Number.isInteger(nodeId)) {
-            showNodeDetail(e.target.data('graphId'), nodeId);
+            runCanvasAction(function() { return showNodeDetail(e.target.data('graphId'), nodeId); });
         } else if (e.target.data('nodeType') === 'Graph') {
             showGraphDetail(e.target.data('nodeData'));
         }
@@ -77,15 +78,15 @@ function initCytoscape() {
     cy.on('dbltap', 'node', e => {
         const nodeId = e.target.data('nodeId');
         if (Number.isInteger(nodeId)) {
-            loadSubgraph(e.target.data('graphId'), nodeId, 2);
+            exploreSubgraph(e.target.data('graphId'), nodeId, 2);
         } else if (e.target.data('nodeType') === 'Graph') {
-            loadSingleGraphOverview(e.target.data('graphId'));
+            exploreGraph(e.target.data('graphId'));
         }
     });
     cy.on('tap', 'edge', e => {
         const nodeId = e.target.data('targetNodeId');
         if (Number.isInteger(nodeId)) {
-            showNodeDetail(e.target.data('graphId'), nodeId);
+            runCanvasAction(function() { return showNodeDetail(e.target.data('graphId'), nodeId); });
         } else if (e.target.data('edgeType') === 'TopologyCall') {
             showTopologyRelationDetail(e.target.data('edgeData'));
         }
@@ -106,7 +107,7 @@ async function loadDashboard() {
         setMetric('stat-callsites', totals.callSites);
 
         const graphs = info.graphs || [];
-        const graphCount = Number(info.count || graphs.length || 1);
+        const graphCount = GraphiteUiState.graphCount(info, graphs);
         const countBadge = document.getElementById('graph-count');
         const navigationSection = document.getElementById('navigation-section');
         countBadge.textContent = graphCount;
@@ -214,7 +215,7 @@ function showGraphDetail(graph) {
         '<div class="detail-row"><span class="detail-key">ID</span><span class="detail-value">' + escapeHtml(graphId) + '</span></div>' +
         graphMetricRow('Nodes', graph.nodes) + graphMetricRow('Edges', graph.edges) +
         graphMetricRow('Methods', graph.methods) + graphMetricRow('Call sites', graph.callSites) +
-        '</div><div class="detail-block"><button onclick="loadSingleGraphOverview(' + htmlJsString(graphId) + ')">Explore classes</button></div>' +
+        '</div><div class="detail-block"><button onclick="exploreGraph(' + htmlJsString(graphId) + ')">Explore classes</button></div>' +
         '<p class="hint">Double-click the graph node to drill down.</p>';
 }
 
@@ -255,7 +256,7 @@ async function showNodeDetail(graphId, nodeId) {
     if (outgoing.length > 0) {
         html += '<div class="detail-block"><h4>Outgoing (' + outgoing.length + ')</h4>';
         outgoing.slice(0, 20).forEach(e => {
-            html += '<div class="detail-edge" onclick="loadSubgraph(' + htmlJsString(graphId) + ', ' + e.to + ', 1)">' + e.type + (e.kind ? '.' + e.kind : '') + ' &rarr; node#' + e.to + '</div>';
+            html += '<div class="detail-edge" onclick="exploreSubgraph(' + htmlJsString(graphId) + ', ' + e.to + ', 1)">' + e.type + (e.kind ? '.' + e.kind : '') + ' &rarr; node#' + e.to + '</div>';
         });
         if (outgoing.length > 20) html += '<div class="hint">...and ' + (outgoing.length - 20) + ' more</div>';
         html += '</div>';
@@ -273,7 +274,7 @@ async function loadIncomingEdges(graphId, nodeId) {
     let html = '<h4>Incoming (' + incoming.length + ')</h4>';
     if (incoming.length > 0) {
         incoming.slice(0, 20).forEach(e => {
-            html += '<div class="detail-edge" onclick="loadSubgraph(' + htmlJsString(graphId) + ', ' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
+            html += '<div class="detail-edge" onclick="exploreSubgraph(' + htmlJsString(graphId) + ', ' + e.from + ', 1)">node#' + e.from + ' &rarr; ' + e.type + (e.kind ? '.' + e.kind : '') + '</div>';
         });
         if (incoming.length > 20) html += '<div class="hint">...and ' + (incoming.length - 20) + ' more</div>';
     } else {
@@ -289,6 +290,14 @@ async function loadSubgraph(graphId, centerId, depth) {
     data.edges.forEach(e => { e.graphId = graphId; e.fromElementId = graphId + ':' + e.from; e.toElementId = graphId + ':' + e.to; });
     renderGraph(data, graphId + ':' + centerId);
     setGraphInfo(data.nodes.length + ' nodes, ' + data.edges.length + ' edges');
+}
+
+function exploreGraph(graphId) {
+    return runCanvasAction(function() { return loadSingleGraphOverview(graphId); });
+}
+
+function exploreSubgraph(graphId, centerId, depth) {
+    return runCanvasAction(function() { return loadSubgraph(graphId, centerId, depth); });
 }
 
 function renderGraph(data, centerId, viewMode) {
@@ -470,9 +479,15 @@ function setCanvasError(error, retry) {
         button.type = 'button';
         button.className = 'retry-button';
         button.textContent = 'Try again';
-        button.addEventListener('click', retry);
+        button.addEventListener('click', function() { runCanvasAction(retry); });
         state.appendChild(button);
     }
+}
+
+function runCanvasAction(action) {
+    return GraphiteUiState.runRecoverable(action, function(error) {
+        setCanvasError(error, action);
+    });
 }
 
 function htmlJsString(value) {
@@ -526,39 +541,49 @@ document.getElementById('btn-reset').addEventListener('click', function() {
     activeGraphId = null;
     document.querySelectorAll('.item-list .item').forEach(function(item) { item.classList.remove('selected'); });
     const reload = dashboardInfo && (dashboardInfo.count || 0) > 1 ? loadGraphTopology : loadInitialGraph;
-    reload().catch(function(error) { setCanvasError(error, reload); });
+    runCanvasAction(reload);
 });
 
 // Load Cypher result nodes onto the canvas
 async function loadCypherResults(nodeRefs) {
     if (nodeRefs.length === 0) return;
-    // Fetch subgraphs for all result nodes and merge them
-    var allNodes = new Map();
-    var allEdges = [];
-
-    // Limit to first 50 nodes to avoid overloading
     var refs = nodeRefs.slice(0, 50);
+    return cypherNeighborhoodRunner.run(async function(signal) {
+        var allNodes = new Map();
+        var allEdges = [];
+        var firstError;
 
-    for (var i = 0; i < refs.length; i++) {
-        try {
-            var ref = refs[i];
-            var data = await fetchJson('/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing');
-            data.nodes.forEach(function(n) {
-                n.graphId = ref.graphId;
-                n.elementId = ref.graphId + ':' + n.id;
-                if (!allNodes.has(n.elementId)) allNodes.set(n.elementId, n);
-            });
-            data.edges.forEach(function(e) {
-                e.graphId = ref.graphId;
-                e.fromElementId = ref.graphId + ':' + e.from;
-                e.toElementId = ref.graphId + ':' + e.to;
-                allEdges.push(e);
-            });
-        } catch (e) { /* Keep rendering the successful result neighborhoods. */ }
-    }
-
-    renderGraph({ nodes: Array.from(allNodes.values()), edges: allEdges }, refs[0].graphId + ':' + refs[0].id);
-    setGraphInfo(allNodes.size + ' nodes, ' + allEdges.length + ' edges');
+        for (var i = 0; i < refs.length; i++) {
+            try {
+                var ref = refs[i];
+                var data = await fetchJson(
+                    '/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing',
+                    { signal: signal }
+                );
+                data.nodes.forEach(function(n) {
+                    n.graphId = ref.graphId;
+                    n.elementId = ref.graphId + ':' + n.id;
+                    if (!allNodes.has(n.elementId)) allNodes.set(n.elementId, n);
+                });
+                data.edges.forEach(function(e) {
+                    e.graphId = ref.graphId;
+                    e.fromElementId = ref.graphId + ':' + e.from;
+                    e.toElementId = ref.graphId + ':' + e.to;
+                    allEdges.push(e);
+                });
+            } catch (error) {
+                if (signal.aborted || error.name === 'AbortError') throw error;
+                if (!firstError) firstError = error;
+            }
+        }
+        if (allNodes.size === 0 && firstError) throw firstError;
+        return { nodes: Array.from(allNodes.values()), edges: allEdges };
+    }, function(result) {
+        renderGraph(result, refs[0].graphId + ':' + refs[0].id);
+        setGraphInfo(result.nodes.length + ' nodes, ' + result.edges.length + ' edges');
+    }, function(error) {
+        setCanvasError(error, function() { loadCypherResults(nodeRefs); });
+    });
 }
 
 // Cypher query support
@@ -566,6 +591,7 @@ async function runCypher() {
     var query = document.getElementById('cypher-input').value.trim();
     var runButton = document.getElementById('cypher-run');
     if (!query || runButton.disabled) return;
+    cypherNeighborhoodRunner.cancel();
 
     var resultDiv = document.getElementById('cypher-result');
     runButton.disabled = true;

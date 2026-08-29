@@ -303,6 +303,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
     .overview-section { grid-column: 1 / -1; }
     #navigation-section, #detail-section { min-height: 220px; max-height: 420px; }
     #navigation-section { border-right: 1px solid var(--border-subtle); }
+    #navigation-section[hidden] + #detail-section { grid-column: 1 / -1; }
     .item-list { max-height: 320px; }
 }
 

@@ -730,6 +730,7 @@ class ExploreCommandTest {
             registry.load("service-b", graphDir)
 
             val groupedPaths = listOf(
+                "/api/methods?class=com.example.Child&limit=10",
                 "/api/annotations?class=com.example.Foo&member=bar",
                 "/api/resources?pattern=**&limit=10",
                 "/api/endpoints?class=com.example.Foo&limit=10",
@@ -745,10 +746,18 @@ class ExploreCommandTest {
                 assertEquals(listOf("service-a", "service-b"), groups.map { it[API_FIELD_GRAPH_ID] })
             }
 
-            listOf("nodes", "call-sites", "methods").forEach { route ->
+            listOf("nodes", "call-sites").forEach { route ->
                 assertEquals(404, get(targetPort, "/api/$route").first)
                 assertEquals(404, get(targetPort, "/api/graphs/service-a/$route").first)
             }
+
+            val (scopedMethodsCode, scopedMethodsBody) = get(
+                targetPort,
+                "/api/graphs/service-a/methods?class=com.example.Child&name=qux"
+            )
+            assertEquals(200, scopedMethodsCode, scopedMethodsBody)
+            val scopedMethods: List<Map<String, Any?>> = parseJson(scopedMethodsBody)
+            assertEquals("int", scopedMethods.single()["returnType"])
 
             val (scopedEndpointsCode, scopedEndpointsBody) = get(
                 targetPort,
@@ -1239,8 +1248,8 @@ class ExploreCommandTest {
     }
 
     @Test
-    fun `legacy search APIs are unavailable while Cypher remains available`() {
-        listOf("nodes", "call-sites", "methods").forEach { route ->
+    fun `node and call-site search APIs are unavailable while Cypher remains available`() {
+        listOf("nodes", "call-sites").forEach { route ->
             assertEquals(404, get("/api/$route").first, "Root search route /api/$route must be unavailable")
             assertEquals(
                 404,
@@ -1256,6 +1265,26 @@ class ExploreCommandTest {
             """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
         )
         assertEquals(200, scopedCode, scopedBody)
+    }
+
+    @Test
+    fun `GET api methods preserves indexed methods without nodes and declared return type`() {
+        val (code, body) = get("/api/methods?class=com.example.Child&name=qux&limit=100")
+        assertEquals(200, code, body)
+        val methods: List<Map<String, Any?>> = parseJson(body)
+        val method = methods.single()
+        assertEquals("com.example.Child", method["class"])
+        assertEquals("qux", method["name"])
+        assertEquals("int", method["returnType"])
+        assertEquals(quxMethod.signature, method["signature"])
+    }
+
+    @Test
+    fun `GET api methods respects global limit`() {
+        val (code, body) = get("/api/methods?limit=1")
+        assertEquals(200, code, body)
+        val methods: List<Map<String, Any?>> = parseJson(body)
+        assertEquals(1, methods.size)
     }
 
     // ========================================================================
@@ -1483,7 +1512,9 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/api/endpoints"))
         assertFalse(paths.containsKey("/api/api-spec"))
         assertTrue(paths.containsKey("/api/resources/{path}"))
-        listOf("nodes", "call-sites", "methods").forEach { route ->
+        assertTrue(paths.containsKey("/api/methods"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/methods"))
+        listOf("nodes", "call-sites").forEach { route ->
             assertFalse(paths.containsKey("/api/$route"))
             assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
         }
@@ -1693,7 +1724,9 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/api/graphs/{graphId}/resources/{path}"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/endpoints"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/architecture/c4"))
-        listOf("nodes", "call-sites", "methods").forEach { route ->
+        assertTrue(paths.containsKey("/api/methods"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/methods"))
+        listOf("nodes", "call-sites").forEach { route ->
             assertFalse(paths.containsKey("/api/$route"))
             assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
         }
