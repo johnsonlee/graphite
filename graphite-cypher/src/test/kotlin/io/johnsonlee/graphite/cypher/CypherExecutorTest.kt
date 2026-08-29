@@ -1202,6 +1202,36 @@ class CypherExecutorTest {
         assertTrue(result.rows.size <= 2)
     }
 
+    @Test
+    fun `variable-length relationship types are matched exactly`() {
+        val source = IntConstant(NodeId(1), 3)
+        val dataFlowTarget = IntConstant(NodeId(2), 2)
+        val callTarget = IntConstant(NodeId(3), 3)
+        val typeTarget = IntConstant(NodeId(4), 4)
+        val mixedGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(dataFlowTarget)
+            .addNode(callTarget)
+            .addNode(typeTarget)
+            .addEdge(DataFlowEdge(source.id, dataFlowTarget.id, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(source.id, callTarget.id, isVirtual = false))
+            .addEdge(TypeEdge(source.id, typeTarget.id, TypeRelation.EXTENDS))
+            .build()
+        val mixedExecutor = CypherExecutor(mixedGraph)
+
+        val union = mixedExecutor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW|CALL*1..1]->(b:IntConstant) " +
+                "WHERE a.value = 3 RETURN b.id ORDER BY b.id LIMIT 10"
+        )
+        val invalid = mixedExecutor.execute(
+            "MATCH (a:IntConstant)-[:D_A_T_A_F_L_O_W*1..1]->(b:IntConstant) " +
+                "WHERE a.value = 3 RETURN b.id ORDER BY b.id LIMIT 10"
+        )
+
+        assertEquals(listOf(2, 3), union.rows.map { it["b.id"] })
+        assertTrue(invalid.rows.isEmpty())
+    }
+
     // --- Edge Cases ---
 
     @Test

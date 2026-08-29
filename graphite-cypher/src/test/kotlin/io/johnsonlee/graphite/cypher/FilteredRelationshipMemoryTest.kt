@@ -58,7 +58,34 @@ class FilteredRelationshipMemoryTest {
         assertEquals(listOf(mapOf("kind" to "ASSIGN")), result.rows)
     }
 
+    @Test
+    fun `zero-hit filtered one-hop variable path does not retain frontier states`() {
+        val source = IntConstant(NodeId(5), 5)
+        val target = IntConstant(NodeId(6), 6)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(target)
+            .build()
+        val virtualGraph = object : Graph by base {
+            override fun outgoing(id: NodeId): Sequence<Edge> =
+                if (id == source.id) {
+                    generateSequence { DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN) }
+                        .take(VARIABLE_PATH_EDGE_COUNT)
+                } else {
+                    emptySequence()
+                }
+        }
+
+        val result = CypherExecutor(virtualGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..1]->(b:IntConstant) " +
+                "WHERE b.value = -1 RETURN b.id ORDER BY b.id LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+    }
+
     private companion object {
         const val EDGE_COUNT = 4_000_000
+        const val VARIABLE_PATH_EDGE_COUNT = 10_000_000
     }
 }

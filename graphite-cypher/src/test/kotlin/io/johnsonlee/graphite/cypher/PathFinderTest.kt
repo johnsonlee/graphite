@@ -119,6 +119,90 @@ class PathFinderTest {
     }
 
     @Test
+    fun `lazy match descends before retaining a wide sibling frontier`() {
+        val source = IntConstant(NodeId.next(), 10)
+        val middle = IntConstant(NodeId.next(), 11)
+        val target = IntConstant(NodeId.next(), 12)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(middle)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, middle.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(middle.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+        val guarded = object : Graph by base {
+            override fun outgoing(id: NodeId): Sequence<Edge> =
+                if (id == source.id) {
+                    sequence {
+                        yieldAll(base.outgoing(id))
+                        error("Lazy traversal consumed the source's sibling frontier before the first deep match")
+                    }
+                } else {
+                    base.outgoing(id)
+                }
+        }
+
+        val match = PathFinder.findPathMatches(
+            guarded,
+            setOf(source.id),
+            PathFinder.SearchOptions(
+                targets = setOf(target.id),
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 2,
+                maxDepth = 2,
+                direction = PathFinder.Direction.OUTGOING
+            )
+        ).first()
+
+        assertEquals(
+            listOf(source.id, middle.id, target.id),
+            match.materialize(null).nodes.map(Node::id)
+        )
+    }
+
+    @Test
+    fun `shallower revisit expands a node again within the remaining depth`() {
+        val source = IntConstant(NodeId.next(), 20)
+        val detour = IntConstant(NodeId.next(), 21)
+        val junction = IntConstant(NodeId.next(), 22)
+        val predecessor = IntConstant(NodeId.next(), 23)
+        val target = IntConstant(NodeId.next(), 24)
+        val sourceToDetour = DataFlowEdge(source.id, detour.id, DataFlowKind.ASSIGN)
+        val sourceToJunction = DataFlowEdge(source.id, junction.id, DataFlowKind.ASSIGN)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(detour)
+            .addNode(junction)
+            .addNode(predecessor)
+            .addNode(target)
+            .addEdge(DataFlowEdge(detour.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(junction.id, predecessor.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(predecessor.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+        val longBranchFirst = object : Graph by base {
+            override fun outgoing(id: NodeId): Sequence<Edge> =
+                if (id == source.id) sequenceOf(sourceToDetour, sourceToJunction) else base.outgoing(id)
+        }
+
+        val path = PathFinder.findPathMatches(
+            longBranchFirst,
+            setOf(source.id),
+            PathFinder.SearchOptions(
+                targets = setOf(target.id),
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 1,
+                maxDepth = 3,
+                direction = PathFinder.Direction.OUTGOING
+            )
+        ).single().materialize(null)
+
+        assertEquals(
+            listOf(source.id, junction.id, predecessor.id, target.id),
+            path.nodes.map(Node::id)
+        )
+    }
+
+    @Test
     fun `depth limit prevents finding distant nodes`() {
         val paths = PathFinder.findPaths(
             graph, setOf(nodeA), setOf(nodeD),

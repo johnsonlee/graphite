@@ -1917,11 +1917,13 @@ class QueryPipeline private constructor(
             ?.let(::nodeCursor)
             ?: findLastBoundNode(bindings)
             ?: return emptySequence()
-        val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
-        return if (rel.variableLength) {
-            matchVariableLengthPathLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
-        } else {
-            matchSingleHopLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+        val resolvedEdgeTypes = rel.types.mapNotNull(NodePropertyAccessor::resolveEdgeType).distinct()
+        val edgeClass = resolvedEdgeTypes.singleOrNull()
+        return when {
+            rel.types.isNotEmpty() && resolvedEdgeTypes.isEmpty() -> emptySequence()
+            rel.variableLength ->
+                matchVariableLengthPathLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
+            else -> matchSingleHopLazily(rel, targetNodePattern, sourceNode, bindings, edgeClass)
         }
     }
 
@@ -1976,7 +1978,8 @@ class QueryPipeline private constructor(
                 minDepth = rel.minHops ?: 1,
                 maxDepth = rel.maxHops ?: 10,
                 direction = direction,
-                workTracker = workTracker
+                workTracker = workTracker,
+                edgePredicate = { edge -> matchesRelConstraints(edge, rel, bindings) }
             )
         )
 

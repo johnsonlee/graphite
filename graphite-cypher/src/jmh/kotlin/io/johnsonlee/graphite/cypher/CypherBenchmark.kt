@@ -132,6 +132,15 @@ open class CypherBenchmark {
     }
 
     @Benchmark
+    fun filteredVariableLengthPath(): CypherResult {
+        return graph.query(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..1]->(b:CallSiteNode) " +
+                "WHERE b.line < 0 " +
+                "RETURN a.value AS value, b.callee_name AS callee LIMIT 20"
+        )
+    }
+
+    @Benchmark
     fun returnDistinct(): CypherResult {
         return graph.query("MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class")
     }

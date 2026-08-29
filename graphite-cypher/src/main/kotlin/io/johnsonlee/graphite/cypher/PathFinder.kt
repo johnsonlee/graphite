@@ -18,7 +18,8 @@ object PathFinder {
         val minDepth: Int,
         val maxDepth: Int,
         val direction: Direction,
-        val workTracker: CypherWorkTracker? = null
+        val workTracker: CypherWorkTracker? = null,
+        val edgePredicate: ((Edge) -> Boolean)? = null
     )
 
     internal class SearchState(
@@ -50,7 +51,7 @@ object PathFinder {
     }
 
     /**
-     * Find all paths from source nodes to target nodes via BFS.
+     * Find paths from source nodes to target nodes with a depth-bounded traversal.
      *
      * @param graph The graph to search
      * @param sources Source node IDs to start from
@@ -82,50 +83,72 @@ object PathFinder {
     ): Sequence<PathMatch> = sequence {
         for (source in sources) {
             val startNode = loadNode(graph, source, options.workTracker) ?: continue
-            yieldAll(bfs(graph, startNode, options))
+            yieldAll(depthFirst(graph, startNode, options))
         }
     }
 
-    private fun bfs(
+    /**
+     * Traverse one branch at a time so suspended lazy consumers retain at most [SearchOptions.maxDepth]
+     * search states instead of a complete breadth-first frontier.
+     * The shallowest-depth map grows with expanded node IDs, but does not retain nodes or parent paths;
+     * only the stack's O(maxDepth) frames retain those objects.
+     *
+     * Matches keep the graph's edge order within each branch. Cypher does not define a global result
+     * order without ORDER BY, so depth-first traversal is safe for the lazy query pipeline while allowing
+     * LIMIT to stop before unrelated siblings are loaded.
+     */
+    private fun depthFirst(
         graph: Graph,
         startNode: Node,
         options: SearchOptions
     ): Sequence<PathMatch> = sequence {
-        val visited = mutableSetOf<Int>()
-        val queue = ArrayDeque<SearchState>()
-        queue.add(SearchState(startNode, incomingEdge = null, parent = null, depth = 0))
+        val expandedAtDepth = mutableMapOf<Int, Int>()
+        val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
+        if (matchesTarget(start, options)) yield(PathMatch(start))
+        if (options.maxDepth <= 0) return@sequence
+        expandedAtDepth[startNode.id.value] = 0
 
-        while (queue.isNotEmpty()) {
-            val state = queue.removeFirst()
-            val current = state.node.id
+        val stack = ArrayDeque<SearchFrame>()
+        stack.addLast(SearchFrame(start, edgesForDirection(graph, startNode.id, options).iterator()))
 
-            if (state.depth == 0 && matchesTarget(state, options)) {
-                yield(PathMatch(state))
+        while (stack.isNotEmpty()) {
+            val frame = stack.last()
+            if (!frame.edges.hasNext()) {
+                stack.removeLast()
+                continue
             }
 
-            if (state.depth >= options.maxDepth) continue
-            if (!visited.add(current.value)) continue
+            val edge = frame.edges.next()
+            val current = frame.state.node.id
+            val nextId = nextNodeId(edge, current, options.direction)
+            val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+            val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
+            if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
 
-            val edges = edgesForDirection(graph, current, options)
-            for (edge in edges) {
-                val nextId = nextNodeId(edge, current, options.direction)
-                val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
-                val nextState = SearchState(nextNode, edge, state, state.depth + 1)
-                if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
-                queue.add(nextState)
+            val previousDepth = expandedAtDepth[nextId.value]
+            if (nextState.depth < options.maxDepth &&
+                (previousDepth == null || nextState.depth < previousDepth)
+            ) {
+                expandedAtDepth[nextId.value] = nextState.depth
+                stack.addLast(SearchFrame(nextState, edgesForDirection(graph, nextId, options).iterator()))
             }
         }
     }
+
+    private data class SearchFrame(
+        val state: SearchState,
+        val edges: Iterator<Edge>
+    )
 
     private fun matchesTarget(state: SearchState, options: SearchOptions): Boolean =
         state.depth >= options.minDepth && (options.targets == null || state.node.id in options.targets)
 
     private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): Sequence<Edge> =
         when (options.direction) {
-            Direction.OUTGOING -> filteredEdges(graph.outgoing(nodeId), options.edgeType, options.workTracker)
-            Direction.INCOMING -> filteredEdges(graph.incoming(nodeId), options.edgeType, options.workTracker)
-            Direction.BOTH -> filteredEdges(graph.outgoing(nodeId), options.edgeType, options.workTracker) +
-                filteredEdges(graph.incoming(nodeId), options.edgeType, options.workTracker)
+            Direction.OUTGOING -> filteredEdges(graph.outgoing(nodeId), options)
+            Direction.INCOMING -> filteredEdges(graph.incoming(nodeId), options)
+            Direction.BOTH -> filteredEdges(graph.outgoing(nodeId), options) +
+                filteredEdges(graph.incoming(nodeId), options)
         }
 
     private fun nextNodeId(edge: Edge, current: NodeId, direction: Direction): NodeId = when (direction) {
@@ -141,12 +164,13 @@ object PathFinder {
 
     private fun filteredEdges(
         edges: Sequence<Edge>,
-        edgeType: Class<out Edge>?,
-        workTracker: CypherWorkTracker?
+        options: SearchOptions
     ): Sequence<Edge> = sequence {
         for (edge in edges) {
-            workTracker?.consume()
-            if (edgeType == null || edgeType.isInstance(edge)) yield(edge)
+            options.workTracker?.consume()
+            val typeMatches = options.edgeType?.isInstance(edge) != false
+            val predicateMatches = options.edgePredicate?.invoke(edge) != false
+            if (typeMatches && predicateMatches) yield(edge)
         }
     }
 
