@@ -278,6 +278,96 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `mapped disjunction hands warm small graphs back to property indexes`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                val marker = if (index == 1) "Voucher" else "Feature"
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.${marker}Caller$index"),
+                            "create$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index"),
+                            "invoke$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            "caller_class",
+            "caller_name",
+            "callee_class",
+            "callee_name"
+        ).map { property ->
+            StringPropertyPredicate(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "voucher"
+            )
+        }
+        val dir = Files.createTempDirectory("webgraph-warm-disjunction-handoff")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val cold = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(1), cold)
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates
+                    )
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        limit = 0
+                    ).orEmpty().none()
+                )
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        emptyList()
+                    )
+                )
+
+                loaded.clearStringPropertyIndexes()
+                var consumed = 0
+                val reset = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { consumed++ }
+                ).orEmpty().map { it.id.value }.toList()
+                assertEquals(listOf(1), reset)
+                assertEquals(3, consumed)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
     private fun assertEarlyLimitedLookupsDoNotBuildIndex(graph: MappedWebGraphBackedGraph) {
         listOf(
             StringMatchMode.CONTAINS to "alpha",

@@ -198,6 +198,23 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
+        val nodeCount = nodeTypeIndex.count(type)
+        val cachedPredicates = predicates.distinctBy {
+            StringPredicateKey(it.transform, it.mode, it.expected)
+        }
+        val propertyIndexesFit = estimatedStringPropertyIndexBytes(nodeCount) <=
+            MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
+        val predicateStatesAreWarm = cachedPredicates.all { predicate ->
+            rawStringMatchStates.contains(
+                RawStringMatchKey(
+                    StringPropertyKey(type, predicate.property),
+                    predicate.transform,
+                    predicate.mode,
+                    predicate.expected
+                )
+            )
+        }
+        if (propertyIndexesFit && predicateStatesAreWarm) return null
         return sequence {
             val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
             val matchStates = predicates.map { predicate ->
@@ -674,6 +691,9 @@ internal class RawStringMatchStates(
             }
         }
     }
+
+    @Synchronized
+    fun contains(key: RawStringMatchKey): Boolean = states.containsKey(key)
 
     @Synchronized
     fun clear() {
