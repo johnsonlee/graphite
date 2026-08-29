@@ -174,6 +174,77 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `filtered relationship limit scopes an exact graph id before traversal`() {
+        val orders = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 10))
+            .addNode(IntConstant(NodeId(2), 20))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val billing = graph(IntConstant(NodeId(1), 30))
+        val unreadableBilling = object : Graph by billing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("Graph-id equality must prune unrelated graphs")
+        }
+        val executor = executor("billing" to unreadableBilling, "orders" to orders)
+
+        val result = executor.execute(
+            "MATCH (c)-[r:DATAFLOW]->(n) " +
+                "WHERE c.graphId = 'orders' AND c.value = 10 " +
+                "RETURN c.graphId AS graph, c.value AS source, n.value AS target, r.kind AS kind LIMIT 1"
+        )
+
+        assertEquals("orders", result.rows.single()["graph"])
+        assertEquals(10, result.rows.single()["source"])
+        assertEquals(20, result.rows.single()["target"])
+        assertEquals("ASSIGN", result.rows.single()["kind"])
+        assertEquals(listOf("orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `filtered relationship graph id pruning recognizes equivalent predicates`() {
+        val orders = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 10))
+            .addNode(IntConstant(NodeId(2), 20))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val executor = executor("billing" to graph(IntConstant(NodeId(1), 30)), "orders" to orders)
+        val predicates = listOf(
+            "'orders' = c.graphId",
+            "graphId(c) = 'orders'",
+            "c.graphId <> 'billing'",
+            "true"
+        )
+
+        for (predicate in predicates) {
+            val result = executor.execute(
+                "MATCH (c)-[:DATAFLOW]->(n) WHERE $predicate " +
+                    "RETURN c.graphId AS graph, n.value AS value LIMIT 1"
+            )
+
+            assertEquals("orders", result.rows.single()["graph"])
+            assertEquals(20, result.rows.single()["value"])
+        }
+    }
+
+    @Test
+    fun `filtered distinct relationship limit merges graph provenance`() {
+        fun dataFlowGraph(): Graph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId(1), 10))
+            .addNode(IntConstant(NodeId(2), 20))
+            .addEdge(DataFlowEdge(NodeId(1), NodeId(2), DataFlowKind.ASSIGN))
+            .build()
+        val executor = executor("billing" to dataFlowGraph(), "orders" to dataFlowGraph())
+
+        val result = executor.execute(
+            "MATCH (c)-[:DATAFLOW]->(n) WHERE n.value = 20 " +
+                "RETURN DISTINCT n.value AS value LIMIT 1"
+        )
+
+        assertEquals(20, result.rows.single()["value"])
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()).sorted())
+    }
+
+    @Test
     fun `aggregates once across all selected graphs and retains contributors`() {
         val executor = executor(
             "orders" to graph(IntConstant(NodeId(1), 10), IntConstant(NodeId(2), 20)),

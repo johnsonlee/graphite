@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.Test
+
 description = "Graphite Cypher - Cypher query engine for Graphite graphs"
 
 plugins {
@@ -72,4 +74,25 @@ tasks.named("compileTestKotlin") {
 
 tasks.named("compileJmhKotlin") {
     dependsOn(tasks.named("generateJmhGrammarSource"))
+}
+
+val filteredRelationshipMemoryTest by tasks.registering(Test::class) {
+    description = "Verifies filtered relationship queries stay within a bounded heap"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    filter {
+        includeTestsMatching("io.johnsonlee.graphite.cypher.FilteredRelationshipMemoryTest")
+    }
+    maxHeapSize = "256m"
+    forkEvery = 1
+    doNotTrackState("The heap-bound relationship regression must execute on every invocation")
+}
+
+tasks.named<Test>("test") {
+    exclude("**/FilteredRelationshipMemoryTest.class")
+}
+
+tasks.named("check") {
+    dependsOn(filteredRelationshipMemoryTest)
 }
