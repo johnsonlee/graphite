@@ -156,9 +156,11 @@ internal object MethodQueryExecutor {
         if (!supported) return null
 
         var total = 0L
+        val contributingSources = linkedSetOf<String>()
         for (source in sources) {
             checkCancelled()
             val count = source.graph.methodCount() ?: return null
+            if (count > 0L) contributingSources += source.id
             total = try {
                 Math.addExact(total, count)
             } catch (_: ArithmeticException) {
@@ -166,7 +168,9 @@ internal object MethodQueryExecutor {
             }
         }
         val row = mutableMapOf<String, Any?>(columns(ret).single() to total)
-        if (qualified) row[INTERNAL_PROVENANCE_KEY] = sources.mapTo(linkedSetOf()) { it.id }
+        if (qualified && contributingSources.isNotEmpty()) {
+            row[INTERNAL_PROVENANCE_KEY] = contributingSources
+        }
         return CypherResult(columns(ret), listOf(row))
     }
 

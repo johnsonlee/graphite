@@ -122,6 +122,50 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `Method count provenance excludes empty graphs`() {
+        val populated = DefaultGraph.Builder().apply {
+            addMethod(
+                MethodDescriptor(
+                    TypeDescriptor("com.example.Populated"),
+                    "load",
+                    emptyList(),
+                    TypeDescriptor("void")
+                )
+            )
+        }.build()
+        val executor = executor(
+            "empty-before" to graph(),
+            "populated" to populated,
+            "empty-after" to graph()
+        )
+
+        for (query in listOf(
+            "MATCH (m:Method) RETURN count(m) AS total",
+            "MATCH (m:Method) RETURN count(*) AS total"
+        )) {
+            val row = executor.execute(query).rows.single()
+
+            assertEquals(1L, row["total"])
+            assertEquals(listOf("populated"), graphIds(row))
+        }
+    }
+
+    @Test
+    fun `Method count over all empty graphs has empty provenance`() {
+        val executor = executor("empty-a" to graph(), "empty-b" to graph())
+
+        for (query in listOf(
+            "MATCH (m:Method) RETURN count(m) AS total",
+            "MATCH (m:Method) RETURN count(*) AS total"
+        )) {
+            val row = executor.execute(query).rows.single()
+
+            assertEquals(0L, row["total"])
+            assertEquals(emptyList(), graphIds(row))
+        }
+    }
+
+    @Test
     fun `shared execution context cancellation stops a cross graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
