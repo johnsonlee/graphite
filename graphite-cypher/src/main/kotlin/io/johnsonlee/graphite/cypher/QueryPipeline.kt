@@ -15,9 +15,11 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
+import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import java.util.PriorityQueue
 
@@ -767,6 +769,16 @@ class QueryPipeline private constructor(
                 ?.takeIf { it < Int.MAX_VALUE }
                 ?.toInt()
                 ?: Int.MAX_VALUE
+            val fused = stringPropertyDisjunctionCandidates(
+                graph,
+                candidateType,
+                filters,
+                completeScanLimit
+            )
+            if (fused != null) {
+                candidateSequences += fused
+                continue
+            }
             val accelerated = filters.map { filter ->
                 stringPropertyCandidates(
                     graph,
@@ -1594,6 +1606,23 @@ class QueryPipeline private constructor(
                 filter.expected,
                 limit
             )
+        }
+    }
+
+    private fun <T : Node> stringPropertyDisjunctionCandidates(
+        graph: Graph,
+        type: Class<T>,
+        filters: List<DirectStringFilter>,
+        limit: Int
+    ): Sequence<T>? {
+        val predicates = filters.map { filter ->
+            StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
+        }
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        return if (tracker == null) {
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit)
+        } else {
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit, tracker)
         }
     }
 

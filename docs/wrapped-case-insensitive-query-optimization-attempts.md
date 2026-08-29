@@ -194,3 +194,30 @@ adjacent regression: Android mapped load is `149.418 -> 139.761 ms/op`, the
 five mapped query benchmarks range from `-12.6%` to `+6.7%`, and
 `GraphEndToEndBenchmark.android_build_save_load_query` is
 `25,294.562 -> 24,900.711 ms/op` (`-1.6%`).
+
+### 2026-08-29 - Attempt 006: Fuse same-node string-property disjunctions
+
+The mapped backend previously evaluated the four caller/callee predicates as
+four independent storage lookups (or fell back to deserializing a complete
+node stream when a cold unbounded lookup was not admitted). It now exposes an
+optional exact disjunction capability. The Cypher fast path uses it only when
+the backend supports every property, preserving the existing ordered fallback
+for dynamic and unsupported properties. One fused scan inspects each candidate
+node ID once, emits each matching node once in canonical order, and charges one
+work unit per inspected candidate. Predicates with the same transform, operator,
+and literal share their string-ID match state even when they target different
+properties.
+
+Preliminary same-machine, cold single-shot checks on the four real fixtures:
+
+| Distribution | `main` | Fused scan | Speedup | Allocation reduction |
+|---|---:|---:|---:|---:|
+| dense method `CONTAINS` | `2.050 s` | `1.703 s` | `1.20x` | `10.8%` |
+| first/last bimodal prefix | `3.352 s` | `2.279 s` | `1.47x` | `29.1%` |
+| zero-hit broad `CONTAINS` | `0.831 s` | `0.537 s` | `1.55x` | `21.6%` |
+
+**Conclusion:** retained. The capability removes redundant storage work and
+reduces allocation without changing query semantics, but it is not sufficient
+for the 10x multi-graph objective. The next attempt adds bounded cross-graph
+execution around this fused primitive while retaining ordered global merge,
+budget, cancellation, and provenance semantics.

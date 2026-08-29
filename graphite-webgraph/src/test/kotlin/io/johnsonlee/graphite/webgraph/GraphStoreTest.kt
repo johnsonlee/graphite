@@ -46,7 +46,9 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -163,6 +165,41 @@ class GraphStoreTest {
                 assertWrappedLowercaseQuery(loaded)
                 assertRawStringPropertyLookups(loaded)
                 assertWorkAwareTransformedLookup(mapped)
+                var disjunctionWork = 0
+                val disjunction = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "owner"
+                        ),
+                        StringPropertyPredicate(
+                            "callee_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "target"
+                        )
+                    ),
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { disjunctionWork++ }
+                )?.map { it.id.value }?.toList()
+                assertEquals(listOf(2), disjunction)
+                assertEquals(1, disjunctionWork)
+                assertNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "unknown",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "feature"
+                            )
+                        )
+                    )
+                )
                 assertNull(
                     loaded.nodesByStringProperty(
                         StringConstant::class.java,

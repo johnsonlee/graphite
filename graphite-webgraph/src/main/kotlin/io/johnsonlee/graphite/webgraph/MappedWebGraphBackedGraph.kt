@@ -18,10 +18,12 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
@@ -82,6 +84,7 @@ internal class MappedWebGraphBackedGraph(
 ) : Graph,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
+    WorkAwareStringPropertyDisjunctionLookup,
     StringPropertyLookupOrder,
     Closeable {
 
@@ -171,6 +174,85 @@ internal class MappedWebGraphBackedGraph(
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>? = lookupStringProperty(type, property, transform, mode, expected, limit, workConsumer)
+
+    override fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int
+    ): Sequence<T>? = lookupStringPropertyDisjunction(type, predicates, limit, workConsumer = null)
+
+    override fun <T : Node> nodesByStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): Sequence<T>? = lookupStringPropertyDisjunction(type, predicates, limit, workConsumer)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Node> lookupStringPropertyDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
+        if (limit <= 0) return emptySequence()
+        return sequence {
+            val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
+            val matchStates = predicates.map { predicate ->
+                val predicateKey = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                sharedStates.getOrPut(predicateKey) {
+                    rawStringMatchStates.stateFor(
+                        RawStringMatchKey(
+                            StringPropertyKey(type, predicate.property),
+                            predicate.transform,
+                            predicate.mode,
+                            predicate.expected
+                        ),
+                        stringTable.size()
+                    )
+                }
+            }
+            var yielded = 0
+            for (nodeId in nodeTypeIndex.ids(type)) {
+                workConsumer?.consume()
+                val matches = predicates.indices.any { index ->
+                    val predicate = predicates[index]
+                    val stringId = rawStringPropertyIndex(nodeId, type, predicate.property) ?: return@any false
+                    val states = matchStates[index]
+                    if (states == null) {
+                        stringMatches(
+                            stringTable.get(stringId),
+                            predicate.transform,
+                            predicate.mode,
+                            predicate.expected
+                        )
+                    } else {
+                        when (states[stringId]) {
+                            RAW_STRING_MATCH -> true
+                            RAW_STRING_MISS -> false
+                            else -> stringMatches(
+                                stringTable.get(stringId),
+                                predicate.transform,
+                                predicate.mode,
+                                predicate.expected
+                            ).also { matched ->
+                                states[stringId] = if (matched) RAW_STRING_MATCH else RAW_STRING_MISS
+                            }
+                        }
+                    }
+                }
+                if (matches) {
+                    val matchedNode = node(NodeId(nodeId)) as? T
+                    if (matchedNode != null) {
+                        yield(matchedNode)
+                        yielded++
+                        if (yielded >= limit) break
+                    }
+                }
+            }
+        }
+    }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     private fun <T : Node> lookupStringProperty(
@@ -552,6 +634,12 @@ private data class StringPropertyAdmissionKey(
 
 internal data class RawStringMatchKey(
     val property: StringPropertyKey,
+    val transform: StringValueTransform?,
+    val mode: StringMatchMode,
+    val expected: String
+)
+
+private data class StringPredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
     val expected: String
