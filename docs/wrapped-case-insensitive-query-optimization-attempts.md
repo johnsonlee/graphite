@@ -318,3 +318,20 @@ not one of the globally selected rows.
 **Conclusion:** rejected and implementation removed. The next storage
 primitive should test selected projections during the raw scan and return only
 which selected rows occurred, rather than projecting every filter match.
+
+### 2026-08-29 - Attempt 011: Selected-projection storage pushdown
+
+Tested the narrower primitive proposed by Attempt 010. It resumed after the
+last yielded canonical node ID, compared raw string IDs against only the global
+selected rows, and returned a boolean hit vector. Focused tests covered resume
+position, exact selected/missing values, source order, and provenance.
+
+The real fixture result showed that phase-two projection was still not the
+dominant cold cost. Early, bimodal, and late measured `1.242`, `1.885`, and
+`1.332 s/op`, with `2.87`, `5.06`, and `2.90 GB/op` allocated. Every remaining
+node still had to evaluate the cold lowercase filter, which decodes and
+lowercases each previously unseen string-table value. Avoiding matched-node
+projection therefore could not materially change the total.
+
+**Conclusion:** rejected and implementation removed. The next attempt targets
+the cold lowercase predicate itself while retaining exact Unicode behavior.
