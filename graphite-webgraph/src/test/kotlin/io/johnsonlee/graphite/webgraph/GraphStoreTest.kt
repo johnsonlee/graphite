@@ -65,6 +65,7 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -360,6 +361,63 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(1), reset)
                 assertEquals(3, consumed)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped disjunction tolerates disabled match cache and observes interruption`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.VoucherCaller"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                    0,
+                    null,
+                    emptyList()
+                )
+            )
+            .build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "voucher"
+        )
+        val dir = Files.createTempDirectory("webgraph-disjunction-no-match-cache")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                loaded.javaClass.getDeclaredField("rawStringMatchStates").apply {
+                    isAccessible = true
+                    set(loaded, RawStringMatchStates(maxRetainedBytes = 0, maxEntries = 0))
+                }
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate)
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<CancellationException> {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate)
+                        ).orEmpty().toList()
+                    }
+                } finally {
+                    Thread.interrupted()
+                }
             } finally {
                 loaded.close()
             }
