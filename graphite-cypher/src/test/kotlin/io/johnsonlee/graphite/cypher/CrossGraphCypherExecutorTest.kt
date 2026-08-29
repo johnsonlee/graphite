@@ -44,6 +44,27 @@ import kotlin.test.assertTrue
 class CrossGraphCypherExecutorTest {
 
     @Test
+    fun `Method source preserves graph identity for equal indexed methods`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Shared"),
+            "load",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        fun methodGraph(): Graph = DefaultGraph.Builder().apply { addMethod(method) }.build()
+        val executor = executor("orders" to methodGraph(), "billing" to methodGraph())
+
+        val result = executor.execute(
+            "MATCH (m:Method) WHERE m.signature = '${method.signature}' " +
+                "RETURN m.graphId AS graph, m.signature AS signature LIMIT 10"
+        )
+
+        assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })
+        assertTrue(result.rows.all { it["signature"] == method.signature })
+        assertEquals(listOf(listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
+    }
+
+    @Test
     fun `shared execution context cancellation stops a cross graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)

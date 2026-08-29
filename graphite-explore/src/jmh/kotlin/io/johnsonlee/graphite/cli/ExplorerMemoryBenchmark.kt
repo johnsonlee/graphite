@@ -103,7 +103,7 @@ open class ExplorerMemoryBenchmark {
         measureRetainedHeap(counters) {
             request("/api/graphs") +
                 request("/api/overview?limit=200") +
-                request(cypherPath("MATCH (n:ReturnNode) RETURN n LIMIT 200", 200))
+                request(cypherPath("MATCH (m:Method) RETURN m LIMIT 200", 200))
         }
 
     @Benchmark
@@ -172,7 +172,7 @@ open class ExplorerMemoryBenchmark {
         val before = record()
         issue("/api/graphs")
         issue("/api/overview?limit=200")
-        issue(cypherPath("MATCH (n:ReturnNode) RETURN n LIMIT 200", 200))
+        issue(cypherPath("MATCH (m:Method) RETURN m LIMIT 200", 200))
 
         repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle, ::issue) }
         forceGc()

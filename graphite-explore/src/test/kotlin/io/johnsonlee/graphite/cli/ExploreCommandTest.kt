@@ -1251,19 +1251,19 @@ class ExploreCommandTest {
 
         val (rootCode, rootBody) = post("/api/cypher", """{"query":"MATCH (n) RETURN n.id LIMIT 1"}""")
         assertEquals(200, rootCode, rootBody)
-        val methodQuery = "MATCH (n:ReturnNode) WHERE n.method = '${barMethod.signature}' " +
-            "RETURN n.method, n.class, n.name, n.parameter_types, n.return_type"
+        val methodQuery = "MATCH (m:Method) WHERE m.signature = '${quxMethod.signature}' " +
+            "RETURN m.signature, m.class, m.name, m.parameter_types, m.return_type"
         val (methodCode, methodBody) = post("/api/cypher", """{"query":"$methodQuery"}""")
         assertEquals(200, methodCode, methodBody)
         val methodResult: Map<String, Any?> = parseJson(methodBody)
         @Suppress("UNCHECKED_CAST")
         val methodRows = methodResult["rows"] as List<Map<String, Any?>>
         val methodRow = methodRows.single()
-        assertEquals(barMethod.signature, methodRow["n.method"])
-        assertEquals("com.example.Foo", methodRow["n.class"])
-        assertEquals("bar", methodRow["n.name"])
-        assertEquals(listOf("int"), methodRow["n.parameter_types"])
-        assertEquals("void", methodRow["n.return_type"])
+        assertEquals(quxMethod.signature, methodRow["m.signature"])
+        assertEquals("com.example.Child", methodRow["m.class"])
+        assertEquals("qux", methodRow["m.name"])
+        assertEquals(listOf("java.lang.String"), methodRow["m.parameter_types"])
+        assertEquals("int", methodRow["m.return_type"])
         val (scopedCode, scopedBody) = post(
             "/api/graphs/standalone/cypher",
             """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
@@ -2076,6 +2076,9 @@ class ExploreCommandTest {
     fun `explorer defaults to mapped load mode`() {
         val explore = ExploreCommand()
 
+        CommandLine(explore).parseArgs()
+
+        assertEquals(8080, explore.port)
         assertEquals(GraphStore.LoadMode.MAPPED, explore.loadMode)
         assertNull(explore.data)
         assertNull(explore.graphId)

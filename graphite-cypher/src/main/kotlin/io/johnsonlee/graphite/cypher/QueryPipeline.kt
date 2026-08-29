@@ -192,12 +192,16 @@ class QueryPipeline private constructor(
     @Suppress("CyclomaticComplexMethod")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
-        val fastResult = tryFastNodeCount(clauses)
-            ?: tryFastLabelHistogram(clauses)
-            ?: tryFastOrderedPropertyLimit(clauses)
-            ?: tryFastDistinctPropertyLimit(clauses)
-            ?: tryFastFilteredNodeLimit(clauses)
-            ?: tryFastSingleHopRelationshipLimit(clauses)
+        val fastResult = if (MethodQueryExecutor.referencesMethod(clauses)) {
+            MethodQueryExecutor.execute(clauses, sources, qualified, ::checkCancelled)
+        } else {
+            tryFastNodeCount(clauses)
+                ?: tryFastLabelHistogram(clauses)
+                ?: tryFastOrderedPropertyLimit(clauses)
+                ?: tryFastDistinctPropertyLimit(clauses)
+                ?: tryFastFilteredNodeLimit(clauses)
+                ?: tryFastSingleHopRelationshipLimit(clauses)
+        }
         if (fastResult != null) return fastResult
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())

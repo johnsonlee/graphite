@@ -262,11 +262,12 @@ Use Cypher for agent-driven node, call-site, and method discovery. The legacy
 `/api/nodes`, `/api/call-sites`, and `/api/methods` search routes are not
 available. `/openapi.json` describes the complete supported surface.
 
-Declared method metadata is available on `ReturnNode`:
+Declared method metadata, including indexed methods without graph nodes, is
+available through the virtual `Method` source:
 
 ```cypher
-MATCH (method:ReturnNode)
-RETURN method.method, method.class, method.name,
+MATCH (method:Method)
+RETURN method.signature, method.class, method.name,
        method.parameter_types, method.return_type
 LIMIT 50
 ```

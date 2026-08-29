@@ -20,7 +20,7 @@ class QueryCommand : Callable<Int> {
     @Parameters(index = "1", description = ["Cypher query string"])
     lateinit var query: String
 
-    @Option(names = ["--format", "-f"], description = ["Output format: text, json, csv"], defaultValue = "text")
+    @Option(names = ["--format", "-f"], description = ["Output format: text, json, csv"])
     var format: String = "text"
 
     @Option(names = ["-v", "--verbose"], description = ["Enable verbose output"])
