@@ -114,7 +114,7 @@ open class CypherCapacityBenchmark {
             val recovery = waitForRecovery()
             validateRecovery(recovery)
 
-            val completed = responses.drop(1).map(Future<CapacityHttpResponse>::get)
+            val completed = responses.drop(1).map(Future<CapacityBenchmarkHttpResponse>::get)
             check(completed.size == TARGET_CONCURRENCY - 1 && completed.all {
                 it.status == HTTP_TOO_MANY_REQUESTS && it.body.contains(CYPHER_WORK_BUDGET_CODE)
             }) { "worst-case queries did not fail closed at the work budget: $completed" }
@@ -164,14 +164,14 @@ open class CypherCapacityBenchmark {
         }
     }
 
-    private fun readResponse(socket: Socket): CapacityHttpResponse {
+    private fun readResponse(socket: Socket): CapacityBenchmarkHttpResponse {
         val raw = socket.getInputStream().readBytes().toString(StandardCharsets.UTF_8)
         val status = raw.lineSequence().firstOrNull()?.split(' ')?.getOrNull(1)?.toIntOrNull()
             ?: error("capacity response omitted an HTTP status: $raw")
-        return CapacityHttpResponse(status, raw.substringAfter("\r\n\r\n"))
+        return CapacityBenchmarkHttpResponse(status, raw.substringAfter("\r\n\r\n"))
     }
 
-    private fun request(query: String): CapacityHttpResponse {
+    private fun request(query: String): CapacityBenchmarkHttpResponse {
         val encoded = URLEncoder.encode(query, StandardCharsets.UTF_8)
         val connection = URI(
             "http://127.0.0.1:$port/api/graphs/$GRAPH_ID/cypher?query=$encoded"
@@ -181,14 +181,14 @@ open class CypherCapacityBenchmark {
         return try {
             val status = connection.responseCode
             val stream = if (status in HTTP_SUCCESS_RANGE) connection.inputStream else connection.errorStream
-            CapacityHttpResponse(status, stream?.bufferedReader()?.use { it.readText() }.orEmpty())
+            CapacityBenchmarkHttpResponse(status, stream?.bufferedReader()?.use { it.readText() }.orEmpty())
         } finally {
             connection.disconnect()
         }
     }
 
-    private fun waitForRecovery(): CapacityHttpResponse {
-        var last = CapacityHttpResponse(0, "not attempted")
+    private fun waitForRecovery(): CapacityBenchmarkHttpResponse {
+        var last = CapacityBenchmarkHttpResponse(0, "not attempted")
         check(waitUntil {
             last = request("RETURN 1 AS ok")
             last.status != HTTP_TOO_MANY_REQUESTS || !last.body.contains(CYPHER_CONCURRENCY_LIMIT_CODE)
@@ -196,7 +196,7 @@ open class CypherCapacityBenchmark {
         return last
     }
 
-    private fun validateRecovery(response: CapacityHttpResponse) {
+    private fun validateRecovery(response: CapacityBenchmarkHttpResponse) {
         check(response.status == HTTP_OK) { "recovery query returned HTTP ${response.status}: ${response.body}" }
         val body = JsonParser.parseString(response.body).asJsonObject
         check(body.getAsJsonArray("columns").map { it.asString } == listOf("ok")) {
@@ -301,4 +301,4 @@ private class CypherCapacityBenchmarkRecorder : CypherPerformanceRecorder {
     fun outcomeSnapshot(): Map<CypherQueryOutcome, Int> = outcomes.mapValues { it.value.get() }
 }
 
-private data class CapacityHttpResponse(val status: Int, val body: String)
+private data class CapacityBenchmarkHttpResponse(val status: Int, val body: String)
