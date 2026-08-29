@@ -319,6 +319,19 @@ class CypherCompatibilityTest {
         assertEquals(0, result.rows[0]["m.index"])
     }
 
+    @Test
+    fun `OPTIONAL MATCH - WHERE rejection preserves the input row and null fills new variables`() {
+        val result = executor.execute(
+            "MATCH (n:IntConstant {value: 42}) " +
+                "OPTIONAL MATCH (n)-[:DATAFLOW]->(m:ParameterNode) WHERE m.index = 999 " +
+                "RETURN n.value, m"
+        )
+
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows.single()["n.value"])
+        assertNull(result.rows.single()["m"])
+    }
+
     // ========================================================================
     // 3. WHERE clauses
     // ========================================================================

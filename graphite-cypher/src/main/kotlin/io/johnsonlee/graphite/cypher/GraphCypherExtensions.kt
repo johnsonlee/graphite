@@ -11,3 +11,8 @@ import io.johnsonlee.graphite.graph.Graph
 fun Graph.query(cypher: String): CypherResult {
     return CypherExecutor(this).execute(cypher)
 }
+
+/** Execute a parameterized Cypher query against this graph. */
+fun Graph.query(cypher: String, parameters: Map<String, Any?>): CypherResult {
+    return CypherExecutor(this).execute(cypher, parameters)
+}

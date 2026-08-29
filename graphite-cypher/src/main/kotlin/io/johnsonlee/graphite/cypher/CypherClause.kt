@@ -13,10 +13,14 @@ sealed class CypherClause {
      *
      * @property patterns one or more graph patterns to match
      * @property optional true when this is an `OPTIONAL MATCH`
+     * @property where a predicate that is part of this match operation. This is
+     * especially significant for `OPTIONAL MATCH`, where the predicate decides
+     * whether the optional pattern matched before new variables are null-filled.
      */
     data class Match(
         val patterns: List<CypherPattern>,
-        val optional: Boolean = false
+        val optional: Boolean = false,
+        val where: CypherExpr? = null
     ) : CypherClause()
 
     /**

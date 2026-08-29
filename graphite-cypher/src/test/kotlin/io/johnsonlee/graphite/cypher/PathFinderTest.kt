@@ -211,4 +211,95 @@ class PathFinderTest {
         // Should not include A->B (depth 1), but include A->B->C (depth 2) and longer
         assertTrue(paths.all { it.edges.size >= 2 })
     }
+
+    @Test
+    fun `enumerates distinct trails to the same endpoint`() {
+        val left = NodeId.next()
+        val right = NodeId.next()
+        val end = NodeId.next()
+        val builder = DefaultGraph.Builder()
+        listOf(nodeA, left, right, end).forEachIndexed { value, id ->
+            builder.addNode(IntConstant(id, value))
+        }
+        builder.addEdge(DataFlowEdge(nodeA, left, DataFlowKind.ASSIGN))
+        builder.addEdge(DataFlowEdge(nodeA, right, DataFlowKind.ASSIGN))
+        builder.addEdge(DataFlowEdge(left, end, DataFlowKind.ASSIGN))
+        builder.addEdge(DataFlowEdge(right, end, DataFlowKind.ASSIGN))
+
+        val paths = PathFinder.findPaths(
+            builder.build(),
+            setOf(nodeA),
+            setOf(end),
+            edgeType = DataFlowEdge::class.java,
+            minDepth = 2,
+            maxDepth = 2
+        )
+
+        assertEquals(
+            setOf(listOf(nodeA, left, end), listOf(nodeA, right, end)),
+            paths.map { it.nodes.map(Node::id) }.toSet()
+        )
+    }
+
+    @Test
+    fun `unbounded search goes beyond ten hops`() {
+        val ids = List(12) { NodeId.next() }
+        val builder = DefaultGraph.Builder()
+        ids.forEachIndexed { value, id -> builder.addNode(IntConstant(id, value)) }
+        ids.zipWithNext().forEach { (from, to) ->
+            builder.addEdge(DataFlowEdge(from, to, DataFlowKind.ASSIGN))
+        }
+
+        val paths = PathFinder.findPaths(
+            builder.build(),
+            setOf(ids.first()),
+            setOf(ids.last()),
+            edgeType = DataFlowEdge::class.java
+        )
+
+        assertEquals(1, paths.size)
+        assertEquals(11, paths.single().edges.size)
+    }
+
+    @Test
+    fun `unbounded search allows repeated nodes but never repeated relationships`() {
+        val first = NodeId.next()
+        val second = NodeId.next()
+        val builder = DefaultGraph.Builder()
+        builder.addNode(IntConstant(first, 1))
+        builder.addNode(IntConstant(second, 2))
+        builder.addEdge(DataFlowEdge(first, second, DataFlowKind.ASSIGN))
+        builder.addEdge(DataFlowEdge(second, first, DataFlowKind.RETURN_VALUE))
+
+        val paths = PathFinder.findPaths(
+            builder.build(),
+            setOf(first),
+            setOf(first),
+            edgeType = DataFlowEdge::class.java
+        )
+
+        assertEquals(1, paths.size)
+        assertEquals(listOf(first, second, first), paths.single().nodes.map(Node::id))
+        assertEquals(2, paths.single().edges.size)
+    }
+
+    @Test
+    fun `edge predicate applies to every hop`() {
+        val paths = PathFinder.findPathMatches(
+            graph,
+            setOf(nodeA),
+            PathFinder.SearchOptions(
+                targets = null,
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 1,
+                maxDepth = null,
+                direction = PathFinder.Direction.OUTGOING,
+                edgeFilter = { edge -> edge is DataFlowEdge && edge.kind == DataFlowKind.ASSIGN }
+            )
+        ).map { it.materialize(null) }.toList()
+
+        assertEquals(listOf(listOf(nodeA, nodeB), listOf(nodeA, nodeB, nodeC)), paths.map { path ->
+            path.nodes.map(Node::id)
+        })
+    }
 }

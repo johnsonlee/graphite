@@ -1441,7 +1441,7 @@ class QueryPipelineTest {
     // ========================================================================
 
     @Test
-    fun `variable-length path with path variable`() {
+    fun `variable-length relationship variable is a relationship list`() {
         val clauses = listOf(
             CypherClause.Match(listOf(pattern(
                 nodePattern("a", "IntConstant"),
@@ -1454,7 +1454,56 @@ class QueryPipelineTest {
         )
         val result = pipeline.execute(clauses)
         assertTrue(result.rows.isNotEmpty())
-        assertTrue(result.rows[0]["path"] is PathFinder.Path)
+        val relationships = result.rows[0]["path"] as List<*>
+        assertEquals(4, relationships.size)
+        assertTrue(relationships.all { it is DataFlowEdge })
+    }
+
+    @Test
+    fun `variable-length relationship properties constrain every hop`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a", "ParameterNode"),
+                relPattern(
+                    variable = "r",
+                    type = "DATAFLOW",
+                    variableLength = true,
+                    minHops = 2,
+                    properties = mapOf("kind" to lit("ASSIGN"))
+                ),
+                nodePattern("b", "LocalVariable")
+            ))),
+            CypherClause.Return(listOf(
+                returnItem(variable("r"), "relationships"),
+                returnItem(prop(variable("b"), "name"), "name")
+            ))
+        )
+
+        val result = pipeline.execute(clauses)
+
+        assertEquals(1, result.rows.size)
+        assertEquals("y", result.rows.single()["name"])
+        val relationships = result.rows.single()["relationships"] as List<*>
+        assertEquals(2, relationships.size)
+        assertTrue(relationships.all { it is DataFlowEdge && it.kind == DataFlowKind.ASSIGN })
+    }
+
+    @Test
+    fun `relationships cannot repeat across segments of one pattern`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a", "IntConstant", mapOf("value" to lit(42))),
+                relPattern(type = "DATAFLOW", variableLength = true, minHops = 2, maxHops = 2),
+                nodePattern("b", "LocalVariable"),
+                relPattern(type = "DATAFLOW", direction = Direction.INCOMING),
+                nodePattern("c", "ParameterNode")
+            ))),
+            CypherClause.Return(listOf(returnItem(variable("c"), "parameter")))
+        )
+
+        val result = pipeline.execute(clauses)
+
+        assertTrue(result.rows.isEmpty())
     }
 
     // ========================================================================
@@ -1462,7 +1511,7 @@ class QueryPipelineTest {
     // ========================================================================
 
     @Test
-    fun `order by with nulls`() {
+    fun `order by ascending places nulls last`() {
         val clauses = listOf(
             CypherClause.Unwind(
                 CypherExpr.ListLiteral(listOf(lit(3), lit(null), lit(1))),
@@ -1473,10 +1522,39 @@ class QueryPipelineTest {
         )
         val result = pipeline.execute(clauses)
         assertEquals(3, result.rows.size)
-        // nulls sort before non-nulls
-        assertNull(result.rows[0]["x"])
-        assertEquals(1, result.rows[1]["x"])
-        assertEquals(3, result.rows[2]["x"])
+        assertEquals(1, result.rows[0]["x"])
+        assertEquals(3, result.rows[1]["x"])
+        assertNull(result.rows[2]["x"])
+    }
+
+    @Test
+    fun `order by descending places nulls first`() {
+        val clauses = listOf(
+            CypherClause.Unwind(
+                CypherExpr.ListLiteral(listOf(lit(3), lit(null), lit(1))),
+                "x"
+            ),
+            CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = false)))
+        )
+        val result = pipeline.execute(clauses)
+        assertEquals(listOf(null, 3, 1), result.rows.map { it["x"] })
+    }
+
+    @Test
+    fun `ordered property limit fast path uses Cypher type and null ordering`() {
+        fun query(ascending: Boolean, limit: Int) = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n")))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "value"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending))),
+            CypherClause.Limit(lit(limit))
+        )
+
+        val ascending = pipeline.execute(query(ascending = true, limit = 3))
+        assertEquals(listOf("hello", true, 7), ascending.rows.map { it["x"] })
+
+        val descending = pipeline.execute(query(ascending = false, limit = 1))
+        assertEquals(listOf(null), descending.rows.map { it["x"] })
     }
 
     // ========================================================================
@@ -1508,18 +1586,48 @@ class QueryPipelineTest {
         assertNull(result.rows[0]["m"])
     }
 
+    @Test
+    fun `optional match where filters candidates before null fill`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("n", "IntConstant", mapOf("value" to lit(42)))
+            ))),
+            CypherClause.Match(
+                patterns = listOf(pattern(
+                    nodePattern("n"),
+                    relPattern(type = "DATAFLOW"),
+                    nodePattern("p", "ParameterNode")
+                )),
+                optional = true,
+                where = CypherExpr.Comparison("=", prop(variable("p"), "index"), lit(999))
+            ),
+            CypherClause.Return(listOf(
+                returnItem(prop(variable("n"), "value"), "nval"),
+                returnItem(variable("p"), "p")
+            ))
+        )
+
+        val result = pipeline.execute(clauses)
+        assertEquals(1, result.rows.size)
+        assertEquals(42, result.rows.single()["nval"])
+        assertNull(result.rows.single()["p"])
+    }
+
     // ========================================================================
     // ORDER BY - boolean comparison and toString fallback
     // ========================================================================
 
     @Test
-    fun `order by with mixed types uses toString fallback`() {
-        // When values are not Number/String/Boolean, compareNullable falls through to toString
+    fun `order by uses Cypher total ordering across value types`() {
         val clauses = listOf(
             CypherClause.Unwind(
                 CypherExpr.ListLiteral(listOf(
-                    CypherExpr.ListLiteral(listOf(lit(2))),
-                    CypherExpr.ListLiteral(listOf(lit(1)))
+                    lit(1),
+                    lit(true),
+                    lit("text"),
+                    CypherExpr.ListLiteral(listOf(lit(1))),
+                    CypherExpr.MapLiteral(mapOf("a" to lit(1))),
+                    lit(null)
                 )),
                 "x"
             ),
@@ -1527,7 +1635,160 @@ class QueryPipelineTest {
             CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
         )
         val result = pipeline.execute(clauses)
-        assertEquals(2, result.rows.size)
+        assertEquals(
+            listOf(mapOf("a" to 1), listOf(1), "text", true, 1, null),
+            result.rows.map { it["x"] }
+        )
+    }
+
+    @Test
+    fun `order by places node relationship list and path in Cypher type order`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(CypherPattern(
+                elements = listOf(
+                    nodePattern("n", "IntConstant", mapOf("value" to lit(42))),
+                    relPattern(variable = "r", type = "DATAFLOW"),
+                    nodePattern("m", "ParameterNode")
+                ),
+                pathVariable = "p"
+            ))),
+            CypherClause.Unwind(
+                CypherExpr.ListLiteral(listOf(
+                    CypherExpr.MapLiteral(mapOf("a" to lit(1))),
+                    variable("n"),
+                    variable("r"),
+                    CypherExpr.ListLiteral(listOf(lit("list"))),
+                    variable("p"),
+                    lit("text"),
+                    lit(false),
+                    lit(1.5),
+                    lit(null)
+                )),
+                "x"
+            ),
+            CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
+        )
+
+        val values = pipeline.execute(clauses).rows.map { it["x"] }
+        assertEquals(mapOf("a" to 1), values[0])
+        assertTrue(values[1] is Node)
+        assertTrue(values[2] is Edge)
+        assertEquals(listOf("list"), values[3])
+        assertTrue(values[4] is PathFinder.Path)
+        assertEquals(listOf("text", false, 1.5, null), values.drop(5))
+    }
+
+    @Test
+    fun `order by compares lists lexicographically using Cypher value ordering`() {
+        val lists = listOf(
+            emptyList(),
+            listOf("a"),
+            listOf("a", 1),
+            listOf(1),
+            listOf(1, "a"),
+            listOf(1, null),
+            listOf(null, 1),
+            listOf(null, 2)
+        )
+        val clauses = listOf(
+            CypherClause.Unwind(
+                CypherExpr.ListLiteral(lists.reversed().map { values ->
+                    CypherExpr.ListLiteral(values.map(::lit))
+                }),
+                "x"
+            ),
+            CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
+        )
+
+        val result = pipeline.execute(clauses)
+        assertEquals(lists, result.rows.map { it["x"] })
+    }
+
+    @Test
+    fun `order by compares maps deterministically`() {
+        val maps = listOf(
+            mapOf("a" to 1),
+            mapOf("a" to 2),
+            mapOf("b" to 1),
+            mapOf("a" to 1, "b" to 0)
+        )
+        val clauses = listOf(
+            CypherClause.Unwind(
+                CypherExpr.ListLiteral(maps.reversed().map { entries ->
+                    CypherExpr.MapLiteral(entries.mapValues { lit(it.value) })
+                }),
+                "x"
+            ),
+            CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
+        )
+
+        assertEquals(maps, pipeline.execute(clauses).rows.map { it["x"] })
+    }
+
+    @Test
+    fun `order by treats NaN as the greatest number`() {
+        val clauses = listOf(
+            CypherClause.Unwind(
+                CypherExpr.ListLiteral(listOf(lit(Double.NaN), lit(1.0), lit(Double.NaN), lit(Double.POSITIVE_INFINITY))),
+                "x"
+            ),
+            CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
+        )
+
+        val values = pipeline.execute(clauses).rows.map { it["x"] as Double }
+        assertEquals(listOf(1.0, Double.POSITIVE_INFINITY), values.take(2))
+        assertTrue(values.drop(2).all(Double::isNaN))
+    }
+
+    @Test
+    fun `order by compares identities within node relationship and path types`() {
+        val nodes = pipeline.execute(listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "IntConstant")))),
+            CypherClause.Return(listOf(returnItem(variable("n"), "value"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("value"), ascending = true)))
+        ))
+        assertEquals(listOf(intConst42, intConst7), nodes.rows.map { (it["value"] as Node).id })
+
+        val relationships = pipeline.execute(listOf(
+            CypherClause.Match(listOf(pattern(
+                nodePattern("a"),
+                relPattern(variable = "r", type = "DATAFLOW"),
+                nodePattern("b")
+            ))),
+            CypherClause.Return(listOf(returnItem(variable("r"), "value"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("value"), ascending = true)))
+        ))
+        val orderedEdges = relationships.rows.map { it["value"] as Edge }
+        assertEquals(
+            orderedEdges.sortedWith(compareBy({ it.from.value }, { it.to.value }, { it::class.java.name })),
+            orderedEdges
+        )
+
+        val paths = pipeline.execute(listOf(
+            CypherClause.Match(listOf(CypherPattern(
+                elements = listOf(
+                    nodePattern("a"),
+                    relPattern(type = "DATAFLOW"),
+                    nodePattern("b")
+                ),
+                pathVariable = "p"
+            ))),
+            CypherClause.Return(listOf(returnItem(variable("p"), "value"))),
+            CypherClause.OrderBy(listOf(SortItem(variable("value"), ascending = true)))
+        ))
+        val orderedPaths = paths.rows.map { it["value"] as PathFinder.Path }
+        assertEquals(
+            orderedPaths.sortedWith(compareBy(
+                { it.nodes.first().id.value },
+                { it.edges.first().from.value },
+                { it.edges.first().to.value }
+            )),
+            orderedPaths
+        )
     }
 
     @Test
@@ -2084,7 +2345,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `path variable without explicit edge variable materializes alternating node edge path`() {
+    fun `path variable without explicit edge variable retains path type`() {
         val clauses = listOf(
             CypherClause.Match(listOf(
                 CypherPattern(
@@ -2101,11 +2362,26 @@ class QueryPipelineTest {
 
         val result = pipeline.execute(clauses)
         assertEquals(1, result.rows.size)
-        val path = result.rows[0]["path"]
-        assertTrue(path is List<*>)
-        assertEquals(3, path.size)
-        assertTrue(path[0] is IntConstant)
-        assertTrue(path[1] is DataFlowEdge)
-        assertTrue(path[2] is ParameterNode)
+        val path = result.rows[0]["path"] as PathFinder.Path
+        assertEquals(2, path.nodes.size)
+        assertTrue(path.nodes[0] is IntConstant)
+        assertTrue(path.nodes[1] is ParameterNode)
+        assertEquals(1, path.edges.size)
+        assertTrue(path.edges.single() is DataFlowEdge)
+    }
+
+    @Test
+    fun `single node named path retains its node`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(CypherPattern(
+                elements = listOf(nodePattern("n", "IntConstant", mapOf("value" to lit(42)))),
+                pathVariable = "p"
+            ))),
+            CypherClause.Return(listOf(returnItem(variable("p"), "path")))
+        )
+
+        val path = pipeline.execute(clauses).rows.single()["path"] as PathFinder.Path
+        assertEquals(listOf(intConst42), path.nodes.map(Node::id))
+        assertTrue(path.edges.isEmpty())
     }
 }

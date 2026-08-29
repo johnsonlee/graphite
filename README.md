@@ -134,6 +134,12 @@ result.rows.forEach { row ->
     println("${row["c.value"]} -> ${row["cs.callee_name"]}")
 }
 
+// Bind values without interpolating them into the query text
+val selected = graph.query(
+    "MATCH (c:IntConstant) WHERE c.value = \$value RETURN c",
+    mapOf("value" to 42)
+)
+
 // Programmatic query DSL
 val results = Graphite.from(graph).query {
     findArgumentConstants {
@@ -370,7 +376,7 @@ Graphs are persisted using the [WebGraph](https://webgraph.di.unimi.it/) ecosyst
 | Generic type analysis | `ApiResponse<PageData<User>>` nested structure |
 | Branch reachability | Dead code via condition constant analysis |
 | Annotations | Generic `memberAnnotations()` for any framework |
-| Cypher queries | `graph.query("MATCH ...")` -- full openCypher read grammar |
+| Cypher queries | `graph.query("MATCH ...")` -- read-oriented Cypher subset |
 | Resource access | Files inside JAR/WAR/fat JAR (nested JARs) |
 
 ## Extension Mechanism

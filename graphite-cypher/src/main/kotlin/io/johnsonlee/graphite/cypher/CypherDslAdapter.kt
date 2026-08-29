@@ -142,7 +142,7 @@ private class CypherAstVisitor {
             ctx.matchSt() != null -> {
                 val matchCtx = ctx.matchSt()
                 clauses.add(visitMatchSt(matchCtx))
-                if (matchCtx.whereSt() != null) {
+                if (matchCtx.whereSt() != null && matchCtx.OPTIONAL() == null) {
                     clauses.add(visitWhereSt(matchCtx.whereSt()))
                 }
             }
@@ -163,7 +163,8 @@ private class CypherAstVisitor {
     private fun visitMatchSt(ctx: CypherParser.MatchStContext): CypherClause.Match {
         val optional = ctx.OPTIONAL() != null
         val patterns = visitPatternList(ctx.patternList())
-        return CypherClause.Match(patterns, optional)
+        val where = if (optional) ctx.whereSt()?.let { visitExpr(it.expression()) } else null
+        return CypherClause.Match(patterns, optional, where)
     }
 
     private fun visitWhereSt(ctx: CypherParser.WhereStContext): CypherClause.Where {

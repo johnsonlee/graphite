@@ -852,6 +852,76 @@ class CypherExecutorTest {
         assertTrue(result.rows.size <= 2)
     }
 
+    @Test
+    fun `variable-length relationship variable returns relationships`() {
+        val result = executor.execute(
+            "MATCH (a:IntConstant {value: 42})-[r:DATAFLOW*4]->(b:CallSiteNode) RETURN r"
+        )
+
+        assertEquals(1, result.rows.size)
+        val relationships = result.rows.single()["r"] as List<*>
+        assertEquals(4, relationships.size)
+        assertTrue(relationships.all { it is DataFlowEdge })
+    }
+
+    @Test
+    fun `variable-length path accepts every requested relationship type`() {
+        val result = executor.execute(
+            "MATCH (a:IntConstant {value: 42})-[r:DATAFLOW|CALL*]->(b:ReturnNode) RETURN r"
+        )
+
+        assertEquals(1, result.rows.size)
+        val relationships = result.rows.single()["r"] as List<*>
+        assertEquals(5, relationships.size)
+        assertTrue(relationships.take(4).all { it is DataFlowEdge })
+        assertTrue(relationships.last() is CallEdge)
+    }
+
+    @Test
+    fun `a bound relationship remains a constraint in a later match`() {
+        val result = executor.execute(
+            "MATCH (a:StringConstant)-[r:DATAFLOW]->(b:CallSiteNode {callee_name: 'save'}) " +
+                "MATCH (a)-[r:DATAFLOW]->(x) RETURN x.callee_name AS name"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["name"] })
+    }
+
+    @Test
+    fun `a bound relationship list constrains a variable-length match`() {
+        val result = executor.execute(
+            "MATCH (a:ParameterNode)-[r1:DATAFLOW]->(:LocalVariable {name: 'x'})" +
+                "-[r2:DATAFLOW]->(b:LocalVariable {name: 'y'}) " +
+                "WITH a, b, [r2, r1] AS relationships " +
+                "MATCH (a)-[relationships:DATAFLOW*2]->(b) RETURN relationships"
+        )
+
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `a bound relationship is reserved from earlier variable-length segments`() {
+        NodeId.reset()
+        val first = NodeId.next()
+        val second = NodeId.next()
+        val third = NodeId.next()
+        val builder = DefaultGraph.Builder()
+            .addNode(IntConstant(first, 1))
+            .addNode(IntConstant(second, 2))
+            .addNode(IntConstant(third, 3))
+            .addEdge(DataFlowEdge(first, second, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(second, third, DataFlowKind.ASSIGN))
+        val localExecutor = CypherExecutor(builder.build())
+
+        val result = localExecutor.execute(
+            "MATCH (:IntConstant {value: 2})-[r:DATAFLOW]->(:IntConstant {value: 3}) " +
+                "MATCH (:IntConstant {value: 1})-[:DATAFLOW*1..2]-(b)-[r:DATAFLOW]-(c) " +
+                "RETURN b.value AS b, c.value AS c"
+        )
+
+        assertEquals(listOf(mapOf("b" to 2, "c" to 3)), result.rows)
+    }
+
     // --- Edge Cases ---
 
     @Test
@@ -1051,6 +1121,35 @@ class CypherExecutorTest {
         @Suppress("UNCHECKED_CAST")
         val map = result.rows[0]["m"] as Map<String, Any?>
         assertEquals(42, map["v"])
+    }
+
+    @Test
+    fun `budgeted execution materializes named paths nested in maps`() {
+        val budgeted = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 100))
+        val result = budgeted.execute(
+            "MATCH p=(a:IntConstant {value: 42})-[:DATAFLOW]->(b:ParameterNode) " +
+                "RETURN p, {path: p} AS nested"
+        )
+
+        val path = result.rows.single()["p"] as List<*>
+        assertEquals(3, path.size)
+        assertTrue(path[0] is Map<*, *>)
+        assertTrue(path[1] is DataFlowEdge)
+        val nested = result.rows.single()["nested"] as Map<*, *>
+        assertEquals(path, nested["path"])
+    }
+
+    @Test
+    fun `named path retains anonymous endpoint nodes`() {
+        val result = executor.execute(
+            "MATCH p=(:IntConstant {value: 42})-[:DATAFLOW]->(:ParameterNode) RETURN p"
+        )
+
+        val path = result.rows.single()["p"] as List<*>
+        assertEquals(3, path.size)
+        assertEquals(42, (path[0] as Map<*, *>)["value"])
+        assertTrue(path[1] is DataFlowEdge)
+        assertEquals(0, (path[2] as Map<*, *>)["index"])
     }
 
     // --- NullConstant nodeToMap ---

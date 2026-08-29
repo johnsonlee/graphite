@@ -658,8 +658,9 @@ class CypherFunctionsTest {
     }
 
     @Test
-    fun `count includes nulls`() {
-        assertEquals(3L, CypherFunctions.aggregate("count", listOf(1, null, 3)))
+    fun `count ignores nulls`() {
+        assertEquals(2L, CypherFunctions.aggregate("count", listOf(1, null, 3)))
+        assertEquals(0L, CypherFunctions.aggregate("count", listOf(null, null)))
     }
 
     @Test
@@ -713,8 +714,9 @@ class CypherFunctionsTest {
     }
 
     @Test
-    fun `collect preserves nulls`() {
-        assertEquals(listOf(1, null, 3), CypherFunctions.aggregate("collect", listOf(1, null, 3)))
+    fun `collect ignores nulls`() {
+        assertEquals(listOf(1, 3), CypherFunctions.aggregate("collect", listOf(1, null, 3)))
+        assertEquals(emptyList<Any?>(), CypherFunctions.aggregate("collect", listOf(null, null)))
     }
 
     @Test

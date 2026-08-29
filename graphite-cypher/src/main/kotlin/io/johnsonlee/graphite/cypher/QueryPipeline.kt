@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
+import java.math.BigDecimal
 import java.util.PriorityQueue
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
@@ -43,8 +44,20 @@ private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
 private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
+private const val INTERNAL_MATCHED_PATH_SEGMENTS_KEY = "\u0000graphite.matchedPathSegments"
+private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
+private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
+
+private data class MatchedPathSegment(
+    val tail: List<Any>,
+    val relationships: List<Edge>
+)
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
+
+private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
+    labels.firstOrNull()?.let(NodePropertyAccessor::resolveNodeLabelOrNull)
+        ?: Node::class.java.takeIf { labels.isEmpty() }
 
 private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
@@ -164,20 +177,31 @@ class QueryPipeline private constructor(
     private val graph: Graph get() = sources.single().graph
 
     private val activeWorkTracker = ThreadLocal<CypherWorkTracker?>()
-    private val evaluator = if (workTrackingEnabled) ExpressionEvaluator(::checkCancelled) else ExpressionEvaluator()
+    private val activeParameters = ThreadLocal<Map<String, Any?>>()
+    private val evaluator = ExpressionEvaluator(
+        checkCancelled = if (workTrackingEnabled) ::checkCancelled else null,
+        parameterResolver = { name -> activeParameters.get()?.get(name) }
+    )
 
     /**
      * Execute a list of clauses and return the final result.
      */
-    fun execute(clauses: List<CypherClause>): CypherResult = execute(clauses, null)
+    fun execute(clauses: List<CypherClause>): CypherResult = execute(clauses, emptyMap(), null)
 
     internal fun execute(
         clauses: List<CypherClause>,
         workTracker: CypherWorkTracker?
+    ): CypherResult = execute(clauses, emptyMap(), workTracker)
+
+    internal fun execute(
+        clauses: List<CypherClause>,
+        parameters: Map<String, Any?>,
+        workTracker: CypherWorkTracker?
     ): CypherResult {
-        if (workTracker == null) return executeWithActiveBudget(clauses)
         val previousTracker = activeWorkTracker.get()
-        activeWorkTracker.set(workTracker)
+        val previousParameters = activeParameters.get()
+        if (workTracker == null) activeWorkTracker.remove() else activeWorkTracker.set(workTracker)
+        activeParameters.set(parameters.toMap())
         return try {
             executeWithActiveBudget(clauses)
         } finally {
@@ -185,6 +209,11 @@ class QueryPipeline private constructor(
                 activeWorkTracker.remove()
             } else {
                 activeWorkTracker.set(previousTracker)
+            }
+            if (previousParameters == null) {
+                activeParameters.remove()
+            } else {
+                activeParameters.set(previousParameters)
             }
         }
     }
@@ -222,9 +251,12 @@ class QueryPipeline private constructor(
                         consumedWhereIndex = clauseIndex + 1
                         soughtRows
                     } else if (clause.optional) {
-                        executeOptionalMatch(clause.patterns, rows)
+                        executeOptionalMatch(clause.patterns, clause.where, rows)
                     } else {
                         executeMatch(clause.patterns, rows, earlyLimit)
+                    }
+                    if (!clause.optional && clause.where != null) {
+                        rows = executeInlineWhere(clause.where, rows)
                     }
                 }
                 is CypherClause.Where -> {
@@ -287,9 +319,7 @@ class QueryPipeline private constructor(
         val elementId = elementIdEquality(where.condition, variable) ?: return null
         val sourceAndNode = seekNode(elementId) ?: return emptyList()
         val (source, node) = sourceAndNode
-        val nodeClass = nodePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return emptyList()
         if (!nodeClass.isInstance(node)) return emptyList()
 
         val candidate = nodeValue(source, node)
@@ -366,9 +396,7 @@ class QueryPipeline private constructor(
         val countedVariable = countedVariable(returnItem.expression) ?: return null
         if (countedVariable != "*" && countedVariable != nodePattern.variable) return null
 
-        val nodeClass = nodePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return null
         var count = 0L
         val provenance = if (qualified) linkedSetOf<String>() else null
         for (source in sources) {
@@ -499,9 +527,13 @@ class QueryPipeline private constructor(
         val comparator = Comparator<RankedProjectedRow> { left, right ->
             if (workTrackingEnabled) pollCancellation(comparisons++)
             for (sort in query.sortItems) {
-                val comparison = compareNullable(left.row[sort.column], right.row[sort.column])
+                val comparison = compareOrderValues(
+                    left.row[sort.column],
+                    right.row[sort.column],
+                    sort.ascending
+                )
                 if (comparison != 0) {
-                    return@Comparator if (sort.ascending) comparison else -comparison
+                    return@Comparator comparison
                 }
             }
             left.encounterOrder.compareTo(right.encounterOrder)
@@ -576,9 +608,7 @@ class QueryPipeline private constructor(
                 if (sortItems.isEmpty()) return null
                 val limitCount = ((limit.count as? CypherExpr.Literal)?.value as? Number)?.toCypherInt() ?: return null
                 if (limitCount > MAX_ORDERED_PROPERTY_TOP_K) return null
-                val nodeClass = nodePattern.labels.firstOrNull()
-                    ?.let(NodePropertyAccessor::resolveNodeLabel)
-                    ?: Node::class.java
+                val nodeClass = resolveNodeClass(nodePattern.labels) ?: return null
                 return OrderedPropertyLimitQuery(nodeClass, projections, sortItems, limitCount)
             }
         }
@@ -620,10 +650,9 @@ class QueryPipeline private constructor(
             return CypherResult(listOf(column), emptyList())
         }
 
-        val nodeClass = nodePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
         val column = returnItem.alias ?: returnItem.expression.toCypherString()
+        val nodeClass = resolveNodeClass(nodePattern.labels)
+            ?: return CypherResult(listOf(column), emptyList())
         val seen = LinkedHashMap<Any?, Set<String>>()
         for (candidate in nodeCandidates(nodeClass)) {
             val variable = nodePattern.variable
@@ -686,9 +715,7 @@ class QueryPipeline private constructor(
         val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
-        val nodeClass = nodePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
         val directStringFilter = (where.condition as? CypherExpr.StringOp)
             ?.let { DirectStringFilter.compile(it, variable) }
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1392,9 +1419,7 @@ class QueryPipeline private constructor(
         val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
-        val sourceClass = sourcePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val sourceClass = resolveNodeClass(sourcePattern.labels) ?: return CypherResult(columns, emptyList())
         val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
 
         val rows = mutableListOf<Map<String, Any?>>()
@@ -1463,6 +1488,7 @@ class QueryPipeline private constructor(
 
     private fun executeOptionalMatch(
         patterns: List<CypherPattern>,
+        where: CypherExpr?,
         inputRows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
@@ -1476,6 +1502,14 @@ class QueryPipeline private constructor(
                     nextMatches.addAll(matchPattern(pattern, row))
                 }
                 currentMatches = nextMatches
+            }
+
+            // WHERE belongs to the OPTIONAL MATCH operation. A row for which
+            // the pattern matched but the predicate did not is therefore an
+            // unsuccessful optional match and must be preserved with only the
+            // newly introduced variables set to null.
+            if (where != null) {
+                currentMatches = currentMatches.filter { evaluator.evaluate(where, it) == true }
             }
 
             if (currentMatches.isEmpty()) {
@@ -1508,33 +1542,62 @@ class QueryPipeline private constructor(
     ): List<Map<String, Any?>> {
         val elements = pattern.elements
         if (elements.isEmpty()) return listOf(existingBindings)
-
-        val matches = if (limit != null && elements.size > 1) {
-            matchPatternLazily(elements, existingBindings, limit)
+        val relationshipCount = elements.count { it is PatternElement.RelationshipPattern }
+        val trackSegments = pattern.pathVariable != null || relationshipCount > 1
+        val initialBindings = if (relationshipCount > 1) {
+            reserveBoundRelationships(pattern, existingBindings)
         } else {
-            matchPatternEagerly(elements, existingBindings, limit)
+            existingBindings
         }
 
-        // If the pattern has a path variable, bind it to the matched path
-        if (pattern.pathVariable != null) {
-            return matches.map { bindings ->
-                val path = buildPathRepresentation(pattern, bindings)
-                bindings.toMutableMap().apply {
+        val matches = if (limit != null && elements.size > 1) {
+            matchPatternLazily(elements, initialBindings, limit, trackSegments)
+        } else {
+            matchPatternEagerly(elements, initialBindings, limit, trackSegments)
+        }
+
+        return matches.map { bindings ->
+            val path = pattern.pathVariable?.let { buildPathRepresentation(pattern, bindings) }
+            bindings.toMutableMap().apply {
+                remove(INTERNAL_MATCHED_PATH_SEGMENTS_KEY)
+                remove(INTERNAL_CURRENT_NODE_KEY)
+                remove(INTERNAL_PATH_START_NODE_KEY)
+                if (pattern.pathVariable != null) {
                     this[pattern.pathVariable] = path
                     addProvenance(this, path)
                 }
             }
         }
+    }
 
-        return matches
+    private fun reserveBoundRelationships(
+        pattern: CypherPattern,
+        bindings: Map<String, Any?>
+    ): Map<String, Any?> {
+        val reserved = pattern.elements.asSequence()
+            .filterIsInstance<PatternElement.RelationshipPattern>()
+            .mapNotNull(PatternElement.RelationshipPattern::variable)
+            .flatMap { variable -> relationshipBinding(bindings[variable]).asSequence() }
+            .toSet()
+        if (reserved.isEmpty()) return bindings
+        return bindings.toMutableMap().apply {
+            addMatchedPathSegment(this, MatchedPathSegment(emptyList(), reserved.toList()))
+        }
     }
 
     private fun matchPatternEagerly(
         elements: List<PatternElement>,
         existingBindings: Map<String, Any?>,
-        limit: Int?
+        limit: Int?,
+        trackSegments: Boolean
     ): List<Map<String, Any?>> {
-        var currentMatches = matchNodeElement(elements[0] as PatternElement.NodePattern, existingBindings, limit)
+        var currentMatches = matchNodeElement(
+            elements[0] as PatternElement.NodePattern,
+            existingBindings,
+            limit,
+            navigate = elements.size > 1,
+            trackSegments = trackSegments
+        )
 
         var i = 1
         while (i < elements.size) {
@@ -1555,11 +1618,13 @@ class QueryPipeline private constructor(
     private fun matchPatternLazily(
         elements: List<PatternElement>,
         existingBindings: Map<String, Any?>,
-        limit: Int
+        limit: Int,
+        trackSegments: Boolean
     ): List<Map<String, Any?>> {
         var currentMatches = matchNodeElementLazily(
             elements[0] as PatternElement.NodePattern,
-            existingBindings
+            existingBindings,
+            trackSegments
         )
 
         var i = 1
@@ -1582,50 +1647,29 @@ class QueryPipeline private constructor(
      * Build a path representation as a list of alternating nodes and edges:
      * [startNode, edge1, node2, edge2, ..., endNode]
      *
-     * For relationships without explicit variables, we look up edges between
-     * consecutive node pairs in the graph.
+     * Relationship matches are retained in an internal segment binding so
+     * unnamed and variable-length relationships preserve their exact trail.
      */
     @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
     private fun buildPathRepresentation(
         pattern: CypherPattern,
         bindings: Map<String, Any?>
     ): Any {
-        val path = mutableListOf<Any>()
-        val elements = pattern.elements
-
-        for (i in elements.indices) {
-            when (val element = elements[i]) {
-                is PatternElement.NodePattern -> {
-                    val value = element.variable?.let { bindings[it] }
-                    if (nodeValue(value) != null && value != null) path.add(value)
-                }
-                is PatternElement.RelationshipPattern -> {
-                    val value = element.variable?.let { bindings[it] }
-                    if (edgeValue(value) != null && value != null) {
-                        path.add(value)
-                    } else {
-                        // Look up the edge between the previous and next nodes
-                        val prevValue = elements.getOrNull(i - 1)
-                            ?.let { it as? PatternElement.NodePattern }
-                            ?.variable?.let { bindings[it] }
-                        val nextValue = elements.getOrNull(i + 1)
-                            ?.let { it as? PatternElement.NodePattern }
-                            ?.variable?.let { bindings[it] }
-                        val prev = nodeCursor(prevValue)
-                        val next = nodeCursor(nextValue)
-                        if (prev != null && next != null && prev.source.id == next.source.id) {
-                            val foundEdge = trackWork(prev.source.graph.outgoing(prev.node.id))
-                                .firstOrNull { it.to == next.node.id }
-                                ?: trackWork(prev.source.graph.incoming(prev.node.id))
-                                    .firstOrNull { it.from == next.node.id }
-                            if (foundEdge != null) path.add(edgeValue(prev.source, foundEdge))
-                        }
-                    }
-                }
-            }
+        @Suppress("UNCHECKED_CAST")
+        val matchedSegments = (bindings[INTERNAL_MATCHED_PATH_SEGMENTS_KEY] as? List<MatchedPathSegment>).orEmpty()
+        val firstNode = (pattern.elements.firstOrNull() as? PatternElement.NodePattern)
+            ?.variable
+            ?.let(bindings::get)
+            ?: bindings[INTERNAL_PATH_START_NODE_KEY]
+        val path = buildList {
+            if (firstNode != null) add(firstNode)
+            matchedSegments.forEach { addAll(it.tail) }
         }
-        if (!qualified) return path
+        return pathValue(path)
+    }
 
+    private fun pathValue(path: List<Any>): Any {
+        if (!qualified) return PathFinder.Path(path.filterIsInstance<Node>(), path.filterIsInstance<Edge>())
         val nodes = path.filterIsInstance<QualifiedNode>()
         val edges = path.filterIsInstance<QualifiedEdge>()
         val graphIds = (nodes.map { it.graphId } + edges.map { it.graphId }).distinct()
@@ -1638,11 +1682,19 @@ class QueryPipeline private constructor(
     private fun matchNodeElement(
         nodePattern: PatternElement.NodePattern,
         existingBindings: Map<String, Any?>,
-        limit: Int? = null
+        limit: Int? = null,
+        navigate: Boolean,
+        trackSegments: Boolean
     ): List<Map<String, Any?>> {
         val results = mutableListOf<Map<String, Any?>>()
         for (candidate in nodeElementCandidates(nodePattern, existingBindings)) {
-            val bindings = bindNodeCandidate(candidate, nodePattern, existingBindings) ?: continue
+            val bindings = bindNodeCandidate(
+                candidate,
+                nodePattern,
+                existingBindings,
+                navigate,
+                trackSegments
+            ) ?: continue
             results.add(bindings)
             if (limit != null && results.size >= limit) break
         }
@@ -1651,17 +1703,24 @@ class QueryPipeline private constructor(
 
     private fun matchNodeElementLazily(
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        trackSegments: Boolean
     ): Sequence<Map<String, Any?>> = nodeElementCandidates(nodePattern, existingBindings)
-        .mapNotNull { candidate -> bindNodeCandidate(candidate, nodePattern, existingBindings) }
+        .mapNotNull { candidate ->
+            bindNodeCandidate(
+                candidate,
+                nodePattern,
+                existingBindings,
+                navigate = true,
+                trackSegments = trackSegments
+            )
+        }
 
     private fun nodeElementCandidates(
         nodePattern: PatternElement.NodePattern,
         existingBindings: Map<String, Any?>
     ): Sequence<Any> {
-        val nodeClass = nodePattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return emptySequence()
 
         return if (nodePattern.variable != null &&
             existingBindings.containsKey(nodePattern.variable)
@@ -1681,10 +1740,14 @@ class QueryPipeline private constructor(
     private fun bindNodeCandidate(
         candidate: Any,
         nodePattern: PatternElement.NodePattern,
-        existingBindings: Map<String, Any?>
+        existingBindings: Map<String, Any?>,
+        navigate: Boolean,
+        trackSegments: Boolean
     ): Map<String, Any?>? {
         if (!matchesNodeConstraints(candidate, nodePattern, existingBindings)) return null
         return existingBindings.toMutableMap().apply {
+            if (trackSegments) putIfAbsent(INTERNAL_PATH_START_NODE_KEY, candidate)
+            if (navigate) this[INTERNAL_CURRENT_NODE_KEY] = candidate
             if (nodePattern.variable != null) {
                 this[nodePattern.variable] = candidate
                 addProvenance(this, candidate)
@@ -1706,7 +1769,7 @@ class QueryPipeline private constructor(
         // The source node is the last-bound node in the current bindings.
         val sourceNode = findLastBoundNode(bindings) ?: return results
 
-        val edgeClass = rel.types.firstOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
+        val edgeClass = rel.types.singleOrNull()?.let { NodePropertyAccessor.resolveEdgeType(it) }
 
         if (rel.variableLength) {
             matchVariableLengthPath(rel, targetNodePattern, sourceNode, bindings, edgeClass, limit, results)
@@ -1727,8 +1790,10 @@ class QueryPipeline private constructor(
         results: MutableList<Map<String, Any?>>
     ) {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
+        val unavailableRelationships = unavailableRelationships(rel, bindings)
 
         for (edge in edges) {
+            if (edge.edge in unavailableRelationships || !matchesRelationshipBinding(rel, edge.value, bindings)) continue
             val targetId = resolveTargetId(edge.edge, sourceNode.node.id, rel.direction)
             val targetNode = trackedNode(sourceNode.source.graph, targetId) ?: continue
             val targetValue = nodeValue(sourceNode.source, targetNode)
@@ -1743,6 +1808,10 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = edge.value
                 addProvenance(newBindings, edge.value)
             }
+            addMatchedPathSegmentIfTracked(
+                newBindings,
+                MatchedPathSegment(listOf(edge.value, targetValue), listOf(edge.edge))
+            )
             results.add(newBindings)
             if (limit != null && results.size >= limit) break
         }
@@ -1764,6 +1833,7 @@ class QueryPipeline private constructor(
         }
 
         val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val unavailableRelationships = unavailableRelationships(rel, bindings)
         val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
@@ -1771,9 +1841,12 @@ class QueryPipeline private constructor(
                 targets = null,
                 edgeType = edgeClass,
                 minDepth = rel.minHops ?: 1,
-                maxDepth = rel.maxHops ?: 10,
+                maxDepth = rel.maxHops,
                 direction = direction,
-                workTracker = workTracker
+                workTracker = workTracker,
+                edgeFilter = { edge ->
+                    edge !in unavailableRelationships && matchesRelConstraints(edge, rel, bindings)
+                }
             )
         )
 
@@ -1782,24 +1855,62 @@ class QueryPipeline private constructor(
             val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings) ?: continue
 
             val newBindings = targetMatch.toMutableMap()
+            val path = pathMatch.materialize(workTracker)
+            val relationshipValues = path.edges.map { edgeValue(sourceNode.source, it) }
+            if (!matchesRelationshipBinding(rel, relationshipValues, bindings)) continue
             if (rel.variable != null) {
-                val path = pathMatch.materialize(workTracker)
-                val pathValue = if (qualified) {
-                    workTracker?.consume(path.nodes.size.toLong() + path.edges.size)
-                    QualifiedPath(
-                        graphId = sourceNode.source.id,
-                        nodes = path.nodes.map { QualifiedNode(sourceNode.source.id, sourceNode.source.graph, it) },
-                        edges = path.edges.map { QualifiedEdge(sourceNode.source.id, sourceNode.source.graph, it) }
-                    )
-                } else {
-                    path
-                }
-                newBindings[rel.variable] = pathValue
-                addProvenance(newBindings, pathValue)
+                newBindings[rel.variable] = relationshipValues
+                addProvenance(newBindings, relationshipValues)
             }
+            val pathTail = buildList {
+                path.edges.indices.forEach { index ->
+                    add(relationshipValues[index])
+                    add(nodeValue(sourceNode.source, path.nodes[index + 1]))
+                }
+            }
+            addMatchedPathSegmentIfTracked(newBindings, MatchedPathSegment(pathTail, path.edges))
             results.add(newBindings)
             if (limit != null && results.size >= limit) break
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun matchedRelationships(bindings: Map<String, Any?>): Set<Edge> =
+        (bindings[INTERNAL_MATCHED_PATH_SEGMENTS_KEY] as? List<MatchedPathSegment>)
+            .orEmpty()
+            .flatMapTo(linkedSetOf()) { it.relationships }
+
+    private fun unavailableRelationships(
+        rel: PatternElement.RelationshipPattern,
+        bindings: Map<String, Any?>
+    ): Set<Edge> = matchedRelationships(bindings) - relationshipBinding(rel.variable?.let(bindings::get))
+
+    private fun matchesRelationshipBinding(
+        rel: PatternElement.RelationshipPattern,
+        candidate: Any,
+        bindings: Map<String, Any?>
+    ): Boolean = rel.variable == null || !bindings.containsKey(rel.variable) || bindings[rel.variable] == candidate
+
+    private fun relationshipBinding(value: Any?): Set<Edge> = when (value) {
+        is Edge -> setOf(value)
+        is QualifiedEdge -> setOf(value.edge)
+        is PathFinder.Path -> value.edges.toSet()
+        is QualifiedPath -> value.edges.mapTo(linkedSetOf()) { it.edge }
+        is List<*> -> value.flatMapTo(linkedSetOf(), ::relationshipBinding)
+        else -> emptySet()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun addMatchedPathSegment(bindings: MutableMap<String, Any?>, segment: MatchedPathSegment) {
+        val segments = (bindings[INTERNAL_MATCHED_PATH_SEGMENTS_KEY] as? List<MatchedPathSegment>).orEmpty()
+        bindings[INTERNAL_MATCHED_PATH_SEGMENTS_KEY] = segments + segment
+    }
+
+    private fun addMatchedPathSegmentIfTracked(
+        bindings: MutableMap<String, Any?>,
+        segment: MatchedPathSegment
+    ) {
+        if (INTERNAL_PATH_START_NODE_KEY in bindings) addMatchedPathSegment(bindings, segment)
     }
 
     @Suppress("ReturnCount")
@@ -1809,9 +1920,7 @@ class QueryPipeline private constructor(
         bindings: Map<String, Any?>
     ): Map<String, Any?>? {
         val node = nodeValue(value) ?: return null
-        val nodeClass = targetPattern.labels.firstOrNull()
-            ?.let { NodePropertyAccessor.resolveNodeLabel(it) }
-            ?: Node::class.java
+        val nodeClass = resolveNodeClass(targetPattern.labels) ?: return null
 
         if (!nodeClass.isInstance(node)) return null
 
@@ -1824,6 +1933,7 @@ class QueryPipeline private constructor(
         if (!matchesNodeConstraints(value, targetPattern, bindings)) return null
 
         val result = bindings.toMutableMap()
+        result[INTERNAL_CURRENT_NODE_KEY] = value
         if (targetPattern.variable != null) {
             result[targetPattern.variable] = value
             addProvenance(result, value)
@@ -1842,8 +1952,8 @@ class QueryPipeline private constructor(
         if (pattern.labels.size > 1) {
             val nodeLabels = CypherFunctions.labels(value).map { it.lowercase() }.toSet()
             val allMatch = pattern.labels.all { label ->
-                val labelClass = NodePropertyAccessor.resolveNodeLabel(label)
-                labelClass.isInstance(node) || label.lowercase() in nodeLabels
+                val labelClass = NodePropertyAccessor.resolveNodeLabelOrNull(label)
+                labelClass?.isInstance(node) == true || label.lowercase() in nodeLabels
             }
             if (!allMatch) return false
         }
@@ -1930,14 +2040,8 @@ class QueryPipeline private constructor(
             Direction.BOTH -> if (edge.from == sourceId) edge.to else edge.from
         }
 
-    private fun findLastBoundNode(bindings: Map<String, Any?>): NodeCursor? {
-        // Return the last Node value in insertion order
-        var last: NodeCursor? = null
-        for (value in bindings.values) {
-            nodeCursor(value)?.let { last = it }
-        }
-        return last
-    }
+    private fun findLastBoundNode(bindings: Map<String, Any?>): NodeCursor? =
+        nodeCursor(bindings[INTERNAL_CURRENT_NODE_KEY])
 
     private fun <T : Node> nodeCandidates(type: Class<T>): Sequence<Any> =
         if (qualified) {
@@ -2375,8 +2479,8 @@ class QueryPipeline private constructor(
                 for (item in clause.items) {
                     val leftValue = evaluateOrderValue(item.expression, left)
                     val rightValue = evaluateOrderValue(item.expression, right)
-                    val comparison = compareNullable(leftValue, rightValue)
-                    if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
+                    val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
+                    if (comparison != 0) return@Comparator comparison
                 }
                 0
             })
@@ -2387,8 +2491,8 @@ class QueryPipeline private constructor(
             for (item in clause.items) {
                 val leftValue = evaluateOrderValue(item.expression, left)
                 val rightValue = evaluateOrderValue(item.expression, right)
-                val comparison = compareNullable(leftValue, rightValue)
-                if (comparison != 0) return@Comparator if (item.ascending) comparison else -comparison
+                val comparison = compareOrderValues(leftValue, rightValue, item.ascending)
+                if (comparison != 0) return@Comparator comparison
             }
             0
         })
@@ -2405,14 +2509,141 @@ class QueryPipeline private constructor(
         if (workTrackingEnabled) activeWorkTracker.get()?.checkCancelled()
     }
 
-    private fun compareNullable(a: Any?, b: Any?): Int = when {
-        a == null && b == null -> 0
-        a == null -> -1
-        b == null -> 1
-        a is Number && b is Number -> a.toDouble().compareTo(b.toDouble())
-        a is String && b is String -> a.compareTo(b)
-        a is Boolean && b is Boolean -> a.compareTo(b)
-        else -> a.toString().compareTo(b.toString())
+    /**
+     * Cypher has a total ordering for ORDER BY that is wider than the set of
+     * values accepted by comparison expressions. Null is always greatest, so
+     * it is last for ASC and first for DESC. The remaining cross-type order is
+     * map, node, relationship, list, path, string, boolean, number.
+     */
+    private fun compareOrderValues(a: Any?, b: Any?, ascending: Boolean): Int {
+        val comparison = when {
+            a == null && b == null -> 0
+            a == null -> 1
+            b == null -> -1
+            else -> compareNonNullOrderValues(a, b)
+        }
+        return if (ascending) comparison else -comparison
+    }
+
+    @Suppress("CyclomaticComplexMethod", "ReturnCount")
+    private fun compareNonNullOrderValues(a: Any, b: Any): Int {
+        val typeComparison = orderValueType(a).compareTo(orderValueType(b))
+        if (typeComparison != 0) return typeComparison
+        return when {
+            a is Map<*, *> && b is Map<*, *> -> compareMaps(a, b)
+            isNodeOrderValue(a) && isNodeOrderValue(b) -> compareNodes(a, b)
+            isRelationshipOrderValue(a) && isRelationshipOrderValue(b) -> compareRelationships(a, b)
+            a is List<*> && b is List<*> -> compareLists(a, b)
+            isPathOrderValue(a) && isPathOrderValue(b) -> compareLists(pathElements(a), pathElements(b))
+            a is String && b is String -> a.compareTo(b)
+            a is Boolean && b is Boolean -> a.compareTo(b)
+            a is Number && b is Number -> compareNumbers(a, b)
+            else -> a.toString().compareTo(b.toString())
+        }
+    }
+
+    private fun orderValueType(value: Any): OrderValueType = when {
+        value is Map<*, *> -> OrderValueType.MAP
+        isNodeOrderValue(value) -> OrderValueType.NODE
+        isRelationshipOrderValue(value) -> OrderValueType.RELATIONSHIP
+        value is List<*> -> OrderValueType.LIST
+        isPathOrderValue(value) -> OrderValueType.PATH
+        value is String -> OrderValueType.STRING
+        value is Boolean -> OrderValueType.BOOLEAN
+        value is Number -> OrderValueType.NUMBER
+        else -> OrderValueType.STRING
+    }
+
+    private enum class OrderValueType {
+        MAP,
+        NODE,
+        RELATIONSHIP,
+        LIST,
+        PATH,
+        STRING,
+        BOOLEAN,
+        NUMBER
+    }
+
+    @Suppress("ReturnCount")
+    private fun compareMaps(a: Map<*, *>, b: Map<*, *>): Int {
+        val sizeComparison = a.size.compareTo(b.size)
+        if (sizeComparison != 0) return sizeComparison
+        val aKeys = a.keys.map { it.toString() }.sorted()
+        val bKeys = b.keys.map { it.toString() }.sorted()
+        val keyComparison = compareLists(aKeys, bKeys)
+        if (keyComparison != 0) return keyComparison
+        for (key in aKeys) {
+            val valueComparison = compareOrderValues(a[key], b[key], ascending = true)
+            if (valueComparison != 0) return valueComparison
+        }
+        return 0
+    }
+
+    private fun compareLists(a: List<*>, b: List<*>): Int {
+        val commonSize = minOf(a.size, b.size)
+        for (index in 0 until commonSize) {
+            val comparison = compareOrderValues(a[index], b[index], ascending = true)
+            if (comparison != 0) return comparison
+        }
+        return a.size.compareTo(b.size)
+    }
+
+    @Suppress("ReturnCount")
+    private fun compareNumbers(a: Number, b: Number): Int {
+        val aDouble = a.toDouble()
+        val bDouble = b.toDouble()
+        if (aDouble.isNaN() || bDouble.isNaN()) return when {
+            aDouble.isNaN() && bDouble.isNaN() -> 0
+            aDouble.isNaN() -> 1
+            else -> -1
+        }
+        if (!aDouble.isFinite() || !bDouble.isFinite()) return aDouble.compareTo(bDouble)
+        return BigDecimal(a.toString()).compareTo(BigDecimal(b.toString()))
+    }
+
+    private fun isNodeOrderValue(value: Any): Boolean = value is Node || value is QualifiedNode
+
+    private fun compareNodes(a: Any, b: Any): Int {
+        val graphComparison = orderGraphId(a).compareTo(orderGraphId(b))
+        if (graphComparison != 0) return graphComparison
+        return requireNotNull(nodeValue(a)).id.value.compareTo(requireNotNull(nodeValue(b)).id.value)
+    }
+
+    private fun isRelationshipOrderValue(value: Any): Boolean = value is Edge || value is QualifiedEdge
+
+    @Suppress("ReturnCount")
+    private fun compareRelationships(a: Any, b: Any): Int {
+        val graphComparison = orderGraphId(a).compareTo(orderGraphId(b))
+        if (graphComparison != 0) return graphComparison
+        val aEdge = requireNotNull(edgeValue(a))
+        val bEdge = requireNotNull(edgeValue(b))
+        val fromComparison = aEdge.from.value.compareTo(bEdge.from.value)
+        if (fromComparison != 0) return fromComparison
+        val toComparison = aEdge.to.value.compareTo(bEdge.to.value)
+        if (toComparison != 0) return toComparison
+        return aEdge::class.java.name.compareTo(bEdge::class.java.name)
+    }
+
+    private fun orderGraphId(value: Any): String = when (value) {
+        is QualifiedNode -> value.graphId
+        is QualifiedEdge -> value.graphId
+        else -> ""
+    }
+
+    private fun isPathOrderValue(value: Any): Boolean = value is PathFinder.Path || value is QualifiedPath
+
+    private fun pathElements(value: Any): List<Any> = when (value) {
+        is PathFinder.Path -> interleavePath(value.nodes, value.edges)
+        is QualifiedPath -> interleavePath(value.nodes, value.edges)
+        else -> emptyList()
+    }
+
+    private fun interleavePath(nodes: List<*>, edges: List<*>): List<Any> = buildList {
+        for (index in nodes.indices) {
+            nodes[index]?.let(::add)
+            if (index < edges.size) edges[index]?.let(::add)
+        }
     }
 
     // ========================================================================
