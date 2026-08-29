@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.methodSlice
 import io.johnsonlee.graphite.graph.methods
+import java.util.PriorityQueue
 
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
 
@@ -41,18 +42,8 @@ internal object MethodQueryExecutor {
         val where = (clauses.getOrNull(clauseIndex) as? CypherClause.Where)?.also { clauseIndex++ }
         val ret = clauses.getOrNull(clauseIndex) as? CypherClause.Return ?: return null
         clauseIndex++
-        if (ret.distinct || ret.items.any { containsAggregation(it.expression) }) {
-            return tryExecuteCount(
-                ret,
-                nodePattern,
-                variable,
-                where,
-                clausesComplete = clauseIndex == clauses.size,
-                sources,
-                qualified,
-                checkCancelled
-            )
-        }
+        if (ret.distinct) return null
+        val orderBy = (clauses.getOrNull(clauseIndex) as? CypherClause.OrderBy)?.also { clauseIndex++ }
         val skip = (clauses.getOrNull(clauseIndex) as? CypherClause.Skip)?.also { clauseIndex++ }
         val limit = (clauses.getOrNull(clauseIndex) as? CypherClause.Limit)?.also { clauseIndex++ }
         if (clauseIndex != clauses.size) return null
@@ -60,53 +51,151 @@ internal object MethodQueryExecutor {
         val skipCount = literalCount(skip?.count, default = 0) ?: return null
         val limitCount = literalCount(limit?.count, default = Int.MAX_VALUE) ?: return null
         val requested = saturatedAdd(skipCount, limitCount)
+        val scan = scanPlan(nodePattern, variable, where) ?: return null
+        val execution = MethodExecution(
+            ret,
+            variable,
+            where,
+            scan,
+            sources,
+            qualified,
+            checkCancelled,
+            workTracker
+        )
+        if (ret.items.any { containsAggregation(it.expression) }) {
+            if (orderBy != null) return null
+            return tryExecuteCount(execution, skipCount, limitCount)
+        }
         if (requested == 0) return CypherResult(columns(ret), emptyList())
-
-        val predicate = MethodPredicate(variable).also { candidate ->
-            nodePattern.properties.forEach { (property, value) ->
-                if (!candidate.addEquality(property, value)) return null
-            }
-            if (where != null && !candidate.add(where.condition)) return null
-        }
-
-        val bindings = ArrayList<Map<String, Any?>>(minOf(requested, INITIAL_METHOD_RESULT_CAPACITY))
-        val cancellationConsumer = workTracker?.let { tracker ->
-            MethodMetadataScanConsumer { tracker.checkCancelled() }
-        }
-        for (source in sources) {
-            checkCancelled()
-            if (bindings.size >= requested) break
-            val methods = if (cancellationConsumer == null) {
-                source.graph.methodSlice(predicate.pattern(), requested)
-                    ?: source.graph.methods(predicate.pattern()).take(requested).toList()
-            } else {
-                source.graph.methodSlice(predicate.pattern(), requested, cancellationConsumer)
-                    ?: source.graph.methods(predicate.pattern(), cancellationConsumer).take(requested).toList()
-            }
-            methods.forEach { method ->
-                checkCancelled()
-                if (bindings.size >= requested) return@forEach
-                bindings += mutableMapOf<String, Any?>(
-                    variable to MethodValue(source.id.takeIf { qualified }, method)
-                ).apply {
-                    if (qualified) put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
-                }
-            }
-        }
-
-        val evaluator = ExpressionEvaluator(checkCancelled)
-        val columns = columns(ret)
-        val rows = bindings.drop(skipCount).take(limitCount).map { binding ->
-            mutableMapOf<String, Any?>().apply {
-                ret.items.forEachIndexed { index, item ->
-                    put(columns[index], evaluator.evaluate(item.expression, binding))
-                }
-                binding[INTERNAL_PROVENANCE_KEY]?.let { put(INTERNAL_PROVENANCE_KEY, it) }
-            }
+        val columns = execution.columns
+        val comparator = orderBy?.let { methodRowComparator(it, columns) ?: return null }
+        if (comparator != null && requested > MAX_ORDERED_TOP_K_ROWS) return null
+        val rows = if (comparator == null) {
+            executeStreamingRows(execution, skipCount, limitCount)
+        } else {
+            executeOrderedRows(execution, skipCount, limitCount, requested, comparator)
         }
         checkCancelled()
         return CypherResult(columns, rows)
     }
+
+    private fun scanPlan(
+        nodePattern: PatternElement.NodePattern,
+        variable: String,
+        where: CypherClause.Where?
+    ): MethodScanPlan? {
+        val predicate = MethodPredicate(variable)
+        nodePattern.properties.forEach { (property, value) ->
+            if (!predicate.addEquality(property, value)) return null
+        }
+        val fullyPushed = where == null || predicate.addConjuncts(where.condition)
+        return MethodScanPlan(predicate.pattern(), fullyPushed)
+    }
+
+    private fun executeStreamingRows(
+        execution: MethodExecution,
+        skipCount: Int,
+        limitCount: Int
+    ): List<Map<String, Any?>> {
+        val rows = ArrayList<Map<String, Any?>>(minOf(limitCount, INITIAL_METHOD_RESULT_CAPACITY))
+        var matched = 0
+        for (source in execution.sources) {
+            execution.checkCancelled()
+            if (rows.size >= limitCount) break
+            val remaining = saturatedAdd(skipCount - minOf(skipCount, matched), limitCount - rows.size)
+            for (method in methods(source, execution.scan, remaining, execution.workTracker)) {
+                execution.checkCancelled()
+                val binding = execution.binding(source, method)
+                val matches = execution.matches(binding)
+                if (matches && matched++ >= skipCount) {
+                    rows += execution.project(binding)
+                }
+                if (rows.size >= limitCount) break
+            }
+        }
+        return rows
+    }
+
+    private fun executeOrderedRows(
+        execution: MethodExecution,
+        skipCount: Int,
+        limitCount: Int,
+        requested: Int,
+        comparator: Comparator<Map<String, Any?>>
+    ): List<Map<String, Any?>> {
+        val topRows = PriorityQueue<Map<String, Any?>>(requested, comparator.reversed())
+        for (source in execution.sources) {
+            execution.checkCancelled()
+            for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+                execution.checkCancelled()
+                val binding = execution.binding(source, method)
+                if (!execution.matches(binding)) continue
+                val row = execution.project(binding)
+                if (topRows.size < requested) {
+                    topRows += row
+                } else if (comparator.compare(row, topRows.peek()) < 0) {
+                    topRows.poll()
+                    topRows += row
+                }
+            }
+        }
+        return topRows.sortedWith(comparator).drop(skipCount).take(limitCount)
+    }
+
+    private fun methods(
+        source: CypherGraph,
+        scan: MethodScanPlan,
+        limit: Int,
+        workTracker: CypherWorkTracker?
+    ): Sequence<MethodDescriptor> {
+        var inspected = 0
+        val cancellationConsumer = workTracker?.let { tracker ->
+            MethodMetadataScanConsumer {
+                if ((inspected++ and CANCELLATION_POLL_MASK) == 0) tracker.checkCancelled()
+            }
+        }
+        if (scan.fullyPushed && limit < Int.MAX_VALUE) {
+            val slice = if (cancellationConsumer == null) {
+                source.graph.methodSlice(scan.pattern, limit)
+            } else {
+                source.graph.methodSlice(scan.pattern, limit, cancellationConsumer)
+            }
+            if (slice != null) return slice.asSequence()
+        }
+        return cancellationConsumer?.let { source.graph.methods(scan.pattern, it) }
+            ?: source.graph.methods(scan.pattern)
+    }
+
+    private fun methodRowComparator(
+        orderBy: CypherClause.OrderBy,
+        columns: List<String>
+    ): Comparator<Map<String, Any?>>? {
+        val ordered = orderBy.items.map { item ->
+            val variable = item.expression as? CypherExpr.Variable
+            if (variable == null || variable.name !in columns) return null
+            variable.name to item.ascending
+        }
+        return Comparator { left, right ->
+            for ((column, ascending) in ordered) {
+                val comparison = compareNullable(left[column], right[column])
+                if (comparison != 0) return@Comparator if (ascending) comparison else -comparison
+            }
+            0
+        }
+    }
+
+    private fun compareNullable(left: Any?, right: Any?): Int = when {
+        left == null && right == null -> 0
+        left == null -> -1
+        right == null -> 1
+        left is Number && right is Number -> left.toDouble().compareTo(right.toDouble())
+        left is String && right is String -> left.compareTo(right)
+        left is Boolean && right is Boolean -> left.compareTo(right)
+        else -> left.toString().compareTo(right.toString())
+    }
+
+    private fun MethodPattern.isUnfiltered(): Boolean = declaringClass == null &&
+        name == null && parameterTypes == null && returnType == null && annotations.isEmpty()
 
     private fun columns(ret: CypherClause.Return): List<String> =
         ret.items.map { it.alias ?: it.expression.toCypherString() }
@@ -134,47 +223,126 @@ internal object MethodQueryExecutor {
         else -> false
     }
 
-    @Suppress("ComplexCondition", "LongParameterList", "ReturnCount")
+    @Suppress("ComplexCondition", "ReturnCount")
     private fun tryExecuteCount(
-        ret: CypherClause.Return,
-        nodePattern: PatternElement.NodePattern,
-        variable: String,
-        where: CypherClause.Where?,
-        clausesComplete: Boolean,
-        sources: List<CypherGraph>,
-        qualified: Boolean,
-        checkCancelled: () -> Unit
+        execution: MethodExecution,
+        skipCount: Int,
+        limitCount: Int
     ): CypherResult? {
-        if (ret.distinct || where != null || nodePattern.properties.isNotEmpty() || !clausesComplete) return null
-        val item = ret.items.singleOrNull() ?: return null
-        val countExpression = item.expression
+        val aggregateItems = execution.ret.items.withIndex().filter { containsAggregation(it.value.expression) }
+        val aggregate = aggregateItems.singleOrNull() ?: return null
+        val countExpression = aggregate.value.expression
         val supported = countExpression is CypherExpr.CountStar ||
             countExpression is CypherExpr.FunctionCall &&
             countExpression.name.equals("count", ignoreCase = true) &&
             !countExpression.distinct &&
-            countExpression.args.singleOrNull() == CypherExpr.Variable(variable)
+            countExpression.args.singleOrNull() == CypherExpr.Variable(execution.variable)
         if (!supported) return null
 
-        var total = 0L
-        val contributingSources = linkedSetOf<String>()
-        for (source in sources) {
-            checkCancelled()
-            val count = source.graph.methodCount() ?: return null
-            if (count > 0L) contributingSources += source.id
-            total = try {
-                Math.addExact(total, count)
-            } catch (_: ArithmeticException) {
-                return null
+        val groupItems = execution.ret.items.withIndex().filter { it.index != aggregate.index }
+        val groups = if (execution.where == null && groupItems.isEmpty() && execution.scan.pattern.isUnfiltered()) {
+            countAllMethods(execution) ?: return null
+        } else {
+            countFilteredMethods(execution, groupItems) ?: return null
+        }
+        if (groupItems.isEmpty() && groups.isEmpty()) groups[emptyList()] = MethodCountGroup()
+
+        val columns = execution.columns
+        val rows = groups.map { (key, group) ->
+            var groupIndex = 0
+            mutableMapOf<String, Any?>().apply {
+                execution.ret.items.forEachIndexed { index, _ ->
+                    put(columns[index], if (index == aggregate.index) group.count else key[groupIndex++])
+                }
+                if (group.graphIds.isNotEmpty()) put(INTERNAL_PROVENANCE_KEY, group.graphIds)
             }
         }
-        val row = mutableMapOf<String, Any?>(columns(ret).single() to total)
-        if (qualified && contributingSources.isNotEmpty()) {
-            row[INTERNAL_PROVENANCE_KEY] = contributingSources
+        return CypherResult(columns, rows.drop(skipCount).take(limitCount))
+    }
+
+    private fun countAllMethods(execution: MethodExecution): LinkedHashMap<List<Any?>, MethodCountGroup>? {
+        val group = MethodCountGroup()
+        var valid = true
+        for (source in execution.sources) {
+            execution.checkCancelled()
+            val count = source.graph.methodCount()
+            val total = count?.let { addCount(group.count, it) }
+            if (count == null || total == null) {
+                valid = false
+                break
+            }
+            group.count = total
+            if (execution.qualified && count > 0L) group.graphIds += source.id
         }
-        return CypherResult(columns(ret), listOf(row))
+        return if (valid) linkedMapOf(emptyList<Any?>() to group) else null
+    }
+
+    private fun countFilteredMethods(
+        execution: MethodExecution,
+        groupItems: List<IndexedValue<ReturnItem>>
+    ): LinkedHashMap<List<Any?>, MethodCountGroup>? {
+        val groups = linkedMapOf<List<Any?>, MethodCountGroup>()
+        for (source in execution.sources) {
+            execution.checkCancelled()
+            for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+                execution.checkCancelled()
+                val binding = execution.binding(source, method)
+                if (!execution.matches(binding)) continue
+                val key = groupItems.map { execution.evaluator.evaluate(it.value.expression, binding) }
+                val group = groups.getOrPut(key) { MethodCountGroup() }
+                group.count = addCount(group.count, 1L) ?: return null
+                if (execution.qualified) group.graphIds += source.id
+            }
+        }
+        return groups
+    }
+
+    private fun addCount(current: Long, increment: Long): Long? = try {
+        Math.addExact(current, increment)
+    } catch (_: ArithmeticException) {
+        null
     }
 
     fun isMethodLabel(label: String): Boolean = label.equals(METHOD_LABEL, ignoreCase = true)
+
+    private data class MethodScanPlan(val pattern: MethodPattern, val fullyPushed: Boolean)
+
+    private data class MethodExecution(
+        val ret: CypherClause.Return,
+        val variable: String,
+        val where: CypherClause.Where?,
+        val scan: MethodScanPlan,
+        val sources: List<CypherGraph>,
+        val qualified: Boolean,
+        val checkCancelled: () -> Unit,
+        val workTracker: CypherWorkTracker?
+    ) {
+        val evaluator = ExpressionEvaluator(checkCancelled)
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+
+        fun binding(source: CypherGraph, method: MethodDescriptor): MutableMap<String, Any?> =
+            mutableMapOf<String, Any?>(
+                variable to MethodValue(source.id.takeIf { qualified }, method)
+            ).apply {
+                if (qualified) put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+            }
+
+        fun matches(binding: Map<String, Any?>): Boolean =
+            where == null || evaluator.evaluate(where.condition, binding) == true
+
+        fun project(binding: Map<String, Any?>): MutableMap<String, Any?> =
+            mutableMapOf<String, Any?>().apply {
+                ret.items.forEachIndexed { index, item ->
+                    put(columns[index], evaluator.evaluate(item.expression, binding))
+                }
+                binding[INTERNAL_PROVENANCE_KEY]?.let { put(INTERNAL_PROVENANCE_KEY, it) }
+            }
+    }
+
+    private data class MethodCountGroup(
+        var count: Long = 0L,
+        val graphIds: LinkedHashSet<String> = linkedSetOf()
+    )
 
 }
 
@@ -192,6 +360,14 @@ private class MethodPredicate(private val variable: String) {
         returnType = returnType,
         useRegex = true
     )
+
+    fun addConjuncts(expression: CypherExpr): Boolean = if (expression is CypherExpr.And) {
+        val left = addConjuncts(expression.left)
+        val right = addConjuncts(expression.right)
+        left && right
+    } else {
+        add(expression)
+    }
 
     fun add(expression: CypherExpr): Boolean = when (expression) {
         is CypherExpr.And -> add(expression.left) && add(expression.right)

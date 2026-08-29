@@ -10,6 +10,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StreamingMethodLookup
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -121,7 +122,7 @@ class MethodQueryExecutorTest {
     }
 
     @Test
-    fun `Method index fast path declines unsupported AST shapes`() {
+    fun `Method index path handles residual predicates and declines unsupported shapes`() {
         val graph = DefaultGraph.Builder().build()
         val sources = listOf(CypherGraph("default", graph))
         fun tryFastPath(cypher: String): CypherResult? = MethodQueryExecutor.tryExecute(
@@ -133,9 +134,12 @@ class MethodQueryExecutorTest {
         )
 
         assertNull(tryFastPath("RETURN 1"))
-        assertNull(tryFastPath("MATCH (m:Method) WHERE true RETURN m"))
-        assertNull(tryFastPath("MATCH (m:Method) WHERE 1 = 1 RETURN m"))
+        assertNotNull(tryFastPath("MATCH (m:Method) WHERE true RETURN m"))
+        assertNotNull(tryFastPath("MATCH (m:Method) WHERE 1 = 1 RETURN m"))
         assertNull(tryFastPath("MATCH (m:Method {name: other}) RETURN m"))
+        assertNull(tryFastPath("MATCH (m:Method) RETURN count(m) AS total ORDER BY total"))
+        assertNull(tryFastPath("MATCH (m:Method) RETURN m.name AS name ORDER BY m.name LIMIT 1"))
+        assertNull(tryFastPath("MATCH (m:Method) RETURN m.name AS name ORDER BY name LIMIT 10001"))
         assertNull(
             MethodQueryExecutor.tryExecute(
                 listOf(
@@ -149,6 +153,80 @@ class MethodQueryExecutorTest {
                 checkCancelled = {},
                 workTracker = null
             )
+        )
+    }
+
+    @Test
+    fun `Method filtered count returns zero without materializing matches`() {
+        val graph = DefaultGraph.Builder().apply {
+            addMethod(method("com.example.Alpha", "alpha", emptyList(), "void"))
+        }.build()
+
+        val result = CypherExecutor(graph).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Missing' RETURN count(m) AS total"
+        )
+
+        assertEquals(0L, result.rows.single()["total"])
+    }
+
+    @Test
+    fun `Method bounded order handles equal null and boolean keys`() {
+        val graph = DefaultGraph.Builder().apply {
+            addMethod(method("com.example.Alpha", "alpha", emptyList(), "void"))
+            addMethod(method("com.example.Beta", "beta", emptyList(), "void"))
+        }.build()
+        val executor = CypherExecutor(graph)
+
+        val equalNulls = executor.execute(
+            "MATCH (m:Method) RETURN null AS rank, m.name AS name ORDER BY rank LIMIT 2"
+        )
+        val booleans = executor.execute(
+            "MATCH (m:Method) RETURN m.name = 'alpha' AS selected, m.name AS name " +
+                "ORDER BY selected DESC LIMIT 2"
+        )
+
+        assertEquals(setOf("alpha", "beta"), equalNulls.rows.map { it["name"] }.toSet())
+        assertEquals(listOf(true, false), booleans.rows.map { it["selected"] })
+        assertEquals(listOf("alpha", "beta"), booleans.rows.map { it["name"] })
+    }
+
+    @Test
+    fun `Method OR count and order stay streaming across 36 graphs`() {
+        val graphCount = 36
+        val methodsPerGraph = 1_000
+        val sources = (0 until graphCount).map { graphIndex ->
+            val methods = (0 until methodsPerGraph).map { methodIndex ->
+                method("com.example.Generated", "method$methodIndex", emptyList(), "void")
+            }
+            CypherGraph("graph-$graphIndex", SyntheticMethodIndexGraph(methods))
+        }
+        val executor = CrossGraphCypherExecutor(sources, CypherExecutionBudget(maxWorkUnits = 1))
+
+        val alternatives = executor.execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Generated' AND " +
+                "(m.name = 'method0' OR m.name = 'method999') " +
+                "RETURN graphId(m) AS graph, m.name AS name LIMIT 5000"
+        )
+        val counts = executor.execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Generated' " +
+                "RETURN graphId(m) AS graph, count(m) AS total LIMIT 5000"
+        )
+        val ordered = executor.execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Generated' " +
+                "RETURN graphId(m) AS graph, m.signature AS signature " +
+                "ORDER BY graph, signature DESC LIMIT 36"
+        )
+
+        assertEquals(graphCount * 2, alternatives.rows.size)
+        assertEquals(setOf("method0", "method999"), alternatives.rows.map { it["name"] }.toSet())
+        assertEquals(graphCount, counts.rows.size)
+        assertTrue(counts.rows.all { it["total"] == methodsPerGraph.toLong() })
+        assertEquals((0 until graphCount).map { "graph-$it" }, counts.rows.map { it["graph"] })
+        assertEquals(36, ordered.rows.size)
+        assertTrue(ordered.rows.all { it["graph"] == "graph-0" })
+        assertEquals(
+            ordered.rows.map { it["signature"] as String }.sortedDescending(),
+            ordered.rows.map { it["signature"] }
         )
     }
 

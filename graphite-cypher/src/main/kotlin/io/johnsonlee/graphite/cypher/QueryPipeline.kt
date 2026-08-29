@@ -45,7 +45,7 @@ private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
-private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
+internal const val MAX_ORDERED_TOP_K_ROWS = 10_000
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
 
@@ -608,7 +608,7 @@ class QueryPipeline private constructor(
                 }
                 if (sortItems.isEmpty()) return null
                 val limitCount = ((limit.count as? CypherExpr.Literal)?.value as? Number)?.toCypherInt() ?: return null
-                if (limitCount > MAX_ORDERED_PROPERTY_TOP_K) return null
+                if (limitCount > MAX_ORDERED_TOP_K_ROWS) return null
                 val nodeClass = nodePattern.labels.firstOrNull()
                     ?.let(NodePropertyAccessor::resolveNodeLabel)
                     ?: Node::class.java
