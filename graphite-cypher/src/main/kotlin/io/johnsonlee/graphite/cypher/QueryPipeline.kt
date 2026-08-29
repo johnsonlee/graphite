@@ -174,12 +174,35 @@ class QueryPipeline private constructor(
     internal fun execute(
         clauses: List<CypherClause>,
         workTracker: CypherWorkTracker?
+    ): CypherResult = when {
+        MethodQueryExecutor.referencesMethod(clauses) -> executeMethodQuery(clauses, workTracker)
+        workTracker == null -> executeWithActiveBudget(clauses)
+        else -> {
+            val previousTracker = activeWorkTracker.get()
+            activeWorkTracker.set(workTracker)
+            try {
+                executeWithActiveBudget(clauses)
+            } finally {
+                if (previousTracker == null) {
+                    activeWorkTracker.remove()
+                } else {
+                    activeWorkTracker.set(previousTracker)
+                }
+            }
+        }
+    }
+
+    private fun executeMethodQuery(
+        clauses: List<CypherClause>,
+        workTracker: CypherWorkTracker?
     ): CypherResult {
-        if (workTracker == null) return executeWithActiveBudget(clauses)
+        if (workTracker == null) {
+            return MethodQueryExecutor.execute(clauses, sources, qualified, ::checkCancelled)
+        }
         val previousTracker = activeWorkTracker.get()
         activeWorkTracker.set(workTracker)
         return try {
-            executeWithActiveBudget(clauses)
+            MethodQueryExecutor.execute(clauses, sources, qualified, ::checkCancelled)
         } finally {
             if (previousTracker == null) {
                 activeWorkTracker.remove()
@@ -192,16 +215,12 @@ class QueryPipeline private constructor(
     @Suppress("CyclomaticComplexMethod")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
-        val fastResult = if (MethodQueryExecutor.referencesMethod(clauses)) {
-            MethodQueryExecutor.execute(clauses, sources, qualified, ::checkCancelled)
-        } else {
-            tryFastNodeCount(clauses)
-                ?: tryFastLabelHistogram(clauses)
-                ?: tryFastOrderedPropertyLimit(clauses)
-                ?: tryFastDistinctPropertyLimit(clauses)
-                ?: tryFastFilteredNodeLimit(clauses)
-                ?: tryFastSingleHopRelationshipLimit(clauses)
-        }
+        val fastResult = tryFastNodeCount(clauses)
+            ?: tryFastLabelHistogram(clauses)
+            ?: tryFastOrderedPropertyLimit(clauses)
+            ?: tryFastDistinctPropertyLimit(clauses)
+            ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryFastSingleHopRelationshipLimit(clauses)
         if (fastResult != null) return fastResult
 
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
