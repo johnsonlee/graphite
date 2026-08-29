@@ -129,16 +129,6 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
-            "/api/nodes" to mapOf(
-                "get" to operation(
-                    "List nodes across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_TYPE, TYPE_STRING, false, "Optional node label/type filter"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum number of nodes to return")
-                    ),
-                    responses = mapOf("200" to response("Node list"))
-                )
-            ),
             "/api/node/{id}" to mapOf(
                 "get" to operation(
                     "Fetch every graph-local node with this id, grouped by graphId",
@@ -178,26 +168,15 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
-            "/api/call-sites" to mapOf(
-                "get" to operation(
-                    "List call sites across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional caller/callee class filter"),
-                        queryParameter(API_PARAM_METHOD, TYPE_STRING, false, "Optional method name filter"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
-                    ),
-                    responses = mapOf("200" to response("Call site list"))
-                )
-            ),
             "/api/methods" to mapOf(
                 "get" to operation(
-                    "List methods across all loaded graphs, grouped by graphId",
+                    "List declared methods across all loaded graphs, grouped by graphId",
                     parameters = listOf(
                         queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional declaring class filter"),
                         queryParameter(API_PARAM_NAME, TYPE_STRING, false, "Optional method name filter"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
                     ),
-                    responses = mapOf("200" to response("Method list"))
+                    responses = mapOf("200" to response("Method list with declared return types"))
                 )
             ),
             "/api/annotations" to mapOf(
@@ -339,11 +318,9 @@ internal class OpenApiSpecBuilder {
     @Suppress("UNCHECKED_CAST")
     private fun addGraphScopedPaths(paths: MutableMap<String, Any?>) {
         val graphBoundRoots = listOf(
-            "/api/nodes",
             "/api/node/{id}",
             "/api/node/{id}/outgoing",
             "/api/node/{id}/incoming",
-            "/api/call-sites",
             "/api/methods",
             "/api/annotations",
             "/api/resources",
@@ -369,12 +346,10 @@ internal class OpenApiSpecBuilder {
     }
 
     private fun scopedSummary(rootPath: String): String = when (rootPath) {
-        "/api/nodes" -> "List nodes in one explicit graph"
         "/api/node/{id}" -> "Fetch a node by graph-local id in one explicit graph"
         "/api/node/{id}/outgoing" -> "List outgoing edges in one explicit graph"
         "/api/node/{id}/incoming" -> "List incoming edges in one explicit graph"
-        "/api/call-sites" -> "List call sites in one explicit graph"
-        "/api/methods" -> "List methods in one explicit graph"
+        "/api/methods" -> "List declared methods in one explicit graph"
         "/api/annotations" -> "Fetch member annotations in one explicit graph"
         "/api/resources" -> "List persisted resources in one explicit graph"
         "/api/resources/{path}" -> "Read persisted resource content in one explicit graph"

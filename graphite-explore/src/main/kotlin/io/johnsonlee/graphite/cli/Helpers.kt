@@ -4,7 +4,6 @@ import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
-import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DoubleConstant
@@ -25,18 +24,6 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.ValueNode
-
-internal fun resolveNodeType(type: String?): Class<out Node> = when (type?.lowercase()) {
-    "callsite", "callsitenode" -> CallSiteNode::class.java
-    "constant", "constantnode" -> ConstantNode::class.java
-    "resourcefile", "resourcefilenode" -> ResourceFileNode::class.java
-    "resource", "resourcevalue", "resourcevaluenode" -> ResourceValueNode::class.java
-    "field", "fieldnode" -> FieldNode::class.java
-    "parameter", "parameternode" -> ParameterNode::class.java
-    "return", "returnnode" -> ReturnNode::class.java
-    "local", "localvariable" -> LocalVariable::class.java
-    else -> Node::class.java
-}
 
 internal fun formatNode(node: Node): String = when (node) {
     is CallSiteNode -> "CallSite[${node.id}] ${node.caller.declaringClass.simpleName}.${node.caller.name} -> ${node.callee.declaringClass.simpleName}.${node.callee.name}"

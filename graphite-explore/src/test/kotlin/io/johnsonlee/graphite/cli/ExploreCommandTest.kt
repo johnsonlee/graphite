@@ -651,14 +651,6 @@ class ExploreCommandTest {
                 val totals = graphRegistry["totals"] as Map<String, Any?>
                 assertEquals(4.0, totals[API_FIELD_NODES])
 
-                val (limitedCode, limitedBody) = get(targetPort, "/api/nodes?limit=1")
-                assertEquals(200, limitedCode, limitedBody)
-                val limitedEnvelope: Map<String, Any?> = parseJson(limitedBody)
-                @Suppress("UNCHECKED_CAST")
-                val limitedGroups = limitedEnvelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
-                val limitedCount = limitedGroups.sumOf { (it[API_FIELD_DATA] as List<*>).size }
-                assertEquals(1, limitedCount, "Root limit must be global, body: $limitedBody")
-
                 val (resourceCode, resourceBody) = get(targetPort, "/api/resources/shared/config.txt")
                 assertEquals(200, resourceCode, resourceBody)
                 val resourceEnvelope: Map<String, Any?> = parseJson(resourceBody)
@@ -738,8 +730,7 @@ class ExploreCommandTest {
             registry.load("service-b", graphDir)
 
             val groupedPaths = listOf(
-                "/api/call-sites?method=baz&limit=10",
-                "/api/methods?class=com.example.Foo&limit=10",
+                "/api/methods?class=com.example.Child&limit=10",
                 "/api/annotations?class=com.example.Foo&member=bar",
                 "/api/resources?pattern=**&limit=10",
                 "/api/endpoints?class=com.example.Foo&limit=10",
@@ -754,6 +745,19 @@ class ExploreCommandTest {
                 val groups = envelope[API_FIELD_RESULTS] as List<Map<String, Any?>>
                 assertEquals(listOf("service-a", "service-b"), groups.map { it[API_FIELD_GRAPH_ID] })
             }
+
+            listOf("nodes", "call-sites").forEach { route ->
+                assertEquals(404, get(targetPort, "/api/$route").first)
+                assertEquals(404, get(targetPort, "/api/graphs/service-a/$route").first)
+            }
+
+            val (scopedMethodsCode, scopedMethodsBody) = get(
+                targetPort,
+                "/api/graphs/service-a/methods?class=com.example.Child&name=qux"
+            )
+            assertEquals(200, scopedMethodsCode, scopedMethodsBody)
+            val scopedMethods: List<Map<String, Any?>> = parseJson(scopedMethodsBody)
+            assertEquals("int", scopedMethods.single()["returnType"])
 
             val (scopedEndpointsCode, scopedEndpointsBody) = get(
                 targetPort,
@@ -1243,49 +1247,44 @@ class ExploreCommandTest {
         }
     }
 
-    // ========================================================================
-    // /api/nodes
-    // ========================================================================
-
     @Test
-    fun `GET api nodes returns node list`() {
-        val (code, body) = get("/api/nodes?limit=100")
-        assertEquals(200, code)
-        val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(10, nodes.size)
+    fun `node and call-site search APIs are unavailable while Cypher remains available`() {
+        listOf("nodes", "call-sites").forEach { route ->
+            assertEquals(404, get("/api/$route").first, "Root search route /api/$route must be unavailable")
+            assertEquals(
+                404,
+                get("/api/graphs/standalone/$route").first,
+                "Scoped search route /api/graphs/standalone/$route must be unavailable"
+            )
+        }
+
+        val (rootCode, rootBody) = post("/api/cypher", """{"query":"MATCH (n) RETURN n.id LIMIT 1"}""")
+        assertEquals(200, rootCode, rootBody)
+        val (scopedCode, scopedBody) = post(
+            "/api/graphs/standalone/cypher",
+            """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+        )
+        assertEquals(200, scopedCode, scopedBody)
     }
 
     @Test
-    fun `GET api nodes with type filter returns filtered nodes`() {
-        val (code, body) = get("/api/nodes?type=CallSiteNode&limit=100")
-        assertEquals(200, code)
-        val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, nodes.size)
-        assertEquals("CallSiteNode", nodes[0]["type"])
+    fun `GET api methods preserves indexed methods without nodes and declared return type`() {
+        val (code, body) = get("/api/methods?class=com.example.Child&name=qux&limit=100")
+        assertEquals(200, code, body)
+        val methods: List<Map<String, Any?>> = parseJson(body)
+        val method = methods.single()
+        assertEquals("com.example.Child", method["class"])
+        assertEquals("qux", method["name"])
+        assertEquals("int", method["returnType"])
+        assertEquals(quxMethod.signature, method["signature"])
     }
 
     @Test
-    fun `GET api nodes with constant type filter`() {
-        val (code, body) = get("/api/nodes?type=constant&limit=100")
-        assertEquals(200, code)
-        val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(3, nodes.size)
-    }
-
-    @Test
-    fun `GET api nodes respects limit`() {
-        val (code, body) = get("/api/nodes?limit=2")
-        assertEquals(200, code)
-        val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(2, nodes.size)
-    }
-
-    @Test
-    fun `GET api nodes defaults to 50 limit`() {
-        val (code, body) = get("/api/nodes")
-        assertEquals(200, code)
-        val nodes: List<Map<String, Any?>> = parseJson(body)
-        assertTrue(nodes.size <= 50)
+    fun `GET api methods respects global limit`() {
+        val (code, body) = get("/api/methods?limit=1")
+        assertEquals(200, code, body)
+        val methods: List<Map<String, Any?>> = parseJson(body)
+        assertEquals(1, methods.size)
     }
 
     // ========================================================================
@@ -1384,86 +1383,6 @@ class ExploreCommandTest {
     fun `GET api node incoming returns 400 for invalid id`() {
         val (code, _) = get("/api/graphs/standalone/node/xyz/incoming")
         assertEquals(400, code)
-    }
-
-    // ========================================================================
-    // /api/call-sites
-    // ========================================================================
-
-    @Test
-    fun `GET api call-sites returns matching call sites`() {
-        val (code, body) = get("/api/call-sites?class=com.example.Baz")
-        assertEquals(200, code)
-        val sites: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, sites.size)
-        assertEquals("CallSiteNode", sites[0]["type"])
-    }
-
-    @Test
-    fun `GET api call-sites with method filter`() {
-        val (code, body) = get("/api/call-sites?method=baz")
-        assertEquals(200, code)
-        val sites: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, sites.size)
-    }
-
-    @Test
-    fun `GET api call-sites with no matches`() {
-        val (code, body) = get("/api/call-sites?class=com.nonexistent.Class")
-        assertEquals(200, code)
-        val sites: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(0, sites.size)
-    }
-
-    @Test
-    fun `GET api call-sites respects limit`() {
-        val (code, body) = get("/api/call-sites?limit=0")
-        assertEquals(200, code)
-        val sites: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(0, sites.size)
-    }
-
-    // ========================================================================
-    // /api/methods
-    // ========================================================================
-
-    @Test
-    fun `GET api methods returns matching methods`() {
-        val (code, body) = get("/api/methods?limit=100")
-        assertEquals(200, code)
-        val methods: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(3, methods.size)
-        assertTrue(methods.all { it.containsKey("signature") })
-        assertTrue(methods.all { it.containsKey("class") })
-        assertTrue(methods.all { it.containsKey("name") })
-        assertTrue(methods.all { it.containsKey("returnType") })
-    }
-
-    @Test
-    fun `GET api methods with class filter`() {
-        val (code, body) = get("/api/methods?class=com.example.Child&limit=100")
-        assertEquals(200, code)
-        val methods: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, methods.size)
-        assertEquals("com.example.Child", methods[0]["class"])
-        assertEquals("qux", methods[0]["name"])
-    }
-
-    @Test
-    fun `GET api methods with name filter`() {
-        val (code, body) = get("/api/methods?name=bar&limit=100")
-        assertEquals(200, code)
-        val methods: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, methods.size)
-        assertEquals("bar", methods[0]["name"])
-    }
-
-    @Test
-    fun `GET api methods respects limit`() {
-        val (code, body) = get("/api/methods?limit=1")
-        assertEquals(200, code)
-        val methods: List<Map<String, Any?>> = parseJson(body)
-        assertEquals(1, methods.size)
     }
 
     // ========================================================================
@@ -1593,6 +1512,12 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/api/endpoints"))
         assertFalse(paths.containsKey("/api/api-spec"))
         assertTrue(paths.containsKey("/api/resources/{path}"))
+        assertTrue(paths.containsKey("/api/methods"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/methods"))
+        listOf("nodes", "call-sites").forEach { route ->
+            assertFalse(paths.containsKey("/api/$route"))
+            assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
+        }
         @Suppress("UNCHECKED_CAST")
         val cypher = paths["/api/cypher"] as Map<String, Map<String, Any?>>
         assertTrue(cypher.containsKey("get"))
@@ -1799,6 +1724,12 @@ class ExploreCommandTest {
         assertTrue(paths.containsKey("/api/graphs/{graphId}/resources/{path}"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/endpoints"))
         assertTrue(paths.containsKey("/api/graphs/{graphId}/architecture/c4"))
+        assertTrue(paths.containsKey("/api/methods"))
+        assertTrue(paths.containsKey("/api/graphs/{graphId}/methods"))
+        listOf("nodes", "call-sites").forEach { route ->
+            assertFalse(paths.containsKey("/api/$route"))
+            assertFalse(paths.containsKey("/api/graphs/{graphId}/$route"))
+        }
         @Suppress("UNCHECKED_CAST")
         val resources = paths["/api/resources/{path}"] as Map<String, Map<String, Any?>>
         @Suppress("UNCHECKED_CAST")

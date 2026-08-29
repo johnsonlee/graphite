@@ -801,6 +801,7 @@ export function renderLargeCorpusReport(comparison) {
 export function aggregateReports(directory, metadata) {
     const components = [
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
+        { name: "explorer", report: "explorer-report.md", status: "explorer-status.json" },
         {
             name: "budgeted-collection",
             report: "budgeted-collection-report.md",

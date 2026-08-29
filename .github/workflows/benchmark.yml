@@ -113,6 +113,131 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  explorer:
+    name: explorer-benchmarks
+    needs: [prepare-latency-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Restore persisted fixture graphs
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Verify restored Android graph
+      run: |
+        test -f fixture-graphs/.complete
+        test -f fixture-graphs/android/graph.metadata
+        test -f fixture-graphs/android/graph.nodedata
+
+    - name: Build comparable Explorer JMH jars
+      run: |
+        HARNESS='graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
+        cp "base/${HARNESS}" "candidate/${HARNESS}"
+        base/gradlew -p base :explore:jmhJar --no-daemon
+        candidate/gradlew -p candidate :explore:jmhJar --no-daemon
+
+    - name: Benchmark base then PR
+      run: |
+        mkdir -p benchmark-results
+        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${BASE_JAR}"
+        test -n "${CANDIDATE_JAR}"
+        GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
+        # Hosted-runner RSS has enough allocator noise to make the benchmark's
+        # 64 MiB local waterline flaky before paired results can be compared.
+        # Apply the same ceiling to both revisions; the 15% paired latency gate
+        # and the remaining heap/waterline checks still fail closed.
+        JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
+          -p stableResidentGrowthLimitBytes=134217728)
+        java -jar "${BASE_JAR}" \
+          'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARG}" \
+          -rff "${PWD}/benchmark-results/base-explorer.json"
+        java -jar "${CANDIDATE_JAR}" \
+          'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARG}" \
+          -rff "${PWD}/benchmark-results/candidate-explorer.json"
+
+    - name: Compare Explorer results
+      run: |
+        EXPECTED='io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.'
+        for FILE in benchmark-results/base-explorer.json benchmark-results/candidate-explorer.json; do
+          jq -e --arg expected "${EXPECTED}" \
+            'length == 4 and all(.[]; (.benchmark | startswith($expected)) and
+              .mode == "ss" and .primaryMetric.score > 0)' \
+            "${FILE}" >/dev/null
+        done
+        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          --base benchmark-results/base-explorer.json \
+          --candidate benchmark-results/candidate-explorer.json \
+          --threshold 15 \
+          --threshold-only \
+          --title 'Explorer HTTP sessions' \
+          --report benchmark-results/initial-explorer-report.md \
+          --status benchmark-results/initial-explorer-status.json; then
+          mv benchmark-results/initial-explorer-report.md benchmark-results/explorer-report.md
+          mv benchmark-results/initial-explorer-status.json benchmark-results/explorer-status.json
+        else
+          BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
+          JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
+            -p stableResidentGrowthLimitBytes=134217728)
+          java -jar "${CANDIDATE_JAR}" \
+            'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
+            -jvmArgsAppend "${GRAPH_ARG}" \
+            -rff "${PWD}/benchmark-results/candidate-explorer-confirmation.json"
+          java -jar "${BASE_JAR}" \
+            'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
+            -jvmArgsAppend "${GRAPH_ARG}" \
+            -rff "${PWD}/benchmark-results/base-explorer-confirmation.json"
+          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+            --initial benchmark-results/initial-explorer-status.json \
+            --base benchmark-results/base-explorer-confirmation.json \
+            --candidate benchmark-results/candidate-explorer-confirmation.json \
+            --threshold 15 \
+            --threshold-only \
+            --title 'Explorer HTTP sessions' \
+            --report benchmark-results/explorer-report.md \
+            --status benchmark-results/explorer-status.json
+        fi
+
+    - name: Upload Explorer results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-explorer-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
   budgeted-collection:
     name: budgeted-collection-latency
     runs-on: ubuntu-latest
@@ -869,7 +994,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [method-level, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
+    needs: [method-level, explorer, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
     runs-on: ubuntu-latest
 
     steps:
@@ -942,13 +1067,15 @@ jobs:
       if: always()
       env:
         METHOD_JOB: ${{ needs.method-level.result }}
+        EXPLORER_JOB: ${{ needs.explorer.result }}
         BUDGETED_COLLECTION_JOB: ${{ needs.budgeted-collection.result }}
         BUDGETED_STRING_JOB: ${{ needs.budgeted-mapped-string.result }}
         LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
       run: |
-        if [ "${METHOD_JOB}" != success ] || [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
+        if [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
+          [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then

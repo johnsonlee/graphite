@@ -4,7 +4,6 @@ import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
-import io.johnsonlee.graphite.core.ConstantNode
 import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -55,68 +54,6 @@ class HelpersTest {
         private val fieldNode = FieldNode(NodeId.next(), FieldDescriptor(fooType, "name", TypeDescriptor("java.lang.String")), false)
         private val resourceFileNode = ResourceFileNode(NodeId.next(), "application.yml", "test-fixture", "yaml", "dev")
         private val resourceValueNode = ResourceValueNode(NodeId.next(), "application.yml", "server.port", 8080, "yaml", "dev")
-    }
-
-    // ========================================================================
-    // resolveNodeType
-    // ========================================================================
-
-    @Test
-    fun `resolveNodeType maps CallSiteNode`() {
-        assertEquals(CallSiteNode::class.java, resolveNodeType("CallSiteNode"))
-        assertEquals(CallSiteNode::class.java, resolveNodeType("callsite"))
-    }
-
-    @Test
-    fun `resolveNodeType maps ConstantNode`() {
-        assertEquals(ConstantNode::class.java, resolveNodeType("constant"))
-        assertEquals(ConstantNode::class.java, resolveNodeType("ConstantNode"))
-    }
-
-    @Test
-    fun `resolveNodeType maps FieldNode`() {
-        assertEquals(FieldNode::class.java, resolveNodeType("field"))
-        assertEquals(FieldNode::class.java, resolveNodeType("FieldNode"))
-    }
-
-    @Test
-    fun `resolveNodeType maps ParameterNode`() {
-        assertEquals(ParameterNode::class.java, resolveNodeType("parameter"))
-        assertEquals(ParameterNode::class.java, resolveNodeType("ParameterNode"))
-    }
-
-    @Test
-    fun `resolveNodeType maps ReturnNode`() {
-        assertEquals(ReturnNode::class.java, resolveNodeType("return"))
-        assertEquals(ReturnNode::class.java, resolveNodeType("ReturnNode"))
-    }
-
-    @Test
-    fun `resolveNodeType maps LocalVariable`() {
-        assertEquals(LocalVariable::class.java, resolveNodeType("local"))
-        assertEquals(LocalVariable::class.java, resolveNodeType("LocalVariable"))
-    }
-
-    @Test
-    fun `resolveNodeType maps ResourceValueNode`() {
-        assertEquals(ResourceValueNode::class.java, resolveNodeType("resource"))
-        assertEquals(ResourceValueNode::class.java, resolveNodeType("ResourceValueNode"))
-    }
-
-    @Test
-    fun `resolveNodeType maps ResourceFileNode`() {
-        assertEquals(ResourceFileNode::class.java, resolveNodeType("resourcefile"))
-        assertEquals(ResourceFileNode::class.java, resolveNodeType("ResourceFileNode"))
-    }
-
-    @Test
-    fun `resolveNodeType defaults to Node for null`() {
-        assertEquals(Node::class.java, resolveNodeType(null))
-    }
-
-    @Test
-    fun `resolveNodeType defaults to Node for unknown`() {
-        assertEquals(Node::class.java, resolveNodeType("SomethingElse"))
     }
 
     // ========================================================================
