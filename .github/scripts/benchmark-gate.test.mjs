@@ -535,18 +535,22 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.match(aggregate.body, new RegExp(COMMENT_MARKER));
         assert.match(aggregate.body, /budgeted-collection: result artifact is missing/);
         assert.match(aggregate.body, /explorer: result artifact is missing/);
+        assert.match(aggregate.body, /method-compatibility: result artifact is missing/);
+        assert.match(aggregate.body, /cypher-capacity: result artifact is missing/);
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
 });
 
-test("aggregate report includes the budgeted collection and mapped-string gates", () => {
+test("aggregate report includes every independent benchmark gate", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-complete-"));
     try {
         for (const [report, status, body] of [
             ["method-report.md", "method-status.json", "method report"],
             ["explorer-report.md", "explorer-status.json", "explorer report"],
+            ["method-compatibility-report.md", "method-compatibility-status.json", "Method migration report"],
+            ["cypher-capacity-report.md", "cypher-capacity-status.json", "capacity report"],
             ["budgeted-collection-report.md", "budgeted-collection-status.json", "collection report"],
             ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
             ["large-corpus-report.md", "large-corpus-status.json", "large report"],
@@ -566,6 +570,8 @@ test("aggregate report includes the budgeted collection and mapped-string gates"
         assert.equal(aggregate.passed, true);
         assert.match(aggregate.body, /collection report/);
         assert.match(aggregate.body, /explorer report/);
+        assert.match(aggregate.body, /Method migration report/);
+        assert.match(aggregate.body, /capacity report/);
         assert.match(aggregate.body, /budgeted report/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });

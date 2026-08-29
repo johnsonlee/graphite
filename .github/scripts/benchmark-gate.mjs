@@ -803,6 +803,16 @@ export function aggregateReports(directory, metadata) {
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
         { name: "explorer", report: "explorer-report.md", status: "explorer-status.json" },
         {
+            name: "method-compatibility",
+            report: "method-compatibility-report.md",
+            status: "method-compatibility-status.json"
+        },
+        {
+            name: "cypher-capacity",
+            report: "cypher-capacity-report.md",
+            status: "cypher-capacity-status.json"
+        },
+        {
             name: "budgeted-collection",
             report: "budgeted-collection-report.md",
             status: "budgeted-collection-status.json"
