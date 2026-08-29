@@ -170,7 +170,12 @@ jobs:
         test -n "${BASE_JAR}"
         test -n "${CANDIDATE_JAR}"
         GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
-        JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json)
+        # Hosted-runner RSS has enough allocator noise to make the benchmark's
+        # 64 MiB local waterline flaky before paired results can be compared.
+        # Apply the same ceiling to both revisions; the 15% paired latency gate
+        # and the remaining heap/waterline checks still fail closed.
+        JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
+          -p stableResidentGrowthLimitBytes=134217728)
         java -jar "${BASE_JAR}" \
           'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_ARG}" \
@@ -203,7 +208,8 @@ jobs:
           BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
           CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
           GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
-          JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json)
+          JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
+            -p stableResidentGrowthLimitBytes=134217728)
           java -jar "${CANDIDATE_JAR}" \
             'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_ARG}" \
