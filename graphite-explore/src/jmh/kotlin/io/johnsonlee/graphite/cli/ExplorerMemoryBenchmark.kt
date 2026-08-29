@@ -35,8 +35,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.Comparator
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -373,7 +371,7 @@ open class ExplorerMemoryBenchmark {
  * The candidate copy of this source is compiled into both revisions. A base server is therefore
  * exercised through its scoped `/methods` route, while a candidate server is exercised through
  * `MATCH (m:Method)`. Both paths are normalized to the same schema and checked against the same
- * mapped Android method index before their latency, CPU, and RSS measurements are compared.
+ * heterogeneous mapped method indexes before their latency, CPU, and RSS measurements are compared.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -385,13 +383,15 @@ open class MethodDiscoveryCompatibilityBenchmark {
     @Param("4", "17", "36")
     var graphCount: Int = 0
 
+    @Param("zero", "early", "middle", "late", "prefix", "suffix", "contains", "regex", "or", "count", "order")
+    lateinit var scenario: String
+
     private lateinit var root: Path
     private lateinit var registry: GraphRegistry
     private lateinit var topology: TopologyService
     private lateinit var app: Javalin
     private lateinit var cypherGuard: CypherQueryGuard
-    private lateinit var oracle: Graph
-    private lateinit var fixture: MethodCompatibilityFixture
+    private lateinit var services: List<MethodBenchmarkService>
     private var port: Int = 0
     private var legacyMethodsRoute: Boolean = false
 
@@ -399,9 +399,27 @@ open class MethodDiscoveryCompatibilityBenchmark {
     fun setup() {
         root = Files.createTempDirectory("graphite-method-compatibility")
         registry = GraphRegistry(root, GraphStore.LoadMode.MAPPED)
-        val graphPath = ExplorerBenchmarkCorpus.persistedAndroidGraph()
-        repeat(graphCount) { index ->
-            registry.load("service-$index", graphPath, GraphStore.LoadMode.MAPPED)
+        val fixtures = METHOD_CORPORA.associateWith { corpus ->
+            val graphPath = ExplorerBenchmarkCorpus.persistedGraph(corpus)
+            val graph = GraphStore.load(graphPath, GraphStore.LoadMode.MAPPED)
+            try {
+                MethodCompatibilityFixture.from(corpus, graph.methods(MethodPattern()).toList())
+            } finally {
+                runCatching { (graph as? Closeable)?.close() }
+            }
+        }
+        services = List(graphCount) { index ->
+            val corpus = METHOD_CORPORA[index % METHOD_CORPORA.size]
+            val graphId = "service-$index"
+            val fixture = fixtures.getValue(corpus)
+            registry.load(graphId, ExplorerBenchmarkCorpus.persistedGraph(corpus), GraphStore.LoadMode.MAPPED)
+            MethodBenchmarkService(graphId, corpus, fixture)
+        }
+        check(services.map(MethodBenchmarkService::corpus).withIndex().all { (index, corpus) ->
+            corpus == METHOD_CORPORA[index % METHOD_CORPORA.size]
+        }) { "Method benchmark registry did not preserve the heterogeneous corpus cycle" }
+        check(services.map(MethodBenchmarkService::corpus).toSet() == METHOD_CORPORA.toSet()) {
+            "Method benchmark registry did not include every real corpus"
         }
         topology = TopologyService(registry, emptyList(), root).also { it.rebuild() }
         app = Javalin.create { config ->
@@ -410,13 +428,8 @@ open class MethodDiscoveryCompatibilityBenchmark {
         cypherGuard = CypherQueryGuard(TARGET_CYPHER_CONCURRENCY, TARGET_CYPHER_WORK_BUDGET)
         ExploreRoutes(cypherGuard).register(app, registry, topology)
         port = app.port()
-        oracle = GraphStore.load(graphPath, GraphStore.LoadMode.MAPPED)
-        fixture = MethodCompatibilityFixture.from(oracle.methods(MethodPattern()).toList())
-        legacyMethodsRoute = rawRequest(legacyPath(fixture.className, null)).code == HTTP_OK
-
-        val results = compatibilityCases().map(::executeAndValidate) +
-            rootCompatibilityCases().map(::executeRootAndValidate)
-        writeCompatibilityManifest(results)
+        legacyMethodsRoute = rawRequest(legacyPath(services.first().fixture.className, 0)).code == HTTP_OK
+        writeCompatibilityManifest()
     }
 
     @TearDown
@@ -425,115 +438,109 @@ open class MethodDiscoveryCompatibilityBenchmark {
         runCatching { cypherGuard.close() }
         runCatching { topology.close() }
         runCatching { registry.close() }
-        runCatching { (oracle as? Closeable)?.close() }
         runCatching { root.toFile().deleteRecursively() }
     }
 
     @Benchmark
-    fun android_methodMigrationGate(counters: MethodCompatibilityCounters): Long =
+    fun methodScenarioGate(counters: MethodCompatibilityCounters): Long =
         measure(counters) {
-            var bytes = compatibilityCases().sumOf { executeAndValidate(it).bytes }
-            bytes += rootCompatibilityCases().sumOf { executeRootAndValidate(it).bytes }
-            val executor = Executors.newFixedThreadPool(TARGET_CYPHER_CONCURRENCY)
-            try {
-                val started = System.nanoTime()
-                val futures = (0 until TARGET_CYPHER_CONCURRENCY).map { graphIndex ->
-                    executor.submit(Callable {
-                        val requestStarted = System.nanoTime()
-                        val responseBytes = executeCapacityQuery(graphIndex)
-                        responseBytes to (System.nanoTime() - requestStarted)
-                    })
-                }
-                val results = futures.map { it.get() }
-                counters.tailLatencyNanos = results.maxOf { it.second }
-                counters.concurrentWallNanos = System.nanoTime() - started
-                counters.concurrentRequests = results.size.toLong()
-                bytes + results.sumOf { it.first }
-            } finally {
-                executor.shutdownNow()
+            val scopedBytes = services.mapIndexed { graphIndex, service ->
+                executeAndValidate(caseFor(scenario, service.fixture), service, graphIndex)
+            }.sumOf { it.bytes }
+            val rootBytes = services.distinctBy(MethodBenchmarkService::corpus).sumOf { source ->
+                executeRootAndValidate(caseFor(scenario, source.fixture), source.corpus).bytes
             }
+            scopedBytes + rootBytes
         }
 
-    private fun compatibilityCases(): List<MethodCompatibilityCase> = listOf(
-        zeroCase(),
-        earlyCase(),
-        lateCase(),
-        MethodCompatibilityCase(
+    private fun caseFor(name: String, fixture: MethodCompatibilityFixture): MethodCompatibilityCase = when (name) {
+        "zero" -> MethodCompatibilityCase(
+            "zero",
+            "m.class = ${cypherString(fixture.className)} AND m.name = '__graphite_never_present__'",
+            fixture.className
+        ) { false }
+        "early" -> exactCase("early", fixture.early.record)
+        "middle" -> exactCase("middle", fixture.middle.record)
+        "late" -> exactCase("late", fixture.late.record)
+        "prefix" -> MethodCompatibilityCase(
             "prefix",
-            "m.class = ${cypherString(fixture.className)} AND m.name STARTS WITH ${cypherString(fixture.prefix)}"
-        ) { it.className == fixture.className && it.name.startsWith(fixture.prefix) },
-        MethodCompatibilityCase(
+            "m.class = ${cypherString(fixture.className)} AND m.name STARTS WITH ${cypherString(fixture.prefix)}",
+            fixture.className
+        ) { it.className == fixture.className && it.name.startsWith(fixture.prefix) }
+        "suffix" -> MethodCompatibilityCase(
             "suffix",
-            "m.class = ${cypherString(fixture.className)} AND m.name ENDS WITH ${cypherString(fixture.suffix)}"
-        ) { it.className == fixture.className && it.name.endsWith(fixture.suffix) },
-        MethodCompatibilityCase(
+            "m.class = ${cypherString(fixture.className)} AND m.name ENDS WITH ${cypherString(fixture.suffix)}",
+            fixture.className
+        ) { it.className == fixture.className && it.name.endsWith(fixture.suffix) }
+        "contains" -> MethodCompatibilityCase(
             "contains",
-            "m.class = ${cypherString(fixture.className)} AND m.name CONTAINS ${cypherString(fixture.contains)}"
-        ) { it.className == fixture.className && it.name.contains(fixture.contains) },
-        MethodCompatibilityCase(
+            "m.class = ${cypherString(fixture.className)} AND m.name CONTAINS ${cypherString(fixture.contains)}",
+            fixture.className
+        ) { it.className == fixture.className && it.name.contains(fixture.contains) }
+        "regex" -> MethodCompatibilityCase(
             "regex",
-            "m.class = ${cypherString(fixture.className)} AND m.name =~ ${cypherString(fixture.regex)}"
-        ) { it.className == fixture.className && fixture.regex.toRegex().matches(it.name) },
-        MethodCompatibilityCase(
+            "m.class = ${cypherString(fixture.className)} AND m.name =~ ${cypherString(fixture.regex)}",
+            fixture.className
+        ) { it.className == fixture.className && fixture.regex.toRegex().matches(it.name) }
+        "or" -> MethodCompatibilityCase(
             "or",
             "m.class = ${cypherString(fixture.className)} AND " +
                 "(m.name = ${cypherString(fixture.orNames.first)} OR " +
-                "m.name = ${cypherString(fixture.orNames.second)})"
+                "m.name = ${cypherString(fixture.orNames.second)})",
+            fixture.className
         ) {
             it.className == fixture.className &&
                 (it.name == fixture.orNames.first || it.name == fixture.orNames.second)
-        },
-        MethodCompatibilityCase(
+        }
+        "count" -> MethodCompatibilityCase(
             "count",
             "m.class = ${cypherString(fixture.className)}",
+            fixture.className,
             aggregate = MethodCompatibilityAggregate.COUNT
-        ) { it.className == fixture.className },
-        MethodCompatibilityCase(
+        ) { it.className == fixture.className }
+        "order" -> MethodCompatibilityCase(
             "order",
             "m.class = ${cypherString(fixture.className)}",
+            fixture.className,
             aggregate = MethodCompatibilityAggregate.ORDERED_TOP
         ) { it.className == fixture.className }
-    )
+        else -> error("Unknown Method benchmark scenario: $name")
+    }
 
-    private fun rootCompatibilityCases(): List<MethodCompatibilityCase> =
-        listOf(zeroCase(), earlyCase(), lateCase())
-
-    private fun zeroCase() = MethodCompatibilityCase(
-        "zero",
-        "m.class = ${cypherString(fixture.className)} AND m.name = '__graphite_never_present__'"
-    ) { false }
-
-    private fun earlyCase() = exactCase("early", fixture.early.signature)
-
-    private fun lateCase() = exactCase("late", fixture.late.signature)
-
-    private fun exactCase(name: String, signature: String) = MethodCompatibilityCase(
+    private fun exactCase(name: String, target: MethodCompatibilityRecord) = MethodCompatibilityCase(
         name,
-        "m.signature = ${cypherString(signature)}"
-    ) { it.signature == signature }
+        "m.signature = ${cypherString(target.signature)}",
+        target.className
+    ) { it.signature == target.signature }
 
     private fun executeAndValidate(
         case: MethodCompatibilityCase,
-        graphIndex: Int = 0
+        service: MethodBenchmarkService,
+        graphIndex: Int
     ): MethodCompatibilityResult {
-        val expected = expected(case)
+        val expected = expected(case, service.fixture)
         val response = if (legacyMethodsRoute) {
             executeLegacy(case, graphIndex)
         } else {
             executeCypher(case, graphIndex)
         }
         check(response.schema == expected.schema) {
-            "${case.name} returned schema ${response.schema}, expected ${expected.schema}"
+            "${service.graphId}/${service.corpus}/${case.name} returned schema ${response.schema}, " +
+                "expected ${expected.schema}"
         }
         check(response.digest == expected.digest) {
-            "${case.name} digest mismatch: actual=${response.digest} expected=${expected.digest}"
+            "${service.graphId}/${service.corpus}/${case.name} digest mismatch: " +
+                "actual=${response.digest} expected=${expected.digest}"
         }
         return response
     }
 
-    private fun executeLegacy(case: MethodCompatibilityCase, graphIndex: Int): MethodCompatibilityResult {
+    private fun executeLegacy(
+        case: MethodCompatibilityCase,
+        graphIndex: Int
+    ): MethodCompatibilityResult {
         val response = successfulRequest(
-            legacyPath(fixture.className, graphIndex),
+            legacyPath(case.legacyClassName, graphIndex),
             "legacy methods ${case.name}"
         )
         val methods = JsonParser.parseString(response.body.decodeToString()).asJsonArray.map { element ->
@@ -550,69 +557,117 @@ open class MethodDiscoveryCompatibilityBenchmark {
         return normalized.copy(bytes = response.body.size.toLong())
     }
 
-    private fun executeRootAndValidate(case: MethodCompatibilityCase): MethodCompatibilityResult {
-        check(case.aggregate == MethodCompatibilityAggregate.NONE)
-        val expected = expectedRoot(case)
-        val response = if (legacyMethodsRoute) executeLegacyRoot(case) else executeCypherRoot(case)
-        check(response.schema == expected.schema) {
-            "root ${case.name} returned schema ${response.schema}, expected ${expected.schema}"
+    private fun executeRootAndValidate(
+        case: MethodCompatibilityCase,
+        sourceCorpus: String
+    ): MethodCompatibilityResult {
+        val actual = if (legacyMethodsRoute) executeLegacyRoot(case) else executeCypherRoot(case)
+        val expectedByGraph = expectedByGraph(case)
+        check(actual.byGraph.keys == expectedByGraph.keys) {
+            "root $sourceCorpus/${case.name} returned graph ids ${actual.byGraph.keys}, " +
+                "expected ${expectedByGraph.keys}"
         }
-        check(response.digest == expected.digest) {
-            "root ${case.name} digest mismatch: actual=${response.digest} expected=${expected.digest}"
+        services.forEach { service ->
+            val expected = expectedByGraph.getValue(service.graphId)
+            val result = actual.byGraph.getValue(service.graphId)
+            check(result.schema == expected.schema && result.digest == expected.digest) {
+                "root $sourceCorpus/${case.name}/${service.graphId}/${service.corpus} digest mismatch: " +
+                    "actual=${result.schema}:${result.digest} expected=${expected.schema}:${expected.digest}"
+            }
         }
-        return response
+        return rootResult(case, sourceCorpus, actual.byGraph, actual.bytes)
     }
 
-    private fun executeLegacyRoot(case: MethodCompatibilityCase): MethodCompatibilityResult {
-        val response = successfulRequest(legacyPath(fixture.className, null), "root legacy methods ${case.name}")
+    private fun executeLegacyRoot(case: MethodCompatibilityCase): MethodBenchmarkRootResponse {
+        val response = successfulRequest(legacyPath(case.legacyClassName, null), "root legacy methods ${case.name}")
         val body = JsonParser.parseString(response.body.decodeToString()).asJsonObject
         check(body.get("graphCount").asInt == graphCount) {
             "root legacy ${case.name} reported the wrong graph count: ${body.get("graphCount")}"
         }
-        val records = body.getAsJsonArray("results").flatMap { result ->
+        val byGraph = body.getAsJsonArray("results").associate { result ->
             val grouped = result.asJsonObject
             val graphId = grouped.get("graphId").asString
-            grouped.getAsJsonArray("data").mapNotNull { element ->
-                parseLegacyRecord(element.asJsonObject)
-                    .takeIf(case.predicate)
-                    ?.let { RootMethodCompatibilityRecord(graphId, it) }
+            val methods = grouped.getAsJsonArray("data").map { element ->
+                val value = element.asJsonObject
+                MethodCompatibilityRecord(
+                    className = value.get("class").asString,
+                    name = value.get("name").asString,
+                    parameterTypes = value.getAsJsonArray("parameterTypes").map { it.asString },
+                    returnType = value.get("returnType").asString,
+                    signature = value.get("signature").asString
+                )
             }
+            graphId to normalize(case, methods.filter(case.predicate))
         }
-        return normalizeRoot(case, records).copy(bytes = response.body.size.toLong())
+        return MethodBenchmarkRootResponse(byGraph.withEmptyGraphResults(case), response.body.size.toLong())
     }
 
-    private fun executeCypherRoot(case: MethodCompatibilityCase): MethodCompatibilityResult {
-        val response = successfulRequest(cypherPath(methodProjectionQuery(case), null), "root Method Cypher ${case.name}")
+    private fun executeCypherRoot(case: MethodCompatibilityCase): MethodBenchmarkRootResponse {
+        val query = when (case.aggregate) {
+            MethodCompatibilityAggregate.NONE ->
+                "MATCH (m:Method) WHERE ${case.where} " +
+                    "RETURN graphId(m) AS graph_id, m.class AS class, m.name AS name, " +
+                    "m.parameter_types AS parameter_types, m.return_type AS return_type, " +
+                    "m.signature AS signature LIMIT $METHOD_RESULT_LIMIT"
+            MethodCompatibilityAggregate.COUNT ->
+                "MATCH (m:Method) WHERE ${case.where} RETURN graphId(m) AS graph_id, count(m) AS total"
+            MethodCompatibilityAggregate.ORDERED_TOP ->
+                "MATCH (m:Method) WHERE ${case.where} RETURN graphId(m) AS graph_id, " +
+                    "m.signature AS signature ORDER BY graph_id, signature DESC LIMIT $METHOD_RESULT_LIMIT"
+        }
+        val response = successfulRequest(cypherPath(query, null), "root Method Cypher ${case.name}")
         val body = JsonParser.parseString(response.body.decodeToString()).asJsonObject
         check(body.get("graphCount").asInt == graphCount) {
             "root Method Cypher ${case.name} reported the wrong graph count: ${body.get("graphCount")}"
         }
         val columns = body.getAsJsonArray("columns").map { it.asString }
-        check(columns == METHOD_COLUMNS) { "root ${case.name} returned unexpected columns: $columns" }
-        val records = body.getAsJsonArray("rows").flatMap { element ->
-            val row = element.asJsonObject
-            val method = parseCypherRecord(row)
-            val graphIds = row.getAsJsonObject(ROOT_METADATA_FIELD)
-                ?.getAsJsonArray(ROOT_GRAPH_IDS_FIELD)
-                ?.map { it.asString }
-                ?: error("root ${case.name} row omitted graph provenance: $row")
-            graphIds.map { graphId -> RootMethodCompatibilityRecord(graphId, method) }
+        val rows = body.getAsJsonArray("rows").map { it.asJsonObject }
+        val byGraph = when (case.aggregate) {
+            MethodCompatibilityAggregate.NONE -> {
+                check(columns == listOf("graph_id") + METHOD_COLUMNS) {
+                    "root ${case.name} returned unexpected columns: $columns"
+                }
+                rows.groupBy { it.get("graph_id").asString }
+                    .mapValues { (_, graphRows) -> normalize(case, graphRows.map(::parseCypherRecord)) }
+            }
+            MethodCompatibilityAggregate.COUNT -> {
+                check(columns == listOf("graph_id", "total"))
+                rows.associate { row ->
+                    row.get("graph_id").asString to
+                        scalarResult("count:total", row.get("total").asLong.toString())
+                }
+            }
+            MethodCompatibilityAggregate.ORDERED_TOP -> {
+                check(columns == listOf("graph_id", "signature"))
+                rows.groupBy { it.get("graph_id").asString }.mapValues { (_, graphRows) ->
+                    scalarResult(
+                        "order:signature",
+                        graphRows.map { it.get("signature").asString }.sortedDescending().take(METHOD_ORDER_LIMIT)
+                    )
+                }
+            }
         }
-        return normalizeRoot(case, records).copy(bytes = response.body.size.toLong())
+        return MethodBenchmarkRootResponse(byGraph.withEmptyGraphResults(case), response.body.size.toLong())
     }
 
-    private fun executeCapacityQuery(graphIndex: Int): Long {
-        val query = "MATCH (n:ReturnNode) RETURN n.method AS signature LIMIT $CAPACITY_RESULT_LIMIT"
-        val response = successfulRequest(cypherPath(query, graphIndex), "four-concurrent capacity query")
-        val body = JsonParser.parseString(response.body.decodeToString()).asJsonObject
-        val columns = body.getAsJsonArray("columns").map { it.asString }
-        val rows = body.getAsJsonArray("rows")
-        check(columns == listOf("signature")) { "capacity query returned unexpected columns: $columns" }
-        check(rows.size() == CAPACITY_RESULT_LIMIT && rows.all { row ->
-            row.asJsonObject.get("signature")?.isJsonPrimitive == true
-        }) { "capacity query did not return $CAPACITY_RESULT_LIMIT method signatures" }
-        return response.body.size.toLong()
+    private fun Map<String, MethodCompatibilityResult>.withEmptyGraphResults(
+        case: MethodCompatibilityCase
+    ): Map<String, MethodCompatibilityResult> = services.associate { service ->
+        service.graphId to (this[service.graphId] ?: normalize(case, emptyList()))
     }
+
+    private fun expectedByGraph(case: MethodCompatibilityCase): Map<String, MethodCompatibilityResult> =
+        services.associate { service -> service.graphId to expected(case, service.fixture) }
+
+    private fun rootResult(
+        case: MethodCompatibilityCase,
+        sourceCorpus: String,
+        byGraph: Map<String, MethodCompatibilityResult>,
+        bytes: Long
+    ): MethodCompatibilityResult = scalarResult(
+        "root:$sourceCorpus:${case.name}",
+        services.map { service -> "${service.graphId}=${byGraph.getValue(service.graphId).digest}" }
+    ).copy(bytes = bytes)
 
     private fun executeCypher(case: MethodCompatibilityCase, graphIndex: Int): MethodCompatibilityResult {
         val query = when (case.aggregate) {
@@ -645,63 +700,15 @@ open class MethodDiscoveryCompatibilityBenchmark {
         return normalized.copy(bytes = response.body.size.toLong())
     }
 
-    private fun expected(case: MethodCompatibilityCase): MethodCompatibilityResult =
-        normalize(case, fixture.all.filter(case.predicate))
-
-    private fun expectedRoot(case: MethodCompatibilityCase): MethodCompatibilityResult {
-        val perGraph = fixture.all.filter(case.predicate)
-        val expected = (0 until graphCount).flatMap { graphIndex ->
-            perGraph.map { method -> RootMethodCompatibilityRecord("service-$graphIndex", method) }
-        }
-        check(expected.size == perGraph.size * graphCount)
-        return normalizeRoot(case, expected)
-    }
-
-    private fun normalizeRoot(
+    private fun expected(
         case: MethodCompatibilityCase,
-        records: List<RootMethodCompatibilityRecord>
-    ): MethodCompatibilityResult {
-        val expectedPerGraph = fixture.all.count(case.predicate)
-        check(records.size == expectedPerGraph * graphCount) {
-            "root ${case.name} returned ${records.size} expanded graph-method rows; " +
-                "expected $expectedPerGraph x $graphCount"
-        }
-        val expectedGraphIds = (0 until graphCount).mapTo(linkedSetOf()) { "service-$it" }
-        if (records.isNotEmpty()) {
-            check(records.mapTo(linkedSetOf()) { it.graphId } == expectedGraphIds) {
-                "root ${case.name} did not cover every graph"
-            }
-        }
-        val canonical = records.map { record ->
-            val method = record.method
-            listOf(
-                record.graphId,
-                method.className,
-                method.name,
-                method.parameterTypes.joinToString(","),
-                method.returnType,
-                method.signature
-            ).joinToString("\u0000")
-        }.sorted()
-        return scalarResult(
-            "root:$graphCount:methods:${METHOD_COLUMNS.joinToString(",")}",
-            canonical
-        )
-    }
+        fixture: MethodCompatibilityFixture
+    ): MethodCompatibilityResult = normalize(case, fixture.all.filter(case.predicate))
 
     private fun methodProjectionQuery(case: MethodCompatibilityCase): String =
         "MATCH (m:Method) WHERE ${case.where} " +
             "RETURN m.class AS class, m.name AS name, m.parameter_types AS parameter_types, " +
             "m.return_type AS return_type, m.signature AS signature LIMIT $METHOD_RESULT_LIMIT"
-
-    private fun parseLegacyRecord(value: com.google.gson.JsonObject): MethodCompatibilityRecord =
-        MethodCompatibilityRecord(
-            className = value.get("class").asString,
-            name = value.get("name").asString,
-            parameterTypes = value.getAsJsonArray("parameterTypes").map { it.asString },
-            returnType = value.get("returnType").asString,
-            signature = value.get("signature").asString
-        )
 
     private fun parseCypherRecord(value: com.google.gson.JsonObject): MethodCompatibilityRecord =
         MethodCompatibilityRecord(
@@ -789,11 +796,32 @@ open class MethodDiscoveryCompatibilityBenchmark {
         return bytes
     }
 
-    private fun writeCompatibilityManifest(results: List<MethodCompatibilityResult>) {
+    private fun writeCompatibilityManifest() {
         val configured = System.getProperty(METHOD_MANIFEST_PROPERTY)?.takeIf(String::isNotBlank) ?: return
         val line = buildString {
-            append(graphCount)
-            results.forEach { result -> append('|').append(result.schema).append('=').append(result.digest) }
+            append(graphCount).append('|').append(scenario)
+            services.forEach { service ->
+                val case = caseFor(scenario, service.fixture)
+                val expected = expected(case, service.fixture)
+                append('|')
+                    .append(service.graphId)
+                    .append(':')
+                    .append(service.corpus)
+                    .append(':')
+                    .append(expected.schema)
+                    .append('=')
+                    .append(expected.digest)
+            }
+            services.distinctBy(MethodBenchmarkService::corpus).forEach { source ->
+                val case = caseFor(scenario, source.fixture)
+                val expected = rootResult(case, source.corpus, expectedByGraph(case), 0L)
+                append("|root:")
+                    .append(source.corpus)
+                    .append(':')
+                    .append(expected.schema)
+                    .append('=')
+                    .append(expected.digest)
+            }
             append('\n')
         }
         val path = Path.of(configured)
@@ -826,14 +854,12 @@ open class MethodDiscoveryCompatibilityBenchmark {
         private const val METHOD_ORDER_LIMIT = 5
         private const val TARGET_CYPHER_CONCURRENCY = 4
         private const val TARGET_CYPHER_WORK_BUDGET = 1_000_000L
-        private const val CAPACITY_RESULT_LIMIT = 200
         private const val HTTP_OK = 200
         private const val HTTP_TOO_MANY_REQUESTS = 429
         private const val BYTES_PER_KIB = 1_024L
         private const val METHOD_MANIFEST_PROPERTY = "graphite.method.compatibility.output"
-        private const val ROOT_METADATA_FIELD = "\$metadata"
-        private const val ROOT_GRAPH_IDS_FIELD = "graphIds"
         private val HTTP_SUCCESS_RANGE = 200..299
+        private val METHOD_CORPORA = listOf("android", "tika", "hive", "kotlin-compiler")
         private val METHOD_COLUMNS = listOf("class", "name", "parameter_types", "return_type", "signature")
 
         private fun urlEncode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
@@ -868,32 +894,24 @@ open class MethodBenchmarkCompatibilityCounters {
     var residentSetDeltaBytes: Long = 0
 
     @JvmField
-    var tailLatencyNanos: Long = 0
-
-    @JvmField
-    var concurrentWallNanos: Long = 0
-
-    @JvmField
-    var concurrentRequests: Long = 0
-
-    @JvmField
     var graphCount: Long = 0
 }
 
 typealias MethodCompatibilityCounters = MethodBenchmarkCompatibilityCounters
 private typealias MethodCompatibilityFixture = MethodBenchmarkCompatibilityFixture
 private typealias MethodCompatibilityRecord = MethodBenchmarkCompatibilityRecord
-private typealias RootMethodCompatibilityRecord = MethodBenchmarkRootCompatibilityRecord
 private typealias MethodCompatibilityCase = MethodBenchmarkCompatibilityCase
 private typealias MethodCompatibilityAggregate = MethodBenchmarkCompatibilityAggregate
 private typealias MethodCompatibilityResult = MethodBenchmarkCompatibilityResult
 private typealias MethodHttpResponse = MethodBenchmarkHttpResponse
 
 private data class MethodBenchmarkCompatibilityFixture(
+    val corpus: String,
     val all: List<MethodCompatibilityRecord>,
     val className: String,
-    val early: MethodCompatibilityRecord,
-    val late: MethodCompatibilityRecord,
+    val early: MethodBenchmarkPercentileTarget,
+    val middle: MethodBenchmarkPercentileTarget,
+    val late: MethodBenchmarkPercentileTarget,
     val prefix: String,
     val suffix: String,
     val contains: String,
@@ -901,12 +919,27 @@ private data class MethodBenchmarkCompatibilityFixture(
     val orNames: Pair<String, String>
 ) {
     companion object {
-        fun from(methods: List<MethodDescriptor>): MethodCompatibilityFixture {
+        fun from(corpus: String, methods: List<MethodDescriptor>): MethodCompatibilityFixture {
             val records = methods.map(MethodCompatibilityRecord::from)
+            require(records.size >= MIN_PERCENTILE_METHODS) {
+                "$corpus method index has only ${records.size} records; percentile fixtures require $MIN_PERCENTILE_METHODS"
+            }
+            val early = percentileTarget("early", records, 0)
+            val middle = percentileTarget("middle", records, (records.lastIndex / 2))
+            val late = percentileTarget("late", records, records.lastIndex)
+            check(early.percentile <= EARLY_MAX_PERCENTILE) {
+                "$corpus early ordinal ${early.ordinal}/${records.size} is above 1%"
+            }
+            check(kotlin.math.abs(middle.percentile - MIDDLE_PERCENTILE) <= MIDDLE_PERCENTILE_TOLERANCE) {
+                "$corpus middle ordinal ${middle.ordinal}/${records.size} is not approximately 50%"
+            }
+            check(late.percentile >= LATE_MIN_PERCENTILE) {
+                "$corpus late ordinal ${late.ordinal}/${records.size} is below 99%"
+            }
             val grouped = records.groupBy { it.className }
             val selected = grouped.entries.firstOrNull { (_, values) ->
                 values.size in 3..MAX_COMPATIBILITY_CLASS_METHODS && values.map { it.name }.distinct().size >= 2
-            } ?: error("Android method fixture has no bounded class with representative method names")
+            } ?: error("$corpus method fixture has no bounded class with representative method names")
             val classMethods = selected.value
             val names = classMethods.map { it.name }.distinct()
             val representative = names.first { it.isNotEmpty() }
@@ -915,10 +948,12 @@ private data class MethodBenchmarkCompatibilityFixture(
             val containsStart = (representative.length / 3).coerceAtMost(representative.lastIndex)
             val containsEnd = (containsStart + 2).coerceAtMost(representative.length)
             return MethodCompatibilityFixture(
+                corpus = corpus,
                 all = records,
                 className = selected.key,
-                early = classMethods.first(),
-                late = classMethods.last(),
+                early = early,
+                middle = middle,
+                late = late,
                 prefix = representative.take(prefixLength),
                 suffix = representative.takeLast(suffixLength),
                 contains = representative.substring(containsStart, containsEnd),
@@ -927,9 +962,36 @@ private data class MethodBenchmarkCompatibilityFixture(
             )
         }
 
+        private fun percentileTarget(
+            name: String,
+            records: List<MethodCompatibilityRecord>,
+            index: Int
+        ): MethodBenchmarkPercentileTarget {
+            val percentile = index.toDouble() / records.lastIndex.toDouble()
+            return MethodBenchmarkPercentileTarget(name, records[index], index + 1, percentile)
+        }
+
+        private const val MIN_PERCENTILE_METHODS = 100
         private const val MAX_COMPATIBILITY_CLASS_METHODS = 100
+        private const val EARLY_MAX_PERCENTILE = 0.01
+        private const val MIDDLE_PERCENTILE = 0.50
+        private const val MIDDLE_PERCENTILE_TOLERANCE = 0.01
+        private const val LATE_MIN_PERCENTILE = 0.99
     }
 }
+
+private data class MethodBenchmarkPercentileTarget(
+    val name: String,
+    val record: MethodCompatibilityRecord,
+    val ordinal: Int,
+    val percentile: Double
+)
+
+private data class MethodBenchmarkService(
+    val graphId: String,
+    val corpus: String,
+    val fixture: MethodCompatibilityFixture
+)
 
 private data class MethodBenchmarkCompatibilityRecord(
     val className: String,
@@ -949,14 +1011,10 @@ private data class MethodBenchmarkCompatibilityRecord(
     }
 }
 
-private data class MethodBenchmarkRootCompatibilityRecord(
-    val graphId: String,
-    val method: MethodCompatibilityRecord
-)
-
 private data class MethodBenchmarkCompatibilityCase(
     val name: String,
     val where: String,
+    val legacyClassName: String,
     val aggregate: MethodCompatibilityAggregate = MethodCompatibilityAggregate.NONE,
     val predicate: (MethodCompatibilityRecord) -> Boolean
 )
@@ -966,6 +1024,11 @@ private enum class MethodBenchmarkCompatibilityAggregate { NONE, COUNT, ORDERED_
 private data class MethodBenchmarkCompatibilityResult(val schema: String, val digest: String, val bytes: Long)
 
 private data class MethodBenchmarkHttpResponse(val code: Int, val body: ByteArray)
+
+private data class MethodBenchmarkRootResponse(
+    val byGraph: Map<String, MethodCompatibilityResult>,
+    val bytes: Long
+)
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -1648,6 +1711,24 @@ internal object ExplorerBenchmarkCorpus {
         cachedAndroidGraph ?: preparePersistedAndroidGraph().also { cachedAndroidGraph = it }
     }
 
+    fun persistedGraph(corpus: String): Path = when (corpus) {
+        ANDROID_CORPUS -> persistedAndroidGraph()
+        TIKA_CORPUS -> configuredPersistedGraph(TIKA_GRAPH_PATH_PROPERTY, corpus)
+        HIVE_CORPUS -> configuredPersistedGraph(HIVE_GRAPH_PATH_PROPERTY, corpus)
+        KOTLIN_COMPILER_CORPUS -> configuredPersistedGraph(KOTLIN_COMPILER_GRAPH_PATH_PROPERTY, corpus)
+        else -> error("Unknown Explorer benchmark corpus: $corpus")
+    }
+
+    private fun configuredPersistedGraph(property: String, corpus: String): Path {
+        val configured = System.getProperty(property)
+            ?: error("Set -D$property=<path> for the $corpus Explorer benchmark corpus")
+        val graphPath = Path.of(configured)
+        require(graphPath.isDirectory() && hasPersistedGraph(graphPath)) {
+            "Persisted $corpus graph not found at $graphPath"
+        }
+        return graphPath
+    }
+
     private fun preparePersistedAndroidGraph(): Path {
         System.getProperty(ANDROID_GRAPH_PATH_PROPERTY)?.let { configured ->
             val graphPath = Path.of(configured)
@@ -1727,5 +1808,12 @@ internal object ExplorerBenchmarkCorpus {
 
     private const val ANDROID_JAR_PATH_PROPERTY = "android.jar.path"
     private const val ANDROID_GRAPH_PATH_PROPERTY = "android.graph.path"
+    private const val TIKA_GRAPH_PATH_PROPERTY = "tika.graph.path"
+    private const val HIVE_GRAPH_PATH_PROPERTY = "hive.graph.path"
+    private const val KOTLIN_COMPILER_GRAPH_PATH_PROPERTY = "kotlin.compiler.graph.path"
+    private const val ANDROID_CORPUS = "android"
+    private const val TIKA_CORPUS = "tika"
+    private const val HIVE_CORPUS = "hive"
+    private const val KOTLIN_COMPILER_CORPUS = "kotlin-compiler"
     private const val MAX_CACHE_WALK_DEPTH = 12
 }

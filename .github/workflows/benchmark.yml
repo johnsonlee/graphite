@@ -117,7 +117,7 @@ jobs:
     name: explorer-benchmarks
     needs: [prepare-latency-fixtures]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
     - name: Checkout base
@@ -149,16 +149,20 @@ jobs:
         path: fixture-graphs
         key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
-    - name: Verify restored Android graph
+    - name: Verify restored real graphs
       run: |
         test -f fixture-graphs/.complete
-        test -f fixture-graphs/android/graph.metadata
-        test -f fixture-graphs/android/graph.nodedata
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -f "fixture-graphs/${CORPUS}/graph.metadata"
+          test -f "fixture-graphs/${CORPUS}/graph.nodedata"
+        done
 
     - name: Build comparable Explorer JMH jars
       run: |
-        HARNESS='graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
-        cp "candidate/${HARNESS}" "base/${HARNESS}"
+        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
+          SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
+          cp "candidate/${SOURCE}" "base/${SOURCE}"
+        done
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
 
@@ -235,16 +239,38 @@ jobs:
         CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}"
         test -n "${CANDIDATE_JAR}"
-        GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
+        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
         METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json)
         java -jar "${BASE_JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.*' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARG} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility.txt" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility.txt" \
           -rff "${PWD}/benchmark-results/base-method-compatibility.json"
         java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.*' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARG} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility.txt" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility.txt" \
           -rff "${PWD}/benchmark-results/candidate-method-compatibility.json"
+
+    - name: Benchmark Cypher capacity separately
+      run: |
+        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
+        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        CAPACITY_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json)
+        java -jar "${BASE_JAR}" \
+          'io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover' \
+          "${CAPACITY_ARGS[@]}" -jvmArgsAppend "${GRAPH_ARGS}" \
+          -rff "${PWD}/benchmark-results/base-cypher-capacity.json"
+        java -jar "${CANDIDATE_JAR}" \
+          'io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover' \
+          "${CAPACITY_ARGS[@]}" -jvmArgsAppend "${GRAPH_ARGS}" \
+          -rff "${PWD}/benchmark-results/candidate-cypher-capacity.json"
 
     - name: Gate paired method discovery migration
       run: |
@@ -253,17 +279,17 @@ jobs:
           benchmark-results/base-method-compatibility.json \
           benchmark-results/candidate-method-compatibility.json; do
           jq -e --arg expected "${EXPECTED}" '
-            length == 3 and
+            length == 33 and
             ([.[].params.graphCount] | unique | sort) == ["17", "36", "4"] and
+            ([.[].params.scenario] | unique | sort) ==
+              ["contains", "count", "early", "late", "middle", "or", "order", "prefix", "regex", "suffix", "zero"] and
+            ([.[] | "\(.params.graphCount):\(.params.scenario)"] | unique | length) == 33 and
             all(.[];
               (.benchmark | startswith($expected)) and
               .mode == "ss" and .primaryMetric.score > 0 and
               .secondaryMetrics.processCpuNanos.score > 0 and
               .secondaryMetrics.residentSetAfterBytes.score > 0 and
-              .secondaryMetrics.residentSetDeltaBytes.score >= 0 and
-              .secondaryMetrics.concurrentRequests.score > 0 and
-              .secondaryMetrics.concurrentWallNanos.score > 0 and
-              .secondaryMetrics.tailLatencyNanos.score > 0
+              .secondaryMetrics.residentSetDeltaBytes.score >= 0
             )' "${FILE}" >/dev/null
         done
 
@@ -271,8 +297,8 @@ jobs:
           > benchmark-results/base-method-compatibility.sorted.txt
         sort -u benchmark-results/candidate-method-compatibility.txt \
           > benchmark-results/candidate-method-compatibility.sorted.txt
-        test "$(wc -l < benchmark-results/base-method-compatibility.sorted.txt)" -eq 3
-        test "$(wc -l < benchmark-results/candidate-method-compatibility.sorted.txt)" -eq 3
+        test "$(wc -l < benchmark-results/base-method-compatibility.sorted.txt)" -eq 33
+        test "$(wc -l < benchmark-results/candidate-method-compatibility.sorted.txt)" -eq 33
         diff -u \
           benchmark-results/base-method-compatibility.sorted.txt \
           benchmark-results/candidate-method-compatibility.sorted.txt
@@ -280,13 +306,64 @@ jobs:
         node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-method-compatibility.json \
           --candidate benchmark-results/candidate-method-compatibility.json \
-          --threshold 25 \
+          --threshold 15 \
           --threshold-only \
           --title 'Method discovery REST-to-Cypher migration' \
           --report benchmark-results/method-compatibility-report.md \
           --status benchmark-results/method-compatibility-status.json
 
+    - name: Gate Cypher capacity
+      run: |
+        EXPECTED='io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover'
+        for FILE in \
+          benchmark-results/base-cypher-capacity.json \
+          benchmark-results/candidate-cypher-capacity.json; do
+          jq -e --arg expected "${EXPECTED}" '
+            length == 1 and
+            .[0].benchmark == $expected and
+            .[0].mode == "ss" and
+            .[0].primaryMetric.score > 0 and
+            .[0].secondaryMetrics.activePeak.score == 4 and
+            .[0].secondaryMetrics.concurrencyRejected.score >= 1 and
+            .[0].secondaryMetrics.budgetExceeded.score == 3 and
+            .[0].secondaryMetrics.cancelled.score == 1 and
+            .[0].secondaryMetrics.recoverySucceeded.score == 1 and
+            .[0].secondaryMetrics.targetConcurrency.score == 4 and
+            .[0].secondaryMetrics.targetWorkBudget.score == 1000000 and
+            .[0].secondaryMetrics.processCpuNanos.score > 0 and
+            .[0].secondaryMetrics.residentSetBeforeBytes.score > 0 and
+            .[0].secondaryMetrics.residentSetAfterBytes.score > 0 and
+            .[0].secondaryMetrics.residentSetDeltaBytes.score >= 0 and
+            .[0].secondaryMetrics.tailLatencyNanos.score > 0 and
+            .[0].secondaryMetrics.cancellationLatencyNanos.score > 0 and
+            .[0].secondaryMetrics.cancellationLatencyNanos.score < 2000000000 and
+            .[0].secondaryMetrics.concurrentWallNanos.score > 0' \
+            "${FILE}" >/dev/null
+        done
+        jq -n -e \
+          --slurpfile base benchmark-results/base-cypher-capacity.json \
+          --slurpfile candidate benchmark-results/candidate-cypher-capacity.json '
+            ($base[0][0]) as $base_result |
+            ($candidate[0][0]) as $candidate_result |
+            all(["processCpuNanos", "residentSetAfterBytes", "tailLatencyNanos"][];
+              . as $metric |
+              ($base_result.secondaryMetrics[$metric].score > 0) and
+              ($candidate_result.secondaryMetrics[$metric].score > 0) and
+              ($candidate_result.secondaryMetrics[$metric].score <=
+                ($base_result.secondaryMetrics[$metric].score * 1.15))
+            )' >/dev/null
+        node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          --base benchmark-results/base-cypher-capacity.json \
+          --candidate benchmark-results/candidate-cypher-capacity.json \
+          --threshold 15 \
+          --threshold-only \
+          --title 'Cypher concurrency and work-budget capacity' \
+          --report benchmark-results/cypher-capacity-report.md \
+          --status benchmark-results/cypher-capacity-status.json
+
         cat benchmark-results/method-compatibility-report.md \
+          >> benchmark-results/explorer-report.md
+        cat benchmark-results/cypher-capacity-report.md \
           >> benchmark-results/explorer-report.md
         jq -s '{
           passed: all(.[]; .passed == true),
@@ -295,6 +372,7 @@ jobs:
         }' \
           benchmark-results/explorer-status.json \
           benchmark-results/method-compatibility-status.json \
+          benchmark-results/cypher-capacity-status.json \
           > benchmark-results/explorer-status.combined.json
         mv benchmark-results/explorer-status.combined.json benchmark-results/explorer-status.json
 
