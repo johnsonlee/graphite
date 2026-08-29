@@ -122,8 +122,10 @@ object PathFinder {
      * search states instead of a complete breadth-first frontier.
      * Nodes already present on the current branch are not expanded again, so cycles terminate without
      * retaining a traversal-wide visited set. A fixed-size memo suppresses reconvergent expansion while
-     * preserving the memory bound; eviction can only cause safe re-expansion. Only the stack's O(maxDepth)
-     * frames retain nodes and parent paths.
+     * recording the ancestors that actually blocked each completed suffix. A revisit is suppressed only
+     * when its ancestor set still contains every prior blocker. This keeps acyclic reconvergence cheap
+     * without dropping a suffix that becomes legal under a different branch. Eviction can only cause safe
+     * re-expansion. Only the stack's O(maxDepth) frames retain nodes and parent paths.
      *
      * Matches keep the graph's edge order within each branch. Cypher does not define a global result
      * order without ORDER BY, so depth-first traversal is safe for the lazy query pipeline while allowing
@@ -134,7 +136,7 @@ object PathFinder {
         startNode: Node,
         options: SearchOptions
     ): Sequence<PathMatch> = sequence {
-        val expandedAtDepth = LinkedHashMap<Int, Int>()
+        val expansionMemo = LinkedHashMap<Int, ExpansionRecord>()
         val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
         if (matchesTarget(start, options)) yield(PathMatch(start))
         if (options.maxDepth <= 0) return@sequence
@@ -142,13 +144,18 @@ object PathFinder {
         val stack = ArrayDeque<SearchFrame>()
         val startEdges = edgesForDirection(graph, startNode.id, options).iterator()
         if (!startEdges.hasNext()) return@sequence
-        rememberExpansion(expandedAtDepth, startNode.id, depth = 0)
         stack.addLast(SearchFrame(start, startEdges))
 
         while (stack.isNotEmpty()) {
             val frame = stack.last()
             if (!frame.edges.hasNext()) {
-                stack.removeLast()
+                val completed = stack.removeLast()
+                rememberBounded(
+                    expansionMemo,
+                    completed.state.node.id.value,
+                    ExpansionRecord(completed.state.depth, completed.blockedAncestors.toSet())
+                )
+                stack.lastOrNull()?.blockedAncestors?.addAll(completed.blockedAncestors)
                 continue
             }
 
@@ -159,7 +166,9 @@ object PathFinder {
             val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
             if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
 
-            expandableFrame(graph, nextId, nextState, options, expandedAtDepth)?.let(stack::addLast)
+            val expansion = expandableFrame(graph, nextId, nextState, options, expansionMemo)
+            frame.blockedAncestors.addAll(expansion.blockedAncestors)
+            expansion.frame?.let(stack::addLast)
         }
     }
 
@@ -169,27 +178,44 @@ object PathFinder {
         nodeId: NodeId,
         state: SearchState,
         options: SearchOptions,
-        expandedAtDepth: LinkedHashMap<Int, Int>
-    ): SearchFrame? {
-        if (state.depth >= options.maxDepth || hasAncestor(state.parent, nodeId)) return null
-        val previousDepth = expandedAtDepth[nodeId.value]
-        if (previousDepth != null && previousDepth <= state.depth) return null
+        expansionMemo: LinkedHashMap<Int, ExpansionRecord>
+    ): ExpansionDecision {
+        if (state.depth >= options.maxDepth) return ExpansionDecision()
+        if (hasAncestor(state.parent, nodeId)) {
+            return ExpansionDecision(blockedAncestors = setOf(nodeId.value))
+        }
 
         val edges = edgesForDirection(graph, nodeId, options).iterator()
-        if (!edges.hasNext()) return null
-        rememberExpansion(expandedAtDepth, nodeId, state.depth)
-        return SearchFrame(state, edges)
+        if (!edges.hasNext()) return ExpansionDecision()
+        val previous = expansionMemo[nodeId.value]
+        if (previous != null &&
+            previous.depth == state.depth &&
+            ancestorIds(state.parent).containsAll(previous.blockedAncestors)
+        ) {
+            return ExpansionDecision(blockedAncestors = previous.blockedAncestors)
+        }
+        return ExpansionDecision(frame = SearchFrame(state, edges))
     }
 
-    private fun rememberExpansion(expandedAtDepth: LinkedHashMap<Int, Int>, nodeId: NodeId, depth: Int) {
-        if (!expandedAtDepth.containsKey(nodeId.value) && expandedAtDepth.size >= EXPANSION_MEMO_CAPACITY) {
-            val eldest = expandedAtDepth.entries.iterator()
+    private fun ancestorIds(state: SearchState?): Set<Int> {
+        val ids = mutableSetOf<Int>()
+        var cursor = state
+        while (cursor != null) {
+            ids.add(cursor.node.id.value)
+            cursor = cursor.parent
+        }
+        return ids
+    }
+
+    private fun <K, V> rememberBounded(memo: LinkedHashMap<K, V>, key: K, value: V) {
+        if (!memo.containsKey(key) && memo.size >= EXPANSION_MEMO_CAPACITY) {
+            val eldest = memo.entries.iterator()
             if (eldest.hasNext()) {
                 eldest.next()
                 eldest.remove()
             }
         }
-        expandedAtDepth[nodeId.value] = depth
+        memo[key] = value
     }
 
     private fun hasAncestor(state: SearchState?, nodeId: NodeId): Boolean {
@@ -203,7 +229,18 @@ object PathFinder {
 
     private data class SearchFrame(
         val state: SearchState,
-        val edges: Iterator<Edge>
+        val edges: Iterator<Edge>,
+        val blockedAncestors: MutableSet<Int> = mutableSetOf()
+    )
+
+    private data class ExpansionDecision(
+        val frame: SearchFrame? = null,
+        val blockedAncestors: Set<Int> = emptySet()
+    )
+
+    private data class ExpansionRecord(
+        val depth: Int,
+        val blockedAncestors: Set<Int>
     )
 
     private fun matchesTarget(state: SearchState, options: SearchOptions): Boolean =

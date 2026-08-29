@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.DataFlowEdge
@@ -280,6 +281,66 @@ class PathFinderTest {
             listOf(source.id, junction.id, predecessor.id, target.id),
             path.nodes.map(Node::id)
         )
+    }
+
+    @Test
+    fun `deeper revisit expands a node again for exact depth matches`() {
+        val source = IntConstant(NodeId.next(), 25)
+        val detour = IntConstant(NodeId.next(), 26)
+        val junction = IntConstant(NodeId.next(), 27)
+        val target = IntConstant(NodeId.next(), 28)
+        val graph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(detour)
+            .addNode(junction)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, detour.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(detour.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(junction.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val path = PathFinder.findPathMatches(
+            graph,
+            setOf(source.id),
+            PathFinder.SearchOptions(
+                targets = setOf(target.id),
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 3,
+                maxDepth = 3,
+                direction = PathFinder.Direction.OUTGOING
+            )
+        ).single().materialize(null)
+
+        assertEquals(listOf(source.id, detour.id, junction.id, target.id), path.nodes.map(Node::id))
+    }
+
+    @Test
+    fun `revisited node expands when a different ancestor set makes its suffix legal`() {
+        val source = BooleanConstant(NodeId.next(), true)
+        val ancestor = BooleanConstant(NodeId.next(), true)
+        val alternate = BooleanConstant(NodeId.next(), true)
+        val junction = BooleanConstant(NodeId.next(), true)
+        val target = IntConstant(NodeId.next(), 42)
+        val graph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(ancestor)
+            .addNode(alternate)
+            .addNode(junction)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, ancestor.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(source.id, alternate.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(ancestor.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(ancestor.id, target.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(alternate.id, junction.id, DataFlowKind.ASSIGN))
+            .addEdge(DataFlowEdge(junction.id, ancestor.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = CypherExecutor(graph).execute(
+            "MATCH (a:BooleanConstant)-[:DATAFLOW*4..4]->(b:IntConstant) RETURN b.id AS id"
+        )
+
+        assertEquals(listOf(mapOf("id" to target.id.value)), result.rows)
     }
 
     @Test
