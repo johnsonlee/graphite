@@ -104,6 +104,24 @@ open class CypherBenchmark {
     }
 
     @Benchmark
+    fun filteredSingleHopRelationship(): CypherResult {
+        return graph.query(
+            "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) " +
+                "WHERE c.value > 250 RETURN c.value, cs.callee_name LIMIT 50"
+        )
+    }
+
+    @Benchmark
+    fun orderedFilteredSingleHopRelationship(): CypherResult {
+        return graph.query(
+            "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) " +
+                "WHERE c.value > 250 " +
+                "RETURN c.value AS value, cs.callee_name AS callee " +
+                "ORDER BY value DESC, callee ASC LIMIT 50"
+        )
+    }
+
+    @Benchmark
     fun aggregationCountGroupBy(): CypherResult {
         return graph.query("MATCH (n:CallSiteNode) RETURN n.callee_class, count(*) AS cnt")
     }
@@ -111,6 +129,15 @@ open class CypherBenchmark {
     @Benchmark
     fun variableLengthPath(): CypherResult {
         return graph.query("MATCH (a:IntConstant)-[:DATAFLOW*..2]->(b:CallSiteNode) RETURN a.value, b.callee_name LIMIT 20")
+    }
+
+    @Benchmark
+    fun filteredVariableLengthPath(): CypherResult {
+        return graph.query(
+            "MATCH (a:IntConstant)-[:DATAFLOW*1..1]->(b:CallSiteNode) " +
+                "WHERE b.line < 0 " +
+                "RETURN a.value AS value, b.callee_name AS callee LIMIT 20"
+        )
     }
 
     @Benchmark

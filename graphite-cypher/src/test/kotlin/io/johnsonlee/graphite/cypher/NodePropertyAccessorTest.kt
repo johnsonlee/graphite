@@ -377,6 +377,10 @@ class NodePropertyAccessorTest {
     @Test
     fun `resolveEdgeType returns null for unknown types`() {
         assertNull(NodePropertyAccessor.resolveEdgeType("UNKNOWN"))
+        assertNull(NodePropertyAccessor.resolveEdgeType("D_A_T_A_F_L_O_W"))
+        assertNull(NodePropertyAccessor.resolveEdgeType("C_A_L_L"))
+        assertNull(NodePropertyAccessor.resolveEdgeType("T_Y_P_E"))
+        assertNull(NodePropertyAccessor.resolveEdgeType("RESOURCE_EDGE"))
     }
 
     @Test

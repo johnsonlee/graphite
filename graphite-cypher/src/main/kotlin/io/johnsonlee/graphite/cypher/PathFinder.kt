@@ -19,15 +19,15 @@ object PathFinder {
         val maxDepth: Int?,
         val direction: Direction,
         val workTracker: CypherWorkTracker? = null,
-        val edgeFilter: ((Edge) -> Boolean)? = null
+        val edgePredicate: ((Edge) -> Boolean)? = null,
+        val nodePredicate: ((Node) -> Boolean)? = null
     )
 
     internal class SearchState(
         val node: Node,
         val incomingEdge: Edge?,
         val parent: SearchState?,
-        val depth: Int,
-        val usedEdges: Set<Edge>
+        val depth: Int
     )
 
     internal class PathMatch(private val state: SearchState) {
@@ -40,9 +40,7 @@ object PathFinder {
             var cursor: SearchState? = state
             while (cursor != null) {
                 nodes.add(cursor.node)
-                cursor.incomingEdge?.let { edge ->
-                    edges.add(edge)
-                }
+                cursor.incomingEdge?.let(edges::add)
                 cursor = cursor.parent
             }
             nodes.reverse()
@@ -52,14 +50,14 @@ object PathFinder {
     }
 
     /**
-     * Find all paths from source nodes to target nodes via BFS.
+     * Find all relationship-simple paths from source nodes to target nodes in shortest-first order.
      *
      * @param graph The graph to search
      * @param sources Source node IDs to start from
      * @param targets Optional target node IDs; if null, any reachable node is a valid endpoint
      * @param edgeType Optional edge type filter; if null, all edges are followed
      * @param minDepth Minimum path length (in edges) to include in results
-     * @param maxDepth Optional maximum path length (in edges); `null` explores all relationship-simple trails
+     * @param maxDepth Optional maximum path length (in edges); `null` explores every relationship-simple trail
      * @param direction Edge traversal direction
      * @return List of paths from sources to targets
      */
@@ -71,11 +69,13 @@ object PathFinder {
         minDepth: Int = 1,
         maxDepth: Int? = null,
         direction: Direction = Direction.OUTGOING
-    ): List<Path> = findPathMatches(
-        graph,
-        sources,
-        SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
-    ).map { it.materialize(workTracker = null) }.toList()
+    ): List<Path> {
+        val options = SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
+        return sources.asSequence().flatMap { source ->
+            val startNode = loadNode(graph, source, workTracker = null)
+            if (startNode == null) emptySequence() else breadthFirst(graph, startNode, options)
+        }.map { it.materialize(workTracker = null) }.toList()
+    }
 
     internal fun findPathMatches(
         graph: Graph,
@@ -84,56 +84,174 @@ object PathFinder {
     ): Sequence<PathMatch> = sequence {
         for (source in sources) {
             val startNode = loadNode(graph, source, options.workTracker) ?: continue
-            yieldAll(bfs(graph, startNode, options))
+            yieldAll(depthFirst(graph, startNode, options))
         }
     }
 
-    private fun bfs(
+    /** Preserve the public [findPaths] shortest-first contract. */
+    private fun breadthFirst(
         graph: Graph,
         startNode: Node,
         options: SearchOptions
     ): Sequence<PathMatch> = sequence {
         val queue = ArrayDeque<SearchState>()
-        queue.add(SearchState(startNode, incomingEdge = null, parent = null, depth = 0, usedEdges = emptySet()))
+        queue.add(SearchState(startNode, incomingEdge = null, parent = null, depth = 0))
 
         while (queue.isNotEmpty()) {
             val state = queue.removeFirst()
-            val current = state.node.id
-
-            if (state.depth >= options.minDepth && (options.targets == null || current in options.targets)) {
-                yield(PathMatch(state))
-            }
-
-            if (options.maxDepth != null && state.depth >= options.maxDepth) continue
-
-            val edges = edgesForDirection(graph, current, options)
-            for (edge in edges.filterNot(state.usedEdges::contains)) {
-                // Cypher variable-length patterns enumerate relationship-simple trails:
-                // nodes may repeat, but the same relationship may not occur twice.
-                val nextId = nextNodeId(edge, current, options.direction)
-                loadNode(graph, nextId, options.workTracker)?.let { nextNode ->
-                    queue.add(
-                        SearchState(
-                            nextNode,
-                            edge,
-                            state,
-                            state.depth + 1,
-                            state.usedEdges + edge
-                        )
-                    )
+            if (matchesTarget(state, options)) yield(PathMatch(state))
+            if (canExpand(state.depth, options.maxDepth)) {
+                for (edge in edgesForDirection(graph, state.node.id, options)) {
+                    if (!hasAncestorEdge(state, edge)) {
+                        val nextId = nextNodeId(edge, state.node.id, options.direction)
+                        loadNode(graph, nextId, options.workTracker)?.let { nextNode ->
+                            queue.add(SearchState(nextNode, edge, state, state.depth + 1))
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): List<Edge> =
+    /**
+     * Traverse one branch at a time so a suspended lazy consumer retains only the active branch,
+     * not a complete breadth-first frontier. Nodes may repeat, but an edge already present in the
+     * branch is never reused, matching Cypher relationship-simple trail semantics. With no explicit
+     * maximum depth, the finite relationship set still guarantees termination.
+     *
+     * A bounded memo suppresses only suffixes that completed without producing a match or touching
+     * an edge from the prefix. Result-producing or prefix-dependent suffixes are always replayed.
+     */
+    @Suppress("CyclomaticComplexMethod")
+    private fun depthFirst(
+        graph: Graph,
+        startNode: Node,
+        options: SearchOptions
+    ): Sequence<PathMatch> = sequence {
+        val deadSuffixMemo = LinkedHashMap<ExpansionKey, Unit>()
+        val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
+        if (matchesTarget(start, options)) yield(PathMatch(start))
+        if (options.maxDepth != null && options.maxDepth <= 0) return@sequence
+        if (options.maxDepth == 1) {
+            yieldAll(singleHop(graph, start, options))
+            return@sequence
+        }
+
+        val startEdges = edgesForDirection(graph, startNode.id, options).iterator()
+        if (!startEdges.hasNext()) return@sequence
+        val stack = ArrayDeque<SearchFrame>()
+        stack.addLast(SearchFrame(start, startEdges))
+
+        while (stack.isNotEmpty()) {
+            val frame = stack.last()
+            if (!frame.edges.hasNext()) {
+                val completed = stack.removeLast()
+                if (!completed.foundMatch && !completed.prefixEdgeBlocked) {
+                    rememberBounded(
+                        deadSuffixMemo,
+                        ExpansionKey(completed.state.node.id.value, completed.state.depth),
+                        Unit
+                    )
+                }
+                stack.lastOrNull()?.let { parent ->
+                    parent.foundMatch = parent.foundMatch || completed.foundMatch
+                    parent.prefixEdgeBlocked = parent.prefixEdgeBlocked || completed.prefixEdgeBlocked
+                }
+                continue
+            }
+
+            val edge = frame.edges.next()
+            if (hasAncestorEdge(frame.state, edge)) {
+                frame.prefixEdgeBlocked = true
+                continue
+            }
+            val nextId = nextNodeId(edge, frame.state.node.id, options.direction)
+            val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+            val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
+            if (matchesTarget(nextState, options)) {
+                frame.foundMatch = true
+                yield(PathMatch(nextState))
+            }
+
+            if (canExpand(nextState.depth, options.maxDepth)) {
+                expandableFrame(graph, nextId, nextState, options, deadSuffixMemo)?.let(stack::addLast)
+            }
+        }
+    }
+
+    private fun canExpand(depth: Int, maxDepth: Int?): Boolean = maxDepth == null || depth < maxDepth
+
+    private fun singleHop(
+        graph: Graph,
+        start: SearchState,
+        options: SearchOptions
+    ): Sequence<PathMatch> = sequence {
+        for (edge in edgesForDirection(graph, start.node.id, options)) {
+            val nextId = nextNodeId(edge, start.node.id, options.direction)
+            val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+            val nextState = SearchState(nextNode, edge, start, depth = 1)
+            if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
+        }
+    }
+
+    @Suppress("ReturnCount")
+    private fun expandableFrame(
+        graph: Graph,
+        nodeId: NodeId,
+        state: SearchState,
+        options: SearchOptions,
+        deadSuffixMemo: LinkedHashMap<ExpansionKey, Unit>
+    ): SearchFrame? {
+        if (ExpansionKey(nodeId.value, state.depth) in deadSuffixMemo) return null
+        val edges = edgesForDirection(graph, nodeId, options).iterator()
+        if (!edges.hasNext()) return null
+        return SearchFrame(state, edges)
+    }
+
+    private fun <K, V> rememberBounded(memo: LinkedHashMap<K, V>, key: K, value: V) {
+        if (!memo.containsKey(key) && memo.size >= DEAD_SUFFIX_MEMO_CAPACITY) {
+            val eldest = memo.entries.iterator()
+            if (eldest.hasNext()) {
+                eldest.next()
+                eldest.remove()
+            }
+        }
+        memo[key] = value
+    }
+
+    private fun hasAncestorEdge(state: SearchState?, edge: Edge): Boolean {
+        var cursor = state
+        while (cursor != null) {
+            if (cursor.incomingEdge == edge) return true
+            cursor = cursor.parent
+        }
+        return false
+    }
+
+    private data class SearchFrame(
+        val state: SearchState,
+        val edges: Iterator<Edge>,
+        var foundMatch: Boolean = false,
+        var prefixEdgeBlocked: Boolean = false
+    )
+
+    private data class ExpansionKey(
+        val nodeId: Int,
+        val depth: Int
+    )
+
+    private fun matchesTarget(state: SearchState, options: SearchOptions): Boolean =
+        state.depth >= options.minDepth &&
+            (options.targets == null || state.node.id in options.targets) &&
+            (options.nodePredicate?.invoke(state.node) != false)
+
+    private fun edgesForDirection(graph: Graph, nodeId: NodeId, options: SearchOptions): Sequence<Edge> =
         when (options.direction) {
             Direction.OUTGOING -> filteredEdges(graph.outgoing(nodeId), options)
             Direction.INCOMING -> filteredEdges(graph.incoming(nodeId), options)
-            Direction.BOTH -> (
-                filteredEdges(graph.outgoing(nodeId), options) +
-                    filteredEdges(graph.incoming(nodeId), options)
-                ).distinct()
+            Direction.BOTH -> filteredEdges(graph.outgoing(nodeId), options) +
+                filteredEdges(graph.incoming(nodeId), options)
+                    .filterNot { it.from == nodeId && it.to == nodeId }
         }
 
     private fun nextNodeId(edge: Edge, current: NodeId, direction: Direction): NodeId = when (direction) {
@@ -150,18 +268,16 @@ object PathFinder {
     private fun filteredEdges(
         edges: Sequence<Edge>,
         options: SearchOptions
-    ): List<Edge> {
-        val result = mutableListOf<Edge>()
+    ): Sequence<Edge> = sequence {
         for (edge in edges) {
             options.workTracker?.consume()
-            val matchesType = options.edgeType == null || options.edgeType.isInstance(edge)
-            val matchesFilter = options.edgeFilter == null || options.edgeFilter.invoke(edge)
-            if (matchesType && matchesFilter) {
-                result.add(edge)
-            }
+            val typeMatches = options.edgeType?.isInstance(edge) != false
+            val predicateMatches = options.edgePredicate?.invoke(edge) != false
+            if (typeMatches && predicateMatches) yield(edge)
         }
-        return result
     }
 
     enum class Direction { OUTGOING, INCOMING, BOTH }
+
+    private const val DEAD_SUFFIX_MEMO_CAPACITY = 16_384
 }
