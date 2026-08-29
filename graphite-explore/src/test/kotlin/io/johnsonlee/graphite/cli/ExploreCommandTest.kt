@@ -2081,8 +2081,10 @@ class ExploreCommandTest {
         assertNull(explore.graphId)
         assertNull(explore.topology)
         assertTrue(explore.graphSpecs.isEmpty())
-        assertEquals(DEFAULT_MAX_CONCURRENT_CYPHER, explore.maxConcurrentCypher)
-        assertEquals(DEFAULT_CYPHER_WORK_BUDGET, explore.cypherWorkBudget)
+        assertEquals(4, DEFAULT_MAX_CONCURRENT_CYPHER)
+        assertEquals(1_000_000L, DEFAULT_CYPHER_WORK_BUDGET)
+        assertEquals(4, explore.maxConcurrentCypher)
+        assertEquals(1_000_000L, explore.cypherWorkBudget)
         assertFalse(explore.metricsEnabled)
     }
 

@@ -158,7 +158,7 @@ jobs:
     - name: Build comparable Explorer JMH jars
       run: |
         HARNESS='graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
-        cp "base/${HARNESS}" "candidate/${HARNESS}"
+        cp "candidate/${HARNESS}" "base/${HARNESS}"
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
 

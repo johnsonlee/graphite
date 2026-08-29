@@ -90,8 +90,8 @@ graphite serve --data /data/graphs \
   --graph orders:orders-graph \
   --graph billing:/data/billing-graph \
   --topology /rules/company-topology.cypher \
-  --max-concurrent-cypher 2 \
-  --cypher-work-budget 250000 \
+  --max-concurrent-cypher 4 \
+  --cypher-work-budget 1000000 \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -275,8 +275,8 @@ A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
 
-Cypher endpoints admit at most two executing queries by default and stop a
-query after 250,000 graph work units. Candidate inspections and materialized
+Cypher endpoints admit at most four executing queries by default and stop a
+query after 1,000,000 graph work units. Candidate inspections and materialized
 path elements consume work units. Configure these bounds with
 `--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
