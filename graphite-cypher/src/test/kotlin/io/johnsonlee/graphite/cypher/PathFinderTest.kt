@@ -194,6 +194,53 @@ class PathFinderTest {
     }
 
     @Test
+    fun `lazy match evicts old expansion memo entries after its fixed capacity`() {
+        val source = IntConstant(NodeId.next(), 40)
+        val middleIdOffset = 100_000
+        val targetIdOffset = 200_000
+        val width = 16_385
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .build()
+        val virtualGraph = object : Graph by base {
+            override fun node(id: NodeId): Node? = when (id.value) {
+                source.id.value -> source
+                in middleIdOffset until middleIdOffset + width -> IntConstant(id, id.value)
+                in targetIdOffset until targetIdOffset + width -> IntConstant(id, id.value)
+                else -> null
+            }
+
+            override fun outgoing(id: NodeId): Sequence<Edge> = when (id.value) {
+                source.id.value -> (0 until width).asSequence().map { index ->
+                    DataFlowEdge(source.id, NodeId(middleIdOffset + index), DataFlowKind.ASSIGN)
+                }
+                in middleIdOffset until middleIdOffset + width -> sequenceOf(
+                    DataFlowEdge(
+                        id,
+                        NodeId(targetIdOffset + id.value - middleIdOffset),
+                        DataFlowKind.ASSIGN
+                    )
+                )
+                else -> emptySequence()
+            }
+        }
+
+        val matches = PathFinder.findPathMatches(
+            virtualGraph,
+            setOf(source.id),
+            PathFinder.SearchOptions(
+                targets = null,
+                edgeType = DataFlowEdge::class.java,
+                minDepth = 2,
+                maxDepth = 2,
+                direction = PathFinder.Direction.OUTGOING
+            )
+        ).count()
+
+        assertEquals(width, matches)
+    }
+
+    @Test
     fun `shallower revisit expands a node again within the remaining depth`() {
         val source = IntConstant(NodeId.next(), 20)
         val detour = IntConstant(NodeId.next(), 21)
