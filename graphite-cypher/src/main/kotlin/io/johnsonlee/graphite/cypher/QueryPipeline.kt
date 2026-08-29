@@ -851,15 +851,14 @@ class QueryPipeline private constructor(
     private fun shouldParallelizeStringScan(
         nodeClass: Class<out Node>,
         filter: DirectStringDisjunction
-    ): Boolean = sources.any { source ->
-        DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
-            if (!nodeClass.isAssignableFrom(candidateType) ||
-                filter.filters.none { it.property in properties } || source.graph.nodeCount(candidateType) == 0L
-            ) return@any false
+    ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
+        if (!nodeClass.isAssignableFrom(candidateType)) return@any false
+        val predicates = filter.filters
+            .filter { it.property in properties }
+            .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
+        predicates.isNotEmpty() && sources.any { source ->
+            if (source.graph.nodeCount(candidateType) == 0L) return@any false
             val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
-            val predicates = filter.filters.filter { it.property in properties }.map { direct ->
-                StringPropertyPredicate(direct.property, direct.transform, direct.mode, direct.expected)
-            }
             strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
         }
     }
