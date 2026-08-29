@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
+import java.util.regex.Pattern
 
 data class ClassDependency(
     val callerClass: String,
@@ -426,28 +427,49 @@ data class MethodPattern(
     val annotations: List<String> = emptyList(), // e.g., ["org.springframework.web.bind.annotation.GetMapping"]
     val useRegex: Boolean = false              // when true, declaringClass and name are treated as regex patterns
 ) {
+    @Transient
+    private val declaringClassRegex = compileRegex(declaringClass)
+
+    @Transient
+    private val nameRegex = compileRegex(name)
+
+    @Transient
+    private val parameterTypeRegexes = parameterTypes?.map(::compileRegex)
+
+    @Transient
+    private val returnTypeRegex = compileRegex(returnType)
+
     fun matches(method: MethodDescriptor): Boolean {
-        if (declaringClass != null && !matchesPattern(method.declaringClass.className, declaringClass)) {
+        if (declaringClass != null &&
+            !matchesPattern(method.declaringClass.className, declaringClass, declaringClassRegex)
+        ) {
             return false
         }
-        if (name != null && !matchesPattern(method.name, name)) {
+        if (name != null && !matchesPattern(method.name, name, nameRegex)) {
             return false
         }
         if (parameterTypes != null) {
             if (method.parameterTypes.size != parameterTypes.size) return false
-            if (!method.parameterTypes.zip(parameterTypes).all { (actual, pattern) ->
-                    matchesPattern(actual.className, pattern)
+            if (!method.parameterTypes.indices.all { index ->
+                    matchesPattern(
+                        method.parameterTypes[index].className,
+                        parameterTypes[index],
+                        parameterTypeRegexes?.get(index)
+                    )
                 }) return false
         }
-        if (returnType != null && !matchesPattern(method.returnType.className, returnType)) {
+        if (returnType != null && !matchesPattern(method.returnType.className, returnType, returnTypeRegex)) {
             return false
         }
         return true
     }
 
-    private fun matchesPattern(actual: String, pattern: String): Boolean {
+    private fun compileRegex(pattern: String?): Pattern? =
+        pattern?.takeIf { useRegex }?.let(Pattern::compile)
+
+    private fun matchesPattern(actual: String, pattern: String, regex: Pattern?): Boolean {
         return if (useRegex) {
-            pattern.toRegex().matches(actual)
+            requireNotNull(regex).matcher(actual).matches()
         } else if (pattern.endsWith("*")) {
             actual.startsWith(pattern.dropLast(1))
         } else {

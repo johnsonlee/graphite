@@ -8,8 +8,17 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StreamingMethodLookup
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -188,6 +197,141 @@ class MethodQueryExecutorTest {
         assertEquals(setOf("alpha", "beta"), equalNulls.rows.map { it["name"] }.toSet())
         assertEquals(listOf(true, false), booleans.rows.map { it["selected"] })
         assertEquals(listOf("alpha", "beta"), booleans.rows.map { it["name"] })
+    }
+
+    @Test
+    fun `Method root scan uses NCPU fork join workers and preserves graph order`() {
+        assertEquals(Runtime.getRuntime().availableProcessors().coerceAtLeast(1), METHOD_GRAPH_SCAN_PARALLELISM)
+        val workerCount = minOf(4, METHOD_GRAPH_SCAN_PARALLELISM)
+        if (workerCount == 1) return
+
+        val started = CountDownLatch(workerCount)
+        val workers = ConcurrentHashMap.newKeySet<String>()
+        val sources = (0 until workerCount).map { index ->
+            val indexedMethod = method("com.example.Parallel", "method$index", emptyList(), "void")
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+                    workers += Thread.currentThread().name
+                    started.countDown()
+                    check(started.await(5, TimeUnit.SECONDS)) { "Method graph scans did not run concurrently" }
+                    return listOf(indexedMethod).filter(pattern::matches).take(limit)
+                }
+
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
+                    sequenceOf(indexedMethod).filter(pattern::matches)
+            }
+            CypherGraph("graph-$index", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Parallel' " +
+                "RETURN graphId(m) AS graph, m.name AS name LIMIT $workerCount"
+        )
+
+        assertEquals((0 until workerCount).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertEquals((0 until workerCount).map { "method$it" }, result.rows.map { it["name"] })
+        assertEquals(workerCount, workers.size)
+    }
+
+    @Test
+    fun `cancelling a parallel Method scan stops every worker`() {
+        val started = CountDownLatch(minOf(2, METHOD_GRAPH_SCAN_PARALLELISM))
+        val indexedMethod = method("com.example.Cancel", "running", emptyList(), "void")
+        val sources = (0 until 2).map { index ->
+            val graph = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
+                    generateSequence { indexedMethod }.filter(pattern::matches)
+
+                override fun methods(
+                    pattern: MethodPattern,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): Sequence<MethodDescriptor> = sequence {
+                    started.countDown()
+                    while (true) {
+                        scanConsumer.inspect()
+                        if (pattern.matches(indexedMethod)) yield(indexedMethod)
+                    }
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+        val signal = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1), signal)
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val query = executor.submit<CypherResult> {
+                CrossGraphCypherExecutor(sources, context).execute(
+                    "MATCH (m:Method) WHERE m.name = 'missing' OR m.name = 'also-missing' RETURN m LIMIT 1"
+                )
+            }
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertTrue(signal.cancel())
+            val error = assertFailsWith<ExecutionException> { query.get(5, TimeUnit.SECONDS) }
+            assertTrue(error.cause is CypherQueryCancelledException)
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `interrupting a parallel Method coordinator waits for its workers`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val started = CountDownLatch(2)
+        val release = CountDownLatch(1)
+        val coordinator = AtomicReference<Thread>()
+        val indexedMethod = method("com.example.Interrupt", "running", emptyList(), "void")
+        val sources = (0 until 2).map { index ->
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+                    started.countDown()
+                    release.await()
+                    return listOf(indexedMethod).filter(pattern::matches).take(limit)
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val query = executor.submit<CypherResult> {
+                coordinator.set(Thread.currentThread())
+                CrossGraphCypherExecutor(sources).execute(
+                    "MATCH (m:Method) WHERE m.class = 'com.example.Interrupt' RETURN m LIMIT 1"
+                )
+            }
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            coordinator.get().interrupt()
+            assertFailsWith<TimeoutException> { query.get(100, TimeUnit.MILLISECONDS) }
+            assertFalse(query.isDone)
+            release.countDown()
+            val error = assertFailsWith<ExecutionException> { query.get(5, TimeUnit.SECONDS) }
+            assertTrue(error.cause is CypherQueryCancelledException)
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `parallel Method scan propagates a source failure after workers finish`() {
+        val finished = CountDownLatch(1)
+        val goodMethod = method("com.example.Parallel", "good", emptyList(), "void")
+        val good = object : Graph by DefaultGraph.Builder().build() {
+            override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+                listOf(goodMethod).also { finished.countDown() }.filter(pattern::matches).take(limit)
+        }
+        val failed = object : Graph by DefaultGraph.Builder().build() {
+            override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+                error("failed Method source")
+        }
+
+        val error = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(listOf(CypherGraph("good", good), CypherGraph("failed", failed))).execute(
+                "MATCH (m:Method) WHERE m.class = 'com.example.Parallel' RETURN m LIMIT 1"
+            )
+        }
+
+        assertEquals("failed Method source", error.message)
+        assertTrue(finished.await(5, TimeUnit.SECONDS))
     }
 
     @Test

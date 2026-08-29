@@ -21,7 +21,8 @@ data class CypherExecutionBudget(val maxWorkUnits: Long) {
 
 /**
  * Shares one work counter across sequential Cypher executions in a logical request.
- * A context is request-scoped and must not be used concurrently.
+ * A context is request-scoped: callers must not start separate executions concurrently,
+ * while one execution may safely share its atomic tracker with internal scan workers.
  */
 class CypherExecutionContext(
     val executionBudget: CypherExecutionBudget,
