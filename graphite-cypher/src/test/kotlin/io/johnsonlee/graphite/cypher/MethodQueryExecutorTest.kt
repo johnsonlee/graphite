@@ -183,7 +183,7 @@ class MethodQueryExecutorTest {
     fun `Method bounded order handles equal null and boolean keys`() {
         val graph = DefaultGraph.Builder().apply {
             addMethod(method("com.example.Alpha", "alpha", emptyList(), "void"))
-            addMethod(method("com.example.Beta", "beta", emptyList(), "void"))
+            addMethod(method("com.example.Beta", "beta", listOf("int"), "void"))
         }.build()
         val executor = CypherExecutor(graph)
 
@@ -194,10 +194,14 @@ class MethodQueryExecutorTest {
             "MATCH (m:Method) RETURN m.name = 'alpha' AS selected, m.name AS name " +
                 "ORDER BY selected DESC LIMIT 2"
         )
+        val lists = executor.execute(
+            "MATCH (m:Method) RETURN m.parameter_types AS parameters ORDER BY parameters LIMIT 2"
+        )
 
         assertEquals(setOf("alpha", "beta"), equalNulls.rows.map { it["name"] }.toSet())
         assertEquals(listOf(true, false), booleans.rows.map { it["selected"] })
         assertEquals(listOf("alpha", "beta"), booleans.rows.map { it["name"] })
+        assertEquals(listOf(emptyList<String>(), listOf("int")), lists.rows.map { it["parameters"] })
     }
 
     @Test
@@ -323,6 +327,8 @@ class MethodQueryExecutorTest {
             coordinator.get().interrupt()
             assertFailsWith<TimeoutException> { query.get(100, TimeUnit.MILLISECONDS) }
             assertFalse(query.isDone)
+            coordinator.get().interrupt()
+            Thread.sleep(50)
             release.countDown()
             val error = assertFailsWith<ExecutionException> { query.get(5, TimeUnit.SECONDS) }
             assertTrue(error.cause is CypherQueryCancelledException)
@@ -330,6 +336,65 @@ class MethodQueryExecutorTest {
             release.countDown()
             executor.shutdownNow()
         }
+    }
+
+    @Test
+    fun `parallel Method scan wraps a checked source failure`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val goodMethod = method("com.example.Checked", "good", emptyList(), "void")
+        val good = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequenceOf(goodMethod).filter(pattern::matches)
+        }
+        val failed = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequence {
+                throw CheckedMethodSourceFailure()
+            }
+        }
+
+        val error = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(listOf(CypherGraph("good", good), CypherGraph("failed", failed))).execute(
+                "MATCH (m:Method) WHERE m.class = 'missing' " +
+                    "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
+            )
+        }
+
+        assertEquals("Parallel Method scan failed", error.message)
+        assertEquals("checked Method source", error.cause?.message)
+    }
+
+    @Test
+    fun `parallel Method scan propagates a fatal source error`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val goodMethod = method("com.example.Fatal", "good", emptyList(), "void")
+        val good = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequenceOf(goodMethod).filter(pattern::matches)
+        }
+        val failed = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequence {
+                throw AssertionError("fatal Method source")
+            }
+        }
+
+        val error = assertFailsWith<AssertionError> {
+            CrossGraphCypherExecutor(listOf(CypherGraph("good", good), CypherGraph("failed", failed))).execute(
+                "MATCH (m:Method) WHERE m.class = 'missing' " +
+                    "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
+            )
+        }
+
+        assertEquals("fatal Method source", error.message)
     }
 
     @Test
@@ -421,6 +486,22 @@ class MethodQueryExecutorTest {
 
         assertEquals(listOf("com.example.Owner0"), result.rows.map { it["owner"] })
         assertEquals(1, inspected.get())
+    }
+
+    @Test
+    fun `qualified Method distinct limit merges provenance from every source`() {
+        val indexedMethod = method("com.example.Shared", "shared", emptyList(), "void")
+        val sources = listOf("first", "second").map { graphId ->
+            CypherGraph(graphId, DefaultGraph.Builder().apply { addMethod(indexedMethod) }.build())
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) RETURN DISTINCT m.name AS name LIMIT 1"
+        )
+
+        assertEquals(listOf("shared"), result.rows.map { it["name"] })
+        val metadata = result.rows.single()[RESULT_METADATA_KEY] as Map<*, *>
+        assertEquals(listOf("first", "second"), metadata[RESULT_GRAPH_IDS_KEY])
     }
 
     @Test
@@ -542,6 +623,21 @@ class MethodQueryExecutorTest {
     }
 
     @Test
+    fun `literal Method count group stays source bounded`() {
+        val indexedMethod = method("com.example.Group", "grouped", emptyList(), "void")
+        val sources = listOf("first", "second").map { graphId ->
+            CypherGraph(graphId, DefaultGraph.Builder().apply { addMethod(indexedMethod) }.build())
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) RETURN 'all' AS bucket, count(*) AS count LIMIT 1"
+        )
+
+        assertEquals("all", result.rows.single()["bucket"])
+        assertEquals(2L, result.rows.single()["count"])
+    }
+
+    @Test
     fun `Method source preserves general Cypher semantics outside the indexed fast path`() {
         val alpha = method("com.example.Alpha", "alpha", listOf("java.lang.String"), "void")
         val beta = method("com.example.Beta", "beta", listOf("int", "long"), "int")
@@ -598,4 +694,6 @@ class MethodQueryExecutorTest {
         override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
             error("Method metadata queries must not scan graph nodes")
     }
+
+    private class CheckedMethodSourceFailure : Throwable("checked Method source")
 }
