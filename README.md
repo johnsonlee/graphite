@@ -239,7 +239,6 @@ Generic JDK resource linking currently covers:
 | `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
-| `/api/nodes`, `/api/methods`, ... | Query every loaded graph; non-Cypher results are grouped by `graphId` |
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
 | `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
 | `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
@@ -259,9 +258,10 @@ one graph. Every root non-Cypher result is grouped by `graphId`, while every
 cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
 qualified identities such as `elementId = "orders:42"`.
 
-For agent-driven discovery, probe `/openapi.json` first. It describes the full
-root-all and graph-scoped REST surface, including the two explicit modes of
-`/api/cypher/graphs`.
+Use Cypher for agent-driven node, method, and call-site discovery. The legacy
+`/api/nodes`, `/api/methods`, and `/api/call-sites` search routes are not
+available. `/openapi.json` describes the remaining operational and
+visualization APIs plus the Cypher query surface.
 
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
@@ -464,8 +464,9 @@ providing `graph_id` selects exactly one graph. The `cypher` tool can also use
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 
-LLMs can now use tools such as openapi, graphs, cypher, resources, resource, endpoints,
-c4, nodes, methods, call_sites, and annotations.
+LLMs can use tools such as openapi, graphs, cypher, resources, resource,
+endpoints, c4, and annotations. Node, method, and call-site discovery goes
+through the `cypher` tool rather than dedicated probe tools.
 
 The explore server also exposes a single C4 architecture endpoint:
 

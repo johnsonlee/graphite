@@ -1,5 +1,7 @@
 let cy;
 let dashboardInfo;
+let activeGraphId;
+let resizeTimer;
 
 const NODE_COLORS = {
     Graph: '#58a6ff', Class: '#58a6ff',
@@ -12,7 +14,7 @@ const NODE_COLORS = {
 };
 
 const NODE_SIZES = {
-    Graph: 72, Class: 32, CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
+    CallSiteNode: 28, FieldNode: 22, ParameterNode: 18, ReturnNode: 18, LocalVariable: 14
 };
 
 const EDGE_COLORS = { TopologyCall: '#f85149', DataFlow: '#30363d', Call: '#f85149', Type: '#bc8cff', ControlFlow: '#d29922' };
@@ -22,32 +24,46 @@ function initCytoscape() {
         container: document.getElementById('cy'),
         style: [
             { selector: 'node', style: {
-                'label': 'data(label)', 'background-color': 'data(color)', 'color': '#8b949e',
-                'font-size': '9px', 'text-valign': 'bottom', 'text-margin-y': 5,
+                'label': 'data(label)', 'background-color': 'data(color)', 'color': '#a8b6c8',
+                'font-size': '10px', 'text-valign': 'bottom', 'text-margin-y': 7,
                 'width': 'data(size)', 'height': 'data(size)',
-                'border-width': 0, 'text-max-width': '120px', 'text-wrap': 'ellipsis'
+                'border-width': 1, 'border-color': '#314158', 'text-max-width': '140px', 'text-wrap': 'ellipsis',
+                'transition-property': 'border-color, border-width, opacity, background-color',
+                'transition-duration': '160ms'
             }},
             { selector: 'edge', style: {
                 'width': 'data(width)', 'line-color': 'data(color)', 'target-arrow-color': 'data(color)',
                 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8,
-                'curve-style': 'bezier', 'opacity': 0.6
+                'curve-style': 'bezier', 'opacity': 0.48
             }},
             { selector: 'node[nodeType = "Graph"]', style: {
-                'shape': 'round-rectangle', 'color': '#e6edf3', 'font-size': '12px', 'font-weight': 600,
-                'text-valign': 'center', 'text-margin-y': 0, 'border-width': 2, 'border-color': '#79c0ff',
-                'text-max-width': '150px'
+                'shape': 'round-rectangle', 'width': 216, 'height': 86,
+                'background-color': '#132131', 'background-fill': 'linear-gradient',
+                'background-gradient-stop-colors': '#1d3b4e #1d3b4e #132131 #132131',
+                'background-gradient-stop-positions': '0% 34% 34% 100%', 'background-gradient-direction': 'to-bottom',
+                'color': '#f2f6fb', 'font-size': '11px', 'font-weight': 500,
+                'text-valign': 'center', 'text-margin-y': 0, 'border-width': 1.5, 'border-color': '#477092',
+                'text-max-width': '190px', 'text-wrap': 'wrap', 'text-overflow-wrap': 'anywhere',
+                'text-justification': 'left', 'line-height': 1.6
+            }},
+            { selector: 'node[nodeType = "Class"]', style: {
+                'shape': 'round-rectangle', 'width': 126, 'height': 36,
+                'background-color': '#132131', 'color': '#dce8f5', 'font-size': '10px',
+                'text-valign': 'center', 'text-margin-y': 0, 'border-color': '#36536d',
+                'text-max-width': '108px', 'text-wrap': 'ellipsis'
             }},
             { selector: 'edge[edgeType = "TopologyCall"]', style: {
-                'label': 'data(label)', 'color': '#d29922', 'font-size': '10px',
-                'text-background-color': '#0d1117', 'text-background-opacity': 0.85,
-                'text-background-padding': '3px', 'text-rotation': 'autorotate', 'opacity': 0.85
+                'label': 'data(label)', 'color': '#ffb86b', 'font-size': '9px',
+                'text-background-color': '#070b11', 'text-background-opacity': 0.9,
+                'text-background-padding': '4px', 'text-rotation': 'autorotate', 'opacity': 0.68
             }},
-            { selector: 'node:selected', style: { 'border-width': 2, 'border-color': '#58a6ff' }},
-            { selector: 'node.highlighted', style: { 'border-width': 2, 'border-color': '#fff', 'z-index': 10 }},
+            { selector: 'node:active', style: { 'overlay-opacity': 0.08, 'overlay-color': '#5ee4c2' }},
+            { selector: 'node:selected', style: { 'border-width': 2.5, 'border-color': '#5ee4c2' }},
+            { selector: 'node.highlighted', style: { 'border-width': 2.5, 'border-color': '#5ee4c2', 'z-index': 10 }},
             { selector: 'edge:selected', style: { 'width': 2.5, 'opacity': 1 }}
         ],
         layout: { name: 'preset' },
-        minZoom: 0.1, maxZoom: 5, wheelSensitivity: 0.3
+        minZoom: 0.1, maxZoom: 5
     });
 
     cy.on('tap', 'node', e => {
@@ -77,22 +93,39 @@ function initCytoscape() {
 }
 
 async function loadDashboard() {
-    const res = await fetch('/api/graphs');
-    const info = await res.json();
-    dashboardInfo = info;
+    setCanvasState('Loading workspace');
+    setServerStatus('connecting', 'Connecting');
+    try {
+        const info = await fetchJson('/api/graphs');
+        dashboardInfo = info;
 
-    const totals = info.totals || info;
-    document.querySelector('#stat-nodes .stat-value').textContent = totals.nodes.toLocaleString();
-    document.querySelector('#stat-edges .stat-value').textContent = totals.edges.toLocaleString();
-    document.querySelector('#stat-methods .stat-value').textContent = totals.methods.toLocaleString();
-    document.querySelector('#stat-callsites .stat-value').textContent = totals.callSites.toLocaleString();
+        const totals = info.totals || info;
+        setMetric('stat-nodes', totals.nodes);
+        setMetric('stat-edges', totals.edges);
+        setMetric('stat-methods', totals.methods);
+        setMetric('stat-callsites', totals.callSites);
 
-    if ((info.count || 0) > 1) {
-        loadGraphList(info.graphs || []);
-        await loadGraphTopology();
-    } else {
-        await loadTopClasses();
-        await loadInitialGraph();
+        const graphs = info.graphs || [];
+        const graphCount = Number(info.count || graphs.length || 1);
+        const countBadge = document.getElementById('graph-count');
+        const navigationSection = document.getElementById('navigation-section');
+        countBadge.textContent = graphCount;
+        countBadge.title = graphCount.toLocaleString() + (graphCount === 1 ? ' graph' : ' graphs');
+        setServerStatus('connected', 'Connected');
+
+        if (graphCount > 1) {
+            navigationSection.hidden = false;
+            loadGraphList(graphs);
+            await loadGraphTopology();
+        } else {
+            navigationSection.hidden = true;
+            document.getElementById('class-list').innerHTML = '';
+            activeGraphId = graphs.length === 1 ? graphs[0].id : null;
+            await loadInitialGraph();
+        }
+    } catch (error) {
+        setServerStatus('error', 'Unavailable');
+        setCanvasError(error, loadDashboard);
     }
 }
 
@@ -101,11 +134,20 @@ function loadGraphList(graphs) {
     const list = document.getElementById('class-list');
     list.innerHTML = '';
     graphs.forEach(function(graph) {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = '<span class="item-badge badge-graph">' + Number(graph.callSites || 0).toLocaleString() + '</span>' + graph.id;
-        div.title = Number(graph.nodes || 0).toLocaleString() + ' nodes, ' + Number(graph.edges || 0).toLocaleString() + ' edges';
-        div.onclick = function() {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'item';
+        button.innerHTML = '<span class="item-copy"><span class="item-label">' + escapeHtml(graph.id) + '</span>' +
+            '<span class="item-subtitle">' + formatCompactMetric(graph.nodes) + ' nodes · ' +
+            formatCompactMetric(graph.edges) + ' edges · ' + formatCompactMetric(graph.methods) + ' methods</span></span>' +
+            '<span class="item-call-count">' + formatCompactMetric(graph.callSites) + '<small>calls</small></span>';
+        button.title = graph.id + ' — ' + Number(graph.nodes || 0).toLocaleString() + ' nodes, ' +
+            Number(graph.edges || 0).toLocaleString() + ' edges, ' + Number(graph.methods || 0).toLocaleString() +
+            ' methods, ' + Number(graph.callSites || 0).toLocaleString() + ' call sites';
+        button.onclick = function() {
+            list.querySelectorAll('.item').forEach(function(item) { item.classList.remove('selected'); });
+            button.classList.add('selected');
+            activeGraphId = graph.id;
             const node = cy.getElementById(graphElementId(graph.id));
             if (node.length) {
                 cy.elements().removeClass('highlighted');
@@ -114,13 +156,13 @@ function loadGraphList(graphs) {
             }
             showGraphDetail(graph);
         };
-        list.appendChild(div);
+        list.appendChild(button);
     });
 }
 
 async function loadGraphTopology() {
-    const res = await fetch('/api/topology');
-    const data = await res.json();
+    setCanvasState('Loading graph topology');
+    const data = await fetchJson('/api/topology');
     data.nodes.forEach(function(node) { node.elementId = graphElementId(node.id); });
     data.edges.forEach(function(edge) {
         edge.fromElementId = graphElementId(edge.from);
@@ -130,51 +172,25 @@ async function loadGraphTopology() {
     let info = data.graphCount + ' graphs, ' + data.relationCount + ' call relations, ' +
         Number(data.matchedRows || 0).toLocaleString() + ' matched rows';
     if (data.stale) info += ' (topology is stale)';
-    document.getElementById('graph-info').textContent = info;
-}
-
-async function loadTopClasses() {
-    document.getElementById('navigation-title').textContent = 'Top Classes';
-    const res = await fetch('/api/methods?limit=200');
-    const response = await res.json();
-    const methods = flattenGroupedData(response);
-
-    const classCounts = {};
-    methods.forEach(m => {
-        const cls = m.class || '';
-        const key = m.graphId + ':' + cls;
-        classCounts[key] = (classCounts[key] || 0) + 1;
-    });
-
-    const sorted = Object.entries(classCounts).sort((a, b) => b[1] - a[1]).slice(0, 15);
-    const list = document.getElementById('class-list');
-    list.innerHTML = '';
-
-    sorted.forEach(([key, count]) => {
-        const separator = key.indexOf(':');
-        const graphId = key.substring(0, separator);
-        const cls = key.substring(separator + 1);
-        const div = document.createElement('div');
-        div.className = 'item';
-        const shortName = cls.split('.').pop();
-        div.innerHTML = '<span class="item-badge badge-methods">' + count + '</span>' + shortName;
-        div.title = graphId + ': ' + cls;
-        div.onclick = () => searchByClass(cls);
-        list.appendChild(div);
-    });
+    setGraphInfo(info);
 }
 
 async function loadInitialGraph() {
-    const res = await fetch('/api/overview');
-    const response = await res.json();
+    const graphs = dashboardInfo && Array.isArray(dashboardInfo.graphs) ? dashboardInfo.graphs : [];
+    if (graphs.length === 1 && graphs[0].id) {
+        await loadSingleGraphOverview(graphs[0].id);
+        return;
+    }
+    setCanvasState('Loading class overview');
+    const response = await fetchJson('/api/overview');
     const data = mergeGroupedGraphs(response);
     renderGraph(data, null);
-    document.getElementById('graph-info').textContent = `${data.nodes.length} nodes, ${data.edges.length} edges`;
+    setGraphInfo(`${data.nodes.length} classes, ${data.edges.length} calls`);
 }
 
 async function loadSingleGraphOverview(graphId) {
-    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/overview');
-    const data = await res.json();
+    setCanvasState('Loading ' + graphId);
+    const data = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/overview');
     data.nodes.forEach(function(node) {
         node.graphId = graphId;
         node.elementId = graphId + ':' + node.id;
@@ -185,7 +201,7 @@ async function loadSingleGraphOverview(graphId) {
         edge.toElementId = graphId + ':' + edge.to;
     });
     renderGraph(data, null);
-    document.getElementById('graph-info').textContent = graphId + ': ' + data.nodes.length + ' classes, ' + data.edges.length + ' calls';
+    setGraphInfo(data.nodes.length + ' classes, ' + data.edges.length + ' calls');
 }
 
 function showGraphDetail(graph) {
@@ -223,11 +239,9 @@ function graphElementId(graphId) { return 'graph:' + graphId; }
 
 async function showNodeDetail(graphId, nodeId) {
     const prefix = '/api/graphs/' + encodeURIComponent(graphId);
-    const [nodeRes, outRes] = await Promise.all([
-        fetch(prefix + '/node/' + nodeId), fetch(prefix + '/node/' + nodeId + '/outgoing?limit=200')
+    const [node, outgoing] = await Promise.all([
+        fetchJson(prefix + '/node/' + nodeId), fetchJson(prefix + '/node/' + nodeId + '/outgoing?limit=200')
     ]);
-    const node = await nodeRes.json();
-    const outgoing = await outRes.json();
 
     // Highlight in graph
     cy.elements().removeClass('highlighted');
@@ -235,7 +249,8 @@ async function showNodeDetail(graphId, nodeId) {
     if (cyNode.length) cyNode.addClass('highlighted');
 
     const panel = document.getElementById('detail-content');
-    let html = '<div class="detail-block"><h4>' + node.type + '</h4><pre>' + JSON.stringify(node, null, 2) + '</pre></div>';
+    let html = '<div class="detail-block"><h4>' + escapeHtml(node.type) + '</h4><pre>' +
+        escapeHtml(JSON.stringify(node, null, 2)) + '</pre></div>';
 
     if (outgoing.length > 0) {
         html += '<div class="detail-block"><h4>Outgoing (' + outgoing.length + ')</h4>';
@@ -254,8 +269,7 @@ async function showNodeDetail(graphId, nodeId) {
 async function loadIncomingEdges(graphId, nodeId) {
     const block = document.getElementById('incoming-block');
     block.innerHTML = '<h4>Incoming</h4><div class="hint">Loading...</div>';
-    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/node/' + nodeId + '/incoming?limit=200');
-    const incoming = await res.json();
+    const incoming = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/node/' + nodeId + '/incoming?limit=200');
     let html = '<h4>Incoming (' + incoming.length + ')</h4>';
     if (incoming.length > 0) {
         incoming.slice(0, 20).forEach(e => {
@@ -269,12 +283,12 @@ async function loadIncomingEdges(graphId, nodeId) {
 }
 
 async function loadSubgraph(graphId, centerId, depth) {
-    const res = await fetch('/api/graphs/' + encodeURIComponent(graphId) + '/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
-    const data = await res.json();
+    setCanvasState('Loading neighborhood');
+    const data = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
     data.nodes.forEach(n => { n.graphId = graphId; n.elementId = graphId + ':' + n.id; });
     data.edges.forEach(e => { e.graphId = graphId; e.fromElementId = graphId + ':' + e.from; e.toElementId = graphId + ':' + e.to; });
     renderGraph(data, graphId + ':' + centerId);
-    document.getElementById('graph-info').textContent = data.nodes.length + ' nodes, ' + data.edges.length + ' edges';
+    setGraphInfo(data.nodes.length + ' nodes, ' + data.edges.length + ' edges');
 }
 
 function renderGraph(data, centerId, viewMode) {
@@ -285,12 +299,14 @@ function renderGraph(data, centerId, viewMode) {
         const elementId = n.elementId || (n.graphId + ':' + n.id);
         if (seen.has(elementId)) return;
         seen.add(elementId);
+        const isCardNode = n.type === 'Graph' || n.type === 'Class';
         elements.push({ data: {
             id: elementId, graphId: n.graphId, nodeId: n.id,
             nodeType: n.type, nodeData: n,
-            label: truncate(n.label || n.type, 25),
+            label: n.type === 'Graph' ? graphCardLabel(n) :
+                (isCardNode ? (n.label || n.id || n.type) : truncate(n.label || n.type, 32)),
             color: NODE_COLORS[n.type] || '#8b949e',
-            size: n.type === 'Graph' ? graphNodeSize(n.callSites) : (NODE_SIZES[n.type] || 16)
+            size: NODE_SIZES[n.type] || 16
         }});
     });
 
@@ -310,29 +326,70 @@ function renderGraph(data, centerId, viewMode) {
     cy.elements().remove();
     cy.add(elements);
 
-    // Use fast layout for large graphs, detailed layout for small subgraphs
-    var isLarge = elements.length > 200;
-    var layoutOpts = viewMode === 'topology' && !isLarge
-        ? { name: 'cose', animate: true, animationDuration: 500, nodeRepulsion: function() { return 28000; }, idealEdgeLength: function() { return 180; }, gravity: 0.2, numIter: 400 }
-        : isLarge
-        ? { name: 'concentric', concentric: function(n) { return n.degree(); }, levelWidth: function() { return 3; }, animate: false, minNodeSpacing: 10 }
-        : { name: 'cose', animate: true, animationDuration: 400, nodeRepulsion: function() { return 12000; }, idealEdgeLength: function() { return 80; }, gravity: 0.3, numIter: 200 };
-    cy.layout(layoutOpts).run();
-
-    if (centerId) {
-        setTimeout(function() {
-            var centerNode = cy.getElementById(centerId);
-            if (centerNode.length) {
-                cy.animate({ center: { eles: centerNode }, zoom: 1.5, duration: 300 });
-            }
-        }, isLarge ? 100 : 500);
+    const nodeCount = data.nodes.length;
+    const edgeCount = data.edges.length;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let layoutOpts;
+    if (viewMode === 'topology' && edgeCount === 0) {
+        layoutOpts = topologyGridOptions();
+    } else if (nodeCount > 180) {
+        layoutOpts = {
+            name: 'concentric', animate: false, minNodeSpacing: 16,
+            concentric: function(node) { return node.degree(); }, levelWidth: function() { return 3; }
+        };
     } else {
-        cy.fit(null, 30);
+        layoutOpts = {
+            name: 'cose', animate: !reduceMotion, animationDuration: 420,
+            nodeRepulsion: function() { return viewMode === 'topology' ? 42000 : 15000; },
+            idealEdgeLength: function() { return viewMode === 'topology' ? 210 : 92; },
+            gravity: viewMode === 'topology' ? 0.16 : 0.28, numIter: 420
+        };
     }
+
+    const layout = cy.layout(layoutOpts);
+    cy.one('layoutstop', function() {
+        finishGraphLayout(centerId, reduceMotion);
+        setCanvasState();
+    });
+    layout.run();
 }
 
-function graphNodeSize(callSites) {
-    return Math.max(NODE_SIZES.Graph, Math.min(112, 64 + Math.log10(Number(callSites || 0) + 1) * 8));
+function topologyGridOptions() {
+    const canvasWidth = cy.width();
+    const graphCount = cy.nodes().length;
+    const graphCardWidth = 216;
+    const cardGap = 28;
+    const fitColumns = Math.max(1, Math.floor((canvasWidth - 72 + cardGap) / (graphCardWidth + cardGap)));
+    const balancedColumns = Math.ceil(Math.sqrt(graphCount));
+    const responsiveLimit = canvasWidth < 560 ? 1 : (canvasWidth < 960 ? 2 : 6);
+    return {
+        name: 'grid',
+        cols: Math.min(graphCount, balancedColumns, fitColumns, responsiveLimit),
+        avoidOverlap: true,
+        avoidOverlapPadding: 24,
+        condense: true,
+        spacingFactor: 1.06
+    };
+}
+
+function finishGraphLayout(centerId, reduceMotion) {
+    if (centerId) {
+        const centerNode = cy.getElementById(centerId);
+        if (centerNode.length) {
+            if (reduceMotion) {
+                cy.center(centerNode);
+                cy.zoom(Math.min(1.35, cy.zoom()));
+            } else {
+                cy.animate({ center: { eles: centerNode }, zoom: 1.28, duration: 260 });
+            }
+            return;
+        }
+    }
+    cy.fit(null, 72);
+    if (cy.zoom() > 1.05) {
+        cy.zoom({ level: 1.05, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
+        cy.center();
+    }
 }
 
 function topologyEdgeWidth(edge) {
@@ -348,18 +405,78 @@ function escapeHtml(value) {
     });
 }
 
-function htmlJsString(value) {
-    return JSON.stringify(value).replace(/"/g, '&quot;');
+async function fetchJson(url, options) {
+    const response = await fetch(url, options);
+    let data;
+    try {
+        data = await response.json();
+    } catch (_) {
+        data = null;
+    }
+    if (!response.ok) {
+        const message = data && data.error ? data.error : response.status + ' ' + response.statusText;
+        throw new Error(message);
+    }
+    return data;
 }
 
-function flattenGroupedData(response) {
-    if (!response || !Array.isArray(response.results)) return Array.isArray(response) ? response : [];
-    var values = [];
-    response.results.forEach(function(group) {
-        var data = Array.isArray(group.data) ? group.data : [];
-        data.forEach(function(item) { values.push(Object.assign({ graphId: group.graphId }, item)); });
-    });
-    return values;
+function formatCompactMetric(value) {
+    const number = Number(value || 0);
+    return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(number);
+}
+
+function graphCardLabel(graph) {
+    const id = graph.label || graph.id || graph.graphId || 'Graph';
+    return id + '\n\n' + formatCompactMetric(graph.nodes) + ' nodes  ·  ' + formatCompactMetric(graph.edges) + ' edges\n' +
+        formatCompactMetric(graph.methods) + ' methods  ·  ' + formatCompactMetric(graph.callSites) + ' calls';
+}
+
+function setMetric(id, value) {
+    const card = document.getElementById(id);
+    const number = Number(value || 0);
+    card.querySelector('.stat-value').textContent = formatCompactMetric(number);
+    card.title = number.toLocaleString() + ' ' + card.querySelector('.stat-label').textContent.toLowerCase();
+}
+
+function setServerStatus(state, label) {
+    const status = document.getElementById('server-status');
+    status.classList.remove('connected', 'error');
+    if (state === 'connected' || state === 'error') status.classList.add(state);
+    status.querySelector('.status-label').textContent = label;
+}
+
+function setGraphInfo(info) {
+    document.getElementById('graph-info').textContent = info;
+}
+
+function setCanvasState(message) {
+    const state = document.getElementById('canvas-state');
+    state.classList.remove('error');
+    if (!message) {
+        state.classList.add('hidden');
+        return;
+    }
+    state.classList.remove('hidden');
+    state.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>' + escapeHtml(message) + '</span>';
+}
+
+function setCanvasError(error, retry) {
+    const state = document.getElementById('canvas-state');
+    state.classList.remove('hidden');
+    state.classList.add('error');
+    state.innerHTML = '<strong>Unable to load the graph</strong><span>' + escapeHtml(error.message || error) + '</span>';
+    if (retry) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'retry-button';
+        button.textContent = 'Try again';
+        button.addEventListener('click', retry);
+        state.appendChild(button);
+    }
+}
+
+function htmlJsString(value) {
+    return JSON.stringify(value).replace(/"/g, '&quot;');
 }
 
 function mergeGroupedGraphs(response) {
@@ -385,69 +502,31 @@ function mergeGroupedGraphs(response) {
     return { nodes: nodes, edges: edges };
 }
 
-async function search() {
-    var query = document.getElementById('search').value.trim();
-    var type = document.getElementById('search-type').value;
-    if (!query) return;
-
-    var nodeRef = query.match(/^([A-Za-z0-9][A-Za-z0-9._-]{0,127}):(\d+)$/);
-    if (nodeRef && type === 'nodes') {
-        loadSubgraph(nodeRef[1], parseInt(nodeRef[2]), 2);
-        return;
-    }
-
-    var url;
-    switch (type) {
-        case 'call-sites': url = '/api/call-sites?class=' + encodeURIComponent(query) + '&limit=50'; break;
-        case 'methods': url = '/api/methods?class=' + encodeURIComponent(query) + '&limit=50'; break;
-        case 'nodes': url = '/api/nodes?type=' + encodeURIComponent(query) + '&limit=50'; break;
-    }
-
-    var res = await fetch(url);
-    var results = flattenGroupedData(await res.json());
-    showResults(results, type);
-}
-
-function searchByClass(className) {
-    document.getElementById('search').value = className;
-    document.getElementById('search-type').value = 'call-sites';
-    search();
-}
-
-function showResults(results, type) {
-    var section = document.getElementById('results-section');
-    var list = document.getElementById('results-list');
-    list.innerHTML = '';
-
-    results.forEach(function(item) {
-        var div = document.createElement('div');
-        div.className = 'item';
-        if (type === 'methods') {
-            var shortClass = (item.class || '').split('.').pop();
-            div.innerHTML = '<span class="item-badge badge-methods">M</span>' + shortClass + '.' + item.name + '()';
-            div.title = item.graphId + ': ' + item.class + '.' + item.name + '(' + (item.returnType || '') + ')';
-        } else if (item.id !== undefined) {
-            var badge = type === 'call-sites' ? '<span class="item-badge badge-callsite">CS</span>' : '';
-            div.innerHTML = badge + (item.label || item.type);
-            div.title = item.graphId + ':node#' + item.id;
-            div.onclick = (function(graphId, id) {
-                return function() { loadSubgraph(graphId, id, 2); };
-            })(item.graphId, item.id);
-        }
-        list.appendChild(div);
-    });
-
-    section.style.display = 'block';
-}
-
 // Event listeners
-document.getElementById('search-btn').addEventListener('click', search);
-document.getElementById('search').addEventListener('keypress', function(e) { if (e.key === 'Enter') search(); });
-document.getElementById('close-results').addEventListener('click', function() { document.getElementById('results-section').style.display = 'none'; });
-document.getElementById('btn-fit').addEventListener('click', function() { cy.fit(null, 30); });
+document.getElementById('btn-fit').addEventListener('click', function() { finishGraphLayout(null, false); });
+window.addEventListener('resize', function() {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(function() {
+        if (!cy || cy.nodes().length === 0) return;
+        cy.resize();
+        const isTopologyOverview = cy.edges().length === 0 && cy.nodes().every(function(node) {
+            return node.data('nodeType') === 'Graph';
+        });
+        if (isTopologyOverview) {
+            const layout = cy.layout(topologyGridOptions());
+            cy.one('layoutstop', function() { finishGraphLayout(null, true); });
+            layout.run();
+        } else {
+            finishGraphLayout(null, true);
+        }
+    }, 140);
+});
 document.getElementById('btn-reset').addEventListener('click', function() {
     cy.elements().remove();
-    if (dashboardInfo && (dashboardInfo.count || 0) > 1) loadGraphTopology(); else loadInitialGraph();
+    activeGraphId = null;
+    document.querySelectorAll('.item-list .item').forEach(function(item) { item.classList.remove('selected'); });
+    const reload = dashboardInfo && (dashboardInfo.count || 0) > 1 ? loadGraphTopology : loadInitialGraph;
+    reload().catch(function(error) { setCanvasError(error, reload); });
 });
 
 // Load Cypher result nodes onto the canvas
@@ -463,8 +542,7 @@ async function loadCypherResults(nodeRefs) {
     for (var i = 0; i < refs.length; i++) {
         try {
             var ref = refs[i];
-            var res = await fetch('/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing');
-            var data = await res.json();
+            var data = await fetchJson('/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing');
             data.nodes.forEach(function(n) {
                 n.graphId = ref.graphId;
                 n.elementId = ref.graphId + ':' + n.id;
@@ -476,53 +554,57 @@ async function loadCypherResults(nodeRefs) {
                 e.toElementId = ref.graphId + ':' + e.to;
                 allEdges.push(e);
             });
-        } catch (e) { /* skip failed fetches */ }
+        } catch (e) { /* Keep rendering the successful result neighborhoods. */ }
     }
 
     renderGraph({ nodes: Array.from(allNodes.values()), edges: allEdges }, refs[0].graphId + ':' + refs[0].id);
-    document.getElementById('graph-info').textContent = allNodes.size + ' nodes, ' + allEdges.length + ' edges';
+    setGraphInfo(allNodes.size + ' nodes, ' + allEdges.length + ' edges');
 }
 
 // Cypher query support
 async function runCypher() {
     var query = document.getElementById('cypher-input').value.trim();
-    if (!query) return;
+    var runButton = document.getElementById('cypher-run');
+    if (!query || runButton.disabled) return;
 
     var resultDiv = document.getElementById('cypher-result');
-    resultDiv.innerHTML = '<span style="color: var(--text-muted)">Running...</span>';
+    runButton.disabled = true;
+    runButton.classList.add('running');
+    runButton.querySelector('.run-label').textContent = 'Running';
+    resultDiv.setAttribute('aria-busy', 'true');
+    resultDiv.innerHTML = '<div class="query-state">Running query…</div>';
 
     try {
-        var res = await fetch('/api/cypher', {
+        var data = await fetchJson('/api/cypher', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: query })
         });
-        var data = await res.json();
 
         if (data.error) {
-            resultDiv.innerHTML = '<div id="cypher-error">' + data.error + '</div>';
+            resultDiv.innerHTML = '<div id="cypher-error">' + escapeHtml(data.error) + '</div>';
             return;
         }
 
         if (!data.columns || data.columns.length === 0) {
-            resultDiv.innerHTML = '<span style="color: var(--text-muted)">(no results)</span>';
+            resultDiv.innerHTML = '<div class="query-state">Query completed with no results.</div>';
             return;
         }
 
-        var html = '<table><tr>';
-        data.columns.forEach(function(col) { html += '<th>' + col + '</th>'; });
-        html += '</tr>';
+        var html = '<table><thead><tr>';
+        data.columns.forEach(function(col) { html += '<th>' + escapeHtml(col) + '</th>'; });
+        html += '</tr></thead><tbody>';
         data.rows.forEach(function(row) {
             html += '<tr>';
             data.columns.forEach(function(col) {
                 var val = row[col];
                 var display = val === null ? 'null' : (typeof val === 'object' ? JSON.stringify(val) : val);
-                html += '<td>' + display + '</td>';
+                html += '<td title="' + escapeHtml(display) + '">' + escapeHtml(display) + '</td>';
             });
             html += '</tr>';
         });
-        html += '</table>';
-        html += '<div style="color: var(--text-muted); margin-top: 4px; font-size: 10px;">' + data.rowCount + ' row(s)</div>';
+        html += '</tbody></table>';
+        html += '<div class="query-summary">' + Number(data.rowCount || data.rows.length).toLocaleString() + ' rows returned</div>';
         resultDiv.innerHTML = html;
 
         // Collect node IDs from results
@@ -557,7 +639,12 @@ async function runCypher() {
             loadCypherResults(nodeRefs);
         }
     } catch (e) {
-        resultDiv.innerHTML = '<div id="cypher-error">Error: ' + e.message + '</div>';
+        resultDiv.innerHTML = '<div id="cypher-error">' + escapeHtml(e.message || e) + '</div>';
+    } finally {
+        runButton.disabled = false;
+        runButton.classList.remove('running');
+        runButton.querySelector('.run-label').textContent = 'Run query';
+        resultDiv.removeAttribute('aria-busy');
     }
 }
 

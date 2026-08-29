@@ -157,24 +157,6 @@ server.tool(
   }
 );
 
-// List nodes
-server.tool(
-  "nodes",
-  "List nodes by type across all graphs, grouped by graph, or in one explicit graph",
-  {
-    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
-    type: z.string().optional().describe("Node type filter (e.g., CallSiteNode, IntConstant, Annotation)"),
-    limit: z.number().optional().default(50).describe("Max results"),
-  },
-  async ({ graph_id, type, limit }) => {
-    const params: Record<string, string> = {};
-    if (type) params.type = type;
-    if (limit) params.limit = String(limit);
-    const data = await graphiteGet(graphApiPath(graph_id, "/nodes"), params);
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  }
-);
-
 // Get node by ID
 server.tool(
   "node",
@@ -213,46 +195,6 @@ server.tool(
   },
   async ({ id, graph_id }) => {
     const data = await graphiteGet(graphApiPath(graph_id, `/node/${id}/incoming`));
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  }
-);
-
-// Find call sites
-server.tool(
-  "call_sites",
-  "Find call sites across all graphs, grouped by graph, or in one explicit graph",
-  {
-    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
-    class_pattern: z.string().optional().describe("Class name pattern"),
-    method_pattern: z.string().optional().describe("Method name pattern"),
-    limit: z.number().optional().default(50).describe("Max results"),
-  },
-  async ({ graph_id, class_pattern, method_pattern, limit }) => {
-    const params: Record<string, string> = {};
-    if (class_pattern) params.class = class_pattern;
-    if (method_pattern) params.method = method_pattern;
-    if (limit) params.limit = String(limit);
-    const data = await graphiteGet(graphApiPath(graph_id, "/call-sites"), params);
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  }
-);
-
-// List methods
-server.tool(
-  "methods",
-  "List methods across all graphs, grouped by graph, or in one explicit graph",
-  {
-    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
-    class_pattern: z.string().optional().describe("Class name pattern"),
-    name_pattern: z.string().optional().describe("Method name pattern"),
-    limit: z.number().optional().default(50).describe("Max results"),
-  },
-  async ({ graph_id, class_pattern, name_pattern, limit }) => {
-    const params: Record<string, string> = {};
-    if (class_pattern) params.class = class_pattern;
-    if (name_pattern) params.name = name_pattern;
-    if (limit) params.limit = String(limit);
-    const data = await graphiteGet(graphApiPath(graph_id, "/methods"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
