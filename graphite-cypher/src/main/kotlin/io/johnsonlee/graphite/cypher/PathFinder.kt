@@ -51,7 +51,7 @@ object PathFinder {
     }
 
     /**
-     * Find paths from source nodes to target nodes with a depth-bounded traversal.
+     * Find all paths from source nodes to target nodes via breadth-first search.
      *
      * @param graph The graph to search
      * @param sources Source node IDs to start from
@@ -70,11 +70,13 @@ object PathFinder {
         minDepth: Int = 1,
         maxDepth: Int = 10,
         direction: Direction = Direction.OUTGOING
-    ): List<Path> = findPathMatches(
-        graph,
-        sources,
-        SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
-    ).map { it.materialize(workTracker = null) }.toList()
+    ): List<Path> {
+        val options = SearchOptions(targets, edgeType, minDepth, maxDepth, direction)
+        return sources.asSequence().flatMap { source ->
+            val startNode = loadNode(graph, source, workTracker = null)
+            if (startNode == null) emptySequence() else breadthFirst(graph, startNode, options)
+        }.map { it.materialize(workTracker = null) }.toList()
+    }
 
     internal fun findPathMatches(
         graph: Graph,
@@ -87,11 +89,39 @@ object PathFinder {
         }
     }
 
+    /** Preserve the public [findPaths] shortest-first contract. */
+    private fun breadthFirst(
+        graph: Graph,
+        startNode: Node,
+        options: SearchOptions
+    ): Sequence<PathMatch> = sequence {
+        val visited = mutableSetOf<Int>()
+        val queue = ArrayDeque<SearchState>()
+        queue.add(SearchState(startNode, incomingEdge = null, parent = null, depth = 0))
+
+        while (queue.isNotEmpty()) {
+            val state = queue.removeFirst()
+            val current = state.node.id
+
+            if (state.depth == 0 && matchesTarget(state, options)) yield(PathMatch(state))
+            if (state.depth >= options.maxDepth) continue
+            if (!visited.add(current.value)) continue
+
+            for (edge in edgesForDirection(graph, current, options)) {
+                val nextId = nextNodeId(edge, current, options.direction)
+                val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+                val nextState = SearchState(nextNode, edge, state, state.depth + 1)
+                if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
+                queue.add(nextState)
+            }
+        }
+    }
+
     /**
      * Traverse one branch at a time so suspended lazy consumers retain at most [SearchOptions.maxDepth]
      * search states instead of a complete breadth-first frontier.
-     * The shallowest-depth map grows with expanded node IDs, but does not retain nodes or parent paths;
-     * only the stack's O(maxDepth) frames retain those objects.
+     * Nodes already present on the current branch are not expanded again, so cycles terminate without
+     * retaining a traversal-wide visited set. Only the stack's O(maxDepth) frames retain search state.
      *
      * Matches keep the graph's edge order within each branch. Cypher does not define a global result
      * order without ORDER BY, so depth-first traversal is safe for the lazy query pipeline while allowing
@@ -102,11 +132,9 @@ object PathFinder {
         startNode: Node,
         options: SearchOptions
     ): Sequence<PathMatch> = sequence {
-        val expandedAtDepth = mutableMapOf<Int, Int>()
         val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
         if (matchesTarget(start, options)) yield(PathMatch(start))
         if (options.maxDepth <= 0) return@sequence
-        expandedAtDepth[startNode.id.value] = 0
 
         val stack = ArrayDeque<SearchFrame>()
         stack.addLast(SearchFrame(start, edgesForDirection(graph, startNode.id, options).iterator()))
@@ -125,14 +153,21 @@ object PathFinder {
             val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
             if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
 
-            val previousDepth = expandedAtDepth[nextId.value]
             if (nextState.depth < options.maxDepth &&
-                (previousDepth == null || nextState.depth < previousDepth)
+                !hasAncestor(frame.state, nextId)
             ) {
-                expandedAtDepth[nextId.value] = nextState.depth
                 stack.addLast(SearchFrame(nextState, edgesForDirection(graph, nextId, options).iterator()))
             }
         }
+    }
+
+    private fun hasAncestor(state: SearchState?, nodeId: NodeId): Boolean {
+        var cursor = state
+        while (cursor != null) {
+            if (cursor.node.id == nodeId) return true
+            cursor = cursor.parent
+        }
+        return false
     }
 
     private data class SearchFrame(

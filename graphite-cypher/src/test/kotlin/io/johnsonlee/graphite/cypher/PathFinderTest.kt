@@ -119,6 +119,39 @@ class PathFinderTest {
     }
 
     @Test
+    fun `public path search returns targets in breadth first order`() {
+        val source = IntConstant(NodeId.next(), 30)
+        val middle = IntConstant(NodeId.next(), 31)
+        val directTarget = IntConstant(NodeId.next(), 32)
+        val deepTarget = IntConstant(NodeId.next(), 33)
+        val sourceToMiddle = DataFlowEdge(source.id, middle.id, DataFlowKind.ASSIGN)
+        val sourceToDirectTarget = DataFlowEdge(source.id, directTarget.id, DataFlowKind.ASSIGN)
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(middle)
+            .addNode(directTarget)
+            .addNode(deepTarget)
+            .addEdge(DataFlowEdge(middle.id, deepTarget.id, DataFlowKind.ASSIGN))
+            .build()
+        val longBranchFirst = object : Graph by base {
+            override fun outgoing(id: NodeId): Sequence<Edge> =
+                if (id == source.id) sequenceOf(sourceToMiddle, sourceToDirectTarget) else base.outgoing(id)
+        }
+
+        val paths = PathFinder.findPaths(
+            longBranchFirst,
+            sources = setOf(source.id),
+            targets = setOf(directTarget.id, deepTarget.id),
+            edgeType = DataFlowEdge::class.java,
+            minDepth = 1,
+            maxDepth = 2
+        )
+
+        assertEquals(listOf(1, 2), paths.map { it.edges.size })
+        assertEquals(listOf(directTarget.id, deepTarget.id), paths.map { it.nodes.last().id })
+    }
+
+    @Test
     fun `lazy match descends before retaining a wide sibling frontier`() {
         val source = IntConstant(NodeId.next(), 10)
         val middle = IntConstant(NodeId.next(), 11)
