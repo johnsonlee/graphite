@@ -580,7 +580,8 @@ class CrossGraphCypherExecutorTest {
             "orders" to orderedGraph("example.TargetA"),
             "billing" to orderedGraph("example.TargetB")
         ).execute(
-            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' OR " +
+                "n.callee_class CONTAINS 'Target' " +
                 "RETURN DISTINCT n.caller_class AS caller LIMIT 2"
         )
 
