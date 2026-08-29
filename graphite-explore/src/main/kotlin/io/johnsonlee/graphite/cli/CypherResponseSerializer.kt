@@ -11,7 +11,7 @@ import java.io.Writer
 internal val GRAPHITE_GSON: Gson = GsonBuilder().setPrettyPrinting().create()
 
 internal fun interface CypherResponseSerializer {
-    fun write(ctx: Context, value: Any, cancellationSignal: CypherCancellationSignal)
+    fun write(ctx: Context, value: Map<String, Any?>, cancellationSignal: CypherCancellationSignal)
 }
 
 internal class GsonCypherResponseSerializer(
@@ -19,7 +19,14 @@ internal class GsonCypherResponseSerializer(
     private val progress: () -> Unit = {}
 ) : CypherResponseSerializer {
 
-    override fun write(ctx: Context, value: Any, cancellationSignal: CypherCancellationSignal) {
+    override fun write(
+        ctx: Context,
+        value: Map<String, Any?>,
+        cancellationSignal: CypherCancellationSignal
+    ) {
+        require(value[API_FIELD_ROW_COUNT] is Number) {
+            "A successful Cypher response must contain a numeric rowCount"
+        }
         ctx.contentType(ContentType.APPLICATION_JSON)
             .result(serialize(value, cancellationSignal))
     }

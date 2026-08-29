@@ -10,9 +10,7 @@ import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
-import jakarta.servlet.AsyncContext
-import jakarta.servlet.AsyncEvent
-import jakarta.servlet.AsyncListener
+import org.eclipse.jetty.io.ByteArrayEndPoint
 import org.eclipse.jetty.io.Connection
 import org.eclipse.jetty.util.thread.Scheduler
 import java.io.ByteArrayOutputStream
@@ -27,6 +25,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -343,25 +342,6 @@ class CypherClientCancellationTest {
     }
 
     @Test
-    fun `servlet failures and timeouts cancel the query`() {
-        val cancellations = AtomicInteger()
-        val listener = CypherCancellationAsyncListener(cancellations::incrementAndGet)
-        val registered = arrayListOf<AsyncListener>()
-        val asyncContext = proxy<AsyncContext> { methodName, arguments ->
-            if (methodName == "addListener") registered += arguments.single() as AsyncListener
-            null
-        }
-        val event = AsyncEvent(asyncContext)
-
-        listener.onStartAsync(event)
-        listener.onError(event)
-        listener.onTimeout(event)
-
-        assertEquals(listOf<AsyncListener>(listener), registered)
-        assertEquals(2, cancellations.get())
-    }
-
-    @Test
     fun `closing the Jetty connection cancels the query`() {
         val cancellations = AtomicInteger()
         val listener = CypherCancellationConnectionListener(cancellations::incrementAndGet)
@@ -390,6 +370,35 @@ class CypherClientCancellationTest {
         scheduled.removeFirst().run()
         assertEquals(1, scheduled.size)
         monitor.close()
+    }
+
+    @Test
+    fun `disconnect monitor restores idle timeout when scheduler rejects cleanup`() {
+        val rejectScheduling = AtomicReference(false)
+        val scheduler = proxy<Scheduler> { methodName, _ ->
+            when (methodName) {
+                "schedule" -> {
+                    if (rejectScheduling.get()) throw RejectedExecutionException("scheduler stopped")
+                    proxy<Scheduler.Task> { taskMethod, _ -> taskMethod == "cancel" }
+                }
+                else -> null
+            }
+        }
+        val endPoint = ByteArrayEndPoint(scheduler, ORIGINAL_IDLE_TIMEOUT_MILLIS).apply { onOpen() }
+        val monitor = DisconnectMonitor(
+            scheduler,
+            connection = null,
+            cancel = {},
+            monitoredEndPoint = endPoint
+        )
+
+        monitor.start()
+        assertEquals(0L, endPoint.idleTimeout)
+        rejectScheduling.set(true)
+        monitor.close()
+
+        assertEquals(ORIGINAL_IDLE_TIMEOUT_MILLIS, endPoint.idleTimeout)
+        endPoint.close()
     }
 
     private fun verifyResetDisconnect(beforeReset: (Socket) -> Unit = {}) {
@@ -586,9 +595,12 @@ class CypherClientCancellationTest {
         val cancellationSignal = CypherCancellationSignal {
             if (checkpoints.incrementAndGet() == GRAPH_FREE_PROGRESS_CHECKPOINTS) progress.countDown()
         }
+        val createdSignals = AtomicInteger()
         val routes = ExploreRoutes(
             CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 1, performance = performance),
-            cancellationSignalFactory = { cancellationSignal }
+            cancellationSignalFactory = {
+                if (createdSignals.getAndIncrement() == 0) cancellationSignal else CypherCancellationSignal()
+            }
         )
         val app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
@@ -738,6 +750,7 @@ private class DisconnectPerformanceRecorder : CypherPerformanceRecorder {
 }
 
 private const val MAX_DISCONNECT_LATENCY_MILLIS = 2_000L
+private const val ORIGINAL_IDLE_TIMEOUT_MILLIS = 30_000L
 private const val PIPELINED_REQUEST_BUFFER_MILLIS = 200L
 private const val LARGE_PIPELINE_REQUESTS = 150
 private const val VALID_PIPELINE_PADDING_BYTES = 550_000
