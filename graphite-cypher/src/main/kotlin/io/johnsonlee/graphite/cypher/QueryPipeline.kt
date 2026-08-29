@@ -14,6 +14,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
@@ -23,6 +24,7 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
+import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
@@ -1994,8 +1996,11 @@ class QueryPipeline private constructor(
 
     private fun methodCandidates(): Sequence<Any> {
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val cancellationConsumer = tracker?.let { activeTracker ->
+            MethodMetadataScanConsumer { activeTracker.checkCancelled() }
+        }
         return sources.asSequence().flatMap { source ->
-            val methods = tracker?.let { source.graph.methods(MethodPattern(), it) }
+            val methods = cancellationConsumer?.let { source.graph.methods(MethodPattern(), it) }
                 ?: source.graph.methods(MethodPattern())
             methods.map { method -> MethodValue(source.id.takeIf { qualified }, method) }
         }

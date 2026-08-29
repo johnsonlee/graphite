@@ -5,11 +5,11 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.StreamingMethodLookup
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -35,14 +35,16 @@ class MethodQueryExecutorTest {
     }
 
     @Test
-    fun `Method metadata scans consume work instead of bypassing a tiny budget`() {
+    fun `Method metadata scans do not consume graph work budget`() {
         val methods = (0..2).map { method("com.example.Generated", "method$it", emptyList(), "void") }
         val graph = SyntheticMethodIndexGraph(methods)
         val executor = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
 
-        assertFailsWith<CypherBudgetExceededException> {
-            executor.execute("MATCH (m:Method) WHERE m.name = 'neverPresent' RETURN m.signature LIMIT 1")
-        }
+        val result = executor.execute(
+            "MATCH (m:Method) WHERE m.name = 'neverPresent' RETURN m.signature LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
         assertEquals(3L, graph.methodCount())
     }
 
@@ -191,7 +193,7 @@ class MethodQueryExecutorTest {
 
     private class SyntheticMethodIndexGraph(
         private val indexedMethods: List<MethodDescriptor>
-    ) : Graph by DefaultGraph.Builder().build() {
+    ) : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
         override fun methodCount(): Long = indexedMethods.size.toLong()
 
         override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
@@ -199,9 +201,9 @@ class MethodQueryExecutorTest {
 
         override fun methods(
             pattern: MethodPattern,
-            workConsumer: GraphWorkConsumer
+            scanConsumer: MethodMetadataScanConsumer
         ): Sequence<MethodDescriptor> = indexedMethods.asSequence()
-            .onEach { workConsumer.consume() }
+            .onEach { scanConsumer.inspect() }
             .filter(pattern::matches)
 
         override fun <T : Node> nodes(type: Class<T>): Sequence<T> =

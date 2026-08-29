@@ -60,6 +60,32 @@ fun interface GraphWorkConsumer {
     fun consume()
 }
 
+/** Polls request cancellation while a storage backend scans method metadata. */
+fun interface MethodMetadataScanConsumer {
+    fun inspect()
+}
+
+/**
+ * Optional method-metadata capability for lazy, cancellation-aware storage scans.
+ *
+ * This stays outside [Graph] so adding cancellable method discovery does not add JVM
+ * interface methods that older third-party [Graph] implementations would be forced to
+ * implement at runtime. Method metadata is not graph work, so the callback deliberately
+ * has a type distinct from [GraphWorkConsumer].
+ */
+interface StreamingMethodLookup {
+    fun methods(
+        pattern: MethodPattern,
+        scanConsumer: MethodMetadataScanConsumer
+    ): Sequence<MethodDescriptor>
+
+    fun methodSlice(
+        pattern: MethodPattern,
+        limit: Int,
+        scanConsumer: MethodMetadataScanConsumer
+    ): List<MethodDescriptor>? = null
+}
+
 /** Optional string lookup capability that exposes its internal work to callers. */
 interface WorkAwareStringPropertyLookup : StringPropertyLookup {
     fun <T : Node> nodesByStringProperty(
@@ -224,21 +250,6 @@ interface Graph {
     fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
 
     /**
-     * Return a bounded method slice while charging every descriptor inspected by the lookup.
-     * Implementations that cannot expose their internal scan should return null so callers can
-     * fall back to [methods] with an explicit work consumer.
-     */
-    fun methodSlice(
-        pattern: MethodPattern,
-        limit: Int,
-        workConsumer: GraphWorkConsumer
-    ): List<MethodDescriptor>? = null
-
-    /** Scan method metadata while charging each descriptor before applying [pattern]. */
-    fun methods(pattern: MethodPattern, workConsumer: GraphWorkConsumer): Sequence<MethodDescriptor> =
-        methods(MethodPattern()).onEach { workConsumer.consume() }.filter(pattern::matches)
-
-    /**
      * Get the underlying values for an enum constant.
      * Enum constructors can have multiple user-defined arguments.
      *
@@ -315,6 +326,28 @@ interface Graph {
     fun classOverview(limit: Int): ClassOverview? = null
 
 }
+
+/**
+ * Scan method metadata while polling cancellation before applying [pattern].
+ * Storage backends can keep this lazy by implementing [StreamingMethodLookup].
+ */
+fun Graph.methods(
+    pattern: MethodPattern,
+    scanConsumer: MethodMetadataScanConsumer
+): Sequence<MethodDescriptor> = (this as? StreamingMethodLookup)
+    ?.methods(pattern, scanConsumer)
+    ?: methods(MethodPattern()).onEach { scanConsumer.inspect() }.filter(pattern::matches)
+
+/**
+ * Use a bounded method lookup only when the backend can poll cancellation during its scan.
+ * Returning null lets callers fall back to the streaming [methods] extension.
+ */
+fun Graph.methodSlice(
+    pattern: MethodPattern,
+    limit: Int,
+    scanConsumer: MethodMetadataScanConsumer
+): List<MethodDescriptor>? = (this as? StreamingMethodLookup)
+    ?.methodSlice(pattern, limit, scanConsumer)
 
 /**
  * Use a storage-aware string lookup when [Graph] also implements

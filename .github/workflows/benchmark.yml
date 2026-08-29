@@ -229,6 +229,75 @@ jobs:
             --status benchmark-results/explorer-status.json
         fi
 
+    - name: Benchmark paired method discovery migration
+      run: |
+        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        test -n "${BASE_JAR}"
+        test -n "${CANDIDATE_JAR}"
+        GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
+        METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json)
+        java -jar "${BASE_JAR}" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.*' "${METHOD_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARG} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility.txt" \
+          -rff "${PWD}/benchmark-results/base-method-compatibility.json"
+        java -jar "${CANDIDATE_JAR}" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.*' "${METHOD_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_ARG} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility.txt" \
+          -rff "${PWD}/benchmark-results/candidate-method-compatibility.json"
+
+    - name: Gate paired method discovery migration
+      run: |
+        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.'
+        for FILE in \
+          benchmark-results/base-method-compatibility.json \
+          benchmark-results/candidate-method-compatibility.json; do
+          jq -e --arg expected "${EXPECTED}" '
+            length == 3 and
+            ([.[].params.graphCount] | unique | sort) == ["17", "36", "4"] and
+            all(.[];
+              (.benchmark | startswith($expected)) and
+              .mode == "ss" and .primaryMetric.score > 0 and
+              .secondaryMetrics.processCpuNanos.score > 0 and
+              .secondaryMetrics.residentSetAfterBytes.score > 0 and
+              .secondaryMetrics.residentSetDeltaBytes.score >= 0 and
+              .secondaryMetrics.concurrentRequests.score > 0 and
+              .secondaryMetrics.concurrentWallNanos.score > 0 and
+              .secondaryMetrics.tailLatencyNanos.score > 0
+            )' "${FILE}" >/dev/null
+        done
+
+        sort -u benchmark-results/base-method-compatibility.txt \
+          > benchmark-results/base-method-compatibility.sorted.txt
+        sort -u benchmark-results/candidate-method-compatibility.txt \
+          > benchmark-results/candidate-method-compatibility.sorted.txt
+        test "$(wc -l < benchmark-results/base-method-compatibility.sorted.txt)" -eq 3
+        test "$(wc -l < benchmark-results/candidate-method-compatibility.sorted.txt)" -eq 3
+        diff -u \
+          benchmark-results/base-method-compatibility.sorted.txt \
+          benchmark-results/candidate-method-compatibility.sorted.txt
+
+        node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          --base benchmark-results/base-method-compatibility.json \
+          --candidate benchmark-results/candidate-method-compatibility.json \
+          --threshold 25 \
+          --threshold-only \
+          --title 'Method discovery REST-to-Cypher migration' \
+          --report benchmark-results/method-compatibility-report.md \
+          --status benchmark-results/method-compatibility-status.json
+
+        cat benchmark-results/method-compatibility-report.md \
+          >> benchmark-results/explorer-report.md
+        jq -s '{
+          passed: all(.[]; .passed == true),
+          errors: (map(.errors // []) | add),
+          rows: (map(.rows // []) | add)
+        }' \
+          benchmark-results/explorer-status.json \
+          benchmark-results/method-compatibility-status.json \
+          > benchmark-results/explorer-status.combined.json
+        mv benchmark-results/explorer-status.combined.json benchmark-results/explorer-status.json
+
     - name: Upload Explorer results
       if: always()
       uses: actions/upload-artifact@v7

@@ -277,12 +277,14 @@ and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
 
 Cypher endpoints admit at most four executing queries by default and stop a
-query after 1,000,000 graph work units. Candidate inspections and materialized
+query after 1,000,000 graph work units. Graph-node candidate inspections and materialized
 path elements consume work units. Configure these bounds with
 `--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
+Streaming `Method` metadata reads poll cancellation but do not spend graph work
+units, so complete multi-graph method discovery does not depend on descriptor count.
 The `=~` operator preserves Java `Pattern` syntax, including backreferences,
 look-around, possessive quantifiers, character-class intersections, and Java's
 default line-terminator behavior. Budgeted execution polls cancellation through

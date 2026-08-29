@@ -65,6 +65,63 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `Method discovery stays correct across 4 17 and 36 graphs with a tiny graph budget`() {
+        for (graphCount in listOf(4, 17, 36)) {
+            val graphs = (0 until graphCount).map { index ->
+                val graph = DefaultGraph.Builder().apply {
+                    addMethod(
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Shared"),
+                            "early",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        )
+                    )
+                    addMethod(
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Service$index"),
+                            "late$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        )
+                    )
+                }.build()
+                CypherGraph("graph-$index", graph)
+            }
+            val executor = CrossGraphCypherExecutor(graphs, CypherExecutionBudget(maxWorkUnits = 1))
+
+            assertTrue(
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'missing' RETURN m.signature LIMIT 1"
+                ).rows.isEmpty()
+            )
+            assertEquals(
+                "graph-0",
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'early' RETURN graphId(m) AS graph LIMIT 1"
+                ).rows.single()["graph"]
+            )
+            assertEquals(
+                "graph-${graphCount - 1}",
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'late${graphCount - 1}' " +
+                        "RETURN graphId(m) AS graph LIMIT 1"
+                ).rows.single()["graph"]
+            )
+            assertTrue(
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'missing-a' OR m.name = 'missing-b' OR " +
+                        "m.name = 'missing-c' RETURN m.signature LIMIT 1"
+                ).rows.isEmpty()
+            )
+            assertEquals(
+                graphCount * 2L,
+                executor.execute("MATCH (m:Method) RETURN count(m) AS total").rows.single()["total"]
+            )
+        }
+    }
+
+    @Test
     fun `shared execution context cancellation stops a cross graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
