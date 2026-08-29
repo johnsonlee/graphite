@@ -66,6 +66,7 @@ internal class OpenApiSpecBuilder {
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
                         "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Graph not loaded")
                     )
                 ),
@@ -80,6 +81,7 @@ internal class OpenApiSpecBuilder {
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
                         "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Graph not loaded")
                     )
                 )
@@ -105,6 +107,7 @@ internal class OpenApiSpecBuilder {
                         "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
                         "400" to response("Missing or invalid query"),
                         "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Requested graph not loaded")
                     )
                 ),
@@ -125,6 +128,7 @@ internal class OpenApiSpecBuilder {
                         "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
                         "400" to response("Missing or invalid query"),
                         "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Requested graph not loaded")
                     )
                 )
@@ -260,7 +264,8 @@ internal class OpenApiSpecBuilder {
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded")
+                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected")
                     )
                 ),
                 "post" to operation(
@@ -272,7 +277,8 @@ internal class OpenApiSpecBuilder {
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded")
+                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "503" to response("Cypher cancelled while the client remained connected")
                     )
                 )
             ),

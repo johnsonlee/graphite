@@ -522,8 +522,17 @@ internal class ExploreRoutes(
                     try {
                         val error = unwrapCompletionFailure(outcome.exceptionOrNull())
                         if (error == null) {
-                            respond(outcome.getOrThrow(), cancellationSignal)
-                        } else if (error !is CypherQueryCancelledException) {
+                            try {
+                                respond(outcome.getOrThrow(), cancellationSignal)
+                            } catch (cancelled: CypherQueryCancelledException) {
+                                if (!clientCancellation.isClientDisconnected) {
+                                    respondCypherError(ctx, cancelled)
+                                }
+                            }
+                        } else if (
+                            error !is CypherQueryCancelledException ||
+                            !clientCancellation.isClientDisconnected
+                        ) {
                             respondCypherError(ctx, error)
                         }
                     } finally {
@@ -689,10 +698,12 @@ internal class ExploreRoutes(
         val code = when (error) {
             is CypherConcurrencyLimitException -> "cypher_concurrency_limit"
             is CypherBudgetExceededException -> "cypher_work_budget_exceeded"
+            is CypherQueryCancelledException -> "cypher_query_cancelled"
             else -> "cypher_query_failed"
         }
         val status = when (code) {
             "cypher_query_failed" -> HTTP_BAD_REQUEST
+            "cypher_query_cancelled" -> HTTP_SERVICE_UNAVAILABLE
             else -> HTTP_TOO_MANY_REQUESTS
         }
         if (error is CypherConcurrencyLimitException) ctx.header("Retry-After", "1")
@@ -1155,6 +1166,7 @@ internal class ExploreRoutes(
         private const val HTTP_NOT_FOUND = 404
         private const val HTTP_PAYLOAD_TOO_LARGE = 413
         private const val HTTP_TOO_MANY_REQUESTS = 429
+        private const val HTTP_SERVICE_UNAVAILABLE = 503
 
         private const val DEFAULT_EDGE_LIMIT = 200
         private const val DEFAULT_RESOURCE_LIMIT = 100

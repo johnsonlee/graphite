@@ -2,8 +2,6 @@ package io.johnsonlee.graphite.cli
 
 import io.javalin.http.Context
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
-import jakarta.servlet.AsyncEvent
-import jakarta.servlet.AsyncListener
 import org.eclipse.jetty.io.AbstractEndPoint
 import org.eclipse.jetty.io.Connection
 import org.eclipse.jetty.io.SocketChannelEndPoint
@@ -20,6 +18,7 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.nio.ByteBuffer
 import java.nio.channels.SocketChannel
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -27,10 +26,13 @@ import java.util.concurrent.atomic.AtomicReference
 internal class CypherClientCancellation private constructor(
     private val cancellationSignal: CypherCancellationSignal,
     private val cancelTask: AtomicReference<(() -> Unit)?>,
+    private val disconnected: AtomicBoolean,
     private val connection: Connection,
     private val connectionListener: Connection.Listener,
     private val disconnectMonitor: DisconnectMonitor
 ) : Closeable {
+
+    val isClientDisconnected: Boolean get() = disconnected.get()
 
     fun bind(task: CypherQueryTask<*>) {
         cancelTask.set(task::cancel)
@@ -38,8 +40,11 @@ internal class CypherClientCancellation private constructor(
     }
 
     override fun close() {
-        disconnectMonitor.close()
-        connection.removeEventListener(connectionListener)
+        try {
+            disconnectMonitor.close()
+        } finally {
+            connection.removeEventListener(connectionListener)
+        }
     }
 
     companion object {
@@ -53,12 +58,13 @@ internal class CypherClientCancellation private constructor(
             onBackpressure: () -> Unit
         ): CypherClientCancellation {
             val cancelTask = AtomicReference<(() -> Unit)?>(null)
+            val disconnected = AtomicBoolean()
             val cancel: () -> Unit = {
+                disconnected.set(true)
                 cancellationSignal.cancel()
                 cancelTask.get()?.invoke()
                 Unit
             }
-            val asyncListener = CypherCancellationAsyncListener(cancel)
             val channel = Request.getBaseRequest(ctx.req()).httpChannel
             val connection = channel.connection
             val connectionListener = CypherCancellationConnectionListener(cancel)
@@ -69,28 +75,28 @@ internal class CypherClientCancellation private constructor(
                 onBackpressure
             )
 
-            ctx.req().asyncContext.addListener(asyncListener)
             connection.addEventListener(connectionListener)
-            disconnectMonitor.start()
+            try {
+                disconnectMonitor.start()
+            } catch (error: RejectedExecutionException) {
+                try {
+                    disconnectMonitor.close()
+                } finally {
+                    connection.removeEventListener(connectionListener)
+                }
+                throw error
+            }
 
             return CypherClientCancellation(
                 cancellationSignal,
                 cancelTask,
+                disconnected,
                 connection,
                 connectionListener,
                 disconnectMonitor
             )
         }
     }
-}
-
-internal class CypherCancellationAsyncListener(
-    private val cancel: () -> Unit
-) : AsyncListener {
-    override fun onComplete(event: AsyncEvent) = Unit
-    override fun onStartAsync(event: AsyncEvent) = event.asyncContext.addListener(this)
-    override fun onError(event: AsyncEvent) = cancel()
-    override fun onTimeout(event: AsyncEvent) = cancel()
 }
 
 internal class CypherCancellationConnectionListener(
@@ -104,9 +110,11 @@ internal class DisconnectMonitor(
     private val scheduler: Scheduler,
     private val connection: HttpConnection?,
     private val cancel: () -> Unit,
-    private val onBackpressure: () -> Unit = {}
+    private val onBackpressure: () -> Unit = {},
+    monitoredEndPoint: AbstractEndPoint? = null
 ) : Runnable, Closeable {
-    private val endPoint = connection?.endPoint as? AbstractEndPoint
+    private val endPoint = monitoredEndPoint ?: connection?.endPoint as? AbstractEndPoint
+    private val connectionIdleTimeout = endPoint?.idleTimeout
     private val lock = Any()
     private val ownsReadInterest = AtomicBoolean()
     @Volatile
@@ -201,7 +209,13 @@ internal class DisconnectMonitor(
         return expandedCapacity - bufferedBytes
     }
 
-    fun start() = schedule(DISCONNECT_READ_INTEREST_DELAY_MILLIS)
+    fun start() {
+        // A Cypher request can legitimately perform no socket I/O for longer than Jetty's
+        // default 30-second connection idle timeout. The read interest below still detects
+        // a real peer disconnect, so suspend only the idle clock while this request is active.
+        endPoint?.idleTimeout = 0L
+        schedule(DISCONNECT_READ_INTEREST_DELAY_MILLIS)
+    }
 
     override fun run() {
         synchronized(lock) {
@@ -236,6 +250,21 @@ internal class DisconnectMonitor(
             ownsReadInterest.compareAndSet(true, false)
         }
         if (clearReadInterest) endPoint?.fillInterest?.onFail(DISCONNECT_MONITOR_CLOSED)
+        restoreConnectionIdleTimeout()
+    }
+
+    @Suppress("SwallowedException")
+    private fun restoreConnectionIdleTimeout() {
+        val idleTimeout = connectionIdleTimeout ?: return
+        val monitoredEndPoint = endPoint ?: return
+        monitoredEndPoint.notIdle()
+        try {
+            // Jetty updates the timeout value before scheduling its next idle check. A shutting-down
+            // scheduler can reject only that check; cleanup must still complete with the value restored.
+            monitoredEndPoint.idleTimeout = idleTimeout
+        } catch (_: RejectedExecutionException) {
+            Unit
+        }
     }
 
     private fun schedule(delayMillis: Long) {

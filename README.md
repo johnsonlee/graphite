@@ -294,10 +294,14 @@ The `=~` operator preserves Java `Pattern` syntax, including backreferences,
 look-around, possessive quantifiers, character-class intersections, and Java's
 default line-terminator behavior. Budgeted execution polls cancellation through
 the matcher's input without changing the accepted pattern language.
-An executing query is cancelled when the server observes a TCP reset, servlet timeout,
-or Jetty connection error. A clean input FIN is not treated as cancellation: TCP exposes
-both a full client `close()` and a valid request-side `SHUT_WR` as the same input
-half-close until the server attempts to write the response.
+An executing query is cancelled only when the server observes an actual connection close,
+TCP reset, or socket error. Jetty's connection idle clock is suspended while Cypher is
+executing, because a query can legitimately perform no socket I/O for longer than the
+connector's default 30-second idle timeout. A clean input FIN is not treated as cancellation:
+TCP exposes both a full client `close()` and a valid request-side `SHUT_WR` as the same input
+half-close until the server attempts to write the response. A server-side cancellation on a
+still-connected client returns HTTP 503 with `code` set to `cypher_query_cancelled`; it is
+never reported as an empty HTTP 200 response.
 
 Start the server with `--metrics` to expose Prometheus output at `/metrics`.
 Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.

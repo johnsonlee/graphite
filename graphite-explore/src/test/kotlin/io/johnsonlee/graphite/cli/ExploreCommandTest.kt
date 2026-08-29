@@ -1510,6 +1510,7 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val responses = post["responses"] as Map<String, Any?>
         assertTrue(responses.containsKey("429"))
+        assertTrue(responses.containsKey("503"))
     }
 
     @Test
@@ -3507,6 +3508,19 @@ class ExploreCommandTest {
         val (code, body) = post("/api/cypher", """{"query": "MATCH (n:IntConstant) RETURN n.value"}""")
         assertEquals(200, code, "Expected 200, body: $body")
         assertTrue(body.contains("columns"), "Response should contain 'columns', body: $body")
+    }
+
+    @Test
+    fun `POST api cypher returns a structured empty result when nothing matches`() {
+        val (code, body) = post(
+            "/api/cypher",
+            """{"query":"MATCH (n:IntConstant) WHERE n.value = -1 RETURN n.value"}"""
+        )
+
+        assertEquals(200, code, body)
+        val result: Map<String, Any?> = parseJson(body)
+        assertEquals(0.0, result[API_FIELD_ROW_COUNT])
+        assertEquals(emptyList<Any>(), result[API_FIELD_ROWS])
     }
 
     @Test
