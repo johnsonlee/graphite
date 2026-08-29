@@ -746,7 +746,9 @@ jobs:
         - shard: synthetic-1
           real: false
           correctness: false
-          parameters: '-p graphCount=1'
+          # The sub-millisecond warm path is still tier-compiling after the class-level
+          # two-iteration warmup. Stabilize it before applying the 15% relative gate.
+          parameters: '-p graphCount=1 -wi 5 -i 6'
           filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
         - shard: synthetic-4
           real: false
