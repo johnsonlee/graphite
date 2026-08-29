@@ -10,6 +10,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class MethodQueryExecutorTest {
@@ -82,6 +83,71 @@ class MethodQueryExecutorTest {
 
         val value = result.rows.single()["m"] as Map<*, *>
         assertEquals(indexedOnly.signature, value["signature"])
+    }
+
+    @Test
+    fun `Method virtual nodes expose a stable Cypher schema`() {
+        val indexedOnly = method("com.example.Schema", "load", listOf("java.lang.String"), "int")
+        val graph = DefaultGraph.Builder().apply { addMethod(indexedOnly) }.build()
+        val executor = CypherExecutor(graph)
+
+        val result = executor.execute(
+            "MATCH (m:Method {signature: '${indexedOnly.signature}'}) " +
+                "RETURN id(m) AS id, elementId(m) AS elementId, labels(m) AS labels, " +
+                "keys(m) AS keys, properties(m) AS properties LIMIT 1"
+        )
+        val row = result.rows.single()
+
+        assertEquals(indexedOnly.signature, row["id"])
+        assertEquals("Method:${indexedOnly.signature}", row["elementId"])
+        assertEquals(listOf("Method"), row["labels"])
+        assertEquals(
+            listOf("signature", "class", "name", "parameter_types", "return_type"),
+            row["keys"]
+        )
+        assertEquals(
+            linkedMapOf(
+                "signature" to indexedOnly.signature,
+                "class" to "com.example.Schema",
+                "name" to "load",
+                "parameter_types" to listOf("java.lang.String"),
+                "return_type" to "int"
+            ),
+            row["properties"]
+        )
+        assertTrue(executor.execute("MATCH (m:Method) RETURN m LIMIT 0").rows.isEmpty())
+    }
+
+    @Test
+    fun `Method index fast path declines unsupported AST shapes`() {
+        val graph = DefaultGraph.Builder().build()
+        val sources = listOf(CypherGraph("default", graph))
+        fun tryFastPath(cypher: String): CypherResult? = MethodQueryExecutor.tryExecute(
+            CypherDslAdapter.parse(cypher),
+            sources,
+            qualified = false,
+            checkCancelled = {},
+            workTracker = null
+        )
+
+        assertNull(tryFastPath("RETURN 1"))
+        assertNull(tryFastPath("MATCH (m:Method) WHERE true RETURN m"))
+        assertNull(tryFastPath("MATCH (m:Method) WHERE 1 = 1 RETURN m"))
+        assertNull(tryFastPath("MATCH (m:Method {name: other}) RETURN m"))
+        assertNull(
+            MethodQueryExecutor.tryExecute(
+                listOf(
+                    CypherClause.Match(
+                        listOf(CypherPattern(listOf(PatternElement.RelationshipPattern())))
+                    ),
+                    CypherClause.Return(listOf(ReturnItem(CypherExpr.Literal(1))))
+                ),
+                sources,
+                qualified = false,
+                checkCancelled = {},
+                workTracker = null
+            )
+        )
     }
 
     @Test
