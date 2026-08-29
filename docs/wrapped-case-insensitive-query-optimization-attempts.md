@@ -352,3 +352,33 @@ decode overhead: lowercase allocation alone is not the remaining bottleneck.
 **Conclusion:** rejected and implementation removed. Phase-two scheduling has
 a clearer avoidable stall: fixed-size waves leave a worker idle while waiting
 for the slowest graph in the current wave.
+
+### 2026-08-29 - Attempt 013: Work-conserving provenance join
+
+Phase one remains source-ordered and wave-bounded because later graph work can
+become unnecessary once the global limit is known. Phase two is different:
+every graph must finish provenance discovery. It now submits all remaining
+graph tasks to the same fixed two-worker executor at once. Completion of any
+task immediately admits the next graph, eliminating the barrier between fixed
+`[0,1]`, `[2,3]` waves without increasing concurrency. A deterministic test
+holds one provenance task open and proves that a third graph starts as soon as
+the other worker becomes free.
+
+One-fork cold real-fixture checks now clear the fixed pre-PR-95 10x baseline in
+all eight distributions:
+
+| Distribution | Candidate | Fixed-baseline speedup |
+|---|---:|---:|
+| broad | `1.062 s` | `13.11x` |
+| dense | `0.919 s` | `15.25x` |
+| early | `1.102 s` | `10.44x` |
+| bimodal | `1.139 s` | `14.30x` |
+| late | `1.181 s` | `10.75x` |
+| middle | `1.190 s` | `12.03x` |
+| skewed | `1.072 s` | `14.90x` |
+| zero hit | `0.536 s` | `28.37x` |
+
+**Conclusion:** retained. This is a bounded fork/join schedule with parallelism
+two, not an `NCPU` pool. It improves load balance while preserving exact work
+accounting, cancellation joins, source-selected row order, and complete
+provenance.

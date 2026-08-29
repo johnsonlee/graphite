@@ -26,7 +26,9 @@ import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
@@ -532,6 +534,67 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("billing", "orders"), graphIds(result.rows.first()))
         assertEquals(listOf("orders"), graphIds(result.rows.last()))
         assertEquals(2, maximumActive.get())
+    }
+
+    @Test
+    fun `provenance scans keep workers busy across more graphs than workers`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val releaseSlowGraph = CountDownLatch(1)
+        val slowGraphStarted = CountDownLatch(1)
+        val thirdGraphStarted = CountDownLatch(1)
+        val returnType = TypeDescriptor("void")
+
+        fun scheduledGraph(callerClass: String, afterFirst: (() -> Unit)? = null): Graph {
+            val node = CallSiteNode(
+                NodeId(1),
+                MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+            val backing = graph(node)
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    @Suppress("UNCHECKED_CAST")
+                    return sequence {
+                        yield(node as T)
+                        afterFirst?.invoke()
+                    }
+                }
+            }
+        }
+
+        val queryThread = Executors.newSingleThreadExecutor()
+        val future = queryThread.submit<CypherResult> {
+            executor(
+                "slow" to scheduledGraph("example.TargetA") {
+                    slowGraphStarted.countDown()
+                    check(releaseSlowGraph.await(5, TimeUnit.SECONDS))
+                },
+                "quick" to scheduledGraph("example.TargetB"),
+                "third" to scheduledGraph("example.TargetA") { thirdGraphStarted.countDown() }
+            ).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' OR " +
+                    "n.callee_class CONTAINS 'Target' " +
+                    "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+            )
+        }
+        try {
+            assertTrue(slowGraphStarted.await(5, TimeUnit.SECONDS))
+            assertTrue(thirdGraphStarted.await(2, TimeUnit.SECONDS))
+            releaseSlowGraph.countDown()
+            val result = future.get(5, TimeUnit.SECONDS)
+            assertEquals(listOf("example.TargetA"), result.rows.map { it["caller"] })
+            assertEquals(listOf("slow", "third"), graphIds(result.rows.single()))
+        } finally {
+            releaseSlowGraph.countDown()
+            queryThread.shutdownNow()
+        }
     }
 
     @Test

@@ -852,18 +852,16 @@ class QueryPipeline private constructor(
         if (rows.size >= limit) {
             val selected = rows.keys.toSet()
             val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
-            scanners.chunked(directStringParallelism).forEach { wave ->
-                val hits = runDirectStringTasks(wave.map { scanner ->
-                    { scanner.collectRemainingSelectedRows(selectedMatcher) }
-                })
-                hits.forEachIndexed { index, visibleRows ->
-                    val graphId = wave[index].source.id
-                    visibleRows.forEach { visible ->
-                        val row = rows.getValue(visible)
-                        @Suppress("UNCHECKED_CAST")
-                        val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
-                        row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
-                    }
+            val hits = runDirectStringTasks(scanners.map { scanner ->
+                { scanner.collectRemainingSelectedRows(selectedMatcher) }
+            })
+            hits.forEachIndexed { index, visibleRows ->
+                val graphId = scanners[index].source.id
+                visibleRows.forEach { visible ->
+                    val row = rows.getValue(visible)
+                    @Suppress("UNCHECKED_CAST")
+                    val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
+                    row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
                 }
             }
         }
