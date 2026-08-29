@@ -4,6 +4,8 @@ import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.ControlFlowEdge
+import io.johnsonlee.graphite.core.ControlFlowKind
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.DoubleConstant
@@ -27,6 +29,8 @@ import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
@@ -560,6 +564,82 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `relationship types accept only documented spellings`() {
+        val source = IntConstant(NodeId.next(), 1)
+        val target = IntConstant(NodeId.next(), 2)
+        val relationshipGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+            .addEdge(CallEdge(source.id, target.id, isVirtual = false))
+            .addEdge(TypeEdge(source.id, target.id, TypeRelation.EXTENDS))
+            .addEdge(ControlFlowEdge(source.id, target.id, ControlFlowKind.SEQUENTIAL))
+            .addEdge(ResourceEdge(source.id, target.id, ResourceRelation.LOOKUP))
+            .build()
+        val relationshipExecutor = CypherExecutor(relationshipGraph)
+        val accepted = mapOf(
+            "DATAFLOW" to "DATAFLOW",
+            "DATA_FLOW" to "DATAFLOW",
+            "data_flow" to "DATAFLOW",
+            "CALL" to "CALL",
+            "TYPE" to "TYPE",
+            "CONTROL_FLOW" to "CONTROL_FLOW",
+            "CONTROLFLOW" to "CONTROL_FLOW",
+            "RESOURCE" to "RESOURCE_LOOKUP",
+            "RESOURCE_LOOKUP" to "RESOURCE_LOOKUP"
+        )
+
+        accepted.forEach { (requested, actual) ->
+            val result = relationshipExecutor.execute(
+                "MATCH (a:IntConstant)-[r:$requested]->(b:IntConstant) RETURN type(r) AS type"
+            )
+            assertEquals(listOf(mapOf("type" to actual)), result.rows, requested)
+        }
+
+        val constrainedCall = relationshipExecutor.execute(
+            "MATCH (a:IntConstant)-[r:CALL {virtual: false, dynamic: false}]->(b:IntConstant) " +
+                "RETURN type(r) AS type"
+        )
+        assertEquals(listOf(mapOf("type" to "CALL")), constrainedCall.rows)
+
+        listOf("D_A_T_A_F_L_O_W", "C_A_L_L", "T_Y_P_E", "C_O_N_T_R_O_L_F_L_O_W", "RESOURCE_EDGE")
+            .forEach { malformed ->
+                val result = relationshipExecutor.execute(
+                    "MATCH (a:IntConstant)-[r:$malformed]->(b:IntConstant) RETURN type(r) AS type"
+                )
+                assertTrue(result.rows.isEmpty(), malformed)
+            }
+
+        val resourceTypes = listOf(
+            "RESOURCE_OPEN" to ResourceRelation.OPENS,
+            "RESOURCE_LOAD" to ResourceRelation.LOADS,
+            "RESOURCE_BUNDLE_CANDIDATE" to ResourceRelation.BUNDLE_CANDIDATE,
+            "RESOURCE_LOOKUP" to ResourceRelation.LOOKUP,
+            "RESOURCE_KEYS" to ResourceRelation.ENUMERATES
+        )
+        val resourceSource = IntConstant(NodeId.next(), -1)
+        val resourceTargets = resourceTypes.mapIndexed { index, _ -> IntConstant(NodeId.next(), index) }
+        val resourceGraph = DefaultGraph.Builder()
+            .addNode(resourceSource)
+            .apply {
+                resourceTargets.forEachIndexed { index, target ->
+                    addNode(target)
+                    addEdge(ResourceEdge(resourceSource.id, target.id, resourceTypes[index].second))
+                }
+            }
+            .build()
+        val resourceExecutor = CypherExecutor(resourceGraph)
+
+        resourceTypes.forEachIndexed { index, (requested, _) ->
+            val result = resourceExecutor.execute(
+                "MATCH (a:IntConstant)-[r:$requested]->(b:IntConstant) " +
+                    "WHERE b.value = $index RETURN type(r) AS type"
+            )
+            assertEquals(listOf(mapOf("type" to requested)), result.rows, requested)
+        }
+    }
+
+    @Test
     fun `filtered single hop limit streams complete matches before stopping`() {
         var outgoingCalls = 0
         val orderedGraph = object : Graph by graph {
@@ -688,6 +768,105 @@ class CypherExecutorTest {
         )
 
         assertEquals(listOf(mapOf("index" to 1)), result.rows)
+    }
+
+    @Test
+    fun `filtered relationship order by retains only skip plus limit rows`() {
+        val owner = TypeDescriptor("com.example.StreamingOrder")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 42)
+        val targets = listOf(
+            ParameterNode(NodeId.next(), 0, valueType, method),
+            ParameterNode(NodeId.next(), 2, valueType, method),
+            ParameterNode(NodeId.next(), 1, valueType, method)
+        )
+        val base = DefaultGraph.Builder()
+            .addNode(source)
+            .apply { targets.forEach(::addNode) }
+            .build()
+        var consumedEdges = 0
+        val guarded = object : Graph by base {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T> =
+                if (id == source.id && type == DataFlowEdge::class.java) {
+                    sequence {
+                        repeat(100_000) { index ->
+                            consumedEdges++
+                            val target = targets[index % targets.size]
+                            yield(DataFlowEdge(source.id, target.id, DataFlowKind.PARAMETER_PASS) as T)
+                        }
+                    }
+                } else {
+                    emptySequence()
+                }
+        }
+
+        val result = CypherExecutor(guarded).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN DISTINCT b.index AS index " +
+                "ORDER BY index DESC SKIP 1 LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("index" to 1)), result.rows)
+        assertEquals(100_000, consumedEdges, "ORDER BY must inspect every filtered relationship match")
+    }
+
+    @Test
+    fun `filtered relationship top k preserves expression null and multi-field ordering`() {
+        val owner = TypeDescriptor("com.example.StreamingOrderSemantics")
+        val valueType = TypeDescriptor("int")
+        val method = MethodDescriptor(owner, "run", emptyList(), TypeDescriptor("void"))
+        val source = IntConstant(NodeId.next(), 42)
+        val firstNullRank = ParameterNode(NodeId.next(), 1, valueType, method)
+        val secondNullRank = ParameterNode(NodeId.next(), 1, valueType, method)
+        val zeroRank = ParameterNode(NodeId.next(), 0, valueType, method)
+        val twoRank = ParameterNode(NodeId.next(), 2, valueType, method)
+        val orderedGraph = DefaultGraph.Builder()
+            .addNode(source)
+            .addNode(firstNullRank)
+            .addNode(secondNullRank)
+            .addNode(zeroRank)
+            .addNode(twoRank)
+            .addEdge(DataFlowEdge(source.id, firstNullRank.id, DataFlowKind.PARAMETER_PASS))
+            .addEdge(DataFlowEdge(source.id, secondNullRank.id, DataFlowKind.PARAMETER_PASS))
+            .addEdge(DataFlowEdge(source.id, zeroRank.id, DataFlowKind.PARAMETER_PASS))
+            .addEdge(DataFlowEdge(source.id, twoRank.id, DataFlowKind.PARAMETER_PASS))
+            .build()
+
+        val result = CypherExecutor(orderedGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN b.index AS index, b.id AS id " +
+                "ORDER BY CASE WHEN index = 1 THEN null ELSE index END ASC, id DESC SKIP 1 LIMIT 2"
+        )
+
+        assertEquals(
+            listOf(
+                mapOf("index" to 1, "id" to firstNullRank.id.value),
+                mapOf("index" to 0, "id" to zeroRank.id.value)
+            ),
+            result.rows
+        )
+
+        val hiddenPropertyOrder = CypherExecutor(orderedGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN b.id AS id " +
+                "ORDER BY b.index ASC LIMIT 2"
+        )
+        assertEquals(
+            listOf(
+                mapOf("id" to zeroRank.id.value),
+                mapOf("id" to firstNullRank.id.value)
+            ),
+            hiddenPropertyOrder.rows
+        )
+
+        val hiddenExpressionOrder = CypherExecutor(orderedGraph).execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN b.id AS id " +
+                "ORDER BY CASE WHEN b.index = 0 THEN -1 ELSE b.index END ASC LIMIT 2"
+        )
+        assertEquals(hiddenPropertyOrder.rows, hiddenExpressionOrder.rows)
     }
 
     @Test

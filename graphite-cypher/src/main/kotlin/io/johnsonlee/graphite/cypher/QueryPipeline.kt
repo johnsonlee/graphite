@@ -12,6 +12,7 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
@@ -534,7 +535,8 @@ class QueryPipeline private constructor(
 
     private data class RankedProjectedRow(
         val row: MutableMap<String, Any?>,
-        val encounterOrder: Long
+        val encounterOrder: Long,
+        val sortValues: List<Any?> = emptyList()
     )
 
     private data class OrderedPropertyLimitQuery(
@@ -1361,20 +1363,21 @@ class QueryPipeline private constructor(
     }
 
     /**
-     * Streams a filtered MATCH pattern through projection and pagination so
-     * LIMIT bounds retained rows instead of being applied after eager
-     * materialization. DISTINCT retains at most SKIP + LIMIT visible values.
+     * Streams a filtered MATCH pattern through projection, ordering, and pagination so
+     * LIMIT bounds retained rows instead of being applied after eager materialization.
+     * DISTINCT and ORDER BY retain at most SKIP + LIMIT visible values.
      */
     @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
     private fun tryStreamingFilteredMatchLimit(clauses: List<CypherClause>): CypherResult? {
-        if (clauses.size !in 4..5) return null
+        if (clauses.size !in 4..6) return null
         val match = clauses.getOrNull(0) as? CypherClause.Match ?: return null
         val where = clauses.getOrNull(1) as? CypherClause.Where ?: return null
         val ret = clauses.getOrNull(2) as? CypherClause.Return ?: return null
-        val skip = clauses.getOrNull(clauses.lastIndex - 1) as? CypherClause.Skip
-        val limit = clauses.lastOrNull() as? CypherClause.Limit ?: return null
-        if (clauses.size == 5 && skip == null) return null
-        if (clauses.size == 4 && skip != null) return null
+        var suffixIndex = 3
+        val orderBy = (clauses.getOrNull(suffixIndex) as? CypherClause.OrderBy)?.also { suffixIndex++ }
+        val skip = (clauses.getOrNull(suffixIndex) as? CypherClause.Skip)?.also { suffixIndex++ }
+        val limit = clauses.getOrNull(suffixIndex) as? CypherClause.Limit ?: return null
+        if (suffixIndex != clauses.lastIndex) return null
         if (match.optional || match.patterns.size != 1 || match.patterns.single().pathVariable != null ||
             ret.items.any { containsAggregation(it.expression) } ||
             ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }
@@ -1398,6 +1401,17 @@ class QueryPipeline private constructor(
             ?: sources
 
         val matches = matchPatternLazily(pattern, emptyMap(), candidateSources)
+        if (orderBy != null) {
+            return projectOrderedFilteredRows(
+                matches,
+                where,
+                ret,
+                orderBy,
+                columns,
+                skipCount,
+                retainedCount.toInt()
+            )
+        }
         if (ret.distinct) {
             return projectDistinctFilteredRows(matches, where, ret, columns, skipCount, retainedCount.toInt())
         }
@@ -1429,6 +1443,87 @@ class QueryPipeline private constructor(
             if (!qualified && distinctRows.size >= retainedCount) break
         }
         return CypherResult(columns, distinctRows.values.drop(skipCount))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun projectOrderedFilteredRows(
+        matches: Sequence<Map<String, Any?>>,
+        where: CypherClause.Where,
+        ret: CypherClause.Return,
+        orderBy: CypherClause.OrderBy,
+        columns: List<String>,
+        skipCount: Int,
+        retainedCount: Int
+    ): CypherResult {
+        val comparator = rankedRowComparator(orderBy)
+        val topRows = PriorityQueue<RankedProjectedRow>(comparator.reversed())
+        val selectedDistinctRows = if (ret.distinct) {
+            HashMap<Map<String, Any?>, RankedProjectedRow>()
+        } else {
+            null
+        }
+        var encounterOrder = 0L
+
+        for (bindings in matches) {
+            if (evaluator.evaluate(where.condition, bindings) != true) continue
+            val projected = projectRow(ret.items, columns, bindings)
+            val visible = selectedDistinctRows?.let { projected.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY } }
+            val existing = visible?.let { selectedDistinctRows?.get(it) }
+            if (existing != null) {
+                val graphIds = (existing.row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                    (projected[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                if (graphIds.isNotEmpty()) existing.row[INTERNAL_PROVENANCE_KEY] = graphIds
+                encounterOrder++
+                continue
+            }
+
+            val ranked = RankedProjectedRow(
+                row = projected,
+                encounterOrder = encounterOrder++,
+                sortValues = evaluateOrderValues(orderBy, bindings, projected)
+            )
+            if (topRows.size < retainedCount) {
+                topRows.add(ranked)
+                if (visible != null) selectedDistinctRows?.put(visible, ranked)
+            } else if (comparator.compare(ranked, topRows.peek()) < 0) {
+                val removed = topRows.poll()
+                selectedDistinctRows?.remove(removed.row.filterKeys { it != INTERNAL_PROVENANCE_KEY })
+                topRows.add(ranked)
+                if (visible != null) selectedDistinctRows?.put(visible, ranked)
+            }
+        }
+        checkCancelled()
+
+        val rows = topRows.toList()
+            .sortedWith(comparator)
+            .drop(skipCount)
+            .map(RankedProjectedRow::row)
+        return CypherResult(columns, rows)
+    }
+
+    private fun rankedRowComparator(orderBy: CypherClause.OrderBy): Comparator<RankedProjectedRow> {
+        var comparisons = 0
+        return Comparator { left, right ->
+            if (workTrackingEnabled) pollCancellation(comparisons++)
+            for ((index, item) in orderBy.items.withIndex()) {
+                val leftValue = left.sortValues[index]
+                val rightValue = right.sortValues[index]
+                val comparison = compareNullable(leftValue, rightValue)
+                if (comparison != 0) {
+                    return@Comparator if (item.ascending) comparison else -comparison
+                }
+            }
+            left.encounterOrder.compareTo(right.encounterOrder)
+        }
+    }
+
+    private fun evaluateOrderValues(
+        orderBy: CypherClause.OrderBy,
+        bindings: Map<String, Any?>,
+        projected: Map<String, Any?>
+    ): List<Any?> {
+        val orderContext = bindings.toMutableMap().apply { putAll(projected) }
+        return orderBy.items.map { item -> evaluateOrderValue(item.expression, orderContext) }
     }
 
     /**
@@ -1519,7 +1614,7 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         bindings: Map<String, Any?>
-    ): Map<String, Any?> {
+    ): MutableMap<String, Any?> {
         val projected = mutableMapOf<String, Any?>()
         for (i in items.indices) {
             projected[columns[i]] = evaluator.evaluate(items[i].expression, bindings)
@@ -1968,9 +2063,8 @@ class QueryPipeline private constructor(
         bindings: Map<String, Any?>
     ): Boolean {
         if (rel.types.isNotEmpty()) {
-            val edgeTypeName = CypherFunctions.type(edge)
             val typeMatches = rel.types.any { requested ->
-                matchesRelationshipType(edge, edgeTypeName, requested)
+                matchesRelationshipType(edge, requested)
             }
             if (!typeMatches) {
                 return false
@@ -1995,10 +2089,32 @@ class QueryPipeline private constructor(
         }
     }
 
-    private fun matchesRelationshipType(edge: Edge, actual: String?, requested: String): Boolean =
-        requested.equals(actual, ignoreCase = true) ||
-            requested.replace("_", "").equals(actual?.replace("_", ""), ignoreCase = true) ||
-            (edge is ResourceEdge && requested.equals("RESOURCE", ignoreCase = true))
+    /**
+     * Matches only the relationship spellings that are part of the Cypher surface.
+     *
+     * Keep the aliases explicit: removing every underscore made malformed names
+     * such as `D_A_T_A_F_L_O_W` indistinguishable from `DATAFLOW` and allocated
+     * normalized strings for every candidate edge.
+     */
+    private fun matchesRelationshipType(edge: Edge, requested: String): Boolean = when (edge) {
+        is DataFlowEdge ->
+            requested.equals("DATAFLOW", ignoreCase = true) ||
+                requested.equals("DATA_FLOW", ignoreCase = true)
+        is CallEdge -> requested.equals("CALL", ignoreCase = true)
+        is TypeEdge -> requested.equals("TYPE", ignoreCase = true)
+        is ControlFlowEdge ->
+            requested.equals("CONTROL_FLOW", ignoreCase = true) ||
+                requested.equals("CONTROLFLOW", ignoreCase = true)
+        is ResourceEdge ->
+            requested.equals("RESOURCE", ignoreCase = true) || when (edge.kind) {
+                ResourceRelation.OPENS -> requested.equals("RESOURCE_OPEN", ignoreCase = true)
+                ResourceRelation.LOADS -> requested.equals("RESOURCE_LOAD", ignoreCase = true)
+                ResourceRelation.BUNDLE_CANDIDATE ->
+                    requested.equals("RESOURCE_BUNDLE_CANDIDATE", ignoreCase = true)
+                ResourceRelation.LOOKUP -> requested.equals("RESOURCE_LOOKUP", ignoreCase = true)
+                ResourceRelation.ENUMERATES -> requested.equals("RESOURCE_KEYS", ignoreCase = true)
+            }
+    }
 
     // ========================================================================
     // Graph traversal helpers

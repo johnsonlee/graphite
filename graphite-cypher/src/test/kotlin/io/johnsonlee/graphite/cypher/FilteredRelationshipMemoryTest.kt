@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 class FilteredRelationshipMemoryTest {
 
     @Test
-    fun `zero-hit filtered relationship scan does not retain intermediate rows`() {
+    fun `zero-hit ordered filtered relationship scan does not retain intermediate rows`() {
         val source = IntConstant(NodeId(1), 1)
         val target = IntConstant(NodeId(2), 2)
         val base = DefaultGraph.Builder()
@@ -34,7 +34,7 @@ class FilteredRelationshipMemoryTest {
 
         val result = CypherExecutor(virtualGraph).execute(
             "MATCH (a:IntConstant)-[r:DATAFLOW]->(b:IntConstant) " +
-                "WHERE b.value = -1 RETURN r LIMIT 1"
+                "WHERE b.value = -1 RETURN r ORDER BY b.value LIMIT 1"
         )
 
         assertTrue(result.rows.isEmpty())
