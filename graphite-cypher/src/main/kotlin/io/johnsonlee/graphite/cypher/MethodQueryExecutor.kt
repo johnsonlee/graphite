@@ -7,8 +7,12 @@ import io.johnsonlee.graphite.graph.methodSlice
 import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ForkJoinTask
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
 
@@ -18,18 +22,40 @@ internal val METHOD_GRAPH_SCAN_PARALLELISM: Int =
 private val methodGraphScanPool = ForkJoinPool(METHOD_GRAPH_SCAN_PARALLELISM)
 
 @Suppress("ThrowsCount", "TooGenericExceptionCaught")
-private fun <T> runMethodGraphTasks(tasks: List<() -> T>): List<T> {
-    if (tasks.size == 1) return listOf(tasks.single().invoke())
-    val futures = tasks.map { task -> methodGraphScanPool.submit(Callable(task)) }
+private fun <T> runMethodGraphTasks(tasks: List<(() -> Unit) -> T>): List<T> {
+    if (tasks.size == 1) return listOf(tasks.single().invoke({}))
+    val cancellation = MethodTaskCancellation()
+    val remaining = CountDownLatch(tasks.size)
+    val handles = tasks.map { task ->
+        val state = AtomicInteger(METHOD_TASK_PENDING)
+        val future = methodGraphScanPool.submit(Callable {
+            if (!state.compareAndSet(METHOD_TASK_PENDING, METHOD_TASK_RUNNING)) {
+                throw ParallelMethodTaskCancelledException()
+            }
+            try {
+                cancellation.check()
+                task(cancellation::check)
+            } catch (error: Throwable) {
+                cancellation.fail(error)
+                throw error
+            } finally {
+                state.set(METHOD_TASK_FINISHED)
+                remaining.countDown()
+            }
+        })
+        MethodTaskHandle(state, future)
+    }
     return try {
-        futures.map { it.get() }
+        handles.map { it.future.get() }
     } catch (_: InterruptedException) {
-        futures.forEach { it.quietlyJoin() }
+        cancellation.fail(CypherQueryCancelledException())
+        cancelPendingAndAwait(handles, remaining)
         Thread.currentThread().interrupt()
         throw CypherQueryCancelledException()
     } catch (error: ExecutionException) {
-        futures.forEach { it.quietlyJoin() }
-        val outer = error.cause ?: error
+        cancellation.fail(error.cause ?: error)
+        cancelPendingAndAwait(handles, remaining)
+        val outer = cancellation.failure() ?: error.cause ?: error
         val nested = outer.cause
         val cause = if (nested != null && nested.javaClass == outer.javaClass && outer.message == nested.toString()) {
             nested
@@ -43,6 +69,50 @@ private fun <T> runMethodGraphTasks(tasks: List<() -> T>): List<T> {
         }
     }
 }
+
+private fun <T> cancelPendingAndAwait(handles: List<MethodTaskHandle<T>>, remaining: CountDownLatch) {
+    handles.forEach { handle ->
+        if (handle.state.compareAndSet(METHOD_TASK_PENDING, METHOD_TASK_CANCELLED)) {
+            handle.future.cancel(false)
+            remaining.countDown()
+        }
+    }
+    var interrupted = false
+    while (remaining.count > 0L) {
+        try {
+            remaining.await()
+        } catch (_: InterruptedException) {
+            interrupted = true
+        }
+    }
+    if (interrupted) Thread.currentThread().interrupt()
+}
+
+private class MethodTaskCancellation {
+    private val cause = AtomicReference<Throwable?>()
+
+    fun fail(error: Throwable) {
+        if (error !is ParallelMethodTaskCancelledException) cause.compareAndSet(null, error)
+    }
+
+    fun check() {
+        if (cause.get() != null) throw ParallelMethodTaskCancelledException()
+    }
+
+    fun failure(): Throwable? = cause.get()
+}
+
+private data class MethodTaskHandle<T>(
+    val state: AtomicInteger,
+    val future: ForkJoinTask<T>
+)
+
+private class ParallelMethodTaskCancelledException : RuntimeException()
+
+private const val METHOD_TASK_PENDING = 0
+private const val METHOD_TASK_RUNNING = 1
+private const val METHOD_TASK_FINISHED = 2
+private const val METHOD_TASK_CANCELLED = 3
 
 /** Executes bounded Cypher reads over the graph's method metadata index. */
 @Suppress("TooManyFunctions")
@@ -78,7 +148,6 @@ internal object MethodQueryExecutor {
         val where = (clauses.getOrNull(clauseIndex) as? CypherClause.Where)?.also { clauseIndex++ }
         val ret = clauses.getOrNull(clauseIndex) as? CypherClause.Return ?: return null
         clauseIndex++
-        if (ret.distinct) return null
         val orderBy = (clauses.getOrNull(clauseIndex) as? CypherClause.OrderBy)?.also { clauseIndex++ }
         val skip = (clauses.getOrNull(clauseIndex) as? CypherClause.Skip)?.also { clauseIndex++ }
         val limit = (clauses.getOrNull(clauseIndex) as? CypherClause.Limit)?.also { clauseIndex++ }
@@ -99,14 +168,17 @@ internal object MethodQueryExecutor {
             workTracker
         )
         if (ret.items.any { containsAggregation(it.expression) }) {
-            if (orderBy != null) return null
+            if (ret.distinct || orderBy != null) return null
             return tryExecuteCount(execution, skipCount, limitCount)
         }
         if (requested == 0) return CypherResult(columns(ret), emptyList())
         val columns = execution.columns
         val comparator = orderBy?.let { methodRowComparator(it, columns) ?: return null }
+        if (ret.distinct && comparator != null) return null
         if (comparator != null && requested > MAX_ORDERED_TOP_K_ROWS) return null
-        val rows = if (comparator == null) {
+        val rows = if (ret.distinct) {
+            executeDistinctRows(execution, skipCount, limitCount, requested)
+        } else if (comparator == null) {
             executeStreamingRows(execution, skipCount, limitCount)
         } else {
             executeOrderedRows(execution, skipCount, limitCount, requested, comparator)
@@ -133,7 +205,9 @@ internal object MethodQueryExecutor {
         skipCount: Int,
         limitCount: Int
     ): List<Map<String, Any?>> = if (
-        execution.sources.size == 1 || saturatedAdd(skipCount, limitCount) > MAX_ORDERED_TOP_K_ROWS
+        execution.sources.size == 1 ||
+        saturatedAdd(skipCount, limitCount) <= METHOD_GRAPH_SCAN_PARALLELISM ||
+        saturatedAdd(skipCount, limitCount) > MAX_ORDERED_TOP_K_ROWS
     ) {
         executeSequentialRows(execution, skipCount, limitCount)
     } else {
@@ -177,7 +251,7 @@ internal object MethodQueryExecutor {
         for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
             execution.checkCancelled()
             val batches = runMethodGraphTasks(wave.map { source ->
-                { executeSourceRows(execution, source, requested) }
+                { checkPeerCancelled -> executeSourceRows(execution, source, requested, checkPeerCancelled) }
             })
             for (batch in batches) {
                 for (row in batch) {
@@ -192,11 +266,13 @@ internal object MethodQueryExecutor {
     private fun executeSourceRows(
         execution: MethodExecution,
         source: CypherGraph,
-        limit: Int
+        limit: Int,
+        checkPeerCancelled: () -> Unit
     ): List<Map<String, Any?>> {
         val rows = ArrayList<Map<String, Any?>>(minOf(limit, INITIAL_METHOD_RESULT_CAPACITY))
         val evaluator = execution.newEvaluator()
-        for (method in methods(source, execution.scan, limit, execution.workTracker)) {
+        for (method in methods(source, execution.scan, limit, execution.workTracker, checkPeerCancelled)) {
+            checkPeerCancelled()
             execution.checkCancelled()
             val binding = execution.binding(source, method)
             if (execution.matches(binding, evaluator)) {
@@ -218,7 +294,9 @@ internal object MethodQueryExecutor {
         for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
             execution.checkCancelled()
             val batches = runMethodGraphTasks(wave.map { source ->
-                { executeOrderedSourceRows(execution, source, requested, comparator) }
+                { checkPeerCancelled ->
+                    executeOrderedSourceRows(execution, source, requested, comparator, checkPeerCancelled)
+                }
             })
             for (batch in batches) {
                 batch.forEach { row -> addOrderedRow(topRows, row, requested, comparator) }
@@ -231,11 +309,13 @@ internal object MethodQueryExecutor {
         execution: MethodExecution,
         source: CypherGraph,
         requested: Int,
-        comparator: Comparator<Map<String, Any?>>
+        comparator: Comparator<Map<String, Any?>>,
+        checkPeerCancelled: () -> Unit
     ): List<Map<String, Any?>> {
         val topRows = PriorityQueue<Map<String, Any?>>(requested, comparator.reversed())
         val evaluator = execution.newEvaluator()
-        for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+        for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker, checkPeerCancelled)) {
+            checkPeerCancelled()
             execution.checkCancelled()
             val binding = execution.binding(source, method)
             if (!execution.matches(binding, evaluator)) continue
@@ -262,14 +342,18 @@ internal object MethodQueryExecutor {
         source: CypherGraph,
         scan: MethodScanPlan,
         limit: Int,
-        workTracker: CypherWorkTracker?
+        workTracker: CypherWorkTracker?,
+        checkPeerCancelled: (() -> Unit)? = null
     ): Sequence<MethodDescriptor> {
         var inspected = 0
-        val cancellationConsumer = workTracker?.let { tracker ->
+        val cancellationConsumer = if (workTracker != null || checkPeerCancelled != null) {
             MethodMetadataScanConsumer {
-                if ((inspected++ and CANCELLATION_POLL_MASK) == 0) tracker.checkCancelled()
+                if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
+                    checkPeerCancelled?.invoke()
+                    workTracker?.checkCancelled()
+                }
             }
-        }
+        } else null
         if (scan.fullyPushed && limit < Int.MAX_VALUE) {
             val slice = if (cancellationConsumer == null) {
                 source.graph.methodSlice(scan.pattern, limit)
@@ -280,6 +364,45 @@ internal object MethodQueryExecutor {
         }
         return cancellationConsumer?.let { source.graph.methods(scan.pattern, it) }
             ?: source.graph.methods(scan.pattern)
+    }
+
+    @Suppress("LoopWithTooManyJumpStatements")
+    private fun executeDistinctRows(
+        execution: MethodExecution,
+        skipCount: Int,
+        limitCount: Int,
+        requested: Int
+    ): List<Map<String, Any?>> {
+        val distinctRows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val evaluator = execution.newEvaluator()
+        sourceLoop@ for (source in execution.sources) {
+            execution.checkCancelled()
+            for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+                execution.checkCancelled()
+                val binding = execution.binding(source, method)
+                if (!execution.matches(binding, evaluator)) continue
+                mergeDistinctRow(distinctRows, execution.project(binding, evaluator), requested)
+                if (!execution.qualified && distinctRows.size >= requested) break@sourceLoop
+            }
+        }
+        return distinctRows.values.drop(skipCount).take(limitCount)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun mergeDistinctRow(
+        rows: LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        row: MutableMap<String, Any?>,
+        limit: Int
+    ) {
+        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+        val existing = rows[visible]
+        if (existing != null) {
+            val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
+                (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+            if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
+        } else if (rows.size < limit) {
+            rows[visible] = row
+        }
     }
 
     private fun methodRowComparator(
@@ -359,7 +482,7 @@ internal object MethodQueryExecutor {
         val groups = if (execution.where == null && groupItems.isEmpty() && execution.scan.pattern.isUnfiltered()) {
             countAllMethods(execution) ?: return null
         } else {
-            countFilteredMethods(execution, groupItems) ?: return null
+            countFilteredMethods(execution, groupItems, saturatedAdd(skipCount, limitCount)) ?: return null
         }
         if (groupItems.isEmpty() && groups.isEmpty()) groups[emptyList()] = MethodCountGroup()
 
@@ -396,13 +519,23 @@ internal object MethodQueryExecutor {
     @Suppress("ReturnCount")
     private fun countFilteredMethods(
         execution: MethodExecution,
-        groupItems: List<IndexedValue<ReturnItem>>
+        groupItems: List<IndexedValue<ReturnItem>>,
+        groupLimit: Int
     ): LinkedHashMap<List<Any?>, MethodCountGroup>? {
         val groups = linkedMapOf<List<Any?>, MethodCountGroup>()
+        if (groupItems.isNotEmpty() && !hasSourceBoundedGroups(groupItems, execution.variable)) {
+            for (source in execution.sources) {
+                execution.checkCancelled()
+                if (!countGroupedSourceMethods(execution, source, groupItems, groups, groupLimit)) return null
+            }
+            return groups
+        }
         for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
             execution.checkCancelled()
             val batches = runMethodGraphTasks(wave.map { source ->
-                { countSourceMethods(execution, source, groupItems) }
+                { checkPeerCancelled ->
+                    countSourceMethods(execution, source, groupItems, checkPeerCancelled)
+                }
             })
             for (batch in batches) {
                 batch ?: return null
@@ -416,14 +549,30 @@ internal object MethodQueryExecutor {
         return groups
     }
 
+    private fun hasSourceBoundedGroups(
+        groupItems: List<IndexedValue<ReturnItem>>,
+        variable: String
+    ): Boolean = groupItems.all { (_, item) ->
+        when (val expression = item.expression) {
+            is CypherExpr.Literal -> true
+            is CypherExpr.FunctionCall ->
+                expression.name.equals("graphId", ignoreCase = true) &&
+                    !expression.distinct &&
+                    expression.args == listOf(CypherExpr.Variable(variable))
+            else -> false
+        }
+    }
+
     private fun countSourceMethods(
         execution: MethodExecution,
         source: CypherGraph,
-        groupItems: List<IndexedValue<ReturnItem>>
+        groupItems: List<IndexedValue<ReturnItem>>,
+        checkPeerCancelled: () -> Unit
     ): LinkedHashMap<List<Any?>, MethodCountGroup>? {
         val groups = linkedMapOf<List<Any?>, MethodCountGroup>()
         val evaluator = execution.newEvaluator()
-        for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+        for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker, checkPeerCancelled)) {
+            checkPeerCancelled()
             execution.checkCancelled()
             val binding = execution.binding(source, method)
             if (!execution.matches(binding, evaluator)) continue
@@ -433,6 +582,31 @@ internal object MethodQueryExecutor {
             if (execution.qualified) group.graphIds += source.id
         }
         return groups
+    }
+
+    @Suppress("LoopWithTooManyJumpStatements")
+    private fun countGroupedSourceMethods(
+        execution: MethodExecution,
+        source: CypherGraph,
+        groupItems: List<IndexedValue<ReturnItem>>,
+        groups: LinkedHashMap<List<Any?>, MethodCountGroup>,
+        groupLimit: Int
+    ): Boolean {
+        val evaluator = execution.newEvaluator()
+        for (method in methods(source, execution.scan, Int.MAX_VALUE, execution.workTracker)) {
+            execution.checkCancelled()
+            val binding = execution.binding(source, method)
+            if (!execution.matches(binding, evaluator)) continue
+            val key = groupItems.map { evaluator.evaluate(it.value.expression, binding) }
+            val group = groups[key] ?: if (groups.size < groupLimit) {
+                MethodCountGroup().also { groups[key] = it }
+            } else {
+                continue
+            }
+            group.count = addCount(group.count, 1L) ?: return false
+            if (execution.qualified) group.graphIds += source.id
+        }
+        return true
     }
 
     private fun addCount(current: Long, increment: Long): Long? = try {

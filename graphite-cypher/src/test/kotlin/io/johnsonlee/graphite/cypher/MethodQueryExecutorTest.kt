@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -209,8 +210,17 @@ class MethodQueryExecutorTest {
         val workers = ConcurrentHashMap.newKeySet<String>()
         val sources = (0 until workerCount).map { index ->
             val indexedMethod = method("com.example.Parallel", "method$index", emptyList(), "void")
-            val graph = object : Graph by DefaultGraph.Builder().build() {
-                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+            val graph = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+                override fun methods(
+                    pattern: MethodPattern,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): Sequence<MethodDescriptor> = sequenceOf(indexedMethod).filter(pattern::matches)
+
+                override fun methodSlice(
+                    pattern: MethodPattern,
+                    limit: Int,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): List<MethodDescriptor> {
                     workers += Thread.currentThread().name
                     started.countDown()
                     check(started.await(5, TimeUnit.SECONDS)) { "Method graph scans did not run concurrently" }
@@ -225,7 +235,7 @@ class MethodQueryExecutorTest {
 
         val result = CrossGraphCypherExecutor(sources).execute(
             "MATCH (m:Method) WHERE m.class = 'com.example.Parallel' " +
-                "RETURN graphId(m) AS graph, m.name AS name LIMIT $workerCount"
+                "RETURN graphId(m) AS graph, m.name AS name LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
         )
 
         assertEquals((0 until workerCount).map { "graph-$it" }, result.rows.map { it["graph"] })
@@ -261,7 +271,8 @@ class MethodQueryExecutorTest {
         try {
             val query = executor.submit<CypherResult> {
                 CrossGraphCypherExecutor(sources, context).execute(
-                    "MATCH (m:Method) WHERE m.name = 'missing' OR m.name = 'also-missing' RETURN m LIMIT 1"
+                    "MATCH (m:Method) WHERE m.name = 'missing' OR m.name = 'also-missing' " +
+                        "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
                 )
             }
             assertTrue(started.await(5, TimeUnit.SECONDS))
@@ -281,8 +292,17 @@ class MethodQueryExecutorTest {
         val coordinator = AtomicReference<Thread>()
         val indexedMethod = method("com.example.Interrupt", "running", emptyList(), "void")
         val sources = (0 until 2).map { index ->
-            val graph = object : Graph by DefaultGraph.Builder().build() {
-                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+            val graph = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+                override fun methods(
+                    pattern: MethodPattern,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): Sequence<MethodDescriptor> = sequenceOf(indexedMethod).filter(pattern::matches)
+
+                override fun methodSlice(
+                    pattern: MethodPattern,
+                    limit: Int,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): List<MethodDescriptor> {
                     started.countDown()
                     release.await()
                     return listOf(indexedMethod).filter(pattern::matches).take(limit)
@@ -295,7 +315,8 @@ class MethodQueryExecutorTest {
             val query = executor.submit<CypherResult> {
                 coordinator.set(Thread.currentThread())
                 CrossGraphCypherExecutor(sources).execute(
-                    "MATCH (m:Method) WHERE m.class = 'com.example.Interrupt' RETURN m LIMIT 1"
+                    "MATCH (m:Method) WHERE m.class = 'com.example.Interrupt' " +
+                        "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
                 )
             }
             assertTrue(started.await(5, TimeUnit.SECONDS))
@@ -315,23 +336,147 @@ class MethodQueryExecutorTest {
     fun `parallel Method scan propagates a source failure after workers finish`() {
         val finished = CountDownLatch(1)
         val goodMethod = method("com.example.Parallel", "good", emptyList(), "void")
-        val good = object : Graph by DefaultGraph.Builder().build() {
-            override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        val good = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequenceOf(goodMethod).filter(pattern::matches)
+
+            override fun methodSlice(
+                pattern: MethodPattern,
+                limit: Int,
+                scanConsumer: MethodMetadataScanConsumer
+            ): List<MethodDescriptor> =
                 listOf(goodMethod).also { finished.countDown() }.filter(pattern::matches).take(limit)
         }
-        val failed = object : Graph by DefaultGraph.Builder().build() {
-            override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
+        val failed = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = emptySequence()
+
+            override fun methodSlice(
+                pattern: MethodPattern,
+                limit: Int,
+                scanConsumer: MethodMetadataScanConsumer
+            ): List<MethodDescriptor> =
                 error("failed Method source")
         }
 
         val error = assertFailsWith<IllegalStateException> {
             CrossGraphCypherExecutor(listOf(CypherGraph("good", good), CypherGraph("failed", failed))).execute(
-                "MATCH (m:Method) WHERE m.class = 'com.example.Parallel' RETURN m LIMIT 1"
+                "MATCH (m:Method) WHERE m.class = 'com.example.Parallel' " +
+                    "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
             )
         }
 
         assertEquals("failed Method source", error.message)
         assertTrue(finished.await(5, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun `small Method limit scans graph sources on demand`() {
+        val sliceCalls = AtomicInteger()
+        val sources = (0 until 8).map { index ->
+            val indexedMethod = method("com.example.OnDemand", "method$index", emptyList(), "void")
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+                    sliceCalls.incrementAndGet()
+                    return listOf(indexedMethod).filter(pattern::matches).take(limit)
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.OnDemand' " +
+                "RETURN graphId(m) AS graph, m.name AS name LIMIT 1"
+        )
+
+        assertEquals(listOf("graph-0"), result.rows.map { it["graph"] })
+        assertEquals(1, sliceCalls.get())
+    }
+
+    @Test
+    fun `Method distinct limit stops after the first distinct row`() {
+        val inspected = AtomicInteger()
+        val methods = (0 until 36_000).map { index ->
+            method("com.example.Owner$index", "method$index", emptyList(), "void")
+        }
+        val graph = object : Graph by SyntheticMethodIndexGraph(methods), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = methods.asSequence()
+                .onEach {
+                    inspected.incrementAndGet()
+                    scanConsumer.inspect()
+                }
+                .filter(pattern::matches)
+        }
+
+        val result = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1)).execute(
+            "MATCH (m:Method) RETURN DISTINCT m.class AS owner LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Owner0"), result.rows.map { it["owner"] })
+        assertEquals(1, inspected.get())
+    }
+
+    @Test
+    fun `failing Method source cancels a running peer scan`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val peerStarted = CountDownLatch(1)
+        val peerStopped = CountDownLatch(1)
+        val indexedMethod = method("com.example.Peer", "running", emptyList(), "void")
+        val failed = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = emptySequence()
+
+            override fun methodSlice(
+                pattern: MethodPattern,
+                limit: Int,
+                scanConsumer: MethodMetadataScanConsumer
+            ): List<MethodDescriptor> {
+                check(peerStarted.await(5, TimeUnit.SECONDS))
+                error("failed Method source")
+            }
+        }
+        val running = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = sequence {
+                peerStarted.countDown()
+                try {
+                    while (true) {
+                        scanConsumer.inspect()
+                        if (pattern.matches(indexedMethod)) yield(indexedMethod)
+                    }
+                } finally {
+                    peerStopped.countDown()
+                }
+            }
+        }
+
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val query = executor.submit<CypherResult> {
+                CrossGraphCypherExecutor(
+                    listOf(CypherGraph("failed", failed), CypherGraph("running", running))
+                ).execute(
+                    "MATCH (m:Method) WHERE m.class = 'missing' " +
+                        "RETURN m LIMIT ${METHOD_GRAPH_SCAN_PARALLELISM + 1}"
+                )
+            }
+            val error = assertFailsWith<ExecutionException> { query.get(5, TimeUnit.SECONDS) }
+            assertEquals("failed Method source", error.cause?.message)
+            assertTrue(peerStopped.await(5, TimeUnit.SECONDS))
+        } finally {
+            executor.shutdownNow()
+        }
     }
 
     @Test
@@ -372,6 +517,28 @@ class MethodQueryExecutorTest {
             ordered.rows.map { it["signature"] as String }.sortedDescending(),
             ordered.rows.map { it["signature"] }
         )
+    }
+
+    @Test
+    fun `bounded grouped Method count retains only requested keys across sources`() {
+        val methodsPerGraph = 100_000
+        val sources = (0 until 8).map { graphIndex ->
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
+                    (0 until methodsPerGraph).asSequence()
+                        .map { index -> method("com.example.Generated", "method$index", emptyList(), "void") }
+                        .filter(pattern::matches)
+            }
+            CypherGraph("graph-$graphIndex", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) RETURN m.name AS name, count(*) AS count LIMIT 1"
+        )
+
+        assertEquals(1, result.rows.size)
+        assertEquals("method0", result.rows.single()["name"])
+        assertEquals(8L, result.rows.single()["count"])
     }
 
     @Test
