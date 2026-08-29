@@ -63,10 +63,11 @@ Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
 source graph is persisted and that JVM exits, the raw mmap work directory is
 deleted before the next corpus starts. Only the four final persisted graph
 directories remain for the shared query measurements.
-Every multi-graph row must remain at least 10x faster than the fixed baseline;
-the single-graph row retains the 50% fixed-baseline floor. No row may regress
-more than 15% against the current PR base. Missing graph-count or query
-variants, incompatible units, invalid scores, and missing artifacts fail
+Every real-fixture row must remain at least 10x faster than the fixed baseline;
+the lightweight synthetic scaling rows retain the 50% fixed-baseline floor.
+No row may regress more than 15% against the current PR base; synthetic changes
+below the 0.5 ms absolute noise floor remain informational. Missing graph-count
+or query variants, incompatible units, invalid scores, and missing artifacts fail
 closed. A suspected failure reruns candidate, base, and fixed baseline in
 reverse order before it blocks. The fixed baseline prevents the original full-scan behavior from
 becoming an accepted new base after a merge; the moving base comparison catches

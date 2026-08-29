@@ -422,3 +422,28 @@ preventing an empty-result shortcut from masquerading as a latency win.
 **Conclusion:** retained and supersedes Attempt 013's submit-all queue. It keeps
 two-way scan parallelism without cross-request FIFO monopolization or nested
 pool deadlock.
+
+### 2026-08-29 - Attempt 015: Lookup-state-driven parallel admission
+
+The first GitHub Actions run showed that executor overhead is material on tiny
+warm graphs: the four-graph synthetic cache-hit case moved from `0.194 ms/op`
+on `main` to `0.753 ms/op`, even though the cold path improved. Those fixtures
+contain only 2,000 relevant call-site nodes per graph and are not representative
+of the production scans that motivated parallel execution.
+
+Mapped graphs now expose whether the relevant string state is warm and the
+property index fits within its retained-memory budget. If every relevant graph
+prefers that indexed path, the pipeline stays serial and avoids worker setup.
+Cold, oversized, unknown, and unordered lookups remain eligible for fused
+storage scans and bounded two-worker parallelism. The decision follows actual
+lookup state instead of a graph-count or CPU-count heuristic.
+
+The synthetic gate now samples the geometric `1/4/16/64` curve with the normal
+50% fixed-baseline floor and a 15% moving-base guard. Because every warm result
+is sub-millisecond, changes below an independent 0.5 ms absolute floor are
+reported as noise; the original +0.559 ms four-graph regression would still
+fail. The 10x requirement remains on heterogeneous real fixtures and the
+independent 36-real-graph row.
+
+**Conclusion:** retained. Small cached queries avoid fused and fork-join setup,
+while real multi-graph searches keep bounded parallel scans.

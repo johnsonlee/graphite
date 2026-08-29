@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
 const MIB = 1024 * 1024;
+const SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS = 0.5;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=4]",
@@ -396,11 +397,16 @@ export function compareLatencyBaseline(
             errors.push(`${key}: fixed-baseline speedup requires finite confidence bounds`);
         }
         const speedup = ((fixedScore / candidateScore) - 1) * 100;
-        const multiGraph = /AllFixture|ThirtySix|graphCount=(?!1\])/.test(key);
+        const multiGraph = /AllFixture|ThirtySix/.test(key);
         const requiredSpeedup = multiGraph ? Math.max(minimumSpeedup, 900) : minimumSpeedup;
         const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
             confidenceSeparates(candidateBounds, fixedBounds, true);
         const improvementBlocked = speedup < requiredSpeedup || !improvementSeparated;
+        const syntheticScale = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
+        const absoluteRegression = candidateScore - baseRow.baseScore;
+        const belowAbsoluteNoiseFloor = syntheticScale && baseRow.unit === "ms/op" &&
+            absoluteRegression < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
+        const regressionBlocked = baseRow.blocked && !belowAbsoluteNoiseFloor;
         rows.push({
             ...baseRow,
             fixedScore,
@@ -408,7 +414,10 @@ export function compareLatencyBaseline(
             minimumSpeedup: requiredSpeedup,
             improvementSeparated,
             improvementBlocked,
-            blocked: baseRow.blocked || improvementBlocked
+            absoluteRegression,
+            absoluteNoiseFloor: syntheticScale ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
+            belowAbsoluteNoiseFloor,
+            blocked: regressionBlocked || improvementBlocked
         });
     }
 

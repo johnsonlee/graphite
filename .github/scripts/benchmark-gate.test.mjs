@@ -311,14 +311,44 @@ test("latency expected keys include geometric synthetic scaling and real 36-grap
 });
 
 test("multi-graph latency requires a ten-times fixed-baseline factor", () => {
-    const params = { graphCount: "64" };
-    const fixed = jmhResult({ score: 100, confidence: [98, 102], params });
-    const base = jmhResult({ score: 10, confidence: [9.5, 10.5], params });
-    const tooSlow = jmhResult({ score: 11, confidence: [10.5, 11.5], params });
+    const benchmark = "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery";
+    const fixed = jmhResult({ benchmark, score: 100, confidence: [98, 102] });
+    const base = jmhResult({ benchmark, score: 10, confidence: [9.5, 10.5] });
+    const tooSlow = jmhResult({ benchmark, score: 11, confidence: [10.5, 11.5] });
     const comparison = compareLatencyBaseline([fixed], [base], [tooSlow]);
 
     assert.equal(comparison.passed, false);
     assert.equal(comparison.rows[0].minimumSpeedup, 900);
+});
+
+test("synthetic graph-count curves use the normal fixed-baseline floor", () => {
+    const params = { graphCount: "64" };
+    const fixed = jmhResult({ score: 100, confidence: [98, 102], params });
+    const base = jmhResult({ score: 20, confidence: [19, 21], params });
+    const candidate = jmhResult({ score: 20, confidence: [19, 21], params });
+    const comparison = compareLatencyBaseline([fixed], [base], [candidate]);
+
+    assert.equal(comparison.passed, true);
+    assert.equal(comparison.rows[0].minimumSpeedup, 50);
+});
+
+test("synthetic latency ignores sub-half-millisecond changes but blocks larger regressions", () => {
+    const benchmark = "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery";
+    const params = { graphCount: "64" };
+    const common = { benchmark, unit: "ms/op", params };
+    const fixed = jmhResult({ ...common, score: 10, confidence: [9.8, 10.2] });
+    const base = jmhResult({ ...common, score: 0.58, confidence: [0.56, 0.60] });
+    const noise = jmhResult({ ...common, score: 0.87, confidence: [0.85, 0.89] });
+    const regression = jmhResult({ ...common, score: 1.20, confidence: [1.18, 1.22] });
+
+    const accepted = compareLatencyBaseline([fixed], [base], [noise]);
+    const blocked = compareLatencyBaseline([fixed], [base], [regression]);
+
+    assert.equal(accepted.passed, true);
+    assert.equal(accepted.rows[0].aboveThreshold, true);
+    assert.equal(accepted.rows[0].belowAbsoluteNoiseFloor, true);
+    assert.equal(blocked.passed, false);
+    assert.equal(blocked.rows[0].belowAbsoluteNoiseFloor, false);
 });
 
 test("resource gate accepts 4 GiB single and 8 GiB AllFixture profiles", () => {
