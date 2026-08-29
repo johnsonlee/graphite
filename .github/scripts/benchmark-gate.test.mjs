@@ -511,51 +511,68 @@ test("latency shard aggregation requires every shard and the complete benchmark 
     }
 });
 
-const baseCorpusLine = [
-    "LARGE_CORPUS_BASELINE",
-    "hive",
-    "nodes=100",
-    "buildMs=10000",
-    "saveMs=2000",
-    "mappedLoadMs=200",
-    "queryMs=1000",
-    "pipelineMs=13200",
-    `peakHeapBytes=${2_000 * 1024 * 1024}`
-].join("\t");
+const expectedLargeCorpora = ["tika", "hive", "kotlin-compiler"];
+
+function corpusLine(corpus, overrides = {}) {
+    const measurement = {
+        nodes: 100,
+        sourceEdges: 200,
+        persistedEdges: 190,
+        methods: 80,
+        callSites: 60,
+        persistedBytes: 100_000_000,
+        buildMs: 10_000,
+        saveMs: 2_000,
+        mappedLoadMs: 200,
+        queryMs: 1_000,
+        pipelineMs: 13_200,
+        peakHeapBytes: 2_000 * 1024 * 1024,
+        ...overrides
+    };
+    return [
+        "LARGE_CORPUS_BASELINE",
+        corpus,
+        ...Object.entries(measurement).map(([name, value]) => `${name}=${value}`)
+    ].join("\t");
+}
+
+function corpusLog(overrides = {}) {
+    return expectedLargeCorpora
+        .map((corpus) => corpusLine(corpus, overrides[corpus]))
+        .join("\n");
+}
+
+const baseCorpusLog = corpusLog();
 
 test("large-corpus parser accepts Gradle-prefixed output", () => {
-    const parsed = parseLargeCorpusLog(`runner prefix ${baseCorpusLine}\n`);
+    const parsed = parseLargeCorpusLog(`runner prefix ${corpusLine("hive")}\n`);
 
-    assert.equal(parsed.get("hive").buildMs, 10_000);
-    assert.equal(parsed.get("hive").nodes, 100);
+    assert.deepEqual(parsed.errors, []);
+    assert.equal(parsed.results.get("hive").buildMs, 10_000);
+    assert.equal(parsed.results.get("hive").nodes, 100);
 });
 
 test("large-corpus comparison blocks a material pipeline regression", () => {
-    const candidate = baseCorpusLine
-        .replace("pipelineMs=13200", "pipelineMs=17000")
-        .replace("buildMs=10000", "buildMs=13000");
-    const comparison = compareLargeCorpus(baseCorpusLine, candidate);
+    const candidate = corpusLog({ hive: { buildMs: 13_000, pipelineMs: 16_200 } });
+    const comparison = compareLargeCorpus(baseCorpusLog, candidate);
 
     assert.equal(comparison.passed, false);
-    assert.equal(comparison.rows.find((row) => row.metric === "pipeline").blocked, true);
+    assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "pipeline").blocked, true);
     assert.match(renderLargeCorpusReport(comparison), /\*\*FAIL\*\*/);
 });
 
 test("large-corpus comparison ignores changes below the absolute noise floor", () => {
-    const candidate = baseCorpusLine.replace("mappedLoadMs=200", "mappedLoadMs=250");
-    const comparison = compareLargeCorpus(baseCorpusLine, candidate);
+    const candidate = corpusLog({ hive: { mappedLoadMs: 250, pipelineMs: 13_250 } });
+    const comparison = compareLargeCorpus(baseCorpusLog, candidate);
 
     assert.equal(comparison.passed, true);
-    assert.equal(comparison.rows.find((row) => row.metric === "mapped load").blocked, false);
+    assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load").blocked, false);
 });
 
 test("large-corpus comparison reports sampled heap without blocking on GC noise", () => {
-    const candidate = baseCorpusLine.replace(
-        `peakHeapBytes=${2_000 * 1024 * 1024}`,
-        `peakHeapBytes=${3_500 * 1024 * 1024}`
-    );
-    const comparison = compareLargeCorpus(baseCorpusLine, candidate);
-    const heap = comparison.rows.find((row) => row.metric === "peak heap");
+    const candidate = corpusLog({ hive: { peakHeapBytes: 3_500 * 1024 * 1024 } });
+    const comparison = compareLargeCorpus(baseCorpusLog, candidate);
+    const heap = comparison.rows.find((row) => row.corpus === "hive" && row.metric === "peak heap");
 
     assert.equal(comparison.passed, true);
     assert.equal(heap.advisory, true);
@@ -564,27 +581,93 @@ test("large-corpus comparison reports sampled heap without blocking on GC noise"
 });
 
 test("large-corpus reverse-order confirmation rejects a one-round false positive", () => {
-    const initialCandidate = baseCorpusLine.replace("saveMs=2000", "saveMs=3000");
-    const initial = compareLargeCorpus(baseCorpusLine, initialCandidate);
-    const retryCandidate = baseCorpusLine.replace("saveMs=2000", "saveMs=2100");
-    const retry = compareLargeCorpus(baseCorpusLine, retryCandidate);
+    const initialCandidate = corpusLog({ hive: { saveMs: 3_000, pipelineMs: 14_200 } });
+    const initial = compareLargeCorpus(baseCorpusLog, initialCandidate);
+    const retryCandidate = corpusLog({ hive: { saveMs: 2_100, pipelineMs: 13_300 } });
+    const retry = compareLargeCorpus(baseCorpusLog, retryCandidate);
     const confirmed = confirmLargeCorpus(initial, retry);
 
     assert.equal(initial.passed, false);
     assert.equal(confirmed.passed, true);
-    assert.equal(confirmed.rows.find((row) => row.metric === "save").blocked, false);
+    assert.equal(confirmed.rows.find((row) => row.corpus === "hive" && row.metric === "save").blocked, false);
     assert.match(renderLargeCorpusReport(confirmed), /\*\*NOISE\*\*/);
 });
 
 test("large-corpus reverse-order confirmation blocks a repeated regression", () => {
-    const candidate = baseCorpusLine.replace("saveMs=2000", "saveMs=3000");
-    const initial = compareLargeCorpus(baseCorpusLine, candidate);
-    const retry = compareLargeCorpus(baseCorpusLine, candidate);
+    const candidate = corpusLog({ hive: { saveMs: 3_000, pipelineMs: 14_200 } });
+    const initial = compareLargeCorpus(baseCorpusLog, candidate);
+    const retry = compareLargeCorpus(baseCorpusLog, candidate);
     const confirmed = confirmLargeCorpus(initial, retry);
 
     assert.equal(confirmed.passed, false);
-    assert.equal(confirmed.rows.find((row) => row.metric === "save").blocked, true);
+    assert.equal(confirmed.rows.find((row) => row.corpus === "hive" && row.metric === "save").blocked, true);
     assert.match(renderLargeCorpusReport(confirmed), /\*\*FAIL\*\*/);
+});
+
+test("large-corpus comparison requires the exact corpus set", () => {
+    const missing = expectedLargeCorpora.slice(0, 2).map((corpus) => corpusLine(corpus)).join("\n");
+    const unexpected = `${baseCorpusLog}\n${corpusLine("android")}`;
+
+    assert.equal(compareLargeCorpus(missing, missing).passed, false);
+    assert.match(compareLargeCorpus(missing, missing).errors.join("\n"), /missing expected large corpus kotlin-compiler/);
+    assert.equal(compareLargeCorpus(unexpected, unexpected).passed, false);
+    assert.match(compareLargeCorpus(unexpected, unexpected).errors.join("\n"), /unexpected large corpus android/);
+});
+
+test("large-corpus comparison rejects duplicate corpus markers without overwriting", () => {
+    const duplicate = `${baseCorpusLog}\n${corpusLine("hive", { nodes: 1 })}`;
+    const comparison = compareLargeCorpus(duplicate, baseCorpusLog);
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /base: duplicate large-corpus marker hive/);
+});
+
+test("large-corpus comparison rejects graph-shape drift even when the candidate is faster", () => {
+    for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
+        const candidate = corpusLog({
+            hive: {
+                [field]: 1,
+                buildMs: 1_000,
+                saveMs: 200,
+                mappedLoadMs: 20,
+                queryMs: 100,
+                pipelineMs: 1_320
+            }
+        });
+        const comparison = compareLargeCorpus(baseCorpusLog, candidate);
+        assert.equal(comparison.passed, false, field);
+        assert.match(comparison.errors.join("\n"), new RegExp(`hive/${field}: graph shape changed`));
+    }
+});
+
+test("large-corpus confirmation cannot clear a graph-shape failure", () => {
+    const drifted = corpusLog({ hive: { nodes: 99 } });
+    const initial = compareLargeCorpus(baseCorpusLog, drifted);
+    const cleanRetry = compareLargeCorpus(baseCorpusLog, baseCorpusLog);
+    const confirmed = confirmLargeCorpus(initial, cleanRetry);
+
+    assert.equal(confirmed.passed, false);
+    assert.match(confirmed.errors.join("\n"), /hive\/nodes: graph shape changed/);
+});
+
+test("large-corpus comparison validates required measurements", () => {
+    const zeroTiming = corpusLog({ hive: { queryMs: 0, pipelineMs: 12_200 } });
+    const missingShape = baseCorpusLog.replace("\tsourceEdges=200", "");
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, zeroTiming).passed, false);
+    assert.match(compareLargeCorpus(baseCorpusLog, zeroTiming).errors.join("\n"), /hive\/query: invalid measurement/);
+    assert.equal(compareLargeCorpus(missingShape, baseCorpusLog).passed, false);
+    assert.match(compareLargeCorpus(missingShape, baseCorpusLog).errors.join("\n"), /invalid graph-shape measurement/);
+});
+
+test("large-corpus comparison tolerates only small persisted-size noise", () => {
+    const withinTolerance = corpusLog({ hive: { persistedBytes: 100_004_096 } });
+    const outsideTolerance = corpusLog({ hive: { persistedBytes: 100_004_097 } });
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, withinTolerance).passed, true);
+    const comparison = compareLargeCorpus(baseCorpusLog, outsideTolerance);
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /exceeding the 4096-byte tolerance/);
 });
 
 test("aggregate report fails closed when an artifact is missing", () => {

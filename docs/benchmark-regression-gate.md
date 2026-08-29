@@ -10,6 +10,27 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Trust boundary
+
+The pull-request revision supplies production code only. Comparator commands, expected benchmark
+keys, workload harnesses, fixture-preparation harnesses, shard combination, and final aggregation
+are all loaded from the pull request's exact base SHA. Fixed baselines and the candidate are built
+with that base-owned workload source. Candidate copies of comparator tests still run as ordinary
+test coverage, but they are not authoritative for the gate decision.
+
+Benchmark execution jobs have only `contents: read`, every checkout disables credential
+persistence, and result artifacts are downloaded by exact name into separate directories before
+the trusted aggregator stages the expected report/status pair. The only job with
+`pull-requests: write` downloads the already-aggregated report and updates the PR comment; it does
+not check out or execute candidate code.
+
+`.github/CODEOWNERS` assigns the workflow, comparator, JMH workloads, and large-corpus gate harness
+to the repository owner. The active `main` ruleset requires code-owner review so changes to this
+trusted control plane cannot approve themselves; the repository owner is the sole pull-request
+bypass actor for solo maintenance. This repository-local boundary prevents direct comparator or
+workload substitution; defending against a deliberately hostile candidate build script additionally
+requires an external required workflow or GitHub App on an isolated runner.
+
 ## Wrapped case-insensitive latency gate
 
 The `wrapped-query-latency` job protects the production
@@ -121,6 +142,11 @@ The candidate runs before the base so it does not receive a systematic filesyste
 The semantic and fixture assertions still run in record mode; record mode only disables the
 machine-specific absolute timing ceiling. Each corpus process is capped at a 4 GiB heap, so an OOM
 or failure to finish still blocks the pull request.
+
+The comparator requires exactly one result for each of Tika, Hive, and the Kotlin compiler. Node,
+source-edge, persisted-edge, method, and call-site counts must match exactly between the PR base and
+candidate. Persisted graph size may differ by at most 4 KiB to accommodate observed filesystem
+serialization noise; larger size changes fail closed and require an explicit gate-contract update.
 
 | Metric | Relative limit | Minimum absolute increase |
 |---|---:|---:|
