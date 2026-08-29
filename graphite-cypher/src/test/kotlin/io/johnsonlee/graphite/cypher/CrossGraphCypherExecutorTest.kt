@@ -21,9 +21,14 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import org.junit.Test
+import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
@@ -31,6 +36,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@Suppress("LargeClass")
 class CrossGraphCypherExecutorTest {
 
     @Test
@@ -465,6 +471,67 @@ class CrossGraphCypherExecutorTest {
 
         assertEquals(listOf("com.example.VoucherService"), result.rows.map { it["caller"] })
         assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `parallel string scans preserve source order limit and complete provenance`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+
+        fun parallelGraph(vararg callerClasses: String): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                callerClasses.forEachIndexed { index, callerClass ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    if (type != CallSiteNode::class.java) return emptySequence()
+                    @Suppress("UNCHECKED_CAST")
+                    val nodes = backing.nodes(CallSiteNode::class.java) as Sequence<T>
+                    return sequence<T> {
+                        val now = active.incrementAndGet()
+                        maximumActive.accumulateAndGet(now, ::maxOf)
+                        try {
+                            barrier.await(2, TimeUnit.SECONDS)
+                            for (node in nodes.take(limit)) yield(node)
+                        } finally {
+                            active.decrementAndGet()
+                        }
+                    }
+                }
+            }
+        }
+
+        val result = executor(
+            "orders" to parallelGraph("example.TargetA", "example.TargetB"),
+            "billing" to parallelGraph("example.TargetA", "example.TargetC")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("example.TargetA", "example.TargetB"), result.rows.map { it["caller"] })
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.first()))
+        assertEquals(listOf("orders"), graphIds(result.rows.last()))
+        assertEquals(2, maximumActive.get())
     }
 
     @Test

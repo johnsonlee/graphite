@@ -221,3 +221,38 @@ reduces allocation without changing query semantics, but it is not sufficient
 for the 10x multi-graph objective. The next attempt adds bounded cross-graph
 execution around this fused primitive while retaining ordered global merge,
 budget, cancellation, and provenance semantics.
+
+### 2026-08-29 - Attempt 007: Bounded ordered cross-graph scans
+
+The direct disjunction path now scans independent graph instances on a private
+bounded executor, while the caller merges rows strictly by source ordinal. A
+worker pauses after at most `LIMIT` local distinct rows. After the global rows
+are known, it drains its remaining candidates only to add provenance for those
+selected visible values. This preserves first-seen row order and complete
+cross-graph provenance without retaining every matching row. Unsupported or
+non-deterministic projections stay serial; the same graph instance is locked
+across workers; work accounting uses one atomic CAS counter; and the first
+failure interrupts and joins every submitted scan.
+
+The real 36-graph zero-hit case established why logical CPU count is not a safe
+default on this mmap/allocation-bound workload:
+
+| Parallelism | Latency | Relative to serial | Allocation |
+|---:|---:|---:|---:|
+| 1 | `3.038 s` | `1.00x` | `11.24 GB/op` |
+| 2 | `2.708 s` | `1.12x` | `11.51 GB/op` |
+| 4 | `4.988 s` | `0.61x` | `11.52 GB/op` |
+| 8 | `10.207 s` | `0.30x` | `11.44 GB/op` |
+| 16 (`NCPU`) | `19.697 s` | `0.15x` | `12.16 GB/op` |
+
+The default is therefore two workers, still bounded by available processors;
+`graphite.cypher.directStringParallelism` remains available for controlled
+deployment and benchmark experiments. On the four real fixtures, two workers
+produce `0.535–2.081 s/op`. Six of eight distributions clear the fixed-baseline
+10x target; first-only (`9.26x`), last-only (`8.84x`), and first/last bimodal
+(`7.83x`) show that concurrency alone cannot satisfy the gate.
+
+**Conclusion:** retained at parallelism two. It improves the dense case from
+`1.707` to `1.169 s/op` and reduces its allocation from `5.23` to `4.36 GB/op`,
+while higher fan-out is decisively rejected. The remaining work targets
+per-graph string decode/lowercase allocation rather than adding threads.

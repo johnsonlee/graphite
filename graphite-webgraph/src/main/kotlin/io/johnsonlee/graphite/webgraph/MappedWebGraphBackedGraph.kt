@@ -38,6 +38,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.util.LinkedHashMap
+import java.util.concurrent.CancellationException
 
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
@@ -188,7 +189,7 @@ internal class MappedWebGraphBackedGraph(
         workConsumer: GraphWorkConsumer
     ): Sequence<T>? = lookupStringPropertyDisjunction(type, predicates, limit, workConsumer)
 
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")
     private fun <T : Node> lookupStringPropertyDisjunction(
         type: Class<T>,
         predicates: List<StringPropertyPredicate>,
@@ -214,7 +215,13 @@ internal class MappedWebGraphBackedGraph(
                 }
             }
             var yielded = 0
+            var inspected = 0
             for (nodeId in nodeTypeIndex.ids(type)) {
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException("Mapped string-property scan interrupted")
+                }
                 workConsumer?.consume()
                 val matches = predicates.indices.any { index ->
                     val predicate = predicates[index]
@@ -614,6 +621,7 @@ private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
 private const val STRING_HASH_FACTOR = 31
 private const val RAW_STRING_MISS: Byte = 1
 private const val RAW_STRING_MATCH: Byte = 2
+private const val RAW_SCAN_INTERRUPTION_POLL_MASK = 1_023
 
 private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
     STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +

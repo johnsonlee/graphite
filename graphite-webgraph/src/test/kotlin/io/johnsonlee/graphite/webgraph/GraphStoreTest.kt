@@ -76,6 +76,7 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
+    @Suppress("LongMethod")
     fun `mapped string property lookup uses raw node fields and falls back when unsupported`() {
         val owner = TypeDescriptor("example.Owner")
         val caller = MethodDescriptor(

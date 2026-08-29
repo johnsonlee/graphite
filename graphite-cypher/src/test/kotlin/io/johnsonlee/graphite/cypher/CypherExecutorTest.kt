@@ -33,7 +33,9 @@ import io.johnsonlee.graphite.graph.Graph
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
@@ -275,6 +277,34 @@ class CypherExecutorTest {
         assertFailsWith<CypherBudgetExceededException> {
             CypherExecutor(chain, context).execute("MATCH (n:IntConstant) RETURN n.value LIMIT 1")
         }
+    }
+
+    @Test
+    fun `work tracker enforces one exact budget across concurrent workers`() {
+        val budget = 10_000
+        val tracker = CypherWorkTracker(CypherExecutionBudget(budget.toLong()))
+        val successful = AtomicInteger()
+        val start = CountDownLatch(1)
+        val workers = Executors.newFixedThreadPool(8)
+        repeat(8) {
+            workers.submit {
+                start.await()
+                while (true) {
+                    try {
+                        tracker.consume()
+                        successful.incrementAndGet()
+                    } catch (_: CypherBudgetExceededException) {
+                        break
+                    }
+                }
+            }
+        }
+
+        start.countDown()
+        workers.shutdown()
+        assertTrue(workers.awaitTermination(5, TimeUnit.SECONDS))
+        assertEquals(budget, successful.get())
+        assertFailsWith<CypherBudgetExceededException> { tracker.consume() }
     }
 
     @Test
