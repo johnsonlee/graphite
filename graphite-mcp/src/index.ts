@@ -3,6 +3,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import packageMetadata from "../package.json";
 
 const GRAPHITE_URL = process.env.GRAPHITE_URL || "http://localhost:8080";
 
@@ -72,7 +73,7 @@ function graphApiPath(graphId: string | undefined, path: string): string {
 
 const server = new McpServer({
   name: "graphite",
-  version: "1.0.0",
+  version: packageMetadata.version,
 });
 
 // Graph registry and cached statistics

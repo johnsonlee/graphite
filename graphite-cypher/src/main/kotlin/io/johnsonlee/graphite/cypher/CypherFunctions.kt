@@ -248,7 +248,6 @@ object CypherFunctions {
     )
 
     private fun id(value: Any?): Any? = when (value) {
-        is MethodValue -> value.method.signature
         is Node -> value.id.value
         is QualifiedNode -> value.node.id.value
         else -> null

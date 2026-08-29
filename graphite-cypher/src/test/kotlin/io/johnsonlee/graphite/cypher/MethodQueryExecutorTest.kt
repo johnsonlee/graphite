@@ -100,7 +100,7 @@ class MethodQueryExecutorTest {
         )
         val row = result.rows.single()
 
-        assertEquals(indexedOnly.signature, row["id"])
+        assertNull(row["id"])
         assertEquals("Method:${indexedOnly.signature}", row["elementId"])
         assertEquals(listOf("Method"), row["labels"])
         assertEquals(

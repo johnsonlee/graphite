@@ -258,9 +258,10 @@ one graph. Every root non-Cypher result is grouped by `graphId`, while every
 cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
 qualified identities such as `elementId = "orders:42"`.
 
-Use Cypher for agent-driven node, call-site, and method discovery. The legacy
-`/api/nodes`, `/api/call-sites`, and `/api/methods` search routes are not
-available. `/openapi.json` describes the complete supported surface.
+Graphite 3.0 removes the legacy `/api/nodes`, `/api/call-sites`, and
+`/api/methods` search routes and the MCP `methods` tool. Use Cypher for
+agent-driven node, call-site, and method discovery. `/openapi.json` describes
+the complete supported surface.
 
 Declared method metadata, including indexed methods without graph nodes, is
 available through the virtual `Method` source:
@@ -271,6 +272,10 @@ RETURN method.signature, method.class, method.name,
        method.parameter_types, method.return_type
 LIMIT 50
 ```
+
+`Method` values are virtual metadata records rather than stored graph nodes.
+Their stable string identity is available through `elementId(method)`;
+`id(method)` returns `null` because no numeric graph-node id exists.
 
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
