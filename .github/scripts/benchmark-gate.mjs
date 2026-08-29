@@ -893,17 +893,30 @@ export function stageLatestArtifacts(directory, output) {
     const artifacts = fs.readdirSync(directory, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => {
-            const match = entry.name.match(/-(\d+)$/);
-            return match === null ? null : { name: entry.name, attempt: Number(match[1]) };
+            const match = entry.name.match(/^(.*)-(\d+)$/);
+            return match === null ? null : {
+                name: entry.name,
+                producer: match[1],
+                attempt: Number(match[2])
+            };
         })
-        .filter((entry) => entry !== null)
-        .sort((left, right) => left.attempt - right.attempt || left.name.localeCompare(right.name));
+        .filter((entry) => entry !== null);
     if (artifacts.length === 0) throw new Error(`No benchmark artifacts found in ${directory}`);
-    fs.mkdirSync(output, { recursive: true });
+    const latestByProducer = new Map();
     for (const artifact of artifacts) {
+        const latest = latestByProducer.get(artifact.producer);
+        if (latest === undefined || artifact.attempt > latest.attempt) {
+            latestByProducer.set(artifact.producer, artifact);
+        }
+    }
+    const latestArtifacts = [...latestByProducer.values()]
+        .sort((left, right) => left.name.localeCompare(right.name));
+    fs.rmSync(output, { recursive: true, force: true });
+    fs.mkdirSync(output, { recursive: true });
+    for (const artifact of latestArtifacts) {
         fs.cpSync(path.join(directory, artifact.name), output, { recursive: true, force: true });
     }
-    return artifacts.map((artifact) => artifact.name);
+    return latestArtifacts.map((artifact) => artifact.name);
 }
 
 function compareJmhCommand(args) {

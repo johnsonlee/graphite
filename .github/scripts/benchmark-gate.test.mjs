@@ -646,7 +646,7 @@ test("aggregate report includes every independent benchmark gate", () => {
     }
 });
 
-test("artifact staging keeps successful jobs and overlays the latest rerun attempt", () => {
+test("artifact staging keeps successful jobs and selects only the latest producer attempt", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-artifacts-"));
     const output = path.join(directory, "staged");
     try {
@@ -664,11 +664,32 @@ test("artifact staging keeps successful jobs and overlays the latest rerun attem
 
         assert.deepEqual(staged, [
             "benchmark-method-101-1",
-            "benchmark-resource-101-1",
             "benchmark-resource-101-2"
         ]);
         assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "method-status.json"))), { passed: true });
         assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "resource-status.json"))), { passed: true });
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("artifact staging does not mix stale files into a partial retry", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-artifacts-partial-retry-"));
+    const output = path.join(directory, "staged");
+    try {
+        const resourceFirst = path.join(directory, "benchmark-resource-101-1");
+        const resourceRetry = path.join(directory, "benchmark-resource-101-2");
+        fs.mkdirSync(resourceFirst);
+        fs.mkdirSync(resourceRetry);
+        fs.writeFileSync(path.join(resourceFirst, "resource-status.json"), JSON.stringify({ passed: true }));
+        fs.writeFileSync(path.join(resourceFirst, "candidate.json"), JSON.stringify({ attempt: 1 }));
+        fs.writeFileSync(path.join(resourceRetry, "candidate.json"), JSON.stringify({ attempt: 2 }));
+
+        const staged = stageLatestArtifacts(directory, output);
+
+        assert.deepEqual(staged, ["benchmark-resource-101-2"]);
+        assert.equal(fs.existsSync(path.join(output, "resource-status.json")), false);
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "candidate.json"))), { attempt: 2 });
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
