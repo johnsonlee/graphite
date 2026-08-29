@@ -56,7 +56,7 @@ class CrossGraphCypherExecutorTest {
 
         val result = executor.execute(
             "MATCH (m:Method) WHERE m.signature = '${method.signature}' " +
-                "RETURN m.graphId AS graph, m.signature AS signature LIMIT 10"
+                "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10"
         )
 
         assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })

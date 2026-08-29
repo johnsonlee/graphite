@@ -3,7 +3,6 @@ package io.johnsonlee.graphite.cypher
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.graph.MethodPattern
 
-private const val METHOD_LABEL = "Method"
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
 
 /** Executes bounded Cypher reads over the graph's method metadata index. */
@@ -18,53 +17,69 @@ internal object MethodQueryExecutor {
     }
 
     @Suppress("LongMethod", "ReturnCount", "CyclomaticComplexMethod", "NestedBlockDepth")
-    fun execute(
+    fun tryExecute(
         clauses: List<CypherClause>,
         sources: List<CypherGraph>,
         qualified: Boolean,
-        checkCancelled: () -> Unit
-    ): CypherResult {
+        checkCancelled: () -> Unit,
+        workTracker: CypherWorkTracker?
+    ): CypherResult? {
         val match = clauses.firstOrNull() as? CypherClause.Match
-            ?: unsupported()
-        if (match.optional || match.patterns.size != 1) unsupported()
+            ?: return null
+        if (match.optional || match.patterns.size != 1) return null
         val pattern = match.patterns.single()
-        if (pattern.pathVariable != null || pattern.elements.size != 1) unsupported()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
         val nodePattern = pattern.elements.single() as? PatternElement.NodePattern
-            ?: unsupported()
-        if (nodePattern.labels.size != 1 || !isMethodLabel(nodePattern.labels.single())) unsupported()
-        val variable = nodePattern.variable ?: unsupported()
+            ?: return null
+        if (nodePattern.labels.size != 1 || !isMethodLabel(nodePattern.labels.single())) return null
+        val variable = nodePattern.variable ?: return null
 
         var clauseIndex = 1
         val where = (clauses.getOrNull(clauseIndex) as? CypherClause.Where)?.also { clauseIndex++ }
-        val ret = clauses.getOrNull(clauseIndex) as? CypherClause.Return ?: unsupported()
+        val ret = clauses.getOrNull(clauseIndex) as? CypherClause.Return ?: return null
         clauseIndex++
-        if (ret.distinct || ret.items.any { containsAggregation(it.expression) }) unsupported()
+        if (ret.distinct || ret.items.any { containsAggregation(it.expression) }) return null
         val skip = (clauses.getOrNull(clauseIndex) as? CypherClause.Skip)?.also { clauseIndex++ }
         val limit = (clauses.getOrNull(clauseIndex) as? CypherClause.Limit)?.also { clauseIndex++ }
-        if (clauseIndex != clauses.size) unsupported()
+        if (clauseIndex != clauses.size) return null
 
-        val skipCount = literalCount(skip?.count, default = 0)
-        val limitCount = literalCount(limit?.count, default = Int.MAX_VALUE)
+        val skipCount = literalCount(skip?.count, default = 0) ?: return null
+        val limitCount = literalCount(limit?.count, default = Int.MAX_VALUE) ?: return null
         val requested = saturatedAdd(skipCount, limitCount)
         if (requested == 0) return CypherResult(columns(ret), emptyList())
 
-        val predicate = MethodPredicate(variable)
-        nodePattern.properties.forEach { (property, value) ->
-            if (!predicate.addEquality(property, value)) unsupported()
+        val predicateBranches = where?.condition?.let(::conjunctionBranches) ?: listOf(emptyList())
+        val predicates = predicateBranches.map { branch ->
+            MethodPredicate(variable).also { predicate ->
+                nodePattern.properties.forEach { (property, value) ->
+                    if (!predicate.addEquality(property, value)) return null
+                }
+                if (branch.any { !predicate.add(it) }) return null
+            }
         }
-        if (where != null && !predicate.add(where.condition)) unsupported()
 
         val bindings = ArrayList<Map<String, Any?>>(minOf(requested, INITIAL_METHOD_RESULT_CAPACITY))
         for (source in sources) {
             checkCancelled()
-            val remaining = requested - bindings.size
-            if (remaining <= 0) break
-            val methods = source.graph.methodSlice(predicate.pattern(), remaining)
-                ?: source.graph.methods(predicate.pattern()).take(remaining).toList()
-            methods.forEach { method ->
-                checkCancelled()
-                bindings += mutableMapOf<String, Any?>(variable to methodValue(method, source, qualified)).apply {
-                    if (qualified) put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+            val emitted = linkedSetOf<MethodDescriptor>()
+            for (predicate in predicates) {
+                if (bindings.size >= requested) break
+                val methods = if (workTracker == null) {
+                    source.graph.methodSlice(predicate.pattern(), requested)
+                        ?: source.graph.methods(predicate.pattern()).take(requested).toList()
+                } else {
+                    source.graph.methodSlice(predicate.pattern(), requested, workTracker)
+                        ?: source.graph.methods(predicate.pattern(), workTracker).take(requested).toList()
+                }
+                methods.forEach { method ->
+                    checkCancelled()
+                    if (!emitted.add(method)) return@forEach
+                    if (bindings.size >= requested) return@forEach
+                    bindings += mutableMapOf<String, Any?>(
+                        variable to MethodValue(source.id.takeIf { qualified }, method)
+                    ).apply {
+                        if (qualified) put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+                    }
                 }
             }
         }
@@ -83,24 +98,16 @@ internal object MethodQueryExecutor {
         return CypherResult(columns, rows)
     }
 
-    private fun methodValue(method: MethodDescriptor, source: CypherGraph, qualified: Boolean): Map<String, Any?> =
-        linkedMapOf<String, Any?>(
-            "signature" to method.signature,
-            "class" to method.declaringClass.className,
-            "name" to method.name,
-            "parameter_types" to method.parameterTypes.map { it.className },
-            "return_type" to method.returnType.className
-        ).apply {
-            if (qualified) put(GRAPH_ID_PROPERTY, source.id)
-        }
-
     private fun columns(ret: CypherClause.Return): List<String> =
         ret.items.map { it.alias ?: it.expression.toCypherString() }
 
-    private fun literalCount(expression: CypherExpr?, default: Int): Int {
-        if (expression == null) return default
-        val count = (expression as? CypherExpr.Literal)?.value as? Number ?: unsupported()
-        return count.toLong().coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
+    private fun literalCount(expression: CypherExpr?, default: Int): Int? = if (expression == null) {
+        default
+    } else {
+        ((expression as? CypherExpr.Literal)?.value as? Number)
+            ?.toLong()
+            ?.coerceIn(0, Int.MAX_VALUE.toLong())
+            ?.toInt()
     }
 
     private fun saturatedAdd(left: Int, right: Int): Int =
@@ -117,11 +124,15 @@ internal object MethodQueryExecutor {
         else -> false
     }
 
-    private fun isMethodLabel(label: String): Boolean = label.equals(METHOD_LABEL, ignoreCase = true)
+    fun isMethodLabel(label: String): Boolean = label.equals(METHOD_LABEL, ignoreCase = true)
 
-    private fun unsupported(): Nothing = throw CypherException(
-        "Method metadata queries support MATCH (m:Method), optional indexed WHERE, RETURN, SKIP, and LIMIT"
-    )
+    private fun conjunctionBranches(expression: CypherExpr): List<List<CypherExpr>> = when (expression) {
+        is CypherExpr.Or -> conjunctionBranches(expression.left) + conjunctionBranches(expression.right)
+        is CypherExpr.And -> conjunctionBranches(expression.left).flatMap { left ->
+            conjunctionBranches(expression.right).map { right -> left + right }
+        }
+        else -> listOf(listOf(expression))
+    }
 }
 
 @Suppress("ReturnCount")
@@ -150,8 +161,8 @@ private class MethodPredicate(private val variable: String) {
     fun addEquality(property: String, value: CypherExpr): Boolean {
         val raw = literal(value) ?: return false
         return when (property) {
-            "signature" -> addSignature(raw as? String)
-            "parameter_types" -> {
+            METHOD_SIGNATURE_PROPERTY -> addSignature(raw as? String)
+            METHOD_PARAMETER_TYPES_PROPERTY -> {
                 val parameters = (raw as? List<*>)?.map { it as? String ?: return false } ?: return false
                 setOnce(parameterTypes, parameters.map(Regex::escape)) { parameterTypes = it }
             }
@@ -195,9 +206,9 @@ private class MethodPredicate(private val variable: String) {
     }
 
     private fun addProperty(property: String, regex: String?): Boolean = when (property) {
-        "class" -> setOnce(declaringClass, regex) { declaringClass = it }
-        "name" -> setOnce(name, regex) { name = it }
-        "return_type" -> setOnce(returnType, regex) { returnType = it }
+        METHOD_CLASS_PROPERTY -> setOnce(declaringClass, regex) { declaringClass = it }
+        METHOD_NAME_PROPERTY -> setOnce(name, regex) { name = it }
+        METHOD_RETURN_TYPE_PROPERTY -> setOnce(returnType, regex) { returnType = it }
         else -> false
     }
 

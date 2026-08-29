@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.cli
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import io.javalin.Javalin
 import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.core.CallSiteNode
@@ -103,7 +104,7 @@ open class ExplorerMemoryBenchmark {
         measureRetainedHeap(counters) {
             request("/api/graphs") +
                 request("/api/overview?limit=200") +
-                request(cypherPath("MATCH (m:Method) RETURN m LIMIT 200", 200))
+                requestMethodDiscovery()
         }
 
     @Benchmark
@@ -172,7 +173,8 @@ open class ExplorerMemoryBenchmark {
         val before = record()
         issue("/api/graphs")
         issue("/api/overview?limit=200")
-        issue(cypherPath("MATCH (m:Method) RETURN m LIMIT 200", 200))
+        bytes += requestMethodDiscovery()
+        record()
 
         repeat(waterlineWarmupCycles) { cycle -> issueCycle(cycle, ::issue) }
         forceGc()
@@ -245,7 +247,21 @@ open class ExplorerMemoryBenchmark {
     private fun cypherPath(query: String, limit: Int = 10): String =
         "/api/cypher?limit=$limit&query=${URLEncoder.encode(query, StandardCharsets.UTF_8)}"
 
-    private fun request(path: String): Long {
+    private fun requestMethodDiscovery(): Long = request(
+        cypherPath("MATCH (n:ReturnNode) RETURN n.method AS signature LIMIT 200", 200)
+    ) { body ->
+        val result = JsonParser.parseString(body.decodeToString()).asJsonObject
+        val columns = result.getAsJsonArray("columns")
+        val rows = result.getAsJsonArray("rows")
+        check(columns.size() == 1 && columns[0].asString == "signature") {
+            "Method discovery returned unexpected columns: $columns"
+        }
+        check(rows.size() == 200 && rows.all { row ->
+            row.asJsonObject.get("signature")?.isJsonPrimitive == true
+        }) { "Method discovery did not return 200 signatures" }
+    }
+
+    private fun request(path: String, validate: ((ByteArray) -> Unit)? = null): Long {
         val connection = URI("http://localhost:$port$path").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = HTTP_TIMEOUT_MS
@@ -258,6 +274,7 @@ open class ExplorerMemoryBenchmark {
         }
         connection.disconnect()
         check(code in HTTP_SUCCESS_RANGE) { "GET $path returned $code: ${body.decodeToString()}" }
+        validate?.invoke(body)
         return body.size.toLong()
     }
 

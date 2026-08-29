@@ -224,6 +224,21 @@ interface Graph {
     fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? = null
 
     /**
+     * Return a bounded method slice while charging every descriptor inspected by the lookup.
+     * Implementations that cannot expose their internal scan should return null so callers can
+     * fall back to [methods] with an explicit work consumer.
+     */
+    fun methodSlice(
+        pattern: MethodPattern,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): List<MethodDescriptor>? = null
+
+    /** Scan method metadata while charging each descriptor before applying [pattern]. */
+    fun methods(pattern: MethodPattern, workConsumer: GraphWorkConsumer): Sequence<MethodDescriptor> =
+        methods(MethodPattern()).onEach { workConsumer.consume() }.filter(pattern::matches)
+
+    /**
      * Get the underlying values for an enum constant.
      * Enum constructors can have multiple user-defined arguments.
      *

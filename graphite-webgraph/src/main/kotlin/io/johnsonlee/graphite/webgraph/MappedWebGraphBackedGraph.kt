@@ -467,6 +467,14 @@ internal class MappedWebGraphBackedGraph(
             NodeSerializer.readMetadataMethodSlice(dis, stringTable, pattern, limit)
         }
 
+    override fun methodSlice(
+        pattern: MethodPattern,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): List<MethodDescriptor> = DataInputStream(BufferedInputStream(metadataFile.inputStream())).use { dis ->
+        NodeSerializer.readMetadataMethodSlice(dis, stringTable, pattern, limit, workConsumer)
+    }
+
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]
 

@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,22 +34,15 @@ class MethodQueryExecutorTest {
     }
 
     @Test
-    fun `Method source uses metadata slice for large zero and late hits under a tiny budget`() {
-        val late = method("com.example.Generated", "method300000", emptyList(), "void")
-        val graph = SyntheticLargeMethodIndexGraph(late)
+    fun `Method metadata scans consume work instead of bypassing a tiny budget`() {
+        val methods = (0..2).map { method("com.example.Generated", "method$it", emptyList(), "void") }
+        val graph = SyntheticMethodIndexGraph(methods)
         val executor = CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1))
 
-        val missing = executor.execute(
-            "MATCH (m:Method) WHERE m.name = 'neverPresent' RETURN m.signature LIMIT 1"
-        )
-        val found = executor.execute(
-            "MATCH (m:Method) WHERE m.name = 'method300000' RETURN m.signature LIMIT 1"
-        )
-
-        assertTrue(missing.rows.isEmpty())
-        assertEquals(late.signature, found.rows.single()["m.signature"])
-        assertEquals(2, graph.sliceCalls)
-        assertEquals(300_001L, graph.methodCount())
+        assertFailsWith<CypherBudgetExceededException> {
+            executor.execute("MATCH (m:Method) WHERE m.name = 'neverPresent' RETURN m.signature LIMIT 1")
+        }
+        assertEquals(3L, graph.methodCount())
     }
 
     @Test
@@ -91,27 +85,34 @@ class MethodQueryExecutorTest {
     }
 
     @Test
-    fun `Method source rejects shapes that cannot preserve indexed semantics`() {
-        val graph = DefaultGraph.Builder().build()
+    fun `Method source preserves general Cypher semantics outside the indexed fast path`() {
+        val alpha = method("com.example.Alpha", "alpha", listOf("java.lang.String"), "void")
+        val beta = method("com.example.Beta", "beta", listOf("int", "long"), "int")
+        val graph = DefaultGraph.Builder().apply {
+            addMethod(alpha)
+            addMethod(beta)
+            addNode(io.johnsonlee.graphite.core.StringConstant(io.johnsonlee.graphite.core.NodeId(1), "beta"))
+        }.build()
         val executor = CypherExecutor(graph)
-        listOf(
-            "MATCH (m:Method) WHERE m.unknown = 'x' RETURN m LIMIT 1",
-            "MATCH (m:Method) WHERE 'x' = 'x' RETURN m LIMIT 1",
-            "MATCH (m:Method) WHERE m.name = 'a' OR m.name = 'b' RETURN m LIMIT 1",
-            "MATCH (m:Method) RETURN size(collect(m.name)) LIMIT 1"
-        ).forEach { query ->
-            assertFailsWith<CypherException>(query) { executor.execute(query) }
-        }
 
-        assertFailsWith<CypherException> {
-            MethodQueryExecutor.execute(emptyList(), listOf(CypherGraph("single", graph)), false) {}
-        }
-        val relationshipOnly = CypherClause.Match(
-            listOf(CypherPattern(listOf(PatternElement.RelationshipPattern())))
+        val alternatives = executor.execute(
+            "MATCH (m:Method) WHERE m.name = 'alpha' OR m.name = 'beta' " +
+                "RETURN DISTINCT m.name AS name ORDER BY name DESC SKIP 0 LIMIT 2"
         )
-        assertFailsWith<CypherException> {
-            MethodQueryExecutor.execute(listOf(relationshipOnly), listOf(CypherGraph("single", graph)), false) {}
-        }
+        val aggregate = executor.execute("MATCH (m:Method) RETURN count(m) AS total")
+        val unwind = executor.execute(
+            "MATCH (m:Method) WITH m WHERE m.name = 'beta' " +
+                "UNWIND m.parameter_types AS parameter RETURN parameter ORDER BY parameter"
+        )
+        val joined = executor.execute(
+            "MATCH (m:Method), (n:StringConstant) WHERE m.name = n.value RETURN m.signature AS signature"
+        )
+
+        assertEquals(listOf("beta", "alpha"), alternatives.rows.map { it["name"] })
+        assertEquals(2L, aggregate.rows.single()["total"])
+        assertEquals(listOf("int", "long"), unwind.rows.map { it["parameter"] })
+        assertEquals(listOf(beta.signature), joined.rows.map { it["signature"] })
+        assertTrue(executor.execute("MATCH (m:Method) WHERE m.unknown = 'x' RETURN m").rows.isEmpty())
     }
 
     private fun method(owner: String, name: String, parameters: List<String>, returnType: String) =
@@ -122,17 +123,20 @@ class MethodQueryExecutorTest {
             TypeDescriptor(returnType)
         )
 
-    private class SyntheticLargeMethodIndexGraph(
-        private val lateMethod: MethodDescriptor
+    private class SyntheticMethodIndexGraph(
+        private val indexedMethods: List<MethodDescriptor>
     ) : Graph by DefaultGraph.Builder().build() {
-        var sliceCalls = 0
+        override fun methodCount(): Long = indexedMethods.size.toLong()
 
-        override fun methodCount(): Long = 300_001L
+        override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
+            indexedMethods.asSequence().filter(pattern::matches)
 
-        override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
-            sliceCalls++
-            return if (limit > 0 && pattern.matches(lateMethod)) listOf(lateMethod) else emptyList()
-        }
+        override fun methods(
+            pattern: MethodPattern,
+            workConsumer: GraphWorkConsumer
+        ): Sequence<MethodDescriptor> = indexedMethods.asSequence()
+            .onEach { workConsumer.consume() }
+            .filter(pattern::matches)
 
         override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
             error("Method metadata queries must not scan graph nodes")
