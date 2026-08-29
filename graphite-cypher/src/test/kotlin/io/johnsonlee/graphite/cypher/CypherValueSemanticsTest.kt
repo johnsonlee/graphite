@@ -31,6 +31,22 @@ class CypherValueSemanticsTest {
     }
 
     @Test
+    fun `range membership preserves numeric coercion and null semantics`() {
+        val result = executor.execute(
+            "RETURN 2 IN range(1, 3) AS integerMatch, " +
+                "2.0 IN range(1, 3) AS floatMatch, " +
+                "2.5 IN range(1, 3) AS fractionalMiss, " +
+                "null IN range(1, 3) AS nullMembership"
+        )
+
+        val row = result.rows.single()
+        assertEquals(true, row["integerMatch"])
+        assertEquals(true, row["floatMatch"])
+        assertEquals(false, row["fractionalMiss"])
+        assertNull(row["nullMembership"])
+    }
+
+    @Test
     fun `count and collect ignore null inputs end to end`() {
         val result = executor.execute(
             "UNWIND [1, null, 2, null] AS value " +

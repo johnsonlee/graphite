@@ -520,6 +520,11 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `graphId returns null for non-qualified values`() {
+        assertNull(CypherFunctions.call("graphId", listOf("not a qualified value")))
+    }
+
+    @Test
     fun `coalesce returns first non-null`() {
         assertEquals("a", CypherFunctions.call("coalesce", listOf(null, "a", "b")))
     }

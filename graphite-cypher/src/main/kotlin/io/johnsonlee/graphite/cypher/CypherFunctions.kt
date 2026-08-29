@@ -431,18 +431,14 @@ object CypherFunctions {
         val end = (args[1] as Number).toLong()
         val step = if (args.size > 2) (args[2] as Number).toLong() else 1L
         if (step == 0L) throw CypherException("Step cannot be zero in range()")
-        if (checkCancelled == null) {
-            return if (step > 0) (start..end step step).toList()
-            else (start downTo end step -step).toList()
-        }
-        val values = ArrayList<Long>()
+        val values = CypherRangeValues()
         var index = 0
         for (value in LongProgression.fromClosedRange(start, end, step)) {
-            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
             values.add(value)
             index++
         }
-        checkCancelled()
+        checkCancelled?.invoke()
         return values
     }
 
@@ -651,6 +647,9 @@ object CypherFunctions {
         if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
     }
 }
+
+/** A materialized, null-free list of integral values produced by Cypher's range() function. */
+internal class CypherRangeValues : ArrayList<Long>()
 
 class CypherException(message: String) : RuntimeException(message)
 

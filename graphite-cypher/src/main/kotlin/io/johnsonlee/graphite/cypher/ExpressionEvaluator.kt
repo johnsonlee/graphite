@@ -458,7 +458,7 @@ private fun appendWithCancellation(
 
 private fun cypherEquals(left: Any?, right: Any?): Boolean? = when {
     left == null || right == null -> null
-    left is Number && right is Number -> left.toDouble() == right.toDouble()
+    left is Number && right is Number -> left == right || left.toDouble() == right.toDouble()
     left is List<*> && right is List<*> -> cypherListsEqual(left, right)
     left is Map<*, *> && right is Map<*, *> -> cypherMapsEqual(left, right)
     else -> left == right
@@ -492,22 +492,119 @@ private fun cypherMapsEqual(left: Map<*, *>, right: Map<*, *>): Boolean? {
     return if (containsNullComparison) null else true
 }
 
+@Suppress("ReturnCount")
 private fun evaluateMembership(
     list: List<*>,
     element: Any?,
     checkCancelled: (() -> Unit)?
 ): Boolean? {
+    if (list.isEmpty()) return false
+    if (element == null) {
+        checkCancelled?.invoke()
+        return null
+    }
+    if (list is CypherRangeValues && element is Number) {
+        return evaluateRangeMembership(list, element, checkCancelled)
+    }
+
+    if (checkCancelled == null) return evaluateMembershipUntracked(list, element)
+    return if (list is RandomAccess) {
+        evaluateRandomAccessMembership(list, element, checkCancelled)
+    } else {
+        evaluateSequentialMembership(list, element, checkCancelled)
+    }
+}
+
+@Suppress("ReturnCount")
+private fun evaluateRangeMembership(
+    list: CypherRangeValues,
+    element: Number,
+    checkCancelled: (() -> Unit)?
+): Boolean {
+    val target = element.toLong()
+    if (element.toDouble() != target.toDouble()) {
+        checkCancelled?.invoke()
+        return false
+    }
+    if (checkCancelled == null) return list.contains(target)
+
+    var start = 0
+    while (start < list.size) {
+        checkCancelled()
+        val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
+        if (list.subList(start, end).contains(target)) return true
+        start = end
+    }
+    checkCancelled()
+    return false
+}
+
+private fun evaluateMembershipUntracked(list: List<*>, element: Any): Boolean? {
     var containsNullComparison = false
-    for ((index, candidate) in list.withIndex()) {
-        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
-        when (cypherEquals(element, candidate)) {
+    for (candidate in list) {
+        when (cypherMembershipEquals(element, candidate)) {
             true -> return true
             null -> containsNullComparison = true
             false -> Unit
         }
     }
-    checkCancelled?.invoke()
     return if (containsNullComparison) null else false
+}
+
+private fun evaluateRandomAccessMembership(
+    list: List<*>,
+    element: Any,
+    checkCancelled: () -> Unit
+): Boolean? {
+    var containsNullComparison = false
+    var start = 0
+    while (start < list.size) {
+        checkCancelled()
+        val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
+        var index = start
+        while (index < end) {
+            when (cypherMembershipEquals(element, list[index])) {
+                true -> return true
+                null -> containsNullComparison = true
+                false -> Unit
+            }
+            index++
+        }
+        start = end
+    }
+    checkCancelled()
+    return if (containsNullComparison) null else false
+}
+
+private fun evaluateSequentialMembership(
+    list: List<*>,
+    element: Any,
+    checkCancelled: () -> Unit
+): Boolean? {
+    var containsNullComparison = false
+    var index = 0
+    val iterator = list.listIterator()
+    while (iterator.hasNext()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        when (cypherMembershipEquals(element, iterator.next())) {
+            true -> return true
+            null -> containsNullComparison = true
+            false -> Unit
+        }
+        index++
+    }
+    checkCancelled()
+    return if (containsNullComparison) null else false
+}
+
+private fun cypherMembershipEquals(element: Any, candidate: Any?): Boolean? = when {
+    candidate == null -> null
+    element is List<*> && candidate is List<*> -> cypherListsEqual(element, candidate)
+    element is Map<*, *> && candidate is Map<*, *> -> cypherMapsEqual(element, candidate)
+    element == candidate -> true
+    element is Number && candidate is Number && element.javaClass === candidate.javaClass -> false
+    element is Number && candidate is Number -> element.toDouble() == candidate.toDouble()
+    else -> false
 }
 
 private const val CANCELLABLE_COLLECTION_CHUNK_SIZE = 4 * (CANCELLATION_POLL_MASK + 1)

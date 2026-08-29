@@ -458,6 +458,16 @@ class ExpressionEvaluatorTest {
     }
 
     @Test
+    fun `IN - preserves numeric coercion and nested collection nulls`() {
+        assertEquals(true, eval(CypherExpr.ListOp("IN", lit(2), lit(listOf(2L)))))
+        assertNull(eval(CypherExpr.ListOp("IN", lit(listOf(1, null)), lit(listOf(listOf(1, null))))))
+        assertEquals(
+            false,
+            eval(CypherExpr.ListOp("IN", lit(listOf(1, null)), lit(listOf(listOf(2, null)))))
+        )
+    }
+
+    @Test
     fun `IN - empty list returns false even for null`() {
         assertEquals(false, eval(CypherExpr.ListOp("IN", lit(null), lit(emptyList<Any?>()))))
     }
@@ -466,6 +476,7 @@ class ExpressionEvaluatorTest {
     fun `equality propagates nulls nested in collections`() {
         assertNull(eval(CypherExpr.Comparison("=", lit(listOf(1, null)), lit(listOf(1, null)))))
         assertEquals(false, eval(CypherExpr.Comparison("=", lit(listOf(1, null)), lit(listOf(2, null)))))
+        assertEquals(true, eval(CypherExpr.Comparison("=", lit(mapOf("x" to 1)), lit(mapOf("x" to 1)))))
         assertNull(eval(CypherExpr.Comparison("=", lit(mapOf("x" to null)), lit(mapOf("x" to null)))))
     }
 
