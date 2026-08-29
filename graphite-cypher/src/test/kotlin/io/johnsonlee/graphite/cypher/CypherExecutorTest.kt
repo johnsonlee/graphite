@@ -691,6 +691,21 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `filtered relationship pagination handles bounded edge cases`() {
+        val zeroLimit = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN b.index AS index LIMIT 0"
+        )
+        val oversizedPage = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode) " +
+                "WHERE a.value = 42 RETURN b.index AS index SKIP 2147483647 LIMIT 1"
+        )
+
+        assertTrue(zeroLimit.rows.isEmpty())
+        assertTrue(oversizedPage.rows.isEmpty())
+    }
+
+    @Test
     fun `a later pattern expands from its declared source variable`() {
         val owner = TypeDescriptor("com.example.PatternSource")
         val valueType = TypeDescriptor("int")
@@ -1912,6 +1927,26 @@ class CypherExecutorTest {
 
         val path = result.rows.single()["p"] as List<*>
         assertTrue(path.size >= 3, "Path should contain the matched node, edge, and node")
+    }
+
+    @Test
+    fun `named path with relationship variable retains the bound edge`() {
+        val result = executor.execute(
+            "MATCH p = (c:IntConstant)-[r:DATAFLOW]->(ps:ParameterNode) RETURN p LIMIT 1"
+        )
+
+        val path = result.rows.single()["p"] as List<*>
+        assertTrue(path.size >= 3, "Path should contain the explicitly bound relationship")
+    }
+
+    @Test
+    fun `repeated target variable rejects a different node`() {
+        val result = executor.execute(
+            "MATCH (a:IntConstant)-[:DATAFLOW]->(b:ParameterNode)-[:DATAFLOW]->(a) " +
+                "WHERE true RETURN a.value LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
     }
 
     // --- NOT CONTAINS / NOT STARTS WITH / NOT ENDS WITH ---

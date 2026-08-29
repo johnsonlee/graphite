@@ -70,6 +70,22 @@ class PathFinderTest {
     }
 
     @Test
+    fun `depth zero returns the source and default bounds still find direct paths`() {
+        val zeroDepth = PathFinder.findPaths(
+            graph, setOf(nodeA), setOf(nodeA),
+            edgeType = DataFlowEdge::class.java,
+            minDepth = 0, maxDepth = 0
+        )
+        val defaultBounds = PathFinder.findPaths(
+            graph, setOf(nodeA), setOf(nodeB),
+            edgeType = DataFlowEdge::class.java
+        )
+
+        assertEquals(listOf(nodeA), zeroDepth.single().nodes.map(Node::id))
+        assertEquals(listOf(nodeA, nodeB), defaultBounds.single().nodes.map(Node::id))
+    }
+
+    @Test
     fun `find multi-hop paths`() {
         val paths = PathFinder.findPaths(
             graph, setOf(nodeA), setOf(nodeD),
