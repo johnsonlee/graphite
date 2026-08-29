@@ -7,15 +7,23 @@ test('an empty registry remains zero graphs', () => {
     assert.equal(uiState.graphCount({}, []), 0);
 });
 
-test('a failed interactive request is reported without an unhandled rejection', async () => {
+test('a failed canvas action is reported with the same action for retry', async () => {
     let reported;
-    const result = await uiState.runRecoverable(
-        async () => { throw new Error('Graph not loaded: hot-unloaded'); },
-        error => { reported = error; }
+    let retry;
+    const runner = uiState.createLatestTaskRunner();
+    const runCanvasAction = uiState.createInterruptingActionRunner(
+        runner,
+        (error, action) => {
+            reported = error;
+            retry = action;
+        }
     );
+    const action = async () => { throw new Error('Graph not loaded: hot-unloaded'); };
+    const result = await runCanvasAction(action);
 
     assert.equal(result, undefined);
     assert.equal(reported.message, 'Graph not loaded: hot-unloaded');
+    assert.equal(retry, action);
 });
 
 test('a delayed first query cannot overwrite a newer query neighborhood', async () => {
@@ -38,4 +46,26 @@ test('a delayed first query cannot overwrite a newer query neighborhood', async 
     releaseFirst();
     assert.equal(await first, false);
     assert.deepEqual(applied, ['query-b']);
+});
+
+test('a newer non-query canvas action invalidates a delayed query neighborhood', async () => {
+    const runner = uiState.createLatestTaskRunner();
+    const applied = [];
+    let releaseQuery;
+    const runCanvasAction = uiState.createInterruptingActionRunner(
+        runner,
+        error => { throw error; }
+    );
+
+    const query = runner.run(
+        () => new Promise(resolve => { releaseQuery = () => resolve('stale-query'); }),
+        value => applied.push(value)
+    );
+    await Promise.resolve();
+
+    await runCanvasAction(async () => { applied.push('new-graph-view'); });
+    releaseQuery();
+
+    assert.equal(await query, false);
+    assert.deepEqual(applied, ['new-graph-view']);
 });

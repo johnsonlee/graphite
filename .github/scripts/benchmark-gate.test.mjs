@@ -534,6 +534,7 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.equal(aggregate.passed, false);
         assert.match(aggregate.body, new RegExp(COMMENT_MARKER));
         assert.match(aggregate.body, /budgeted-collection: result artifact is missing/);
+        assert.match(aggregate.body, /explorer: result artifact is missing/);
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
@@ -545,6 +546,7 @@ test("aggregate report includes the budgeted collection and mapped-string gates"
     try {
         for (const [report, status, body] of [
             ["method-report.md", "method-status.json", "method report"],
+            ["explorer-report.md", "explorer-status.json", "explorer report"],
             ["budgeted-collection-report.md", "budgeted-collection-status.json", "collection report"],
             ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
             ["large-corpus-report.md", "large-corpus-status.json", "large report"],
@@ -563,6 +565,7 @@ test("aggregate report includes the budgeted collection and mapped-string gates"
 
         assert.equal(aggregate.passed, true);
         assert.match(aggregate.body, /collection report/);
+        assert.match(aggregate.body, /explorer report/);
         assert.match(aggregate.body, /budgeted report/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });

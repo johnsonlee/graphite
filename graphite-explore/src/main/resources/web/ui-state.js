@@ -50,9 +50,19 @@
         return { cancel: cancel, run: run };
     }
 
+    function createInterruptingActionRunner(latestTaskRunner, onError) {
+        return function(action) {
+            latestTaskRunner.cancel();
+            return runRecoverable(action, function(error) {
+                onError(error, action);
+            });
+        };
+    }
+
     return {
         graphCount: graphCount,
         runRecoverable: runRecoverable,
-        createLatestTaskRunner: createLatestTaskRunner
+        createLatestTaskRunner: createLatestTaskRunner,
+        createInterruptingActionRunner: createInterruptingActionRunner
     };
 }));

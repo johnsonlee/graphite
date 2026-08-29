@@ -3,6 +3,10 @@ let dashboardInfo;
 let activeGraphId;
 let resizeTimer;
 const cypherNeighborhoodRunner = GraphiteUiState.createLatestTaskRunner();
+const runCanvasAction = GraphiteUiState.createInterruptingActionRunner(
+    cypherNeighborhoodRunner,
+    function(error, action) { setCanvasError(error, action); }
+);
 
 const NODE_COLORS = {
     Graph: '#58a6ff', Class: '#58a6ff',
@@ -262,7 +266,7 @@ async function showNodeDetail(graphId, nodeId) {
         html += '</div>';
     }
 
-    html += '<div class="detail-block" id="incoming-block"><button onclick="loadIncomingEdges(' + htmlJsString(graphId) + ', ' + nodeId + ')">Load incoming</button></div>';
+    html += '<div class="detail-block" id="incoming-block"><button onclick="exploreIncomingEdges(' + htmlJsString(graphId) + ', ' + nodeId + ')">Load incoming</button></div>';
 
     panel.innerHTML = html;
 }
@@ -281,6 +285,10 @@ async function loadIncomingEdges(graphId, nodeId) {
         html += '<div class="hint">None</div>';
     }
     block.innerHTML = html;
+}
+
+function exploreIncomingEdges(graphId, nodeId) {
+    return runCanvasAction(function() { return loadIncomingEdges(graphId, nodeId); });
 }
 
 async function loadSubgraph(graphId, centerId, depth) {
@@ -482,12 +490,6 @@ function setCanvasError(error, retry) {
         button.addEventListener('click', function() { runCanvasAction(retry); });
         state.appendChild(button);
     }
-}
-
-function runCanvasAction(action) {
-    return GraphiteUiState.runRecoverable(action, function(error) {
-        setCanvasError(error, action);
-    });
 }
 
 function htmlJsString(value) {
