@@ -2,10 +2,13 @@ let cy;
 let dashboardInfo;
 let activeGraphId;
 let resizeTimer;
-const cypherNeighborhoodRunner = GraphiteUiState.createLatestTaskRunner();
+let incomingLoadGeneration = 0;
+const canvasIntentController = GraphiteUiState.createLatestIntentController();
 const runCanvasAction = GraphiteUiState.createInterruptingActionRunner(
-    cypherNeighborhoodRunner,
-    function(error, action) { setCanvasError(error, action); }
+    canvasIntentController,
+    function(error, action) { setCanvasError(error, action); },
+    clearCanvasError,
+    clearCanvasLoading
 );
 
 const NODE_COLORS = {
@@ -74,9 +77,11 @@ function initCytoscape() {
     cy.on('tap', 'node', e => {
         const nodeId = e.target.data('nodeId');
         if (Number.isInteger(nodeId)) {
-            runCanvasAction(function() { return showNodeDetail(e.target.data('graphId'), nodeId); });
+            runCanvasAction(function(intent) { return showNodeDetail(e.target.data('graphId'), nodeId, intent); });
         } else if (e.target.data('nodeType') === 'Graph') {
-            showGraphDetail(e.target.data('nodeData'));
+            runCanvasAction(function(intent) {
+                intent.commit(function() { showGraphDetail(e.target.data('nodeData')); });
+            });
         }
     });
     cy.on('dbltap', 'node', e => {
@@ -90,18 +95,21 @@ function initCytoscape() {
     cy.on('tap', 'edge', e => {
         const nodeId = e.target.data('targetNodeId');
         if (Number.isInteger(nodeId)) {
-            runCanvasAction(function() { return showNodeDetail(e.target.data('graphId'), nodeId); });
+            runCanvasAction(function(intent) { return showNodeDetail(e.target.data('graphId'), nodeId, intent); });
         } else if (e.target.data('edgeType') === 'TopologyCall') {
-            showTopologyRelationDetail(e.target.data('edgeData'));
+            runCanvasAction(function(intent) {
+                intent.commit(function() { showTopologyRelationDetail(e.target.data('edgeData')); });
+            });
         }
     });
 }
 
-async function loadDashboard() {
+async function loadDashboard(intent) {
     setCanvasState('Loading workspace');
     setServerStatus('connecting', 'Connecting');
     try {
-        const info = await fetchJson('/api/graphs');
+        const info = await fetchJson('/api/graphs', { signal: intent.signal });
+        if (!intent.isCurrent()) return;
         dashboardInfo = info;
 
         const totals = info.totals || info;
@@ -121,16 +129,16 @@ async function loadDashboard() {
         if (graphCount > 1) {
             navigationSection.hidden = false;
             loadGraphList(graphs);
-            await loadGraphTopology();
+            await loadGraphTopology(intent);
         } else {
             navigationSection.hidden = true;
             document.getElementById('class-list').innerHTML = '';
             activeGraphId = graphs.length === 1 ? graphs[0].id : null;
-            await loadInitialGraph();
+            await loadInitialGraph(intent);
         }
     } catch (error) {
-        setServerStatus('error', 'Unavailable');
-        setCanvasError(error, loadDashboard);
+        if (intent.isCurrent() && error.name !== 'AbortError') setServerStatus('error', 'Unavailable');
+        throw error;
     }
 }
 
@@ -150,52 +158,60 @@ function loadGraphList(graphs) {
             Number(graph.edges || 0).toLocaleString() + ' edges, ' + Number(graph.methods || 0).toLocaleString() +
             ' methods, ' + Number(graph.callSites || 0).toLocaleString() + ' call sites';
         button.onclick = function() {
-            list.querySelectorAll('.item').forEach(function(item) { item.classList.remove('selected'); });
-            button.classList.add('selected');
-            activeGraphId = graph.id;
-            const node = cy.getElementById(graphElementId(graph.id));
-            if (node.length) {
-                cy.elements().removeClass('highlighted');
-                node.addClass('highlighted');
-                cy.animate({ center: { eles: node }, zoom: 1.3, duration: 250 });
-            }
-            showGraphDetail(graph);
+            runCanvasAction(function(intent) {
+                intent.commit(function() {
+                    list.querySelectorAll('.item').forEach(function(item) { item.classList.remove('selected'); });
+                    button.classList.add('selected');
+                    activeGraphId = graph.id;
+                    const node = cy.getElementById(graphElementId(graph.id));
+                    if (node.length) {
+                        cy.elements().removeClass('highlighted');
+                        node.addClass('highlighted');
+                        cy.animate({ center: { eles: node }, zoom: 1.3, duration: 250 });
+                    }
+                    showGraphDetail(graph);
+                });
+            });
         };
         list.appendChild(button);
     });
 }
 
-async function loadGraphTopology() {
+async function loadGraphTopology(intent) {
     setCanvasState('Loading graph topology');
-    const data = await fetchJson('/api/topology');
+    const data = await fetchJson('/api/topology', { signal: intent.signal });
     data.nodes.forEach(function(node) { node.elementId = graphElementId(node.id); });
     data.edges.forEach(function(edge) {
         edge.fromElementId = graphElementId(edge.from);
         edge.toElementId = graphElementId(edge.to);
     });
-    renderGraph(data, null, 'topology');
-    let info = data.graphCount + ' graphs, ' + data.relationCount + ' call relations, ' +
-        Number(data.matchedRows || 0).toLocaleString() + ' matched rows';
-    if (data.stale) info += ' (topology is stale)';
-    setGraphInfo(info);
+    intent.commit(function() {
+        renderGraph(data, null, 'topology', intent);
+        let info = data.graphCount + ' graphs, ' + data.relationCount + ' call relations, ' +
+            Number(data.matchedRows || 0).toLocaleString() + ' matched rows';
+        if (data.stale) info += ' (topology is stale)';
+        setGraphInfo(info);
+    });
 }
 
-async function loadInitialGraph() {
+async function loadInitialGraph(intent) {
     const graphs = dashboardInfo && Array.isArray(dashboardInfo.graphs) ? dashboardInfo.graphs : [];
     if (graphs.length === 1 && graphs[0].id) {
-        await loadSingleGraphOverview(graphs[0].id);
+        await loadSingleGraphOverview(graphs[0].id, intent);
         return;
     }
     setCanvasState('Loading class overview');
-    const response = await fetchJson('/api/overview');
+    const response = await fetchJson('/api/overview', { signal: intent.signal });
     const data = mergeGroupedGraphs(response);
-    renderGraph(data, null);
-    setGraphInfo(`${data.nodes.length} classes, ${data.edges.length} calls`);
+    intent.commit(function() {
+        renderGraph(data, null, undefined, intent);
+        setGraphInfo(`${data.nodes.length} classes, ${data.edges.length} calls`);
+    });
 }
 
-async function loadSingleGraphOverview(graphId) {
+async function loadSingleGraphOverview(graphId, intent) {
     setCanvasState('Loading ' + graphId);
-    const data = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/overview');
+    const data = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/overview', { signal: intent.signal });
     data.nodes.forEach(function(node) {
         node.graphId = graphId;
         node.elementId = graphId + ':' + node.id;
@@ -205,8 +221,10 @@ async function loadSingleGraphOverview(graphId) {
         edge.fromElementId = graphId + ':' + edge.from;
         edge.toElementId = graphId + ':' + edge.to;
     });
-    renderGraph(data, null);
-    setGraphInfo(data.nodes.length + ' classes, ' + data.edges.length + ' calls');
+    intent.commit(function() {
+        renderGraph(data, null, undefined, intent);
+        setGraphInfo(data.nodes.length + ' classes, ' + data.edges.length + ' calls');
+    });
 }
 
 function showGraphDetail(graph) {
@@ -242,18 +260,14 @@ function graphMetricRow(label, value) {
 
 function graphElementId(graphId) { return 'graph:' + graphId; }
 
-async function showNodeDetail(graphId, nodeId) {
+async function showNodeDetail(graphId, nodeId, intent) {
     const prefix = '/api/graphs/' + encodeURIComponent(graphId);
+    const options = { signal: intent.signal };
     const [node, outgoing] = await Promise.all([
-        fetchJson(prefix + '/node/' + nodeId), fetchJson(prefix + '/node/' + nodeId + '/outgoing?limit=200')
+        fetchJson(prefix + '/node/' + nodeId, options),
+        fetchJson(prefix + '/node/' + nodeId + '/outgoing?limit=200', options)
     ]);
 
-    // Highlight in graph
-    cy.elements().removeClass('highlighted');
-    const cyNode = cy.getElementById(graphId + ':' + nodeId);
-    if (cyNode.length) cyNode.addClass('highlighted');
-
-    const panel = document.getElementById('detail-content');
     let html = '<div class="detail-block"><h4>' + escapeHtml(node.type) + '</h4><pre>' +
         escapeHtml(JSON.stringify(node, null, 2)) + '</pre></div>';
 
@@ -268,13 +282,33 @@ async function showNodeDetail(graphId, nodeId) {
 
     html += '<div class="detail-block" id="incoming-block"><button onclick="exploreIncomingEdges(' + htmlJsString(graphId) + ', ' + nodeId + ')">Load incoming</button></div>';
 
-    panel.innerHTML = html;
+    intent.commit(function() {
+        cy.elements().removeClass('highlighted');
+        const cyNode = cy.getElementById(graphId + ':' + nodeId);
+        if (cyNode.length) cyNode.addClass('highlighted');
+        document.getElementById('detail-content').innerHTML = html;
+    });
 }
 
-async function loadIncomingEdges(graphId, nodeId) {
+async function loadIncomingEdges(graphId, nodeId, intent) {
     const block = document.getElementById('incoming-block');
+    const idleHtml = block.innerHTML;
+    const loadToken = String(++incomingLoadGeneration);
+    block.dataset.incomingLoad = loadToken;
     block.innerHTML = '<h4>Incoming</h4><div class="hint">Loading...</div>';
-    const incoming = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/node/' + nodeId + '/incoming?limit=200');
+    let incoming;
+    try {
+        incoming = await fetchJson(
+            '/api/graphs/' + encodeURIComponent(graphId) + '/node/' + nodeId + '/incoming?limit=200',
+            { signal: intent.signal }
+        );
+    } catch (error) {
+        if (block.isConnected && block.dataset.incomingLoad === loadToken) {
+            delete block.dataset.incomingLoad;
+            block.innerHTML = idleHtml;
+        }
+        throw error;
+    }
     let html = '<h4>Incoming (' + incoming.length + ')</h4>';
     if (incoming.length > 0) {
         incoming.slice(0, 20).forEach(e => {
@@ -284,31 +318,39 @@ async function loadIncomingEdges(graphId, nodeId) {
     } else {
         html += '<div class="hint">None</div>';
     }
-    block.innerHTML = html;
+    intent.commit(function() {
+        delete block.dataset.incomingLoad;
+        block.innerHTML = html;
+    });
 }
 
 function exploreIncomingEdges(graphId, nodeId) {
-    return runCanvasAction(function() { return loadIncomingEdges(graphId, nodeId); });
+    return runCanvasAction(function(intent) { return loadIncomingEdges(graphId, nodeId, intent); });
 }
 
-async function loadSubgraph(graphId, centerId, depth) {
+async function loadSubgraph(graphId, centerId, depth, intent) {
     setCanvasState('Loading neighborhood');
-    const data = await fetchJson('/api/graphs/' + encodeURIComponent(graphId) + '/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing');
+    const data = await fetchJson(
+        '/api/graphs/' + encodeURIComponent(graphId) + '/subgraph?center=' + centerId + '&depth=' + depth + '&direction=outgoing',
+        { signal: intent.signal }
+    );
     data.nodes.forEach(n => { n.graphId = graphId; n.elementId = graphId + ':' + n.id; });
     data.edges.forEach(e => { e.graphId = graphId; e.fromElementId = graphId + ':' + e.from; e.toElementId = graphId + ':' + e.to; });
-    renderGraph(data, graphId + ':' + centerId);
-    setGraphInfo(data.nodes.length + ' nodes, ' + data.edges.length + ' edges');
+    intent.commit(function() {
+        renderGraph(data, graphId + ':' + centerId, undefined, intent);
+        setGraphInfo(data.nodes.length + ' nodes, ' + data.edges.length + ' edges');
+    });
 }
 
 function exploreGraph(graphId) {
-    return runCanvasAction(function() { return loadSingleGraphOverview(graphId); });
+    return runCanvasAction(function(intent) { return loadSingleGraphOverview(graphId, intent); });
 }
 
 function exploreSubgraph(graphId, centerId, depth) {
-    return runCanvasAction(function() { return loadSubgraph(graphId, centerId, depth); });
+    return runCanvasAction(function(intent) { return loadSubgraph(graphId, centerId, depth, intent); });
 }
 
-function renderGraph(data, centerId, viewMode) {
+function renderGraph(data, centerId, viewMode, intent) {
     const elements = [];
     const seen = new Set();
 
@@ -365,6 +407,7 @@ function renderGraph(data, centerId, viewMode) {
 
     const layout = cy.layout(layoutOpts);
     cy.one('layoutstop', function() {
+        if (intent && !intent.isCurrent()) return;
         finishGraphLayout(centerId, reduceMotion);
         setCanvasState();
     });
@@ -492,6 +535,16 @@ function setCanvasError(error, retry) {
     }
 }
 
+function clearCanvasError() {
+    const state = document.getElementById('canvas-state');
+    if (state.classList.contains('error')) setCanvasState();
+}
+
+function clearCanvasLoading() {
+    const state = document.getElementById('canvas-state');
+    if (!state.classList.contains('error')) setCanvasState();
+}
+
 function htmlJsString(value) {
     return JSON.stringify(value).replace(/"/g, '&quot;');
 }
@@ -547,44 +600,41 @@ document.getElementById('btn-reset').addEventListener('click', function() {
 });
 
 // Load Cypher result nodes onto the canvas
-async function loadCypherResults(nodeRefs) {
+async function loadCypherResults(nodeRefs, intent) {
     if (nodeRefs.length === 0) return;
     var refs = nodeRefs.slice(0, 50);
-    return cypherNeighborhoodRunner.run(async function(signal) {
-        var allNodes = new Map();
-        var allEdges = [];
-        var firstError;
+    var allNodes = new Map();
+    var allEdges = [];
+    var firstError;
 
-        for (var i = 0; i < refs.length; i++) {
-            try {
-                var ref = refs[i];
-                var data = await fetchJson(
-                    '/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing',
-                    { signal: signal }
-                );
-                data.nodes.forEach(function(n) {
-                    n.graphId = ref.graphId;
-                    n.elementId = ref.graphId + ':' + n.id;
-                    if (!allNodes.has(n.elementId)) allNodes.set(n.elementId, n);
-                });
-                data.edges.forEach(function(e) {
-                    e.graphId = ref.graphId;
-                    e.fromElementId = ref.graphId + ':' + e.from;
-                    e.toElementId = ref.graphId + ':' + e.to;
-                    allEdges.push(e);
-                });
-            } catch (error) {
-                if (signal.aborted || error.name === 'AbortError') throw error;
-                if (!firstError) firstError = error;
-            }
+    for (var i = 0; i < refs.length; i++) {
+        try {
+            var ref = refs[i];
+            var data = await fetchJson(
+                '/api/graphs/' + encodeURIComponent(ref.graphId) + '/subgraph?center=' + ref.id + '&depth=1&direction=outgoing',
+                { signal: intent.signal }
+            );
+            data.nodes.forEach(function(n) {
+                n.graphId = ref.graphId;
+                n.elementId = ref.graphId + ':' + n.id;
+                if (!allNodes.has(n.elementId)) allNodes.set(n.elementId, n);
+            });
+            data.edges.forEach(function(e) {
+                e.graphId = ref.graphId;
+                e.fromElementId = ref.graphId + ':' + e.from;
+                e.toElementId = ref.graphId + ':' + e.to;
+                allEdges.push(e);
+            });
+        } catch (error) {
+            if (!intent.isCurrent() || error.name === 'AbortError') throw error;
+            if (!firstError) firstError = error;
         }
-        if (allNodes.size === 0 && firstError) throw firstError;
-        return { nodes: Array.from(allNodes.values()), edges: allEdges };
-    }, function(result) {
-        renderGraph(result, refs[0].graphId + ':' + refs[0].id);
+    }
+    if (allNodes.size === 0 && firstError) throw firstError;
+    var result = { nodes: Array.from(allNodes.values()), edges: allEdges };
+    intent.commit(function() {
+        renderGraph(result, refs[0].graphId + ':' + refs[0].id, undefined, intent);
         setGraphInfo(result.nodes.length + ' nodes, ' + result.edges.length + ' edges');
-    }, function(error) {
-        setCanvasError(error, function() { loadCypherResults(nodeRefs); });
     });
 }
 
@@ -593,7 +643,8 @@ async function runCypher() {
     var query = document.getElementById('cypher-input').value.trim();
     var runButton = document.getElementById('cypher-run');
     if (!query || runButton.disabled) return;
-    cypherNeighborhoodRunner.cancel();
+    clearCanvasLoading();
+    var queryIntent = canvasIntentController.begin();
 
     var resultDiv = document.getElementById('cypher-result');
     runButton.disabled = true;
@@ -663,8 +714,8 @@ async function runCypher() {
         var uniqueRefs = new Map();
         nodeRefs.forEach(function(ref) { uniqueRefs.set(ref.graphId + ':' + ref.id, ref); });
         nodeRefs = Array.from(uniqueRefs.values());
-        if (nodeRefs.length > 0) {
-            loadCypherResults(nodeRefs);
+        if (nodeRefs.length > 0 && queryIntent.isCurrent()) {
+            runCanvasAction(function(intent) { return loadCypherResults(nodeRefs, intent); });
         }
     } catch (e) {
         resultDiv.innerHTML = '<div id="cypher-error">' + escapeHtml(e.message || e) + '</div>';
@@ -683,4 +734,4 @@ document.getElementById('cypher-input').addEventListener('keydown', function(e) 
 
 // Init
 initCytoscape();
-loadDashboard();
+runCanvasAction(loadDashboard);
