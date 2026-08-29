@@ -7,9 +7,12 @@ import {
     COMMENT_MARKER,
     aggregateReports,
     combineLatencyShards,
+    compareLatencyResources,
+    confirmLatencyResources,
     confirmLargeCorpus,
     LATENCY_EXPECTED_BENCHMARK_KEYS,
     LATENCY_EXPECTED_SHARDS,
+    LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS,
     confirmLatencyBaseline,
     confirmJmh,
     compareJmh,
@@ -27,7 +30,9 @@ function jmhResult({
     score,
     confidence,
     unit = "us/op",
-    params
+    params,
+    jvmArgs,
+    secondaryMetrics
 }) {
     const result = {
         benchmark,
@@ -39,7 +44,38 @@ function jmhResult({
         }
     };
     if (params !== undefined) result.params = params;
+    if (jvmArgs !== undefined) result.jvmArgs = jvmArgs;
+    if (secondaryMetrics !== undefined) result.secondaryMetrics = secondaryMetrics;
     return result;
+}
+
+function metric(score, scoreUnit) {
+    return { score, scoreUnit };
+}
+
+function resourceResult({ allFixture = false, overrides = {}, jvmArgs } = {}) {
+    const maxHeapBytes = (allFixture ? 8 : 4) * 1024 ** 3;
+    return jmhResult({
+        benchmark: LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[allFixture ? 1 : 0],
+        mode: "ss",
+        score: 1,
+        confidence: [0.9, 1.1],
+        unit: "ms/op",
+        jvmArgs: jvmArgs ?? [`-Xmx${allFixture ? 8 : 4}g`],
+        secondaryMetrics: {
+            maxHeapBytes: metric(maxHeapBytes, "#"),
+            loadedHeapBytes: metric(100 * 1024 ** 2, "#"),
+            peakUsedHeapBytes: metric(200 * 1024 ** 2, "#"),
+            retainedHeapBytes: metric(120 * 1024 ** 2, "#"),
+            retainedHeapDeltaBytes: metric(20 * 1024 ** 2, "#"),
+            queryGcCount: metric(0, "#"),
+            queryGcTimeMs: metric(0, "#"),
+            "gc.alloc.rate.norm": metric(1_000_000, "B/op"),
+            "gc.count": metric(0, "counts"),
+            "gc.time": metric(0, "ms"),
+            ...overrides
+        }
+    });
 }
 
 test("JMH comparison blocks a separated latency regression", () => {
@@ -253,14 +289,73 @@ test("latency confirmation blocks only failures repeated by the same benchmark",
 test("latency baseline fails closed when one graph-count parameter is missing", () => {
     const fixed = [
         { ...jmhResult({ score: 100 }), params: { graphCount: "1" } },
-        { ...jmhResult({ score: 1_700 }), params: { graphCount: "17" } }
+        { ...jmhResult({ score: 6_400 }), params: { graphCount: "64" } }
     ];
     const base = fixed.map((result) => ({ ...result, primaryMetric: { ...result.primaryMetric, score: 20 } }));
     const candidate = base.slice(0, 1);
     const comparison = compareLatencyBaseline(fixed, base, candidate);
 
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /graphCount=17/);
+    assert.match(comparison.errors.join("\n"), /graphCount=64/);
+});
+
+test("latency expected keys include geometric synthetic scaling and real 36-graph coverage", () => {
+    for (const graphCount of [1, 4, 16, 64]) {
+        assert.ok(LATENCY_EXPECTED_BENCHMARK_KEYS.some((key) => key.includes(`graphCount=${graphCount}]`)));
+    }
+    assert.ok(LATENCY_EXPECTED_BENCHMARK_KEYS.some((key) => key.includes("ThirtySixRealGraphs")));
+});
+
+test("multi-graph latency requires a ten-times fixed-baseline factor", () => {
+    const params = { graphCount: "64" };
+    const fixed = jmhResult({ score: 100, confidence: [98, 102], params });
+    const base = jmhResult({ score: 10, confidence: [9.5, 10.5], params });
+    const tooSlow = jmhResult({ score: 11, confidence: [10.5, 11.5], params });
+    const comparison = compareLatencyBaseline([fixed], [base], [tooSlow]);
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows[0].minimumSpeedup, 900);
+});
+
+test("resource gate accepts 4 GiB single and 8 GiB AllFixture profiles", () => {
+    const base = [resourceResult(), resourceResult({ allFixture: true })];
+    const candidate = [resourceResult(), resourceResult({ allFixture: true })];
+
+    assert.equal(compareLatencyResources(base, candidate).passed, true);
+});
+
+test("resource gate fails closed on the wrong single-graph max heap", () => {
+    const base = [resourceResult(), resourceResult({ allFixture: true })];
+    const candidate = [resourceResult({ jvmArgs: ["-Xmx8g"] }), resourceResult({ allFixture: true })];
+    const comparison = compareLatencyResources(base, candidate);
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /expected exactly -Xmx4g/);
+});
+
+test("resource gate requires GC, retained, and peak metrics", () => {
+    const missingGc = resourceResult({ overrides: { "gc.time": undefined } });
+    const invalidHeap = resourceResult({ overrides: { retainedHeapBytes: metric(300 * 1024 ** 2, "#") } });
+    const allFixture = resourceResult({ allFixture: true });
+
+    assert.match(compareLatencyResources([resourceResult(), allFixture], [missingGc, allFixture]).errors.join("\n"),
+        /gc.time/);
+    assert.match(compareLatencyResources([resourceResult(), allFixture], [invalidHeap, allFixture]).errors.join("\n"),
+        /invalid loaded\/retained\/peak/);
+});
+
+test("resource confirmation aligns the same metric before blocking", () => {
+    const base = [resourceResult(), resourceResult({ allFixture: true })];
+    const firstCandidate = [
+        resourceResult({ overrides: { retainedHeapDeltaBytes: metric(80 * 1024 ** 2, "#") } }),
+        resourceResult({ allFixture: true })
+    ];
+    const retryCandidate = [resourceResult(), resourceResult({ allFixture: true })];
+    const initial = compareLatencyResources(base, firstCandidate);
+    const confirmed = confirmLatencyResources(initial, compareLatencyResources(base, retryCandidate));
+
+    assert.equal(initial.passed, false);
+    assert.equal(confirmed.passed, true);
 });
 
 test("latency baseline fails when an expected benchmark disappears from all revisions", () => {
@@ -410,7 +505,8 @@ test("aggregate report includes the budgeted collection and mapped-string gates"
             ["budgeted-collection-report.md", "budgeted-collection-status.json", "collection report"],
             ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
             ["large-corpus-report.md", "large-corpus-status.json", "large report"],
-            ["latency-report.md", "latency-status.json", "latency report"]
+            ["latency-report.md", "latency-status.json", "latency report"],
+            ["latency-resource-report.md", "latency-resource-status.json", "resource report"]
         ]) {
             fs.writeFileSync(path.join(directory, report), `${body}\n`);
             fs.writeFileSync(path.join(directory, status), JSON.stringify({ passed: true }));

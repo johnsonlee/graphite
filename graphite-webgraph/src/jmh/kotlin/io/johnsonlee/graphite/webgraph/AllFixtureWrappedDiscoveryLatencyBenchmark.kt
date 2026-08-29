@@ -97,6 +97,57 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
 }
 
 /**
+ * Production-sized 36-graph latency guard. The four immutable real fixtures are
+ * opened round-robin so every executor entry has an independent graph identity
+ * without rebuilding or copying roughly 200 million nodes.
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 1)
+@Measurement(iterations = 3)
+@Fork(1, jvmArgs = ["-Xmx8g"])
+open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
+
+    private lateinit var executor: CrossGraphCypherExecutor
+    private val loadedGraphs = mutableListOf<Graph>()
+    private val clearIndexMethods = mutableListOf<Method?>()
+
+    @Setup
+    fun setup() {
+        val kinds = BenchmarkCorpusKind.entries
+        val graphs = (0 until REAL_GRAPH_COUNT).map { graphIndex ->
+            val kind = kinds[graphIndex % kinds.size]
+            val graph = GraphStore.loadMapped(BenchmarkCorpus.persistedGraph(kind))
+            check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
+            loadedGraphs += graph
+            clearIndexMethods += graph.javaClass.declaredMethods
+                .firstOrNull { it.name.startsWith("clearStringPropertyIndexes") }
+                ?.also { it.isAccessible = true }
+            CypherGraph("fixture-$graphIndex-${kind.id}", graph)
+        }
+        check(graphs.size == REAL_GRAPH_COUNT)
+        executor = budgetedLatencyExecutor(graphs)
+        check(executor.execute(ZERO_HIT_QUERY).rows.isEmpty())
+    }
+
+    @TearDown
+    fun tearDown() {
+        loadedGraphs.forEach { (it as? Closeable)?.close() }
+    }
+
+    @Benchmark
+    fun zeroHitBroadContainsAcrossThirtySixRealGraphs(): CypherResult {
+        loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
+        return executor.execute(ZERO_HIT_QUERY).also { result -> check(result.rows.isEmpty()) }
+    }
+
+    private companion object {
+        const val REAL_GRAPH_COUNT = 36
+    }
+}
+
+/**
  * Hashes complete columns, rows, values, and provenance for every timed query.
  * CI compares these markers across fixed, base, and candidate revisions.
  */
@@ -185,7 +236,7 @@ internal object AllFixtureBenchmarkDistributionCalibration {
 
 private const val EXPECTED_ALL_FIXTURE_NODES = 19_091_048L
 
-private const val ZERO_HIT_QUERY = """
+internal const val ZERO_HIT_QUERY = """
 MATCH (n)
 WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'
    OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'
@@ -312,4 +363,4 @@ internal fun budgetedLatencyExecutor(graphs: List<CypherGraph>): CrossGraphCyphe
 
 private const val ALLOW_LEGACY_UNBUDGETED_PROPERTY =
     "graphite.benchmark.allowLegacyUnbudgetedExecutor"
-private const val LATENCY_BENCHMARK_WORK_BUDGET = 25_000_000L
+private const val LATENCY_BENCHMARK_WORK_BUDGET = 500_000_000L

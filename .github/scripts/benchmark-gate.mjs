@@ -10,9 +10,13 @@ export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 const MIB = 1024 * 1024;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=4]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=16]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=17]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=4]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=16]",
+    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.broadlyDistributedClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.denseDistributedMethodContainsCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.earlyGraphClassPrefixCaseInsensitiveDiscovery",
@@ -20,9 +24,31 @@ export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.lateGraphClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.middleGraphsClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.skewedMixedClassMethodOperatorCaseInsensitiveDiscovery",
-    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery"
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsCaseInsensitiveDiscovery",
+    "io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs"
 ];
-export const LATENCY_EXPECTED_SHARDS = ["synthetic", "real-a", "real-b", "real-c", "real-d"];
+export const LATENCY_EXPECTED_SHARDS = [
+    "synthetic-1", "synthetic-4", "synthetic-16", "synthetic-64",
+    "real-a", "real-b", "real-c", "real-d", "real-36"
+];
+export const LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS = [
+    "io.johnsonlee.graphite.webgraph.SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint",
+    "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint"
+];
+const GIB = 1024 * MIB;
+const LATENCY_RESOURCE_PROFILES = new Map([
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 4 * GIB }],
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[1], { maxHeapBytes: 8 * GIB }]
+]);
+const LATENCY_RESOURCE_METRICS = [
+    { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
+    { key: "gc.count", label: "GC count", threshold: 15, minimum: 1 },
+    { key: "gc.time", label: "GC time", threshold: 15, minimum: 10 },
+    { key: "queryGcCount", label: "query GC count", threshold: 15, minimum: 1 },
+    { key: "queryGcTimeMs", label: "query GC time", threshold: 15, minimum: 10 },
+    { key: "retainedHeapDeltaBytes", label: "retained heap delta", threshold: 15, minimum: 16 * MIB },
+    { key: "peakUsedHeapBytes", label: "peak used heap", threshold: 15, minimum: 64 * MIB }
+];
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
@@ -85,6 +111,25 @@ function benchmarkKey(result) {
         .map(([name, value]) => `${name}=${value}`)
         .join(",");
     return parameters.length === 0 ? result.benchmark : `${result.benchmark}[${parameters}]`;
+}
+
+function resultMap(results, revision, errors) {
+    const mapped = new Map();
+    for (const result of results) {
+        const key = benchmarkKey(result);
+        if (mapped.has(key)) errors.push(`${revision}: duplicate benchmark ${key}`);
+        else mapped.set(key, result);
+    }
+    return mapped;
+}
+
+function secondaryMetric(result, name) {
+    return result.secondaryMetrics?.[name] ?? null;
+}
+
+function parseMaximumHeapArguments(result) {
+    if (!Array.isArray(result.jvmArgs)) return [];
+    return result.jvmArgs.filter((argument) => /^-Xmx/i.test(argument));
 }
 
 function shortBenchmarkName(name) {
@@ -328,14 +373,16 @@ export function compareLatencyBaseline(
             errors.push(`${key}: fixed-baseline speedup requires finite confidence bounds`);
         }
         const speedup = ((fixedScore / candidateScore) - 1) * 100;
+        const multiGraph = /AllFixture|ThirtySix|graphCount=(?!1\])/.test(key);
+        const requiredSpeedup = multiGraph ? Math.max(minimumSpeedup, 900) : minimumSpeedup;
         const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
             confidenceSeparates(candidateBounds, fixedBounds, true);
-        const improvementBlocked = speedup < minimumSpeedup || !improvementSeparated;
+        const improvementBlocked = speedup < requiredSpeedup || !improvementSeparated;
         rows.push({
             ...baseRow,
             fixedScore,
             speedup,
-            minimumSpeedup,
+            minimumSpeedup: requiredSpeedup,
             improvementSeparated,
             improvementBlocked,
             blocked: baseRow.blocked || improvementBlocked
@@ -348,6 +395,118 @@ export function compareLatencyBaseline(
         errors,
         rows
     };
+}
+
+export function compareLatencyResources(baseResults, candidateResults, threshold = 15) {
+    const errors = [];
+    const base = resultMap(baseResults, "PR base resources", errors);
+    const candidate = resultMap(candidateResults, "candidate resources", errors);
+    const rows = [];
+
+    for (const key of LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS) {
+        const baseline = base.get(key);
+        const current = candidate.get(key);
+        if (baseline === undefined || current === undefined) {
+            errors.push(`${key}: missing from ${baseline === undefined ? "base" : "candidate"} resource results`);
+            continue;
+        }
+        const profile = LATENCY_RESOURCE_PROFILES.get(key);
+        for (const [revision, result] of [["PR base", baseline], ["candidate", current]]) {
+            const heapArguments = parseMaximumHeapArguments(result);
+            const expectedArgument = `-Xmx${profile.maxHeapBytes / GIB}g`;
+            if (heapArguments.length !== 1 || heapArguments[0].toLowerCase() !== expectedArgument.toLowerCase()) {
+                errors.push(`${revision}/${key}: expected exactly ${expectedArgument}, found ${heapArguments.join(", ") || "none"}`);
+            }
+            for (const name of [
+                "maxHeapBytes", "loadedHeapBytes", "peakUsedHeapBytes", "retainedHeapBytes",
+                "retainedHeapDeltaBytes", "queryGcCount", "queryGcTimeMs",
+                "gc.alloc.rate.norm", "gc.count", "gc.time"
+            ]) {
+                const metric = secondaryMetric(result, name);
+                if (metric === null || finiteNumber(metric.score) === null || typeof metric.scoreUnit !== "string" ||
+                    metric.scoreUnit.length === 0
+                ) errors.push(`${revision}/${key}: missing or invalid secondary metric ${name}`);
+            }
+            const maxHeap = finiteNumber(secondaryMetric(result, "maxHeapBytes")?.score);
+            const loaded = finiteNumber(secondaryMetric(result, "loadedHeapBytes")?.score);
+            const peak = finiteNumber(secondaryMetric(result, "peakUsedHeapBytes")?.score);
+            const retained = finiteNumber(secondaryMetric(result, "retainedHeapBytes")?.score);
+            const tolerance = Math.max(16 * MIB, profile.maxHeapBytes * 0.01);
+            if (maxHeap !== null && (maxHeap > profile.maxHeapBytes || maxHeap < profile.maxHeapBytes - tolerance)) {
+                errors.push(`${revision}/${key}: effective max heap ${maxHeap} does not match ${profile.maxHeapBytes}`);
+            }
+            if (loaded !== null && peak !== null && retained !== null &&
+                (loaded < 0 || retained < 0 || peak < loaded || retained > peak ||
+                    (maxHeap !== null && peak > maxHeap))
+            ) errors.push(`${revision}/${key}: invalid loaded/retained/peak heap relationship`);
+        }
+
+        for (const metric of LATENCY_RESOURCE_METRICS) {
+            const baseMetric = secondaryMetric(baseline, metric.key);
+            const candidateMetric = secondaryMetric(current, metric.key);
+            const baseValue = finiteNumber(baseMetric?.score);
+            const candidateValue = finiteNumber(candidateMetric?.score);
+            if (baseValue === null || candidateValue === null || baseValue < 0 || candidateValue < 0) continue;
+            if (baseMetric.scoreUnit !== candidateMetric.scoreUnit) {
+                errors.push(`${key}/${metric.label}: base and candidate units differ`);
+                continue;
+            }
+            const increase = candidateValue - baseValue;
+            const delta = baseValue === 0
+                ? (increase > 0 ? Number.POSITIVE_INFINITY : 0)
+                : (increase / baseValue) * 100;
+            const aboveThreshold = increase > metric.minimum && (baseValue === 0 || delta > threshold);
+            rows.push({
+                key,
+                metric: metric.label,
+                baseValue,
+                candidateValue,
+                unit: baseMetric.scoreUnit,
+                delta,
+                threshold,
+                minimum: metric.minimum,
+                aboveThreshold,
+                blocked: aboveThreshold
+            });
+        }
+    }
+    for (const [revision, mapped] of [["PR base", base], ["candidate", candidate]]) {
+        for (const key of mapped.keys()) {
+            if (!LATENCY_RESOURCE_PROFILES.has(key)) errors.push(`${revision}: unexpected resource benchmark ${key}`);
+        }
+    }
+    return { passed: errors.length === 0 && rows.every((row) => !row.blocked), errors, rows };
+}
+
+export function confirmLatencyResources(initial, confirmation) {
+    const errors = [...initial.errors, ...confirmation.errors.map((error) => `confirmation: ${error}`)];
+    const retries = new Map(confirmation.rows.map((row) => [`${row.key}/${row.metric}`, row]));
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const retry = retries.get(`${row.key}/${row.metric}`);
+        if (retry === undefined) {
+            errors.push(`${row.key}/${row.metric}: missing from resource confirmation`);
+            return row;
+        }
+        return { ...row, confirmation: retry, blocked: retry.blocked };
+    });
+    return { passed: errors.length === 0 && rows.every((row) => !row.blocked), errors, rows };
+}
+
+export function renderLatencyResourceReport(comparison) {
+    const lines = [
+        "### Wrapped-query resource guardrails", "",
+        "Resource probes run separately from latency timing. JVM caps and metric presence fail closed;",
+        "GC, retained-heap, and peak-heap regressions must repeat in reverse order.", "",
+        "| Benchmark | Metric | Base | PR | Change | Gate |",
+        "|---|---|---:|---:|---:|:---:|"
+    ];
+    for (const row of comparison.rows) {
+        lines.push(`| \`${shortBenchmarkName(row.key)}\` | ${row.metric} | ${formatScore(row.baseValue)} ${row.unit} | ` +
+            `${formatScore(row.candidateValue)} ${row.unit} | ${formatDelta(row.delta)} | **${statusLabel(row)}** |`);
+    }
+    if (comparison.errors.length > 0) lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    return `${lines.join("\n")}\n`;
 }
 
 export function confirmLatencyBaseline(initial, confirmation) {
@@ -387,7 +546,8 @@ export function renderLatencyBaselineReport(comparison) {
     const lines = [
         "### Wrapped case-insensitive query latency",
         "",
-        "The PR must remain at least 50% faster than the fixed pre-PR-95 baseline and must not regress",
+        "Multi-graph rows must remain at least 10x faster than the fixed pre-PR-95 baseline;",
+        "the single-graph row must remain at least 50% faster. No row may regress",
         "more than 15% against the PR base with separated 99.9% confidence intervals.",
         "A suspected failure blocks only when the same benchmark fails the reverse-order confirmation run.",
         "",
@@ -607,7 +767,8 @@ export function aggregateReports(directory, metadata) {
             status: "budgeted-string-status.json"
         },
         { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" },
-        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" }
+        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" },
+        { name: "wrapped-query-resources", report: "latency-resource-report.md", status: "latency-resource-status.json" }
     ];
     const errors = [];
     const reports = [];
@@ -679,6 +840,26 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareLatencyResourcesCommand(args) {
+    const comparison = compareLatencyResources(
+        readJson(requireArg(args, "base")), readJson(requireArg(args, "candidate")), Number(args.threshold ?? 15)
+    );
+    writeFile(requireArg(args, "report"), renderLatencyResourceReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
+function confirmLatencyResourcesCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const retry = compareLatencyResources(
+        readJson(requireArg(args, "base")), readJson(requireArg(args, "candidate")), Number(args.threshold ?? 15)
+    );
+    const comparison = confirmLatencyResources(initial, retry);
+    writeFile(requireArg(args, "report"), renderLatencyResourceReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function confirmLatencyBaselineCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareLatencyBaseline(
@@ -746,6 +927,8 @@ function main(argv) {
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "combine-latency-shards") combineLatencyShardsCommand(args);
+    else if (command === "compare-latency-resources") compareLatencyResourcesCommand(args);
+    else if (command === "confirm-latency-resources") confirmLatencyResourcesCommand(args);
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);

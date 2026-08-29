@@ -21,8 +21,9 @@ revisions:
 2. the pull request's current base SHA; and
 3. the pull request candidate SHA.
 
-The 12 benchmark keys are split across five parallel matrix shards: one for
-the four synthetic keys and four for pairs of real-fixture query cases. Within
+The 17 latency keys are split across nine parallel matrix shards: four for the
+synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,
+and one for the real 36-graph case. Within
 each shard, fixed baseline, current base, and candidate still run sequentially
 on the same runner, so parallelism does not turn cross-runner variance into a
 performance comparison. A prerequisite job restores or builds the persisted
@@ -30,15 +31,18 @@ fixture graphs once with a 4 GiB heap, using a content-addressed cache key over
 the graph-building/serialization sources, fixture harness, dependency catalog,
 and Gradle build files. Real shards restore that immutable cache instead of
 rebuilding 19 million nodes independently. The final `wrapped-query-latency`
-job fails closed unless all five shard reports arrive and their union contains
+job fails closed unless all nine shard reports arrive and their union contains
 every expected key exactly once.
 
-It measures warm and cold queries with `graphCount=1` and `graphCount=17` on
+It measures warm and cold queries on a geometric `graphCount=1/4/16/64` scale on
 deterministic persisted graphs. It also builds every repository benchmark
 fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially on a cache miss,
 then each real shard opens the four
 persisted graphs together, and measures the same query over the heterogeneous
-19,091,048-node graph set. Source graphs are never retained together: each is
+19,091,048-node graph set. A separate 36-graph benchmark opens those four
+persisted fixtures round-robin under an 8 GiB cap, assigns every mapping an
+independent graph identity, and forces a zero-hit query to visit the complete
+real graph list. Source graphs are never retained together: each is
 closed after persistence, before the next fixture is built.
 
 The real-corpus suite treats target distribution as part of the fixture. Its
@@ -57,13 +61,30 @@ Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
 source graph is persisted and that JVM exits, the raw mmap work directory is
 deleted before the next corpus starts. Only the four final persisted graph
 directories remain for the shared query measurements.
-Every row must remain at least 50% faster than the fixed baseline and may not
-regress more than 15% against the current PR base. Missing graph-count or query
+Every multi-graph row must remain at least 10x faster than the fixed baseline;
+the single-graph row retains the 50% fixed-baseline floor. No row may regress
+more than 15% against the current PR base. Missing graph-count or query
 variants, incompatible units, invalid scores, and missing artifacts fail
 closed. A suspected failure reruns candidate, base, and fixed baseline in
 reverse order before it blocks. The fixed baseline prevents the original full-scan behavior from
 becoming an accepted new base after a merge; the moving base comparison catches
 new regressions in later optimizations.
+
+## Wrapped-query resource gate
+
+Resource probes run in separate SingleShot JMH classes, so their forced full-GC
+fixtures never enter the latency score. The single synthetic graph is required
+to run with exactly `-Xmx4g`; the 36-graph AllFixture probe runs with exactly
+`-Xmx8g`. The gate checks both the fork argument and the effective maximum heap
+reported from inside the fork.
+
+Each resource result must contain finite `gc.alloc.rate.norm`, `gc.count`, and
+`gc.time` profiler metrics plus loaded, peak, post-GC retained, and retained-delta
+heap counters. Missing metrics, incompatible units, duplicate results, a wrong
+heap cap, or impossible `loaded <= peak <= max` / `retained <= peak`
+relationships fail closed. Allocation, collection, GC-time, retained-delta, and
+peak regressions use a 15% relative threshold plus an absolute noise floor and
+must repeat in a candidate-first confirmation run before blocking.
 
 ## Method-level gate
 
@@ -147,6 +168,8 @@ Run the two benchmark sources directly:
 ./gradlew :webgraph:largeCorpusTest -Dlarge.corpus.record=true --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='WrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='AllFixtureWrappedDiscoveryLatencyBenchmark.*' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.*' --no-daemon
+./gradlew :webgraph:jmh -Pjmh.filter='.*WrappedDiscoveryResourceBenchmark.*' --no-daemon
 ```
 
 The workflow deliberately keeps benchmark execution separate from unit-test coverage. Coverage

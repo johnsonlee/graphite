@@ -45,7 +45,7 @@ private const val WRAPPED_DISCOVERY_HIT_INTERVAL = 1_000
 @Fork(1, jvmArgs = ["-Xmx4g"])
 open class WrappedDiscoveryLatencyBenchmark {
 
-    @Param("1", "17")
+    @Param("1", "4", "16", "64")
     @JvmField
     var graphCount: Int = 1
 
@@ -131,7 +131,7 @@ open class WrappedDiscoveryLatencyBenchmark {
     }
 }
 
-private const val WRAPPED_DISCOVERY_QUERY = """
+internal const val WRAPPED_DISCOVERY_QUERY = """
 MATCH (n)
 WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'voucher'
    OR toLower(coalesce(n.caller_name, '')) CONTAINS 'voucher'
