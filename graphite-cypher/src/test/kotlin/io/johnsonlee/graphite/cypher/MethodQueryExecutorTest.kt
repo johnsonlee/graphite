@@ -503,6 +503,31 @@ class MethodQueryExecutorTest {
     }
 
     @Test
+    fun `large source-bounded Method counts scan graph sources serially`() {
+        val caller = Thread.currentThread().name
+        val workers = ConcurrentHashMap.newKeySet<String>()
+        val sources = (0 until 4).map { index ->
+            val indexedMethod = method("com.example.Count", "method$index", emptyList(), "void")
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> = sequence {
+                    workers += Thread.currentThread().name
+                    if (pattern.matches(indexedMethod)) yield(indexedMethod)
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Count' " +
+                "RETURN graphId(m) AS graph, count(m) AS total LIMIT 5000"
+        )
+
+        assertEquals((0 until 4).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertTrue(result.rows.all { it["total"] == 1L })
+        assertEquals(setOf(caller), workers)
+    }
+
+    @Test
     fun `Method distinct limit stops after the first distinct row`() {
         val inspected = AtomicInteger()
         val methods = (0 until 36_000).map { index ->

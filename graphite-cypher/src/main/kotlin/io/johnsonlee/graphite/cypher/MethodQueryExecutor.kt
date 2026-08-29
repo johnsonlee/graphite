@@ -548,7 +548,8 @@ internal object MethodQueryExecutor {
         groupLimit: Int
     ): LinkedHashMap<List<Any?>, MethodCountGroup>? {
         val groups = linkedMapOf<List<Any?>, MethodCountGroup>()
-        if (groupItems.isNotEmpty() && !hasSourceBoundedGroups(groupItems, execution.variable)) {
+        val sourceBounded = hasSourceBoundedGroups(groupItems, execution.variable)
+        if (groupItems.isNotEmpty() && (!sourceBounded || groupLimit > MAX_PARALLEL_METHOD_ROWS)) {
             for (source in execution.sources) {
                 execution.checkCancelled()
                 if (!countGroupedSourceMethods(execution, source, groupItems, groups, groupLimit)) return null
