@@ -5,8 +5,6 @@ import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.CypherResult
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.input.LoaderConfig
-import io.johnsonlee.graphite.sootup.JavaProjectLoader
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -20,7 +18,6 @@ import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
 import java.lang.reflect.Method
-import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -53,7 +50,7 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
             CypherGraph(kind.id, graph)
         }
         check(graphs.sumOf { it.graph.nodeCount(Node::class.java) ?: 0L } == EXPECTED_ALL_FIXTURE_NODES)
-        executor = CrossGraphCypherExecutor(graphs)
+        executor = budgetedLatencyExecutor(graphs)
     }
 
     @TearDown
@@ -62,66 +59,39 @@ open class AllFixtureWrappedDiscoveryLatencyBenchmark {
     }
 
     @Benchmark
-    fun zeroHitBroadContainsCaseInsensitiveDiscovery(): CypherResult = executeCold(ZERO_HIT_QUERY)
+    fun zeroHitBroadContainsCaseInsensitiveDiscovery(): CypherResult = executeCold(ZERO_HIT_QUERY, 0)
 
     @Benchmark
     fun denseDistributedMethodContainsCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(DENSE_DISTRIBUTED_METHOD_QUERY)
+        executeCold(DENSE_DISTRIBUTED_METHOD_QUERY, 50)
 
     @Benchmark
-    fun earlyGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(EARLY_GRAPH_PREFIX_QUERY)
+    fun earlyGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(EARLY_GRAPH_PREFIX_QUERY, 1)
 
     @Benchmark
-    fun middleGraphsClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(MIDDLE_GRAPHS_PREFIX_QUERY)
+    fun middleGraphsClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(MIDDLE_GRAPHS_PREFIX_QUERY, 250)
 
     @Benchmark
-    fun lateGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(LATE_GRAPH_PREFIX_QUERY)
+    fun lateGraphClassPrefixCaseInsensitiveDiscovery(): CypherResult = executeCold(LATE_GRAPH_PREFIX_QUERY, 50)
 
     @Benchmark
     fun broadlyDistributedClassPrefixCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(BROADLY_DISTRIBUTED_PREFIX_QUERY)
+        executeCold(BROADLY_DISTRIBUTED_PREFIX_QUERY, 250)
 
     @Benchmark
     fun firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(FIRST_LAST_GRAPH_BIMODAL_QUERY)
+        executeCold(FIRST_LAST_GRAPH_BIMODAL_QUERY, 250)
 
     @Benchmark
     fun skewedMixedClassMethodOperatorCaseInsensitiveDiscovery(): CypherResult =
-        executeCold(SKEWED_MIXED_OPERATOR_QUERY)
+        executeCold(SKEWED_MIXED_OPERATOR_QUERY, 250)
 
-    private fun executeCold(query: String): CypherResult {
+    private fun executeCold(query: String, expectedRows: Int): CypherResult {
         loadedGraphs.indices.forEach { index -> clearIndexMethods[index]?.invoke(loadedGraphs[index]) }
-        return executor.execute(query)
-    }
-}
-
-/**
- * Builds each eager source graph in sequence and closes it before building the
- * next one. The resulting persisted graphs can then be shared by every JMH
- * revision in the same CI job.
- */
-internal object AllFixtureBenchmarkGraphPreparation {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        require(args.size == 2) { "Usage: AllFixtureBenchmarkGraphPreparation <corpus-id> <output-directory>" }
-        val kind = BenchmarkCorpusKind.entries.single { it.id == args[0] }
-        prepare(kind, Path.of(args[1]).toAbsolutePath().normalize())
-    }
-
-    private fun prepare(kind: BenchmarkCorpusKind, output: Path) {
-        require(Files.notExists(output)) { "Fixture graph output already exists: $output" }
-        val graph = JavaProjectLoader(
-            LoaderConfig(
-                buildCallGraph = false,
-                extractAnnotations = false,
-                trackCrossMethodFunctionalDispatch = false
-            )
-        ).load(BenchmarkCorpus.resolveJar(kind))
-        try {
-            GraphStore.save(graph, output)
-            check(graph.nodes(Node::class.java).count().toLong() == kind.expectedNodeCount)
-        } finally {
-            (graph as? Closeable)?.close()
+        return executor.execute(query).also { result ->
+            check(result.rows.size == expectedRows) {
+                "Successful query returned ${result.rows.size} rows; expected $expectedRows"
+            }
         }
     }
 }
@@ -143,13 +113,16 @@ internal object AllFixtureBenchmarkQueryCorrectness {
                     CypherGraph(kind.id, graph)
                 }
             }
-            val executor = CrossGraphCypherExecutor(sources)
-            ALL_FIXTURE_QUERIES.forEach { (name, query) ->
-                val result = executor.execute(query)
+            ALL_FIXTURE_QUERIES.forEach { case ->
+                val executor = budgetedLatencyExecutor(sources)
+                val result = executor.execute(case.query)
+                check(result.rows.size == case.expectedRows) {
+                    "${case.name} returned ${result.rows.size} rows; expected ${case.expectedRows}"
+                }
                 val digest = MessageDigest.getInstance("SHA-256")
                     .digest(canonical(result.columns to result.rows).toByteArray(Charsets.UTF_8))
                     .joinToString("") { byte -> "%02x".format(byte) }
-                println("ALL_FIXTURE_QUERY_RESULT\t$name\trows=${result.rows.size}\tsha256=$digest")
+                println("ALL_FIXTURE_QUERY_RESULT\t${case.name}\trows=${result.rows.size}\tsha256=$digest")
             }
         } finally {
             graphs.asReversed().forEach { (it as? Closeable)?.close() }
@@ -299,13 +272,44 @@ private val EXPECTED_DISTRIBUTIONS = mapOf(
     BenchmarkCorpusKind.KOTLIN_COMPILER to longArrayOf(265_980, 0, 0, 891_500, 208_763, 1_509)
 )
 
-private val ALL_FIXTURE_QUERIES = listOf(
-    "zeroHitBroadContains" to ZERO_HIT_QUERY,
-    "denseDistributedMethodContains" to DENSE_DISTRIBUTED_METHOD_QUERY,
-    "earlyGraphClassPrefix" to EARLY_GRAPH_PREFIX_QUERY,
-    "middleGraphsClassPrefix" to MIDDLE_GRAPHS_PREFIX_QUERY,
-    "lateGraphClassPrefix" to LATE_GRAPH_PREFIX_QUERY,
-    "broadlyDistributedClassPrefix" to BROADLY_DISTRIBUTED_PREFIX_QUERY,
-    "firstLastGraphBimodalClassPrefix" to FIRST_LAST_GRAPH_BIMODAL_QUERY,
-    "skewedMixedClassMethodOperator" to SKEWED_MIXED_OPERATOR_QUERY
+private data class BenchmarkFixtureQueryCase(
+    val name: String,
+    val query: String,
+    val expectedRows: Int
 )
+
+private val ALL_FIXTURE_QUERIES = listOf(
+    BenchmarkFixtureQueryCase("zeroHitBroadContains", ZERO_HIT_QUERY, 0),
+    BenchmarkFixtureQueryCase("denseDistributedMethodContains", DENSE_DISTRIBUTED_METHOD_QUERY, 50),
+    BenchmarkFixtureQueryCase("earlyGraphClassPrefix", EARLY_GRAPH_PREFIX_QUERY, 1),
+    BenchmarkFixtureQueryCase("middleGraphsClassPrefix", MIDDLE_GRAPHS_PREFIX_QUERY, 250),
+    BenchmarkFixtureQueryCase("lateGraphClassPrefix", LATE_GRAPH_PREFIX_QUERY, 50),
+    BenchmarkFixtureQueryCase("broadlyDistributedClassPrefix", BROADLY_DISTRIBUTED_PREFIX_QUERY, 250),
+    BenchmarkFixtureQueryCase("firstLastGraphBimodalClassPrefix", FIRST_LAST_GRAPH_BIMODAL_QUERY, 250),
+    BenchmarkFixtureQueryCase("skewedMixedClassMethodOperator", SKEWED_MIXED_OPERATOR_QUERY, 250)
+)
+
+/**
+ * Uses an explicit budget large enough for every validated fixture query while
+ * retaining the budget-enabled candidate lookup and work-accounting path. The
+ * fixed pre-PR-95 comparison predates the budget API and must explicitly opt in
+ * to the legacy constructor from the workflow.
+ */
+internal fun budgetedLatencyExecutor(graphs: List<CypherGraph>): CrossGraphCypherExecutor {
+    val budgetType = try {
+        Class.forName("io.johnsonlee.graphite.cypher.CypherExecutionBudget")
+    } catch (error: ClassNotFoundException) {
+        check(java.lang.Boolean.getBoolean(ALLOW_LEGACY_UNBUDGETED_PROPERTY)) {
+            "CypherExecutionBudget is unavailable; refusing to benchmark an unbudgeted current revision"
+        }
+        return CrossGraphCypherExecutor(graphs)
+    }
+    val budget = budgetType.getConstructor(java.lang.Long.TYPE).newInstance(LATENCY_BENCHMARK_WORK_BUDGET)
+    return CrossGraphCypherExecutor::class.java
+        .getConstructor(List::class.java, budgetType)
+        .newInstance(graphs, budget) as CrossGraphCypherExecutor
+}
+
+private const val ALLOW_LEGACY_UNBUDGETED_PROPERTY =
+    "graphite.benchmark.allowLegacyUnbudgetedExecutor"
+private const val LATENCY_BENCHMARK_WORK_BUDGET = 25_000_000L

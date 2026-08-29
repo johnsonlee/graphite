@@ -396,28 +396,38 @@ jobs:
       uses: actions/cache@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Detect complete persisted fixture cache
+      id: fixture-cache-state
+      run: |
+        READY=true
+        test -f fixture-graphs/.complete || READY=false
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}" || READY=false
+        done
+        echo "ready=${READY}" >> "${GITHUB_OUTPUT}"
 
     - name: Setup Java
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: '17'
 
     - name: Setup Gradle
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-read-only: true
 
     - name: Build fixture preparation harness
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
         candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures :webgraph:jmhJar --no-daemon
 
     - name: Prepare all real fixture graphs
-      if: steps.fixture-cache.outputs.cache-hit != 'true'
+      if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
         FIXTURE_DIR="${PWD}/candidate/graphite-webgraph/build/benchmark-fixtures"
         ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
@@ -517,7 +527,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: fixture-graphs
-        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v1-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
 
     - name: Verify restored fixture graphs
       if: matrix.real
@@ -552,7 +562,12 @@ jobs:
         for REVISION in fixed base candidate; do
           JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
+          LEGACY_BUDGET_ARGS=()
+          if [ "${REVISION}" = fixed ]; then
+            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+          fi
           java -Xmx8g -cp "${JMH_JAR}" \
+            "${LEGACY_BUDGET_ARGS[@]}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | tee "benchmark-results/${REVISION}-fixture-correctness.log"
@@ -580,9 +595,11 @@ jobs:
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
         java -jar "${FIXED_JAR}" \
           "${BENCHMARK_FILTER}" \
-          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
           "${BENCHMARK_FILTER}" \
@@ -617,6 +634,8 @@ jobs:
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
           java -jar "${CANDIDATE_JAR}" \
             "${BENCHMARK_FILTER}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
@@ -627,7 +646,7 @@ jobs:
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
           java -jar "${FIXED_JAR}" \
             "${BENCHMARK_FILTER}" \
-            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
           node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
             --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
