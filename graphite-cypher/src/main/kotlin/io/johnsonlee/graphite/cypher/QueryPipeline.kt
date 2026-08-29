@@ -2087,8 +2087,8 @@ class QueryPipeline private constructor(
     private fun nodeProperty(value: Any, property: String): Any? = when (value) {
         is MethodValue -> value.property(property)
         is QualifiedNode -> when (property) {
-            "graphId" -> value.graphId
-            "elementId", "qualifiedId" -> value.elementId
+            GRAPH_ID_PROPERTY -> value.graphId
+            ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY -> value.elementId
             else -> NodePropertyAccessor.getProperty(value.node, property)
         }
         is Node -> NodePropertyAccessor.getProperty(value, property)

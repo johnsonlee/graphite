@@ -297,9 +297,9 @@ object CypherFunctions {
         is MethodValue -> value.properties()
         is Node -> NodePropertyAccessor.getAllProperties(value)
         is QualifiedNode -> NodePropertyAccessor.getAllProperties(value.node) + mapOf(
-            "graphId" to value.graphId,
-            "elementId" to value.elementId,
-            "qualifiedId" to value.elementId
+            GRAPH_ID_PROPERTY to value.graphId,
+            ELEMENT_ID_PROPERTY to value.elementId,
+            QUALIFIED_ID_PROPERTY to value.elementId
         )
         else -> null
     }
