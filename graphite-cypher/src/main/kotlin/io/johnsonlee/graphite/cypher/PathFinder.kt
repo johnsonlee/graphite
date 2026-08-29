@@ -140,6 +140,15 @@ object PathFinder {
         val start = SearchState(startNode, incomingEdge = null, parent = null, depth = 0)
         if (matchesTarget(start, options)) yield(PathMatch(start))
         if (options.maxDepth <= 0) return@sequence
+        if (options.maxDepth == 1) {
+            for (edge in edgesForDirection(graph, startNode.id, options)) {
+                val nextId = nextNodeId(edge, startNode.id, options.direction)
+                val nextNode = loadNode(graph, nextId, options.workTracker) ?: continue
+                val nextState = SearchState(nextNode, edge, start, depth = 1)
+                if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
+            }
+            return@sequence
+        }
 
         val stack = ArrayDeque<SearchFrame>()
         val startEdges = edgesForDirection(graph, startNode.id, options).iterator()
@@ -166,9 +175,16 @@ object PathFinder {
             val nextState = SearchState(nextNode, edge, frame.state, frame.state.depth + 1)
             if (matchesTarget(nextState, options)) yield(PathMatch(nextState))
 
-            val expansion = expandableFrame(graph, nextId, nextState, options, expansionMemo)
-            frame.blockedAncestors.addAll(expansion.blockedAncestors)
-            expansion.frame?.let(stack::addLast)
+            if (nextState.depth < options.maxDepth) {
+                expandableFrame(
+                    graph,
+                    nextId,
+                    nextState,
+                    options,
+                    expansionMemo,
+                    frame.blockedAncestors
+                )?.let(stack::addLast)
+            }
         }
     }
 
@@ -178,23 +194,25 @@ object PathFinder {
         nodeId: NodeId,
         state: SearchState,
         options: SearchOptions,
-        expansionMemo: LinkedHashMap<Int, ExpansionRecord>
-    ): ExpansionDecision {
-        if (state.depth >= options.maxDepth) return ExpansionDecision()
+        expansionMemo: LinkedHashMap<Int, ExpansionRecord>,
+        blockedAncestors: MutableSet<Int>
+    ): SearchFrame? {
         if (hasAncestor(state.parent, nodeId)) {
-            return ExpansionDecision(blockedAncestors = setOf(nodeId.value))
+            blockedAncestors.add(nodeId.value)
+            return null
         }
 
         val edges = edgesForDirection(graph, nodeId, options).iterator()
-        if (!edges.hasNext()) return ExpansionDecision()
+        if (!edges.hasNext()) return null
         val previous = expansionMemo[nodeId.value]
         if (previous != null &&
             previous.depth == state.depth &&
             ancestorIds(state.parent).containsAll(previous.blockedAncestors)
         ) {
-            return ExpansionDecision(blockedAncestors = previous.blockedAncestors)
+            blockedAncestors.addAll(previous.blockedAncestors)
+            return null
         }
-        return ExpansionDecision(frame = SearchFrame(state, edges))
+        return SearchFrame(state, edges)
     }
 
     private fun ancestorIds(state: SearchState?): Set<Int> {
@@ -231,11 +249,6 @@ object PathFinder {
         val state: SearchState,
         val edges: Iterator<Edge>,
         val blockedAncestors: MutableSet<Int> = mutableSetOf()
-    )
-
-    private data class ExpansionDecision(
-        val frame: SearchFrame? = null,
-        val blockedAncestors: Set<Int> = emptySet()
     )
 
     private data class ExpansionRecord(
