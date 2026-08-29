@@ -477,6 +477,9 @@ async function fetchJson(url, options) {
         const message = data && data.error ? data.error : response.status + ' ' + response.statusText;
         throw new Error(message);
     }
+    if (data === null) {
+        throw new Error('Invalid empty JSON response for HTTP ' + response.status);
+    }
     return data;
 }
 
