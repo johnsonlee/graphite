@@ -199,20 +199,16 @@ internal class MappedWebGraphBackedGraph(
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
         val nodeCount = nodeTypeIndex.count(type)
-        val cachedPredicates = predicates.distinctBy {
-            StringPredicateKey(it.transform, it.mode, it.expected)
-        }
         val propertyIndexesFit = estimatedStringPropertyIndexBytes(nodeCount) <=
             MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
-        val predicateStatesAreWarm = cachedPredicates.all { predicate ->
-            rawStringMatchStates.contains(
-                RawStringMatchKey(
-                    StringPropertyKey(type, predicate.property),
-                    predicate.transform,
-                    predicate.mode,
-                    predicate.expected
-                )
-            )
+        var predicateStatesAreWarm = true
+        predicates.forEachIndexed { index, predicate ->
+            val duplicate = (0 until index).any { earlier ->
+                val previous = predicates[earlier]
+                previous.transform == predicate.transform && previous.mode == predicate.mode &&
+                    previous.expected == predicate.expected
+            }
+            if (!duplicate && !rawStringMatchStates.contains(type, predicate)) predicateStatesAreWarm = false
         }
         if (propertyIndexesFit && predicateStatesAreWarm) return null
         return sequence {
@@ -693,7 +689,10 @@ internal class RawStringMatchStates(
     }
 
     @Synchronized
-    fun contains(key: RawStringMatchKey): Boolean = states.containsKey(key)
+    fun contains(type: Class<out Node>, predicate: StringPropertyPredicate): Boolean = states.keys.any { key ->
+        key.property.type == type && key.transform == predicate.transform && key.mode == predicate.mode &&
+            key.expected == predicate.expected
+    }
 
     @Synchronized
     fun clear() {

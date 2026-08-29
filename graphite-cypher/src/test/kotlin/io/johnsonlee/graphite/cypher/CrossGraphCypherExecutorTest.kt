@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
@@ -534,6 +535,57 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("billing", "orders"), graphIds(result.rows.first()))
         assertEquals(listOf("orders"), graphIds(result.rows.last()))
         assertEquals(2, maximumActive.get())
+    }
+
+    @Test
+    fun `small ordered graph scans stay serial`() {
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+
+        fun orderedGraph(callerClass: String): Graph {
+            val backing = DefaultGraph.Builder()
+                .addNode(
+                    CallSiteNode(
+                        NodeId(0),
+                        MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                        0,
+                        null,
+                        emptyList()
+                    )
+                )
+                .build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup, StringPropertyLookupOrder {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = sequence {
+                    val now = active.incrementAndGet()
+                    maximumActive.accumulateAndGet(now, ::maxOf)
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        yieldAll(backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>)
+                    } finally {
+                        active.decrementAndGet()
+                    }
+                }
+
+                override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+            }
+        }
+
+        val result = executor(
+            "orders" to orderedGraph("example.TargetA"),
+            "billing" to orderedGraph("example.TargetB")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("example.TargetA", "example.TargetB"), result.rows.map { it["caller"] })
+        assertEquals(1, maximumActive.get())
     }
 
     @Test

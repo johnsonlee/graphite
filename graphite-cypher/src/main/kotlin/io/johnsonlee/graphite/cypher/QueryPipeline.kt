@@ -44,6 +44,7 @@ private const val SINGLE_GRAPH_ID = "single"
 private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
+private const val MIN_PARALLEL_DIRECT_STRING_NODES = 100_000L
 
 private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
@@ -799,7 +800,7 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int
     ): CypherResult {
-        if (canExecuteDirectStringDisjunctionInParallel(variable, items)) {
+        if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, items)) {
             return executeDirectStringDisjunctionInParallel(
                 nodeClass,
                 variable,
@@ -834,14 +835,25 @@ class QueryPipeline private constructor(
     }
 
     private fun canExecuteDirectStringDisjunctionInParallel(
+        nodeClass: Class<out Node>,
         variable: String,
         items: List<ReturnItem>
     ): Boolean = qualified && sources.size > 1 && directStringParallelism > 1 &&
-        !directStringWorkerActive.get() && items.all { item ->
+        !directStringWorkerActive.get() && hasParallelStringScanScale(nodeClass) && items.all { item ->
         when (val expression = item.expression) {
             is CypherExpr.Literal -> true
             is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable)
             else -> false
+        }
+    }
+
+    private fun hasParallelStringScanScale(nodeClass: Class<out Node>): Boolean {
+        if (sources.any { it.graph !is StringPropertyLookupOrder }) return true
+        return sources.any { source ->
+            DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, _) ->
+                nodeClass.isAssignableFrom(candidateType) &&
+                    (source.graph.nodeCount(candidateType) ?: Long.MAX_VALUE) >= MIN_PARALLEL_DIRECT_STRING_NODES
+            }
         }
     }
 
