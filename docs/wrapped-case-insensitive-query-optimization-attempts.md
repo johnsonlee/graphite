@@ -300,3 +300,21 @@ non-selected matches without changing row order, distinctness, provenance, or
 fallback behavior. The remaining work must avoid matched-node materialization
 or use distribution-aware scheduling; a larger default worker pool is not
 supported by the 36-graph data.
+
+### 2026-08-29 - Attempt 010: Raw storage projection
+
+Tested a mapped-store capability that returned only the raw string properties
+needed by `RETURN`, bypassing complete `CallSiteNode` deserialization. The
+parallel scanner consumed these projected arrays directly and retained the
+materialized-node fallback for every other graph implementation and expression.
+
+This did not remove the dominant work. At parallelism two, early regressed from
+`1.214` to `1.785 s/op`, bimodal moved from `1.798` to `1.857 s/op`, and late
+from `1.175` to `1.202 s/op`. Allocation was still `2.84`, `4.58`, and
+`2.90 GB/op`: phase-two provenance completion continued creating and decoding
+a four-column array for every filter match, even though nearly every match was
+not one of the globally selected rows.
+
+**Conclusion:** rejected and implementation removed. The next storage
+primitive should test selected projections during the raw scan and return only
+which selected rows occurred, rather than projecting every filter match.
