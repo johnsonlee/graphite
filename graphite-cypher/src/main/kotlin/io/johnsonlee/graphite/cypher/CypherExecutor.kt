@@ -77,6 +77,7 @@ class CypherExecutor internal constructor(
         maxRows: Int?,
         workTracker: CypherWorkTracker?
     ): CypherResult {
+        workTracker?.checkCancelled()
         // Handle UNION by splitting into sub-queries
         val unionIndex = clauses.indexOfFirst { it is CypherClause.Union }
         if (unionIndex >= 0) {
@@ -88,7 +89,7 @@ class CypherExecutor internal constructor(
         val raw = pipeline.execute(boundedClauses, workTracker)
 
         // Post-process: convert Node values to property maps
-        return materializeResult(raw)
+        return materializeResult(raw, workTracker)
     }
 
     private fun applyMaxRows(clauses: List<CypherClause>, maxRows: Int): List<CypherClause> {
@@ -155,7 +156,8 @@ class CypherExecutor internal constructor(
         var current = mutableListOf<CypherClause>()
         var unionAll = false
 
-        for (clause in clauses) {
+        for ((index, clause) in clauses.withIndex()) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
             if (clause is CypherClause.Union) {
                 segments.add(current)
                 current = mutableListOf()
@@ -180,7 +182,8 @@ class CypherExecutor internal constructor(
     ): CypherResult {
         var columns = emptyList<String>()
         val rows = mutableListOf<Map<String, Any?>>()
-        for (segment in segments) {
+        for ((segmentIndex, segment) in segments.withIndex()) {
+            if ((segmentIndex and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
             val remaining = maxRows?.minus(rows.size)
             if (remaining != null && remaining <= 0) {
                 if (columns.isEmpty()) {
@@ -198,7 +201,7 @@ class CypherExecutor internal constructor(
                 rows.addAll(result.rows.take(remaining))
             }
         }
-        return materializeResult(CypherResult(columns, rows))
+        return materializeResult(CypherResult(columns, rows), workTracker)
     }
 
     private fun executeUnionDistinct(
@@ -215,13 +218,17 @@ class CypherExecutor internal constructor(
         var columns = emptyList<String>()
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         // Later segments can still add provenance to a retained duplicate row.
-        for (segment in segments) {
+        for ((segmentIndex, segment) in segments.withIndex()) {
+            if ((segmentIndex and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
             val boundedSegment = maxRows?.let { applyMaxRowsToSegment(segment, it) } ?: segment
             val result = pipeline.execute(boundedSegment, workTracker)
             if (columns.isEmpty()) columns = result.columns
-            result.rows.forEach { row -> addDistinctRow(rows, row, maxRows) }
+            result.rows.forEachIndexed { index, row ->
+                if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+                addDistinctRow(rows, row, maxRows)
+            }
         }
-        return materializeResult(CypherResult(columns, rows.values.toList()))
+        return materializeResult(CypherResult(columns, rows.values.toList()), workTracker)
     }
 
     /**
@@ -230,8 +237,28 @@ class CypherExecutor internal constructor(
      * When a result value is a [GraphiteNode], convert it to a property map
      * so that callers receive serializable data rather than internal objects.
      */
-    private fun materializeResult(raw: CypherResult): CypherResult {
-        val rows = raw.rows.map { row ->
+    private fun materializeResult(raw: CypherResult, workTracker: CypherWorkTracker?): CypherResult {
+        if (workTracker == null) return materializeResult(raw)
+        val rows = raw.rows.mapIndexed { index, row ->
+            if ((index and CANCELLATION_POLL_MASK) == 0) workTracker.checkCancelled()
+            buildMap {
+                row.forEach { (key, value) ->
+                    if (key != INTERNAL_PROVENANCE_KEY) put(key, materializeValue(value, workTracker))
+                }
+                @Suppress("UNCHECKED_CAST")
+                val graphIds = row[INTERNAL_PROVENANCE_KEY] as? Set<String>
+                if (!graphIds.isNullOrEmpty()) {
+                    put(RESULT_METADATA_KEY, mapOf(RESULT_GRAPH_IDS_KEY to graphIds.sorted()))
+                }
+            }
+        }
+        workTracker.checkCancelled()
+        return CypherResult(raw.columns, rows)
+    }
+
+    private fun materializeResult(raw: CypherResult): CypherResult = CypherResult(
+        raw.columns,
+        raw.rows.map { row ->
             buildMap {
                 row.forEach { (key, value) ->
                     if (key != INTERNAL_PROVENANCE_KEY) put(key, materializeValue(value))
@@ -243,8 +270,7 @@ class CypherExecutor internal constructor(
                 }
             }
         }
-        return CypherResult(raw.columns, rows)
-    }
+    )
 
     @Suppress("UNCHECKED_CAST")
     private fun addDistinctRow(
@@ -261,6 +287,39 @@ class CypherExecutor internal constructor(
         } else if (maxRows == null || rows.size < maxRows) {
             rows[visible] = row.toMutableMap()
         }
+    }
+
+    private fun materializeValue(value: Any?, workTracker: CypherWorkTracker?): Any? = when (value) {
+        is GraphiteNode -> nodeToMap(value)
+        is QualifiedNode -> nodeToMap(value.node) + mapOf(
+            GRAPH_ID_PROPERTY to value.graphId,
+            ELEMENT_ID_PROPERTY to value.elementId,
+            QUALIFIED_ID_PROPERTY to value.elementId
+        )
+        is QualifiedEdge -> edgeToMap(value)
+        is QualifiedPath -> mapOf(
+            GRAPH_ID_PROPERTY to value.graphId,
+            "length" to value.edges.size,
+            "nodes" to value.nodes.mapIndexed { index, node ->
+                if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+                materializeValue(node, workTracker)
+            },
+            "relationships" to value.edges.mapIndexed { index, edge ->
+                if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+                materializeValue(edge, workTracker)
+            }
+        )
+        is List<*> -> value.mapIndexed { index, item ->
+            if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+            materializeValue(item, workTracker)
+        }
+        is Map<*, *> -> buildMap {
+            value.entries.forEachIndexed { index, entry ->
+                if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+                put(entry.key, materializeValue(entry.value, workTracker))
+            }
+        }
+        else -> value
     }
 
     private fun materializeValue(value: Any?): Any? = when (value) {

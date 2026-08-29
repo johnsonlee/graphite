@@ -34,6 +34,12 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import org.junit.Before
 import org.junit.Test
+import java.util.AbstractSequentialList
+import java.util.LinkedList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.abs
@@ -58,6 +64,7 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -711,6 +718,58 @@ class CypherFunctionsTest {
     }
 
     @Test
+    fun `tracked aggregates preserve untracked results`() {
+        val values = listOf<Any?>(null, 1.0, 2.0, 3.0)
+        val aggregateNames = listOf(
+            "count",
+            "sum",
+            "avg",
+            "min",
+            "max",
+            "collect",
+            "percentileCont",
+            "percentileDisc",
+            "stdev",
+            "stdevp"
+        )
+        var cancellationChecks = 0
+
+        for (name in aggregateNames) {
+            assertEquals(
+                CypherFunctions.aggregate(name, values),
+                CypherFunctions.aggregate(name, values) { cancellationChecks++ },
+                name
+            )
+        }
+        assertTrue(cancellationChecks > 0)
+        assertNull(CypherFunctions.aggregate("avg", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("min", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("max", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("percentileCont", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("percentileDisc", listOf(null)) {})
+        assertNull(CypherFunctions.aggregate("stdev", listOf(1)) {})
+        assertNull(CypherFunctions.aggregate("stdevp", listOf(1)) {})
+        assertFailsWith<CypherException> {
+            CypherFunctions.aggregate("unknown", values) {}
+        }
+    }
+
+    @Test
+    fun `tracked extrema preserve NaN and signed zero ordering`() {
+        for (values in listOf(listOf(Double.NaN, 1.0), listOf(1.0, Double.NaN))) {
+            assertEquals(1.0, CypherFunctions.aggregate("min", values) {})
+            assertTrue((CypherFunctions.aggregate("max", values) {} as Double).isNaN())
+        }
+
+        for (values in listOf(listOf(-0.0, 0.0), listOf(0.0, -0.0))) {
+            val minimum = CypherFunctions.aggregate("min", values) {} as Double
+            val maximum = CypherFunctions.aggregate("max", values) {} as Double
+            assertEquals((-0.0).toRawBits(), minimum.toRawBits())
+            assertEquals(0.0.toRawBits(), maximum.toRawBits())
+        }
+    }
+
+    @Test
     fun `stdev computes sample standard deviation`() {
         val values = listOf(2, 4, 4, 4, 5, 5, 7, 9)
         val result = CypherFunctions.aggregate("stdev", values) as Double
@@ -759,6 +818,38 @@ class CypherFunctionsTest {
     @Test
     fun `percentileDisc returns null for empty filtered list`() {
         assertNull(CypherFunctions.aggregate("percentileDisc", listOf(null)))
+    }
+
+    @Test
+    fun `percentile sort observes cancellation after aggregation starts`() {
+        val values = (10_000 downTo 1).map { it as Any? }
+        val cancellation = CypherCancellationSignal()
+        val sortEntered = CountDownLatch(1)
+        val resumeSort = CountDownLatch(1)
+        val checkpoints = AtomicInteger()
+        val failure = AtomicReference<Throwable?>()
+        val worker = Thread {
+            try {
+                CypherFunctions.aggregate("percentileCont", values) {
+                    if (checkpoints.incrementAndGet() == SORT_PHASE_CHECKPOINT) {
+                        sortEntered.countDown()
+                        resumeSort.await()
+                    }
+                    cancellation.throwIfCancelled()
+                }
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(sortEntered.await(5, TimeUnit.SECONDS), "Percentile aggregation did not enter sorting")
+        cancellation.cancel()
+        resumeSort.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Percentile sorting ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
     }
 
     @Test
@@ -882,6 +973,66 @@ class CypherFunctionsTest {
     @Test
     fun `relationships returns null for non-list non-path`() {
         assertNull(CypherFunctions.call("relationships", listOf("not a list")))
+    }
+
+    @Test
+    fun `tracked list functions observe cancellation during collection copies`() {
+        val node = IntConstant(NodeId.next(), 42)
+        val edge = DataFlowEdge(NodeId.next(), NodeId.next(), DataFlowKind.ASSIGN)
+        val cases = listOf(
+            "reverse" to listOf((0 until 10_000).toList()),
+            "tail" to listOf((0 until 10_000).toList()),
+            "nodes" to listOf(List(10_000) { node }),
+            "relationships" to listOf(List(10_000) { edge })
+        )
+
+        for ((name, args) in cases) {
+            val checks = AtomicInteger()
+            assertFailsWith<CollectionFunctionCancelled>(name) {
+                CypherFunctions.call(name, args) {
+                    if (checks.incrementAndGet() == 2) throw CollectionFunctionCancelled()
+                }
+            }
+            assertEquals(2, checks.get(), name)
+        }
+    }
+
+    @Test
+    fun `tracked collection functions preserve completed results`() {
+        val node = IntConstant(NodeId.next(), 42)
+        val edge = DataFlowEdge(NodeId.next(), NodeId.next(), DataFlowKind.ASSIGN)
+        var checks = 0
+        val checkCancelled: () -> Unit = {
+            checks++
+        }
+
+        assertEquals("cba", CypherFunctions.call("reverse", listOf("abc"), checkCancelled))
+        assertEquals(listOf(3, 2, 1), CypherFunctions.call("reverse", listOf(listOf(1, 2, 3)), checkCancelled))
+        assertEquals(listOf(2, 3), CypherFunctions.call("tail", listOf(listOf(1, 2, 3)), checkCancelled))
+        assertEquals(listOf(node), CypherFunctions.call("nodes", listOf(listOf(node, "value")), checkCancelled))
+        assertEquals(
+            listOf(edge),
+            CypherFunctions.call("relationships", listOf(listOf(edge, "value")), checkCancelled)
+        )
+        assertTrue(checks > 0)
+    }
+
+    @Test
+    fun `tracked reverse preserves supplementary characters`() {
+        val value = "A\uD83D\uDE00B\uD83D\uDE80C"
+
+        assertEquals(value.reversed(), CypherFunctions.call("reverse", listOf(value)) {})
+    }
+
+    @Test
+    fun `tracked reverse and tail stay linear for sequential lists`() {
+        val reverseInput = TrackingSequentialList((0 until 10_000).toList())
+        val tailInput = TrackingSequentialList((0 until 10_000).toList())
+
+        assertEquals((0 until 10_000).reversed().toList(), CypherFunctions.call("reverse", listOf(reverseInput)) {})
+        assertEquals((1 until 10_000).toList(), CypherFunctions.call("tail", listOf(tailInput)) {})
+        assertEquals(1, reverseInput.listIteratorCalls)
+        assertEquals(1, tailInput.listIteratorCalls)
     }
 
     // ========================================================================
@@ -1015,3 +1166,21 @@ class CypherFunctionsTest {
         assertEquals(true, NodePropertyAccessor.getAllProperties(boolNode)["value"])
     }
 }
+
+private class TrackingSequentialList<T>(values: List<T>) : AbstractSequentialList<T>() {
+    private val delegate = LinkedList(values)
+    var listIteratorCalls = 0
+        private set
+
+    override val size: Int
+        get() = delegate.size
+
+    override fun listIterator(index: Int): MutableListIterator<T> {
+        listIteratorCalls++
+        return delegate.listIterator(index)
+    }
+}
+
+private class CollectionFunctionCancelled : RuntimeException()
+
+private const val SORT_PHASE_CHECKPOINT = 15

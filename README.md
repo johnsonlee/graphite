@@ -243,6 +243,7 @@ Generic JDK resource linking currently covers:
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
 | `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
 | `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
+| `/metrics` | Prometheus performance metrics when the server starts with `--metrics` |
 | `/openapi.json` | Machine-readable OpenAPI document for the explore server |
 | `/swagger.json` | Swagger-compatible alias of the same API document |
 
@@ -273,6 +274,24 @@ path elements consume work units. Configure these bounds with
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
+The `=~` operator preserves Java `Pattern` syntax, including backreferences,
+look-around, possessive quantifiers, character-class intersections, and Java's
+default line-terminator behavior. Budgeted execution polls cancellation through
+the matcher's input without changing the accepted pattern language.
+An executing query is cancelled when the server observes a TCP reset, servlet timeout,
+or Jetty connection error. A clean input FIN is not treated as cancellation: TCP exposes
+both a full client `close()` and a valid request-side `SHUT_WR` as the same input
+half-close until the server attempts to write the response.
+
+Start the server with `--metrics` to expose Prometheus output at `/metrics`.
+Metrics are opt-in, so the default request path has no Micrometer instrumentation cost.
+Runtime and HTTP performance metrics are the primary surface: JVM heap, GC and
+threads; process CPU, uptime and file descriptors; and Jetty connections,
+thread-pool load and route-template HTTP latency. Graphite-specific metrics are
+secondary and currently cover Cypher active queries, concurrency limit,
+rejections and duration by fixed outcome. Graph ids, query text, keywords,
+classes and methods are never used as metric labels. HTTP URI labels are route
+templates and are capped at 64 distinct values.
 
 For label discovery, use the metadata-backed histogram shape below. Graphite
 answers it from node type counts without visiting graph nodes:

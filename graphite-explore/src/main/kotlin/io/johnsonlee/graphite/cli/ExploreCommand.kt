@@ -1,6 +1,5 @@
 package io.johnsonlee.graphite.cli
 
-import com.google.gson.GsonBuilder
 import io.javalin.Javalin
 import io.javalin.json.JavalinGson
 import io.johnsonlee.graphite.cli.c4.C4ArchitectureService
@@ -75,7 +74,11 @@ open class ServeCommand : Callable<Int> {
     )
     var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
 
-    private val gson = GsonBuilder().setPrettyPrinting().create()
+    @Option(
+        names = ["--metrics"],
+        description = ["Expose Prometheus performance metrics at $METRICS_PATH"]
+    )
+    var metricsEnabled: Boolean = false
 
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
@@ -104,16 +107,23 @@ open class ServeCommand : Callable<Int> {
             return 1
         }
 
+        val performanceMetrics = if (metricsEnabled) ServerPerformanceMetrics() else null
         var app: Javalin? = null
         try {
             app = Javalin.create { config ->
-                config.jsonMapper(JavalinGson(gson))
+                config.jsonMapper(JavalinGson(GRAPHITE_GSON))
                 config.staticFiles.add("/web")
-            }.start(port)
+                performanceMetrics?.configure(config)
+            }
 
-            registerApiRoutes(app, registry, topologyService)
+            performanceMetrics?.registerRoutes(app)
+            registerApiRoutes(app, registry, topologyService, performanceMetrics)
+            app.start(port)
 
             System.err.println("Web UI: http://localhost:${app.port()}")
+            if (performanceMetrics != null) {
+                System.err.println("Metrics: http://localhost:${app.port()}$METRICS_PATH")
+            }
             System.err.println("Data: $root")
             System.err.println("Loaded graphs: ${registry.list().joinToString { it.id }}")
             val topologySummary = topologyService.summary()
@@ -130,6 +140,7 @@ open class ServeCommand : Callable<Int> {
             return 0
         } finally {
             app?.stop()
+            performanceMetrics?.close()
             topologyService.close()
             registry.close()
         }
@@ -139,8 +150,14 @@ open class ServeCommand : Callable<Int> {
         ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget)).register(app, graph)
     }
 
-    internal fun registerApiRoutes(app: Javalin, registry: GraphRegistry, topology: TopologyService) {
-        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget)).register(app, registry, topology)
+    internal fun registerApiRoutes(
+        app: Javalin,
+        registry: GraphRegistry,
+        topology: TopologyService,
+        performanceMetrics: ServerPerformanceMetrics? = null
+    ) {
+        val recorder = performanceMetrics?.cypherRecorder(maxConcurrentCypher) ?: NoOpCypherPerformanceRecorder
+        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget, recorder)).register(app, registry, topology)
     }
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =

@@ -32,6 +32,9 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -272,6 +275,114 @@ class CypherExecutorTest {
         assertFailsWith<CypherBudgetExceededException> {
             CypherExecutor(chain, context).execute("MATCH (n:IntConstant) RETURN n.value LIMIT 1")
         }
+    }
+
+    @Test
+    fun `budgeted pipeline preserves unbudgeted clause results`() {
+        val budgeted = CypherExecutor(
+            graph,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = Long.MAX_VALUE))
+        )
+        val queries = listOf(
+            "UNWIND [3, 1, 2, 2] AS x WITH x WHERE x > 1 " +
+                "RETURN DISTINCT x + 0 AS value ORDER BY value DESC",
+            "UNWIND [3, 1, 2, 2] AS x RETURN x, count(x) AS occurrences ORDER BY x DESC",
+            "UNWIND [1, 1, 2] AS x RETURN count(DISTINCT x) AS occurrences",
+            "MATCH (n:IntConstant) WHERE n.value >= 0 RETURN n.value ORDER BY n.value LIMIT 3"
+        )
+
+        for (query in queries) {
+            assertEquals(executor.execute(query), budgeted.execute(query), query)
+        }
+    }
+
+    @Test
+    fun `budgeted extrema preserve NaN and signed zero ordering`() {
+        val budgeted = CypherExecutor(
+            graph,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = Long.MAX_VALUE))
+        )
+
+        for (values in listOf("toFloat('NaN'), 1.0", "1.0, toFloat('NaN')")) {
+            val row = budgeted.execute(
+                "UNWIND [$values] AS x RETURN min(x) AS lo, max(x) AS hi"
+            ).rows.single()
+            assertEquals(1.0, row["lo"])
+            assertTrue((row["hi"] as Double).isNaN())
+        }
+
+        for (values in listOf("-0.0, 0.0", "0.0, -0.0")) {
+            val row = budgeted.execute(
+                "UNWIND [$values] AS x RETURN min(x) AS lo, max(x) AS hi"
+            ).rows.single()
+            assertEquals((-0.0).toRawBits(), (row["lo"] as Double).toRawBits())
+            assertEquals(0.0.toRawBits(), (row["hi"] as Double).toRawBits())
+        }
+    }
+
+    @Test
+    fun `execution context cancellation stops a graph scan`() {
+        val cancellation = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
+        cancellation.cancel()
+
+        assertFailsWith<CypherQueryCancelledException> {
+            CypherExecutor(graph, context).execute("MATCH (n) RETURN n.id LIMIT 1")
+        }
+    }
+
+    @Test
+    fun `execution context cancellation remains active across sequential executors`() {
+        val cancellation = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
+        assertEquals(
+            listOf(mapOf("value" to 1)),
+            CypherExecutor(graph, context).execute("RETURN 1 AS value").rows
+        )
+
+        cancellation.cancel()
+
+        assertFailsWith<CypherQueryCancelledException> {
+            CypherExecutor(graph, context).execute("MATCH (n) RETURN n.id LIMIT 1")
+        }
+    }
+
+    @Test
+    fun `execution context cancellation stops graph-free range and unwind work`() {
+        val cancellation = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1), cancellation)
+        val started = CountDownLatch(1)
+        val failure = AtomicReference<Throwable?>()
+        val worker = Thread {
+            try {
+                started.countDown()
+                CypherExecutor(graph, context).execute(
+                    "UNWIND range(1, 10000000) AS x RETURN x LIMIT 1"
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(started.await(1, TimeUnit.SECONDS))
+        Thread.sleep(20)
+        cancellation.cancel()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Graph-free query ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
+    }
+
+    @Test
+    fun `graph-free cancellation checkpoints do not consume graph work budget`() {
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+
+        val result = CypherExecutor(graph, context).execute(
+            "UNWIND range(1, 10000) AS x RETURN x LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("x" to 1L)), result.rows)
     }
 
     @Test

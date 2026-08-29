@@ -50,6 +50,7 @@ import io.johnsonlee.graphite.input.ResourceEntry
 import io.johnsonlee.graphite.webgraph.GraphStore
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import picocli.CommandLine
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -869,10 +870,23 @@ class ExploreCommandTest {
                     """{"query":"$query","graphs":["missing"]}"""
                 )
                 assertEquals(404, missingCode, "Expected 404, body: $missingBody")
-                assertTrue(missingBody.contains("Graph not loaded: missing"), "Expected missing graph error, body: $missingBody")
+                assertEquals(
+                    mapOf(API_FIELD_ERROR to "Graph not loaded: missing"),
+                    parseJson<Map<String, Any?>>(missingBody)
+                )
             }
         } finally {
             root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `scoped cypher preserves missing graph response contract`() {
+        withExploreApp(DefaultGraph.Builder().build()) { targetPort ->
+            val (code, body) = get(targetPort, "/api/graphs/missing/cypher?query=RETURN%201")
+
+            assertEquals(404, code)
+            assertEquals(mapOf(API_FIELD_ERROR to "Graph not loaded"), parseJson<Map<String, Any?>>(body))
         }
     }
 
@@ -1762,6 +1776,11 @@ class ExploreCommandTest {
         val spec = ExploreCommand().buildOpenApiSpec()
         assertEquals("3.0.3", spec["openapi"])
         @Suppress("UNCHECKED_CAST")
+        val info = spec["info"] as Map<String, Any?>
+        val buildVersion = requireNotNull(System.getProperty("graphite.version"))
+        assertEquals(buildVersion, info["version"])
+        assertTrue(GraphiteVersionProvider().getVersion().contentEquals(arrayOf("graphite $buildVersion")))
+        @Suppress("UNCHECKED_CAST")
         val paths = spec["paths"] as Map<String, Map<String, Any?>>
         assertTrue(paths.containsKey("/openapi.json"))
         assertTrue(paths.containsKey("/swagger.json"))
@@ -2153,6 +2172,16 @@ class ExploreCommandTest {
         assertTrue(explore.graphSpecs.isEmpty())
         assertEquals(DEFAULT_MAX_CONCURRENT_CYPHER, explore.maxConcurrentCypher)
         assertEquals(DEFAULT_CYPHER_WORK_BUDGET, explore.cypherWorkBudget)
+        assertFalse(explore.metricsEnabled)
+    }
+
+    @Test
+    fun `server metrics require explicit opt in`() {
+        val serve = ServeCommand()
+
+        CommandLine(serve).parseArgs("--metrics")
+
+        assertTrue(serve.metricsEnabled)
     }
 
     @Test

@@ -34,6 +34,20 @@ import kotlin.test.assertTrue
 class CrossGraphCypherExecutorTest {
 
     @Test
+    fun `shared execution context cancellation stops a cross graph scan`() {
+        val cancellation = CypherCancellationSignal()
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)
+        cancellation.cancel()
+
+        assertFailsWith<CypherQueryCancelledException> {
+            CrossGraphCypherExecutor(
+                listOf(CypherGraph("service", graph(IntConstant(NodeId(1), 10)))),
+                context
+            ).execute("MATCH (n) RETURN n.id LIMIT 1")
+        }
+    }
+
+    @Test
     fun `retains JVM one argument constructor`() {
         val constructor = assertNotNull(
             CrossGraphCypherExecutor::class.java.getConstructor(List::class.java)

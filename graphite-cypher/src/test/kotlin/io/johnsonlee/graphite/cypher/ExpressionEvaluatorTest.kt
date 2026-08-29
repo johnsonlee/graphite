@@ -16,7 +16,14 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import org.junit.Before
 import org.junit.Test
+import java.util.AbstractSequentialList
+import java.util.LinkedList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -200,6 +207,56 @@ class ExpressionEvaluatorTest {
         val right = CypherExpr.ListLiteral(listOf(lit(3), lit(4)))
         val expr = CypherExpr.BinaryOp("+", left, right)
         assertEquals(listOf(1, 2, 3, 4), eval(expr))
+    }
+
+    @Test
+    fun `tracked list concatenation observes cancellation during copy`() {
+        val values = (0 until 10_000).toList()
+        val checks = AtomicInteger()
+        val tracked = ExpressionEvaluator {
+            if (checks.incrementAndGet() == 2) throw CollectionOperationCancelled()
+        }
+
+        assertFailsWith<CollectionOperationCancelled> {
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(values), lit(values)), emptyMap())
+        }
+        assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `tracked list concatenation traverses sequential inputs once`() {
+        val left = EvaluatorTrackingSequentialList(listOf(1, 2))
+        val right = EvaluatorTrackingSequentialList(listOf(3, 4))
+        val tracked = ExpressionEvaluator {}
+
+        assertEquals(
+            listOf(1, 2, 3, 4),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(left), lit(right)), emptyMap())
+        )
+        assertEquals(1, left.listIteratorCalls)
+        assertEquals(1, right.listIteratorCalls)
+    }
+
+    @Test
+    fun `tracked list operations preserve completed results`() {
+        var checks = 0
+        val tracked = ExpressionEvaluator { checks++ }
+
+        assertEquals(
+            listOf(1, 2, 3, 4),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(listOf(1, 2)), lit(listOf(3, 4))), emptyMap())
+        )
+        assertEquals(
+            listOf(1, 2, 3),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(listOf(1, 2)), lit(3)), emptyMap())
+        )
+        assertEquals(
+            listOf(1, 2, 3),
+            tracked.evaluate(CypherExpr.BinaryOp("+", lit(1), lit(listOf(2, 3))), emptyMap())
+        )
+        assertEquals(true, tracked.evaluate(CypherExpr.ListOp("IN", lit(2), lit(listOf(1, 2, 3))), emptyMap()))
+        assertEquals(false, tracked.evaluate(CypherExpr.ListOp("IN", lit(4), lit(listOf(1, 2, 3))), emptyMap()))
+        assertTrue(checks > 0)
     }
 
     // ========================================================================
@@ -390,6 +447,28 @@ class ExpressionEvaluatorTest {
         assertNull(eval(CypherExpr.ListOp("IN", lit(1), lit(null))))
     }
 
+    @Test
+    fun `tracked IN observes cancellation during membership scan`() {
+        val checks = AtomicInteger()
+        val tracked = ExpressionEvaluator {
+            if (checks.incrementAndGet() == 2) throw CollectionOperationCancelled()
+        }
+
+        assertFailsWith<CollectionOperationCancelled> {
+            tracked.evaluate(CypherExpr.ListOp("IN", lit(-1), lit((0 until 10_000).toList())), emptyMap())
+        }
+        assertEquals(2, checks.get())
+    }
+
+    @Test
+    fun `tracked IN traverses a sequential input once`() {
+        val values = EvaluatorTrackingSequentialList(listOf(1, 2, 3))
+        val tracked = ExpressionEvaluator {}
+
+        assertFalse(tracked.evaluate(CypherExpr.ListOp("IN", lit(4), lit(values)), emptyMap()) as Boolean)
+        assertEquals(1, values.listIteratorCalls)
+    }
+
     // ========================================================================
     // 11. Regex
     // ========================================================================
@@ -398,6 +477,130 @@ class ExpressionEvaluatorTest {
     fun `regex match`() {
         assertEquals(true, eval(CypherExpr.RegexMatch(lit("hello"), lit("hel.*"))))
         assertEquals(false, eval(CypherExpr.RegexMatch(lit("hello"), lit("xyz.*"))))
+    }
+
+    @Test
+    fun `regex preserves Java pattern language`() {
+        val matchingCases = listOf(
+            "aa" to "(a)\\1",
+            "foobar" to "foo(?=bar)bar",
+            "aaa" to "a++",
+            "a" to "[a-z&&[^b]]",
+            "abcXYZ_123" to "[a-z]+[A-Z_]+[0-9]+",
+            "azm" to "[a-z]+[a-m]+"
+        )
+
+        for ((value, pattern) in matchingCases) {
+            assertEquals(true, eval(CypherExpr.RegexMatch(lit(value), lit(pattern))), pattern)
+        }
+        assertEquals(false, eval(CypherExpr.RegexMatch(lit("b"), lit("[a-z&&[^b]]"))))
+        assertEquals(false, eval(CypherExpr.RegexMatch(lit("abc123def"), lit("[a-z]+[0-9]+"))))
+    }
+
+    @Test
+    fun `ASCII range fast path matches Java regex semantics`() {
+        val patterns = listOf("[a-z]+[0-9]+", "[a-a]+[b-d]+", "[A-Z]+[_]+[0-9]+", "[0]+")
+        val values = listOf("", "a", "abc123", "aaaa", "aaab", "aad", "XYZ_12", "XYZ__12", "0", "00", "é1")
+
+        for (pattern in patterns) {
+            for (value in values) {
+                val expected = pattern.toRegex().matches(value)
+                assertEquals(expected, eval(CypherExpr.RegexMatch(lit(value), lit(pattern))), "$pattern / $value")
+            }
+        }
+    }
+
+    @Test
+    fun `dot rejects every default Java line terminator`() {
+        val lineTerminators = listOf('\n', '\r', '\u0085', '\u2028', '\u2029')
+
+        for (lineTerminator in lineTerminators) {
+            val value = "foo${lineTerminator}bar"
+            assertEquals(false, eval(CypherExpr.RegexMatch(lit(value), lit("foo.*"))))
+        }
+    }
+
+    @Test
+    fun `tracked regex fast paths preserve matches and poll cancellation`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        fun trackedMatch(value: String, pattern: String): Any? = trackedEvaluator.evaluate(
+            CypherExpr.RegexMatch(lit(value), lit(pattern)),
+            emptyMap()
+        )
+
+        assertEquals(true, trackedMatch("literal", "literal"))
+        assertEquals(false, trackedMatch("short", "shorter"))
+        assertEquals(false, trackedMatch("mismatch", "different"))
+        assertEquals(true, trackedMatch("prefix-suffix", "prefix.*"))
+        assertEquals(false, trackedMatch("prefix\rvalue", "prefix.*"))
+        assertEquals(true, trackedMatch("foobar", "foo(?=bar)bar"))
+        assertTrue(cancellationChecks > 0)
+    }
+
+    @Test
+    fun `tracked short ASCII range sequence avoids per-character cancellation polling`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        val value = "a".repeat(100) + "12345678901234"
+
+        assertEquals(
+            true,
+            trackedEvaluator.evaluate(
+                CypherExpr.RegexMatch(lit(value), lit("[a-z]+[0-9]+")),
+                emptyMap()
+            )
+        )
+        assertEquals(1, cancellationChecks)
+    }
+
+    @Test
+    fun `tracked long ASCII range sequence polls cancellation`() {
+        var cancellationChecks = 0
+        val trackedEvaluator = ExpressionEvaluator { cancellationChecks++ }
+        val value = "a".repeat(2_048) + "1234"
+
+        assertEquals(
+            true,
+            trackedEvaluator.evaluate(
+                CypherExpr.RegexMatch(lit(value), lit("[a-z]+[0-9]+")),
+                emptyMap()
+            )
+        )
+        assertTrue(cancellationChecks >= 3)
+    }
+
+    @Test
+    fun `tracked regex without risky syntax still cancels inside the matcher`() {
+        val cancellation = CypherCancellationSignal()
+        val matcherEntered = CountDownLatch(1)
+        val resumeMatcher = CountDownLatch(1)
+        val failure = AtomicReference<Throwable?>()
+        val cancellableEvaluator = ExpressionEvaluator {
+            matcherEntered.countDown()
+            resumeMatcher.await()
+            cancellation.throwIfCancelled()
+        }
+        val worker = Thread {
+            try {
+                val optionalPrefix = "a?".repeat(30)
+                cancellableEvaluator.evaluate(
+                    CypherExpr.RegexMatch(lit("a".repeat(29)), lit(optionalPrefix + "a".repeat(30))),
+                    emptyMap()
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(matcherEntered.await(5, TimeUnit.SECONDS), "Regex matcher did not reach an internal checkpoint")
+        cancellation.cancel()
+        resumeMatcher.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Regex matcher ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
     }
 
     @Test
@@ -420,6 +623,38 @@ class ExpressionEvaluatorTest {
         val cache = field.get(evaluator) as Map<*, *>
 
         assertTrue(cache.size <= 256)
+    }
+
+    @Test
+    fun `regex matching observes cancellation from inside the matcher`() {
+        val cancellation = CypherCancellationSignal()
+        val matcherEntered = CountDownLatch(1)
+        val resumeMatcher = CountDownLatch(1)
+        val failure = AtomicReference<Throwable?>()
+        val cancellableEvaluator = ExpressionEvaluator {
+            matcherEntered.countDown()
+            resumeMatcher.await()
+            cancellation.throwIfCancelled()
+        }
+        val worker = Thread {
+            try {
+                cancellableEvaluator.evaluate(
+                    CypherExpr.RegexMatch(lit("a".repeat(100_000) + "!"), lit("(a+)+$")),
+                    emptyMap()
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+            }
+        }
+
+        worker.start()
+        assertTrue(matcherEntered.await(5, TimeUnit.SECONDS), "Regex matcher did not start reading input")
+        cancellation.cancel()
+        resumeMatcher.countDown()
+        worker.join(TimeUnit.SECONDS.toMillis(2))
+
+        assertFalse(worker.isAlive, "Regex matcher ignored cancellation")
+        assertTrue(failure.get() is CypherQueryCancelledException, "Unexpected failure: ${failure.get()}")
     }
 
     // ========================================================================
@@ -1183,5 +1418,21 @@ class ExpressionEvaluatorTest {
     @Test
     fun `toCypherString - CountStar`() {
         assertEquals("count(*)", CypherExpr.CountStar.toCypherString())
+    }
+}
+
+private class CollectionOperationCancelled : RuntimeException()
+
+private class EvaluatorTrackingSequentialList<T>(values: Collection<T>) : AbstractSequentialList<T>() {
+    private val delegate = LinkedList(values)
+    var listIteratorCalls: Int = 0
+        private set
+
+    override val size: Int
+        get() = delegate.size
+
+    override fun listIterator(index: Int): MutableListIterator<T> {
+        listIteratorCalls++
+        return delegate.listIterator(index)
     }
 }

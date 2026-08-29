@@ -8,6 +8,8 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
 import java.util.LinkedHashMap
+import java.util.RandomAccess
+import java.util.regex.Pattern
 
 private const val PREDICATE_ANY = "any"
 private const val PREDICATE_ALL = "all"
@@ -16,16 +18,25 @@ private const val PREDICATE_SINGLE = "single"
 private const val UNKNOWN_PREDICATE_FUNCTION = "Unknown predicate function"
 private const val LOAD_FACTOR = 0.75f
 private const val MAX_REGEX_CACHE_SIZE = 256
+private const val REGEX_ANY_SUFFIX = ".*"
+private val REGEX_META_CHARACTERS = setOf('\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}')
+private val ASCII_RANGE_SEQUENCE_TOKEN = Pattern.compile("\\[([A-Za-z0-9_])(?:-([A-Za-z0-9_]))?]\\+")
 
 /**
  * Evaluates Cypher expressions against a variable binding context.
  * Supports all openCypher expression types: arithmetic, boolean, comparison,
  * string operators, list operators, CASE, property access, function calls.
  */
-class ExpressionEvaluator {
+class ExpressionEvaluator(
+    private val checkCancelled: (() -> Unit)? = null
+) {
 
-    private val regexCache = object : LinkedHashMap<String, Regex>(MAX_REGEX_CACHE_SIZE + 1, LOAD_FACTOR, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Regex>?): Boolean =
+    private val regexCache = object : LinkedHashMap<String, CompiledCypherRegex>(
+        MAX_REGEX_CACHE_SIZE + 1,
+        LOAD_FACTOR,
+        true
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CompiledCypherRegex>?): Boolean =
             size > MAX_REGEX_CACHE_SIZE
     }
 
@@ -42,8 +53,11 @@ class ExpressionEvaluator {
         }
         is CypherExpr.Parameter -> bindings[expr.name]
         is CypherExpr.FunctionCall -> {
+            checkCancelled?.invoke()
             val args = expr.args.map { evaluate(it, bindings) }
-            CypherFunctions.call(expr.name, args)
+            val result = checkCancelled?.let { CypherFunctions.call(expr.name, args, it) }
+                ?: CypherFunctions.call(expr.name, args)
+            result.also { checkCancelled?.invoke() }
         }
         is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
         is CypherExpr.UnaryOp -> evaluateUnaryOp(expr, bindings)
@@ -57,9 +71,12 @@ class ExpressionEvaluator {
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
         is CypherExpr.ListComprehension -> evaluateListComprehension(expr, bindings)
-        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(expr, bindings) { expression, row ->
-            evaluate(expression, row)
-        }
+        is CypherExpr.PredicateFunction -> evaluatePredicateFunction(
+            expr,
+            bindings,
+            { expression, row -> evaluate(expression, row) },
+            checkCancelled
+        )
         is CypherExpr.Subscript -> evaluateSubscript(expr, bindings)
         is CypherExpr.Slice -> evaluateSlice(expr, bindings)
         is CypherExpr.Not -> {
@@ -95,7 +112,7 @@ class ExpressionEvaluator {
         if (left == null || right == null) return null
 
         return when (expr.op) {
-            "+" -> add(left, right)
+            "+" -> add(left, right, checkCancelled)
             "-" -> arithmetic(left, right) { a, b -> a - b }
             "*" -> arithmetic(left, right) { a, b -> a * b }
             "/" -> arithmetic(left, right) { a, b ->
@@ -122,11 +139,11 @@ class ExpressionEvaluator {
         }
     }
 
-    private fun add(left: Any, right: Any): Any = when {
+    private fun add(left: Any, right: Any, checkCancelled: (() -> Unit)?): Any = when {
         left is String || right is String -> "$left$right"
-        left is List<*> && right is List<*> -> left + right
-        left is List<*> -> left + right
-        right is List<*> -> listOf(left) + right
+        left is List<*> && right is List<*> -> concatenateLists(left, right, checkCancelled)
+        left is List<*> -> concatenateLists(left, listOf(right), checkCancelled)
+        right is List<*> -> concatenateLists(listOf(left), right, checkCancelled)
         else -> arithmetic(left, right) { a, b -> a + b }
     }
 
@@ -208,7 +225,7 @@ class ExpressionEvaluator {
             "IN" -> {
                 val element = evaluate(expr.left, bindings)
                 val list = evaluate(expr.right, bindings) as? List<*> ?: return null
-                element in list
+                containsWithCancellation(list, element, checkCancelled)
             }
             else -> throw CypherException("Unknown list op: ${expr.op}")
         }
@@ -222,9 +239,9 @@ class ExpressionEvaluator {
         val value = evaluate(expr.left, bindings) as? String ?: return null
         val pattern = evaluate(expr.right, bindings) as? String ?: return null
         val regex = synchronized(regexCache) {
-            regexCache.getOrPut(pattern) { Regex(pattern) }
+            regexCache.getOrPut(pattern) { compileCypherRegex(pattern) }
         }
-        return regex.matches(value)
+        return regex.matches(value, checkCancelled).also { checkCancelled?.invoke() }
     }
 
     // ========================================================================
@@ -260,7 +277,8 @@ class ExpressionEvaluator {
         val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
         val results = mutableListOf<Any?>()
 
-        for (element in list) {
+        for ((index, element) in list.withIndex()) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
             val innerBindings = bindings.toMutableMap()
             innerBindings[expr.variable] = element
 
@@ -279,6 +297,7 @@ class ExpressionEvaluator {
             results.add(value)
         }
 
+        checkCancelled?.invoke()
         return results
     }
 
@@ -390,17 +409,263 @@ class ExpressionEvaluator {
     }
 }
 
+private fun concatenateLists(
+    left: List<*>,
+    right: List<*>,
+    checkCancelled: (() -> Unit)?
+): List<Any?> {
+    if (checkCancelled == null) return left + right
+    val result = ArrayList<Any?>(left.size + right.size)
+    appendWithCancellation(result, left, checkCancelled)
+    appendWithCancellation(result, right, checkCancelled)
+    checkCancelled()
+    return result
+}
+
+private fun appendWithCancellation(
+    target: MutableList<Any?>,
+    source: List<*>,
+    checkCancelled: () -> Unit
+) {
+    if (source is RandomAccess) {
+        var start = 0
+        while (start < source.size) {
+            checkCancelled()
+            val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, source.size)
+            target.addAll(source.subList(start, end))
+            start = end
+        }
+        return
+    }
+
+    var index = 0
+    val iterator = source.listIterator()
+    while (iterator.hasNext()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        target.add(iterator.next())
+        index++
+    }
+}
+
+private fun containsWithCancellation(
+    list: List<*>,
+    element: Any?,
+    checkCancelled: (() -> Unit)?
+): Boolean = when {
+    checkCancelled == null -> element in list
+    list is RandomAccess -> containsRandomAccessList(list, element, checkCancelled)
+    else -> containsSequentialList(list, element, checkCancelled)
+}
+
+private fun containsRandomAccessList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+    var start = 0
+    while (start < list.size) {
+        checkCancelled()
+        val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
+        if (list.subList(start, end).contains(element)) return true
+        start = end
+    }
+    checkCancelled()
+    return false
+}
+
+private fun containsSequentialList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+    var index = 0
+    val iterator = list.listIterator()
+    while (iterator.hasNext()) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+        val candidate = iterator.next()
+        if (element == candidate) return true
+        index++
+    }
+    checkCancelled()
+    return false
+}
+
+private const val CANCELLABLE_COLLECTION_CHUNK_SIZE = 4 * (CANCELLATION_POLL_MASK + 1)
+
+private sealed interface CompiledCypherRegex {
+    fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean
+}
+
+private class JavaCypherRegex(pattern: String) : CompiledCypherRegex {
+    private val pattern = Pattern.compile(pattern)
+
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        val input = checkCancelled?.let { CancellationAwareCharSequence(value, it) } ?: value
+        return pattern.matcher(input).matches()
+    }
+}
+
+private class LiteralCypherRegex(
+    private val literal: String,
+    private val prefix: Boolean
+) : CompiledCypherRegex {
+    @Suppress("ReturnCount")
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        if (checkCancelled == null) {
+            return if (prefix) {
+                value.startsWith(literal) && value.indexOfJavaRegexLineTerminator(literal.length) < 0
+            } else {
+                value == literal
+            }
+        }
+        if (value.length < literal.length || !prefix && value.length != literal.length) return false
+        for (index in literal.indices) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            if (value[index] != literal[index]) return false
+        }
+        if (prefix) {
+            for (index in literal.length until value.length) {
+                if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+                if (value[index].isJavaRegexLineTerminator()) return false
+            }
+        }
+        return true
+    }
+}
+
+private class AsciiRangeSequenceCypherRegex(
+    private val ranges: IntArray
+) : CompiledCypherRegex {
+    override fun matches(value: String, checkCancelled: (() -> Unit)?): Boolean {
+        return if (checkCancelled == null || value.length <= CANCELLATION_POLL_MASK) {
+            matchesUnchecked(value)
+        } else {
+            matchesWithCancellation(value, checkCancelled)
+        }
+    }
+
+    private fun matchesUnchecked(value: String): Boolean {
+        var index = 0
+        var rangeIndex = 0
+        while (rangeIndex < ranges.size) {
+            val startIndex = index
+            val rangeStart = ranges[rangeIndex++]
+            val rangeEnd = ranges[rangeIndex++]
+            while (index < value.length && value[index].code in rangeStart..rangeEnd) {
+                index++
+            }
+            if (index == startIndex) return false
+        }
+        return index == value.length
+    }
+
+    private fun matchesWithCancellation(value: String, checkCancelled: () -> Unit): Boolean {
+        var accesses = 0
+        var index = 0
+        var rangeIndex = 0
+        while (rangeIndex < ranges.size) {
+            val startIndex = index
+            val rangeStart = ranges[rangeIndex++]
+            val rangeEnd = ranges[rangeIndex++]
+            while (index < value.length && value[index].code in rangeStart..rangeEnd) {
+                if (++accesses > CANCELLATION_POLL_MASK) {
+                    accesses = 0
+                    checkCancelled()
+                }
+                index++
+            }
+            if (index == startIndex) return false
+        }
+        return index == value.length
+    }
+}
+
+private fun compileCypherRegex(pattern: String): CompiledCypherRegex {
+    val prefix = pattern.endsWith(REGEX_ANY_SUFFIX)
+    val literalPattern = if (prefix) pattern.dropLast(REGEX_ANY_SUFFIX.length) else pattern
+    val literal = parseRegexLiteral(literalPattern)
+    val ranges = if (literal == null) parseAsciiRangeSequence(pattern) else null
+    return when {
+        literal != null -> LiteralCypherRegex(literal, prefix)
+        ranges != null -> AsciiRangeSequenceCypherRegex(ranges)
+        else -> JavaCypherRegex(pattern)
+    }
+}
+
+@Suppress("ReturnCount")
+private fun parseAsciiRangeSequence(pattern: String): IntArray? {
+    val ranges = mutableListOf<Int>()
+    val matcher = ASCII_RANGE_SEQUENCE_TOKEN.matcher(pattern)
+    var endIndex = 0
+    while (matcher.find()) {
+        if (matcher.start() != endIndex) return null
+        val rangeStart = matcher.group(1)[0].code
+        val rangeEnd = matcher.group(2)?.get(0)?.code ?: rangeStart
+        if (rangeStart > rangeEnd || ranges.chunked(2).any { rangeStart <= it[1] && rangeEnd >= it[0] }) return null
+        ranges += rangeStart
+        ranges += rangeEnd
+        endIndex = matcher.end()
+    }
+    return ranges.takeIf { endIndex == pattern.length && it.isNotEmpty() }?.toIntArray()
+}
+
+@Suppress("ReturnCount")
+private fun parseRegexLiteral(pattern: String): String? {
+    val literal = StringBuilder(pattern.length)
+    var index = 0
+    while (index < pattern.length) {
+        val current = pattern[index++]
+        if (current == '\\') {
+            if (index == pattern.length) return null
+            val escaped = pattern[index++]
+            if (escaped !in REGEX_META_CHARACTERS) return null
+            literal.append(escaped)
+        } else {
+            if (current in REGEX_META_CHARACTERS) return null
+            literal.append(current)
+        }
+    }
+    return literal.toString()
+}
+
+private fun String.indexOfJavaRegexLineTerminator(startIndex: Int): Int {
+    for (index in startIndex until length) {
+        if (this[index].isJavaRegexLineTerminator()) return index
+    }
+    return -1
+}
+
+private fun Char.isJavaRegexLineTerminator(): Boolean =
+    this == '\n' || this == '\r' || this == '\u0085' || this == '\u2028' || this == '\u2029'
+
+private class CancellationAwareCharSequence(
+    private val value: String,
+    private val checkCancelled: () -> Unit
+) : CharSequence {
+    private var accesses = 0
+
+    override val length: Int get() = value.length
+
+    override fun get(index: Int): Char {
+        if (++accesses > CANCELLATION_POLL_MASK) {
+            accesses = 0
+            checkCancelled()
+        }
+        return value[index]
+    }
+
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        CancellationAwareCharSequence(value.substring(startIndex, endIndex), checkCancelled)
+
+    override fun toString(): String = value
+}
+
 private fun evaluatePredicateFunction(
     expr: CypherExpr.PredicateFunction,
     bindings: Map<String, Any?>,
-    evaluate: (CypherExpr, Map<String, Any?>) -> Any?
+    evaluate: (CypherExpr, Map<String, Any?>) -> Any?,
+    checkCancelled: (() -> Unit)?
 ): Any? {
     val list = evaluate(expr.listExpr, bindings) as? List<*> ?: return null
-    val results = list.map { element ->
+    val results = list.mapIndexed { index, element ->
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled?.invoke()
         val innerBindings = bindings + (expr.variable to element)
         val value = expr.predicate?.let { evaluate(it, innerBindings) } ?: element
         value as? Boolean
     }
+    checkCancelled?.invoke()
     return evaluatePredicateResults(expr.name, results)
 }
 

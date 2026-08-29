@@ -93,7 +93,20 @@ internal val nodeLabelDescriptors = listOf(
  */
 object CypherFunctions {
 
-    fun call(name: String, args: List<Any?>): Any? = when (name.lowercase()) {
+    fun call(name: String, args: List<Any?>): Any? = dispatch(name, args, null)
+
+    internal fun call(
+        name: String,
+        args: List<Any?>,
+        checkCancelled: () -> Unit
+    ): Any? = dispatch(name, args, checkCancelled)
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun dispatch(
+        name: String,
+        args: List<Any?>,
+        checkCancelled: (() -> Unit)?
+    ): Any? = when (name.lowercase()) {
         // Aggregation (must be handled in aggregation pipeline, not inline)
         FUNCTION_COUNT -> throw CypherAggregationException(name)
         FUNCTION_SUM -> throw CypherAggregationException(name)
@@ -134,15 +147,15 @@ object CypherFunctions {
         "length" -> size(args[0])
         "left" -> (args[0] as? String)?.take((args[1] as Number).toInt())
         "right" -> (args[0] as? String)?.takeLast((args[1] as Number).toInt())
-        "reverse" -> reverse(args[0])
+        "reverse" -> reverse(args[0], checkCancelled)
 
         // List
         "head" -> (args[0] as? List<*>)?.firstOrNull()
-        "tail" -> (args[0] as? List<*>)?.drop(1)
+        "tail" -> tail(args[0], checkCancelled)
         "last" -> (args[0] as? List<*>)?.lastOrNull()
-        "range" -> range(args)
-        "nodes" -> nodes(args[0])
-        "relationships" -> relationships(args[0])
+        "range" -> range(args, checkCancelled)
+        "nodes" -> nodes(args[0], checkCancelled)
+        "relationships" -> relationships(args[0], checkCancelled)
 
         // Math - basic
         "abs" -> abs(args[0])
@@ -193,6 +206,24 @@ object CypherFunctions {
         FUNCTION_PERCENTILE_DISC -> percentileDisc(values, DEFAULT_PERCENTILE)
         FUNCTION_STDEV -> stdev(values, sample = true)
         FUNCTION_STDEVP -> stdev(values, sample = false)
+        else -> throw CypherException("Unknown aggregation: $name")
+    }
+
+    internal fun aggregate(
+        name: String,
+        values: List<Any?>,
+        checkCancelled: () -> Unit
+    ): Any? = when (name.lowercase()) {
+        FUNCTION_COUNT -> values.size.toLong()
+        FUNCTION_SUM -> sum(values, checkCancelled)
+        FUNCTION_AVG -> average(values, checkCancelled)
+        FUNCTION_MIN -> extremum(values, checkCancelled, minimum = true)
+        FUNCTION_MAX -> extremum(values, checkCancelled, minimum = false)
+        FUNCTION_COLLECT -> collect(values, checkCancelled)
+        FUNCTION_PERCENTILE_CONT -> percentileCont(values, DEFAULT_PERCENTILE, checkCancelled)
+        FUNCTION_PERCENTILE_DISC -> percentileDisc(values, DEFAULT_PERCENTILE, checkCancelled)
+        FUNCTION_STDEV -> stdev(values, sample = true, checkCancelled)
+        FUNCTION_STDEVP -> stdev(values, sample = false, checkCancelled)
         else -> throw CypherException("Unknown aggregation: $name")
     }
 
@@ -331,33 +362,117 @@ object CypherFunctions {
         }
     }
 
-    private fun reverse(value: Any?): Any? = when (value) {
-        is String -> value.reversed()
-        is List<*> -> value.reversed()
+    private fun reverse(value: Any?, checkCancelled: (() -> Unit)?): Any? = when (value) {
+        is String -> reverseString(value, checkCancelled)
+        is List<*> -> reverseList(value, checkCancelled)
         else -> null
     }
 
-    private fun range(args: List<Any?>): List<Long> {
+    private fun reverseString(value: String, checkCancelled: (() -> Unit)?): String {
+        if (checkCancelled == null) return value.reversed()
+        val result = StringBuilder(value.length)
+        var sourceIndex = value.length
+        var copied = 0
+        while (sourceIndex > 0) {
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            val trailing = value[--sourceIndex]
+            if (Character.isLowSurrogate(trailing) && sourceIndex > 0) {
+                val leading = value[sourceIndex - 1]
+                if (Character.isHighSurrogate(leading)) {
+                    result.append(leading).append(trailing)
+                    sourceIndex--
+                    copied += 2
+                    continue
+                }
+            }
+            result.append(trailing)
+            copied++
+        }
+        checkCancelled()
+        return result.toString()
+    }
+
+    private fun reverseList(value: List<*>, checkCancelled: (() -> Unit)?): List<*> {
+        if (checkCancelled == null) return value.reversed()
+        val result = ArrayList<Any?>(value.size)
+        val iterator = value.listIterator(value.size)
+        var copied = 0
+        while (iterator.hasPrevious()) {
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.add(iterator.previous())
+            copied++
+        }
+        checkCancelled()
+        return result
+    }
+
+    private fun tail(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when {
+        value !is List<*> -> null
+        checkCancelled == null -> value.drop(1)
+        else -> copyTail(value, checkCancelled)
+    }
+
+    private fun copyTail(list: List<*>, checkCancelled: () -> Unit): List<*> {
+        val result = ArrayList<Any?>(maxOf(list.size - 1, 0))
+        val iterator = list.iterator()
+        if (iterator.hasNext()) iterator.next()
+        var copied = 0
+        while (iterator.hasNext()) {
+            if ((copied and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            result.add(iterator.next())
+            copied++
+        }
+        checkCancelled()
+        return result
+    }
+
+    private fun range(args: List<Any?>, checkCancelled: (() -> Unit)?): List<Long> {
         val start = (args[0] as Number).toLong()
         val end = (args[1] as Number).toLong()
         val step = if (args.size > 2) (args[2] as Number).toLong() else 1L
         if (step == 0L) throw CypherException("Step cannot be zero in range()")
-        return if (step > 0) (start..end step step).toList()
-        else (start downTo end step -step).toList()
+        if (checkCancelled == null) {
+            return if (step > 0) (start..end step step).toList()
+            else (start downTo end step -step).toList()
+        }
+        val values = ArrayList<Long>()
+        var index = 0
+        for (value in LongProgression.fromClosedRange(start, end, step)) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            values.add(value)
+            index++
+        }
+        checkCancelled()
+        return values
     }
 
-    private fun nodes(value: Any?): List<*>? = when (value) {
+    private fun nodes(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when (value) {
         is QualifiedPath -> value.nodes
         is PathFinder.Path -> value.nodes
-        is List<*> -> value.filter { it is Node || it is QualifiedNode }
+        is List<*> -> filterList(value, checkCancelled) { it is Node || it is QualifiedNode }
         else -> null
     }
 
-    private fun relationships(value: Any?): List<*>? = when (value) {
+    private fun relationships(value: Any?, checkCancelled: (() -> Unit)?): List<*>? = when (value) {
         is QualifiedPath -> value.edges
         is PathFinder.Path -> value.edges
-        is List<*> -> value.filter { it is Edge || it is QualifiedEdge }
+        is List<*> -> filterList(value, checkCancelled) { it is Edge || it is QualifiedEdge }
         else -> null
+    }
+
+    private fun filterList(
+        values: List<*>,
+        checkCancelled: (() -> Unit)?,
+        predicate: (Any?) -> Boolean
+    ): List<*> {
+        if (checkCancelled == null) return values.filter(predicate)
+        val result = ArrayList<Any?>()
+        for ((index, value) in values.withIndex()) {
+            if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
+            if (predicate(value)) result.add(value)
+        }
+        checkCancelled()
+        return result
     }
 
     private fun abs(value: Any?): Any? = when (value) {
@@ -408,6 +523,122 @@ object CypherFunctions {
         val divisor = if (sample) (nums.size - 1) else nums.size
         val variance = nums.sumOf { (it - mean).pow(2) } / divisor
         return sqrt(variance)
+    }
+
+    private fun sum(values: List<Any?>, checkCancelled: () -> Unit): Double {
+        var sum = 0.0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) sum += toDouble(value)
+        }
+        checkCancelled()
+        return sum
+    }
+
+    private fun average(values: List<Any?>, checkCancelled: () -> Unit): Double? {
+        var sum = 0.0
+        var count = 0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) {
+                sum += toDouble(value)
+                count++
+            }
+        }
+        checkCancelled()
+        return if (count == 0) null else sum / count
+    }
+
+    private fun extremum(
+        values: List<Any?>,
+        checkCancelled: () -> Unit,
+        minimum: Boolean
+    ): Any? {
+        var selected: Any? = null
+        var selectedNumber = 0.0
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value == null) continue
+            val number = toDouble(value)
+            val comparison = number.compareTo(selectedNumber)
+            if (selected == null || if (minimum) comparison < 0 else comparison > 0) {
+                selected = value
+                selectedNumber = number
+            }
+        }
+        checkCancelled()
+        return selected
+    }
+
+    private fun collect(values: List<Any?>, checkCancelled: () -> Unit): List<Any?> {
+        val result = ArrayList<Any?>(values.size)
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            result.add(value)
+        }
+        checkCancelled()
+        return result
+    }
+
+    private fun percentileCont(values: List<Any?>, p: Double, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        sort(nums, checkCancelled)
+        if (nums.isEmpty()) return null
+        val idx = p * (nums.size - 1)
+        val lower = nums[idx.toInt()]
+        val upper = nums[minOf(idx.toInt() + 1, nums.size - 1)]
+        val frac = idx - idx.toInt()
+        return lower + frac * (upper - lower)
+    }
+
+    private fun percentileDisc(values: List<Any?>, p: Double, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        sort(nums, checkCancelled)
+        if (nums.isEmpty()) return null
+        val idx = kotlin.math.ceil(p * nums.size).toInt() - 1
+        return nums[maxOf(0, idx)]
+    }
+
+    private fun stdev(values: List<Any?>, sample: Boolean, checkCancelled: () -> Unit): Any? {
+        val nums = numericValues(values, checkCancelled)
+        if (nums.size < 2) return null
+        var sum = 0.0
+        for ((index, number) in nums.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            sum += number
+        }
+        val mean = sum / nums.size
+        var squaredDifferences = 0.0
+        for ((index, number) in nums.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            squaredDifferences += (number - mean).pow(2)
+        }
+        checkCancelled()
+        val divisor = if (sample) nums.size - 1 else nums.size
+        return sqrt(squaredDifferences / divisor)
+    }
+
+    private fun numericValues(values: List<Any?>, checkCancelled: () -> Unit): MutableList<Double> {
+        val numbers = ArrayList<Double>(values.size)
+        for ((index, value) in values.withIndex()) {
+            pollCancellation(index, checkCancelled)
+            if (value != null) numbers.add(toDouble(value))
+        }
+        checkCancelled()
+        return numbers
+    }
+
+    private fun sort(values: MutableList<Double>, checkCancelled: () -> Unit) {
+        var comparisons = 0
+        values.sortWith { left, right ->
+            pollCancellation(comparisons++, checkCancelled)
+            left.compareTo(right)
+        }
+        checkCancelled()
+    }
+
+    private fun pollCancellation(index: Int, checkCancelled: () -> Unit) {
+        if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
     }
 }
 

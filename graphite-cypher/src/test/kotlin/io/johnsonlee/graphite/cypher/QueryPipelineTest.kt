@@ -1203,6 +1203,45 @@ class QueryPipelineTest {
         assertEquals(2, result.rows[2]["a"])
     }
 
+    @Test
+    fun `ordered direct property limit preserves multi-key and stable ordering`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", "CallSiteNode")))),
+            CypherClause.Return(listOf(
+                returnItem(prop(variable("n"), "caller_class"), "caller"),
+                returnItem(prop(variable("n"), "callee_class"), "callee"),
+                returnItem(prop(variable("n"), "line"), "line")
+            )),
+            CypherClause.OrderBy(listOf(
+                SortItem(variable("caller"), ascending = true),
+                SortItem(variable("callee"), ascending = true)
+            )),
+            CypherClause.Limit(lit(1))
+        )
+
+        val result = pipeline.execute(clauses)
+
+        assertEquals(listOf("caller", "callee", "line"), result.columns)
+        assertEquals(1, result.rows.size)
+        assertEquals("com.example.Logger", result.rows.single()["callee"])
+        assertEquals(20, result.rows.single()["line"])
+
+        val stableResult = pipeline.execute(
+            clauses.toMutableList().apply {
+                this[2] = CypherClause.OrderBy(listOf(SortItem(variable("caller"), ascending = true)))
+            }
+        )
+        assertEquals(10, stableResult.rows.single()["line"])
+
+        assertFailsWith<CypherBudgetExceededException> {
+            CypherExecutor(graph, CypherExecutionBudget(maxWorkUnits = 1)).execute(
+                "MATCH (n:CallSiteNode) " +
+                    "RETURN n.caller_class AS caller, n.callee_class AS callee, n.line AS line " +
+                    "ORDER BY caller, callee LIMIT 1"
+            )
+        }
+    }
+
     // ========================================================================
     // SKIP - 27. Skip 2
     // ========================================================================

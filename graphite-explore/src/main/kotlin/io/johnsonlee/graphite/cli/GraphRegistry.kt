@@ -22,7 +22,9 @@ internal const val API_FIELD_LOADED_AT = "loadedAt"
 internal const val API_FIELD_LOAD_MODE = "loadMode"
 internal const val STANDALONE_GRAPH_ID = "standalone"
 
-internal class GraphNotLoadedException(id: String) : RuntimeException("Graph not loaded: $id")
+internal class GraphNotLoadedException(id: String? = null) : RuntimeException(
+    id?.let { "Graph not loaded: $it" } ?: "Graph not loaded"
+)
 
 internal data class GraphStats(
     val nodes: Long,
