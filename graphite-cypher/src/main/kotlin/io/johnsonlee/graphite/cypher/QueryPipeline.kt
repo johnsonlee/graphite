@@ -198,6 +198,9 @@ class QueryPipeline private constructor(
         parameters: Map<String, Any?>,
         workTracker: CypherWorkTracker?
     ): CypherResult {
+        if (workTracker == null && parameters.isEmpty() && activeParameters.get() == null) {
+            return executeWithActiveBudget(clauses)
+        }
         val previousTracker = activeWorkTracker.get()
         val previousParameters = activeParameters.get()
         if (workTracker == null) activeWorkTracker.remove() else activeWorkTracker.set(workTracker)
@@ -1556,6 +1559,8 @@ class QueryPipeline private constructor(
             matchPatternEagerly(elements, initialBindings, limit, trackSegments)
         }
 
+        if (pattern.pathVariable == null && matches.none(::containsInternalPathState)) return matches
+
         return matches.map { bindings ->
             val path = pattern.pathVariable?.let { buildPathRepresentation(pattern, bindings) }
             bindings.toMutableMap().apply {
@@ -1569,6 +1574,11 @@ class QueryPipeline private constructor(
             }
         }
     }
+
+    private fun containsInternalPathState(bindings: Map<String, Any?>): Boolean =
+        INTERNAL_MATCHED_PATH_SEGMENTS_KEY in bindings ||
+            INTERNAL_CURRENT_NODE_KEY in bindings ||
+            INTERNAL_PATH_START_NODE_KEY in bindings
 
     private fun reserveBoundRelationships(
         pattern: CypherPattern,
@@ -2527,6 +2537,17 @@ class QueryPipeline private constructor(
 
     @Suppress("CyclomaticComplexMethod", "ReturnCount")
     private fun compareNonNullOrderValues(a: Any, b: Any): Int {
+        when {
+            a is Int && b is Int -> return a.compareTo(b)
+            a is Long && b is Long -> return a.compareTo(b)
+            a is Double && b is Double -> return compareFloatingPoint(a, b)
+            a is Float && b is Float -> return compareFloatingPoint(a.toDouble(), b.toDouble())
+            a is Short && b is Short -> return a.compareTo(b)
+            a is Byte && b is Byte -> return a.compareTo(b)
+            a is String && b is String -> return a.compareTo(b)
+            a is Boolean && b is Boolean -> return a.compareTo(b)
+            a is Number && b is Number -> return compareNumbers(a, b)
+        }
         val typeComparison = orderValueType(a).compareTo(orderValueType(b))
         if (typeComparison != 0) return typeComparison
         return when {
@@ -2535,9 +2556,6 @@ class QueryPipeline private constructor(
             isRelationshipOrderValue(a) && isRelationshipOrderValue(b) -> compareRelationships(a, b)
             a is List<*> && b is List<*> -> compareLists(a, b)
             isPathOrderValue(a) && isPathOrderValue(b) -> compareLists(pathElements(a), pathElements(b))
-            a is String && b is String -> a.compareTo(b)
-            a is Boolean && b is Boolean -> a.compareTo(b)
-            a is Number && b is Number -> compareNumbers(a, b)
             else -> a.toString().compareTo(b.toString())
         }
     }
@@ -2591,15 +2609,20 @@ class QueryPipeline private constructor(
 
     @Suppress("ReturnCount")
     private fun compareNumbers(a: Number, b: Number): Int {
+        if (a.isIntegralNumber() && b.isIntegralNumber()) return a.toLong().compareTo(b.toLong())
         val aDouble = a.toDouble()
         val bDouble = b.toDouble()
-        if (aDouble.isNaN() || bDouble.isNaN()) return when {
-            aDouble.isNaN() && bDouble.isNaN() -> 0
-            aDouble.isNaN() -> 1
-            else -> -1
-        }
+        if (aDouble.isNaN() || bDouble.isNaN()) return compareFloatingPoint(aDouble, bDouble)
         if (!aDouble.isFinite() || !bDouble.isFinite()) return aDouble.compareTo(bDouble)
+        if (a.isFloatingPointNumber() && b.isFloatingPointNumber()) return aDouble.compareTo(bDouble)
         return BigDecimal(a.toString()).compareTo(BigDecimal(b.toString()))
+    }
+
+    private fun compareFloatingPoint(a: Double, b: Double): Int = when {
+        a.isNaN() && b.isNaN() -> 0
+        a.isNaN() -> 1
+        b.isNaN() -> -1
+        else -> a.compareTo(b)
     }
 
     private fun isNodeOrderValue(value: Any): Boolean = value is Node || value is QualifiedNode
@@ -2701,6 +2724,11 @@ class QueryPipeline private constructor(
 private fun Number.toCypherInt(): Int = toLong()
     .coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
     .toInt()
+
+private fun Number.isIntegralNumber(): Boolean =
+    this is Byte || this is Short || this is Int || this is Long
+
+private fun Number.isFloatingPointNumber(): Boolean = this is Float || this is Double
 
 // ========================================================================
 // Pattern variable extraction

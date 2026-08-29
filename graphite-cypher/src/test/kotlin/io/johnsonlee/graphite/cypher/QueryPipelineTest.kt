@@ -1745,6 +1745,27 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `order by preserves numeric ordering across JVM number representations`() {
+        fun ordered(values: List<Number>): List<Any?> {
+            val clauses = listOf(
+                CypherClause.Unwind(CypherExpr.ListLiteral(values.map(::lit)), "x"),
+                CypherClause.Return(listOf(returnItem(variable("x"), "x"))),
+                CypherClause.OrderBy(listOf(SortItem(variable("x"), ascending = true)))
+            )
+            return pipeline.execute(clauses).rows.map { it["x"] }
+        }
+
+        assertEquals(listOf<Byte>(1, 2, 3), ordered(listOf<Byte>(3, 1, 2)))
+        assertEquals(listOf<Short>(1, 2, 3), ordered(listOf<Short>(3, 1, 2)))
+        assertEquals(listOf(1L, 2L, 3L), ordered(listOf(3L, 1L, 2L)))
+        assertEquals(listOf(1.0f, 2.0f, 3.0f), ordered(listOf(3.0f, 1.0f, 2.0f)))
+        assertEquals(
+            listOf<Number>(1, 1.5f, 2L, Double.POSITIVE_INFINITY, Double.NaN),
+            ordered(listOf(Double.NaN, 2L, 1.5f, Double.POSITIVE_INFINITY, 1))
+        )
+    }
+
+    @Test
     fun `order by compares identities within node relationship and path types`() {
         val nodes = pipeline.execute(listOf(
             CypherClause.Match(listOf(pattern(nodePattern("n", "IntConstant")))),
