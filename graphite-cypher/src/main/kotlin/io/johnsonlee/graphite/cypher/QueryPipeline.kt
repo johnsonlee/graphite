@@ -22,6 +22,8 @@ import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import java.util.PriorityQueue
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
@@ -30,6 +32,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
@@ -43,6 +46,35 @@ private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directSt
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
 
 private val directStringWorkerNumber = AtomicInteger()
+private val directStringWorkerActive = ThreadLocal.withInitial { false }
+private val directStringGraphReferenceQueue = ReferenceQueue<Graph>()
+private val directStringGraphLocks = mutableMapOf<IdentityWeakGraphReference, ReentrantLock>()
+
+internal fun directStringGraphLock(graph: Graph): ReentrantLock = synchronized(directStringGraphLocks) {
+    while (true) {
+        val expired = directStringGraphReferenceQueue.poll() as? IdentityWeakGraphReference ?: break
+        directStringGraphLocks.remove(expired)
+    }
+    directStringGraphLocks[IdentityWeakGraphReference(graph)] ?: ReentrantLock().also { lock ->
+        directStringGraphLocks[IdentityWeakGraphReference(graph, directStringGraphReferenceQueue)] = lock
+    }
+}
+
+private class IdentityWeakGraphReference(
+    graph: Graph,
+    queue: ReferenceQueue<Graph>? = null
+) : WeakReference<Graph>(graph, queue) {
+    private val identityHash = System.identityHashCode(graph)
+
+    override fun hashCode(): Int = identityHash
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        val graph = get() ?: return false
+        return other is IdentityWeakGraphReference && graph === other.get()
+    }
+}
+
 private val directStringParallelism: Int by lazy {
     val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
@@ -804,7 +836,8 @@ class QueryPipeline private constructor(
     private fun canExecuteDirectStringDisjunctionInParallel(
         variable: String,
         items: List<ReturnItem>
-    ): Boolean = qualified && sources.size > 1 && directStringParallelism > 1 && items.all { item ->
+    ): Boolean = qualified && sources.size > 1 && directStringParallelism > 1 &&
+        !directStringWorkerActive.get() && items.all { item ->
         when (val expression = item.expression) {
             is CypherExpr.Literal -> true
             is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable)
@@ -880,40 +913,48 @@ class QueryPipeline private constructor(
     private fun <T> runDirectStringTasks(tasks: List<() -> T>): List<T> {
         if (tasks.size == 1) return listOf(tasks.single().invoke())
         val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
-        val futures = mutableListOf<Future<IndexedValue<T>>>()
-        val completions = mutableListOf<CountDownLatch>()
-        val started = mutableListOf<AtomicBoolean>()
+        val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
+        val completions = arrayOfNulls<CountDownLatch>(tasks.size)
+        val started = arrayOfNulls<AtomicBoolean>(tasks.size)
+        fun submit(index: Int) {
+            val completion = CountDownLatch(1)
+            val taskStarted = AtomicBoolean()
+            completions[index] = completion
+            started[index] = taskStarted
+            futures[index] = completionService.submit(Callable {
+                if (!taskStarted.compareAndSet(false, true)) {
+                    throw java.util.concurrent.CancellationException()
+                }
+                val previouslyActive = directStringWorkerActive.get()
+                directStringWorkerActive.set(true)
+                try {
+                    IndexedValue(index, tasks[index]())
+                } finally {
+                    if (previouslyActive) directStringWorkerActive.set(true) else directStringWorkerActive.remove()
+                    completion.countDown()
+                }
+            })
+        }
         return try {
-            tasks.forEachIndexed { index, task ->
-                val completion = CountDownLatch(1)
-                val taskStarted = AtomicBoolean()
-                completions += completion
-                started += taskStarted
-                futures += completionService.submit(Callable {
-                    if (!taskStarted.compareAndSet(false, true)) {
-                        throw java.util.concurrent.CancellationException()
-                    }
-                    try {
-                        IndexedValue(index, task())
-                    } finally {
-                        completion.countDown()
-                    }
-                })
-            }
+            var nextTask = 0
+            repeat(minOf(tasks.size, directStringParallelism)) { submit(nextTask++) }
             val results = arrayOfNulls<Any?>(tasks.size)
             repeat(tasks.size) {
                 val result = completionService.take().get()
                 results[result.index] = result.value
+                if (nextTask < tasks.size) submit(nextTask++)
             }
             @Suppress("UNCHECKED_CAST")
             results.map { it as T }
         } catch (error: Throwable) {
             futures.forEachIndexed { index, future ->
-                if (future.cancel(true) && started[index].compareAndSet(false, true)) {
-                    completions[index].countDown()
+                val taskStarted = started[index]
+                val completion = completions[index]
+                if (future != null && taskStarted != null && completion != null) {
+                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
                 }
             }
-            awaitDirectStringTasks(completions)
+            awaitDirectStringTasks(completions.filterNotNull())
             val cause = (error as? ExecutionException)?.cause ?: error
             when (cause) {
                 is RuntimeException -> throw cause
@@ -947,6 +988,7 @@ class QueryPipeline private constructor(
         private val columns: List<String>,
         private val tracker: CypherWorkTracker?
     ) {
+        private val graphLock = directStringGraphLock(source.graph)
         private val localRows = HashSet<Map<String, Any?>>()
         private val iterator by lazy {
             directStringCandidates(source.graph, nodeClass, filter, tracker).iterator()
@@ -954,7 +996,7 @@ class QueryPipeline private constructor(
         private var exhausted = false
         private var inspected = 0
 
-        fun nextDistinctRows(maxRows: Int): DirectStringScanBatch = synchronized(source.graph) {
+        fun nextDistinctRows(maxRows: Int): DirectStringScanBatch = withGraphLock {
             val rows = mutableListOf<Map<String, Any?>>()
             while (!exhausted && rows.size < maxRows) {
                 if (!iterator.hasNext()) {
@@ -972,7 +1014,7 @@ class QueryPipeline private constructor(
         fun collectRemainingSelectedRows(
             selected: DirectStringSelectedRowMatcher
         ): Set<Map<String, Any?>> =
-            synchronized(source.graph) {
+            withGraphLock {
                 val hits = mutableSetOf<Map<String, Any?>>()
                 val matcher = selected.cursor(source)
                 while (!exhausted) {
@@ -985,6 +1027,20 @@ class QueryPipeline private constructor(
                 }
                 hits
             }
+
+        private fun <T> withGraphLock(action: () -> T): T {
+            try {
+                graphLock.lockInterruptibly()
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw CypherQueryCancelledException()
+            }
+            return try {
+                action()
+            } finally {
+                graphLock.unlock()
+            }
+        }
 
         private fun projectParallelSafeNode(node: Node): Map<String, Any?> {
             val candidate = nodeValue(source, node)
@@ -1089,7 +1145,7 @@ class QueryPipeline private constructor(
                 )
             }
             val candidates: Sequence<Node> = if (accelerated.any { it == null }) {
-                trackWork(graph.nodes(candidateType), tracker).filter(disjunction::matches)
+                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter(disjunction::matches)
             } else if (graph is StringPropertyLookupOrder) {
                 mergeNodeSequences(accelerated.filterNotNull(), graph::stringPropertyNodeOrder)
             } else {
@@ -1101,6 +1157,16 @@ class QueryPipeline private constructor(
             mergeNodeSequences(candidateSequences, graph::stringPropertyNodeOrder)
         } else {
             candidateSequences.asSequence().flatten()
+        }
+    }
+
+    private fun <T> interruptible(values: Sequence<T>): Sequence<T> = sequence {
+        var inspected = 0
+        for (value in values) {
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CypherQueryCancelledException()
+            }
+            yield(value)
         }
     }
 

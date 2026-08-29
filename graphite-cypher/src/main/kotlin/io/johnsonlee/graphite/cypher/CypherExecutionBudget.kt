@@ -73,8 +73,10 @@ internal class CypherWorkTracker(
         while (true) {
             val available = remaining.get()
             if (workUnits > available) {
-                remaining.compareAndSet(available, 0)
-                throw CypherBudgetExceededException(budget.maxWorkUnits)
+                if (remaining.compareAndSet(available, 0)) {
+                    throw CypherBudgetExceededException(budget.maxWorkUnits)
+                }
+                continue
             }
             if (remaining.compareAndSet(available, available - workUnits)) return
         }

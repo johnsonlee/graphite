@@ -382,3 +382,43 @@ all eight distributions:
 two, not an `NCPU` pool. It improves load balance while preserving exact work
 accounting, cancellation joins, source-selected row order, and complete
 provenance.
+
+### 2026-08-29 - Attempt 014: Fair and reentrant work-conserving join
+
+Attempt 013 removed the phase-two wave barrier, but its first implementation
+queued every graph in the shared two-worker executor. One large request could
+therefore place all of its graph tasks ahead of a later request. A graph lookup
+callback that recursively executed another qualifying cross-graph query could
+also make both workers wait for nested work in the same pool.
+
+The retained scheduler now keeps at most two tasks from each request in flight
+and admits one replacement whenever a task completes. Nested queries detected
+on a scan worker use the existing serial path. Per-graph exclusion uses a weak,
+identity-stable interruptible lock instead of the graph monitor, so sibling
+failure can cancel and join a task waiting behind another request. Raw fallback
+node scans also poll interruption before filtering zero-hit candidates. Tests
+cover nested parallel callbacks, rolling admission beyond two graphs, and
+failure while another thread holds the same graph. The shared budget CAS loop
+now retries a raced exhaustion update before reporting the limit exceeded.
+
+Formal one-warmup/three-measurement real-fixture results stayed comfortably
+above the fixed pre-PR-95 10x floor:
+
+| Distribution | Candidate | Fixed-baseline speedup |
+|---|---:|---:|
+| broad | `0.659 s/op` | `21.12x` |
+| dense | `0.742 s/op` | `18.90x` |
+| early | `0.900 s/op` | `12.78x` |
+| bimodal | `0.939 s/op` | `17.34x` |
+| late | `0.888 s/op` | `14.30x` |
+| middle | `0.787 s/op` | `18.18x` |
+| skewed | `0.892 s/op` | `17.91x` |
+| zero hit | `0.296 s/op` | `51.33x` |
+
+The independent 36-real-graph zero-hit gate measured `2.401 s/op`. Its setup
+also runs a positive query that returns the exact 36 ordered graph identities,
+preventing an empty-result shortcut from masquerading as a latency win.
+
+**Conclusion:** retained and supersedes Attempt 013's submit-all queue. It keeps
+two-way scan parallelism without cross-request FIFO monopolization or nested
+pool deadlock.
