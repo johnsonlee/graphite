@@ -42,13 +42,15 @@ const LATENCY_RESOURCE_PROFILES = new Map([
 ]);
 const LATENCY_RESOURCE_METRICS = [
     { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
-    { key: "gc.count", label: "GC count", threshold: 15, minimum: 1 },
-    { key: "gc.time", label: "GC time", threshold: 15, minimum: 10 },
     { key: "queryGcCount", label: "query GC count", threshold: 15, minimum: 1 },
     { key: "queryGcTimeMs", label: "query GC time", threshold: 15, minimum: 10 },
     { key: "retainedHeapDeltaBytes", label: "retained heap delta", threshold: 15, minimum: 16 * MIB },
     { key: "peakUsedHeapBytes", label: "peak used heap", threshold: 15, minimum: 64 * MIB }
 ];
+const LATENCY_RESOURCE_EVENT_METRICS = new Set([
+    "maxHeapBytes", "loadedHeapBytes", "peakUsedHeapBytes", "retainedHeapBytes",
+    "retainedHeapDeltaBytes", "queryGcCount", "queryGcTimeMs"
+]);
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
@@ -125,6 +127,27 @@ function resultMap(results, revision, errors) {
 
 function secondaryMetric(result, name) {
     return result.secondaryMetrics?.[name] ?? null;
+}
+
+function rawMetricValues(metric) {
+    if (!Array.isArray(metric?.rawData) || metric.rawData.length === 0) return null;
+    const values = [];
+    for (const fork of metric.rawData) {
+        if (!Array.isArray(fork) || fork.length === 0) return null;
+        for (const value of fork) {
+            const number = finiteNumber(value);
+            if (number === null) return null;
+            values.push(number);
+        }
+    }
+    return values.length === 0 ? null : values;
+}
+
+function resourceMetricValue(result, name) {
+    const metric = secondaryMetric(result, name);
+    if (!LATENCY_RESOURCE_EVENT_METRICS.has(name)) return finiteNumber(metric?.score);
+    const values = rawMetricValues(metric);
+    return values === null ? null : values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function parseMaximumHeapArguments(result) {
@@ -426,26 +449,39 @@ export function compareLatencyResources(baseResults, candidateResults, threshold
                 if (metric === null || finiteNumber(metric.score) === null || typeof metric.scoreUnit !== "string" ||
                     metric.scoreUnit.length === 0
                 ) errors.push(`${revision}/${key}: missing or invalid secondary metric ${name}`);
+                if (LATENCY_RESOURCE_EVENT_METRICS.has(name) && rawMetricValues(metric) === null) {
+                    errors.push(`${revision}/${key}: missing or invalid per-invocation raw metric ${name}`);
+                }
             }
-            const maxHeap = finiteNumber(secondaryMetric(result, "maxHeapBytes")?.score);
-            const loaded = finiteNumber(secondaryMetric(result, "loadedHeapBytes")?.score);
-            const peak = finiteNumber(secondaryMetric(result, "peakUsedHeapBytes")?.score);
-            const retained = finiteNumber(secondaryMetric(result, "retainedHeapBytes")?.score);
+            const maxHeapValues = rawMetricValues(secondaryMetric(result, "maxHeapBytes"));
+            const loadedValues = rawMetricValues(secondaryMetric(result, "loadedHeapBytes"));
+            const peakValues = rawMetricValues(secondaryMetric(result, "peakUsedHeapBytes"));
+            const retainedValues = rawMetricValues(secondaryMetric(result, "retainedHeapBytes"));
             const tolerance = Math.max(16 * MIB, profile.maxHeapBytes * 0.01);
-            if (maxHeap !== null && (maxHeap > profile.maxHeapBytes || maxHeap < profile.maxHeapBytes - tolerance)) {
-                errors.push(`${revision}/${key}: effective max heap ${maxHeap} does not match ${profile.maxHeapBytes}`);
+            if (maxHeapValues !== null && maxHeapValues.some((value) =>
+                value > profile.maxHeapBytes || value < profile.maxHeapBytes - tolerance
+            )) {
+                errors.push(`${revision}/${key}: effective max heap does not match ${profile.maxHeapBytes} in every invocation`);
             }
-            if (loaded !== null && peak !== null && retained !== null &&
-                (loaded < 0 || retained < 0 || peak < loaded || retained > peak ||
-                    (maxHeap !== null && peak > maxHeap))
-            ) errors.push(`${revision}/${key}: invalid loaded/retained/peak heap relationship`);
+            if (maxHeapValues !== null && loadedValues !== null && peakValues !== null && retainedValues !== null) {
+                const lengths = [maxHeapValues.length, loadedValues.length, peakValues.length, retainedValues.length];
+                if (!lengths.every((length) => length === lengths[0])) {
+                    errors.push(`${revision}/${key}: resource raw metric invocation counts differ`);
+                } else if (loadedValues.some((loaded, index) => {
+                    const peak = peakValues[index];
+                    const retained = retainedValues[index];
+                    return loaded < 0 || retained < 0 || peak < loaded || retained > peak || peak > maxHeapValues[index];
+                })) {
+                    errors.push(`${revision}/${key}: invalid loaded/retained/peak heap relationship`);
+                }
+            }
         }
 
         for (const metric of LATENCY_RESOURCE_METRICS) {
             const baseMetric = secondaryMetric(baseline, metric.key);
             const candidateMetric = secondaryMetric(current, metric.key);
-            const baseValue = finiteNumber(baseMetric?.score);
-            const candidateValue = finiteNumber(candidateMetric?.score);
+            const baseValue = resourceMetricValue(baseline, metric.key);
+            const candidateValue = resourceMetricValue(current, metric.key);
             if (baseValue === null || candidateValue === null || baseValue < 0 || candidateValue < 0) continue;
             if (baseMetric.scoreUnit !== candidateMetric.scoreUnit) {
                 errors.push(`${key}/${metric.label}: base and candidate units differ`);

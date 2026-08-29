@@ -53,6 +53,10 @@ function metric(score, scoreUnit) {
     return { score, scoreUnit };
 }
 
+function eventMetric(value, scoreUnit = "#") {
+    return { score: value * 3, scoreUnit, rawData: [[value, value, value]] };
+}
+
 function resourceResult({ allFixture = false, overrides = {}, jvmArgs } = {}) {
     const maxHeapBytes = (allFixture ? 8 : 4) * 1024 ** 3;
     return jmhResult({
@@ -63,13 +67,13 @@ function resourceResult({ allFixture = false, overrides = {}, jvmArgs } = {}) {
         unit: "ms/op",
         jvmArgs: jvmArgs ?? [`-Xmx${allFixture ? 8 : 4}g`],
         secondaryMetrics: {
-            maxHeapBytes: metric(maxHeapBytes, "#"),
-            loadedHeapBytes: metric(100 * 1024 ** 2, "#"),
-            peakUsedHeapBytes: metric(200 * 1024 ** 2, "#"),
-            retainedHeapBytes: metric(120 * 1024 ** 2, "#"),
-            retainedHeapDeltaBytes: metric(20 * 1024 ** 2, "#"),
-            queryGcCount: metric(0, "#"),
-            queryGcTimeMs: metric(0, "#"),
+            maxHeapBytes: eventMetric(maxHeapBytes),
+            loadedHeapBytes: eventMetric(100 * 1024 ** 2),
+            peakUsedHeapBytes: eventMetric(200 * 1024 ** 2),
+            retainedHeapBytes: eventMetric(120 * 1024 ** 2),
+            retainedHeapDeltaBytes: eventMetric(20 * 1024 ** 2),
+            queryGcCount: eventMetric(0),
+            queryGcTimeMs: eventMetric(0),
             "gc.alloc.rate.norm": metric(1_000_000, "B/op"),
             "gc.count": metric(0, "counts"),
             "gc.time": metric(0, "ms"),
@@ -324,6 +328,15 @@ test("resource gate accepts 4 GiB single and 8 GiB AllFixture profiles", () => {
     assert.equal(compareLatencyResources(base, candidate).passed, true);
 });
 
+test("resource gate reads per-invocation gauges instead of summed AuxCounters scores", () => {
+    const base = [resourceResult(), resourceResult({ allFixture: true })];
+    const candidate = [resourceResult(), resourceResult({ allFixture: true })];
+
+    assert.equal(candidate[0].secondaryMetrics.maxHeapBytes.score, 12 * 1024 ** 3);
+    assert.equal(candidate[1].secondaryMetrics.maxHeapBytes.score, 24 * 1024 ** 3);
+    assert.equal(compareLatencyResources(base, candidate).passed, true);
+});
+
 test("resource gate fails closed on the wrong single-graph max heap", () => {
     const base = [resourceResult(), resourceResult({ allFixture: true })];
     const candidate = [resourceResult({ jvmArgs: ["-Xmx8g"] }), resourceResult({ allFixture: true })];
@@ -335,7 +348,7 @@ test("resource gate fails closed on the wrong single-graph max heap", () => {
 
 test("resource gate requires GC, retained, and peak metrics", () => {
     const missingGc = resourceResult({ overrides: { "gc.time": undefined } });
-    const invalidHeap = resourceResult({ overrides: { retainedHeapBytes: metric(300 * 1024 ** 2, "#") } });
+    const invalidHeap = resourceResult({ overrides: { retainedHeapBytes: eventMetric(300 * 1024 ** 2) } });
     const allFixture = resourceResult({ allFixture: true });
 
     assert.match(compareLatencyResources([resourceResult(), allFixture], [missingGc, allFixture]).errors.join("\n"),
@@ -347,7 +360,7 @@ test("resource gate requires GC, retained, and peak metrics", () => {
 test("resource confirmation aligns the same metric before blocking", () => {
     const base = [resourceResult(), resourceResult({ allFixture: true })];
     const firstCandidate = [
-        resourceResult({ overrides: { retainedHeapDeltaBytes: metric(80 * 1024 ** 2, "#") } }),
+        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } }),
         resourceResult({ allFixture: true })
     ];
     const retryCandidate = [resourceResult(), resourceResult({ allFixture: true })];

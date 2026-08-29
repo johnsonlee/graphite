@@ -600,7 +600,7 @@ jobs:
           grep '^ALL_FIXTURE_QUERY_RESULT' \
             "benchmark-results/${REVISION}-fixture-correctness.log" \
             > "benchmark-results/${REVISION}-fixture-correctness.txt"
-          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 8
+          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 9
         done
         cmp benchmark-results/fixed-fixture-correctness.txt \
           benchmark-results/base-fixture-correctness.txt

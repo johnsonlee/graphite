@@ -42,7 +42,8 @@ persisted graphs together, and measures the same query over the heterogeneous
 19,091,048-node graph set. A separate 36-graph benchmark opens those four
 persisted fixtures round-robin under an 8 GiB cap, assigns every mapping an
 independent graph identity, and forces a zero-hit query to visit the complete
-real graph list. Source graphs are never retained together: each is
+real graph list. A positive preflight query must also return the exact ordered
+set of 36 graph identities. Source graphs are never retained together: each is
 closed after persistence, before the next fixture is built.
 
 The real-corpus suite treats target distribution as part of the fixture. Its
@@ -53,9 +54,10 @@ cases. The queries vary caller/callee fields, class/method properties,
 `CONTAINS`/`STARTS WITH`/`ENDS WITH`, and `LIMIT 1/50/250`.
 Before timing, fixed, current-base, and candidate executors must produce the
 same SHA-256 digest over complete columns, ordered rows, values, and graph
-provenance for all eight queries. The comparator separately requires the exact
-four synthetic and eight real-fixture benchmark keys, so a variant cannot
-silently disappear from all three revisions.
+provenance for all eight distribution queries plus the 36-graph identity
+coverage query. The comparator separately requires the exact eight synthetic,
+eight four-fixture, and one 36-graph benchmark keys, so a variant cannot silently
+disappear from all three revisions.
 
 Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
 source graph is persisted and that JVM exits, the raw mmap work directory is
@@ -79,12 +81,17 @@ to run with exactly `-Xmx4g`; the 36-graph AllFixture probe runs with exactly
 reported from inside the fork.
 
 Each resource result must contain finite `gc.alloc.rate.norm`, `gc.count`, and
-`gc.time` profiler metrics plus loaded, peak, post-GC retained, and retained-delta
-heap counters. Missing metrics, incompatible units, duplicate results, a wrong
-heap cap, or impossible `loaded <= peak <= max` / `retained <= peak`
-relationships fail closed. Allocation, collection, GC-time, retained-delta, and
-peak regressions use a 15% relative threshold plus an absolute noise floor and
-must repeat in a candidate-first confirmation run before blocking.
+`gc.time` profiler metrics plus loaded, peak, post-GC retained, retained-delta,
+and query-only GC counters. JMH sums `AuxCounters(EVENTS)` scores, so the gate
+reads and validates every per-invocation `rawData` sample for heap caps and
+relationships, then compares their means. The profiler GC values remain
+diagnostic because they include forced GC outside the query; regressions are
+decided by the query-only counters. Missing metrics or raw samples, incompatible
+units, duplicate results, a wrong heap cap, or impossible
+`loaded <= peak <= max` / `retained <= peak` relationships fail closed.
+Allocation, query GC, retained-delta, and peak regressions use a 15% relative
+threshold plus an absolute noise floor and must repeat in a candidate-first
+confirmation run before blocking.
 
 ## Method-level gate
 

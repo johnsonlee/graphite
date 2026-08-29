@@ -128,6 +128,7 @@ open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
         }
         check(graphs.size == REAL_GRAPH_COUNT)
         executor = budgetedLatencyExecutor(graphs)
+        checkThirtySixGraphCoverage(executor.execute(REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY))
         check(executor.execute(ZERO_HIT_QUERY).rows.isEmpty())
     }
 
@@ -156,6 +157,11 @@ internal object AllFixtureBenchmarkQueryCorrectness {
     fun main(args: Array<String>) {
         require(args.size == 1) { "Usage: AllFixtureBenchmarkQueryCorrectness <graph-directory>" }
         val root = Path.of(args.single()).toAbsolutePath().normalize()
+        verifyFourFixtureQueries(root)
+        verifyThirtySixGraphCoverage(root)
+    }
+
+    private fun verifyFourFixtureQueries(root: Path) {
         val graphs = mutableListOf<Graph>()
         try {
             val sources = BenchmarkCorpusKind.entries.map { kind ->
@@ -170,14 +176,37 @@ internal object AllFixtureBenchmarkQueryCorrectness {
                 check(result.rows.size == case.expectedRows) {
                     "${case.name} returned ${result.rows.size} rows; expected ${case.expectedRows}"
                 }
-                val digest = MessageDigest.getInstance("SHA-256")
-                    .digest(canonical(result.columns to result.rows).toByteArray(Charsets.UTF_8))
-                    .joinToString("") { byte -> "%02x".format(byte) }
-                println("ALL_FIXTURE_QUERY_RESULT\t${case.name}\trows=${result.rows.size}\tsha256=$digest")
+                printDigest(case.name, result)
             }
         } finally {
             graphs.asReversed().forEach { (it as? Closeable)?.close() }
         }
+    }
+
+    private fun verifyThirtySixGraphCoverage(root: Path) {
+        val graphs = mutableListOf<Graph>()
+        try {
+            val kinds = BenchmarkCorpusKind.entries
+            val sources = (0 until REAL_THIRTY_SIX_GRAPH_COUNT).map { graphIndex ->
+                val kind = kinds[graphIndex % kinds.size]
+                GraphStore.loadMapped(root.resolve(kind.id)).also(graphs::add).let { graph ->
+                    check(graph.nodeCount(Node::class.java) == kind.expectedNodeCount)
+                    CypherGraph("fixture-$graphIndex-${kind.id}", graph)
+                }
+            }
+            val result = budgetedLatencyExecutor(sources).execute(REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY)
+            checkThirtySixGraphCoverage(result)
+            printDigest("realThirtySixGraphCoverage", result)
+        } finally {
+            graphs.asReversed().forEach { (it as? Closeable)?.close() }
+        }
+    }
+
+    private fun printDigest(name: String, result: CypherResult) {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(canonical(result.columns to result.rows).toByteArray(Charsets.UTF_8))
+            .joinToString("") { byte -> "%02x".format(byte) }
+        println("ALL_FIXTURE_QUERY_RESULT\t$name\trows=${result.rows.size}\tsha256=$digest")
     }
 
     private fun canonical(value: Any?): String = when (value) {
@@ -192,6 +221,16 @@ internal object AllFixtureBenchmarkQueryCorrectness {
         is Set<*> -> value.map(::canonical).sorted().joinToString(prefix = "set:[", postfix = "]")
         is Iterable<*> -> value.joinToString(prefix = "list:[", postfix = "]", transform = ::canonical)
         else -> "object:${value::class.java.name}:${value}"
+    }
+}
+
+private fun checkThirtySixGraphCoverage(result: CypherResult) {
+    val expected = (0 until REAL_THIRTY_SIX_GRAPH_COUNT).map { graphIndex ->
+        val kind = BenchmarkCorpusKind.entries[graphIndex % BenchmarkCorpusKind.entries.size]
+        "fixture-$graphIndex-${kind.id}"
+    }
+    check(result.rows.map { it["graphId"] } == expected) {
+        "36-graph coverage query returned ${result.rows.map { it["graphId"] }}; expected $expected"
     }
 }
 
@@ -245,6 +284,16 @@ WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_s
 RETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,
     n.callee_class AS callee, n.callee_name AS calleeMethod
 LIMIT 250
+"""
+
+internal const val REAL_THIRTY_SIX_GRAPH_COUNT = 36
+
+internal const val REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY = """
+MATCH (n:CallSiteNode)
+WHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'java.'
+   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'java.'
+RETURN DISTINCT n.graphId AS graphId
+LIMIT 36
 """
 
 private const val DENSE_DISTRIBUTED_METHOD_QUERY = """
