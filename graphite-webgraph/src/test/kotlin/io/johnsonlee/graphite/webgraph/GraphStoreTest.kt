@@ -392,6 +392,45 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped fused lowercase scan preserves ASCII and Unicode string semantics`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            listOf("Example.VoucherService", "Example.İVOUCHERService").forEachIndexed { index, owner ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor(owner), "Create", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("Example.Repository"), "Load", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-fused-lowercase-semantics")
+        try {
+            GraphStore.save(graph, dir)
+            val mapped = GraphStore.loadMapped(dir)
+            try {
+                fun owners(expected: String): List<Any?> = mapped.query(
+                    "MATCH (n:CallSiteNode) WHERE " +
+                        "toLower(coalesce(n.caller_class, '')) CONTAINS '$expected' OR " +
+                        "toLower(coalesce(n.callee_class, '')) CONTAINS '$expected' " +
+                        "RETURN DISTINCT n.caller_class AS owner LIMIT 10"
+                ).rows.map { it["owner"] }
+
+                assertEquals(listOf("Example.VoucherService", "Example.İVOUCHERService"), owners("voucher"))
+                assertTrue(owners("Voucher").isEmpty(), "The expected literal must not be normalized")
+            } finally {
+                (mapped as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped string index retains two argument JVM lookup method`() {
         val dir = Files.createTempDirectory("webgraph-string-index-abi")
         try {

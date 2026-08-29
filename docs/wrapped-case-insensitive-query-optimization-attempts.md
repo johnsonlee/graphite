@@ -256,3 +256,22 @@ produce `0.535–2.081 s/op`. Six of eight distributions clear the fixed-baselin
 `1.707` to `1.169 s/op` and reduces its allocation from `5.23` to `4.36 GB/op`,
 while higher fan-out is decisively rejected. The remaining work targets
 per-graph string decode/lowercase allocation rather than adding threads.
+
+### 2026-08-29 - Attempt 008: Reusable ASCII lowercase comparison buffer
+
+Tested decoding front-coded strings into one reusable `MutableString` and
+performing exact allocation-free ASCII lowercase `STARTS WITH`/`ENDS WITH`/
+`CONTAINS` comparisons, with the existing Kotlin `String.lowercase()` path for
+non-ASCII values. A new persisted-graph test pins mixed ASCII, Unicode `İ`, and
+the rule that the expected literal itself is not normalized.
+
+Against Attempt 007 at parallelism two, zero-hit improved from `0.535` to
+`0.489 s/op` and allocation fell from `0.980` to `0.902 GB/op`. Dense improved
+only from `1.169` to `1.120 s/op`; early, first/last bimodal, broad, and skewed
+cases regressed to `1.392`, `2.450`, `1.399`, and `1.554 s/op` respectively.
+Their multi-gigabyte allocation barely changed because it is dominated by
+materializing and projecting matching call-site nodes, not lowercase strings.
+
+**Conclusion:** rejected and implementation removed. The Unicode/exactness test
+is retained. The next attempt avoids materializing matches whose projected
+visible values cannot contribute to the already selected global LIMIT rows.
