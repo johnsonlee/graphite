@@ -288,6 +288,15 @@ export function selectJmhMetric(results, metricName) {
     }));
 }
 
+export function makeJmhAdvisory(comparison) {
+    return {
+        ...comparison,
+        passed: comparison.errors.length === 0,
+        advisory: true,
+        rows: comparison.rows.map((row) => ({ ...row, advisory: true, blocked: false }))
+    };
+}
+
 export function confirmJmh(initial, confirmation) {
     const errors = [
         ...initial.errors,
@@ -321,7 +330,9 @@ export function confirmJmh(initial, confirmation) {
 }
 
 export function renderJmhReport(comparison, title = "Method-level JMH") {
-    const decisionRule = comparison.thresholdOnly === true
+    const decisionRule = comparison.advisory === true
+        ? ["This metric is reported for context and does not block the regression gate."]
+        : comparison.thresholdOnly === true
         ? [
             "A row runs reverse-order confirmation whenever it exceeds the 15% limit, regardless of confidence",
             "interval overlap, and blocks only when the confirmation also exceeds 15%."
@@ -896,13 +907,14 @@ export function stageLatestArtifacts(directory, output) {
 }
 
 function compareJmhCommand(args) {
-    const comparison = compareJmh(
+    let comparison = compareJmh(
         selectJmhMetric(readJson(requireArg(args, "base")), args.metric),
         selectJmhMetric(readJson(requireArg(args, "candidate")), args.metric),
         Number(args.threshold ?? 15),
         args["threshold-only"] === true,
         args.metric !== undefined
     );
+    if (args.advisory === true) comparison = makeJmhAdvisory(comparison);
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;

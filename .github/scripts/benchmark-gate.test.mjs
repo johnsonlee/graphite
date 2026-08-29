@@ -19,6 +19,7 @@ import {
     compareLatencyBaseline,
     compareLargeCorpus,
     parseLargeCorpusLog,
+    makeJmhAdvisory,
     renderJmhReport,
     renderLatencyBaselineReport,
     renderLargeCorpusReport,
@@ -225,6 +226,22 @@ test("JMH secondary metric comparison accepts a stable zero baseline", () => {
 
     assert.equal(comparison.passed, true);
     assert.equal(comparison.rows[0].delta, 0);
+});
+
+test("JMH advisory metric reports a regression without blocking", () => {
+    const comparison = compareJmh(
+        [jmhResult({ score: 100 })],
+        [jmhResult({ score: 200 })],
+        15,
+        true
+    );
+    const advisory = makeJmhAdvisory(comparison);
+
+    assert.equal(advisory.passed, true);
+    assert.equal(advisory.rows[0].aboveThreshold, true);
+    assert.equal(advisory.rows[0].blocked, false);
+    assert.match(renderJmhReport(advisory), /reported for context/);
+    assert.match(renderJmhReport(advisory), /\*\*INFO\*\*/);
 });
 
 test("JMH reverse-order confirmation rejects a one-round false positive", () => {

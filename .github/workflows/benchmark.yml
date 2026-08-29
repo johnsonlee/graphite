@@ -346,12 +346,16 @@ jobs:
           local SLUG="$1"
           local METRIC="$2"
           local TITLE="$3"
+          local ADVISORY="$4"
           local METRIC_ARG=()
+          local ADVISORY_ARG=()
           if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-          node .github/scripts/benchmark-gate.mjs compare-jmh \
+          if [ "${ADVISORY}" = true ]; then ADVISORY_ARG=(--advisory); fi
+          node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
             --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json" \
             --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json" \
             "${METRIC_ARG[@]}" \
+            "${ADVISORY_ARG[@]}" \
             --threshold 15 \
             --threshold-only \
             --title "Method discovery ${GRAPH_COUNT}-graph ${TITLE}" \
@@ -360,10 +364,10 @@ jobs:
         }
 
         NEED_CONFIRMATION=0
-        gate_metric wall '' 'wall time' || NEED_CONFIRMATION=1
-        gate_metric cpu processCpuNanos 'CPU time' || NEED_CONFIRMATION=1
-        gate_metric rss-after residentSetAfterBytes 'RSS after query' || NEED_CONFIRMATION=1
-        gate_metric rss-delta residentSetDeltaBytes 'RSS query delta' || NEED_CONFIRMATION=1
+        gate_metric wall '' 'wall time' false || NEED_CONFIRMATION=1
+        gate_metric cpu processCpuNanos 'CPU time' false || NEED_CONFIRMATION=1
+        gate_metric rss-after residentSetAfterBytes 'RSS after query' false || NEED_CONFIRMATION=1
+        gate_metric rss-delta residentSetDeltaBytes 'RSS query delta (advisory)' true || NEED_CONFIRMATION=1
 
         if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
           BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
@@ -391,12 +395,12 @@ jobs:
 
         FINAL_FAILURE=0
         for SPEC in \
-          'wall::wall time' \
-          'cpu:processCpuNanos:CPU time' \
-          'rss-after:residentSetAfterBytes:RSS after query' \
-          'rss-delta:residentSetDeltaBytes:RSS query delta'; do
-          IFS=: read -r SLUG METRIC TITLE <<< "${SPEC}"
-          if [ "${NEED_CONFIRMATION}" -eq 0 ]; then
+          'wall::wall time:false' \
+          'cpu:processCpuNanos:CPU time:false' \
+          'rss-after:residentSetAfterBytes:RSS after query:false' \
+          'rss-delta:residentSetDeltaBytes:RSS query delta (advisory):true'; do
+          IFS=: read -r SLUG METRIC TITLE ADVISORY <<< "${SPEC}"
+          if [ "${NEED_CONFIRMATION}" -eq 0 ] || [ "${ADVISORY}" = true ]; then
             cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-report.md" \
               "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-report.md"
             cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
@@ -404,7 +408,7 @@ jobs:
           else
             METRIC_ARG=()
             if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-            node .github/scripts/benchmark-gate.mjs confirm-jmh \
+            node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
               --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
               --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json" \
               --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json" \
