@@ -740,6 +740,16 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `filtered variable path evaluates where after binding relationship variable`() {
+        val result = CypherExecutor(dataFlowChain(length = 1)).execute(
+            "MATCH (a:IntConstant)-[r:DATAFLOW*1..1]->(b:LocalVariable) " +
+                "WHERE r IS NOT NULL RETURN b.name AS name LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("name" to "local-0")), result.rows)
+    }
+
+    @Test
     fun `filtered distinct relationship pagination retains only the requested window`() {
         val owner = TypeDescriptor("com.example.StreamingDistinct")
         val valueType = TypeDescriptor("int")

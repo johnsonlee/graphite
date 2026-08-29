@@ -102,34 +102,48 @@ class FilteredRelationshipMemoryTest {
 
     @Test
     fun `zero-hit reconvergent variable path stays within the default work budget`() {
-        val source = BooleanConstant(NodeId(20), true)
-        val layers = (0 until RECONVERGENT_LAYER_COUNT).map { layer ->
-            (0 until RECONVERGENT_LAYER_WIDTH).map { index ->
-                val id = NodeId(21 + layer * RECONVERGENT_LAYER_WIDTH + index)
-                if (layer == RECONVERGENT_LAYER_COUNT - 1) IntConstant(id, index) else BooleanConstant(id, true)
-            }
-        }
-        val builder = DefaultGraph.Builder().addNode(source)
-        layers.flatten().forEach(builder::addNode)
-        layers.first().forEach { target ->
-            builder.addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
-        }
-        layers.zipWithNext().forEach { (fromLayer, toLayer) ->
-            fromLayer.forEach { from ->
-                toLayer.forEach { to ->
-                    builder.addEdge(DataFlowEdge(from.id, to.id, DataFlowKind.ASSIGN))
-                }
-            }
-        }
+        val graph = reconvergentGraph()
 
         val result = CypherExecutor(
-            builder.build(),
+            graph,
             CypherExecutionBudget(maxWorkUnits = DEFAULT_SERVER_WORK_BUDGET)
         ).execute(
             "MATCH (a:BooleanConstant)-[:DATAFLOW*1..8]->(b:IntConstant) " +
                 "WHERE b.value = -1 RETURN b.id ORDER BY b.id LIMIT 1"
         )
 
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `absent target label on reconvergent variable path stays within the default work budget`() {
+        val graph = reconvergentGraph(allDescendantsAreInt = true)
+
+        val result = CypherExecutor(
+            graph,
+            CypherExecutionBudget(maxWorkUnits = DEFAULT_SERVER_WORK_BUDGET)
+        ).execute(
+            "MATCH (a:BooleanConstant)-[:DATAFLOW*1..8]->(b:CallSiteNode) " +
+                "RETURN b.id LIMIT 1"
+        )
+
+        assertEquals(listOf("b.id"), result.columns)
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun `absent target property on reconvergent variable path stays within the default work budget`() {
+        val graph = reconvergentGraph(allDescendantsAreInt = true)
+
+        val result = CypherExecutor(
+            graph,
+            CypherExecutionBudget(maxWorkUnits = DEFAULT_SERVER_WORK_BUDGET)
+        ).execute(
+            "MATCH (a:BooleanConstant)-[:DATAFLOW*1..8]->(b:IntConstant {value: -1}) " +
+                "RETURN b.id LIMIT 1"
+        )
+
+        assertEquals(listOf("b.id"), result.columns)
         assertTrue(result.rows.isEmpty())
     }
 
@@ -173,6 +187,33 @@ class FilteredRelationshipMemoryTest {
         ).count()
 
         assertEquals(0, matches)
+    }
+
+    private fun reconvergentGraph(allDescendantsAreInt: Boolean = false): Graph {
+        val source = BooleanConstant(NodeId(20), true)
+        val layers = (0 until RECONVERGENT_LAYER_COUNT).map { layer ->
+            (0 until RECONVERGENT_LAYER_WIDTH).map { index ->
+                val id = NodeId(21 + layer * RECONVERGENT_LAYER_WIDTH + index)
+                if (allDescendantsAreInt || layer == RECONVERGENT_LAYER_COUNT - 1) {
+                    IntConstant(id, index)
+                } else {
+                    BooleanConstant(id, true)
+                }
+            }
+        }
+        val builder = DefaultGraph.Builder().addNode(source)
+        layers.flatten().forEach(builder::addNode)
+        layers.first().forEach { target ->
+            builder.addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+        }
+        layers.zipWithNext().forEach { (fromLayer, toLayer) ->
+            fromLayer.forEach { from ->
+                toLayer.forEach { to ->
+                    builder.addEdge(DataFlowEdge(from.id, to.id, DataFlowKind.ASSIGN))
+                }
+            }
+        }
+        return builder.build()
     }
 
     private companion object {

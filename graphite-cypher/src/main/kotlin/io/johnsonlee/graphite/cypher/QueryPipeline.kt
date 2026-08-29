@@ -1985,15 +1985,13 @@ class QueryPipeline private constructor(
         }
 
         val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val nodePredicate = if (resultPredicate != null && rel.variable == null) {
-            { node: Node ->
-                val endValue = nodeValue(sourceNode.source, node)
-                val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings)
-                targetMatch != null && resultPredicate(targetMatch)
-            }
-        } else {
-            null
-        }
+        val nodePredicate = variablePathNodePredicate(
+            rel,
+            targetNodePattern,
+            sourceNode,
+            bindings,
+            resultPredicate
+        )
         val paths = PathFinder.findPathMatches(
             graph = sourceNode.source.graph,
             sources = setOf(sourceNode.node.id),
@@ -2030,6 +2028,29 @@ class QueryPipeline private constructor(
                 addProvenance(newBindings, pathValue)
             }
             yield(newBindings)
+        }
+    }
+
+    private fun variablePathNodePredicate(
+        rel: PatternElement.RelationshipPattern,
+        targetNodePattern: PatternElement.NodePattern,
+        sourceNode: NodeCursor,
+        bindings: Map<String, Any?>,
+        resultPredicate: ((Map<String, Any?>) -> Boolean)?
+    ): ((Node) -> Boolean)? {
+        val targetNeedsFiltering = targetNodePattern.labels.isNotEmpty() ||
+            targetNodePattern.properties.isNotEmpty() ||
+            targetNodePattern.variable?.let(bindings::containsKey) == true
+        val canPushResultPredicate = resultPredicate != null && rel.variable == null
+        return if (targetNeedsFiltering || canPushResultPredicate) {
+            { node: Node ->
+                val endValue = nodeValue(sourceNode.source, node)
+                val targetMatch = matchTargetNode(targetNodePattern, endValue, bindings)
+                targetMatch != null &&
+                    (!canPushResultPredicate || resultPredicate?.invoke(targetMatch) == true)
+            }
+        } else {
+            null
         }
     }
 
