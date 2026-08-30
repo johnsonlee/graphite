@@ -1041,7 +1041,6 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6/);
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
-    assert.match(workflow, /:webgraph:verifyJmhJarExcludesTests/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),
         "utf8"
@@ -1049,6 +1048,13 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(webgraphBuild, /includeTests\.set\(false\)/);
     assert.match(webgraphBuild, /val verifyJmhJarExcludesTests by tasks\.registering/);
     assert.match(webgraphBuild, /filter\(testEntries::contains\)/);
+    for (const module of ["cypher", "explore", "sootup"]) {
+        const build = fs.readFileSync(
+            new URL(`../../graphite-${module}/build.gradle.kts`, import.meta.url),
+            "utf8"
+        );
+        assert.match(build, /includeTests\.set\(false\)/, `${module} JMH must exclude tests`);
+    }
     const transitionHarness = fs.readFileSync(
         new URL(
             "../../graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
@@ -1057,7 +1063,28 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         )
     );
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const isolationInit = fs.readFileSync(
+        new URL("./benchmark-jmh-isolation.init.gradle", import.meta.url)
+    );
+    const isolationVerifier = fs.readFileSync(
+        new URL("./verify-jmh-jar-isolation.sh", import.meta.url)
+    );
     const sha256 = (contents) => crypto.createHash("sha256").update(contents).digest("hex");
+    assert.match(
+        workflow,
+        new RegExp(`JMH_ISOLATION_INIT_SHA256: ${sha256(isolationInit)}`)
+    );
+    assert.match(
+        workflow,
+        new RegExp(`JMH_ISOLATION_VERIFIER_SHA256: ${sha256(isolationVerifier)}`)
+    );
+    assert.match(workflow, /Checkout candidate build controls/);
+    assert.match(workflow, /Select trusted JMH isolation controls/);
+    assert.match(workflow, /benchmark-jmh-isolation\.init\.gradle/);
+    assert.match(workflow, /verify-jmh-jar-isolation\.sh/);
+    assert.match(workflow, /:webgraph:testClasses :webgraph:jmhJar/);
+    assert.match(workflow, /:explore:testClasses :explore:jmhJar/);
+    assert.match(workflow, /:cypher:testClasses :cypher:jmhJar/);
     assert.match(
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
@@ -1146,6 +1173,9 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     assert.doesNotMatch(workflow, /pull_request:/);
     assert.match(workflow, /PRE_PR_95_BASELINE_SHA: 44b57562f2b3d0c88882a9002bdc488e05e5d7a7/);
     assert.match(workflow, /RealThirtySixGraphWrappedDiscoveryLatencyBenchmark/);
+    assert.match(workflow, /benchmark-jmh-isolation\.init\.gradle/);
+    assert.match(workflow, /verify-jmh-jar-isolation\.sh/);
+    assert.match(workflow, /:webgraph:testClasses :webgraph:jmhJar/);
     assert.match(workflow, /Verify historical and current real-fixture query results/);
     assert.match(workflow, /current\/\.github\/scripts\/benchmark-gate\.mjs compare-latency-baseline/);
     assert.match(workflow, /current\/\.github\/scripts\/benchmark-gate\.mjs confirm-latency-baseline/);

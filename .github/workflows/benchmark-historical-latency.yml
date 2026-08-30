@@ -69,10 +69,14 @@ jobs:
 
     - name: Build historical JMH JAR
       run: |
-        source/gradlew -p source :webgraph:verifyJmhJarExcludesTests --no-daemon
+        source/gradlew -p source \
+          -I "${PWD}/gate/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :webgraph:testClasses :webgraph:jmhJar --no-daemon
         mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
+        bash gate/.github/scripts/verify-jmh-jar-isolation.sh \
+          source/graphite-webgraph "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
         cd jmh-artifact

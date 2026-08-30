@@ -132,11 +132,17 @@ gate. Explorer, Method compatibility, and Cypher capacity similarly reuse one ba
 Explorer JMH build. This removes repeated Gradle compilation from consumer jobs while checksums and
 JAR inspection fail closed on missing or corrupt build artifacts.
 
-The webgraph JMH fat JAR explicitly disables the plugin's default test-output inclusion. Every
+Every benchmark JMH fat JAR explicitly disables the plugin's default test-output inclusion. Every
 comparable build runs a packaging invariant that compiles the project test output, intersects all of
 its relative entries with the finished archive, and fails if any test class or resource leaked into
 the JMH artifact. This keeps unrelated tests from perturbing latency/resource forks while leaving
 candidate production classes intact for the actual regression comparison.
+
+The rollout also covers comparison revisions that predate this Gradle configuration. During that
+one-time transition, the pull-request workflow applies a reviewed init script and verifier from the
+candidate checkout only after both files match their pinned SHA-256 values. Once the exact base SHA
+contains those controls, all comparable revisions automatically use the base-owned copies. The
+scheduled historical workflow always uses the controls from the current default-branch checkout.
 
 The 17 latency keys are split across nine parallel matrix shards: four for the
 synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,

@@ -134,6 +134,25 @@ test("JMH configuration fingerprint includes runtime version, plugin, dependenci
     const unrelatedTask = jmhConfigurationSources("1.37");
     unrelatedTask["graphite-cypher/build.gradle.kts"] += "\ntasks.register(\"unrelatedTest\")\n";
     assert.equal(comparableJmhConfiguration(unrelatedTask), base);
+
+    const explicitIsolation = jmhConfigurationSources("1.37");
+    explicitIsolation["graphite-cypher/build.gradle.kts"] =
+        explicitIsolation["graphite-cypher/build.gradle.kts"].replace(
+            "jmh {\n",
+            "jmh {\n    includeTests.set(false)\n"
+        );
+    assert.equal(comparableJmhConfiguration(explicitIsolation), base);
+
+    const testContaminated = jmhConfigurationSources("1.37");
+    testContaminated["graphite-cypher/build.gradle.kts"] =
+        testContaminated["graphite-cypher/build.gradle.kts"].replace(
+            "jmh {\n",
+            "jmh {\n    includeTests.set(true)\n"
+        );
+    assert.throws(
+        () => comparableJmhConfiguration(testContaminated),
+        /must exclude project test output/
+    );
 });
 
 test("JMH validation fails closed on drift, duplication, and invalid metrics", () => {
@@ -305,6 +324,10 @@ test("tag diff workflow is tag-only, isolated from publishing, and least privile
     assert.match(workflow, /steps\.report\.outputs\.artifact-url/);
     assert.match(workflow, /benchmark-tag-diff\.test\.mjs/);
     assert.match(workflow, /previous_available/);
+    assert.equal((workflow.match(/benchmark-jmh-isolation\.init\.gradle/g) ?? []).length, 2);
+    assert.equal((workflow.match(/verify-jmh-jar-isolation\.sh/g) ?? []).length, 2);
+    assert.equal((workflow.match(/:cypher:testClasses :cypher:jmhJar/g) ?? []).length, 2);
+    assert.match(workflow, /Checkout exact current isolation controls/);
     assert.doesNotMatch(workflow, /continue-on-error/);
     assert.doesNotMatch(workflow, /publish\.yml|softprops|release:/);
     assert.doesNotMatch(publish, /benchmark-tag-diff/);

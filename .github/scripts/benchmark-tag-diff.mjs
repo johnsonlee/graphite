@@ -289,6 +289,19 @@ export function comparableJmhConfiguration(sources) {
     if (blockMatch === null) throw new Error("Module jmh configuration block is missing");
     const blockOpening = moduleBuild.indexOf("{", blockMatch.index);
     const jmhBlock = moduleBuild.slice(blockMatch.index, kotlinBlockEnd(moduleBuild, blockOpening)).trim();
+    const includeTestsLines = jmhBlock
+        .split(/\r?\n/)
+        .filter((line) => /^\s*includeTests\.set\(/.test(line));
+    if (includeTestsLines.length > 1) {
+        throw new Error("Module jmh configuration contains duplicate includeTests controls");
+    }
+    if (includeTestsLines.length === 1 && !/^\s*includeTests\.set\(false\)\s*$/.test(includeTestsLines[0])) {
+        throw new Error("Tag benchmark JMH configuration must exclude project test output");
+    }
+    const effectiveJmhBlock = jmhBlock
+        .split(/\r?\n/)
+        .filter((line) => !/^\s*includeTests\.set\(false\)\s*$/.test(line))
+        .join("\n");
     return [
         pluginVersion,
         runtimeVersion,
@@ -297,7 +310,8 @@ export function comparableJmhConfiguration(sources) {
         modulePlugin,
         coreDependency,
         generatorDependency,
-        jmhBlock
+        effectiveJmhBlock,
+        "includeTests.set(false) // workflow-enforced"
     ].join("\n");
 }
 

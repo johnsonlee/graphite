@@ -19,6 +19,8 @@ env:
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
+  JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
+  JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
@@ -63,6 +65,13 @@ jobs:
         path: source
         persist-credentials: false
 
+    - name: Checkout candidate build controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: controls
+        persist-credentials: false
+
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
@@ -86,10 +95,22 @@ jobs:
 
     - name: Build comparable Explorer JMH JAR
       run: |
-        source/gradlew -p source :explore:jmhJar --no-daemon
+        CONTROL_DIR=gate
+        INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
+        VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
+        if [[ ! -f "${CONTROL_DIR}/${INIT}" || ! -f "${CONTROL_DIR}/${VERIFIER}" ]]; then
+          CONTROL_DIR=controls
+          test "$(sha256sum "${CONTROL_DIR}/${INIT}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_INIT_SHA256}"
+          test "$(sha256sum "${CONTROL_DIR}/${VERIFIER}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_VERIFIER_SHA256}"
+        fi
+        source/gradlew -p source -I "${PWD}/${CONTROL_DIR}/${INIT}" \
+          :explore:testClasses :explore:jmhJar --no-daemon
         mapfile -t JARS < <(find source/graphite-explore/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
+        bash "${CONTROL_DIR}/${VERIFIER}" source/graphite-explore "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-explore-jmh.jar"
         cd jmh-artifact
@@ -129,6 +150,13 @@ jobs:
         path: source
         persist-credentials: false
 
+    - name: Checkout candidate build controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: controls
+        persist-credentials: false
+
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
@@ -154,12 +182,33 @@ jobs:
           install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
           cmp "gate/${SOURCE}" "source/${SOURCE}"
         done
+
+    - name: Select trusted JMH isolation controls
+      id: jmh-isolation-controls
+      run: |
+        CONTROL_DIR=gate
+        INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
+        VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
+        if [[ ! -f "${CONTROL_DIR}/${INIT}" || ! -f "${CONTROL_DIR}/${VERIFIER}" ]]; then
+          CONTROL_DIR=controls
+          test "$(sha256sum "${CONTROL_DIR}/${INIT}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_INIT_SHA256}"
+          test "$(sha256sum "${CONTROL_DIR}/${VERIFIER}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_VERIFIER_SHA256}"
+        fi
+        echo "directory=${CONTROL_DIR}" >> "${GITHUB_OUTPUT}"
+
     - name: Build comparable wrapped-query JMH JAR
       run: |
-        source/gradlew -p source :webgraph:verifyJmhJarExcludesTests --no-daemon
+        CONTROL_DIR='${{ steps.jmh-isolation-controls.outputs.directory }}'
+        source/gradlew -p source \
+          -I "${PWD}/${CONTROL_DIR}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :webgraph:testClasses :webgraph:jmhJar --no-daemon
         mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
+        bash "${CONTROL_DIR}/.github/scripts/verify-jmh-jar-isolation.sh" \
+          source/graphite-webgraph "${JARS[0]}"
         mkdir -p jmh-artifact
         install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
         cd jmh-artifact
@@ -218,8 +267,23 @@ jobs:
           install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
           cmp "base/${SOURCE}" "candidate/${SOURCE}"
         done
-        base/gradlew -p base :cypher:jmhJar --no-daemon
-        candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
+        CONTROL_DIR=base
+        INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
+        VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
+        if [[ ! -f "${CONTROL_DIR}/${INIT}" || ! -f "${CONTROL_DIR}/${VERIFIER}" ]]; then
+          CONTROL_DIR=candidate
+          test "$(sha256sum "${CONTROL_DIR}/${INIT}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_INIT_SHA256}"
+          test "$(sha256sum "${CONTROL_DIR}/${VERIFIER}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_VERIFIER_SHA256}"
+        fi
+        for REVISION in base candidate; do
+          "${REVISION}/gradlew" -p "${REVISION}" -I "${PWD}/${CONTROL_DIR}/${INIT}" \
+            :cypher:testClasses :cypher:jmhJar --no-daemon
+          JAR=$(find "${REVISION}/graphite-cypher/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-cypher" "${JAR}"
+        done
 
     - name: Benchmark base
       run: |
@@ -968,8 +1032,23 @@ jobs:
 
     - name: Build budgeted collection JMH jars
       run: |
-        baseline/gradlew -p baseline :cypher:jmhJar --no-daemon
-        candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
+        CONTROL_DIR=gate
+        INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
+        VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
+        if [[ ! -f "${CONTROL_DIR}/${INIT}" || ! -f "${CONTROL_DIR}/${VERIFIER}" ]]; then
+          CONTROL_DIR=candidate
+          test "$(sha256sum "${CONTROL_DIR}/${INIT}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_INIT_SHA256}"
+          test "$(sha256sum "${CONTROL_DIR}/${VERIFIER}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_VERIFIER_SHA256}"
+        fi
+        for REVISION in baseline candidate; do
+          "${REVISION}/gradlew" -p "${REVISION}" -I "${PWD}/${CONTROL_DIR}/${INIT}" \
+            :cypher:testClasses :cypher:jmhJar --no-daemon
+          JAR=$(find "${REVISION}/graphite-cypher/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-cypher" "${JAR}"
+        done
 
     - name: Benchmark baseline then PR
       run: |
@@ -1077,8 +1156,24 @@ jobs:
 
     - name: Build budgeted lookup JMH jars
       run: |
-        baseline/gradlew -p baseline :webgraph:verifyJmhJarExcludesTests --no-daemon
-        candidate/gradlew -p candidate :webgraph:verifyJmhJarExcludesTests --no-daemon
+        CONTROL_DIR=gate
+        INIT='.github/scripts/benchmark-jmh-isolation.init.gradle'
+        VERIFIER='.github/scripts/verify-jmh-jar-isolation.sh'
+        if [[ ! -f "${CONTROL_DIR}/${INIT}" || ! -f "${CONTROL_DIR}/${VERIFIER}" ]]; then
+          CONTROL_DIR=candidate
+          test "$(sha256sum "${CONTROL_DIR}/${INIT}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_INIT_SHA256}"
+          test "$(sha256sum "${CONTROL_DIR}/${VERIFIER}" | cut -d' ' -f1)" = \
+            "${JMH_ISOLATION_VERIFIER_SHA256}"
+        fi
+        for REVISION in baseline candidate; do
+          "${REVISION}/gradlew" -p "${REVISION}" \
+            -I "${PWD}/${CONTROL_DIR}/${INIT}" \
+            :webgraph:testClasses :webgraph:jmhJar --no-daemon
+          JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          bash "${CONTROL_DIR}/${VERIFIER}" "${REVISION}/graphite-webgraph" "${JAR}"
+        done
 
     - name: Benchmark baseline then PR
       run: |

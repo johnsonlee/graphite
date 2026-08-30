@@ -250,6 +250,9 @@ test("Pages workflow is main-only and uses least-privilege official deployment a
     assert.match(workflow, /environment:\n      name: github-pages/);
     assert.match(workflow, /benchmark-pages-snapshot-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_id \}\}/);
     assert.match(workflow, /retention-days: 90/);
+    assert.match(workflow, /benchmark-jmh-isolation\.init\.gradle/);
+    assert.match(workflow, /verify-jmh-jar-isolation\.sh/);
+    assert.match(workflow, /:cypher:testClasses :cypher:jmhJar/);
     assert.match(workflow, /item\.merge_commit_sha === context\.sha/);
     assert.match(workflow, /baseSha !== integrationParentSha/);
     assert.match(workflow, /candidateTreeSha !== integrationTreeSha/);

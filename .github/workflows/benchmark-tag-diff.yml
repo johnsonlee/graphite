@@ -98,11 +98,13 @@ jobs:
 
     - name: Build exact current JMH JAR
       run: |
-        ./gradlew :cypher:jmhJar --no-daemon
+        ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
         mkdir -p tag-jmh
         mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
+        bash .github/scripts/verify-jmh-jar-isolation.sh graphite-cypher "${JARS[0]}"
         install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
 
     - name: Upload current JMH JAR
@@ -127,6 +129,13 @@ jobs:
         ref: ${{ needs.resolve.outputs.previous_sha }}
         persist-credentials: false
 
+    - name: Checkout exact current isolation controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.resolve.outputs.current_sha }}
+        path: controls
+        persist-credentials: false
+
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
@@ -140,11 +149,14 @@ jobs:
 
     - name: Build exact previous JMH JAR
       run: |
-        ./gradlew :cypher:jmhJar --no-daemon
+        ./gradlew -I "${PWD}/controls/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
         mkdir -p tag-jmh
         mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
+        bash controls/.github/scripts/verify-jmh-jar-isolation.sh \
+          graphite-cypher "${JARS[0]}"
         install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
 
     - name: Upload previous JMH JAR

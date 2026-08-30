@@ -39,7 +39,12 @@ jobs:
       uses: gradle/actions/setup-gradle@v6
 
     - name: Build method-level JMH JAR
-      run: ./gradlew :cypher:jmhJar --no-daemon
+      run: |
+        ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
+        JMH_JAR=$(find graphite-cypher/build/libs -name '*-jmh.jar' -type f -print -quit)
+        test -n "${JMH_JAR}"
+        bash .github/scripts/verify-jmh-jar-isolation.sh graphite-cypher "${JMH_JAR}"
 
     - name: Capture fresh main benchmark snapshot
       run: |

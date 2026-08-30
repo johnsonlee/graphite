@@ -1,5 +1,6 @@
 /.github/CODEOWNERS @johnsonlee
 /.github/workflows/** @johnsonlee
 /.github/scripts/benchmark-* @johnsonlee
+/.github/scripts/verify-jmh-jar-isolation.sh @johnsonlee
 /graphite-*/src/jmh/** @johnsonlee
 /graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt @johnsonlee
