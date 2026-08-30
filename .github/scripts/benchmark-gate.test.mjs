@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -1040,10 +1041,34 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6/);
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
+    assert.match(workflow, /:webgraph:verifyJmhJarExcludesTests/);
+    const webgraphBuild = fs.readFileSync(
+        new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),
+        "utf8"
+    );
+    assert.match(webgraphBuild, /includeTests\.set\(false\)/);
+    assert.match(webgraphBuild, /val verifyJmhJarExcludesTests by tasks\.registering/);
+    assert.match(webgraphBuild, /filter\(testEntries::contains\)/);
+    const transitionHarness = fs.readFileSync(
+        new URL(
+            "../../graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
+                "LargeCorpusPerformanceGateTest.kt",
+            import.meta.url
+        )
+    );
+    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const sha256 = (contents) => crypto.createHash("sha256").update(contents).digest("hex");
     assert.match(
         workflow,
-        /TEST_HARNESS='graphite-webgraph\/src\/test\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/LargeCorpusPerformanceGateTest\.kt'/
+        new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
     );
+    assert.match(
+        workflow,
+        new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
+    );
+    assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b625442/);
+    assert.match(workflow, /mode=pinned-transition/);
+    assert.match(workflow, /needs: \[candidate-gate-tests\]/);
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
     assert.match(workflow, /Checkout candidate reporting code for anchor rollout/);

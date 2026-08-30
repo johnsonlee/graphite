@@ -69,7 +69,7 @@ jobs:
 
     - name: Build historical JMH JAR
       run: |
-        source/gradlew -p source :webgraph:jmhJar --no-daemon
+        source/gradlew -p source :webgraph:verifyJmhJarExcludesTests --no-daemon
         mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null

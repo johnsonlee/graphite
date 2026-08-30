@@ -88,6 +88,13 @@ bypass credentials are part of the trusted boundary. When the base exposes the a
 workflow always selects the base-owned comparator; the final nine-component aggregate remains
 base-owned in either case.
 
+The five-sample large-corpus rollout has an equally bounded one-time transition. If the exact base
+harness and comparator do not expose the new sample protocol, the workflow requires the reviewed
+legacy harness SHA-256, the reviewed candidate harness and comparator SHA-256 values, and a passing
+candidate comparator test job. It then installs that pinned harness into both revisions and uses the
+pinned comparator. Any other pre-protocol base fails closed. Once `main` contains the protocol, the
+workflow automatically returns to base-owned controls and never selects candidate controls.
+
 This workflow is a regression signal for non-malicious changes, not a sandbox or a tamper-resistant
 security boundary. Component jobs still execute candidate Gradle scripts and candidate benchmark
 JARs on the same GitHub-hosted runner and as the same operating-system user as sibling base
@@ -125,10 +132,11 @@ gate. Explorer, Method compatibility, and Cypher capacity similarly reuse one ba
 Explorer JMH build. This removes repeated Gradle compilation from consumer jobs while checksums and
 JAR inspection fail closed on missing or corrupt build artifacts.
 
-The webgraph JMH fat JAR also packages test output. Its comparable-build step therefore overlays the
-base-owned large-corpus test harness in addition to the JMH workload sources. This prevents an
-unrelated test-only bytecode or JAR-layout change from perturbing the latency/resource fork while
-leaving candidate production classes intact for the actual regression comparison.
+The webgraph JMH fat JAR explicitly disables the plugin's default test-output inclusion. Every
+comparable build runs a packaging invariant that compiles the project test output, intersects all of
+its relative entries with the finished archive, and fails if any test class or resource leaked into
+the JMH artifact. This keeps unrelated tests from perturbing latency/resource forks while leaving
+candidate production classes intact for the actual regression comparison.
 
 The 17 latency keys are split across nine parallel matrix shards: four for the
 synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,

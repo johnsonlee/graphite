@@ -16,6 +16,9 @@ env:
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
+  LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
+  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
@@ -151,15 +154,9 @@ jobs:
           install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
           cmp "gate/${SOURCE}" "source/${SOURCE}"
         done
-        TEST_HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
-        test ! -L "source/${TEST_HARNESS}"
-        rm -f -- "source/${TEST_HARNESS}"
-        install -m 0644 "gate/${TEST_HARNESS}" "source/${TEST_HARNESS}"
-        cmp "gate/${TEST_HARNESS}" "source/${TEST_HARNESS}"
-
     - name: Build comparable wrapped-query JMH JAR
       run: |
-        source/gradlew -p source :webgraph:jmhJar --no-daemon
+        source/gradlew -p source :webgraph:verifyJmhJarExcludesTests --no-daemon
         mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
         test "${#JARS[@]}" -eq 1
         jar tf "${JARS[0]}" >/dev/null
@@ -1080,8 +1077,8 @@ jobs:
 
     - name: Build budgeted lookup JMH jars
       run: |
-        baseline/gradlew -p baseline :webgraph:jmhJar --no-daemon
-        candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
+        baseline/gradlew -p baseline :webgraph:verifyJmhJarExcludesTests --no-daemon
+        candidate/gradlew -p candidate :webgraph:verifyJmhJarExcludesTests --no-daemon
 
     - name: Benchmark baseline then PR
       run: |
@@ -1139,6 +1136,7 @@ jobs:
 
   large-corpus:
     name: large-corpus-benchmarks
+    needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -1168,13 +1166,41 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install base-owned large-corpus harness
+    - name: Select trusted large-corpus controls
+      id: large-corpus-controls
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
+        set -euo pipefail
         HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
-        test ! -L "candidate/${HARNESS}"
-        rm -f -- "candidate/${HARNESS}"
-        install -m 0644 "base/${HARNESS}" "candidate/${HARNESS}"
-        cmp "base/${HARNESS}" "candidate/${HARNESS}"
+        COMPARATOR='.github/scripts/benchmark-gate.mjs'
+        if rg -q 'mappedLoadSamples=' "base/${HARNESS}" && \
+          rg -q 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
+          test ! -L "candidate/${HARNESS}"
+          rm -f -- "candidate/${HARNESS}"
+          install -m 0644 "base/${HARNESS}" "candidate/${HARNESS}"
+          cmp "base/${HARNESS}" "candidate/${HARNESS}"
+          echo "comparator=base/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+          echo "mode=base-owned" >> "${GITHUB_OUTPUT}"
+        else
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum "base/${HARNESS}" | cut -d' ' -f1)" = \
+            "${LARGE_CORPUS_LEGACY_HARNESS_SHA256}"
+          test "$(sha256sum "candidate/${HARNESS}" | cut -d' ' -f1)" = \
+            "${LARGE_CORPUS_TRANSITION_HARNESS_SHA256}"
+          test "$(sha256sum "candidate/${COMPARATOR}" | cut -d' ' -f1)" = \
+            "${LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256}"
+          mkdir -p trusted-large-corpus
+          install -m 0644 "candidate/${HARNESS}" trusted-large-corpus/harness.kt
+          for CHECKOUT in base candidate; do
+            test ! -L "${CHECKOUT}/${HARNESS}"
+            rm -f -- "${CHECKOUT}/${HARNESS}"
+            install -m 0644 trusted-large-corpus/harness.kt "${CHECKOUT}/${HARNESS}"
+            cmp trusted-large-corpus/harness.kt "${CHECKOUT}/${HARNESS}"
+          done
+          echo "comparator=candidate/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+          echo "mode=pinned-transition" >> "${GITHUB_OUTPUT}"
+        fi
 
     - name: Benchmark PR large corpora
       run: |
@@ -1193,7 +1219,7 @@ jobs:
 
     - name: Compare large-corpus results
       run: |
-        if node base/.github/scripts/benchmark-gate.mjs compare-large-corpus \
+        if node "${{ steps.large-corpus-controls.outputs.comparator }}" compare-large-corpus \
           --base benchmark-results/base-large-corpus.log \
           --candidate benchmark-results/candidate-large-corpus.log \
           --report benchmark-results/initial-large-corpus-report.md \
@@ -1208,7 +1234,7 @@ jobs:
           candidate/gradlew -p candidate :webgraph:largeCorpusTest \
             -Dlarge.corpus.record=true --no-daemon 2>&1 \
             | tee benchmark-results/candidate-large-corpus-confirmation.log
-          node base/.github/scripts/benchmark-gate.mjs confirm-large-corpus \
+          node "${{ steps.large-corpus-controls.outputs.comparator }}" confirm-large-corpus \
             --initial benchmark-results/initial-large-corpus-status.json \
             --base benchmark-results/base-large-corpus-confirmation.log \
             --candidate benchmark-results/candidate-large-corpus-confirmation.log \

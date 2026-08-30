@@ -1,3 +1,5 @@
+import java.util.zip.ZipFile
+
 description = "Graphite WebGraph Store - Disk-backed graph storage using WebGraph compression"
 
 plugins {
@@ -94,12 +96,47 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
 }
 
 jmh {
+    includeTests.set(false)
     val filter = project.findProperty("jmh.filter") as String?
     if (filter != null) {
         includes.set(listOf(filter))
     }
     failOnError.set(true)
     jvmArgsAppend.addAll(integrationFixtureJvmArgs)
+}
+
+val verifyJmhJarExcludesTests by tasks.registering {
+    description = "Fails if the benchmark fat JAR packages this project's test output"
+    group = "verification"
+    val jmhJar = tasks.named<Jar>("jmhJar")
+    val testOutput = sourceSets.test.get().output
+    dependsOn(jmhJar, tasks.named("testClasses"))
+    inputs.file(jmhJar.flatMap { it.archiveFile })
+    inputs.files(testOutput)
+
+    doLast {
+        val testEntries = testOutput.files.flatMap { root ->
+            if (!root.exists()) {
+                emptyList()
+            } else {
+                root.walkTopDown()
+                    .filter(File::isFile)
+                    .map { it.relativeTo(root).invariantSeparatorsPath }
+                    .toList()
+            }
+        }.toSet()
+        val archive = jmhJar.get().archiveFile.get().asFile
+        val leakedEntries = ZipFile(archive).use { zip ->
+            zip.entries().asSequence()
+                .map { it.name }
+                .filter(testEntries::contains)
+                .sorted()
+                .toList()
+        }
+        check(leakedEntries.isEmpty()) {
+            "JMH JAR contains test output:\n${leakedEntries.joinToString("\n")}"
+        }
+    }
 }
 
 val validateJmhGraphOverrides by tasks.registering(JavaExec::class) {
