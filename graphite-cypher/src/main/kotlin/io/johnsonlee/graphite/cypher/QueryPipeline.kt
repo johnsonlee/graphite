@@ -1504,7 +1504,7 @@ class QueryPipeline private constructor(
                 }
             })
             if (localRows.all(List<OrderedProjectedRow>::isEmpty)) {
-                (waveStart until waveEnd).forEach { sourceIndex ->
+                for (sourceIndex in waveStart until waveEnd) {
                     (sources[sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
                         ?.releaseStringPropertyDisjunctionCache()
                 }
