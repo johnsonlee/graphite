@@ -52,6 +52,8 @@ jobs:
           .schemaVersion == 1 and
           .current.tag == env.CURRENT_TAG and
           (.current.sha | test("^[0-9a-f]{40}$")) and
+          (.current.harnessFingerprint | test("^[0-9a-f]{64}$")) and
+          (.previous == null or (.previous.harnessFingerprint | test("^[0-9a-f]{64}$"))) and
           (.baselineAvailable == (.previous != null))
         ' tag-resolution/metadata.json >/dev/null
         {
@@ -65,7 +67,7 @@ jobs:
     - name: Upload immutable tag resolution
       uses: actions/upload-artifact@v7
       with:
-        name: tag-benchmark-resolution-${{ github.run_id }}
+        name: tag-benchmark-resolution-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-resolution/metadata.json
         if-no-files-found: error
         retention-days: 14
@@ -106,7 +108,7 @@ jobs:
     - name: Upload current JMH JAR
       uses: actions/upload-artifact@v7
       with:
-        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}
+        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-jmh/benchmark.jar
         if-no-files-found: error
         retention-days: 14
@@ -148,7 +150,7 @@ jobs:
     - name: Upload previous JMH JAR
       uses: actions/upload-artifact@v7
       with:
-        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}
+        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-jmh/benchmark.jar
         if-no-files-found: error
         retention-days: 14
@@ -166,14 +168,14 @@ jobs:
     - name: Download current JMH JAR
       uses: actions/download-artifact@v8
       with:
-        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}
+        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-jars/current
 
     - name: Download previous JMH JAR
       if: needs.resolve.outputs.previous_available == 'true'
       uses: actions/download-artifact@v8
       with:
-        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}
+        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-jars/previous
 
     - name: Setup Java
@@ -244,7 +246,7 @@ jobs:
     - name: Upload exact raw measurements
       uses: actions/upload-artifact@v7
       with:
-        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}
+        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: benchmark-results/*.json
         if-no-files-found: error
         retention-days: 14
@@ -266,13 +268,13 @@ jobs:
     - name: Download immutable tag resolution
       uses: actions/download-artifact@v8
       with:
-        name: tag-benchmark-resolution-${{ github.run_id }}
+        name: tag-benchmark-resolution-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-resolution
 
     - name: Download exact raw measurements
       uses: actions/download-artifact@v8
       with:
-        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}
+        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: benchmark-results
 
     - name: Test renderer and create standalone report
@@ -309,7 +311,7 @@ jobs:
       id: report
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-tag-diff-${{ needs.resolve.outputs.current_tag }}-${{ github.run_id }}
+        name: benchmark-tag-diff-${{ needs.resolve.outputs.current_tag }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: tag-report
         if-no-files-found: error
         retention-days: 90

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -14,6 +15,20 @@ export const REPRESENTATIVE_BENCHMARKS = [
     "io.johnsonlee.graphite.cypher.CypherBenchmark.variableLengthPath",
     "io.johnsonlee.graphite.cypher.CypherBenchmark.withPipeline"
 ];
+
+export const HARNESS_FINGERPRINT_PATHS = [
+    "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt"
+];
+
+const BENCHMARK_PROTOCOL = {
+    mode: "avgt",
+    forks: 1,
+    warmupIterations: 2,
+    measurementIterations: 4,
+    warmupTime: "1s",
+    measurementTime: "1s",
+    benchmarks: REPRESENTATIVE_BENCHMARKS
+};
 
 export const COVERAGE_TAXONOMY = [
     {
@@ -50,6 +65,7 @@ export const COVERAGE_TAXONOMY = [
 
 const SEMVER_PATTERN = /^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const SHA_PATTERN = /^[0-9a-f]{40}$/;
+const SHA256_PATTERN = /^[0-9a-f]{64}$/;
 const MAX_REPORT_BYTES = 5 * 1024 * 1024;
 
 function numericIdentifier(value) {
@@ -119,11 +135,126 @@ function gitOutput(args, cwd = process.cwd()) {
     return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 }
 
+function kotlinBlockEnd(source, openingBrace) {
+    let depth = 0;
+    let state = "code";
+    for (let index = openingBrace; index < source.length; index++) {
+        const current = source[index];
+        const next = source[index + 1];
+        if (state === "line-comment") {
+            if (current === "\n") state = "code";
+            continue;
+        }
+        if (state === "block-comment") {
+            if (current === "*" && next === "/") {
+                state = "code";
+                index++;
+            }
+            continue;
+        }
+        if (state === "string") {
+            if (current === "\\") index++;
+            else if (current === '"') state = "code";
+            continue;
+        }
+        if (state === "triple-string") {
+            if (source.slice(index, index + 3) === '\"\"\"') {
+                state = "code";
+                index += 2;
+            }
+            continue;
+        }
+        if (state === "character") {
+            if (current === "\\") index++;
+            else if (current === "'") state = "code";
+            continue;
+        }
+        if (current === "/" && next === "/") {
+            state = "line-comment";
+            index++;
+        } else if (current === "/" && next === "*") {
+            state = "block-comment";
+            index++;
+        } else if (source.slice(index, index + 3) === '\"\"\"') {
+            state = "triple-string";
+            index += 2;
+        } else if (current === '"') {
+            state = "string";
+        } else if (current === "'") {
+            state = "character";
+        } else if (current === "{") {
+            depth++;
+        } else if (current === "}") {
+            depth--;
+            if (depth === 0) return index + 1;
+            if (depth < 0) break;
+        }
+    }
+    throw new Error("Cypher benchmark harness contains an unterminated Kotlin block");
+}
+
+export function comparableHarnessSource(source) {
+    const classMatch = /\b(?:open\s+)?class\s+CypherBenchmark\b[^\{]*\{/.exec(source);
+    if (classMatch === null) throw new Error("CypherBenchmark class declaration is missing");
+    const classOpening = source.indexOf("{", classMatch.index);
+    const classEnd = kotlinBlockEnd(source, classOpening);
+    const classSource = source.slice(0, classEnd);
+    const methodPattern = /^[ \t]*@Benchmark(?:\([^\n]*\))?[ \t]*\r?\n(?:(?:^[ \t]*@[A-Za-z0-9_.]+(?:\([^\n]*\))?[ \t]*\r?\n)*)^[ \t]*(?:(?:public|internal|protected|private|open|final|suspend|inline|tailrec|operator|infix|external)\s+)*fun\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm;
+    const methods = new Map();
+    const spans = [];
+    for (const match of classSource.matchAll(methodPattern)) {
+        const opening = classSource.indexOf("{", match.index + match[0].length);
+        if (opening < 0 || opening >= classEnd) throw new Error(`Benchmark method ${match[1]} must use a block body`);
+        const end = kotlinBlockEnd(classSource, opening);
+        if (methods.has(match[1])) throw new Error(`Duplicate benchmark method ${match[1]}`);
+        methods.set(match[1], classSource.slice(match.index, end).trim());
+        spans.push([match.index, end]);
+    }
+    for (const name of REPRESENTATIVE_BENCHMARKS.map(shortName)) {
+        if (!methods.has(name)) throw new Error(`Representative benchmark method ${name} is missing from the harness`);
+    }
+    if (spans.length === 0) throw new Error("CypherBenchmark has no @Benchmark methods");
+    const firstBenchmark = spans[0][0];
+    let cursor = firstBenchmark;
+    for (const [start, end] of spans) {
+        if (classSource.slice(cursor, start).trim() !== "") {
+            throw new Error("Unsupported shared harness code appears between @Benchmark methods");
+        }
+        cursor = end;
+    }
+    if (classSource.slice(cursor, classEnd - 1).trim() !== "") {
+        throw new Error("Unsupported shared harness code appears after the final @Benchmark method");
+    }
+    return [
+        classSource.slice(0, firstBenchmark).trimEnd(),
+        ...REPRESENTATIVE_BENCHMARKS.map((benchmark) => methods.get(shortName(benchmark)))
+    ].join("\n\n");
+}
+
+function harnessFingerprint(commitSha, cwd) {
+    const hash = createHash("sha256");
+    hash.update("graphite-tag-benchmark-harness-v1\0");
+    hash.update(JSON.stringify(BENCHMARK_PROTOCOL));
+    hash.update("\0");
+    for (const file of HARNESS_FINGERPRINT_PATHS) {
+        const contents = execFileSync("git", ["show", `${commitSha}:${file}`], {
+            cwd,
+            encoding: null,
+            stdio: ["ignore", "pipe", "pipe"]
+        });
+        hash.update(file);
+        hash.update("\0");
+        hash.update(comparableHarnessSource(contents.toString("utf8")));
+        hash.update("\0");
+    }
+    return hash.digest("hex");
+}
+
 function resolveTagRef(tag, cwd) {
     const rawSha = gitOutput(["rev-parse", "--verify", `refs/tags/${tag}`], cwd);
     const commitSha = gitOutput(["rev-parse", "--verify", `refs/tags/${tag}^{commit}`], cwd);
     if (!SHA_PATTERN.test(rawSha) || !SHA_PATTERN.test(commitSha)) throw new Error(`Tag ${tag} did not resolve to SHA-1 object IDs`);
-    return { tag, sha: commitSha, refSha: rawSha };
+    return { tag, sha: commitSha, refSha: rawSha, harnessFingerprint: harnessFingerprint(commitSha, cwd) };
 }
 
 export function resolveGitTagMetadata({
@@ -203,6 +334,7 @@ function validateMetadata(metadata) {
     if (metadata?.schemaVersion !== 1 || metadata?.baselineAvailable !== (metadata?.previous !== null) ||
         parseSemver(metadata?.current?.tag) === null || !SHA_PATTERN.test(metadata?.current?.sha ?? "") ||
         !SHA_PATTERN.test(metadata?.current?.refSha ?? "") ||
+        !SHA256_PATTERN.test(metadata?.current?.harnessFingerprint ?? "") ||
         !Number.isFinite(Date.parse(metadata?.resolvedAt))
     ) {
         throw new Error("Tag metadata is malformed");
@@ -211,7 +343,9 @@ function validateMetadata(metadata) {
         const previous = parseSemver(metadata.previous?.tag);
         const current = parseSemver(metadata.current.tag);
         if (previous === null || !SHA_PATTERN.test(metadata.previous?.sha ?? "") ||
-            !SHA_PATTERN.test(metadata.previous?.refSha ?? "") || compareSemver(previous, current) >= 0
+            !SHA_PATTERN.test(metadata.previous?.refSha ?? "") ||
+            !SHA256_PATTERN.test(metadata.previous?.harnessFingerprint ?? "") ||
+            compareSemver(previous, current) >= 0
         ) {
             throw new Error("Previous tag metadata is malformed or not older than the current tag");
         }
@@ -266,7 +400,7 @@ function renderCoverage() {
     }).join("\n");
 }
 
-function renderRows(current, previous) {
+function renderRows(current, previous, deltasAvailable) {
     const previousByName = new Map((previous ?? []).map((result) => [result.benchmark, result]));
     return current.map((result) => {
         const baseline = previousByName.get(result.benchmark);
@@ -275,7 +409,7 @@ function renderRows(current, previous) {
             if (baseline.mode !== result.mode || baseline.scoreUnit !== result.scoreUnit) {
                 throw new Error(`Incomparable JMH modes or units for ${result.benchmark}`);
             }
-            if (baseline.score > 0) delta = (result.score / baseline.score - 1) * 100;
+            if (deltasAvailable && baseline.score > 0) delta = (result.score / baseline.score - 1) * 100;
         }
         const deltaMarkup = delta === null
             ? "<span class=\"neutral\">unavailable</span>"
@@ -305,16 +439,25 @@ export function buildTagDiffReport({
     } else if (previousResults !== null) {
         throw new Error("Previous JMH result was provided without a resolved baseline tag");
     }
-    const renderedRows = renderRows(current, previous);
+    const workloadCompatible = metadata.baselineAvailable &&
+        metadata.previous.harnessFingerprint === metadata.current.harnessFingerprint;
+    const deltasAvailable = metadata.baselineAvailable && workloadCompatible;
+    const renderedRows = renderRows(current, previous, deltasAvailable);
     const deltas = renderedRows.map((row) => row.delta).filter((value) => value !== null);
     const medianDelta = median(deltas);
-    const comparisonStatus = metadata.baselineAvailable ? "available" : "baseline-unavailable";
+    const comparisonStatus = !metadata.baselineAvailable
+        ? "baseline-unavailable"
+        : workloadCompatible ? "available" : "workload-drift";
     const baselineTag = metadata.previous?.tag ?? "No prior semantic tag";
     const baselineSha = metadata.previous?.sha ?? "unavailable";
-    const statusTitle = metadata.baselineAvailable ? "Release diff available" : "Baseline unavailable";
-    const statusCopy = metadata.baselineAvailable
-        ? "Signed deltas compare the current tag with its semantic predecessor. Negative is faster; positive is slower. This is an informational signal, not a release verdict."
-        : "No lower valid semantic-version tag exists. Current measurements are preserved, but no deltas or pass/fail verdict are fabricated.";
+    const statusTitle = !metadata.baselineAvailable
+        ? "Baseline unavailable"
+        : workloadCompatible ? "Release diff available" : "Deltas unavailable · workload drift";
+    const statusCopy = !metadata.baselineAvailable
+        ? "No lower valid semantic-version tag exists. Current measurements are preserved, but no deltas or pass/fail verdict are fabricated."
+        : workloadCompatible
+            ? "Signed deltas compare the current tag with its semantic predecessor. Negative is faster; positive is slower. This is an informational signal, not a release verdict."
+            : "The benchmark harness fingerprint changed between tags. Both raw score sets are preserved, but signed deltas are unavailable because they do not describe an identical workload.";
     const rows = renderedRows.map((row) => row.html).join("\n");
     const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -324,7 +467,7 @@ export function buildTagDiffReport({
 </style></head><body><main>
 <header class="hero"><p class="eyebrow">Graphite release telemetry</p><h1>Tag benchmark diff</h1><p class="hero-copy">A bounded, same-runner method-level comparison between an exact release tag and its semantic predecessor, rendered with the PR #104 coverage taxonomy and explicit evidence boundaries.</p><div class="pills"><span class="pill ${metadata.baselineAvailable ? "available" : "unavailable"}">${escapeHtml(statusTitle)}</span><span class="pill">current <code>${escapeHtml(metadata.current.tag)}</code></span><span class="pill">previous <code>${escapeHtml(baselineTag)}</code></span></div>${runUrl === "" ? "" : `<a class="button" href="${escapeHtml(safeUrl(runUrl))}">Open workflow run</a>`}</header>
 <section class="kpis"><article class="kpi"><strong>${current.length}</strong><span>representative JMH methods</span></article><article class="kpi"><strong>${medianDelta === null ? "—" : escapeHtml(signedPercent(medianDelta))}</strong><span>median current-vs-previous delta</span></article><article class="kpi"><strong>1 fork</strong><span>2 warmup / 4 measurement iterations</span></article><article class="kpi"><strong>No verdict</strong><span>informational and independent of publishing</span></article></section>
-<section class="section"><div class="section-head"><div><p class="eyebrow">Exact provenance</p><h2>Compared revisions</h2></div></div><div class="metadata"><article class="revision"><strong>Current · ${escapeHtml(metadata.current.tag)}</strong><small>Commit SHA</small><code>${escapeHtml(metadata.current.sha)}</code></article><article class="revision"><strong>Previous · ${escapeHtml(baselineTag)}</strong><small>Commit SHA</small><code>${escapeHtml(baselineSha)}</code></article></div><p class="notice"><strong>${escapeHtml(statusTitle)}</strong>${escapeHtml(statusCopy)}</p></section>
+<section class="section"><div class="section-head"><div><p class="eyebrow">Exact provenance</p><h2>Compared revisions</h2></div></div><div class="metadata"><article class="revision"><strong>Current · ${escapeHtml(metadata.current.tag)}</strong><small>Commit SHA</small><code>${escapeHtml(metadata.current.sha)}</code><small>Harness fingerprint</small><code>${escapeHtml(metadata.current.harnessFingerprint)}</code></article><article class="revision"><strong>Previous · ${escapeHtml(baselineTag)}</strong><small>Commit SHA</small><code>${escapeHtml(baselineSha)}</code><small>Harness fingerprint</small><code>${escapeHtml(metadata.previous?.harnessFingerprint ?? "unavailable")}</code></article></div><p class="notice"><strong>${escapeHtml(statusTitle)}</strong>${escapeHtml(statusCopy)}</p></section>
 <section class="section"><div class="section-head"><div><p class="eyebrow">Method-level latency</p><h2>Current vs previous</h2><p>Scores use JMH AverageTime. Lower is better. Confidence bounds are descriptive and do not establish a release gate.</p></div></div><div class="table-scroll"><table><thead><tr><th>Benchmark</th><th>Previous</th><th>Current</th><th>Unit</th><th>Delta</th><th>99.9% confidence bounds</th></tr></thead><tbody>${rows}</tbody></table></div></section>
 <section class="section"><div class="section-head"><div><p class="eyebrow">PR #104 coverage taxonomy</p><h2>What this report does—and does not—measure</h2><p>An observed area is still intentionally partial; unmeasured areas never inherit a verdict from method latency.</p></div></div><div class="coverage-grid">${renderCoverage()}</div></section>
 <footer>${escapeHtml(repository)} · generated ${escapeHtml(generatedAt)} · source metadata resolved ${escapeHtml(metadata.resolvedAt)}</footer>
@@ -333,11 +476,12 @@ export function buildTagDiffReport({
     const comparisonLine = metadata.baselineAvailable
         ? `Previous: \`${metadata.previous.tag}\` (\`${metadata.previous.sha}\`)`
         : "Previous: unavailable — no lower valid semantic-version tag exists";
-    const summary = `## Tag benchmark diff\n\nCurrent: \`${metadata.current.tag}\` (\`${metadata.current.sha}\`)  \n${comparisonLine}  \nComparison: **${metadata.baselineAvailable ? "available" : "baseline unavailable"}**  \nRepresentative measurements: **${current.length}**\n\n${statusCopy}\n`;
+    const summary = `## Tag benchmark diff\n\nCurrent: \`${metadata.current.tag}\` (\`${metadata.current.sha}\`)  \n${comparisonLine}  \nComparison: **${comparisonStatus.replaceAll("-", " ")}**  \nRepresentative measurements: **${current.length}**\n\n${statusCopy}\n`;
     const manifest = {
         schemaVersion: 1,
         kind: "graphite-tag-benchmark-diff",
         comparisonStatus,
+        workloadCompatible,
         repository,
         generatedAt,
         metadata,

@@ -8,6 +8,7 @@ import path from "node:path";
 import test from "node:test";
 import {
     buildTagDiffReport,
+    comparableHarnessSource,
     compareSemver,
     COVERAGE_TAXONOMY,
     parseSemver,
@@ -36,10 +37,35 @@ function results(multiplier = 1) {
     return REPRESENTATIVE_BENCHMARKS.map((benchmark, index) => result(benchmark, (index + 1) * 10 * multiplier));
 }
 
-function metadata(previous = { tag: "v2.4.3", sha: "b".repeat(40), refSha: "b".repeat(40) }) {
+function harnessSource(simpleValue) {
+    const methods = REPRESENTATIVE_BENCHMARKS.map((benchmark) => benchmark.split(".").at(-1));
+    return `import org.openjdk.jmh.annotations.Benchmark
+
+open class CypherBenchmark {
+    private val fixture = 1
+
+${methods.map((name) => `    @Benchmark
+    fun ${name}(): Int {
+        return ${name === "simpleNodeMatch" ? simpleValue : "fixture"}
+    }`).join("\n\n")}
+}
+`;
+}
+
+function metadata(previous = {
+    tag: "v2.4.3",
+    sha: "b".repeat(40),
+    refSha: "b".repeat(40),
+    harnessFingerprint: "c".repeat(64)
+}) {
     return {
         schemaVersion: 1,
-        current: { tag: "v2.4.4", sha: "a".repeat(40), refSha: "a".repeat(40) },
+        current: {
+            tag: "v2.4.4",
+            sha: "a".repeat(40),
+            refSha: "a".repeat(40),
+            harnessFingerprint: "c".repeat(64)
+        },
         previous,
         baselineAvailable: previous !== null,
         resolvedAt: "2026-08-30T00:00:00.000Z"
@@ -66,6 +92,16 @@ test("previous tag resolution is semantic, deterministic, and ignores malformed 
     assert.equal(resolvePreviousTag(["v1.0.0"], "v1.0.0"), null);
     assert.throws(() => resolvePreviousTag(tags, "vbad"), /not valid SemVer/);
     assert.throws(() => resolvePreviousTag(tags, "v9.9.9"), /missing from the fetched tag set/);
+});
+
+test("harness fingerprint source ignores unrelated benchmarks but includes selected method bodies", () => {
+    const base = harnessSource(1);
+    const withUnrelatedBenchmark = base.replace(
+        /\n}\n$/,
+        "\n\n    @Benchmark\n    fun unrelatedBenchmark(): Int {\n        return 99\n    }\n}\n",
+    );
+    assert.equal(comparableHarnessSource(withUnrelatedBenchmark), comparableHarnessSource(base));
+    assert.notEqual(comparableHarnessSource(harnessSource(2)), comparableHarnessSource(base));
 });
 
 test("JMH validation fails closed on drift, duplication, and invalid metrics", () => {
@@ -131,17 +167,22 @@ test("first semantic tag renders an explicit unavailable baseline without a verd
     }), /without a resolved baseline/);
 });
 
-test("resolve CLI peels annotated tags and records exact tag commits", () => {
+test("resolve CLI peels annotated tags and disables deltas when a method body changed", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-tag-resolve-"));
     try {
         execFileSync("git", ["init", "-q"], { cwd: directory });
         execFileSync("git", ["config", "user.name", "Tag Test"], { cwd: directory });
         execFileSync("git", ["config", "user.email", "tag@example.invalid"], { cwd: directory });
-        fs.writeFileSync(path.join(directory, "value.txt"), "one\n");
-        execFileSync("git", ["add", "value.txt"], { cwd: directory });
+        const harness = path.join(
+            directory,
+            "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt"
+        );
+        fs.mkdirSync(path.dirname(harness), { recursive: true });
+        fs.writeFileSync(harness, harnessSource(1));
+        execFileSync("git", ["add", "."], { cwd: directory });
         execFileSync("git", ["commit", "-q", "-m", "one"], { cwd: directory });
         execFileSync("git", ["tag", "v1.0.0"], { cwd: directory });
-        fs.writeFileSync(path.join(directory, "value.txt"), "two\n");
+        fs.writeFileSync(harness, harnessSource(2));
         execFileSync("git", ["commit", "-q", "-am", "two"], { cwd: directory });
         execFileSync("git", ["tag", "-a", "v1.1.0", "-m", "release"], { cwd: directory });
         const commitSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: directory, encoding: "utf8" }).trim();
@@ -160,6 +201,18 @@ test("resolve CLI peels annotated tags and records exact tag commits", () => {
         assert.notEqual(resolved.current.refSha, commitSha);
         assert.equal(resolved.previous.tag, "v1.0.0");
         assert.equal(resolved.baselineAvailable, true);
+        assert.notEqual(resolved.current.harnessFingerprint, resolved.previous.harnessFingerprint);
+        const report = buildTagDiffReport({
+            metadata: resolved,
+            currentResults: results(),
+            previousResults: results(),
+            generatedAt: "2026-08-30T01:02:03.000Z"
+        });
+        assert.equal(report.manifest.comparisonStatus, "workload-drift");
+        assert.equal(report.manifest.workloadCompatible, false);
+        assert.ok(report.manifest.measurements.every((measurement) => measurement.deltaPercent === null));
+        assert.match(report.html, /Deltas unavailable · workload drift/);
+        assert.doesNotMatch(report.html, /\+0\.00%/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -218,4 +271,14 @@ test("tag diff workflow is tag-only, isolated from publishing, and least privile
     assert.doesNotMatch(workflow, /continue-on-error/);
     assert.doesNotMatch(workflow, /publish\.yml|softprops|release:/);
     assert.doesNotMatch(publish, /benchmark-tag-diff/);
+    const uploadNames = [...workflow.matchAll(
+        /uses: actions\/upload-artifact@v7\n\s+with:\n\s+name: ([^\n]+)/g,
+    )].map((match) => match[1]);
+    assert.equal(uploadNames.length, 5);
+    assert.ok(uploadNames.every((name) => name.includes("github.run_attempt")));
+    for (const name of uploadNames.slice(0, 4)) {
+        assert.match(workflow, new RegExp(
+            `uses: actions\\/download-artifact@v8\\n\\s+with:\\n\\s+name: ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+        ));
+    }
 });

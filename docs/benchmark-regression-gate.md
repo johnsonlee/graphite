@@ -59,7 +59,11 @@ The resulting self-contained HTML artifact records both full commit SHAs, scores
 bounds, signed release-to-release deltas, and the same PR #104 coverage taxonomy and known gaps used
 by the pull-request and Pages reports. It is retained with its manifest, tag-resolution metadata,
 and raw JMH JSON for 90 days. If no earlier semantic tag exists, the report preserves the current
-measurements but explicitly marks the baseline and deltas unavailable.
+measurements but explicitly marks the baseline and deltas unavailable. The resolver fingerprints
+the shared `CypherBenchmark.kt` fixture/setup, all six selected method bodies, and the fixed
+execution protocol while ignoring unrelated benchmark additions. When that fingerprint changes
+between tags, both raw score sets remain visible but signed deltas are disabled as incomparable
+workload drift.
 
 This comparison is informational: it produces no release pass/fail verdict and has no dependency
 edge to `.github/workflows/publish.yml`, so a benchmark or rendering failure cannot block artifact
