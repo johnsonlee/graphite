@@ -36,6 +36,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import java.io.DataInput
 import java.io.DataInputStream
@@ -757,7 +758,8 @@ internal object NodeSerializer {
         dis: DataInput,
         strings: StringTable,
         pattern: MethodPattern,
-        limit: Int
+        limit: Int,
+        scanConsumer: MethodMetadataScanConsumer? = null
     ): List<MethodDescriptor> {
         readHeader(dis, MAGIC_METADATA)
         val methodCount = dis.readInt()
@@ -768,12 +770,29 @@ internal object NodeSerializer {
         var remaining = methodCount
         while (remaining > 0 && result.size < boundedLimit) {
             val method = readMethodDescriptor(dis, strings)
+            scanConsumer?.inspect()
             if (pattern.matches(method)) {
                 result.add(method)
             }
             remaining--
         }
         return result
+    }
+
+    /** Lazily reads method descriptors without materializing the metadata method map. */
+    fun readMetadataMethods(
+        dis: DataInput,
+        strings: StringTable,
+        pattern: MethodPattern,
+        scanConsumer: MethodMetadataScanConsumer? = null
+    ): Sequence<MethodDescriptor> = sequence {
+        readHeader(dis, MAGIC_METADATA)
+        val methodCount = dis.readInt()
+        repeat(methodCount) {
+            val method = readMethodDescriptor(dis, strings)
+            scanConsumer?.inspect()
+            if (pattern.matches(method)) yield(method)
+        }
     }
 
     // ========================================================================

@@ -172,17 +172,6 @@ internal class OpenApiSpecBuilder {
                     )
                 )
             ),
-            "/api/methods" to mapOf(
-                "get" to operation(
-                    "List declared methods across all loaded graphs, grouped by graphId",
-                    parameters = listOf(
-                        queryParameter(API_PARAM_CLASS, TYPE_STRING, false, "Optional declaring class filter"),
-                        queryParameter(API_PARAM_NAME, TYPE_STRING, false, "Optional method name filter"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
-                    ),
-                    responses = mapOf("200" to response("Method list with declared return types"))
-                )
-            ),
             "/api/annotations" to mapOf(
                 "get" to operation(
                     "Fetch member annotations across all loaded graphs, grouped by graphId",
@@ -327,7 +316,6 @@ internal class OpenApiSpecBuilder {
             "/api/node/{id}",
             "/api/node/{id}/outgoing",
             "/api/node/{id}/incoming",
-            "/api/methods",
             "/api/annotations",
             "/api/resources",
             "/api/resources/{path}",
@@ -355,7 +343,6 @@ internal class OpenApiSpecBuilder {
         "/api/node/{id}" -> "Fetch a node by graph-local id in one explicit graph"
         "/api/node/{id}/outgoing" -> "List outgoing edges in one explicit graph"
         "/api/node/{id}/incoming" -> "List incoming edges in one explicit graph"
-        "/api/methods" -> "List declared methods in one explicit graph"
         "/api/annotations" -> "Fetch member annotations in one explicit graph"
         "/api/resources" -> "List persisted resources in one explicit graph"
         "/api/resources/{path}" -> "Read persisted resource content in one explicit graph"

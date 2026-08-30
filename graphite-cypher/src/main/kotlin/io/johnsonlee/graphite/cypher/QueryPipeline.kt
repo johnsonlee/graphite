@@ -15,6 +15,8 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
+import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
@@ -23,6 +25,7 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
+import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
@@ -43,7 +46,7 @@ private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
 private const val SINGLE_HOP_PATTERN_ELEMENTS = 3
 private const val SINGLE_GRAPH_ID = "single"
-private const val MAX_ORDERED_PROPERTY_TOP_K = 10_000
+internal const val MAX_ORDERED_TOP_K_ROWS = 10_000
 private const val INTERNAL_MATCHED_PATH_SEGMENTS_KEY = "\u0000graphite.matchedPathSegments"
 private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
@@ -228,9 +231,22 @@ class QueryPipeline private constructor(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "ReturnCount")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
+        if (MethodQueryExecutor.referencesMethod(clauses)) {
+            if (activeParameters.get().orEmpty().isEmpty()) {
+                val methodResult = MethodQueryExecutor.tryExecute(
+                    clauses,
+                    sources,
+                    qualified,
+                    ::checkCancelled,
+                    activeWorkTracker.get()
+                )
+                if (methodResult != null) return methodResult
+            }
+            return executeGeneralClauses(clauses)
+        }
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
             ?: tryFastOrderedPropertyLimit(clauses)
@@ -240,6 +256,11 @@ class QueryPipeline private constructor(
             ?: tryFastSingleHopRelationshipLimit(clauses)
         if (fastResult != null) return fastResult
 
+        return executeGeneralClauses(clauses)
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun executeGeneralClauses(clauses: List<CypherClause>): CypherResult {
         var rows: List<Map<String, Any?>> = listOf(emptyMap())
         var columns: List<String> = emptyList()
 
@@ -621,7 +642,7 @@ class QueryPipeline private constructor(
                 }
                 if (sortItems.isEmpty()) return null
                 val limitCount = ((limit.count as? CypherExpr.Literal)?.value as? Number)?.toCypherInt() ?: return null
-                if (limitCount > MAX_ORDERED_PROPERTY_TOP_K) return null
+                if (limitCount > MAX_ORDERED_TOP_K_ROWS) return null
                 val nodeClass = resolveNodeClass(nodePattern.labels) ?: return null
                 return OrderedPropertyLimitQuery(nodeClass, projections, sortItems, limitCount)
             }
@@ -1984,18 +2005,26 @@ class QueryPipeline private constructor(
         existingBindings: Map<String, Any?>,
         candidateSources: List<CypherGraph> = sources
     ): Sequence<Any> {
-        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return emptySequence()
+        val methodSource = nodePattern.labels.any(MethodQueryExecutor::isMethodLabel)
+        val nodeClass = if (methodSource) Node::class.java else resolveNodeClass(nodePattern.labels)
+            ?: return emptySequence()
 
         return if (nodePattern.variable != null &&
             existingBindings.containsKey(nodePattern.variable)
         ) {
             val existing = existingBindings[nodePattern.variable]
-            val node = nodeValue(existing)
-            if (existing != null && node != null && nodeClass.isInstance(node)) {
+            val matchesSource = if (methodSource) {
+                existing is MethodValue
+            } else {
+                nodeValue(existing)?.let(nodeClass::isInstance) == true
+            }
+            if (existing != null && matchesSource) {
                 sequenceOf(existing)
             } else {
                 emptySequence()
             }
+        } else if (methodSource) {
+            methodCandidates()
         } else {
             nodeCandidates(nodeClass, candidateSources)
         }
@@ -2285,6 +2314,12 @@ class QueryPipeline private constructor(
         pattern: PatternElement.NodePattern,
         bindings: Map<String, Any?>
     ): Boolean {
+        if (value is MethodValue) {
+            if (pattern.labels.any { !MethodQueryExecutor.isMethodLabel(it) }) return false
+            return pattern.properties.all { (key, expression) ->
+                value.property(key) == evaluator.evaluate(expression, bindings)
+            }
+        }
         val node = nodeValue(value) ?: return false
         // Check all labels
         if (pattern.labels.size > 1) {
@@ -2418,6 +2453,18 @@ class QueryPipeline private constructor(
             trackWork(graph.nodes(type)).map { it as Any }
         }
 
+    private fun methodCandidates(): Sequence<Any> {
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val cancellationConsumer = tracker?.let { activeTracker ->
+            MethodMetadataScanConsumer { activeTracker.checkCancelled() }
+        }
+        return sources.asSequence().flatMap { source ->
+            val methods = cancellationConsumer?.let { source.graph.methods(MethodPattern(), it) }
+                ?: source.graph.methods(MethodPattern())
+            methods.map { method -> MethodValue(source.id.takeIf { qualified }, method) }
+        }
+    }
+
     private fun <T> trackWork(
         values: Sequence<T>,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
@@ -2497,9 +2544,10 @@ class QueryPipeline private constructor(
         if (qualified) QualifiedEdge(source.id, source.graph, edge) else edge
 
     private fun nodeProperty(value: Any, property: String): Any? = when (value) {
+        is MethodValue -> value.property(property)
         is QualifiedNode -> when (property) {
-            "graphId" -> value.graphId
-            "elementId", "qualifiedId" -> value.elementId
+            GRAPH_ID_PROPERTY -> value.graphId
+            ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY -> value.elementId
             else -> NodePropertyAccessor.getProperty(value.node, property)
         }
         is Node -> NodePropertyAccessor.getProperty(value, property)
@@ -2507,6 +2555,7 @@ class QueryPipeline private constructor(
     }
 
     private fun provenanceOf(value: Any?): Set<String> = when (value) {
+        is MethodValue -> value.graphId?.let(::setOf).orEmpty()
         is QualifiedNode -> setOf(value.graphId)
         is QualifiedEdge -> setOf(value.graphId)
         is QualifiedPath -> setOf(value.graphId)

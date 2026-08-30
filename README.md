@@ -90,8 +90,8 @@ graphite serve --data /data/graphs \
   --graph orders:orders-graph \
   --graph billing:/data/billing-graph \
   --topology /rules/company-topology.cypher \
-  --max-concurrent-cypher 2 \
-  --cypher-work-budget 250000 \
+  --max-concurrent-cypher 4 \
+  --cypher-work-budget 1000000 \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -245,7 +245,6 @@ Generic JDK resource linking currently covers:
 | `/api/topology` | Get the graph-to-graph call topology built at startup and mapped from temporary storage |
 | `/api/cypher` | Run one Cypher query over the union of every loaded graph |
 | `/api/cypher/graphs` | Run one query over an explicit graph set, or explicitly fan out per graph |
-| `/api/methods` | List declared methods, including declared return types and indexed methods without graph nodes |
 | `/api/resources` | List indexed resources in every graph, grouped by `graphId` |
 | `/api/resources/{path}` | Read every matching resource without path collisions, grouped by `graphId` |
 | `/api/endpoints` | Extract framework HTTP endpoints from every graph, grouped by `graphId` |
@@ -265,23 +264,38 @@ one graph. Every root non-Cypher result is grouped by `graphId`, while every
 cross-graph Cypher row includes `$metadata.graphIds` and returned graph elements include
 qualified identities such as `elementId = "orders:42"`.
 
-Use Cypher for agent-driven node and call-site discovery. The legacy
-`/api/nodes` and `/api/call-sites` search routes are not available. The
-`/api/methods` route remains because its structured result preserves declared
-return types and indexed methods that do not have corresponding graph nodes.
-`/openapi.json` describes the complete supported surface.
+Graphite 3.0 removes the legacy `/api/nodes`, `/api/call-sites`, and
+`/api/methods` search routes and the MCP `methods` tool. Use Cypher for
+agent-driven node, call-site, and method discovery. `/openapi.json` describes
+the complete supported surface.
+
+Declared method metadata, including indexed methods without graph nodes, is
+available through the virtual `Method` source:
+
+```cypher
+MATCH (method:Method)
+RETURN method.signature, method.class, method.name,
+       method.parameter_types, method.return_type
+LIMIT 50
+```
+
+`Method` values are virtual metadata records rather than stored graph nodes.
+Their stable string identity is available through `elementId(method)`;
+`id(method)` returns `null` because no numeric graph-node id exists.
 
 A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
 
-Cypher endpoints admit at most two executing queries by default and stop a
-query after 250,000 graph work units. Candidate inspections and materialized
+Cypher endpoints admit at most four executing queries by default and stop a
+query after 1,000,000 graph work units. Graph-node candidate inspections and materialized
 path elements consume work units. Configure these bounds with
 `--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
 HTTP 429 with `code` set to `cypher_concurrency_limit` or
 `cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
 replace this execution budget for aggregations that must scan before limiting.
+Streaming `Method` metadata reads poll cancellation but do not spend graph work
+units, so complete multi-graph method discovery does not depend on descriptor count.
 The `=~` operator preserves Java `Pattern` syntax, including backreferences,
 look-around, possessive quantifiers, character-class intersections, and Java's
 default line-terminator behavior. Budgeted execution polls cancellation through
@@ -476,10 +490,9 @@ providing `graph_id` selects exactly one graph. The `cypher` tool can also use
 `graphs: ["orders", "billing"]` for an explicit subset or `all_graphs: true`
 with `mode: "cross-graph"` or `mode: "fanout"`.
 
-LLMs can use tools such as openapi, graphs, cypher, methods, resources,
-resource, endpoints, c4, and annotations. Node and call-site discovery goes
-through the `cypher` tool; declared method metadata remains available through
-the dedicated `methods` tool.
+LLMs can use tools such as openapi, graphs, cypher, resources, resource,
+endpoints, c4, and annotations. Node, call-site, and method discovery goes
+through the `cypher` tool.
 
 The explore server also exposes a single C4 architecture endpoint:
 

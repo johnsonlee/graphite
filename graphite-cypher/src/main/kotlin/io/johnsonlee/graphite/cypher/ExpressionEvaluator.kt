@@ -353,6 +353,7 @@ class ExpressionEvaluator private constructor(
 
     @Suppress("CyclomaticComplexMethod")
     private fun resolveProperty(obj: Any?, propertyName: String): Any? = when (obj) {
+        is MethodValue -> obj.property(propertyName)
         is Node -> NodePropertyAccessor.getProperty(obj, propertyName)
         is QualifiedNode -> when (propertyName) {
             GRAPH_ID_PROPERTY -> obj.graphId

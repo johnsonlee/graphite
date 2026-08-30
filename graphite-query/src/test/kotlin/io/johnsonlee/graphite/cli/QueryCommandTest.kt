@@ -21,6 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import picocli.CommandLine
 
 class QueryCommandTest {
 
@@ -70,6 +71,15 @@ class QueryCommandTest {
             System.setErr(oldErr)
         }
         return Triple(outBaos.toString(), errBaos.toString(), code)
+    }
+
+    @Test
+    fun `query parser preserves text format default`() {
+        val command = QueryCommand()
+
+        CommandLine(command).parseArgs(graphDir.toString(), "MATCH (n) RETURN n LIMIT 1")
+
+        assertEquals("text", command.format)
     }
 
     @Test

@@ -69,6 +69,128 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `Method source preserves graph identity for equal indexed methods`() {
+        val method = MethodDescriptor(
+            TypeDescriptor("com.example.Shared"),
+            "load",
+            emptyList(),
+            TypeDescriptor("void")
+        )
+        fun methodGraph(): Graph = DefaultGraph.Builder().apply { addMethod(method) }.build()
+        val executor = executor("orders" to methodGraph(), "billing" to methodGraph())
+
+        val result = executor.execute(
+            "MATCH (m:Method) WHERE m.signature = '${method.signature}' " +
+                "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10"
+        )
+
+        assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })
+        assertTrue(result.rows.all { it["signature"] == method.signature })
+        assertEquals(listOf(listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
+    }
+
+    @Test
+    fun `Method discovery stays correct across 4 17 and 36 graphs with a tiny graph budget`() {
+        for (graphCount in listOf(4, 17, 36)) {
+            val graphs = (0 until graphCount).map { index ->
+                val graph = DefaultGraph.Builder().apply {
+                    addMethod(
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Shared"),
+                            "early",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        )
+                    )
+                    addMethod(
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Service$index"),
+                            "late$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        )
+                    )
+                }.build()
+                CypherGraph("graph-$index", graph)
+            }
+            val executor = CrossGraphCypherExecutor(graphs, CypherExecutionBudget(maxWorkUnits = 1))
+
+            assertTrue(
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'missing' RETURN m.signature LIMIT 1"
+                ).rows.isEmpty()
+            )
+            assertEquals(
+                "graph-0",
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'early' RETURN graphId(m) AS graph LIMIT 1"
+                ).rows.single()["graph"]
+            )
+            assertEquals(
+                "graph-${graphCount - 1}",
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'late${graphCount - 1}' " +
+                        "RETURN graphId(m) AS graph LIMIT 1"
+                ).rows.single()["graph"]
+            )
+            assertTrue(
+                executor.execute(
+                    "MATCH (m:Method) WHERE m.name = 'missing-a' OR m.name = 'missing-b' OR " +
+                        "m.name = 'missing-c' RETURN m.signature LIMIT 1"
+                ).rows.isEmpty()
+            )
+            assertEquals(
+                graphCount * 2L,
+                executor.execute("MATCH (m:Method) RETURN count(m) AS total").rows.single()["total"]
+            )
+        }
+    }
+
+    @Test
+    fun `Method count provenance excludes empty graphs`() {
+        val populated = DefaultGraph.Builder().apply {
+            addMethod(
+                MethodDescriptor(
+                    TypeDescriptor("com.example.Populated"),
+                    "load",
+                    emptyList(),
+                    TypeDescriptor("void")
+                )
+            )
+        }.build()
+        val executor = executor(
+            "empty-before" to graph(),
+            "populated" to populated,
+            "empty-after" to graph()
+        )
+
+        for (query in listOf(
+            "MATCH (m:Method) RETURN count(m) AS total",
+            "MATCH (m:Method) RETURN count(*) AS total"
+        )) {
+            val row = executor.execute(query).rows.single()
+
+            assertEquals(1L, row["total"])
+            assertEquals(listOf("populated"), graphIds(row))
+        }
+    }
+
+    @Test
+    fun `Method count over all empty graphs has empty provenance`() {
+        val executor = executor("empty-a" to graph(), "empty-b" to graph())
+
+        for (query in listOf(
+            "MATCH (m:Method) RETURN count(m) AS total",
+            "MATCH (m:Method) RETURN count(*) AS total"
+        )) {
+            val row = executor.execute(query).rows.single()
+
+            assertEquals(0L, row["total"])
+            assertEquals(emptyList(), graphIds(row))
+        }
+    }
+
+    @Test
     fun `shared execution context cancellation stops a cross graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)

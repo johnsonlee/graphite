@@ -10,8 +10,8 @@ internal const val CANCELLATION_POLL_MASK = 1_023
 /**
  * Bounds graph work performed by one Cypher execution.
  *
- * A work unit is one graph candidate inspected or one path element materialized
- * by the query pipeline. Metadata fast paths do not consume work units.
+ * A work unit is one graph or metadata candidate inspected, or one path element
+ * materialized by the query pipeline.
  */
 data class CypherExecutionBudget(val maxWorkUnits: Long) {
     init {
@@ -21,7 +21,8 @@ data class CypherExecutionBudget(val maxWorkUnits: Long) {
 
 /**
  * Shares one work counter across sequential Cypher executions in a logical request.
- * A context is request-scoped and must not be used concurrently.
+ * A context is request-scoped: callers must not start separate executions concurrently,
+ * while one execution may safely share its atomic tracker with internal scan workers.
  */
 class CypherExecutionContext(
     val executionBudget: CypherExecutionBudget,

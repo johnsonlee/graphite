@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.input.ResourceAccessor
+import java.util.regex.Pattern
 
 data class ClassDependency(
     val callerClass: String,
@@ -58,6 +59,32 @@ interface StringPropertyLookup {
 /** Receives one callback for each storage item inspected by a graph lookup. */
 fun interface GraphWorkConsumer {
     fun consume()
+}
+
+/** Polls request cancellation while a storage backend scans method metadata. */
+fun interface MethodMetadataScanConsumer {
+    fun inspect()
+}
+
+/**
+ * Optional method-metadata capability for lazy, cancellation-aware storage scans.
+ *
+ * This stays outside [Graph] so adding cancellable method discovery does not add JVM
+ * interface methods that older third-party [Graph] implementations would be forced to
+ * implement at runtime. Method metadata is not graph work, so the callback deliberately
+ * has a type distinct from [GraphWorkConsumer].
+ */
+interface StreamingMethodLookup {
+    fun methods(
+        pattern: MethodPattern,
+        scanConsumer: MethodMetadataScanConsumer
+    ): Sequence<MethodDescriptor>
+
+    fun methodSlice(
+        pattern: MethodPattern,
+        limit: Int,
+        scanConsumer: MethodMetadataScanConsumer
+    ): List<MethodDescriptor>? = null
 }
 
 /** Optional string lookup capability that exposes its internal work to callers. */
@@ -302,6 +329,28 @@ interface Graph {
 }
 
 /**
+ * Scan method metadata while polling cancellation before applying [pattern].
+ * Storage backends can keep this lazy by implementing [StreamingMethodLookup].
+ */
+fun Graph.methods(
+    pattern: MethodPattern,
+    scanConsumer: MethodMetadataScanConsumer
+): Sequence<MethodDescriptor> = (this as? StreamingMethodLookup)
+    ?.methods(pattern, scanConsumer)
+    ?: methods(MethodPattern()).onEach { scanConsumer.inspect() }.filter(pattern::matches)
+
+/**
+ * Use a bounded method lookup only when the backend can poll cancellation during its scan.
+ * Returning null lets callers fall back to the streaming [methods] extension.
+ */
+fun Graph.methodSlice(
+    pattern: MethodPattern,
+    limit: Int,
+    scanConsumer: MethodMetadataScanConsumer
+): List<MethodDescriptor>? = (this as? StreamingMethodLookup)
+    ?.methodSlice(pattern, limit, scanConsumer)
+
+/**
  * Use a storage-aware string lookup when [Graph] also implements
  * [StringPropertyLookup]. Existing graph implementations remain binary
  * compatible and return null through this extension.
@@ -378,28 +427,79 @@ data class MethodPattern(
     val annotations: List<String> = emptyList(), // e.g., ["org.springframework.web.bind.annotation.GetMapping"]
     val useRegex: Boolean = false              // when true, declaringClass and name are treated as regex patterns
 ) {
+    @Transient
+    private val declaringClassExactRegex = exactRegex(declaringClass)
+
+    @Transient
+    private val declaringClassRegex = compileRegex(declaringClass, declaringClassExactRegex)
+
+    @Transient
+    private val nameExactRegex = exactRegex(name)
+
+    @Transient
+    private val nameRegex = compileRegex(name, nameExactRegex)
+
+    @Transient
+    private val parameterTypeExactRegexes = parameterTypes?.map(::exactRegex)
+
+    @Transient
+    private val parameterTypeRegexes = parameterTypes?.mapIndexed { index, pattern ->
+        compileRegex(pattern, parameterTypeExactRegexes?.get(index))
+    }
+
+    @Transient
+    private val returnTypeExactRegex = exactRegex(returnType)
+
+    @Transient
+    private val returnTypeRegex = compileRegex(returnType, returnTypeExactRegex)
+
     fun matches(method: MethodDescriptor): Boolean {
-        if (declaringClass != null && !matchesPattern(method.declaringClass.className, declaringClass)) {
+        if (declaringClass != null &&
+            !matchesPattern(
+                method.declaringClass.className,
+                declaringClass,
+                declaringClassExactRegex,
+                declaringClassRegex
+            )
+        ) {
             return false
         }
-        if (name != null && !matchesPattern(method.name, name)) {
+        if (name != null && !matchesPattern(method.name, name, nameExactRegex, nameRegex)) {
             return false
         }
         if (parameterTypes != null) {
             if (method.parameterTypes.size != parameterTypes.size) return false
-            if (!method.parameterTypes.zip(parameterTypes).all { (actual, pattern) ->
-                    matchesPattern(actual.className, pattern)
+            if (!method.parameterTypes.indices.all { index ->
+                    matchesPattern(
+                        method.parameterTypes[index].className,
+                        parameterTypes[index],
+                        parameterTypeExactRegexes?.get(index),
+                        parameterTypeRegexes?.get(index)
+                    )
                 }) return false
         }
-        if (returnType != null && !matchesPattern(method.returnType.className, returnType)) {
+        if (returnType != null &&
+            !matchesPattern(method.returnType.className, returnType, returnTypeExactRegex, returnTypeRegex)
+        ) {
             return false
         }
         return true
     }
 
-    private fun matchesPattern(actual: String, pattern: String): Boolean {
+    private fun exactRegex(pattern: String?): String? {
+        if (!useRegex || pattern == null) return null
+        return pattern.takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
+            ?.substring(2, pattern.length - 2)
+            ?.replace("\\E\\\\E\\Q", "\\E")
+            ?.takeIf { Pattern.quote(it) == pattern }
+    }
+
+    private fun compileRegex(pattern: String?, exact: String?): Pattern? =
+        pattern?.takeIf { useRegex && exact == null }?.let(Pattern::compile)
+
+    private fun matchesPattern(actual: String, pattern: String, exactRegex: String?, regex: Pattern?): Boolean {
         return if (useRegex) {
-            pattern.toRegex().matches(actual)
+            exactRegex?.let(actual::equals) ?: requireNotNull(regex).matcher(actual).matches()
         } else if (pattern.endsWith("*")) {
             actual.startsWith(pattern.dropLast(1))
         } else {

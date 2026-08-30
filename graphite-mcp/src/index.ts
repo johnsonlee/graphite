@@ -3,6 +3,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import packageMetadata from "../package.json";
 
 const GRAPHITE_URL = process.env.GRAPHITE_URL || "http://localhost:8080";
 
@@ -72,7 +73,7 @@ function graphApiPath(graphId: string | undefined, path: string): string {
 
 const server = new McpServer({
   name: "graphite",
-  version: "1.0.0",
+  version: packageMetadata.version,
 });
 
 // Graph registry and cached statistics
@@ -195,26 +196,6 @@ server.tool(
   },
   async ({ id, graph_id }) => {
     const data = await graphiteGet(graphApiPath(graph_id, `/node/${id}/incoming`));
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  }
-);
-
-// List declared methods
-server.tool(
-  "methods",
-  "List declared methods, including indexed methods without nodes and declared return types, across all graphs or in one explicit graph",
-  {
-    graph_id: z.string().optional().describe("Explicit graph id; omit to query all graphs"),
-    class_pattern: z.string().optional().describe("Declaring class pattern"),
-    name_pattern: z.string().optional().describe("Method name pattern"),
-    limit: z.number().optional().default(50).describe("Max results"),
-  },
-  async ({ graph_id, class_pattern, name_pattern, limit }) => {
-    const params: Record<string, string> = {};
-    if (class_pattern) params.class = class_pattern;
-    if (name_pattern) params.name = name_pattern;
-    if (limit) params.limit = String(limit);
-    const data = await graphiteGet(graphApiPath(graph_id, "/methods"), params);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );

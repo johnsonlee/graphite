@@ -93,6 +93,9 @@ class DefaultGraphTest {
             .addNode(StringConstant(NodeId.next(), "hello"))
             .build()
 
+        assertTrue(Graph::class.java.methods.none { MethodMetadataScanConsumer::class.java in it.parameterTypes })
+        assertEquals(setOf(1), Graph::class.java.methods.filter { it.name == "methods" }.map { it.parameterCount }.toSet())
+        assertEquals(setOf(2), Graph::class.java.methods.filter { it.name == "methodSlice" }.map { it.parameterCount }.toSet())
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringProperty" })
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByTransformedStringProperty" })
         assertTrue(Graph::class.java.methods.none { it.name == "nodesByStringPropertyDisjunction" })
@@ -159,6 +162,34 @@ class DefaultGraphTest {
             ).orEmpty().map { it.value }.toList()
         )
         assertEquals(1, work)
+    }
+
+    @Test
+    fun `method scan capability stays optional and falls back with cancellation polling`() {
+        val alpha = makeMethod("com.example.Service", "alpha")
+        val beta = makeMethod("com.example.Service", "beta")
+        val graph: Graph = DefaultGraph.Builder().addMethod(alpha).addMethod(beta).build()
+        var inspections = 0
+        val scanConsumer = MethodMetadataScanConsumer { inspections++ }
+
+        assertEquals(
+            listOf(alpha),
+            graph.methods(MethodPattern(name = "alpha"), scanConsumer).toList()
+        )
+        assertEquals(2, inspections)
+        assertNull(graph.methodSlice(MethodPattern(), 1, scanConsumer))
+
+        val streaming = object : Graph by graph, StreamingMethodLookup {
+            override fun methods(
+                pattern: MethodPattern,
+                scanConsumer: MethodMetadataScanConsumer
+            ): Sequence<MethodDescriptor> = graph.methods(pattern).onEach { scanConsumer.inspect() }
+        }
+        val streamingGraph: Graph = streaming
+        inspections = 0
+        assertEquals(listOf(beta), streamingGraph.methods(MethodPattern(name = "beta"), scanConsumer).toList())
+        assertEquals(1, inspections)
+        assertNull(streamingGraph.methodSlice(MethodPattern(), 1, scanConsumer))
     }
 
     // ========================================================================
