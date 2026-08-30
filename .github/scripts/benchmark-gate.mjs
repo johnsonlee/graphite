@@ -60,6 +60,9 @@ const LARGE_CORPUS_METRICS = [
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
     { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }
 ];
+export const LARGE_CORPUS_EXPECTED_CORPORA = ["tika", "hive", "kotlin-compiler"];
+const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"];
+const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 
 function finiteNumber(value) {
     if (value === null || value === undefined || value === "") return null;
@@ -688,43 +691,111 @@ export function combineLatencyShards(directory) {
 
 export function parseLargeCorpusLog(contents) {
     const results = new Map();
+    const errors = [];
     for (const line of contents.split(/\r?\n/)) {
         const marker = line.indexOf("LARGE_CORPUS_BASELINE");
         if (marker < 0) continue;
         const tokens = line.slice(marker).trim().split(/\s+/);
-        if (tokens.length < 3) continue;
+        if (tokens.length < 3) {
+            errors.push("Malformed large-corpus marker");
+            continue;
+        }
         const corpus = tokens[1];
+        if (results.has(corpus)) {
+            errors.push(`duplicate large-corpus marker ${corpus}`);
+            continue;
+        }
         const measurement = { corpus };
         for (const token of tokens.slice(2)) {
             const separator = token.indexOf("=");
-            if (separator < 1) continue;
+            if (separator < 1) {
+                errors.push(`${corpus}: malformed measurement token ${token}`);
+                continue;
+            }
             const name = token.slice(0, separator);
+            if (Object.hasOwn(measurement, name)) {
+                errors.push(`${corpus}: duplicate measurement ${name}`);
+                continue;
+            }
             const value = finiteNumber(token.slice(separator + 1));
-            if (value !== null) measurement[name] = value;
+            if (value === null) {
+                errors.push(`${corpus}/${name}: invalid measurement`);
+                continue;
+            }
+            measurement[name] = value;
         }
         results.set(corpus, measurement);
     }
-    return results;
+    return { results, errors };
 }
 
 export function compareLargeCorpus(baseLog, candidateLog) {
-    const base = parseLargeCorpusLog(baseLog);
-    const candidate = parseLargeCorpusLog(candidateLog);
-    const errors = [];
+    const baseParsed = parseLargeCorpusLog(baseLog);
+    const candidateParsed = parseLargeCorpusLog(candidateLog);
+    const base = baseParsed.results;
+    const candidate = candidateParsed.results;
+    const errors = [
+        ...baseParsed.errors.map((error) => `base: ${error}`),
+        ...candidateParsed.errors.map((error) => `candidate: ${error}`)
+    ];
     const rows = [];
-    const corpora = [...new Set([...base.keys(), ...candidate.keys()])].sort();
+    const expected = new Set(LARGE_CORPUS_EXPECTED_CORPORA);
 
-    for (const corpus of corpora) {
+    for (const [revision, results] of [["base", base], ["candidate", candidate]]) {
+        for (const corpus of expected) {
+            if (!results.has(corpus)) errors.push(`${revision}: missing expected large corpus ${corpus}`);
+        }
+        for (const corpus of results.keys()) {
+            if (!expected.has(corpus)) errors.push(`${revision}: unexpected large corpus ${corpus}`);
+        }
+    }
+
+    for (const corpus of LARGE_CORPUS_EXPECTED_CORPORA) {
         const baseline = base.get(corpus);
         const current = candidate.get(corpus);
-        if (baseline === undefined || current === undefined) {
-            errors.push(`${corpus}: missing from ${baseline === undefined ? "base" : "candidate"} results`);
-            continue;
+        if (baseline === undefined || current === undefined) continue;
+
+        for (const field of LARGE_CORPUS_SHAPE_FIELDS) {
+            const baseValue = finiteNumber(baseline[field]);
+            const candidateValue = finiteNumber(current[field]);
+            if (!Number.isSafeInteger(baseValue) || !Number.isSafeInteger(candidateValue) ||
+                baseValue <= 0 || candidateValue <= 0
+            ) {
+                errors.push(`${corpus}/${field}: invalid graph-shape measurement`);
+            } else if (baseValue !== candidateValue) {
+                errors.push(`${corpus}/${field}: graph shape changed from ${baseValue} to ${candidateValue}`);
+            }
         }
+
+        const basePersistedBytes = finiteNumber(baseline.persistedBytes);
+        const candidatePersistedBytes = finiteNumber(current.persistedBytes);
+        if (!Number.isSafeInteger(basePersistedBytes) || !Number.isSafeInteger(candidatePersistedBytes) ||
+            basePersistedBytes <= 0 || candidatePersistedBytes <= 0
+        ) {
+            errors.push(`${corpus}/persistedBytes: invalid persisted-size measurement`);
+        } else if (Math.abs(candidatePersistedBytes - basePersistedBytes) >
+            LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE
+        ) {
+            errors.push(
+                `${corpus}/persistedBytes: persisted size changed from ${basePersistedBytes} to ` +
+                `${candidatePersistedBytes}, exceeding the ${LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE}-byte tolerance`
+            );
+        }
+
+        for (const [revision, measurement] of [["base", baseline], ["candidate", current]]) {
+            const phaseTotal = ["buildMs", "saveMs", "mappedLoadMs", "queryMs"]
+                .map((key) => finiteNumber(measurement[key]))
+                .reduce((sum, value) => value === null ? null : (sum === null ? null : sum + value), 0);
+            const pipeline = finiteNumber(measurement.pipelineMs);
+            if (phaseTotal !== null && pipeline !== null && phaseTotal !== pipeline) {
+                errors.push(`${corpus}/${revision}: pipelineMs ${pipeline} does not equal phase total ${phaseTotal}`);
+            }
+        }
+
         for (const metric of LARGE_CORPUS_METRICS) {
             const baseValue = finiteNumber(baseline[metric.key]);
             const candidateValue = finiteNumber(current[metric.key]);
-            if (baseValue === null || candidateValue === null || baseValue <= 0 || candidateValue < 0) {
+            if (baseValue === null || candidateValue === null || baseValue <= 0 || candidateValue <= 0) {
                 errors.push(`${corpus}/${metric.label}: invalid measurement`);
                 continue;
             }
@@ -749,7 +820,6 @@ export function compareLargeCorpus(baseLog, candidateLog) {
         }
     }
 
-    if (corpora.length === 0) errors.push("No large-corpus measurements were found");
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
@@ -801,6 +871,7 @@ export function renderLargeCorpusReport(comparison) {
         "### Real-corpus end to end",
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
+        "The exact corpus set and graph-shape counts must match; persisted size may vary by at most 4 KiB.",
         "Small absolute changes below the noise floor do not block.",
         "Suspected timing regressions must repeat in a reverse-order confirmation run.",
         "Sampled peak heap is informational because its single-run value depends on GC timing; OOM still blocks.",

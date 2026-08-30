@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: benchmark-${{ github.event.pull_request.number }}
@@ -20,6 +19,22 @@ env:
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
 jobs:
+  candidate-gate-tests:
+    name: candidate-gate-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout PR gate tests
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Test candidate benchmark gate logic
+      run: node --test candidate/.github/scripts/benchmark-gate.test.mjs
+
   method-level:
     name: method-level-benchmarks
     runs-on: ubuntu-latest
@@ -31,12 +46,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -49,15 +66,18 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Test benchmark gate logic
-      run: node --test candidate/.github/scripts/benchmark-gate.test.mjs
+    - name: Test base benchmark gate logic
+      run: node --test base/.github/scripts/benchmark-gate.test.mjs
 
     - name: Build JMH jars
       run: |
-        cp candidate/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt \
-          base/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt
-        cp candidate/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt \
-          base/graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt
+        for HARNESS in CypherBenchmark.kt BudgetedCypherBenchmark.kt; do
+          SOURCE="graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/${HARNESS}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+          cmp "base/${SOURCE}" "candidate/${SOURCE}"
+        done
         base/gradlew -p base :cypher:jmhJar --no-daemon
         candidate/gradlew -p candidate :cypher:jmhJar --no-daemon
 
@@ -80,7 +100,7 @@ jobs:
 
     - name: Compare method-level results
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        if node base/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-jmh.json \
           --candidate benchmark-results/candidate-jmh.json \
           --threshold 15 \
@@ -97,7 +117,7 @@ jobs:
           java -jar "${BASE_JAR}" \
             'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
             -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+          node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
             --initial benchmark-results/initial-method-status.json \
             --base benchmark-results/base-jmh-confirmation.json \
             --candidate benchmark-results/candidate-jmh-confirmation.json \
@@ -127,12 +147,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -163,7 +185,10 @@ jobs:
       run: |
         for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
           SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          cp "candidate/${SOURCE}" "base/${SOURCE}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+          cmp "base/${SOURCE}" "candidate/${SOURCE}"
         done
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
@@ -200,7 +225,7 @@ jobs:
               .mode == "ss" and .primaryMetric.score > 0)' \
             "${FILE}" >/dev/null
         done
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        if node base/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-explorer.json \
           --candidate benchmark-results/candidate-explorer.json \
           --threshold 15 \
@@ -224,7 +249,7 @@ jobs:
             'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_ARG}" \
             -rff "${PWD}/benchmark-results/base-explorer-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+          node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
             --initial benchmark-results/initial-explorer-status.json \
             --base benchmark-results/base-explorer-confirmation.json \
             --candidate benchmark-results/candidate-explorer-confirmation.json \
@@ -260,12 +285,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -295,7 +322,10 @@ jobs:
     - name: Build comparable Method JMH jars
       run: |
         SOURCE=graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt
-        cp "candidate/${SOURCE}" "base/${SOURCE}"
+        test ! -L "candidate/${SOURCE}"
+        rm -f -- "candidate/${SOURCE}"
+        install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+        cmp "base/${SOURCE}" "candidate/${SOURCE}"
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
 
@@ -353,7 +383,7 @@ jobs:
           local ADVISORY_ARG=()
           if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
           if [ "${ADVISORY}" = true ]; then ADVISORY_ARG=(--advisory); fi
-          node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          node base/.github/scripts/benchmark-gate.mjs compare-jmh \
             --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json" \
             --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json" \
             "${METRIC_ARG[@]}" \
@@ -410,7 +440,7 @@ jobs:
           else
             METRIC_ARG=()
             if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-            node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+            node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
               --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
               --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json" \
               --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json" \
@@ -457,10 +487,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout PR gate code
+    - name: Checkout base gate code
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
 
     - name: Download Method shards
       uses: actions/download-artifact@v8
@@ -551,12 +582,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -587,7 +620,10 @@ jobs:
       run: |
         for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
           SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          cp "candidate/${SOURCE}" "base/${SOURCE}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+          cmp "base/${SOURCE}" "candidate/${SOURCE}"
         done
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
@@ -663,7 +699,7 @@ jobs:
               ($candidate_result.secondaryMetrics[$metric].score <=
                 ($base_result.secondaryMetrics[$metric].score * 1.15))
             )' >/dev/null
-        node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        node base/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-cypher-capacity.json \
           --candidate benchmark-results/candidate-cypher-capacity.json \
           --threshold 15 \
@@ -687,17 +723,26 @@ jobs:
     timeout-minutes: 20
 
     steps:
+    - name: Checkout PR base gate
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+
     - name: Checkout cancellable collection baseline
       uses: actions/checkout@v7
       with:
         ref: ${{ env.BUDGETED_COLLECTION_BASELINE_SHA }}
         path: baseline
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -710,10 +755,15 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install identical budgeted collection harness in baseline
+    - name: Install base-owned budgeted collection harness
       run: |
         HARNESS='graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt'
-        cp "candidate/${HARNESS}" "baseline/${HARNESS}"
+        for REVISION in baseline candidate; do
+          test ! -L "${REVISION}/${HARNESS}"
+          rm -f -- "${REVISION}/${HARNESS}"
+          install -m 0644 "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+          cmp "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+        done
 
     - name: Build budgeted collection JMH jars
       run: |
@@ -735,7 +785,7 @@ jobs:
 
     - name: Compare budgeted collection latency
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        if node gate/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/baseline-budgeted-collection.json \
           --candidate benchmark-results/candidate-budgeted-collection.json \
           --threshold 15 \
@@ -757,7 +807,7 @@ jobs:
             'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
             -foe true -rf json \
             -rff "${PWD}/benchmark-results/baseline-budgeted-collection-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+          node gate/.github/scripts/benchmark-gate.mjs confirm-jmh \
             --initial benchmark-results/initial-budgeted-collection-status.json \
             --base benchmark-results/baseline-budgeted-collection-confirmation.json \
             --candidate benchmark-results/candidate-budgeted-collection-confirmation.json \
@@ -782,17 +832,26 @@ jobs:
     timeout-minutes: 20
 
     steps:
+    - name: Checkout PR base gate
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+
     - name: Checkout budgeted lookup baseline
       uses: actions/checkout@v7
       with:
         ref: ${{ env.BUDGETED_LOOKUP_BASELINE_SHA }}
         path: baseline
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -805,10 +864,15 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install identical budgeted lookup harness in baseline
+    - name: Install base-owned budgeted lookup harness
       run: |
         HARNESS='graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedStringAdmissionBenchmark.kt'
-        cp "candidate/${HARNESS}" "baseline/${HARNESS}"
+        for REVISION in baseline candidate; do
+          test ! -L "${REVISION}/${HARNESS}"
+          rm -f -- "${REVISION}/${HARNESS}"
+          install -m 0644 "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+          cmp "gate/${HARNESS}" "${REVISION}/${HARNESS}"
+        done
 
     - name: Build budgeted lookup JMH jars
       run: |
@@ -830,7 +894,7 @@ jobs:
 
     - name: Compare budgeted lookup latency
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        if node gate/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/baseline-budgeted-string.json \
           --candidate benchmark-results/candidate-budgeted-string.json \
           --threshold 15 \
@@ -849,7 +913,7 @@ jobs:
           java -jar "${BASELINE_JAR}" \
             'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
             -foe true -rf json -rff "${PWD}/benchmark-results/baseline-budgeted-string-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+          node gate/.github/scripts/benchmark-gate.mjs confirm-jmh \
             --initial benchmark-results/initial-budgeted-string-status.json \
             --base benchmark-results/baseline-budgeted-string-confirmation.json \
             --candidate benchmark-results/candidate-budgeted-string-confirmation.json \
@@ -880,12 +944,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -897,6 +963,14 @@ jobs:
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-read-only: true
+
+    - name: Install base-owned large-corpus harness
+      run: |
+        HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
+        test ! -L "candidate/${HARNESS}"
+        rm -f -- "candidate/${HARNESS}"
+        install -m 0644 "base/${HARNESS}" "candidate/${HARNESS}"
+        cmp "base/${HARNESS}" "candidate/${HARNESS}"
 
     - name: Benchmark PR large corpora
       run: |
@@ -915,7 +989,7 @@ jobs:
 
     - name: Compare large-corpus results
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-large-corpus \
+        if node base/.github/scripts/benchmark-gate.mjs compare-large-corpus \
           --base benchmark-results/base-large-corpus.log \
           --candidate benchmark-results/candidate-large-corpus.log \
           --report benchmark-results/initial-large-corpus-report.md \
@@ -930,7 +1004,7 @@ jobs:
           candidate/gradlew -p candidate :webgraph:largeCorpusTest \
             -Dlarge.corpus.record=true --no-daemon 2>&1 \
             | tee benchmark-results/candidate-large-corpus-confirmation.log
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-large-corpus \
+          node base/.github/scripts/benchmark-gate.mjs confirm-large-corpus \
             --initial benchmark-results/initial-large-corpus-status.json \
             --base benchmark-results/base-large-corpus-confirmation.log \
             --candidate benchmark-results/candidate-large-corpus-confirmation.log \
@@ -953,11 +1027,19 @@ jobs:
     timeout-minutes: 20
 
     steps:
+    - name: Checkout PR base gate
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Restore or save persisted fixture graphs
       id: fixture-cache
@@ -988,6 +1070,20 @@ jobs:
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-read-only: true
+
+    - name: Install base-owned fixture preparation harness
+      if: steps.fixture-cache-state.outputs.ready != 'true'
+      run: |
+        for HARNESS in \
+          BenchmarkCorpus.kt \
+          AllFixtureBenchmarkGraphPreparation.kt \
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt; do
+          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "gate/${SOURCE}" "candidate/${SOURCE}"
+          cmp "gate/${SOURCE}" "candidate/${SOURCE}"
+        done
 
     - name: Build fixture preparation harness
       if: steps.fixture-cache-state.outputs.ready != 'true'
@@ -1093,18 +1189,21 @@ jobs:
       with:
         ref: ${{ env.PRE_PR_95_BASELINE_SHA }}
         path: fixed
+        persist-credentials: false
 
     - name: Checkout PR base
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -1132,15 +1231,20 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install identical latency harness in baselines
+    - name: Install base-owned latency harness
       run: |
         for HARNESS in \
+          BenchmarkCorpus.kt \
           WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          cp "candidate/${SOURCE}" "fixed/${SOURCE}"
-          cp "candidate/${SOURCE}" "base/${SOURCE}"
+          for REVISION in fixed candidate; do
+            test ! -L "${REVISION}/${SOURCE}"
+            rm -f -- "${REVISION}/${SOURCE}"
+            install -m 0644 "base/${SOURCE}" "${REVISION}/${SOURCE}"
+            cmp "base/${SOURCE}" "${REVISION}/${SOURCE}"
+          done
         done
 
     - name: Build latency benchmark jars
@@ -1217,7 +1321,7 @@ jobs:
         BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
         SHARD: ${{ matrix.shard }}
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
+        if node base/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
           --fixed "benchmark-results/fixed-latency-${SHARD}.json" \
           --base "benchmark-results/base-latency-${SHARD}.json" \
           --candidate "benchmark-results/candidate-latency-${SHARD}.json" \
@@ -1254,7 +1358,7 @@ jobs:
             "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
             -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
+          node base/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
             --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
             --fixed "benchmark-results/fixed-latency-confirmation-${SHARD}.json" \
             --base "benchmark-results/base-latency-confirmation-${SHARD}.json" \
@@ -1270,9 +1374,10 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: latency-shard-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: latency-shard-${{ matrix.shard }}-${{ github.event.pull_request.number }}
         path: benchmark-results/
         if-no-files-found: warn
+        overwrite: true
         retention-days: 14
 
   wrapped-query-latency:
@@ -1282,23 +1387,87 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout PR reporting code
+    - name: Checkout base reporting code
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
 
-    - name: Download latency shard results
+    - name: Download synthetic-1 results
       continue-on-error: true
       uses: actions/download-artifact@v8
       with:
-        pattern: latency-shard-*-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
-        path: benchmark-results
-        merge-multiple: true
+        name: latency-shard-synthetic-1-${{ github.event.pull_request.number }}
+        path: shard-results/synthetic-1
+
+    - name: Download synthetic-4 results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-synthetic-4-${{ github.event.pull_request.number }}
+        path: shard-results/synthetic-4
+
+    - name: Download synthetic-16 results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-synthetic-16-${{ github.event.pull_request.number }}
+        path: shard-results/synthetic-16
+
+    - name: Download synthetic-64 results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-synthetic-64-${{ github.event.pull_request.number }}
+        path: shard-results/synthetic-64
+
+    - name: Download real-a results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-real-a-${{ github.event.pull_request.number }}
+        path: shard-results/real-a
+
+    - name: Download real-b results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-real-b-${{ github.event.pull_request.number }}
+        path: shard-results/real-b
+
+    - name: Download real-c results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-real-c-${{ github.event.pull_request.number }}
+        path: shard-results/real-c
+
+    - name: Download real-d results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-real-d-${{ github.event.pull_request.number }}
+        path: shard-results/real-d
+
+    - name: Download real-36 results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: latency-shard-real-36-${{ github.event.pull_request.number }}
+        path: shard-results/real-36
 
     - name: Combine latency shard results
       if: always()
       run: |
         mkdir -p benchmark-results
+        for SHARD in synthetic-1 synthetic-4 synthetic-16 synthetic-64 real-a real-b real-c real-d real-36; do
+          for FILE in "latency-report-${SHARD}.md" "latency-status-${SHARD}.json"; do
+            SOURCE="shard-results/${SHARD}/${FILE}"
+            if [ -f "${SOURCE}" ] && [ ! -L "${SOURCE}" ]; then
+              install -m 0644 "${SOURCE}" "benchmark-results/${FILE}"
+            fi
+          done
+        done
         node .github/scripts/benchmark-gate.mjs combine-latency-shards \
           --directory benchmark-results \
           --report benchmark-results/latency-report.md \
@@ -1333,12 +1502,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -1364,14 +1535,18 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install identical resource harness in PR base
+    - name: Install base-owned resource harness
       run: |
         for HARNESS in \
+          BenchmarkCorpus.kt \
           WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          cp "candidate/${SOURCE}" "base/${SOURCE}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+          cmp "base/${SOURCE}" "candidate/${SOURCE}"
         done
 
     - name: Build resource benchmark jars
@@ -1398,7 +1573,7 @@ jobs:
 
     - name: Enforce resource guardrails
       run: |
-        if node candidate/.github/scripts/benchmark-gate.mjs compare-latency-resources \
+        if node base/.github/scripts/benchmark-gate.mjs compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
           --candidate benchmark-results/candidate-latency-resources.json \
           --report benchmark-results/initial-latency-resource-report.md \
@@ -1419,7 +1594,7 @@ jobs:
           java -jar "${BASE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
             -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-resources-confirmation.json"
-          node candidate/.github/scripts/benchmark-gate.mjs confirm-latency-resources \
+          node base/.github/scripts/benchmark-gate.mjs confirm-latency-resources \
             --initial benchmark-results/initial-latency-resource-status.json \
             --base benchmark-results/base-latency-resources-confirmation.json \
             --candidate benchmark-results/candidate-latency-resources-confirmation.json \
@@ -1439,16 +1614,17 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout PR reporting code
+    - name: Checkout base reporting code
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
 
-    - name: Download benchmark results
+    - name: Download method-level results
       continue-on-error: true
       uses: actions/download-artifact@v8
       with:
@@ -1474,6 +1650,63 @@ jobs:
           --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
           --report benchmark-results/benchmark-report.md \
           --status benchmark-results/benchmark-status.json
+
+    - name: Upload aggregate benchmark report
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-report-${{ github.event.pull_request.number }}
+        path: |
+          benchmark-results/benchmark-report.md
+          benchmark-results/benchmark-status.json
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 14
+
+    - name: Enforce benchmark gate
+      if: always()
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+        METHOD_JOB: ${{ needs.method-level.result }}
+        EXPLORER_JOB: ${{ needs.explorer.result }}
+        METHOD_COMPATIBILITY_JOB: ${{ needs.method-compatibility.result }}
+        CYPHER_CAPACITY_JOB: ${{ needs.cypher-capacity.result }}
+        BUDGETED_COLLECTION_JOB: ${{ needs.budgeted-collection.result }}
+        BUDGETED_STRING_JOB: ${{ needs.budgeted-mapped-string.result }}
+        LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
+        LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
+        LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
+      run: |
+        if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
+          [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
+          [ "${METHOD_COMPATIBILITY_JOB}" != success ] || \
+          [ "${CYPHER_CAPACITY_JOB}" != success ] || \
+          [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
+          [ "${BUDGETED_STRING_JOB}" != success ] || \
+          [ "${LARGE_CORPUS_JOB}" != success ] || \
+          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then
+          echo "::error::Benchmark execution or comparison failed"
+          exit 1
+        fi
+        node -e "const s=require('./benchmark-results/benchmark-status.json'); if(!s.passed) process.exit(1)"
+
+  benchmark-comment:
+    name: benchmark-comment
+    if: always()
+    needs: [benchmark-regression-gate]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Download aggregate benchmark report
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-report-${{ github.event.pull_request.number }}
+        path: benchmark-results
 
     - name: Attach benchmark report to PR
       if: always()
@@ -1513,28 +1746,3 @@ jobs:
               body
             });
           }
-
-    - name: Enforce benchmark gate
-      if: always()
-      env:
-        METHOD_JOB: ${{ needs.method-level.result }}
-        EXPLORER_JOB: ${{ needs.explorer.result }}
-        METHOD_COMPATIBILITY_JOB: ${{ needs.method-compatibility.result }}
-        CYPHER_CAPACITY_JOB: ${{ needs.cypher-capacity.result }}
-        BUDGETED_COLLECTION_JOB: ${{ needs.budgeted-collection.result }}
-        BUDGETED_STRING_JOB: ${{ needs.budgeted-mapped-string.result }}
-        LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
-        LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
-        LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
-      run: |
-        if [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
-          [ "${METHOD_COMPATIBILITY_JOB}" != success ] || \
-          [ "${CYPHER_CAPACITY_JOB}" != success ] || \
-          [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
-          [ "${BUDGETED_STRING_JOB}" != success ] || \
-          [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then
-          echo "::error::Benchmark execution or comparison failed"
-          exit 1
-        fi
-        node -e "const s=require('./benchmark-results/benchmark-status.json'); if(!s.passed) process.exit(1)"

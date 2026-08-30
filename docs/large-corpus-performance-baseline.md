@@ -32,7 +32,8 @@ Gradle neither skips it as up to date nor restores it from the build cache. Each
 four-minute timeout and verifies the artifact fingerprint, exact graph shape, mapped query
 results, end-to-end time ceiling, and sampled heap usage. It is wired into `check` and fails fast.
 
-Record a candidate baseline (assertions are intentionally bypassed only in record mode):
+Record timing evidence while retaining fixture, graph-shape, and mapped-round-trip assertions.
+Record mode bypasses only the machine-specific absolute pipeline ceiling:
 
 ```bash
 ./gradlew :webgraph:largeCorpusTest -Dlarge.corpus.record=true --no-daemon

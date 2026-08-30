@@ -10,6 +10,34 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Integrity model and limitations
+
+Comparator commands, expected benchmark keys, workload harnesses, fixture-preparation harnesses,
+shard combination, and final aggregation are loaded from the pull request's exact base SHA. This
+keeps ordinary pull requests from accidentally changing the experiment and its pass criteria in the
+same revision. Candidate comparator tests run as non-authoritative test coverage in a separate job
+whose runner contains only the candidate checkout.
+
+This workflow is a regression signal for non-malicious changes, not a sandbox or a tamper-resistant
+security boundary. Component jobs still execute candidate Gradle scripts and candidate benchmark
+JARs on the same GitHub-hosted runner and as the same operating-system user as sibling base
+checkouts, base measurements, and the base comparator. A deliberately hostile candidate process
+can therefore overwrite those files or forge a component report/status artifact. The fresh
+base-only aggregation job cannot recover integrity after a component artifact has been forged, so
+the required check must not be treated as proof against a hostile pull request.
+
+Benchmark jobs have only `contents: read`, every checkout disables credential persistence, and the
+only job with `pull-requests: write` downloads the aggregate report and updates the PR comment
+without checking out or executing candidate code. These controls protect repository credentials
+and limit write authority; they do not isolate files or processes on a mixed benchmark runner.
+
+`.github/CODEOWNERS` assigns the workflow, comparator, JMH workloads, and large-corpus gate harness
+to the repository owner, and the active `main` ruleset requires code-owner review. Code-owner review
+is the repository-local security boundary for gate changes. Fully defending against hostile build
+or runtime code requires base and candidate execution on separate runners, raw artifact comparison
+in a fresh base-only job, or an external required workflow/GitHub App. That isolation is not provided
+by this workflow.
+
 ## Wrapped case-insensitive latency gate
 
 The `wrapped-query-latency` job protects the production
@@ -122,6 +150,11 @@ The semantic and fixture assertions still run in record mode; record mode only d
 machine-specific absolute timing ceiling. Each corpus process is capped at a 4 GiB heap, so an OOM
 or failure to finish still blocks the pull request.
 
+The comparator requires exactly one result for each of Tika, Hive, and the Kotlin compiler. Node,
+source-edge, persisted-edge, method, and call-site counts must match exactly between the PR base and
+candidate. Persisted graph size may differ by at most 4 KiB to accommodate observed filesystem
+serialization noise; larger size changes fail closed and require an explicit gate-contract update.
+
 | Metric | Relative limit | Minimum absolute increase |
 |---|---:|---:|
 | Build | 20% | 500 ms |
@@ -143,7 +176,7 @@ output or a benchmark process failure blocks the gate.
 `gradle/actions/setup-gradle` caches the wrapper distribution, downloaded dependencies, compiled
 build scripts, artifact transforms, and other reusable Gradle User Home state. The unit-test
 workflow writes this cache on the default branch. Pull-request benchmark jobs use it read-only, so
-they can reuse trusted main-branch state without creating a cache entry for every PR.
+they can reuse base-branch state without creating a cache entry for every PR.
 
 Generated graphs and project `build/` directories are deliberately excluded. The end-to-end gate
 must measure graph construction and persistence rather than restore those outputs from a cache.

@@ -114,16 +114,16 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         val measurement = PeakHeapSampler().use { sampler -> runPipeline(jar, sampler) }
         println(measurement.baselineLine(baseline))
 
+        assertEquals(baseline.nodeCount, measurement.nodes, "Node baseline changed for ${baseline.id}")
+        assertEquals(baseline.sourceEdgeCount, measurement.sourceEdges, "Source edge baseline changed for ${baseline.id}")
+        assertEquals(
+            baseline.persistedEdgeCount,
+            measurement.persistedEdges,
+            "Persisted edge baseline changed for ${baseline.id}"
+        )
+        assertEquals(baseline.methodCount, measurement.methods, "Method baseline changed for ${baseline.id}")
+        assertEquals(baseline.callSiteCount, measurement.callSites, "Call-site baseline changed for ${baseline.id}")
         if (!java.lang.Boolean.getBoolean(RECORD_PROPERTY)) {
-            assertEquals(baseline.nodeCount, measurement.nodes, "Node baseline changed for ${baseline.id}")
-            assertEquals(baseline.sourceEdgeCount, measurement.sourceEdges, "Source edge baseline changed for ${baseline.id}")
-            assertEquals(
-                baseline.persistedEdgeCount,
-                measurement.persistedEdges,
-                "Persisted edge baseline changed for ${baseline.id}"
-            )
-            assertEquals(baseline.methodCount, measurement.methods, "Method baseline changed for ${baseline.id}")
-            assertEquals(baseline.callSiteCount, measurement.callSites, "Call-site baseline changed for ${baseline.id}")
             assertTrue(
                 measurement.pipelineMillis <= baseline.maxPipelineMillis,
                 "${baseline.id} pipeline took ${measurement.pipelineMillis} ms; ceiling=${baseline.maxPipelineMillis} ms"

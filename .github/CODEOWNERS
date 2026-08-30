@@ -1,0 +1,5 @@
+/.github/CODEOWNERS @johnsonlee
+/.github/workflows/** @johnsonlee
+/.github/scripts/benchmark-* @johnsonlee
+/graphite-*/src/jmh/** @johnsonlee
+/graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt @johnsonlee
