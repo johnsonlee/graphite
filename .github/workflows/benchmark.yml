@@ -66,7 +66,7 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Test trusted benchmark gate logic
+    - name: Test base benchmark gate logic
       run: node --test base/.github/scripts/benchmark-gate.test.mjs
 
     - name: Build JMH jars
@@ -489,7 +489,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout trusted gate code
+    - name: Checkout base gate code
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.base.sha }}
@@ -757,7 +757,7 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install trusted budgeted collection harness
+    - name: Install base-owned budgeted collection harness
       run: |
         HARNESS='graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedCypherBenchmark.kt'
         for REVISION in baseline candidate; do
@@ -867,7 +867,7 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install trusted budgeted lookup harness
+    - name: Install base-owned budgeted lookup harness
       run: |
         HARNESS='graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedStringAdmissionBenchmark.kt'
         for REVISION in baseline candidate; do
@@ -968,7 +968,7 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install trusted large-corpus harness
+    - name: Install base-owned large-corpus harness
       run: |
         HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
         test ! -L "candidate/${HARNESS}"
@@ -1076,7 +1076,7 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install trusted fixture preparation harness
+    - name: Install base-owned fixture preparation harness
       if: steps.fixture-cache-state.outputs.ready != 'true'
       run: |
         for HARNESS in \
@@ -1236,7 +1236,7 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install trusted latency harness
+    - name: Install base-owned latency harness
       run: |
         for HARNESS in \
           BenchmarkCorpus.kt \
@@ -1392,7 +1392,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout trusted reporting code
+    - name: Checkout base reporting code
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.base.sha }}
@@ -1541,7 +1541,7 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install trusted resource harness
+    - name: Install base-owned resource harness
       run: |
         for HARNESS in \
           BenchmarkCorpus.kt \
@@ -1625,7 +1625,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout trusted reporting code
+    - name: Checkout base reporting code
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.base.sha }}
