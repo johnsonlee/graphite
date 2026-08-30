@@ -15,8 +15,9 @@ days.
 The pull-request revision supplies production code only. Comparator commands, expected benchmark
 keys, workload harnesses, fixture-preparation harnesses, shard combination, and final aggregation
 are all loaded from the pull request's exact base SHA. Fixed baselines and the candidate are built
-with that base-owned workload source. Candidate copies of comparator tests still run as ordinary
-test coverage, but they are not authoritative for the gate decision.
+with that base-owned workload source. Candidate copies of comparator tests run as ordinary test
+coverage in a separate runner that contains only the candidate checkout. They cannot access the
+base comparator, measurements, or authoritative workspace and are not part of the gate decision.
 
 Benchmark execution jobs have only `contents: read`, every checkout disables credential
 persistence, and result artifacts are downloaded by exact name into separate directories before

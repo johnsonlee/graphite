@@ -19,6 +19,22 @@ env:
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
 jobs:
+  candidate-gate-tests:
+    name: candidate-gate-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout PR gate tests
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Test candidate benchmark gate logic
+      run: node --test candidate/.github/scripts/benchmark-gate.test.mjs
+
   method-level:
     name: method-level-benchmarks
     runs-on: ubuntu-latest
@@ -50,10 +66,8 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Test benchmark gate logic
-      run: |
-        node --test base/.github/scripts/benchmark-gate.test.mjs
-        node --test candidate/.github/scripts/benchmark-gate.test.mjs
+    - name: Test trusted benchmark gate logic
+      run: node --test base/.github/scripts/benchmark-gate.test.mjs
 
     - name: Build JMH jars
       run: |
@@ -1596,7 +1610,7 @@ jobs:
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
     runs-on: ubuntu-latest
 
     steps:
@@ -1648,6 +1662,7 @@ jobs:
     - name: Enforce benchmark gate
       if: always()
       env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         METHOD_JOB: ${{ needs.method-level.result }}
         EXPLORER_JOB: ${{ needs.explorer.result }}
         METHOD_COMPATIBILITY_JOB: ${{ needs.method-compatibility.result }}
@@ -1658,7 +1673,8 @@ jobs:
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
       run: |
-        if [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
+        if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
+          [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
           [ "${METHOD_COMPATIBILITY_JOB}" != success ] || \
           [ "${CYPHER_CAPACITY_JOB}" != success ] || \
           [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
