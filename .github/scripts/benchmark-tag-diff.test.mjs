@@ -344,11 +344,55 @@ test("first semantic tag renders an explicit unavailable baseline without a verd
     assert.equal(report.manifest.comparisonStatus, "baseline-unavailable");
     assert.ok(report.manifest.measurements.every((measurement) => measurement.deltaPercent === null));
     assert.ok(report.manifest.measurements.every((measurement) => measurement.classification === "unavailable"));
+    assert.deepEqual(
+        [...report.html.matchAll(/data-trend-metric="([^"]+)"/g)].map((match) => match[1]),
+        ["measurement-confidence", "coverage-completeness"]
+    );
+    assert.match(report.html, /Measurement confidence trend[\s\S]*?v2\.4\.4/);
+    assert.match(report.html, /Coverage completeness trend[\s\S]*?v2\.4\.4/);
     assert.throws(() => buildTagDiffReport({
         metadata: metadata(null),
         currentResults: results(),
         previousResults: results()
     }), /without a resolved baseline/);
+});
+
+test("absolute evidence observations start a new segment at a protocol break", () => {
+    const previousReport = buildTagDiffReport({
+        metadata: metadata(),
+        currentResults: results(1.1),
+        previousResults: results(),
+        generatedAt: "2026-08-30T01:02:03.000Z"
+    });
+    const driftMetadata = metadata({
+        tag: "v2.4.4",
+        sha: "a".repeat(40),
+        refSha: "a".repeat(40),
+        harnessFingerprint: "c".repeat(64)
+    });
+    driftMetadata.current = {
+        tag: "v2.4.5",
+        sha: "d".repeat(40),
+        refSha: "d".repeat(40),
+        harnessFingerprint: "e".repeat(64)
+    };
+    const driftReport = buildTagDiffReport({
+        metadata: driftMetadata,
+        currentResults: results(1.2),
+        previousResults: results(1.1),
+        history: previousReport.manifest.releaseHistory,
+        generatedAt: "2026-08-31T01:02:03.000Z"
+    });
+    const measurementCard = driftReport.html.match(/<article class="trend-card" data-trend-metric="measurement-confidence">[\s\S]*?<\/article>/)?.[0] ?? "";
+    const coverageCard = driftReport.html.match(/<article class="trend-card" data-trend-metric="coverage-completeness">[\s\S]*?<\/article>/)?.[0] ?? "";
+    assert.equal(driftReport.manifest.comparisonStatus, "workload-drift");
+    assert.match(measurementCard, /2 releases · 1 protocol break/);
+    assert.match(measurementCard, /v2\.4\.4/);
+    assert.match(measurementCard, /v2\.4\.5/);
+    assert.match(measurementCard, /class="protocol-break"/);
+    assert.match(coverageCard, /2 releases · 1 protocol break/);
+    assert.match(coverageCard, /v2\.4\.4/);
+    assert.match(coverageCard, /v2\.4\.5/);
 });
 
 test("resolve CLI peels annotated tags and disables deltas when a method body changed", () => {

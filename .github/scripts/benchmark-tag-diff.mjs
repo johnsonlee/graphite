@@ -835,7 +835,7 @@ function trendSeries(history, id) {
             segment++;
             latencyIndex = 100;
         }
-        if (metric?.currentValue === null || metric === null || entry.comparisonStatus !== "available") {
+        if (metric === null || metric.currentValue === null) {
             previous = entry;
             continue;
         }
