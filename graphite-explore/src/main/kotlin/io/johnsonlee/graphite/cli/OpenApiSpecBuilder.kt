@@ -467,22 +467,39 @@ internal class OpenApiSpecBuilder {
         API_PARAM_TIMEOUT_MILLIS,
         TYPE_INTEGER,
         false,
-        CYPHER_TIMEOUT_DESCRIPTION
+        CYPHER_TIMEOUT_DESCRIPTION,
+        minimum = 1
     )
 
-    private fun queryParameter(name: String, type: String, required: Boolean, description: String): Map<String, Any?> =
-        parameter("query", name, type, required, description)
+    private fun queryParameter(
+        name: String,
+        type: String,
+        required: Boolean,
+        description: String,
+        minimum: Int? = null
+    ): Map<String, Any?> = parameter("query", name, type, required, description, minimum)
 
     private fun pathParameter(name: String, type: String, description: String): Map<String, Any?> =
         parameter("path", name, type, true, description)
 
-    private fun parameter(location: String, name: String, type: String, required: Boolean, description: String): Map<String, Any?> =
+    private fun parameter(
+        location: String,
+        name: String,
+        type: String,
+        required: Boolean,
+        description: String,
+        minimum: Int? = null
+    ): Map<String, Any?> =
         mapOf(
             "in" to location,
             API_FIELD_NAME to name,
             FIELD_REQUIRED to required,
             FIELD_DESCRIPTION to description,
-            "schema" to mapOf(API_FIELD_TYPE to type)
+            "schema" to if (minimum == null) {
+                mapOf(API_FIELD_TYPE to type)
+            } else {
+                mapOf(API_FIELD_TYPE to type, "minimum" to minimum)
+            }
         )
 
     private fun response(description: String): Map<String, Any?> =

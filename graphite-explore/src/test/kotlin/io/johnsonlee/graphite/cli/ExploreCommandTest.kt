@@ -1509,6 +1509,19 @@ class ExploreCommandTest {
         val post = cypher["post"] as Map<String, Any?>
         assertTrue(post.containsKey("requestBody"))
         assertTrue(post["requestBody"].toString().contains(API_PARAM_TIMEOUT_MILLIS))
+        listOf("/api/cypher", "/api/cypher/graphs", "/api/graphs/{graphId}/cypher").forEach { path ->
+            @Suppress("UNCHECKED_CAST")
+            val operations = paths.getValue(path) as Map<String, Map<String, Any?>>
+            operations.forEach { (method, operation) ->
+                @Suppress("UNCHECKED_CAST")
+                val parameters = operation.getValue("parameters") as List<Map<String, Any?>>
+                val timeout = parameters.single { it[API_FIELD_NAME] == API_PARAM_TIMEOUT_MILLIS }
+                @Suppress("UNCHECKED_CAST")
+                val schema = timeout.getValue("schema") as Map<String, Any?>
+                assertEquals("integer", schema[API_FIELD_TYPE], "$method $path timeout schema type")
+                assertEquals(1.0, schema["minimum"], "$method $path timeout schema minimum")
+            }
+        }
         @Suppress("UNCHECKED_CAST")
         val responses = post["responses"] as Map<String, Any?>
         assertTrue(responses.containsKey("429"))
