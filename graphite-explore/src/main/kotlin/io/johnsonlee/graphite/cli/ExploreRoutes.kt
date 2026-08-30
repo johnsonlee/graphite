@@ -16,6 +16,7 @@ import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
+import io.johnsonlee.graphite.cypher.CypherQueryTimeoutException
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
@@ -505,6 +506,12 @@ internal class ExploreRoutes(
         execute: (List<GraphLease>, CypherExecutionContext) -> T,
         respond: (T, CypherCancellationSignal) -> Unit
     ): CompletableFuture<Unit> {
+        val clientTimeoutMillis = try {
+            parseClientCypherTimeoutMillis(ctx)
+        } catch (error: IllegalArgumentException) {
+            respondCypherError(ctx, error)
+            return CompletableFuture.completedFuture(Unit)
+        }
         val cancellationSignal = cancellationSignalFactory()
         val clientCancellation = clientCancellationObserver(ctx, cancellationSignal)
         val leases = try {
@@ -518,6 +525,7 @@ internal class ExploreRoutes(
         val task = try {
             cypherGuard.submit(
                 cancellationSignal,
+                clientTimeoutMillis = clientTimeoutMillis,
                 continuation = { outcome ->
                     try {
                         val error = unwrapCompletionFailure(outcome.exceptionOrNull())
@@ -690,6 +698,25 @@ internal class ExploreRoutes(
         return query.trim()
     }
 
+    private fun parseClientCypherTimeoutMillis(ctx: Context): Long? {
+        val body = ctx.body().trim()
+        val bodyTimeout = if (body.isEmpty()) {
+            null
+        } else {
+            JsonParser.parseString(body).asJsonObject.get(API_PARAM_TIMEOUT_MILLIS)
+                ?.takeUnless { it.isJsonNull }
+                ?.let { value ->
+                    require(value.isJsonPrimitive) { "'$API_PARAM_TIMEOUT_MILLIS' must be a positive integer" }
+                    value.asString
+                }
+        }
+        val raw = bodyTimeout ?: ctx.queryParam(API_PARAM_TIMEOUT_MILLIS) ?: return null
+        val timeoutMillis = raw.toLongOrNull()
+            ?: throw IllegalArgumentException("'$API_PARAM_TIMEOUT_MILLIS' must be a positive integer")
+        require(timeoutMillis > 0) { "'$API_PARAM_TIMEOUT_MILLIS' must be a positive integer" }
+        return timeoutMillis
+    }
+
     private fun respondCypherError(ctx: Context, error: Throwable) {
         if (error is GraphNotLoadedException) {
             ctx.status(HTTP_NOT_FOUND).json(mapOf(API_FIELD_ERROR to error.message))
@@ -698,20 +725,23 @@ internal class ExploreRoutes(
         val code = when (error) {
             is CypherConcurrencyLimitException -> "cypher_concurrency_limit"
             is CypherBudgetExceededException -> "cypher_work_budget_exceeded"
+            is CypherQueryTimeoutException -> "cypher_query_timeout"
             is CypherQueryCancelledException -> "cypher_query_cancelled"
             else -> "cypher_query_failed"
         }
         val status = when (code) {
             "cypher_query_failed" -> HTTP_BAD_REQUEST
+            "cypher_query_timeout" -> HTTP_GATEWAY_TIMEOUT
             "cypher_query_cancelled" -> HTTP_SERVICE_UNAVAILABLE
             else -> HTTP_TOO_MANY_REQUESTS
         }
         if (error is CypherConcurrencyLimitException) ctx.header("Retry-After", "1")
         ctx.status(status).json(
-            mapOf(
-                API_FIELD_ERROR to (error.message ?: "Query execution failed"),
-                "code" to code
-            )
+            buildMap<String, Any?> {
+                put(API_FIELD_ERROR, error.message ?: "Query execution failed")
+                put("code", code)
+                if (error is CypherQueryTimeoutException) put(API_PARAM_TIMEOUT_MILLIS, error.timeoutMillis)
+            }
         )
     }
 
@@ -1166,6 +1196,7 @@ internal class ExploreRoutes(
         private const val HTTP_NOT_FOUND = 404
         private const val HTTP_PAYLOAD_TOO_LARGE = 413
         private const val HTTP_TOO_MANY_REQUESTS = 429
+        private const val HTTP_GATEWAY_TIMEOUT = 504
         private const val HTTP_SERVICE_UNAVAILABLE = 503
 
         private const val DEFAULT_EDGE_LIMIT = 200

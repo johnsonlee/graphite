@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.cli
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
+import io.johnsonlee.graphite.cypher.CypherQueryTimeoutException
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
@@ -24,6 +25,58 @@ class CypherQueryGuardTest {
         }
         assertFailsWith<IllegalArgumentException> {
             CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            CypherQueryGuard(maxConcurrent = 1, maxTimeoutMillis = 0)
+        }
+        assertEquals(60_000L, DEFAULT_CYPHER_MAX_TIMEOUT_MILLIS)
+    }
+
+    @Test
+    fun `guard applies shorter client timeout and caps longer client timeout`() {
+        fun timedOutAfter(guard: CypherQueryGuard, clientTimeoutMillis: Long): Long {
+            val started = CountDownLatch(1)
+            val interrupted = CountDownLatch(1)
+            val task = guard.submit(
+                CypherCancellationSignal(),
+                clientTimeoutMillis = clientTimeoutMillis
+            ) {
+                started.countDown()
+                try {
+                    CountDownLatch(1).await()
+                } catch (error: InterruptedException) {
+                    interrupted.countDown()
+                    throw error
+                }
+            }
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            val timeout = assertFailsWith<CypherQueryTimeoutException> {
+                task.completion.get(5, TimeUnit.SECONDS)
+            }
+            assertTrue(interrupted.await(5, TimeUnit.SECONDS))
+            return timeout.timeoutMillis
+        }
+
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10, maxTimeoutMillis = 100)
+        try {
+            assertEquals(25L, timedOutAfter(guard, 25))
+            assertEquals(100L, timedOutAfter(guard, 1_000))
+            assertEquals("next", executeWhenAvailable(guard) { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `invalid client timeout does not consume a permit`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+        try {
+            assertFailsWith<IllegalArgumentException> {
+                guard.submit(CypherCancellationSignal(), clientTimeoutMillis = 0) { "invalid" }
+            }
+            assertEquals("next", guard.execute { "next" })
+        } finally {
+            guard.close()
         }
     }
 

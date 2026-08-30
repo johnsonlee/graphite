@@ -50,6 +50,7 @@ internal const val API_PARAM_MODE = "mode"
 internal const val API_PARAM_PER_GRAPH_LIMIT = "perGraphLimit"
 internal const val API_PARAM_PATTERN = "pattern"
 internal const val API_PARAM_QUERY = "query"
+internal const val API_PARAM_TIMEOUT_MILLIS = "timeoutMs"
 
 internal const val API_ERROR_INVALID_NODE_ID = "Invalid node ID"
 internal const val API_ERROR_INVALID_NODE_ID_OPENAPI = "Invalid node id"

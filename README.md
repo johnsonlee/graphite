@@ -91,7 +91,7 @@ graphite serve --data /data/graphs \
   --graph billing:/data/billing-graph \
   --topology /rules/company-topology.cypher \
   --max-concurrent-cypher 4 \
-  --cypher-work-budget 1000000 \
+  --cypher-max-timeout-ms 60000 \
   --port 8080
 
 # Hot-load or replace a graph without restarting the server
@@ -287,20 +287,23 @@ A global discovery query belongs on `/api/cypher`. Enumerating `/api/graphs`
 and then calling `/api/graphs/{graphId}/cypher` for each entry performs
 client-side fan-out and repeats HTTP and Cypher parsing overhead.
 
-Cypher endpoints admit at most four executing queries by default and stop a
-query after 1,000,000 graph work units. Graph-node candidate inspections and materialized
-path elements consume work units. Configure these bounds with
-`--max-concurrent-cypher` and `--cypher-work-budget`. A rejected request returns
-HTTP 429 with `code` set to `cypher_concurrency_limit` or
-`cypher_work_budget_exceeded`. Result `LIMIT` controls returned rows; it does not
-replace this execution budget for aggregations that must scan before limiting.
-Streaming `Method` metadata reads poll cancellation but do not spend graph work
-units, so complete multi-graph method discovery does not depend on descriptor count.
+Cypher endpoints admit at most four executing queries by default and enforce a
+60-second maximum request timeout. Configure these bounds with
+`--max-concurrent-cypher` and `--cypher-max-timeout-ms`. Clients may request a
+shorter positive `timeoutMs` in the query string or JSON body; the effective
+timeout is the smaller of the client value and the server maximum. A timeout
+automatically cancels and interrupts the corresponding query, returning HTTP
+504 with `code` set to `cypher_query_timeout`. Concurrency rejection returns
+HTTP 429 with `code` set to `cypher_concurrency_limit`.
+
+`--cypher-work-budget` is deprecated and ignored. It remains accepted for
+command-line compatibility but no longer constrains server requests. Core
+library callers may still use `CypherExecutionBudget` directly.
 The `=~` operator preserves Java `Pattern` syntax, including backreferences,
 look-around, possessive quantifiers, character-class intersections, and Java's
-default line-terminator behavior. Budgeted execution polls cancellation through
+default line-terminator behavior. Server execution polls cancellation through
 the matcher's input without changing the accepted pattern language.
-An executing query is cancelled only when the server observes an actual connection close,
+An executing query is also cancelled when the server observes an actual connection close,
 TCP reset, or socket error. Jetty's connection idle clock is suspended while Cypher is
 executing, because a query can legitimately perform no socket I/O for longer than the
 connector's default 30-second idle timeout. A clean input FIN is not treated as cancellation:

@@ -736,32 +736,35 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `raw string match states enforce one aggregate graph memory bound`() {
+    fun `raw string match states evict least recently used entries within graph memory bound`() {
         val states = RawStringMatchStates(maxRetainedBytes = 512, maxEntries = 8)
         val property = StringPropertyKey(StringConstant::class.java, "value")
+        val firstKey =
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first")
+        val secondKey =
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "second")
+        val thirdKey =
+            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "third")
 
-        val first = states.stateFor(
-            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
-            stringCount = 40
-        )
-        val second = states.stateFor(
-            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "second"),
-            stringCount = 40
-        )
-        val overflow = states.stateFor(
-            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "third"),
-            stringCount = 40
-        )
+        val first = states.stateFor(firstKey, stringCount = 40)
+        val second = states.stateFor(secondKey, stringCount = 40)
 
         assertNotNull(first)
         assertNotNull(second)
-        assertNull(overflow)
+        assertTrue(states.stateFor(firstKey, stringCount = 40) === first)
+        val third = states.stateFor(thirdKey, stringCount = 40)
+        assertNotNull(third)
         assertEquals(2, states.size())
-        assertEquals(442L, states.retainedBytes())
-        assertTrue(states.stateFor(
-            RawStringMatchKey(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "first"),
-            stringCount = 40
-        ) === first)
+        assertEquals(440L, states.retainedBytes())
+        fun predicate(expected: String) = StringPropertyPredicate(
+            "value",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            expected
+        )
+        assertTrue(states.contains(StringConstant::class.java, predicate("first")))
+        assertTrue(!states.contains(StringConstant::class.java, predicate("second")))
+        assertTrue(states.contains(StringConstant::class.java, predicate("third")))
 
         val oversizedKeyStates = RawStringMatchStates(maxRetainedBytes = 256, maxEntries = 8)
         assertNull(oversizedKeyStates.stateFor(

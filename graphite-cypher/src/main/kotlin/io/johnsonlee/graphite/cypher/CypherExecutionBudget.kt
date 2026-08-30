@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 internal const val CANCELLATION_POLL_MASK = 1_023
 
@@ -38,18 +39,31 @@ class CypherCancellationSignal(
     private val checkObserver: (() -> Unit)? = null
 ) {
     private val cancelled = AtomicBoolean()
+    private val cancellation = AtomicReference<CypherQueryCancelledException?>()
 
     val isCancelled: Boolean get() = cancelled.get()
 
-    fun cancel(): Boolean = cancelled.compareAndSet(false, true)
+    fun cancel(): Boolean = cancel(CypherQueryCancelledException())
+
+    fun cancel(reason: CypherQueryCancelledException): Boolean {
+        if (!cancellation.compareAndSet(null, reason)) return false
+        cancelled.set(true)
+        return true
+    }
+
+    fun cancellationException(): CypherQueryCancelledException =
+        cancellation.get() ?: CypherQueryCancelledException()
 
     fun throwIfCancelled() {
         checkObserver?.invoke()
-        if (isCancelled) throw CypherQueryCancelledException()
+        if (isCancelled) throw cancellationException()
     }
 }
 
-class CypherQueryCancelledException : CancellationException("Cypher query cancelled")
+open class CypherQueryCancelledException(message: String = "Cypher query cancelled") : CancellationException(message)
+
+class CypherQueryTimeoutException(val timeoutMillis: Long) :
+    CypherQueryCancelledException("Cypher query timed out after $timeoutMillis ms")
 
 class CypherBudgetExceededException(
     val maxWorkUnits: Long
