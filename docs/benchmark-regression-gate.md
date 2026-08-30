@@ -255,7 +255,7 @@ serialization noise; larger size changes fail closed and require an explicit gat
 |---|---:|---:|
 | Build | 20% | 500 ms |
 | Save | 25% | 250 ms |
-| Mapped load | 30% | 150 ms |
+| Mapped load (median of 5) | 30% | 50 ms |
 | Query | 25% | 250 ms |
 | Full pipeline | 20% | 1,000 ms |
 | Sampled peak heap | Report only | 4 GiB process cap |
@@ -267,10 +267,10 @@ for repeatable phase regressions. Sampled peak heap is informational because a s
 sample varies with GC timing; the isolated 4 GiB process cap is the hard memory gate. Missing corpus
 output or a benchmark process failure blocks the gate.
 
-The mapped-load floor is 150 ms because an unchanged production tree showed a repeatable 120–123 ms
-base/candidate spread on GitHub-hosted runners. The 30% relative limit remains in place, while the
-full-pipeline gate, persisted-size tolerance, and exact graph-shape checks continue to catch material
-end-to-end or semantic regressions.
+Mapped loading is measured five times against the same persisted graph and compared by median. The
+marker also records the sample minimum, maximum, and count; the comparator fails closed unless both
+revisions use the exact five-sample protocol and the median lies inside a valid positive range. This
+removes single filesystem/mmap startup outliers without weakening the original 30% plus 50 ms gate.
 
 ## Gradle caching
 

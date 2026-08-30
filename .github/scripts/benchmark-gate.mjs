@@ -159,7 +159,7 @@ const LATENCY_RESOURCE_EVENT_METRICS = new Set([
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
-    { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 150, unit: "ms" },
+    { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 50, unit: "ms" },
     { key: "queryMs", label: "query", threshold: 25, minimum: 250, unit: "ms" },
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
     { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }
@@ -167,6 +167,7 @@ const LARGE_CORPUS_METRICS = [
 export const LARGE_CORPUS_EXPECTED_CORPORA = ["tika", "hive", "kotlin-compiler"];
 const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"];
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
+const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
 function finiteNumber(value) {
     if (value === null || value === undefined || value === "") return null;
@@ -1036,6 +1037,22 @@ export function compareLargeCorpus(baseLog, candidateLog) {
         }
 
         for (const [revision, measurement] of [["base", baseline], ["candidate", current]]) {
+            const sampleCount = finiteNumber(measurement.mappedLoadSamples);
+            const minimumLoad = finiteNumber(measurement.mappedLoadMinMs);
+            const medianLoad = finiteNumber(measurement.mappedLoadMs);
+            const maximumLoad = finiteNumber(measurement.mappedLoadMaxMs);
+            if (!Number.isSafeInteger(sampleCount) || sampleCount !== LARGE_CORPUS_MAPPED_LOAD_SAMPLES) {
+                errors.push(
+                    `${corpus}/${revision}: mappedLoadSamples must equal ${LARGE_CORPUS_MAPPED_LOAD_SAMPLES}`
+                );
+            }
+            if (minimumLoad === null || medianLoad === null || maximumLoad === null ||
+                minimumLoad <= 0 || medianLoad <= 0 || maximumLoad <= 0 ||
+                minimumLoad > medianLoad || medianLoad > maximumLoad
+            ) {
+                errors.push(`${corpus}/${revision}: invalid mapped-load sample distribution`);
+            }
+
             const phaseTotal = ["buildMs", "saveMs", "mappedLoadMs", "queryMs"]
                 .map((key) => finiteNumber(measurement[key]))
                 .reduce((sum, value) => value === null ? null : (sum === null ? null : sum + value), 0);
@@ -1125,6 +1142,7 @@ export function renderLargeCorpusReport(comparison) {
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
         "The exact corpus set and graph-shape counts must match; persisted size may vary by at most 4 KiB.",
+        "Mapped load is the median of five loads of the same persisted graph; min/max remain in the audit marker.",
         "Small absolute changes below the noise floor do not block.",
         "Suspected timing regressions must repeat in a reverse-order confirmation run.",
         "Sampled peak heap is informational because its single-run value depends on GC timing; OOM still blocks.",
@@ -1141,7 +1159,8 @@ export function renderLargeCorpusReport(comparison) {
         lines.push(
             `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${confirmation} | ${row.advisory ? "4 GiB cap" : `${row.threshold.toFixed(0)}%`} | ` +
+            `${confirmation} | ${row.advisory ? "4 GiB cap" :
+                `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`} | ` +
             `**${statusLabel(row)}** |`
         );
     }

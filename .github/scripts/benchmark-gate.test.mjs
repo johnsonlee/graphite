@@ -678,7 +678,10 @@ function corpusLine(corpus, overrides = {}) {
         persistedBytes: 100_000_000,
         buildMs: 10_000,
         saveMs: 2_000,
+        mappedLoadSamples: 5,
+        mappedLoadMinMs: 180,
         mappedLoadMs: 200,
+        mappedLoadMaxMs: 220,
         queryMs: 1_000,
         pipelineMs: 13_200,
         peakHeapBytes: 2_000 * 1024 * 1024,
@@ -716,22 +719,39 @@ test("large-corpus comparison blocks a material pipeline regression", () => {
     assert.match(renderLargeCorpusReport(comparison), /\*\*FAIL\*\*/);
 });
 
-test("large-corpus comparison ignores mapped-load changes at the measured absolute noise floor", () => {
-    const candidate = corpusLog({ hive: { mappedLoadMs: 350, pipelineMs: 13_350 } });
+test("large-corpus comparison ignores mapped-load changes at the absolute noise floor", () => {
+    const candidate = corpusLog({
+        hive: { mappedLoadMinMs: 210, mappedLoadMs: 250, mappedLoadMaxMs: 270, pipelineMs: 13_250 }
+    });
     const comparison = compareLargeCorpus(baseCorpusLog, candidate);
-    const mappedLoad = comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load");
 
     assert.equal(comparison.passed, true);
-    assert.equal(mappedLoad.minimum, 150);
-    assert.equal(mappedLoad.blocked, false);
+    assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load").blocked, false);
 });
 
-test("large-corpus comparison blocks mapped-load changes above the measured absolute noise floor", () => {
-    const candidate = corpusLog({ hive: { mappedLoadMs: 351, pipelineMs: 13_351 } });
+test("large-corpus comparison blocks a robust mapped-load median above the noise floor", () => {
+    const candidate = corpusLog({
+        hive: { mappedLoadMinMs: 240, mappedLoadMs: 280, mappedLoadMaxMs: 320, pipelineMs: 13_280 }
+    });
     const comparison = compareLargeCorpus(baseCorpusLog, candidate);
 
     assert.equal(comparison.passed, false);
     assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load").blocked, true);
+    assert.match(renderLargeCorpusReport(comparison), /median of five loads/);
+    assert.match(renderLargeCorpusReport(comparison), /30% \+ 50 ms/);
+});
+
+test("large-corpus comparison requires the five-sample mapped-load protocol", () => {
+    const wrongCount = corpusLog({ hive: { mappedLoadSamples: 3 } });
+    const invalidDistribution = corpusLog({ hive: { mappedLoadMinMs: 220, mappedLoadMaxMs: 180 } });
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, wrongCount).passed, false);
+    assert.match(compareLargeCorpus(baseCorpusLog, wrongCount).errors.join("\n"), /mappedLoadSamples must equal 5/);
+    assert.equal(compareLargeCorpus(baseCorpusLog, invalidDistribution).passed, false);
+    assert.match(
+        compareLargeCorpus(baseCorpusLog, invalidDistribution).errors.join("\n"),
+        /invalid mapped-load sample distribution/
+    );
 });
 
 test("large-corpus comparison reports sampled heap without blocking on GC noise", () => {

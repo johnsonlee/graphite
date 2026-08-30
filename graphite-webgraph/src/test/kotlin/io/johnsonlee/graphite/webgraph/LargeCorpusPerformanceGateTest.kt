@@ -21,6 +21,7 @@ import kotlin.test.assertTrue
 
 private const val FOUR_GIB_BYTES = 4L * 1024L * 1024L * 1024L
 private const val RECORD_PROPERTY = "large.corpus.record"
+private const val MAPPED_LOAD_SAMPLE_COUNT = 5
 
 data class CorpusBaseline(
     val id: String,
@@ -91,7 +92,10 @@ private data class GateMeasurement(
     val persistedBytes: Long,
     val buildMillis: Long,
     val saveMillis: Long,
+    val mappedLoadSampleCount: Int,
+    val mappedLoadMinMillis: Long,
     val mappedLoadMillis: Long,
+    val mappedLoadMaxMillis: Long,
     val queryMillis: Long,
     val pipelineMillis: Long,
     val peakHeapBytes: Long
@@ -167,21 +171,31 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             closeQuietly(sourceGraph)
             sourceGraph = null
 
-            val loadStart = System.nanoTime()
-            loadedGraph = GraphStore.loadMapped(output)
-            val mappedLoadMillis = elapsedMillis(loadStart)
+            val mappedLoadSamples = LongArray(MAPPED_LOAD_SAMPLE_COUNT)
+            repeat(MAPPED_LOAD_SAMPLE_COUNT) { index ->
+                val loadStart = System.nanoTime()
+                val sampleGraph = GraphStore.loadMapped(output)
+                mappedLoadSamples[index] = elapsedMillis(loadStart)
+                if (index == mappedLoadSamples.lastIndex) {
+                    loadedGraph = sampleGraph
+                } else {
+                    closeQuietly(sampleGraph)
+                }
+            }
+            val mappedLoadMillis = mappedLoadSamples.sorted()[mappedLoadSamples.size / 2]
+            val queryGraph = checkNotNull(loadedGraph) { "Mapped graph sample was not retained" }
 
             val queryStart = System.nanoTime()
-            val loadedCallSites = loadedGraph.query(CALL_SITE_COUNT_QUERY)
-            val loadedPropertyRows = loadedGraph.query(PROPERTY_QUERY).rows
-            val loadedRelationshipRows = loadedGraph.query(RELATIONSHIP_QUERY).rows
+            val loadedCallSites = queryGraph.query(CALL_SITE_COUNT_QUERY)
+            val loadedPropertyRows = queryGraph.query(PROPERTY_QUERY).rows
+            val loadedRelationshipRows = queryGraph.query(RELATIONSHIP_QUERY).rows
             val queryMillis = elapsedMillis(queryStart)
             val mappedCallSites = (loadedCallSites.rows.single()["count"] as Number).toLong()
-            val mappedNodes = loadedGraph.nodeCount(Node::class.java)
-                ?: loadedGraph.nodes(Node::class.java).count().toLong()
-            val mappedMethods = loadedGraph.methodCount() ?: loadedGraph.methods(MethodPattern()).count().toLong()
-            val mappedEdges = loadedGraph.edgeCount()
-                ?: loadedGraph.nodes(Node::class.java).sumOf { node -> loadedGraph.outgoing(node.id).count().toLong() }
+            val mappedNodes = queryGraph.nodeCount(Node::class.java)
+                ?: queryGraph.nodes(Node::class.java).count().toLong()
+            val mappedMethods = queryGraph.methodCount() ?: queryGraph.methods(MethodPattern()).count().toLong()
+            val mappedEdges = queryGraph.edgeCount()
+                ?: queryGraph.nodes(Node::class.java).sumOf { node -> queryGraph.outgoing(node.id).count().toLong() }
             assertEquals(nodes, mappedNodes, "Mapped graph must preserve node count for ${baseline.id}")
             assertEquals(callSites, mappedCallSites, "Mapped query must preserve call-site count for ${baseline.id}")
             assertEquals(methods, mappedMethods, "Mapped graph must preserve method count for ${baseline.id}")
@@ -206,7 +220,10 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 persistedBytes = persistedBytes,
                 buildMillis = buildMillis,
                 saveMillis = saveMillis,
+                mappedLoadSampleCount = mappedLoadSamples.size,
+                mappedLoadMinMillis = mappedLoadSamples.min(),
                 mappedLoadMillis = mappedLoadMillis,
+                mappedLoadMaxMillis = mappedLoadSamples.max(),
                 queryMillis = queryMillis,
                 pipelineMillis = buildMillis + saveMillis + mappedLoadMillis + queryMillis,
                 peakHeapBytes = sampler.peakBytes()
@@ -229,7 +246,10 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "persistedBytes=$persistedBytes",
         "buildMs=$buildMillis",
         "saveMs=$saveMillis",
+        "mappedLoadSamples=$mappedLoadSampleCount",
+        "mappedLoadMinMs=$mappedLoadMinMillis",
         "mappedLoadMs=$mappedLoadMillis",
+        "mappedLoadMaxMs=$mappedLoadMaxMillis",
         "queryMs=$queryMillis",
         "pipelineMs=$pipelineMillis",
         "peakHeapBytes=$peakHeapBytes"
