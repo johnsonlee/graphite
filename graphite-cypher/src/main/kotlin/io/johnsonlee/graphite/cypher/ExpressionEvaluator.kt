@@ -196,7 +196,7 @@ class ExpressionEvaluator private constructor(
     }
 
     private fun compareValues(a: Any, b: Any): Int = when {
-        a is Number && b is Number -> toDouble(a).compareTo(toDouble(b))
+        a is Number && b is Number -> compareCypherNumbers(a, b)
         a is String && b is String -> a.compareTo(b)
         a is Boolean && b is Boolean -> a.compareTo(b)
         a is QualifiedNode && b is QualifiedNode ->

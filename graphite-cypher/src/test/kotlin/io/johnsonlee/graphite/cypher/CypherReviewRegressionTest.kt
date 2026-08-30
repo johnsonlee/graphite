@@ -40,6 +40,12 @@ class CypherReviewRegressionTest {
             "different",
             executor.singleValue("RETURN CASE null WHEN true THEN \"same\" ELSE \"different\" END AS value")
         )
+        val comparison = executor.execute(
+            "RETURN 9007199254740993 > 9007199254740992 AS greater, " +
+                "9007199254740992 < 9007199254740993 AS less"
+        ).rows.single()
+        assertEquals(true, comparison["greater"])
+        assertEquals(true, comparison["less"])
     }
 
     @Test
@@ -127,6 +133,30 @@ class CypherReviewRegressionTest {
                 "MATCH (b)-[s:DATAFLOW]-(c) RETURN c.value AS value"
         )
         assertEquals(listOf(mapOf("value" to 1)), separateMatches.rows)
+    }
+
+    @Test
+    fun `limit pushdown does not cross pattern joins or later matches`() {
+        val deadEnd = IntConstant(NodeId.next(), 1)
+        val source = IntConstant(NodeId.next(), 2)
+        val target = IntConstant(NodeId.next(), 3)
+        val graph = DefaultGraph.Builder()
+            .addNode(deadEnd)
+            .addNode(source)
+            .addNode(target)
+            .addEdge(DataFlowEdge(source.id, target.id, DataFlowKind.ASSIGN))
+            .build()
+        val executor = CypherExecutor(graph)
+
+        val joinedPatterns = executor.execute(
+            "MATCH (a:IntConstant), (a)-[:DATAFLOW]->(b) RETURN a.value AS value LIMIT 1"
+        )
+        val separateMatches = executor.execute(
+            "MATCH (a:IntConstant) MATCH (a)-[:DATAFLOW]->(b) RETURN a.value AS value LIMIT 1"
+        )
+
+        assertEquals(listOf(mapOf("value" to 2)), joinedPatterns.rows)
+        assertEquals(listOf(mapOf("value" to 2)), separateMatches.rows)
     }
 
     @Test

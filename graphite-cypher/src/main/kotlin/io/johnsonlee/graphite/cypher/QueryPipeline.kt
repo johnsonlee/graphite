@@ -23,7 +23,6 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
-import java.math.BigDecimal
 import java.util.PriorityQueue
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
@@ -3074,15 +3073,7 @@ class QueryPipeline private constructor(
     }
 
     @Suppress("ReturnCount")
-    private fun compareNumbers(a: Number, b: Number): Int {
-        if (a.isIntegralNumber() && b.isIntegralNumber()) return a.toLong().compareTo(b.toLong())
-        val aDouble = a.toDouble()
-        val bDouble = b.toDouble()
-        if (aDouble.isNaN() || bDouble.isNaN()) return compareFloatingPoint(aDouble, bDouble)
-        if (!aDouble.isFinite() || !bDouble.isFinite()) return aDouble.compareTo(bDouble)
-        if (a.isFloatingPointNumber() && b.isFloatingPointNumber()) return aDouble.compareTo(bDouble)
-        return BigDecimal(a.toString()).compareTo(BigDecimal(b.toString()))
-    }
+    private fun compareNumbers(a: Number, b: Number): Int = compareCypherNumbers(a, b)
 
     private fun compareFloatingPoint(a: Double, b: Double): Int = when {
         a.isNaN() && b.isNaN() -> 0
@@ -3151,6 +3142,8 @@ class QueryPipeline private constructor(
     private fun computeEarlyLimit(clauses: List<CypherClause>): Int? {
         val matchIndex = clauses.indexOfFirst { it is CypherClause.Match && !it.optional }
         if (matchIndex < 0) return null
+        val match = clauses[matchIndex] as CypherClause.Match
+        if (match.patterns.size != 1 || match.where != null) return null
 
         val limitIndex = clauses.indexOfFirst { it is CypherClause.Limit }
         if (limitIndex <= matchIndex) return null
@@ -3161,6 +3154,7 @@ class QueryPipeline private constructor(
             when (clause) {
                 is CypherClause.Return -> !clause.items.any { containsAggregation(it.expression) } && !clause.distinct
                 is CypherClause.Where,
+                is CypherClause.Match,
                 is CypherClause.With,
                 is CypherClause.OrderBy,
                 is CypherClause.Skip,
@@ -3190,11 +3184,6 @@ class QueryPipeline private constructor(
 private fun Number.toCypherInt(): Int = toLong()
     .coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
     .toInt()
-
-private fun Number.isIntegralNumber(): Boolean =
-    this is Byte || this is Short || this is Int || this is Long
-
-private fun Number.isFloatingPointNumber(): Boolean = this is Float || this is Double
 
 // ========================================================================
 // Pattern variable extraction

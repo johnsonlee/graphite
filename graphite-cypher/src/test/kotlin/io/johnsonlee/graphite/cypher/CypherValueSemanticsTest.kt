@@ -7,6 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class CypherValueSemanticsTest {
     private lateinit var executor: CypherExecutor
@@ -91,6 +92,15 @@ class CypherValueSemanticsTest {
         assertEquals(false, requiresCypherNormalization(map))
         assertEquals(true, requiresCypherNormalization(listOf("value", 1)))
         assertEquals(true, requiresCypherNormalization(mapOf("key" to listOf(1))))
+    }
+
+    @Test
+    fun `numeric comparison is exact and orders nonfinite values explicitly`() {
+        assertTrue(compareCypherNumbers(9007199254740993L, 9007199254740992L) > 0)
+        assertEquals(0, compareCypherNumbers(1, 1.0))
+        assertTrue(compareCypherNumbers(1.5, 2) < 0)
+        assertTrue(compareCypherNumbers(Double.POSITIVE_INFINITY, Long.MAX_VALUE) > 0)
+        assertTrue(compareCypherNumbers(Double.NEGATIVE_INFINITY, Long.MIN_VALUE) < 0)
     }
 
     @Test

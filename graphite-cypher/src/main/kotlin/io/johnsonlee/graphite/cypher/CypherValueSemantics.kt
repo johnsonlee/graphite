@@ -22,6 +22,19 @@ private fun cypherNumbersEqual(left: Number, right: Number): Boolean {
     }
 }
 
+internal fun compareCypherNumbers(left: Number, right: Number): Int {
+    if (left.isIntegralNumber() && right.isIntegralNumber()) {
+        return left.toLong().compareTo(right.toLong())
+    }
+    val leftDouble = left.toDouble()
+    val rightDouble = right.toDouble()
+    return if (!leftDouble.isFinite() || !rightDouble.isFinite()) {
+        leftDouble.compareTo(rightDouble)
+    } else {
+        left.toCypherBigDecimal().compareTo(right.toCypherBigDecimal())
+    }
+}
+
 private fun Number.toCypherBigDecimal(): BigDecimal = if (isIntegralNumber()) {
     BigDecimal.valueOf(toLong())
 } else {
