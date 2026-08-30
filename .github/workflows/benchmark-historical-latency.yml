@@ -1,0 +1,436 @@
+name: Historical wrapped-query latency
+
+on:
+  schedule:
+  - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: historical-wrapped-query-latency
+  cancel-in-progress: true
+
+env:
+  JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  PRE_PR_95_BASELINE_SHA: 44b57562f2b3d0c88882a9002bdc488e05e5d7a7
+
+jobs:
+  build-jmh:
+    name: build-historical-jmh-${{ matrix.revision }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [fixed, current]
+
+    steps:
+    - name: Checkout current benchmark harness
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        path: gate
+        persist-credentials: false
+
+    - name: Checkout benchmark revision
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ matrix.revision == 'fixed' && env.PRE_PR_95_BASELINE_SHA || github.sha }}
+        path: source
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Install current historical harness
+      run: |
+        for HARNESS in \
+          BenchmarkCorpus.kt \
+          WrappedDiscoveryLatencyBenchmark.kt \
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
+          WrappedDiscoveryResourceBenchmark.kt; do
+          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          test ! -L "source/${SOURCE}"
+          rm -f -- "source/${SOURCE}"
+          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
+          cmp "gate/${SOURCE}" "source/${SOURCE}"
+        done
+
+    - name: Build historical JMH JAR
+      run: |
+        source/gradlew -p source \
+          -I "${PWD}/gate/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :webgraph:testClasses :webgraph:jmhJar --no-daemon
+        mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        bash gate/.github/scripts/verify-jmh-jar-isolation.sh \
+          source/graphite-webgraph "${JARS[0]}"
+        mkdir -p jmh-artifact
+        install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
+        cd jmh-artifact
+        sha256sum "${{ matrix.revision }}-webgraph-jmh.jar" \
+          > "${{ matrix.revision }}-webgraph-jmh.jar.sha256"
+
+    - name: Upload historical JMH JAR
+      uses: actions/upload-artifact@v7
+      with:
+        name: historical-jmh-${{ matrix.revision }}-${{ github.run_id }}
+        path: jmh-artifact/
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 2
+
+  prepare-fixtures:
+    name: prepare-historical-fixtures
+    needs: [build-jmh]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout current revision
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        path: current
+        persist-credentials: false
+
+    - name: Restore or save persisted fixture graphs
+      id: fixture-cache
+      uses: actions/cache@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/graphite-core/src/main/**', 'current/graphite-sootup/src/main/**', 'current/graphite-webgraph/src/main/**', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Detect complete persisted fixture cache
+      id: fixture-cache-state
+      run: |
+        READY=true
+        test -f fixture-graphs/.complete || READY=false
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}" || READY=false
+        done
+        echo "ready=${READY}" >> "${GITHUB_OUTPUT}"
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      if: steps.fixture-cache-state.outputs.ready != 'true'
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Download current historical JMH JAR
+      if: steps.fixture-cache-state.outputs.ready != 'true'
+      uses: actions/download-artifact@v8
+      with:
+        name: historical-jmh-current-${{ github.run_id }}
+        path: jmh-jars/current
+
+    - name: Resolve fixture source JARs
+      if: steps.fixture-cache-state.outputs.ready != 'true'
+      run: current/gradlew -p current :webgraph:prepareBenchmarkFixtures --no-daemon
+
+    - name: Prepare all real fixture graphs
+      if: steps.fixture-cache-state.outputs.ready != 'true'
+      run: |
+        (cd jmh-jars/current && sha256sum -c current-webgraph-jmh.jar.sha256)
+        CURRENT_JAR=${PWD}/jmh-jars/current/current-webgraph-jmh.jar
+        FIXTURE_DIR="${PWD}/current/graphite-webgraph/build/benchmark-fixtures"
+        ANDROID_JAR=$(find "${FIXTURE_DIR}" -name 'android-all-*.jar' -print -quit)
+        TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
+        HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
+        KOTLIN_JAR=$(find "${FIXTURE_DIR}" -name 'kotlin-compiler-embeddable-*.jar' -print -quit)
+        test -n "${ANDROID_JAR}" && test -n "${TIKA_JAR}" && test -n "${HIVE_JAR}" && \
+          test -n "${KOTLIN_JAR}" && test -f "${CURRENT_JAR}"
+        mkdir -p fixture-graphs
+        for CORPUS in android tika hive kotlin-compiler; do
+          SOURCE_TMP=$(mktemp -d "${RUNNER_TEMP}/graphite-source-${CORPUS}-XXXXXX")
+          java -Xmx4g -Djava.io.tmpdir="${SOURCE_TMP}" \
+            -Dandroid.jar.path="${ANDROID_JAR}" \
+            -Dtika.jar.path="${TIKA_JAR}" \
+            -Dhive.jar.path="${HIVE_JAR}" \
+            -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+            -cp "${CURRENT_JAR}" \
+            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkGraphPreparation \
+            "${CORPUS}" "${PWD}/fixture-graphs/${CORPUS}"
+          rm -rf -- "${SOURCE_TMP}"
+        done
+        java -Xmx4g -cp "${CURRENT_JAR}" \
+          io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkDistributionCalibration \
+          "${PWD}/fixture-graphs"
+        touch fixture-graphs/.complete
+
+    - name: Verify persisted fixture graphs
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}"
+        done
+
+  historical-latency-shard:
+    name: historical-latency-${{ matrix.shard }}
+    needs: [build-jmh, prepare-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - shard: synthetic-1
+          real: false
+          correctness: false
+          parameters: '-p graphCount=1 -wi 5 -i 6'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-4
+          real: false
+          correctness: false
+          parameters: '-p graphCount=4'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-16
+          real: false
+          correctness: false
+          parameters: '-p graphCount=16'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: synthetic-64
+          real: false
+          correctness: false
+          parameters: '-p graphCount=64'
+          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
+        - shard: real-a
+          real: true
+          correctness: true
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(zeroHitBroadContainsCaseInsensitiveDiscovery|denseDistributedMethodContainsCaseInsensitiveDiscovery)'
+        - shard: real-b
+          real: true
+          correctness: false
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(earlyGraphClassPrefixCaseInsensitiveDiscovery|middleGraphsClassPrefixCaseInsensitiveDiscovery)'
+        - shard: real-c
+          real: true
+          correctness: false
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(lateGraphClassPrefixCaseInsensitiveDiscovery|broadlyDistributedClassPrefixCaseInsensitiveDiscovery)'
+        - shard: real-d
+          real: true
+          correctness: false
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.(firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery|skewedMixedClassMethodOperatorCaseInsensitiveDiscovery)'
+        - shard: real-36
+          real: true
+          correctness: false
+          parameters: ''
+          filter: 'io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs'
+
+    steps:
+    - name: Checkout current gate code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        path: current
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Download fixed historical JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: historical-jmh-fixed-${{ github.run_id }}
+        path: jmh-jars/fixed
+
+    - name: Download current historical JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: historical-jmh-current-${{ github.run_id }}
+        path: jmh-jars/current
+
+    - name: Verify historical JMH artifacts
+      run: |
+        for REVISION in fixed current; do
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-webgraph-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar" >/dev/null
+        done
+
+    - name: Restore persisted fixture graphs
+      if: matrix.real
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('current/gradle/libs.versions.toml', 'current/gradle/wrapper/gradle-wrapper.properties', 'current/settings.gradle.kts', 'current/**/build.gradle.kts', 'current/graphite-core/src/main/**', 'current/graphite-sootup/src/main/**', 'current/graphite-webgraph/src/main/**', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'current/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Verify persisted fixture graphs
+      if: matrix.real
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -d "fixture-graphs/${CORPUS}"
+        done
+
+    - name: Verify historical and current real-fixture query results
+      if: matrix.correctness
+      run: |
+        set -o pipefail
+        mkdir -p benchmark-results
+        for REVISION in fixed current; do
+          EXTRA_JVM_ARGS=()
+          if [ "${REVISION}" = fixed ]; then
+            EXTRA_JVM_ARGS=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
+          fi
+          java -Xmx8g "${EXTRA_JVM_ARGS[@]}" \
+            -cp "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar" \
+            io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
+            "${PWD}/fixture-graphs" \
+            | tee "benchmark-results/${REVISION}-fixture-correctness.log"
+          grep '^ALL_FIXTURE_QUERY_RESULT' \
+            "benchmark-results/${REVISION}-fixture-correctness.log" \
+            > "benchmark-results/${REVISION}-fixture-correctness.txt"
+          test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 9
+        done
+        cmp benchmark-results/fixed-fixture-correctness.txt \
+          benchmark-results/current-fixture-correctness.txt
+
+    - name: Benchmark historical baseline and current main
+      env:
+        BENCHMARK_FILTER: ${{ matrix.filter }}
+        BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
+        SHARD: ${{ matrix.shard }}
+      run: |
+        mkdir -p benchmark-results
+        GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+          -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+        PARAM_ARGS=()
+        if [ -n "${BENCHMARK_PARAMETERS}" ]; then
+          read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
+        fi
+        java -jar jmh-jars/fixed/fixed-webgraph-jmh.jar \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+          -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
+        java -jar jmh-jars/current/current-webgraph-jmh.jar \
+          "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/current-latency-${SHARD}.json"
+
+    - name: Enforce retained historical speedup
+      env:
+        BENCHMARK_FILTER: ${{ matrix.filter }}
+        BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
+        SHARD: ${{ matrix.shard }}
+      run: |
+        if node current/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
+          --fixed "benchmark-results/fixed-latency-${SHARD}.json" \
+          --base "benchmark-results/current-latency-${SHARD}.json" \
+          --candidate "benchmark-results/current-latency-${SHARD}.json" \
+          --minimum-speedup 50 \
+          --threshold 15 \
+          --allow-subset \
+          --report "benchmark-results/initial-latency-report-${SHARD}.md" \
+          --status "benchmark-results/initial-latency-status-${SHARD}.json"; then
+          mv "benchmark-results/initial-latency-report-${SHARD}.md" \
+            "benchmark-results/latency-report-${SHARD}.md"
+          mv "benchmark-results/initial-latency-status-${SHARD}.json" \
+            "benchmark-results/latency-status-${SHARD}.json"
+        else
+          GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+            -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+            -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+            -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+          FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
+            -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
+          PARAM_ARGS=()
+          if [ -n "${BENCHMARK_PARAMETERS}" ]; then
+            read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
+          fi
+          java -jar jmh-jars/current/current-webgraph-jmh.jar \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/current-latency-confirmation-${SHARD}.json"
+          java -jar jmh-jars/fixed/fixed-webgraph-jmh.jar \
+            "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
+            -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
+          node current/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
+            --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
+            --fixed "benchmark-results/fixed-latency-confirmation-${SHARD}.json" \
+            --base "benchmark-results/current-latency-confirmation-${SHARD}.json" \
+            --candidate "benchmark-results/current-latency-confirmation-${SHARD}.json" \
+            --minimum-speedup 50 \
+            --threshold 15 \
+            --allow-subset \
+            --report "benchmark-results/latency-report-${SHARD}.md" \
+            --status "benchmark-results/latency-status-${SHARD}.json"
+        fi
+
+    - name: Upload historical latency shard
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: historical-latency-${{ matrix.shard }}-${{ github.run_id }}
+        path: benchmark-results/
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 30
+
+  historical-latency:
+    name: historical-wrapped-query-latency
+    if: always()
+    needs: [historical-latency-shard]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout current gate code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        path: current
+        persist-credentials: false
+
+    - name: Download historical shard results
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        pattern: historical-latency-*-${{ github.run_id }}
+        path: benchmark-results
+        merge-multiple: true
+
+    - name: Combine historical latency results
+      run: |
+        node current/.github/scripts/benchmark-gate.mjs combine-latency-shards \
+          --directory benchmark-results \
+          --report benchmark-results/historical-latency-report.md \
+          --status benchmark-results/historical-latency-status.json
+        test "${{ needs.historical-latency-shard.result }}" = success
+        jq -e '.passed == true' benchmark-results/historical-latency-status.json >/dev/null
+
+    - name: Upload historical latency report
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-historical-latency-${{ github.run_id }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 30

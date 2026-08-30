@@ -7,6 +7,110 @@ import { pathToFileURL } from "node:url";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
+export const BENCHMARK_COVERAGE_DOMAINS = [
+    {
+        name: "Semantic correctness",
+        components: ["method-compatibility"],
+        missing: ["universal-correctness-manifest", "isolated-workload-identity"]
+    },
+    {
+        name: "Latency regression",
+        components: [
+            "method-level",
+            "budgeted-collection",
+            "budgeted-mapped-string",
+            "wrapped-query-latency"
+        ],
+        missing: ["cross-graph-dataflow-latency", "storage-load-stage-latency"]
+    },
+    {
+        name: "Throughput and capacity",
+        components: ["cypher-capacity"],
+        missing: ["sustained-throughput", "saturation-capacity", "multi-client-capacity"]
+    },
+    {
+        name: "Memory and resources",
+        components: ["explorer", "wrapped-query-resources"],
+        missing: ["allocation-per-operation", "memory-leak", "disk-and-temporary-space-budget"]
+    },
+    {
+        name: "Scalability",
+        components: [],
+        missing: ["graph-build-scaling", "corpus-load-scaling", "concurrent-user-scaling"]
+    },
+    {
+        name: "Build and persistence lifecycle",
+        components: ["large-corpus"],
+        missing: ["dedicated-graph-build", "dedicated-save-load", "persisted-mapped-query", "persistence-migration"]
+    }
+];
+
+export const BENCHMARK_COMPONENTS = [
+    {
+        name: "method-level",
+        report: "method-report.md",
+        status: "method-status.json",
+        coverage: "partial",
+        gap: "Low sample count and hosted-runner variance."
+    },
+    {
+        name: "explorer",
+        report: "explorer-report.md",
+        status: "explorer-status.json",
+        coverage: "partial",
+        gap: "Four fixture scenarios; no allocation or leak proof."
+    },
+    {
+        name: "method-compatibility",
+        report: "method-compatibility-report.md",
+        status: "method-compatibility-status.json",
+        coverage: "partial",
+        gap: "Fixed discovery matrix only; no universal semantic coverage."
+    },
+    {
+        name: "cypher-capacity",
+        report: "cypher-capacity-report.md",
+        status: "cypher-capacity-status.json",
+        coverage: "partial",
+        gap: "One composite point and limited concurrency shapes."
+    },
+    {
+        name: "budgeted-collection",
+        report: "budgeted-collection-report.md",
+        status: "budgeted-collection-status.json",
+        coverage: "partial",
+        gap: "Fixed historical baseline; no current-base comparison."
+    },
+    {
+        name: "budgeted-mapped-string",
+        report: "budgeted-string-report.md",
+        status: "budgeted-string-status.json",
+        coverage: "partial",
+        gap: "Fixed historical baseline; no current-base comparison."
+    },
+    {
+        name: "large-corpus",
+        report: "large-corpus-report.md",
+        status: "large-corpus-status.json",
+        coverage: "partial",
+        gap: "Three fixed corpora; stage rows do not provide universal corpus or lifecycle coverage."
+    },
+    {
+        name: "wrapped-query-latency",
+        report: "latency-report.md",
+        status: "latency-status.json",
+        coverage: "complete",
+        gap: "No gate-specific gap identified."
+    },
+    {
+        name: "wrapped-query-resources",
+        report: "latency-resource-report.md",
+        status: "latency-resource-status.json",
+        coverage: "partial",
+        gap: "Exact point probes only; no long-duration leak or soak proof."
+    }
+];
+
 const MIB = 1024 * 1024;
 const SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS = 0.5;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
@@ -63,6 +167,7 @@ const LARGE_CORPUS_METRICS = [
 export const LARGE_CORPUS_EXPECTED_CORPORA = ["tika", "hive", "kotlin-compiler"];
 const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"];
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
+const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
 function finiteNumber(value) {
     if (value === null || value === undefined || value === "") return null;
@@ -218,10 +323,8 @@ export function compareJmh(
     allowZeroBase = false
 ) {
     const errors = [];
-    const base = new Map();
-    const candidate = new Map();
-    for (const result of baseResults) base.set(benchmarkKey(result), result);
-    for (const result of candidateResults) candidate.set(benchmarkKey(result), result);
+    const base = resultMap(baseResults, "base", errors);
+    const candidate = resultMap(candidateResults, "candidate", errors);
 
     const allKeys = [...new Set([...base.keys(), ...candidate.keys()])].sort();
     const rows = [];
@@ -378,9 +481,9 @@ export function compareLatencyBaseline(
     expectedKeys = null
 ) {
     const regression = compareJmh(baseResults, candidateResults, regressionThreshold);
-    const fixed = new Map(fixedResults.map((result) => [benchmarkKey(result), result]));
-    const candidate = new Map(candidateResults.map((result) => [benchmarkKey(result), result]));
     const errors = [...regression.errors];
+    const fixed = resultMap(fixedResults, "fixed baseline", errors);
+    const candidate = new Map(candidateResults.map((result) => [benchmarkKey(result), result]));
     const regressionRows = new Map(regression.rows.map((row) => [row.key, row]));
     const rows = [];
 
@@ -455,6 +558,89 @@ export function compareLatencyBaseline(
 
     if (rows.length === 0) errors.push("No comparable latency benchmarks were found");
     return {
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
+export function compareLatencyAnchor(
+    anchorResults,
+    baseResults,
+    candidateResults,
+    regressionThreshold = 15,
+    anchorThreshold = 50,
+    expectedKeys = null
+) {
+    const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold);
+    const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold);
+    const errors = [
+        ...baseComparison.errors,
+        ...anchorComparison.errors.map((error) => `known-good anchor: ${error}`)
+    ];
+    for (const [revision, results] of [
+        ["known-good anchor", anchorResults],
+        ["PR base", baseResults],
+        ["candidate", candidateResults]
+    ]) {
+        for (const result of results) {
+            const score = finiteNumber(result.primaryMetric?.score);
+            if (score === null || score <= 0) {
+                errors.push(`${revision}/${benchmarkKey(result)}: latency score must be finite and positive`);
+            }
+        }
+    }
+    const baseRows = new Map(baseComparison.rows.map((row) => [row.key, row]));
+    const anchorRows = new Map(anchorComparison.rows.map((row) => [row.key, row]));
+    const keys = expectedKeys === null
+        ? [...new Set([...baseRows.keys(), ...anchorRows.keys()])].sort()
+        : [...expectedKeys].sort();
+    if (expectedKeys !== null) {
+        const expected = new Set(expectedKeys);
+        for (const [revision, results] of [
+            ["known-good anchor", anchorResults],
+            ["PR base", baseResults],
+            ["candidate", candidateResults]
+        ]) {
+            const actual = new Set(results.map(benchmarkKey));
+            for (const key of expected) {
+                if (!actual.has(key)) errors.push(`${revision}: missing expected latency benchmark ${key}`);
+            }
+            for (const key of actual) {
+                if (!expected.has(key)) errors.push(`${revision}: unexpected latency benchmark ${key}`);
+            }
+        }
+    }
+
+    const rows = [];
+    for (const key of keys) {
+        const baseRow = baseRows.get(key);
+        const anchorRow = anchorRows.get(key);
+        if (baseRow === undefined || anchorRow === undefined) {
+            errors.push(`${key}: missing from anchor, PR base, or candidate results`);
+            continue;
+        }
+        const synthetic = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
+        const baseNoise = synthetic && baseRow.unit === "ms/op" &&
+            baseRow.candidateScore - baseRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
+        const anchorNoise = synthetic && anchorRow.unit === "ms/op" &&
+            anchorRow.candidateScore - anchorRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
+        rows.push({
+            ...baseRow,
+            anchorScore: anchorRow.baseScore,
+            anchorDelta: anchorRow.delta,
+            anchorThreshold: anchorRow.threshold,
+            anchorConfidenceSeparated: anchorRow.confidenceSeparated,
+            anchorBlocked: anchorRow.blocked && !anchorNoise,
+            baseBelowAbsoluteNoiseFloor: baseNoise,
+            anchorBelowAbsoluteNoiseFloor: anchorNoise,
+            absoluteNoiseFloor: synthetic ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
+            blocked: (baseRow.blocked && !baseNoise) || (anchorRow.blocked && !anchorNoise)
+        });
+    }
+    if (rows.length === 0) errors.push("No comparable latency benchmarks were found");
+    return {
+        comparison: "anchor",
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         rows
@@ -619,6 +805,70 @@ export function confirmLatencyBaseline(initial, confirmation) {
     };
 }
 
+export function confirmLatencyAnchor(initial, confirmation) {
+    const errors = [
+        ...initial.errors,
+        ...confirmation.errors.map((error) => `confirmation: ${error}`)
+    ];
+    const confirmationRows = new Map(confirmation.rows.map((row) => [row.key, row]));
+    const rows = initial.rows.map((row) => {
+        if (!row.blocked) return row;
+        const retry = confirmationRows.get(row.key);
+        if (retry === undefined) {
+            errors.push(`${row.key}: missing from anchor confirmation results`);
+            return row;
+        }
+        return {
+            ...row,
+            confirmation: {
+                anchorScore: retry.anchorScore,
+                baseScore: retry.baseScore,
+                candidateScore: retry.candidateScore,
+                anchorDelta: retry.anchorDelta,
+                delta: retry.delta,
+                blocked: retry.blocked
+            },
+            blocked: retry.blocked
+        };
+    });
+    return {
+        comparison: "anchor",
+        passed: errors.length === 0 && rows.every((row) => !row.blocked),
+        errors,
+        rows
+    };
+}
+
+export function renderLatencyAnchorReport(comparison) {
+    const lines = [
+        "### Wrapped case-insensitive query latency",
+        "",
+        "The candidate may not regress more than 50% against the pinned known-good anchor or 15%",
+        "against the current PR base. Suspected failures must repeat in reverse execution order.",
+        "Synthetic changes below the 0.5 ms absolute noise floor remain informational.",
+        "",
+        "| Benchmark | Known-good | PR base | PR | Regression vs anchor | Regression vs base | Confirmation | Gate |",
+        "|---|---:|---:|---:|---:|---:|---:|:---:|"
+    ];
+    for (const row of comparison.rows) {
+        const confirmation = row.confirmation === undefined
+            ? "-"
+            : `${formatScore(row.confirmation.anchorScore)} / ${formatScore(row.confirmation.baseScore)} / ` +
+                `${formatScore(row.confirmation.candidateScore)} ${row.unit} ` +
+                `(${formatDelta(row.confirmation.anchorDelta)} anchor; ${formatDelta(row.confirmation.delta)} base)`;
+        lines.push(
+            `| \`${shortBenchmarkName(row.key)}\` | ${formatScore(row.anchorScore)} ${row.unit} | ` +
+            `${formatScore(row.baseScore)} ${row.unit} | ${formatScore(row.candidateScore)} ${row.unit} | ` +
+            `${formatDelta(row.anchorDelta)} | ${formatDelta(row.delta)} | ${confirmation} | ` +
+            `**${row.blocked ? "FAIL" : "PASS"}** |`
+        );
+    }
+    if (comparison.errors.length > 0) {
+        lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    }
+    return `${lines.join("\n")}\n`;
+}
+
 export function renderLatencyBaselineReport(comparison) {
     const lines = [
         "### Wrapped case-insensitive query latency",
@@ -655,6 +905,7 @@ export function combineLatencyShards(directory) {
     const errors = [];
     const rows = [];
     const seenKeys = new Set();
+    const comparisons = new Set();
     for (const shard of LATENCY_EXPECTED_SHARDS) {
         const statusFile = path.join(directory, `latency-status-${shard}.json`);
         if (!fs.existsSync(statusFile)) {
@@ -662,6 +913,7 @@ export function combineLatencyShards(directory) {
             continue;
         }
         const status = readJson(statusFile);
+        comparisons.add(status.comparison ?? "baseline");
         for (const error of status.errors ?? []) errors.push(`${shard}: ${error}`);
         for (const row of status.rows ?? []) {
             if (seenKeys.has(row.key)) {
@@ -682,7 +934,9 @@ export function combineLatencyShards(directory) {
         if (!expected.has(key)) errors.push(`combined latency results: unexpected benchmark ${key}`);
     }
     rows.sort((left, right) => left.key.localeCompare(right.key));
+    if (comparisons.size !== 1) errors.push("latency shards use mixed comparison policies");
     return {
+        comparison: comparisons.size === 1 ? [...comparisons][0] : "unknown",
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         rows
@@ -783,6 +1037,22 @@ export function compareLargeCorpus(baseLog, candidateLog) {
         }
 
         for (const [revision, measurement] of [["base", baseline], ["candidate", current]]) {
+            const sampleCount = finiteNumber(measurement.mappedLoadSamples);
+            const minimumLoad = finiteNumber(measurement.mappedLoadMinMs);
+            const medianLoad = finiteNumber(measurement.mappedLoadMs);
+            const maximumLoad = finiteNumber(measurement.mappedLoadMaxMs);
+            if (!Number.isSafeInteger(sampleCount) || sampleCount !== LARGE_CORPUS_MAPPED_LOAD_SAMPLES) {
+                errors.push(
+                    `${corpus}/${revision}: mappedLoadSamples must equal ${LARGE_CORPUS_MAPPED_LOAD_SAMPLES}`
+                );
+            }
+            if (minimumLoad === null || medianLoad === null || maximumLoad === null ||
+                minimumLoad <= 0 || medianLoad <= 0 || maximumLoad <= 0 ||
+                minimumLoad > medianLoad || medianLoad > maximumLoad
+            ) {
+                errors.push(`${corpus}/${revision}: invalid mapped-load sample distribution`);
+            }
+
             const phaseTotal = ["buildMs", "saveMs", "mappedLoadMs", "queryMs"]
                 .map((key) => finiteNumber(measurement[key]))
                 .reduce((sum, value) => value === null ? null : (sum === null ? null : sum + value), 0);
@@ -872,6 +1142,7 @@ export function renderLargeCorpusReport(comparison) {
         "",
         "Each corpus runs `JAR -> build -> save -> mapped load -> Cypher` in an isolated 4 GiB JVM.",
         "The exact corpus set and graph-shape counts must match; persisted size may vary by at most 4 KiB.",
+        "Mapped load is the median of five loads of the same persisted graph; min/max remain in the audit marker.",
         "Small absolute changes below the noise floor do not block.",
         "Suspected timing regressions must repeat in a reverse-order confirmation run.",
         "Sampled peak heap is informational because its single-run value depends on GC timing; OOM still blocks.",
@@ -888,7 +1159,8 @@ export function renderLargeCorpusReport(comparison) {
         lines.push(
             `| ${row.corpus} | ${row.metric} | ${formatMeasurement(row.baseValue, row.unit)} | ` +
             `${formatMeasurement(row.candidateValue, row.unit)} | ${formatDelta(row.delta)} | ` +
-            `${confirmation} | ${row.advisory ? "4 GiB cap" : `${row.threshold.toFixed(0)}%`} | ` +
+            `${confirmation} | ${row.advisory ? "4 GiB cap" :
+                `${row.threshold.toFixed(0)}% + ${formatMeasurement(row.minimum, row.unit)}`} | ` +
             `**${statusLabel(row)}** |`
         );
     }
@@ -899,65 +1171,94 @@ export function renderLargeCorpusReport(comparison) {
 }
 
 export function aggregateReports(directory, metadata) {
-    const components = [
-        { name: "method-level", report: "method-report.md", status: "method-status.json" },
-        { name: "explorer", report: "explorer-report.md", status: "explorer-status.json" },
-        {
-            name: "method-compatibility",
-            report: "method-compatibility-report.md",
-            status: "method-compatibility-status.json"
-        },
-        {
-            name: "cypher-capacity",
-            report: "cypher-capacity-report.md",
-            status: "cypher-capacity-status.json"
-        },
-        {
-            name: "budgeted-collection",
-            report: "budgeted-collection-report.md",
-            status: "budgeted-collection-status.json"
-        },
-        {
-            name: "budgeted-mapped-string",
-            report: "budgeted-string-report.md",
-            status: "budgeted-string-status.json"
-        },
-        { name: "large-corpus", report: "large-corpus-report.md", status: "large-corpus-status.json" },
-        { name: "wrapped-query-latency", report: "latency-report.md", status: "latency-status.json" },
-        { name: "wrapped-query-resources", report: "latency-resource-report.md", status: "latency-resource-status.json" }
-    ];
     const errors = [];
-    const reports = [];
+    const reports = new Map();
+    const results = new Map();
     let passed = true;
-    for (const component of components) {
+    for (const component of BENCHMARK_COMPONENTS) {
         const reportFile = path.join(directory, component.report);
         const statusFile = path.join(directory, component.status);
         if (!fs.existsSync(reportFile) || !fs.existsSync(statusFile)) {
             errors.push(`${component.name}: result artifact is missing`);
             passed = false;
+            results.set(component.name, "MISSING");
             continue;
         }
-        reports.push(fs.readFileSync(reportFile, "utf8").trim());
+        reports.set(component.name, fs.readFileSync(reportFile, "utf8").trim());
         const status = readJson(statusFile);
-        if (status.passed !== true) passed = false;
+        const componentPassed = status.passed === true;
+        results.set(component.name, componentPassed ? "PASS" : "FAIL");
+        if (!componentPassed) passed = false;
     }
 
+    const componentByName = new Map(BENCHMARK_COMPONENTS.map((component) => [component.name, component]));
+    const coverageRows = BENCHMARK_COVERAGE_DOMAINS.flatMap((domain) => domain.components.map((name) => {
+        const component = componentByName.get(name);
+        const coverage = component.coverage === "complete" ? "✅ Complete" : "⚠️ Partial";
+        return `| ${domain.name} | \`${name}\` | **${results.get(name) ?? "MISSING"}** | ${coverage} | ${component.gap} |`;
+    }));
+    const productSections = BENCHMARK_COVERAGE_DOMAINS.flatMap((domain) => {
+        const section = [
+            `#### ${domain.name}`,
+            "",
+            domain.components.length === 0
+                ? "No implemented benchmark gate currently covers this domain."
+                : `Implemented gates: ${domain.components.map((name) => `\`${name}\``).join(", ")}.`,
+            "",
+            `Not covered by this suite (non-blocking for this run): ${domain.missing.map((name) => `\`${name}\``).join(", ")}.`,
+            ""
+        ];
+        for (const name of domain.components) {
+            const report = reports.get(name);
+            if (report !== undefined) section.push(report.replace(/^### /, "##### "), "");
+        }
+        return section;
+    });
+
+    const passedComponents = [...results.values()].filter((componentResult) => componentResult === "PASS").length;
     const result = passed && errors.length === 0 ? "PASS" : "FAIL";
     const body = [
         COMMENT_MARKER,
         "## Benchmark Regression Gate",
         "",
-        `**${result}**`,
+        `**${result} — ${passedComponents}/${BENCHMARK_COMPONENTS.length} component reports passed**`,
         "",
         `Base: \`${metadata.baseSha.slice(0, 12)}\`  `,
         `PR: \`${metadata.candidateSha.slice(0, 12)}\`  `,
         `Runner: \`${metadata.runner}\``,
         "",
-        ...reports.flatMap((report) => [report, ""]),
+        "### Coverage summary",
+        "",
+        "Coverage labels follow the gate model: ✅ has no identified gate-specific gap; ⚠️ is implemented but incomplete.",
+        "Run result and coverage are separate: PASS is evidence only for the stated contract, not for a listed gap or an uncovered family.",
+        "",
+        "| Coverage domain | Gate | Run result | Coverage | Known gap |",
+        "|---|---|:---:|:---:|---|",
+        ...coverageRows,
+        "",
+        "### Product performance",
+        "",
+        ...productSections,
+        "### Gate system",
+        "",
+        "| Area | Coverage | Known gap |",
+        "|---|:---:|---|",
+        "| Evidence reliability | ⚠️ Partial | Fresh attempt-aware aggregation consumes component verdicts rather than freshly comparing raw measurements; historical variance, cold/warm separation, and required evidence publication remain uncovered. |",
+        "| Control-plane integrity | ⚠️ Partial | Base-owned controls and candidate-only tests are implemented, but candidate-process isolation and external required authority remain uncovered. |",
+        "| Coverage policy | ⚠️ Partial | The suite is static; changed-path ownership, missing-family policy, and benchmark-budget lifecycle remain uncovered. |",
+        "",
         ...(errors.length > 0 ? ["### Infrastructure errors", "", ...errors.map((error) => `- ${error}`), ""] : []),
         `[View benchmark logs and artifacts](${metadata.runUrl})`
     ].join("\n");
-    return { passed: result === "PASS", errors, body: `${body}\n` };
+    return {
+        passed: result === "PASS",
+        errors,
+        baseSha: metadata.baseSha,
+        candidateSha: metadata.candidateSha,
+        runner: metadata.runner,
+        runUrl: metadata.runUrl,
+        body: `${body}\n`
+    };
 }
 
 export function stageLatestArtifacts(directory, output) {
@@ -1028,6 +1329,20 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareLatencyAnchorCommand(args) {
+    const comparison = compareLatencyAnchor(
+        readJson(requireArg(args, "anchor")),
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args["anchor-threshold"] ?? 50),
+        args["allow-subset"] === true ? null : LATENCY_EXPECTED_BENCHMARK_KEYS
+    );
+    writeFile(requireArg(args, "report"), renderLatencyAnchorReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function compareLatencyResourcesCommand(args) {
     const comparison = compareLatencyResources(
         readJson(requireArg(args, "base")), readJson(requireArg(args, "candidate")), Number(args.threshold ?? 15)
@@ -1064,9 +1379,28 @@ function confirmLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function confirmLatencyAnchorCommand(args) {
+    const initial = readJson(requireArg(args, "initial"));
+    const confirmation = compareLatencyAnchor(
+        readJson(requireArg(args, "anchor")),
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        Number(args.threshold ?? 15),
+        Number(args["anchor-threshold"] ?? 50),
+        args["allow-subset"] === true ? null : LATENCY_EXPECTED_BENCHMARK_KEYS
+    );
+    const comparison = confirmLatencyAnchor(initial, confirmation);
+    writeFile(requireArg(args, "report"), renderLatencyAnchorReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function combineLatencyShardsCommand(args) {
     const comparison = combineLatencyShards(requireArg(args, "directory"));
-    writeFile(requireArg(args, "report"), renderLatencyBaselineReport(comparison));
+    const report = comparison.comparison === "anchor"
+        ? renderLatencyAnchorReport(comparison)
+        : renderLatencyBaselineReport(comparison);
+    writeFile(requireArg(args, "report"), report);
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
 }
@@ -1119,6 +1453,8 @@ function main(argv) {
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
+    else if (command === "compare-latency-anchor") compareLatencyAnchorCommand(args);
+    else if (command === "confirm-latency-anchor") confirmLatencyAnchorCommand(args);
     else if (command === "combine-latency-shards") combineLatencyShardsCommand(args);
     else if (command === "compare-latency-resources") compareLatencyResourcesCommand(args);
     else if (command === "confirm-latency-resources") confirmLatencyResourcesCommand(args);

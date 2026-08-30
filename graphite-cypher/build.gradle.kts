@@ -29,6 +29,7 @@ dependencies {
 }
 
 jmh {
+    includeTests.set(false)
     val filter = project.findProperty("jmh.filter") as String?
     if (filter != null) {
         includes.set(listOf(filter))

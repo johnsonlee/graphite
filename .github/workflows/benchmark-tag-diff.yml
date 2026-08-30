@@ -1,0 +1,433 @@
+name: Tag benchmark diff
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+  queue: max
+
+env:
+  JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+
+jobs:
+  resolve:
+    name: resolve-semantic-tag-pair
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      current_sha: ${{ steps.tags.outputs.current_sha }}
+      current_tag: ${{ steps.tags.outputs.current_tag }}
+      previous_available: ${{ steps.tags.outputs.previous_available }}
+      previous_sha: ${{ steps.tags.outputs.previous_sha }}
+      previous_tag: ${{ steps.tags.outputs.previous_tag }}
+
+    steps:
+    - name: Checkout exact pushed tag with complete tag history
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: Resolve semantic predecessor and exact commit SHAs
+      id: tags
+      env:
+        CURRENT_TAG: ${{ github.ref_name }}
+        EXPECTED_REF: ${{ github.ref }}
+        EXPECTED_SHA: ${{ github.sha }}
+      run: |
+        mkdir -p tag-resolution
+        node .github/scripts/benchmark-tag-diff.mjs resolve \
+          --current-tag "${CURRENT_TAG}" \
+          --expected-ref "${EXPECTED_REF}" \
+          --expected-sha "${EXPECTED_SHA}" \
+          --output tag-resolution/metadata.json
+        jq -e '
+          .schemaVersion == 1 and
+          .current.tag == env.CURRENT_TAG and
+          (.current.sha | test("^[0-9a-f]{40}$")) and
+          (.current.harnessFingerprint | test("^[0-9a-f]{64}$")) and
+          (.previous == null or (.previous.harnessFingerprint | test("^[0-9a-f]{64}$"))) and
+          (.baselineAvailable == (.previous != null))
+        ' tag-resolution/metadata.json >/dev/null
+        {
+          echo "current_sha=$(jq -r '.current.sha' tag-resolution/metadata.json)"
+          echo "current_tag=$(jq -r '.current.tag' tag-resolution/metadata.json)"
+          echo "previous_available=$(jq -r '.baselineAvailable' tag-resolution/metadata.json)"
+          echo "previous_sha=$(jq -r '.previous.sha // empty' tag-resolution/metadata.json)"
+          echo "previous_tag=$(jq -r '.previous.tag // empty' tag-resolution/metadata.json)"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Upload immutable tag resolution
+      uses: actions/upload-artifact@v7
+      with:
+        name: tag-benchmark-resolution-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-resolution/metadata.json
+        if-no-files-found: error
+        retention-days: 14
+
+  build-current:
+    name: build-current-tag-jmh
+    needs: [resolve]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout exact current tag commit
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.resolve.outputs.current_sha }}
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle read-only cache
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Build exact current JMH JAR
+      run: |
+        ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
+        mkdir -p tag-jmh
+        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        bash .github/scripts/verify-jmh-jar-isolation.sh graphite-cypher "${JARS[0]}"
+        install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
+
+    - name: Upload current JMH JAR
+      uses: actions/upload-artifact@v7
+      with:
+        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-jmh/benchmark.jar
+        if-no-files-found: error
+        retention-days: 14
+
+  build-previous:
+    name: build-previous-tag-jmh
+    needs: [resolve]
+    if: needs.resolve.outputs.previous_available == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout exact previous tag commit
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.resolve.outputs.previous_sha }}
+        persist-credentials: false
+
+    - name: Checkout exact current isolation controls
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.resolve.outputs.current_sha }}
+        path: controls
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle read-only cache
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Build exact previous JMH JAR
+      run: |
+        ./gradlew -I "${PWD}/controls/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
+        mkdir -p tag-jmh
+        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        bash controls/.github/scripts/verify-jmh-jar-isolation.sh \
+          graphite-cypher "${JARS[0]}"
+        install -m 0644 "${JARS[0]}" tag-jmh/benchmark.jar
+
+    - name: Upload previous JMH JAR
+      uses: actions/upload-artifact@v7
+      with:
+        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-jmh/benchmark.jar
+        if-no-files-found: error
+        retention-days: 14
+
+  benchmark:
+    name: benchmark-tag-pair-on-one-runner
+    needs: [resolve, build-current, build-previous]
+    if: >-
+      ${{ always() && needs.resolve.result == 'success' && needs.build-current.result == 'success' &&
+          (needs.resolve.outputs.previous_available != 'true' || needs.build-previous.result == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Download current JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: tag-benchmark-current-jmh-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-jars/current
+
+    - name: Download previous JMH JAR
+      if: needs.resolve.outputs.previous_available == 'true'
+      uses: actions/download-artifact@v8
+      with:
+        name: tag-benchmark-previous-jmh-${{ needs.resolve.outputs.previous_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-jars/previous
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Run bounded representative set
+      env:
+        PREVIOUS_AVAILABLE: ${{ needs.resolve.outputs.previous_available }}
+      run: |
+        set -o pipefail
+        mkdir -p benchmark-results
+        BENCHMARK_PATTERN='^io\.johnsonlee\.graphite\.cypher\.CypherBenchmark\.(aggregationCountGroupBy|nodeMatchWithWhere|simpleNodeMatch|singleHopRelationship|variableLengthPath|withPipeline)$'
+        run_revision() {
+          local revision="$1"
+          local jar="tag-jars/${revision}/benchmark.jar"
+          test -f "${jar}" && test ! -L "${jar}"
+          jar tf "${jar}" >/dev/null
+          java -jar "${jar}" "${BENCHMARK_PATTERN}" \
+            -f 1 -wi 2 -i 4 -w 1s -r 1s -foe true -rf json \
+            -rff "${PWD}/benchmark-results/${revision}-jmh.json"
+        }
+        if [ "${PREVIOUS_AVAILABLE}" = true ]; then
+          run_revision previous
+        fi
+        run_revision current
+
+    - name: Fail closed on incomplete or malformed JMH output
+      env:
+        PREVIOUS_AVAILABLE: ${{ needs.resolve.outputs.previous_available }}
+      run: |
+        EXPECTED='[
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.aggregationCountGroupBy",
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.nodeMatchWithWhere",
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.simpleNodeMatch",
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.singleHopRelationship",
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.variableLengthPath",
+          "io.johnsonlee.graphite.cypher.CypherBenchmark.withPipeline"
+        ]'
+        validate_result() {
+          local file="$1"
+          test -f "${file}" && test ! -L "${file}"
+          jq -e --argjson expected "${EXPECTED}" '
+            type == "array" and
+            length == ($expected | length) and
+            ([.[].benchmark] | sort) == ($expected | sort) and
+            ([.[].benchmark] | unique | length) == length and
+            all(.[];
+              .mode == "avgt" and
+              ((.params // {}) == {}) and
+              (.primaryMetric.score | type == "number" and isfinite and . > 0) and
+              (.primaryMetric.scoreError | type == "number" and isfinite and . >= 0) and
+              (.primaryMetric.scoreUnit | test("^(ns|us|ms|s)/op$")) and
+              (.primaryMetric.scoreConfidence | type == "array" and length == 2) and
+              all(.primaryMetric.scoreConfidence[]; type == "number" and isfinite)
+            )
+          ' "${file}" >/dev/null
+        }
+        validate_result benchmark-results/current-jmh.json
+        if [ "${PREVIOUS_AVAILABLE}" = true ]; then
+          validate_result benchmark-results/previous-jmh.json
+        else
+          test ! -e benchmark-results/previous-jmh.json
+        fi
+
+    - name: Upload exact raw measurements
+      uses: actions/upload-artifact@v7
+      with:
+        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: benchmark-results/*.json
+        if-no-files-found: error
+        retention-days: 14
+
+  render:
+    name: render-self-contained-tag-diff
+    needs: [resolve, benchmark]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: read
+
+    steps:
+    - name: Checkout exact current report generator
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.resolve.outputs.current_sha }}
+        path: gate
+        persist-credentials: false
+
+    - name: Configure GitHub Pages
+      id: pages
+      uses: actions/configure-pages@v6
+
+    - name: Download immutable tag resolution
+      uses: actions/download-artifact@v8
+      with:
+        name: tag-benchmark-resolution-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-resolution
+
+    - name: Download exact raw measurements
+      uses: actions/download-artifact@v8
+      with:
+        name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: benchmark-results
+
+    - name: Recover published release history
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p tag-resolution
+        RELEASE_URL=$(node -e '
+          const url = new URL("releases/", process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output tag-resolution/published-releases.html --write-out '%{http_code}' "${RELEASE_URL}")
+        if [ "${STATUS}" = 200 ]; then
+          node gate/.github/scripts/benchmark-tag-diff.mjs extract-history \
+            --input tag-resolution/published-releases.html \
+            --output tag-resolution/history.json
+        elif [ "${STATUS}" = 404 ]; then
+          node -e 'require("fs").writeFileSync("tag-resolution/history.json", "[]\n")'
+        else
+          echo "::error::Published release history returned HTTP ${STATUS}"
+          exit 1
+        fi
+
+    - name: Test renderer and create standalone report
+      env:
+        PREVIOUS_AVAILABLE: ${{ needs.resolve.outputs.previous_available }}
+      run: |
+        node --test gate/.github/scripts/benchmark-tag-diff.test.mjs
+        ARGS=(
+          --metadata tag-resolution/metadata.json
+          --current benchmark-results/current-jmh.json
+          --output tag-report/index.html
+          --summary tag-report/summary.md
+          --manifest tag-report/manifest.json
+          --history tag-resolution/history.json
+          --repository '${{ github.repository }}'
+          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        )
+        if [ "${PREVIOUS_AVAILABLE}" = true ]; then
+          ARGS+=(--previous benchmark-results/previous-jmh.json)
+        fi
+        node gate/.github/scripts/benchmark-tag-diff.mjs render "${ARGS[@]}"
+        mkdir -p tag-report/raw
+        install -m 0644 tag-resolution/metadata.json tag-report/raw/tag-metadata.json
+        install -m 0644 benchmark-results/current-jmh.json tag-report/raw/current-jmh.json
+        if [ "${PREVIOUS_AVAILABLE}" = true ]; then
+          install -m 0644 benchmark-results/previous-jmh.json tag-report/raw/previous-jmh.json
+        fi
+        test -f tag-report/index.html
+        test -f tag-report/summary.md
+        test -f tag-report/manifest.json
+        test -z "$(find tag-report -type l -print -quit)"
+        test "$(du -sb tag-report | cut -f 1)" -le 5242880
+
+    - name: Upload retained HTML diff report
+      id: report
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-tag-diff-${{ needs.resolve.outputs.current_tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: tag-report
+        if-no-files-found: error
+        retention-days: 90
+
+    - name: Surface tag comparison summary
+      run: |
+        cat tag-report/summary.md >> "${GITHUB_STEP_SUMMARY}"
+        printf '\n[Download the self-contained HTML report](%s)\n' \
+          '${{ steps.report.outputs.artifact-url }}' >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: Assemble Pages site without replacing the main observatory
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p _site/releases
+        ROOT_URL=$(node -e '
+          const url = new URL(process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output _site/index.html --write-out '%{http_code}' "${ROOT_URL}")
+        if [ "${STATUS}" != 200 ] && [ "${STATUS}" != 404 ]; then
+          echo "::error::Published main observatory returned HTTP ${STATUS}"
+          exit 1
+        fi
+        if [ "${STATUS}" = 404 ]; then
+          install -m 0644 tag-report/index.html _site/index.html
+        fi
+        install -m 0644 _site/index.html _site/404.html
+        install -m 0644 tag-report/index.html _site/releases/index.html
+        touch _site/.nojekyll
+        test -z "$(find _site -type l -print -quit)"
+        test "$(du -sb _site | cut -f 1)" -le 10485760
+
+    - name: Upload combined GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: _site
+        retention-days: 1
+
+  deploy:
+    name: deploy-release-observatory-pages
+    needs: [resolve, render]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}releases/
+
+    steps:
+    - name: Reject a moved or deleted tag before deployment
+      uses: actions/github-script@v9
+      env:
+        CURRENT_TAG: ${{ needs.resolve.outputs.current_tag }}
+        RESOLVED_SHA: ${{ needs.resolve.outputs.current_sha }}
+      with:
+        script: |
+          const commit = (await github.rest.repos.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: process.env.CURRENT_TAG
+          })).data;
+          if (commit.sha !== process.env.RESOLVED_SHA) {
+            core.setFailed(`Refusing to deploy moved tag ${process.env.CURRENT_TAG}: expected ${process.env.RESOLVED_SHA}, got ${commit.sha}.`);
+          }
+
+    - name: Deploy release benchmark observatory
+      id: deployment
+      uses: actions/deploy-pages@v5

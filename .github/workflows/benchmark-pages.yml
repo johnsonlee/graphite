@@ -1,0 +1,308 @@
+name: Main benchmark observatory
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  snapshot:
+    name: benchmark-main-snapshot
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout exact main commit
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+
+    - name: Build method-level JMH JAR
+      run: |
+        ./gradlew -I "${PWD}/.github/scripts/benchmark-jmh-isolation.init.gradle" \
+          :cypher:testClasses :cypher:jmhJar --no-daemon
+        JMH_JAR=$(find graphite-cypher/build/libs -name '*-jmh.jar' -type f -print -quit)
+        test -n "${JMH_JAR}"
+        bash .github/scripts/verify-jmh-jar-isolation.sh graphite-cypher "${JMH_JAR}"
+
+    - name: Capture fresh main benchmark snapshot
+      run: |
+        mkdir -p benchmark-source
+        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        java -jar "${JARS[0]}" \
+          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
+          -foe true -rf json -rff "${PWD}/benchmark-source/main-method-jmh.json"
+        jq -e '
+          length > 0 and
+          all(.[].benchmark;
+            startswith("io.johnsonlee.graphite.cypher.CypherBenchmark.") or
+            . == "io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgetedGeneralRegex") and
+          all(.[].primaryMetric.score; type == "number" and isfinite and . >= 0) and
+          ([.[] | "\(.benchmark)|\(.params // {})"] | unique | length) == length
+        ' benchmark-source/main-method-jmh.json >/dev/null
+
+    - name: Upload forensic snapshot artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
+        path: benchmark-source/main-method-jmh.json
+        if-no-files-found: error
+        retention-days: 90
+
+  render:
+    name: render-benchmark-pages
+    needs: [snapshot]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pages: read
+
+    steps:
+    - name: Checkout report generator
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        persist-credentials: false
+
+    - name: Configure GitHub Pages
+      id: pages
+      uses: actions/configure-pages@v6
+
+    - name: Download fresh main snapshot
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
+        path: benchmark-source
+
+    - name: Find the merged PR benchmark evidence
+      id: source
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const fs = require('fs');
+          const associated = await github.paginate(
+            github.rest.repos.listPullRequestsAssociatedWithCommit,
+            { owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha, per_page: 100 }
+          );
+          const pull = associated
+            .filter((item) => item.merged_at && item.base.ref === 'main' && item.merge_commit_sha === context.sha)
+            .sort((left, right) => Date.parse(right.merged_at) - Date.parse(left.merged_at))[0];
+          if (!pull) {
+            core.info('Paired evidence unavailable: this main commit is not the exact merge commit of an associated PR.');
+            core.setOutput('found', 'false');
+            return;
+          }
+          const integration = (await github.rest.repos.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.sha
+          })).data;
+          const integrationParentSha = integration.parents?.[0]?.sha;
+          const integrationTreeSha = integration.commit?.tree?.sha;
+          if (!integrationParentSha || !integrationTreeSha) {
+            core.info('Paired evidence unavailable: the main integration parent or tree could not be resolved.');
+            core.setOutput('found', 'false');
+            return;
+          }
+          const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'benchmark.yml',
+            event: 'pull_request',
+            status: 'completed',
+            head_sha: pull.head.sha,
+            per_page: 100
+          });
+          const successfulRuns = runs
+            .filter((item) => item.conclusion === 'success')
+            .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at));
+          let evidence = null;
+          for (const run of successfulRuns) {
+            const detailed = (await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id
+            })).data;
+            const runPull = detailed.pull_requests?.find((item) => item.number === pull.number);
+            const baseSha = runPull?.base?.sha;
+            const candidateSha = runPull?.head?.sha;
+            if (!baseSha || !candidateSha || candidateSha !== detailed.head_sha || candidateSha !== pull.head.sha) {
+              continue;
+            }
+            const candidate = (await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: candidateSha
+            })).data;
+            const candidateTreeSha = candidate.commit?.tree?.sha;
+            if (baseSha !== integrationParentSha || !candidateTreeSha || candidateTreeSha !== integrationTreeSha) {
+              continue;
+            }
+            evidence = {
+              schemaVersion: 1,
+              integrationSha: context.sha,
+              integrationParentSha,
+              integrationTreeSha,
+              baseSha,
+              candidateSha,
+              candidateTreeSha,
+              sourcePr: pull.number,
+              sourceRunId: detailed.id,
+              sourceRunUrl: detailed.html_url
+            };
+            break;
+          }
+          if (!evidence) {
+            core.info('Paired evidence unavailable: no successful PR run matches the exact main parent and tree.');
+            core.setOutput('found', 'false');
+            return;
+          }
+          fs.mkdirSync('benchmark-source', { recursive: true });
+          fs.writeFileSync('benchmark-source/paired-provenance.json', `${JSON.stringify(evidence, null, 2)}\n`);
+          core.setOutput('found', 'true');
+          core.setOutput('run_id', String(evidence.sourceRunId));
+          core.setOutput('run_url', evidence.sourceRunUrl);
+          core.setOutput('source_pr', String(evidence.sourcePr));
+
+    - name: Download paired PR benchmark report
+      if: steps.source.outputs.found == 'true'
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-report-${{ steps.source.outputs.source_pr }}
+        path: benchmark-source/paired
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        run-id: ${{ steps.source.outputs.run_id }}
+
+    - name: Recover the published rolling history
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p benchmark-source
+        HTTPS_URL=$(node -e '
+          const url = new URL(process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output benchmark-source/published.html --write-out '%{http_code}' "${HTTPS_URL}")
+        if [ "${STATUS}" = 200 ]; then
+          node .github/scripts/benchmark-pages.mjs extract-history \
+            --input benchmark-source/published.html \
+            --output benchmark-source/history.json
+        elif [ "${STATUS}" = 404 ]; then
+          node -e 'require("fs").writeFileSync("benchmark-source/history.json", "[]\n")'
+        else
+          echo "::error::Published benchmark history returned HTTP ${STATUS}"
+          exit 1
+        fi
+
+    - name: Preserve the published release observatory
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        RELEASE_URL=$(node -e '
+          const url = new URL("releases/", process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output benchmark-source/published-releases.html --write-out '%{http_code}' "${RELEASE_URL}")
+        if [ "${STATUS}" = 404 ]; then
+          rm -f benchmark-source/published-releases.html
+        elif [ "${STATUS}" != 200 ]; then
+          echo "::error::Published release observatory returned HTTP ${STATUS}"
+          exit 1
+        fi
+
+    - name: Test and render self-contained report
+      run: |
+        node --test .github/scripts/benchmark-pages.test.mjs
+        node .github/scripts/benchmark-pages.mjs build \
+          --snapshot benchmark-source/main-method-jmh.json \
+          --report benchmark-source/paired/benchmark-report.md \
+          --status benchmark-source/paired/benchmark-status.json \
+          --provenance benchmark-source/paired-provenance.json \
+          --history benchmark-source/history.json \
+          --output _site \
+          --sha '${{ github.sha }}' \
+          --branch main \
+          --repository '${{ github.repository }}' \
+          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        test -f _site/index.html
+        if [ -f benchmark-source/published-releases.html ]; then
+          mkdir -p _site/releases
+          install -m 0644 benchmark-source/published-releases.html _site/releases/index.html
+        fi
+        test -z "$(find _site -type l -print -quit)"
+        FILE_COUNT=$(find _site -type f | wc -l)
+        test "${FILE_COUNT}" -ge 3
+        test "${FILE_COUNT}" -le 4
+        test "$(du -sb _site | cut -f 1)" -le 5242880
+
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: _site
+        retention-days: 1
+
+  deploy:
+    name: deploy-benchmark-pages
+    needs: [render]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Reject a stale main workflow run
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const branch = (await github.rest.repos.getBranch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branch: 'main'
+          })).data;
+          const currentMainSha = branch.commit.sha;
+          if (currentMainSha !== context.sha) {
+            core.setFailed(`Refusing to deploy stale main snapshot ${context.sha}; current remote main is ${currentMainSha}.`);
+          }
+
+    - name: Deploy benchmark observatory
+      id: deployment
+      uses: actions/deploy-pages@v5

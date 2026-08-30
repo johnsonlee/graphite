@@ -1,0 +1,5 @@
+allprojects { project ->
+    project.pluginManager.withPlugin("me.champeau.jmh") {
+        project.extensions.getByName("jmh").includeTests.set(false)
+    }
+}

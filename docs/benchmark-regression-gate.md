@@ -10,6 +10,67 @@ contains the base and candidate SHAs, runner architecture, every measured score,
 and gate decision. Raw JMH JSON and large-corpus logs are retained as workflow artifacts for 14
 days.
 
+## Report coverage taxonomy
+
+The aggregate comment separates a component's run result from its coverage scope. `PASS`/`FAIL`
+comes only from the nine blocking component reports. Coverage labels follow the model introduced in
+PR #104: ✅ means an implemented gate has no identified gate-specific gap, while ⚠️ means the gate
+is implemented but intentionally incomplete. A passing component does not claim to cover its listed
+gap.
+
+The report groups detailed evidence under the product-performance domains `Semantic correctness`,
+`Latency regression`, `Throughput and capacity`, `Memory and resources`, `Scalability`, and `Build
+and persistence lifecycle`. Every blocking component belongs to exactly one domain. Benchmark
+families not exercised by the suite are listed as non-blocking uncovered scope instead of being
+mixed into the run verdict. A separate `Gate system` table keeps evidence reliability,
+control-plane integrity, and coverage-policy limitations visible without presenting them as product
+measurements.
+
+## Main benchmark observatory
+
+Every push to `main` (and an optional manual dispatch) runs
+`.github/workflows/benchmark-pages.yml`. This post-merge workflow does not join the pull-request
+gate. It builds the current commit's Cypher JMH JAR once, records the method-level benchmark set as
+an informational absolute snapshot, and retains the raw JSON artifact for 90 days.
+
+The report renderer also locates the successful paired benchmark artifact from the pull request
+associated with the main commit. When a direct push has no associated artifact, the page says so
+explicitly rather than manufacturing a gate verdict. It recovers the previously published embedded
+history, replaces same-SHA manual reruns, and retains up to 90 snapshots or 180 days. Hosted-runner
+cross-run deltas are informational; only the paired PR report supplies blocking regression
+decisions.
+
+The generated `index.html` is self-contained: responsive coverage cards, searchable evidence
+tables, attention-row filtering, current/previous snapshot deltas, inline CSS/JavaScript, a strict
+content-security policy, and no CDN or runtime package dependency. It is uploaded through the
+official GitHub Pages artifact path and deployed by a separate `github-pages` environment job with
+only `pages: write` and `id-token: write`. The live destination is
+`https://johnsonlee.io/graphite/`.
+
+## Release-tag benchmark diff
+
+Every pushed release tag matching `v*` independently runs
+`.github/workflows/benchmark-tag-diff.yml`. The resolver peels annotated tags, validates the exact
+event commit, and selects the highest valid semantic-version tag below the current version. Current
+and previous JMH JARs are built from their exact commits, then six representative
+`CypherBenchmark` methods run sequentially on one hosted runner with a bounded one-fork protocol.
+
+The resulting self-contained HTML artifact records both full commit SHAs, scores, confidence
+bounds, signed release-to-release deltas, and the same PR #104 coverage taxonomy and known gaps used
+by the pull-request and Pages reports. It is retained with its manifest, tag-resolution metadata,
+and raw JMH JSON for 90 days. If no earlier semantic tag exists, the report preserves the current
+measurements but explicitly marks the baseline and deltas unavailable. The resolver fingerprints
+the shared `CypherBenchmark.kt` fixture/setup, all six selected method bodies, and the fixed
+execution protocol, together with the effective JMH runtime, Gradle plugin, dependencies, and
+module JMH options. Unrelated benchmark additions and non-JMH Gradle tasks are ignored. When that
+fingerprint changes between tags, both raw score sets remain visible but signed deltas are disabled
+as incomparable workload drift.
+
+This comparison is informational: it produces no release pass/fail verdict and has no dependency
+edge to `.github/workflows/publish.yml`, so a benchmark or rendering failure cannot block artifact
+publishing. Only latency for the representative method set is observed; correctness, throughput,
+resource usage, scalability, and build/persistence lifecycle coverage remain explicitly unmeasured.
+
 ## Integrity model and limitations
 
 Comparator commands, expected benchmark keys, workload harnesses, fixture-preparation harnesses,
@@ -17,6 +78,32 @@ shard combination, and final aggregation are loaded from the pull request's exac
 keeps ordinary pull requests from accidentally changing the experiment and its pass criteria in the
 same revision. Candidate comparator tests run as non-authoritative test coverage in a separate job
 whose runner contains only the candidate checkout.
+
+The known-good-anchor rollout has one compatibility exception for a pull request whose base
+predates the anchor comparator command: its latency shards and latency-shard combiner may use the
+candidate comparator only when the base comparator matches the pinned reviewed SHA-256 and
+`candidate-gate-tests` passes. Any other pre-anchor base fails closed. The CODEOWNERS boundary must
+review that bootstrap change for actors without ruleset bypass. Repository owners and holders of
+bypass credentials are part of the trusted boundary. When the base exposes the anchor command, the
+workflow always selects the base-owned comparator; the final nine-component aggregate remains
+base-owned in either case.
+
+The five-sample large-corpus rollout has an equally bounded one-time transition. If the exact base
+harness and comparator do not expose the new sample protocol, the workflow requires the reviewed
+legacy harness SHA-256, the reviewed candidate harness and comparator SHA-256 values, and a passing
+candidate comparator test job. It then installs that pinned harness into both revisions and uses the
+pinned comparator. Any other pre-protocol base fails closed. Once `main` contains the protocol, the
+workflow automatically returns to base-owned controls and never selects candidate controls.
+
+The coverage-taxonomy rollout changes presentation only. The base-owned aggregator always writes
+the authoritative verdict and is the only status enforced by the required check. If that exact base
+does not yet render the coverage summary, a candidate renderer is allowed only when its reviewed
+SHA-256 matches and candidate gate tests pass. The workflow enriches the base status with the exact
+base SHA, candidate SHA, runner, and run URL, then requires the rendered status to match its verdict,
+errors, and provenance. The required check reads only that authoritative status; the published
+status remains paired byte-for-byte with the rendered report so Pages can validate the evidence.
+The artifact retains both reports and statuses for audit. Once the base renderer contains the
+taxonomy, the transition path is skipped.
 
 This workflow is a regression signal for non-malicious changes, not a sandbox or a tamper-resistant
 security boundary. Component jobs still execute candidate Gradle scripts and candidate benchmark
@@ -33,26 +120,44 @@ and limit write authority; they do not isolate files or processes on a mixed ben
 
 `.github/CODEOWNERS` assigns the workflow, comparator, JMH workloads, and large-corpus gate harness
 to the repository owner, and the active `main` ruleset requires code-owner review. Code-owner review
-is the repository-local security boundary for gate changes. Fully defending against hostile build
-or runtime code requires base and candidate execution on separate runners, raw artifact comparison
-in a fresh base-only job, or an external required workflow/GitHub App. That isolation is not provided
-by this workflow.
+protects these gate files from changes by actors who cannot bypass that ruleset. It does not protect
+against a repository owner exercising approval authority or a holder using bypass credentials; those
+actors and credentials are within the repository-local trusted boundary. Fully defending against
+hostile build or runtime code requires base and candidate execution on separate runners, raw artifact
+comparison in a fresh base-only job, or an external required workflow/GitHub App. That isolation is
+not provided by this workflow.
 
 ## Wrapped case-insensitive latency gate
 
 The `wrapped-query-latency` job protects the production
 `toLower(coalesce(...)) CONTAINS` discovery shape on persisted mapped graphs.
-The same `WrappedDiscoveryLatencyBenchmark` source is compiled at three
-revisions:
+The same `WrappedDiscoveryLatencyBenchmark` source is compiled once at each of three revisions:
 
-1. fixed pre-PR-95 commit `44b57562f2b3d0c88882a9002bdc488e05e5d7a7`;
+1. pinned known-good commit `0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6`;
 2. the pull request's current base SHA; and
 3. the pull request candidate SHA.
+
+The three validated JMH JARs are uploaded once and reused by all latency shards and the resource
+gate. Explorer, Method compatibility, and Cypher capacity similarly reuse one base and one candidate
+Explorer JMH build. This removes repeated Gradle compilation from consumer jobs while checksums and
+JAR inspection fail closed on missing or corrupt build artifacts.
+
+Every benchmark JMH fat JAR explicitly disables the plugin's default test-output inclusion. Every
+comparable build runs a packaging invariant that compiles the project test output, intersects all of
+its relative entries with the finished archive, and fails if any test class or resource leaked into
+the JMH artifact. This keeps unrelated tests from perturbing latency/resource forks while leaving
+candidate production classes intact for the actual regression comparison.
+
+The rollout also covers comparison revisions that predate this Gradle configuration. During that
+one-time transition, the pull-request workflow applies a reviewed init script and verifier from the
+candidate checkout only after both files match their pinned SHA-256 values. Once the exact base SHA
+contains those controls, all comparable revisions automatically use the base-owned copies. The
+scheduled historical workflow always uses the controls from the current default-branch checkout.
 
 The 17 latency keys are split across nine parallel matrix shards: four for the
 synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,
 and one for the real 36-graph case. Within
-each shard, fixed baseline, current base, and candidate still run sequentially
+each shard, known-good anchor, current base, and candidate still run sequentially
 on the same runner, so parallelism does not turn cross-runner variance into a
 performance comparison. A prerequisite job restores or builds the persisted
 fixture graphs once with a 4 GiB heap, using a content-addressed cache key over
@@ -80,7 +185,7 @@ four-corpus, first-graph-only, middle-graphs-only, last-graph-only,
 four-corpus-distributed, first/last bimodal, and highly skewed class/method
 cases. The queries vary caller/callee fields, class/method properties,
 `CONTAINS`/`STARTS WITH`/`ENDS WITH`, and `LIMIT 1/50/250`.
-Before timing, fixed, current-base, and candidate executors must produce the
+Before timing, known-good, current-base, and candidate executors must produce the
 same SHA-256 digest over complete columns, ordered rows, values, and graph
 provenance for all eight distribution queries plus the 36-graph identity
 coverage query. The comparator separately requires the exact eight synthetic,
@@ -90,16 +195,23 @@ disappear from all three revisions.
 Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
 source graph is persisted and that JVM exits, the raw mmap work directory is
 deleted before the next corpus starts. Only the four final persisted graph
-directories remain for the shared query measurements.
-Every real-fixture row must remain at least 10x faster than the fixed baseline;
-the lightweight synthetic scaling rows retain the 50% fixed-baseline floor.
-No row may regress more than 15% against the current PR base; synthetic changes
-below the 0.5 ms absolute noise floor remain informational. Missing graph-count
-or query variants, incompatible units, invalid scores, and missing artifacts fail
-closed. A suspected failure reruns candidate, base, and fixed baseline in
-reverse order before it blocks. The fixed baseline prevents the original full-scan behavior from
-becoming an accepted new base after a merge; the moving base comparison catches
-new regressions in later optimizations.
+directories remain for the shared query measurements. The 36-real-graph setup validates the
+positive exact-identity coverage query but no longer executes a redundant untimed zero-hit scan;
+JMH warmup and measurement iterations remain unchanged.
+
+No row may regress more than 50% against the pinned known-good anchor or more than 15% against the
+current PR base. Synthetic changes below the 0.5 ms absolute noise floor remain informational.
+Missing graph-count or query variants, incompatible units, invalid scores, and missing artifacts
+fail closed. A suspected failure reruns candidate, base, and known-good anchor in reverse order
+before it blocks. The anchor prevents a gradual regression from being normalized across moving
+bases, while the current-base comparison remains sensitive to a new PR-local slowdown.
+
+The expensive proof against the known-bad pre-PR-95 commit
+`44b57562f2b3d0c88882a9002bdc488e05e5d7a7` runs in
+`.github/workflows/benchmark-historical-latency.yml` on a daily schedule and on manual dispatch.
+That workflow preserves the previous exact correctness digest and retained-speedup contract across
+all nine shards, including the 36-real-graph scan, but does not extend pull-request critical-path
+latency.
 
 ## Wrapped-query resource gate
 
@@ -136,6 +248,19 @@ host contention, or execution order from turning a one-round process-level drift
 check failure. If JMH cannot produce finite confidence intervals, the 15% threshold is enforced
 directly. Missing benchmarks, invalid scores, changed units, and execution errors fail closed.
 
+## Method compatibility gate
+
+Method discovery covers the exact 11-scenario matrix at 4, 17, and 36 graphs: 33
+semantic/performance cases. The workflow partitions each graph count into four scenario groups
+(`position`, `string`, `scan`, and `aggregate`) for 12 independently scheduled shards. Each shard
+runs its assigned scenarios for base and candidate from the shared Explorer JMH artifacts and emits
+both JMH metrics and canonical result records.
+
+The aggregator requires all 12 artifacts, the exact 33 unique `(graphCount, scenario)` pairs, and
+identical result records. Wall time, process CPU, and post-run RSS are blocking 15% comparisons;
+RSS delta remains advisory. Sharding changes scheduling only—the scenario manifest and final
+fail-closed contract are unchanged.
+
 ## Real-corpus end-to-end gate
 
 The end-to-end job uses the large-corpus harness introduced in PR #92. Tika, Hive, and the Kotlin
@@ -159,7 +284,7 @@ serialization noise; larger size changes fail closed and require an explicit gat
 |---|---:|---:|
 | Build | 20% | 500 ms |
 | Save | 25% | 250 ms |
-| Mapped load | 30% | 50 ms |
+| Mapped load (median of 5) | 30% | 50 ms |
 | Query | 25% | 250 ms |
 | Full pipeline | 20% | 1,000 ms |
 | Sampled peak heap | Report only | 4 GiB process cap |
@@ -171,6 +296,11 @@ for repeatable phase regressions. Sampled peak heap is informational because a s
 sample varies with GC timing; the isolated 4 GiB process cap is the hard memory gate. Missing corpus
 output or a benchmark process failure blocks the gate.
 
+Mapped loading is measured five times against the same persisted graph and compared by median. The
+marker also records the sample minimum, maximum, and count; the comparator fails closed unless both
+revisions use the exact five-sample protocol and the median lies inside a valid positive range. This
+removes single filesystem/mmap startup outliers without weakening the original 30% plus 50 ms gate.
+
 ## Gradle caching
 
 `gradle/actions/setup-gradle` caches the wrapper distribution, downloaded dependencies, compiled
@@ -180,6 +310,9 @@ they can reuse base-branch state without creating a cache entry for every PR.
 
 Generated graphs and project `build/` directories are deliberately excluded. The end-to-end gate
 must measure graph construction and persistence rather than restore those outputs from a cache.
+Within one workflow run, dedicated build jobs publish checksum-protected JMH JAR artifacts so the
+consumer matrix does not rebuild identical revisions. These short-lived artifacts are a run-local
+fan-out mechanism, not a cross-run build cache.
 
 ## Budgeted mapped-string latency gate
 
@@ -198,9 +331,15 @@ full-scan regression into the moving base.
 Test the comparison and report generation logic:
 
 ```bash
-node --test .github/scripts/benchmark-gate.test.mjs
-actionlint .github/workflows/benchmark.yml
+node --test .github/scripts/benchmark-*.test.mjs
+actionlint .github/workflows/benchmark.yml \
+  .github/workflows/benchmark-historical-latency.yml \
+  .github/workflows/benchmark-pages.yml \
+  .github/workflows/benchmark-tag-diff.yml
 ```
+
+`concurrency.queue: max` is supported by GitHub Actions but may require a current `actionlint`
+release; older schemas can report that key as unknown even when the remaining workflow validates.
 
 Run the two benchmark sources directly:
 
