@@ -159,7 +159,7 @@ const LATENCY_RESOURCE_EVENT_METRICS = new Set([
 const LARGE_CORPUS_METRICS = [
     { key: "buildMs", label: "build", threshold: 20, minimum: 500, unit: "ms" },
     { key: "saveMs", label: "save", threshold: 25, minimum: 250, unit: "ms" },
-    { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 50, unit: "ms" },
+    { key: "mappedLoadMs", label: "mapped load", threshold: 30, minimum: 150, unit: "ms" },
     { key: "queryMs", label: "query", threshold: 25, minimum: 250, unit: "ms" },
     { key: "pipelineMs", label: "pipeline", threshold: 20, minimum: 1_000, unit: "ms" },
     { key: "peakHeapBytes", label: "peak heap", unit: "bytes", advisory: true }

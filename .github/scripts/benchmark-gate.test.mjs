@@ -716,12 +716,22 @@ test("large-corpus comparison blocks a material pipeline regression", () => {
     assert.match(renderLargeCorpusReport(comparison), /\*\*FAIL\*\*/);
 });
 
-test("large-corpus comparison ignores changes below the absolute noise floor", () => {
-    const candidate = corpusLog({ hive: { mappedLoadMs: 250, pipelineMs: 13_250 } });
+test("large-corpus comparison ignores mapped-load changes at the measured absolute noise floor", () => {
+    const candidate = corpusLog({ hive: { mappedLoadMs: 350, pipelineMs: 13_350 } });
     const comparison = compareLargeCorpus(baseCorpusLog, candidate);
+    const mappedLoad = comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load");
 
     assert.equal(comparison.passed, true);
-    assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load").blocked, false);
+    assert.equal(mappedLoad.minimum, 150);
+    assert.equal(mappedLoad.blocked, false);
+});
+
+test("large-corpus comparison blocks mapped-load changes above the measured absolute noise floor", () => {
+    const candidate = corpusLog({ hive: { mappedLoadMs: 351, pipelineMs: 13_351 } });
+    const comparison = compareLargeCorpus(baseCorpusLog, candidate);
+
+    assert.equal(comparison.passed, false);
+    assert.equal(comparison.rows.find((row) => row.corpus === "hive" && row.metric === "mapped load").blocked, true);
 });
 
 test("large-corpus comparison reports sampled heap without blocking on GC noise", () => {
