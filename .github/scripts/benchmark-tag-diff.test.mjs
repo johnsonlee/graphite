@@ -206,6 +206,7 @@ test("HTML report is self-contained, 7+2 classified, provenance-rich, and inject
     assert.match(report.html, /All 6 methods/);
     assert.match(report.html, /\.forest-track:before\{[^}]*width:2px/);
     assert.match(report.html, /\.axis-track:before\{[^}]*width:2px/);
+    assert.match(report.html, /\.axis-track>b\{top:50%;transform:translate\(-50%,-50%\) rotate\(45deg\)\}/);
     assert.match(report.html, /\.signal-columns\{margin-bottom:1rem\}/);
     assert.match(report.html, /\.method-table td\{vertical-align:middle\}/);
     assert.match(report.html, /<table class="method-table">/);
@@ -213,6 +214,11 @@ test("HTML report is self-contained, 7+2 classified, provenance-rich, and inject
     assert.match(report.html, /Worse · shifted right/);
     assert.match(report.html, /Component-CI envelope [+-]\d+\.\d+% to [+-]\d+\.\d+%/);
     assert.match(report.html, /Exact values · 1 release/);
+    assert.equal([...report.html.matchAll(/data-trend-metric=/g)].length, PRODUCT_CORE_INDICATORS.length + EVIDENCE_DIMENSIONS.length);
+    assert.match(report.html, /Product signal trends/);
+    assert.match(report.html, /Evidence quality trends/);
+    assert.match(report.html, /Coverage completeness trend/);
+    assert.match(report.html, /Unavailable releases are not plotted as zero/);
     assert.doesNotMatch(report.html, /<ol class="trend-values">/);
     assert.match(report.html, /Is this a one-off or a trend/);
     assert.match(report.html, /What needs attention/);
