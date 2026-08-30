@@ -46,6 +46,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
@@ -271,6 +272,65 @@ class GraphStoreTest {
 
                 assertEquals(listOf(90, 4), resultIds)
                 assertEquals(resultIds.size, resultIds.distinct().size)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `missing CallSite disjunction skips the combined index`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                    0,
+                    null,
+                    emptyList()
+                )
+            )
+            .build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "definitely-not-present"
+            )
+        )
+        val dir = Files.createTempDirectory("webgraph-missing-disjunction")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    emptyList(),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+                        .orEmpty().toList()
+                )
+                assertEquals(
+                    StringPropertyDisjunctionAggregate(0, emptySet()),
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = "caller_class"
+                    )
+                )
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        limit = 10
+                    )
+                )
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
             } finally {
                 loaded.close()
             }

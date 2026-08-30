@@ -655,6 +655,48 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `parallel indexed distinct projection injects and verifies graph ids`() {
+        class GraphIdIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            var selectedLookups = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                assertEquals(listOf("graphId"), projectedProperties)
+                if (selectedValues != null) {
+                    selectedLookups++
+                    assertEquals(setOf(listOf(null)), selectedValues)
+                }
+                return listOf(StringPropertyDistinctRow(0, listOf(null))).take(limit)
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val first = GraphIdIndexedGraph(graph)
+        val second = GraphIdIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.graphId AS graphId LIMIT 2"
+        )
+
+        assertEquals(listOf("first", "second"), result.rows.map { it["graphId"] })
+        assertEquals(1, first.selectedLookups)
+        assertEquals(1, second.selectedLookups)
+    }
+
+    @Test
     fun `single unlabeled string filter uses typed property lookup instead of a full node scan`() {
         val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
             override fun <T : Node> nodes(type: Class<T>): Sequence<T> =

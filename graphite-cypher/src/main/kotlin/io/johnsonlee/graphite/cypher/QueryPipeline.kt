@@ -1448,6 +1448,10 @@ class QueryPipeline private constructor(
             if (property.expression != CypherExpr.Variable(variable)) return null
             property.propertyName
         }
+        if (projectedProperties.any { property ->
+                property == ELEMENT_ID_PROPERTY || property == QUALIFIED_ID_PROPERTY
+            }
+        ) return null
         val callSiteFilters = filter.filters.filter { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
         if (callSiteFilters.isEmpty()) return null
         val predicates = callSiteFilters.map { candidate ->
@@ -1477,7 +1481,7 @@ class QueryPipeline private constructor(
                     val sourceRows = projected.map { raw ->
                         OrderedProjectedRow(
                             raw.encounterOrder,
-                            rawProjectionRow(raw.values, columns, source.id)
+                            rawProjectionRow(raw.values, projectedProperties, columns, source.id)
                         )
                     }.toMutableList()
 
@@ -1530,15 +1534,19 @@ class QueryPipeline private constructor(
         val hits = runDirectStringTasks(sources.indices.map { sourceIndex ->
             {
                 val source = sources[sourceIndex]
-                val rawHits = projections[sourceIndex].distinctStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    predicates,
-                    projectedProperties,
-                    selectedValues.size,
-                    selectedValues,
-                    tracker
-                ).orEmpty().mapTo(mutableSetOf()) { hit ->
-                    visibleRow(rawProjectionRow(hit.values, columns, source.id))
+                val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
+                val rawHits = mutableSetOf<Map<String, Any?>>()
+                if (sourceSelectedValues.isNotEmpty()) {
+                    projections[sourceIndex].distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties,
+                        sourceSelectedValues.size,
+                        sourceSelectedValues,
+                        tracker
+                    ).orEmpty().mapTo(rawHits) { hit ->
+                        visibleRow(rawProjectionRow(hit.values, projectedProperties, columns, source.id))
+                    }
                 }
                 val matcher = selectedMatcher.cursor(source)
                 for (node in directStringCandidates(
@@ -1568,11 +1576,34 @@ class QueryPipeline private constructor(
 
     private fun rawProjectionRow(
         values: List<String?>,
+        projectedProperties: List<String>,
         columns: List<String>,
         graphId: String
     ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
-        columns.indices.forEach { index -> this[columns[index]] = values[index] }
+        columns.indices.forEach { index ->
+            this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) graphId else values[index]
+        }
         put(INTERNAL_PROVENANCE_KEY, setOf(graphId))
+    }
+
+    private fun storageSelectedValues(
+        selectedValues: Set<List<String?>>,
+        projectedProperties: List<String>,
+        graphId: String
+    ): Set<List<String?>> {
+        val graphIdIndexes = projectedProperties.indices.filter { index ->
+            projectedProperties[index] == GRAPH_ID_PROPERTY
+        }
+        if (graphIdIndexes.isEmpty()) return selectedValues
+        return selectedValues.mapNotNullTo(linkedSetOf()) { values ->
+            if (graphIdIndexes.any { index -> values[index] != graphId }) {
+                null
+            } else {
+                values.mapIndexed { index, value ->
+                    if (index in graphIdIndexes) null else value
+                }
+            }
+        }
     }
 
     private fun projectedNodeRow(
@@ -1581,7 +1612,13 @@ class QueryPipeline private constructor(
         projectedProperties: List<String>,
         columns: List<String>
     ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
-        columns.indices.forEach { index -> this[columns[index]] = NodePropertyAccessor.getProperty(node, projectedProperties[index]) }
+        columns.indices.forEach { index ->
+            this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
+                source.id
+            } else {
+                NodePropertyAccessor.getProperty(node, projectedProperties[index])
+            }
+        }
         put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
     }
 

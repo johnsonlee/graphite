@@ -254,6 +254,12 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
+        if (callSiteStringIndex == null && callSitePredicatesCannotMatch(predicates)) {
+            return StringPropertyDisjunctionAggregate(
+                count = 0,
+                distinctValues = if (distinctProperty == null) null else emptySet()
+            )
+        }
         val index = callSiteStringIndex(type) ?: return null
         return index.aggregate(predicates, distinctProperty).also { aggregate ->
             consumeGraphWork(workConsumer, aggregate.count)
@@ -273,6 +279,7 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
+        if (callSiteStringIndex == null && callSitePredicatesCannotMatch(predicates)) return emptyList()
         val index = callSiteStringIndex(type) ?: return null
         return index.distinctProjection(
             predicates,
@@ -292,6 +299,9 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
+        if (type == CallSiteNode::class.java && callSiteStringIndex == null &&
+            callSitePredicatesCannotMatch(predicates)
+        ) return emptySequence()
         callSiteStringIndex(type)?.let { index ->
             return index.matchingNodeIds(
                 predicates,
@@ -316,7 +326,7 @@ internal class MappedWebGraphBackedGraph(
                     if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                         Thread.currentThread().isInterrupted
                     ) {
-                        throw CancellationException("Mapped string-property scan interrupted")
+                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                     }
                     accounting.consume()
                     val matches = predicates.indices.any { index ->
@@ -359,6 +369,36 @@ internal class MappedWebGraphBackedGraph(
                 accounting.flush()
             }
         }
+    }
+
+    private fun callSitePredicatesCannotMatch(predicates: List<StringPropertyPredicate>): Boolean {
+        val predicateKeys = predicates.mapTo(linkedSetOf()) { predicate ->
+            StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+        }
+        for (predicate in predicateKeys) {
+            if (Thread.currentThread().isInterrupted) {
+                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+            }
+            if (predicate.transform == null && predicate.mode == StringMatchMode.EQUALS) {
+                if (stringTable.findId(predicate.expected) >= 0) return false
+                continue
+            }
+            for (stringId in 0 until stringTable.size()) {
+                if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                if (stringMatches(
+                        stringTable.get(stringId),
+                        predicate.transform,
+                        predicate.mode,
+                        predicate.expected
+                    )
+                ) return false
+            }
+        }
+        return true
     }
 
     @Suppress("ReturnCount")
@@ -925,6 +965,7 @@ internal class MappedWebGraphBackedGraph(
 
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
 private const val MAX_STRING_PROPERTY_INDEXES = 4
 private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
 private const val MAX_STRING_PROPERTY_ADMISSIONS = 32
