@@ -214,11 +214,18 @@ test("HTML report is self-contained, 7+2 classified, provenance-rich, and inject
     assert.match(report.html, /Worse · shifted right/);
     assert.match(report.html, /Component-CI envelope [+-]\d+\.\d+% to [+-]\d+\.\d+%/);
     assert.match(report.html, /Exact values · 1 release/);
-    assert.equal([...report.html.matchAll(/data-trend-metric=/g)].length, PRODUCT_CORE_INDICATORS.length + EVIDENCE_DIMENSIONS.length);
+    assert.deepEqual(
+        [...report.html.matchAll(/data-trend-metric="([^"]+)"/g)].map((match) => match[1]),
+        ["latency", "measurement-confidence", "coverage-completeness"]
+    );
     assert.match(report.html, /Product signal trends/);
     assert.match(report.html, /Evidence quality trends/);
     assert.match(report.html, /Coverage completeness trend/);
-    assert.match(report.html, /Unavailable releases are not plotted as zero/);
+    assert.match(report.html, /6 indicator gaps map to 5 unmeasured domains/);
+    assert.match(report.html, /href="#coverage-map"/);
+    assert.doesNotMatch(report.html, /Tracked indicator/);
+    assert.match(report.html, /Feeds core indicators/);
+    assert.match(report.html, /Would unlock/);
     assert.doesNotMatch(report.html, /<ol class="trend-values">/);
     assert.match(report.html, /Is this a one-off or a trend/);
     assert.match(report.html, /What needs attention/);
