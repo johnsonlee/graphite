@@ -130,10 +130,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-method-${{ github.event.pull_request.number }}
+        name: benchmark-method-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   explorer:
@@ -265,10 +264,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-explorer-${{ github.event.pull_request.number }}
+        name: benchmark-explorer-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   method-compatibility-shard:
@@ -823,10 +821,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-budgeted-collection-${{ github.event.pull_request.number }}
+        name: benchmark-budgeted-collection-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   budgeted-mapped-string:
@@ -931,10 +928,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-budgeted-string-${{ github.event.pull_request.number }}
+        name: benchmark-budgeted-string-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   large-corpus:
@@ -1020,10 +1016,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-large-corpus-${{ github.event.pull_request.number }}
+        name: benchmark-large-corpus-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   prepare-latency-fixtures:
@@ -1482,10 +1477,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-latency-${{ github.event.pull_request.number }}
+        name: benchmark-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: error
-        overwrite: true
         retention-days: 14
 
     - name: Enforce latency shards
@@ -1612,10 +1606,9 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-latency-resources-${{ github.event.pull_request.number }}
+        name: benchmark-latency-resources-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: warn
-        overwrite: true
         retention-days: 14
 
   benchmark-regression-gate:
