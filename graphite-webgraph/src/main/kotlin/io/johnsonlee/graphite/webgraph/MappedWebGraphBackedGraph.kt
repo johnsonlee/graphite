@@ -39,6 +39,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.webgraph.ImmutableGraph
 import java.io.Closeable
 import java.io.DataInput
@@ -383,19 +384,15 @@ internal class MappedWebGraphBackedGraph(
                 if (stringTable.findId(predicate.expected) >= 0) return false
                 continue
             }
+            val actual = MutableString()
             for (stringId in 0 until stringTable.size()) {
                 if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                     Thread.currentThread().isInterrupted
                 ) {
                     throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                 }
-                if (stringMatches(
-                        stringTable.get(stringId),
-                        predicate.transform,
-                        predicate.mode,
-                        predicate.expected
-                    )
-                ) return false
+                stringTable.get(stringId, actual)
+                if (reusableStringMatches(actual, predicate)) return false
             }
         }
         return true
@@ -965,6 +962,7 @@ internal class MappedWebGraphBackedGraph(
 
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+private const val ASCII_MAX_CODE = 0x7f
 private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
 private const val MAX_STRING_PROPERTY_INDEXES = 4
 private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
@@ -1385,6 +1383,38 @@ internal fun stringMatches(
         StringMatchMode.ENDS_WITH -> transformed.endsWith(expected)
         StringMatchMode.CONTAINS -> transformed.contains(expected)
     }
+}
+
+private fun reusableStringMatches(
+    actual: MutableString,
+    predicate: StringPredicateKey
+): Boolean {
+    if (predicate.transform == StringValueTransform.LOWERCASE) {
+        var index = 0
+        while (index < actual.length) {
+            if (actual[index].code > ASCII_MAX_CODE) {
+                return stringMatches(actual.toString(), predicate.transform, predicate.mode, predicate.expected)
+            }
+            index++
+        }
+        actual.toLowerCase()
+    }
+    return when (predicate.mode) {
+        StringMatchMode.EQUALS -> reusableStringEquals(actual, predicate.expected)
+        StringMatchMode.STARTS_WITH -> actual.startsWith(predicate.expected)
+        StringMatchMode.ENDS_WITH -> actual.endsWith(predicate.expected)
+        StringMatchMode.CONTAINS -> actual.indexOf(predicate.expected) >= 0
+    }
+}
+
+private fun reusableStringEquals(actual: MutableString, expected: String): Boolean {
+    if (actual.length != expected.length) return false
+    var index = 0
+    while (index < expected.length) {
+        if (actual[index] != expected[index]) return false
+        index++
+    }
+    return true
 }
 
 internal fun consumeGraphWork(consumer: GraphWorkConsumer?, workUnits: Long) {

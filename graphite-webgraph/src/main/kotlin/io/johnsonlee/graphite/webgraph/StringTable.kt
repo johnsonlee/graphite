@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
 import java.nio.file.Path
 
@@ -47,6 +48,9 @@ internal class StringTable private constructor(
      * Returns the string at the given [index].
      */
     fun get(index: Int): String = list.get(index).toString()
+
+    /** Decodes into a reusable buffer for allocation-sensitive table scans. */
+    internal fun get(index: Int, target: MutableString) = list.get(index, target)
 
     /**
      * Returns the number of strings in the table.
