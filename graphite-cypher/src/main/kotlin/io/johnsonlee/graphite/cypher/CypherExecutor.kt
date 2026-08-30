@@ -290,6 +290,7 @@ class CypherExecutor internal constructor(
     }
 
     private fun materializeValue(value: Any?, workTracker: CypherWorkTracker?): Any? = when (value) {
+        is MethodValue -> value.properties()
         is GraphiteNode -> nodeToMap(value)
         is QualifiedNode -> nodeToMap(value.node) + mapOf(
             GRAPH_ID_PROPERTY to value.graphId,
@@ -323,6 +324,7 @@ class CypherExecutor internal constructor(
     }
 
     private fun materializeValue(value: Any?): Any? = when (value) {
+        is MethodValue -> value.properties()
         is GraphiteNode -> nodeToMap(value)
         is QualifiedNode -> nodeToMap(value.node) + mapOf(
             GRAPH_ID_PROPERTY to value.graphId,

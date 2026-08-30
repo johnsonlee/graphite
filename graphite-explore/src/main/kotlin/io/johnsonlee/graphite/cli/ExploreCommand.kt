@@ -15,10 +15,6 @@ import java.nio.file.Path
 import java.util.concurrent.Callable
 
 private const val DEFAULT_PORT = 8080
-private const val DEFAULT_PORT_TEXT = "8080"
-private const val DEFAULT_LOAD_MODE_TEXT = "MAPPED"
-private const val DEFAULT_MAX_CONCURRENT_CYPHER_TEXT = "2"
-private const val DEFAULT_CYPHER_WORK_BUDGET_TEXT = "250000"
 
 @Command(
     name = "serve",
@@ -39,15 +35,14 @@ open class ServeCommand : Callable<Int> {
     @Option(names = ["--id"], description = ["Required graph id for the optional positional graph"])
     var graphId: String? = null
 
-    @Option(names = ["--port", "-p"], description = ["HTTP port"], defaultValue = DEFAULT_PORT_TEXT)
+    @Option(names = ["--port", "-p"], description = ["HTTP port"])
     var port: Int = DEFAULT_PORT
 
     @Option(
         names = ["--load-mode"],
         description = [
             "Graph load mode: \${COMPLETION-CANDIDATES}. Defaults to MAPPED for multi-graph heap stability."
-        ],
-        defaultValue = DEFAULT_LOAD_MODE_TEXT
+        ]
     )
     var loadMode: GraphStore.LoadMode = GraphStore.LoadMode.MAPPED
 
@@ -62,15 +57,13 @@ open class ServeCommand : Callable<Int> {
 
     @Option(
         names = ["--max-concurrent-cypher"],
-        description = ["Maximum number of Cypher queries executing at once"],
-        defaultValue = DEFAULT_MAX_CONCURRENT_CYPHER_TEXT
+        description = ["Maximum number of Cypher queries executing at once"]
     )
     var maxConcurrentCypher: Int = DEFAULT_MAX_CONCURRENT_CYPHER
 
     @Option(
         names = ["--cypher-work-budget"],
-        description = ["Maximum graph work units per Cypher request"],
-        defaultValue = DEFAULT_CYPHER_WORK_BUDGET_TEXT
+        description = ["Maximum graph work units per Cypher request"]
     )
     var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
 

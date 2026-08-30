@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-internal const val DEFAULT_MAX_CONCURRENT_CYPHER = 2
-internal const val DEFAULT_CYPHER_WORK_BUDGET = 250_000L
+internal const val DEFAULT_MAX_CONCURRENT_CYPHER = 4
+internal const val DEFAULT_CYPHER_WORK_BUDGET = 1_000_000L
 private const val CYPHER_GUARD_CLOSED = "Cypher query guard is closed"
 
 internal class CypherConcurrencyLimitException(maxConcurrent: Int) : RuntimeException(

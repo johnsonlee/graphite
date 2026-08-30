@@ -174,7 +174,8 @@ function isLowerBetter(mode) {
 }
 
 function regressionPercent(baseScore, candidateScore, lowerIsBetter) {
-    if (baseScore <= 0) return Number.POSITIVE_INFINITY;
+    if (baseScore === 0) return candidateScore === 0 ? 0 : Number.POSITIVE_INFINITY;
+    if (baseScore < 0) return Number.POSITIVE_INFINITY;
     return lowerIsBetter
         ? ((candidateScore / baseScore) - 1) * 100
         : (1 - (candidateScore / baseScore)) * 100;
@@ -206,7 +207,13 @@ function statusLabel(row) {
     return "PASS";
 }
 
-export function compareJmh(baseResults, candidateResults, threshold = 15, thresholdOnly = false) {
+export function compareJmh(
+    baseResults,
+    candidateResults,
+    threshold = 15,
+    thresholdOnly = false,
+    allowZeroBase = false
+) {
     const errors = [];
     const base = new Map();
     const candidate = new Map();
@@ -227,7 +234,9 @@ export function compareJmh(baseResults, candidateResults, threshold = 15, thresh
         const candidateMetric = current.primaryMetric ?? {};
         const baseScore = finiteNumber(baseMetric.score);
         const candidateScore = finiteNumber(candidateMetric.score);
-        if (baseScore === null || candidateScore === null || baseScore <= 0 || candidateScore < 0) {
+        if (baseScore === null || candidateScore === null ||
+            (allowZeroBase ? baseScore < 0 : baseScore <= 0) || candidateScore < 0
+        ) {
             errors.push(`${key}: invalid score`);
             continue;
         }
@@ -266,7 +275,25 @@ export function compareJmh(baseResults, candidateResults, threshold = 15, thresh
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         thresholdOnly,
+        allowZeroBase,
         rows
+    };
+}
+
+export function selectJmhMetric(results, metricName) {
+    if (metricName === undefined || metricName === null) return results;
+    return results.map((result) => ({
+        ...result,
+        primaryMetric: result.secondaryMetrics?.[metricName] ?? {}
+    }));
+}
+
+export function makeJmhAdvisory(comparison) {
+    return {
+        ...comparison,
+        passed: comparison.errors.length === 0,
+        advisory: true,
+        rows: comparison.rows.map((row) => ({ ...row, advisory: true, blocked: false }))
     };
 }
 
@@ -303,7 +330,9 @@ export function confirmJmh(initial, confirmation) {
 }
 
 export function renderJmhReport(comparison, title = "Method-level JMH") {
-    const decisionRule = comparison.thresholdOnly === true
+    const decisionRule = comparison.advisory === true
+        ? ["This metric is reported for context and does not block the regression gate."]
+        : comparison.thresholdOnly === true
         ? [
             "A row runs reverse-order confirmation whenever it exceeds the 15% limit, regardless of confidence",
             "interval overlap, and blocks only when the confirmation also exceeds 15%."
@@ -803,6 +832,16 @@ export function aggregateReports(directory, metadata) {
         { name: "method-level", report: "method-report.md", status: "method-status.json" },
         { name: "explorer", report: "explorer-report.md", status: "explorer-status.json" },
         {
+            name: "method-compatibility",
+            report: "method-compatibility-report.md",
+            status: "method-compatibility-status.json"
+        },
+        {
+            name: "cypher-capacity",
+            report: "cypher-capacity-report.md",
+            status: "cypher-capacity-status.json"
+        },
+        {
             name: "budgeted-collection",
             report: "budgeted-collection-report.md",
             status: "budgeted-collection-status.json"
@@ -850,13 +889,45 @@ export function aggregateReports(directory, metadata) {
     return { passed: result === "PASS", errors, body: `${body}\n` };
 }
 
+export function stageLatestArtifacts(directory, output) {
+    const artifacts = fs.readdirSync(directory, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => {
+            const match = entry.name.match(/^(.*)-(\d+)$/);
+            return match === null ? null : {
+                name: entry.name,
+                producer: match[1],
+                attempt: Number(match[2])
+            };
+        })
+        .filter((entry) => entry !== null);
+    if (artifacts.length === 0) throw new Error(`No benchmark artifacts found in ${directory}`);
+    const latestByProducer = new Map();
+    for (const artifact of artifacts) {
+        const latest = latestByProducer.get(artifact.producer);
+        if (latest === undefined || artifact.attempt > latest.attempt) {
+            latestByProducer.set(artifact.producer, artifact);
+        }
+    }
+    const latestArtifacts = [...latestByProducer.values()]
+        .sort((left, right) => left.name.localeCompare(right.name));
+    fs.rmSync(output, { recursive: true, force: true });
+    fs.mkdirSync(output, { recursive: true });
+    for (const artifact of latestArtifacts) {
+        fs.cpSync(path.join(directory, artifact.name), output, { recursive: true, force: true });
+    }
+    return latestArtifacts.map((artifact) => artifact.name);
+}
+
 function compareJmhCommand(args) {
-    const comparison = compareJmh(
-        readJson(requireArg(args, "base")),
-        readJson(requireArg(args, "candidate")),
+    let comparison = compareJmh(
+        selectJmhMetric(readJson(requireArg(args, "base")), args.metric),
+        selectJmhMetric(readJson(requireArg(args, "candidate")), args.metric),
         Number(args.threshold ?? 15),
-        args["threshold-only"] === true
+        args["threshold-only"] === true,
+        args.metric !== undefined
     );
+    if (args.advisory === true) comparison = makeJmhAdvisory(comparison);
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
@@ -932,15 +1003,20 @@ function combineLatencyShardsCommand(args) {
 function confirmJmhCommand(args) {
     const initial = readJson(requireArg(args, "initial"));
     const confirmation = compareJmh(
-        readJson(requireArg(args, "base")),
-        readJson(requireArg(args, "candidate")),
+        selectJmhMetric(readJson(requireArg(args, "base")), args.metric),
+        selectJmhMetric(readJson(requireArg(args, "candidate")), args.metric),
         Number(args.threshold ?? 15),
-        args["threshold-only"] === true
+        args["threshold-only"] === true,
+        args.metric !== undefined
     );
     const comparison = confirmJmh(initial, confirmation);
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, args.title));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
+}
+
+function stageLatestArtifactsCommand(args) {
+    stageLatestArtifacts(requireArg(args, "directory"), requireArg(args, "output"));
 }
 
 function confirmLargeCorpusCommand(args) {
@@ -978,6 +1054,7 @@ function main(argv) {
     else if (command === "confirm-jmh") confirmJmhCommand(args);
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);
+    else if (command === "stage-artifacts") stageLatestArtifactsCommand(args);
     else if (command === "aggregate") aggregateCommand(args);
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);
 }

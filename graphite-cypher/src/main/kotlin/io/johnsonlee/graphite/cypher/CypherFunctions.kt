@@ -254,12 +254,14 @@ object CypherFunctions {
     }
 
     private fun elementId(value: Any?): String? = when (value) {
+        is MethodValue -> listOfNotNull(value.graphId, METHOD_LABEL, value.method.signature).joinToString(":")
         is QualifiedNode -> value.elementId
         is Node -> value.id.value.toString()
         else -> null
     }
 
     private fun graphId(value: Any?): String? = when (value) {
+        is MethodValue -> value.graphId
         is QualifiedNode -> value.graphId
         is QualifiedEdge -> value.graphId
         is QualifiedPath -> value.graphId
@@ -292,22 +294,25 @@ object CypherFunctions {
     }
 
     private fun properties(value: Any?): Map<String, Any?>? = when (value) {
+        is MethodValue -> value.properties()
         is Node -> NodePropertyAccessor.getAllProperties(value)
         is QualifiedNode -> NodePropertyAccessor.getAllProperties(value.node) + mapOf(
-            "graphId" to value.graphId,
-            "elementId" to value.elementId,
-            "qualifiedId" to value.elementId
+            GRAPH_ID_PROPERTY to value.graphId,
+            ELEMENT_ID_PROPERTY to value.elementId,
+            QUALIFIED_ID_PROPERTY to value.elementId
         )
         else -> null
     }
 
     private fun keys(value: Any?): List<String>? = when (value) {
+        is MethodValue -> value.properties().keys.toList()
         is Node -> NodePropertyAccessor.getAllProperties(value).keys.toList()
         is QualifiedNode -> properties(value)?.keys?.toList()
         else -> null
     }
 
     internal fun labels(value: Any?): List<String> = when (value) {
+        is MethodValue -> listOf(METHOD_LABEL)
         is QualifiedNode -> labels(value.node)
         is CallSiteNode -> listOf("CallSiteNode")
         is IntConstant -> listOf("IntConstant", CONSTANT_LABEL)

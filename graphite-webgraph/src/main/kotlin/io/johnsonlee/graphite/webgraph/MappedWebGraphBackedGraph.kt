@@ -16,12 +16,14 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.StreamingMethodLookup
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
@@ -30,7 +32,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.webgraph.ImmutableGraph
-import java.io.BufferedInputStream
 import java.io.Closeable
 import java.io.DataInput
 import java.io.DataInputStream
@@ -38,6 +39,8 @@ import java.io.EOFException
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.file.StandardOpenOption
 import java.util.LinkedHashMap
 import java.util.concurrent.CancellationException
 
@@ -84,6 +87,7 @@ internal class MappedWebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>
 ) : Graph,
+    StreamingMethodLookup,
     WorkAwareStringPropertyLookup,
     WorkAwareTransformedStringPropertyLookup,
     WorkAwareStringPropertyDisjunctionLookup,
@@ -104,6 +108,13 @@ internal class MappedWebGraphBackedGraph(
                 falseBranchNodeIds = IntOpenHashSet(raw.falseBranchNodeIds)
             )
         }.groupBy { it.conditionNodeId.value }
+    }
+
+    /** Method records begin at the metadata header; mmap avoids retaining an open stream on lazy early exit. */
+    private val mappedMethodMetadata: MappedByteBuffer by lazy {
+        FileChannel.open(metadataFile.toPath(), StandardOpenOption.READ).use { channel ->
+            channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
+        }
     }
 
     private val stringPropertyIndexLock = Any()
@@ -458,14 +469,32 @@ internal class MappedWebGraphBackedGraph(
         metadata.value.subtypes[type.className]?.asSequence() ?: emptySequence()
 
     override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
-        metadata.value.methods.values.asSequence().filter { pattern.matches(it) }
+        streamMethods(pattern)
+
+    override fun methods(
+        pattern: MethodPattern,
+        scanConsumer: MethodMetadataScanConsumer
+    ): Sequence<MethodDescriptor> = streamMethods(pattern, scanConsumer)
 
     override fun methodCount(): Long = methodCount
 
     override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> =
-        DataInputStream(BufferedInputStream(metadataFile.inputStream())).use { dis ->
-            NodeSerializer.readMetadataMethodSlice(dis, stringTable, pattern, limit)
-        }
+        NodeSerializer.readMetadataMethodSlice(methodMetadataInput(), stringTable, pattern, limit)
+
+    override fun methodSlice(
+        pattern: MethodPattern,
+        limit: Int,
+        scanConsumer: MethodMetadataScanConsumer
+    ): List<MethodDescriptor> =
+        NodeSerializer.readMetadataMethodSlice(methodMetadataInput(), stringTable, pattern, limit, scanConsumer)
+
+    private fun streamMethods(
+        pattern: MethodPattern,
+        scanConsumer: MethodMetadataScanConsumer? = null
+    ): Sequence<MethodDescriptor> =
+        NodeSerializer.readMetadataMethods(methodMetadataInput(), stringTable, pattern, scanConsumer)
+
+    private fun methodMetadataInput(): DataInput = ByteBufferDataInput(mappedMethodMetadata.duplicate(), 0)
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]
@@ -497,6 +526,8 @@ internal class MappedWebGraphBackedGraph(
         clearStringPropertyIndexes()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
+
+    internal fun isMetadataInitialized(): Boolean = metadata.isInitialized()
 
     internal fun clearStringPropertyIndexes() {
         synchronized(stringPropertyIndexLock) {

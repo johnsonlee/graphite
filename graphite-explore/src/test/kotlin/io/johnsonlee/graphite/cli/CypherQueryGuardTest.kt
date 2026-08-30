@@ -58,6 +58,32 @@ class CypherQueryGuardTest {
     }
 
     @Test
+    fun `default guard admits four concurrent queries and rejects a fifth`() {
+        val guard = CypherQueryGuard()
+        val started = CountDownLatch(DEFAULT_MAX_CONCURRENT_CYPHER)
+        val release = CountDownLatch(1)
+        val tasks = List(DEFAULT_MAX_CONCURRENT_CYPHER) {
+            guard.submit(CypherCancellationSignal()) {
+                started.countDown()
+                release.await()
+            }
+        }
+
+        try {
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertFailsWith<CypherConcurrencyLimitException> {
+                guard.execute { error("fifth query must not run") }
+            }
+            release.countDown()
+            tasks.forEach { it.completion.get(5, TimeUnit.SECONDS) }
+            assertEquals(DEFAULT_CYPHER_WORK_BUDGET, guard.execute { it.executionBudget.maxWorkUnits })
+        } finally {
+            release.countDown()
+            guard.close()
+        }
+    }
+
+    @Test
     fun `guard does not start work after cancellation arrives before execution`() {
         val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
         val cancellation = CypherCancellationSignal().apply(CypherCancellationSignal::cancel)
@@ -199,6 +225,23 @@ class CypherQueryGuardTest {
 
         try {
             val task = guard.submit(CypherCancellationSignal()) { "completed" }
+
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+            assertEquals("next", guard.execute { "next" })
+        } finally {
+            guard.close()
+        }
+    }
+
+    @Test
+    fun `cancelling a completed task preserves its result`() {
+        val guard = CypherQueryGuard(maxConcurrent = 1, maxWorkUnits = 10)
+
+        try {
+            val task = guard.submit(CypherCancellationSignal()) { "completed" }
+            assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
+
+            task.cancel()
 
             assertEquals("completed", task.completion.get(5, TimeUnit.SECONDS))
             assertEquals("next", guard.execute { "next" })
