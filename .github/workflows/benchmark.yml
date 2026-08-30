@@ -14,7 +14,8 @@ concurrency:
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
-  PRE_PR_95_BASELINE_SHA: 44b57562f2b3d0c88882a9002bdc488e05e5d7a7
+  WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
+  ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
@@ -33,7 +34,143 @@ jobs:
         persist-credentials: false
 
     - name: Test candidate benchmark gate logic
-      run: node --test candidate/.github/scripts/benchmark-gate.test.mjs
+      run: node --test candidate/.github/scripts/benchmark-*.test.mjs
+
+  build-explore-jmh:
+    name: build-explore-jmh-${{ matrix.revision }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [base, candidate]
+
+    steps:
+    - name: Checkout base-owned benchmark harness
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+
+    - name: Checkout benchmark revision
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+        path: source
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Install base-owned Explorer harnesses
+      run: |
+        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
+          SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
+          test ! -L "source/${SOURCE}"
+          rm -f -- "source/${SOURCE}"
+          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
+          cmp "gate/${SOURCE}" "source/${SOURCE}"
+        done
+
+    - name: Build comparable Explorer JMH JAR
+      run: |
+        source/gradlew -p source :explore:jmhJar --no-daemon
+        mapfile -t JARS < <(find source/graphite-explore/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        mkdir -p jmh-artifact
+        install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-explore-jmh.jar"
+        cd jmh-artifact
+        sha256sum "${{ matrix.revision }}-explore-jmh.jar" \
+          > "${{ matrix.revision }}-explore-jmh.jar.sha256"
+
+    - name: Upload comparable Explorer JMH JAR
+      uses: actions/upload-artifact@v7
+      with:
+        name: jmh-explore-${{ matrix.revision }}-${{ github.event.pull_request.number }}
+        path: jmh-artifact/
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 2
+
+  build-wrapped-query-jmh:
+    name: build-wrapped-query-jmh-${{ matrix.revision }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [reference, base, candidate]
+
+    steps:
+    - name: Checkout base-owned benchmark harness
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: gate
+        persist-credentials: false
+
+    - name: Checkout benchmark revision
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ matrix.revision == 'reference' && env.WRAPPED_QUERY_REFERENCE_SHA || matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+        path: source
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    - name: Install base-owned wrapped-query harnesses
+      run: |
+        for HARNESS in \
+          BenchmarkCorpus.kt \
+          WrappedDiscoveryLatencyBenchmark.kt \
+          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
+          WrappedDiscoveryResourceBenchmark.kt; do
+          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          test ! -L "source/${SOURCE}"
+          rm -f -- "source/${SOURCE}"
+          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
+          cmp "gate/${SOURCE}" "source/${SOURCE}"
+        done
+
+    - name: Build comparable wrapped-query JMH JAR
+      run: |
+        source/gradlew -p source :webgraph:jmhJar --no-daemon
+        mapfile -t JARS < <(find source/graphite-webgraph/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        mkdir -p jmh-artifact
+        install -m 0644 "${JARS[0]}" "jmh-artifact/${{ matrix.revision }}-webgraph-jmh.jar"
+        cd jmh-artifact
+        sha256sum "${{ matrix.revision }}-webgraph-jmh.jar" \
+          > "${{ matrix.revision }}-webgraph-jmh.jar.sha256"
+
+    - name: Upload comparable wrapped-query JMH JAR
+      uses: actions/upload-artifact@v7
+      with:
+        name: jmh-wrapped-query-${{ matrix.revision }}-${{ github.event.pull_request.number }}
+        path: jmh-artifact/
+        if-no-files-found: error
+        overwrite: true
+        retention-days: 2
 
   method-level:
     name: method-level-benchmarks
@@ -137,7 +274,7 @@ jobs:
 
   explorer:
     name: explorer-benchmarks
-    needs: [prepare-latency-fixtures]
+    needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -162,10 +299,26 @@ jobs:
         distribution: temurin
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+    - name: Download base Explorer JMH JAR
+      uses: actions/download-artifact@v8
       with:
-        cache-read-only: true
+        name: jmh-explore-base-${{ github.event.pull_request.number }}
+        path: jmh-jars/base
+
+    - name: Download candidate Explorer JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-explore-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
+
+    - name: Verify Explorer JMH artifacts
+      run: |
+        for REVISION in base candidate; do
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar"
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar.sha256"
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-explore-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar" >/dev/null
+        done
 
     - name: Restore persisted fixture graphs
       uses: actions/cache/restore@v5
@@ -181,23 +334,11 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Build comparable Explorer JMH jars
-      run: |
-        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
-          SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          test ! -L "candidate/${SOURCE}"
-          rm -f -- "candidate/${SOURCE}"
-          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
-          cmp "base/${SOURCE}" "candidate/${SOURCE}"
-        done
-        base/gradlew -p base :explore:jmhJar --no-daemon
-        candidate/gradlew -p candidate :explore:jmhJar --no-daemon
-
     - name: Benchmark base then PR
       run: |
         mkdir -p benchmark-results
-        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}"
         test -n "${CANDIDATE_JAR}"
         GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
@@ -236,8 +377,8 @@ jobs:
           mv benchmark-results/initial-explorer-report.md benchmark-results/explorer-report.md
           mv benchmark-results/initial-explorer-status.json benchmark-results/explorer-status.json
         else
-          BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
           GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
           JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
             -p stableResidentGrowthLimitBytes=134217728)
@@ -270,14 +411,50 @@ jobs:
         retention-days: 14
 
   method-compatibility-shard:
-    name: method-compatibility-${{ matrix.graph_count }}
-    needs: [prepare-latency-fixtures]
+    name: method-compatibility-${{ matrix.graph_count }}-${{ matrix.group }}
+    needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        graph_count: [4, 17, 36]
+        include:
+        - graph_count: 4
+          group: position
+          scenarios: zero,early,middle
+        - graph_count: 4
+          group: string
+          scenarios: late,prefix,suffix
+        - graph_count: 4
+          group: scan
+          scenarios: contains,regex,or
+        - graph_count: 4
+          group: aggregate
+          scenarios: count,order
+        - graph_count: 17
+          group: position
+          scenarios: zero,early,middle
+        - graph_count: 17
+          group: string
+          scenarios: late,prefix,suffix
+        - graph_count: 17
+          group: scan
+          scenarios: contains,regex,or
+        - graph_count: 17
+          group: aggregate
+          scenarios: count,order
+        - graph_count: 36
+          group: position
+          scenarios: zero,early,middle
+        - graph_count: 36
+          group: string
+          scenarios: late,prefix,suffix
+        - graph_count: 36
+          group: scan
+          scenarios: contains,regex,or
+        - graph_count: 36
+          group: aggregate
+          scenarios: count,order
 
     steps:
     - name: Checkout base
@@ -300,10 +477,26 @@ jobs:
         distribution: temurin
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+    - name: Download base Explorer JMH JAR
+      uses: actions/download-artifact@v8
       with:
-        cache-read-only: true
+        name: jmh-explore-base-${{ github.event.pull_request.number }}
+        path: jmh-jars/base
+
+    - name: Download candidate Explorer JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-explore-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
+
+    - name: Verify Explorer JMH artifacts
+      run: |
+        for REVISION in base candidate; do
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar"
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar.sha256"
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-explore-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar" >/dev/null
+        done
 
     - name: Restore persisted fixture graphs
       uses: actions/cache/restore@v5
@@ -319,47 +512,44 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Build comparable Method JMH jars
-      run: |
-        SOURCE=graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt
-        test ! -L "candidate/${SOURCE}"
-        rm -f -- "candidate/${SOURCE}"
-        install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
-        cmp "base/${SOURCE}" "candidate/${SOURCE}"
-        base/gradlew -p base :explore:jmhJar --no-daemon
-        candidate/gradlew -p candidate :explore:jmhJar --no-daemon
-
     - name: Benchmark paired Method shard
       env:
         GRAPH_COUNT: ${{ matrix.graph_count }}
+        GROUP: ${{ matrix.group }}
+        SCENARIOS: ${{ matrix.scenarios }}
       run: |
         mkdir -p benchmark-results
-        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
         GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json -p "graphCount=${GRAPH_COUNT}")
+        METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
+          -p "graphCount=${GRAPH_COUNT}" -p "scenario=${SCENARIOS}")
         java -jar "${BASE_JAR}" \
           'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}.txt" \
-          -rff "${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json"
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \
+          -rff "${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
         java -jar "${CANDIDATE_JAR}" \
           'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.txt" \
-          -rff "${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json"
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \
+          -rff "${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
 
     - name: Validate Method shard
       env:
         GRAPH_COUNT: ${{ matrix.graph_count }}
+        GROUP: ${{ matrix.group }}
+        SCENARIOS: ${{ matrix.scenarios }}
       run: |
         EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.'
+        SCENARIO_COUNT=$(tr ',' '\n' <<< "${SCENARIOS}" | wc -l)
         for REVISION in base candidate; do
-          FILE="benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}.json"
-          jq -e --arg expected "${EXPECTED}" --arg graph_count "${GRAPH_COUNT}" '
-            length == 11 and
+          FILE="benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
+          jq -e --arg expected "${EXPECTED}" --arg graph_count "${GRAPH_COUNT}" \
+            --arg scenarios "${SCENARIOS}" '
+            length == ($scenarios | split(",") | length) and
             all(.[];
               (.benchmark | startswith($expected)) and
               .params.graphCount == $graph_count and
@@ -368,10 +558,10 @@ jobs:
               .secondaryMetrics.residentSetAfterBytes.score > 0 and
               .secondaryMetrics.residentSetDeltaBytes.score >= 0
             ) and
-            ([.[].params.scenario] | unique | sort) ==
-              ["contains", "count", "early", "late", "middle", "or", "order", "prefix", "regex", "suffix", "zero"]' \
+            ([.[].params.scenario] | unique | sort) == ($scenarios | split(",") | sort)' \
             "${FILE}" >/dev/null
-          test "$(sort -u "benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
+          test "$(sort -u "benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
+            -eq "${SCENARIO_COUNT}"
         done
 
         gate_metric() {
@@ -384,15 +574,15 @@ jobs:
           if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
           if [ "${ADVISORY}" = true ]; then ADVISORY_ARG=(--advisory); fi
           node base/.github/scripts/benchmark-gate.mjs compare-jmh \
-            --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json" \
-            --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json" \
+            --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.json" \
+            --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.json" \
             "${METRIC_ARG[@]}" \
             "${ADVISORY_ARG[@]}" \
             --threshold 15 \
             --threshold-only \
-            --title "Method discovery ${GRAPH_COUNT}-graph ${TITLE}" \
-            --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-report.md" \
-            --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json"
+            --title "Method discovery ${GRAPH_COUNT}-graph ${GROUP} ${TITLE}" \
+            --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-report.md" \
+            --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json"
         }
 
         NEED_CONFIRMATION=0
@@ -402,27 +592,30 @@ jobs:
         gate_metric rss-delta residentSetDeltaBytes 'RSS query delta (advisory)' true || NEED_CONFIRMATION=1
 
         if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
-          BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
           test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
           GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-          METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json -p "graphCount=${GRAPH_COUNT}")
+          METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
+            -p "graphCount=${GRAPH_COUNT}" -p "scenario=${SCENARIOS}")
           java -jar "${CANDIDATE_JAR}" \
             'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt" \
-            -rff "${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json"
+            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt" \
+            -rff "${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.json"
           java -jar "${BASE_JAR}" \
             'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt" \
-            -rff "${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json"
-          test "$(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
-          test "$(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt" | wc -l)" -eq 11
+            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt" \
+            -rff "${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.json"
+          test "$(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
+            -eq "${SCENARIO_COUNT}"
+          test "$(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
+            -eq "${SCENARIO_COUNT}"
           diff -u \
-            <(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.txt") \
-            <(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.txt")
+            <(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt") \
+            <(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt")
         fi
 
         FINAL_FAILURE=0
@@ -433,49 +626,50 @@ jobs:
           'rss-delta:residentSetDeltaBytes:RSS query delta (advisory):true'; do
           IFS=: read -r SLUG METRIC TITLE ADVISORY <<< "${SPEC}"
           if [ "${NEED_CONFIRMATION}" -eq 0 ] || [ "${ADVISORY}" = true ]; then
-            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-report.md" \
-              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-report.md"
-            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
-              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-status.json"
+            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-report.md" \
+              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-report.md"
+            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json" \
+              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-status.json"
           else
             METRIC_ARG=()
             if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
             node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
-              --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
-              --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json" \
-              --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json" \
+              --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json" \
+              --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.json" \
+              --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.json" \
               "${METRIC_ARG[@]}" \
               --threshold 15 \
               --threshold-only \
-              --title "Method discovery ${GRAPH_COUNT}-graph ${TITLE}" \
-              --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-report.md" \
-              --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-status.json" || FINAL_FAILURE=1
+              --title "Method discovery ${GRAPH_COUNT}-graph ${GROUP} ${TITLE}" \
+              --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-report.md" \
+              --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-status.json" || FINAL_FAILURE=1
           fi
         done
         cat \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-wall-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-cpu-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-after-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-delta-report.md" \
-          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-report.md"
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-wall-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-cpu-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-after-report.md" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-delta-report.md" \
+          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-report.md"
         jq -s '{
           passed: all(.[]; .passed == true),
           errors: [.[].errors[]],
           rows: [.[].rows[]]
         }' \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-wall-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-cpu-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-after-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-rss-delta-status.json" \
-          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-status.json"
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-wall-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-cpu-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-after-status.json" \
+          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-delta-status.json" \
+          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-status.json"
         test "${FINAL_FAILURE}" -eq 0
-        jq -e '.passed == true' "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-status.json" >/dev/null
+        jq -e '.passed == true' \
+          "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-status.json" >/dev/null
 
     - name: Upload Method shard
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: benchmark-method-compatibility-shard-${{ matrix.graph_count }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: benchmark-method-compatibility-shard-${{ matrix.graph_count }}-${{ matrix.group }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
         if-no-files-found: error
         retention-days: 14
@@ -510,8 +704,8 @@ jobs:
         SHARD_JOB: ${{ needs.method-compatibility-shard.result }}
       run: |
         test "${SHARD_JOB}" = success
-        test "$(find benchmark-results -name 'base-method-compatibility-*.json' | wc -l)" -eq 3
-        test "$(find benchmark-results -name 'candidate-method-compatibility-*.json' | wc -l)" -eq 3
+        test "$(find benchmark-results -name 'base-method-compatibility-*.json' | wc -l)" -eq 12
+        test "$(find benchmark-results -name 'candidate-method-compatibility-*.json' | wc -l)" -eq 12
         jq -s 'add' benchmark-results/base-method-compatibility-*.json \
           > benchmark-results/base-method-compatibility.json
         jq -s 'add' benchmark-results/candidate-method-compatibility-*.json \
@@ -550,7 +744,7 @@ jobs:
           benchmark-results/base-method-compatibility.sorted.txt \
           benchmark-results/candidate-method-compatibility.sorted.txt
 
-        test "$(find benchmark-results -name 'method-compatibility-shard-*-status.json' | wc -l)" -eq 3
+        test "$(find benchmark-results -name 'method-compatibility-shard-*-status.json' | wc -l)" -eq 12
         cat benchmark-results/method-compatibility-shard-*-report.md \
           > benchmark-results/method-compatibility-report.md
         jq -s '{
@@ -572,7 +766,7 @@ jobs:
 
   cypher-capacity:
     name: cypher-capacity-gate
-    needs: [prepare-latency-fixtures]
+    needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -597,10 +791,26 @@ jobs:
         distribution: temurin
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+    - name: Download base Explorer JMH JAR
+      uses: actions/download-artifact@v8
       with:
-        cache-read-only: true
+        name: jmh-explore-base-${{ github.event.pull_request.number }}
+        path: jmh-jars/base
+
+    - name: Download candidate Explorer JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-explore-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
+
+    - name: Verify Explorer JMH artifacts
+      run: |
+        for REVISION in base candidate; do
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar"
+          test -f "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar.sha256"
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-explore-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar" >/dev/null
+        done
 
     - name: Restore persisted fixture graphs
       uses: actions/cache/restore@v5
@@ -616,23 +826,11 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Build comparable capacity JMH jars
-      run: |
-        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
-          SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          test ! -L "candidate/${SOURCE}"
-          rm -f -- "candidate/${SOURCE}"
-          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
-          cmp "base/${SOURCE}" "candidate/${SOURCE}"
-        done
-        base/gradlew -p base :explore:jmhJar --no-daemon
-        candidate/gradlew -p candidate :explore:jmhJar --no-daemon
-
     - name: Benchmark and normalize Cypher capacity
       run: |
         mkdir -p benchmark-results
-        BASE_JAR=$(find base/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
         GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
@@ -1023,17 +1221,11 @@ jobs:
 
   prepare-latency-fixtures:
     name: prepare-latency-fixtures
+    needs: [build-wrapped-query-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-    - name: Checkout PR base gate
-      uses: actions/checkout@v7
-      with:
-        ref: ${{ github.event.pull_request.base.sha }}
-        path: gate
-        persist-credentials: false
-
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
@@ -1071,24 +1263,16 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install base-owned fixture preparation harness
+    - name: Download candidate wrapped-query JMH JAR
       if: steps.fixture-cache-state.outputs.ready != 'true'
-      run: |
-        for HARNESS in \
-          BenchmarkCorpus.kt \
-          AllFixtureBenchmarkGraphPreparation.kt \
-          AllFixtureWrappedDiscoveryLatencyBenchmark.kt; do
-          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          test ! -L "candidate/${SOURCE}"
-          rm -f -- "candidate/${SOURCE}"
-          install -m 0644 "gate/${SOURCE}" "candidate/${SOURCE}"
-          cmp "gate/${SOURCE}" "candidate/${SOURCE}"
-        done
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-wrapped-query-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
 
-    - name: Build fixture preparation harness
+    - name: Resolve fixture source JARs
       if: steps.fixture-cache-state.outputs.ready != 'true'
-      run: |
-        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures :webgraph:jmhJar --no-daemon
+      run: candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures --no-daemon
 
     - name: Prepare all real fixture graphs
       if: steps.fixture-cache-state.outputs.ready != 'true'
@@ -1098,9 +1282,10 @@ jobs:
         TIKA_JAR=$(find "${FIXTURE_DIR}" -name 'tika-app-*.jar' -print -quit)
         HIVE_JAR=$(find "${FIXTURE_DIR}" -name 'hive-exec-*.jar' -print -quit)
         KOTLIN_JAR=$(find "${FIXTURE_DIR}" -name 'kotlin-compiler-embeddable-*.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        (cd jmh-jars/candidate && sha256sum -c candidate-webgraph-jmh.jar.sha256)
+        CANDIDATE_JAR=${PWD}/jmh-jars/candidate/candidate-webgraph-jmh.jar
         test -n "${ANDROID_JAR}" && test -n "${TIKA_JAR}" && test -n "${HIVE_JAR}" && \
-          test -n "${KOTLIN_JAR}" && test -n "${CANDIDATE_JAR}"
+          test -n "${KOTLIN_JAR}" && test -f "${CANDIDATE_JAR}"
         mkdir -p "${PWD}/fixture-graphs"
         for CORPUS in android tika hive kotlin-compiler; do
           SOURCE_TMP=$(mktemp -d "${RUNNER_TEMP}/graphite-source-${CORPUS}-XXXXXX")
@@ -1128,9 +1313,9 @@ jobs:
 
   wrapped-query-latency-shard:
     name: wrapped-query-latency-shard-${{ matrix.shard }}
-    needs: [prepare-latency-fixtures]
+    needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -1184,13 +1369,6 @@ jobs:
           filter: 'io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs'
 
     steps:
-    - name: Checkout fixed pre-PR-95 baseline
-      uses: actions/checkout@v7
-      with:
-        ref: ${{ env.PRE_PR_95_BASELINE_SHA }}
-        path: fixed
-        persist-credentials: false
-
     - name: Checkout PR base
       uses: actions/checkout@v7
       with:
@@ -1211,10 +1389,32 @@ jobs:
         distribution: temurin
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+    - name: Download known-good wrapped-query JMH JAR
+      uses: actions/download-artifact@v8
       with:
-        cache-read-only: true
+        name: jmh-wrapped-query-reference-${{ github.event.pull_request.number }}
+        path: jmh-jars/reference
+
+    - name: Download base wrapped-query JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-wrapped-query-base-${{ github.event.pull_request.number }}
+        path: jmh-jars/base
+
+    - name: Download candidate wrapped-query JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-wrapped-query-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
+
+    - name: Verify wrapped-query JMH artifacts
+      run: |
+        for REVISION in reference base candidate; do
+          test -f "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar"
+          test -f "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar.sha256"
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-webgraph-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar" >/dev/null
+        done
 
     - name: Restore persisted fixture graphs
       if: matrix.real
@@ -1231,43 +1431,15 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install base-owned latency harness
-      run: |
-        for HARNESS in \
-          BenchmarkCorpus.kt \
-          WrappedDiscoveryLatencyBenchmark.kt \
-          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
-          WrappedDiscoveryResourceBenchmark.kt; do
-          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          for REVISION in fixed candidate; do
-            test ! -L "${REVISION}/${SOURCE}"
-            rm -f -- "${REVISION}/${SOURCE}"
-            install -m 0644 "base/${SOURCE}" "${REVISION}/${SOURCE}"
-            cmp "base/${SOURCE}" "${REVISION}/${SOURCE}"
-          done
-        done
-
-    - name: Build latency benchmark jars
-      run: |
-        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures --no-daemon
-        fixed/gradlew -p fixed :webgraph:jmhJar --no-daemon
-        base/gradlew -p base :webgraph:jmhJar --no-daemon
-        candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
-
     - name: Verify all real-fixture query results
       if: matrix.correctness
       run: |
         set -o pipefail
         mkdir -p benchmark-results
-        for REVISION in fixed base candidate; do
-          JMH_JAR=$(find "${REVISION}/graphite-webgraph/build/libs" -name '*-jmh.jar' -print -quit)
+        for REVISION in reference base candidate; do
+          JMH_JAR=$(find "jmh-jars/${REVISION}" -name '*-jmh.jar' -print -quit)
           test -n "${JMH_JAR}"
-          LEGACY_BUDGET_ARGS=()
-          if [ "${REVISION}" = fixed ]; then
-            LEGACY_BUDGET_ARGS=(-Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true)
-          fi
           java -Xmx8g -cp "${JMH_JAR}" \
-            "${LEGACY_BUDGET_ARGS[@]}" \
             io.johnsonlee.graphite.webgraph.AllFixtureBenchmarkQueryCorrectness \
             "${PWD}/fixture-graphs" \
             | tee "benchmark-results/${REVISION}-fixture-correctness.log"
@@ -1276,36 +1448,35 @@ jobs:
             > "benchmark-results/${REVISION}-fixture-correctness.txt"
           test "$(wc -l < "benchmark-results/${REVISION}-fixture-correctness.txt")" -eq 9
         done
-        cmp benchmark-results/fixed-fixture-correctness.txt \
+        cmp benchmark-results/reference-fixture-correctness.txt \
           benchmark-results/base-fixture-correctness.txt
-        cmp benchmark-results/fixed-fixture-correctness.txt \
+        cmp benchmark-results/reference-fixture-correctness.txt \
           benchmark-results/candidate-fixture-correctness.txt
 
-    - name: Benchmark fixed baseline, PR base, and PR
+    - name: Benchmark known-good reference, PR base, and PR
       env:
         BENCHMARK_FILTER: ${{ matrix.filter }}
         BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         SHARD: ${{ matrix.shard }}
       run: |
         mkdir -p benchmark-results
-        FIXED_JAR=$(find fixed/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        test -n "${FIXED_JAR}" && test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
+        REFERENCE_JAR=$(find jmh-jars/reference -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
+        test -n "${REFERENCE_JAR}" && test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
         GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
           -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
-          -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
         PARAM_ARGS=()
         if [ -n "${BENCHMARK_PARAMETERS}" ]; then
           read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
         fi
-        java -jar "${FIXED_JAR}" \
+        java -jar "${REFERENCE_JAR}" \
           "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
-          -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
-          -rff "${PWD}/benchmark-results/fixed-latency-${SHARD}.json"
+          -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+          -rff "${PWD}/benchmark-results/reference-latency-${SHARD}.json"
         java -jar "${BASE_JAR}" \
           "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
@@ -1315,17 +1486,26 @@ jobs:
           -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
           -rff "${PWD}/benchmark-results/candidate-latency-${SHARD}.json"
 
-    - name: Enforce fixed baseline speedup and current-base regression gate
+    - name: Enforce known-good anchor and current-base regression gate
       env:
         BENCHMARK_FILTER: ${{ matrix.filter }}
         BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
         SHARD: ${{ matrix.shard }}
       run: |
-        if node base/.github/scripts/benchmark-gate.mjs compare-latency-baseline \
-          --fixed "benchmark-results/fixed-latency-${SHARD}.json" \
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if ! grep -q 'compare-latency-anchor' "${COMPARATOR}"; then
+          # Bootstrap is restricted to the reviewed pre-anchor comparator blob.
+          test "$(sha256sum "${COMPARATOR}" | cut -d ' ' -f 1)" = \
+            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+          grep -q 'compare-latency-anchor' "${COMPARATOR}"
+        fi
+        if node "${COMPARATOR}" compare-latency-anchor \
+          --anchor "benchmark-results/reference-latency-${SHARD}.json" \
           --base "benchmark-results/base-latency-${SHARD}.json" \
           --candidate "benchmark-results/candidate-latency-${SHARD}.json" \
-          --minimum-speedup 50 \
+          --anchor-threshold 50 \
           --threshold 15 \
           --allow-subset \
           --report "benchmark-results/initial-latency-report-${SHARD}.md" \
@@ -1333,15 +1513,13 @@ jobs:
           mv "benchmark-results/initial-latency-report-${SHARD}.md" "benchmark-results/latency-report-${SHARD}.md"
           mv "benchmark-results/initial-latency-status-${SHARD}.json" "benchmark-results/latency-status-${SHARD}.json"
         else
-          CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-          BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-          FIXED_JAR=$(find fixed/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+          REFERENCE_JAR=$(find jmh-jars/reference -name '*-jmh.jar' -print -quit)
           GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
             -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-          FIXED_GRAPH_JVM_ARGS="${GRAPH_JVM_ARGS} \
-            -Dgraphite.benchmark.allowLegacyUnbudgetedExecutor=true"
           PARAM_ARGS=()
           if [ -n "${BENCHMARK_PARAMETERS}" ]; then
             read -r -a PARAM_ARGS <<< "${BENCHMARK_PARAMETERS}"
@@ -1354,16 +1532,16 @@ jobs:
             "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
             -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-confirmation-${SHARD}.json"
-          java -jar "${FIXED_JAR}" \
+          java -jar "${REFERENCE_JAR}" \
             "${BENCHMARK_FILTER}" "${PARAM_ARGS[@]}" \
-            -jvmArgsAppend "${FIXED_GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
-            -rff "${PWD}/benchmark-results/fixed-latency-confirmation-${SHARD}.json"
-          node base/.github/scripts/benchmark-gate.mjs confirm-latency-baseline \
+            -jvmArgsAppend "${GRAPH_JVM_ARGS}" -foe true -prof gc -rf json \
+            -rff "${PWD}/benchmark-results/reference-latency-confirmation-${SHARD}.json"
+          node "${COMPARATOR}" confirm-latency-anchor \
             --initial "benchmark-results/initial-latency-status-${SHARD}.json" \
-            --fixed "benchmark-results/fixed-latency-confirmation-${SHARD}.json" \
+            --anchor "benchmark-results/reference-latency-confirmation-${SHARD}.json" \
             --base "benchmark-results/base-latency-confirmation-${SHARD}.json" \
             --candidate "benchmark-results/candidate-latency-confirmation-${SHARD}.json" \
-            --minimum-speedup 50 \
+            --anchor-threshold 50 \
             --threshold 15 \
             --allow-subset \
             --report "benchmark-results/latency-report-${SHARD}.md" \
@@ -1383,7 +1561,7 @@ jobs:
   wrapped-query-latency:
     name: wrapped-query-latency
     if: always()
-    needs: [wrapped-query-latency-shard]
+    needs: [candidate-gate-tests, wrapped-query-latency-shard]
     runs-on: ubuntu-latest
 
     steps:
@@ -1391,6 +1569,13 @@ jobs:
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
+
+    - name: Checkout candidate reporting code for anchor rollout
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate-reporting
         persist-credentials: false
 
     - name: Download synthetic-1 results
@@ -1458,6 +1643,8 @@ jobs:
 
     - name: Combine latency shard results
       if: always()
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         mkdir -p benchmark-results
         for SHARD in synthetic-1 synthetic-4 synthetic-16 synthetic-64 real-a real-b real-c real-d real-36; do
@@ -1468,7 +1655,18 @@ jobs:
             fi
           done
         done
-        node .github/scripts/benchmark-gate.mjs combine-latency-shards \
+        COMBINER=.github/scripts/benchmark-gate.mjs
+        # Bootstrap only: a base predating the anchor command cannot render anchor rows.
+        # Candidate execution is allowed only after its comparator contract tests pass;
+        # once this workflow is in the base, the base-owned combiner is always selected.
+        if ! grep -q 'compare-latency-anchor' "${COMBINER}"; then
+          test "$(sha256sum "${COMBINER}" | cut -d ' ' -f 1)" = \
+            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          COMBINER=candidate-reporting/.github/scripts/benchmark-gate.mjs
+          grep -q 'compare-latency-anchor' "${COMBINER}"
+        fi
+        node "${COMBINER}" combine-latency-shards \
           --directory benchmark-results \
           --report benchmark-results/latency-report.md \
           --status benchmark-results/latency-status.json
@@ -1492,7 +1690,7 @@ jobs:
 
   wrapped-query-resources:
     name: wrapped-query-resources
-    needs: [prepare-latency-fixtures]
+    needs: [prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -1517,10 +1715,26 @@ jobs:
         distribution: temurin
         java-version: '17'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+    - name: Download base wrapped-query JMH JAR
+      uses: actions/download-artifact@v8
       with:
-        cache-read-only: true
+        name: jmh-wrapped-query-base-${{ github.event.pull_request.number }}
+        path: jmh-jars/base
+
+    - name: Download candidate wrapped-query JMH JAR
+      uses: actions/download-artifact@v8
+      with:
+        name: jmh-wrapped-query-candidate-${{ github.event.pull_request.number }}
+        path: jmh-jars/candidate
+
+    - name: Verify wrapped-query JMH artifacts
+      run: |
+        for REVISION in base candidate; do
+          test -f "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar"
+          test -f "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar.sha256"
+          (cd "jmh-jars/${REVISION}" && sha256sum -c "${REVISION}-webgraph-jmh.jar.sha256")
+          jar tf "jmh-jars/${REVISION}/${REVISION}-webgraph-jmh.jar" >/dev/null
+        done
 
     - name: Restore persisted fixture graphs
       uses: actions/cache/restore@v5
@@ -1535,31 +1749,11 @@ jobs:
           test -d "fixture-graphs/${CORPUS}"
         done
 
-    - name: Install base-owned resource harness
-      run: |
-        for HARNESS in \
-          BenchmarkCorpus.kt \
-          WrappedDiscoveryLatencyBenchmark.kt \
-          AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
-          WrappedDiscoveryResourceBenchmark.kt; do
-          SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
-          test ! -L "candidate/${SOURCE}"
-          rm -f -- "candidate/${SOURCE}"
-          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
-          cmp "base/${SOURCE}" "candidate/${SOURCE}"
-        done
-
-    - name: Build resource benchmark jars
-      run: |
-        candidate/gradlew -p candidate :webgraph:prepareBenchmarkFixtures --no-daemon
-        base/gradlew -p base :webgraph:jmhJar --no-daemon
-        candidate/gradlew -p candidate :webgraph:jmhJar --no-daemon
-
     - name: Benchmark PR base then PR resources
       run: |
         mkdir -p benchmark-results
-        BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
         FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
         GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
@@ -1581,8 +1775,8 @@ jobs:
           mv benchmark-results/initial-latency-resource-report.md benchmark-results/latency-resource-report.md
           mv benchmark-results/initial-latency-resource-status.json benchmark-results/latency-resource-status.json
         else
-          BASE_JAR=$(find base/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs -name '*-jmh.jar' -print -quit)
+          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
+          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
           FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
           GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \

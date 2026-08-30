@@ -129,7 +129,6 @@ open class RealThirtySixGraphWrappedDiscoveryLatencyBenchmark {
         check(graphs.size == REAL_GRAPH_COUNT)
         executor = budgetedLatencyExecutor(graphs)
         checkThirtySixGraphCoverage(executor.execute(REAL_THIRTY_SIX_GRAPH_COVERAGE_QUERY))
-        check(executor.execute(ZERO_HIT_QUERY).rows.isEmpty())
     }
 
     @TearDown

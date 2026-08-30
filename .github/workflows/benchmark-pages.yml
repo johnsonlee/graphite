@@ -1,0 +1,210 @@
+name: Main benchmark observatory
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    name: benchmark-main-snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout exact main commit
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+
+    - name: Build method-level JMH JAR
+      run: ./gradlew :cypher:jmhJar --no-daemon
+
+    - name: Capture fresh main benchmark snapshot
+      run: |
+        mkdir -p benchmark-source
+        mapfile -t JARS < <(find graphite-cypher/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        java -jar "${JARS[0]}" \
+          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
+          -foe true -rf json -rff "${PWD}/benchmark-source/main-method-jmh.json"
+        jq -e '
+          length > 0 and
+          all(.[].benchmark;
+            startswith("io.johnsonlee.graphite.cypher.CypherBenchmark.") or
+            . == "io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgetedGeneralRegex") and
+          all(.[].primaryMetric.score; type == "number" and isfinite and . >= 0) and
+          ([.[] | "\(.benchmark)|\(.params // {})"] | unique | length) == length
+        ' benchmark-source/main-method-jmh.json >/dev/null
+
+    - name: Upload forensic snapshot artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
+        path: benchmark-source/main-method-jmh.json
+        if-no-files-found: error
+        retention-days: 90
+
+  render:
+    name: render-benchmark-pages
+    needs: [snapshot]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pages: read
+
+    steps:
+    - name: Checkout report generator
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+        persist-credentials: false
+
+    - name: Configure GitHub Pages
+      id: pages
+      uses: actions/configure-pages@v6
+
+    - name: Download fresh main snapshot
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
+        path: benchmark-source
+
+    - name: Find the merged PR benchmark evidence
+      id: source
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const associated = await github.paginate(
+            github.rest.repos.listPullRequestsAssociatedWithCommit,
+            { owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha, per_page: 100 }
+          );
+          const pull = associated
+            .filter((item) => item.merged_at && item.base.ref === 'main')
+            .sort((left, right) => Date.parse(right.merged_at) - Date.parse(left.merged_at))[0];
+          if (!pull) {
+            core.setOutput('found', 'false');
+            return;
+          }
+          const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'benchmark.yml',
+            event: 'pull_request',
+            status: 'completed',
+            head_sha: pull.head.sha,
+            per_page: 100
+          });
+          const run = runs
+            .filter((item) => item.conclusion === 'success')
+            .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+          if (!run) {
+            core.setOutput('found', 'false');
+            return;
+          }
+          core.setOutput('found', 'true');
+          core.setOutput('run_id', String(run.id));
+          core.setOutput('run_url', run.html_url);
+          core.setOutput('source_pr', String(pull.number));
+
+    - name: Download paired PR benchmark report
+      if: steps.source.outputs.found == 'true'
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: benchmark-report-${{ steps.source.outputs.source_pr }}
+        path: benchmark-source/paired
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        run-id: ${{ steps.source.outputs.run_id }}
+
+    - name: Recover the published rolling history
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p benchmark-source
+        HTTPS_URL=$(node -e '
+          const url = new URL(process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output benchmark-source/published.html --write-out '%{http_code}' "${HTTPS_URL}")
+        if [ "${STATUS}" = 200 ]; then
+          node .github/scripts/benchmark-pages.mjs extract-history \
+            --input benchmark-source/published.html \
+            --output benchmark-source/history.json
+        elif [ "${STATUS}" = 404 ]; then
+          node -e 'require("fs").writeFileSync("benchmark-source/history.json", "[]\n")'
+        else
+          echo "::error::Published benchmark history returned HTTP ${STATUS}"
+          exit 1
+        fi
+
+    - name: Test and render self-contained report
+      env:
+        SOURCE_PR: ${{ steps.source.outputs.source_pr }}
+        SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
+      run: |
+        node --test .github/scripts/benchmark-pages.test.mjs
+        node .github/scripts/benchmark-pages.mjs build \
+          --snapshot benchmark-source/main-method-jmh.json \
+          --report benchmark-source/paired/benchmark-report.md \
+          --status benchmark-source/paired/benchmark-status.json \
+          --history benchmark-source/history.json \
+          --output _site \
+          --sha '${{ github.sha }}' \
+          --branch main \
+          --repository '${{ github.repository }}' \
+          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+          --source-run-url "${SOURCE_RUN_URL}" \
+          --source-pr "${SOURCE_PR}"
+        test -f _site/index.html
+        test -z "$(find _site -type l -print -quit)"
+        test "$(find _site -type f | wc -l)" -eq 3
+        test "$(du -sb _site | cut -f 1)" -le 5242880
+
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: _site
+        retention-days: 1
+
+  deploy:
+    name: deploy-benchmark-pages
+    needs: [render]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Deploy benchmark observatory
+      id: deployment
+      uses: actions/deploy-pages@v5
