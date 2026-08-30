@@ -1270,8 +1270,8 @@ jobs:
         set -euo pipefail
         HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
         COMPARATOR='.github/scripts/benchmark-gate.mjs'
-        if rg -q 'mappedLoadSamples=' "base/${HARNESS}" && \
-          rg -q 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
+        if grep -Fq 'mappedLoadSamples=' "base/${HARNESS}" && \
+          grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
           test ! -L "candidate/${HARNESS}"
           rm -f -- "candidate/${HARNESS}"
           install -m 0644 "base/${HARNESS}" "candidate/${HARNESS}"
