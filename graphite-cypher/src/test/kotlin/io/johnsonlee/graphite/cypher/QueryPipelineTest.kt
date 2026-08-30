@@ -580,6 +580,48 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `parallel indexed distinct projection verifies selected rows in every graph`() {
+        class SelectedIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            var selectedLookups = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                val values = listOf("com.example.Service")
+                if (selectedValues != null) {
+                    selectedLookups++
+                    return listOf(StringPropertyDistinctRow(0, values)).takeIf { values in selectedValues }.orEmpty()
+                }
+                return listOf(StringPropertyDistinctRow(0, values))
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val first = SelectedIndexedGraph(graph)
+        val second = SelectedIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(1, first.selectedLookups)
+        assertEquals(1, second.selectedLookups)
+    }
+
+    @Test
     fun `single unlabeled string filter uses typed property lookup instead of a full node scan`() {
         val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
             override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
