@@ -281,7 +281,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `missing CallSite disjunction skips the combined index`() {
+    fun `long missing contains skips the combined index while prefix builds it`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { index ->
@@ -333,6 +333,16 @@ class GraphStoreTest {
                     )
                 )
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    emptyList(),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates.map { predicate ->
+                            predicate.copy(mode = StringMatchMode.STARTS_WITH)
+                        }
+                    ).orEmpty().toList()
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
             } finally {
                 loaded.close()
             }
