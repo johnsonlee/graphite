@@ -225,6 +225,25 @@ jobs:
           exit 1
         fi
 
+    - name: Preserve the published release observatory
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        RELEASE_URL=$(node -e '
+          const url = new URL("releases/", process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output benchmark-source/published-releases.html --write-out '%{http_code}' "${RELEASE_URL}")
+        if [ "${STATUS}" = 404 ]; then
+          rm -f benchmark-source/published-releases.html
+        elif [ "${STATUS}" != 200 ]; then
+          echo "::error::Published release observatory returned HTTP ${STATUS}"
+          exit 1
+        fi
+
     - name: Test and render self-contained report
       run: |
         node --test .github/scripts/benchmark-pages.test.mjs
@@ -240,8 +259,14 @@ jobs:
           --repository '${{ github.repository }}' \
           --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         test -f _site/index.html
+        if [ -f benchmark-source/published-releases.html ]; then
+          mkdir -p _site/releases
+          install -m 0644 benchmark-source/published-releases.html _site/releases/index.html
+        fi
         test -z "$(find _site -type l -print -quit)"
-        test "$(find _site -type f | wc -l)" -eq 3
+        FILE_COUNT=$(find _site -type f | wc -l)
+        test "${FILE_COUNT}" -ge 3
+        test "${FILE_COUNT}" -le 4
         test "$(du -sb _site | cut -f 1)" -le 5242880
 
     - name: Upload GitHub Pages artifact

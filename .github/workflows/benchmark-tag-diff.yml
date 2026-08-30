@@ -8,8 +8,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: tag-benchmark-diff-${{ github.ref }}
+  group: pages
   cancel-in-progress: false
+  queue: max
 
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
@@ -268,6 +269,9 @@ jobs:
     needs: [resolve, benchmark]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: read
 
     steps:
     - name: Checkout exact current report generator
@@ -276,6 +280,10 @@ jobs:
         ref: ${{ needs.resolve.outputs.current_sha }}
         path: gate
         persist-credentials: false
+
+    - name: Configure GitHub Pages
+      id: pages
+      uses: actions/configure-pages@v6
 
     - name: Download immutable tag resolution
       uses: actions/download-artifact@v8
@@ -289,6 +297,30 @@ jobs:
         name: tag-benchmark-raw-${{ needs.resolve.outputs.current_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: benchmark-results
 
+    - name: Recover published release history
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p tag-resolution
+        RELEASE_URL=$(node -e '
+          const url = new URL("releases/", process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output tag-resolution/published-releases.html --write-out '%{http_code}' "${RELEASE_URL}")
+        if [ "${STATUS}" = 200 ]; then
+          node gate/.github/scripts/benchmark-tag-diff.mjs extract-history \
+            --input tag-resolution/published-releases.html \
+            --output tag-resolution/history.json
+        elif [ "${STATUS}" = 404 ]; then
+          node -e 'require("fs").writeFileSync("tag-resolution/history.json", "[]\n")'
+        else
+          echo "::error::Published release history returned HTTP ${STATUS}"
+          exit 1
+        fi
+
     - name: Test renderer and create standalone report
       env:
         PREVIOUS_AVAILABLE: ${{ needs.resolve.outputs.previous_available }}
@@ -300,6 +332,7 @@ jobs:
           --output tag-report/index.html
           --summary tag-report/summary.md
           --manifest tag-report/manifest.json
+          --history tag-resolution/history.json
           --repository '${{ github.repository }}'
           --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         )
@@ -333,3 +366,68 @@ jobs:
         cat tag-report/summary.md >> "${GITHUB_STEP_SUMMARY}"
         printf '\n[Download the self-contained HTML report](%s)\n' \
           '${{ steps.report.outputs.artifact-url }}' >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: Assemble Pages site without replacing the main observatory
+      env:
+        PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      run: |
+        mkdir -p _site/releases
+        ROOT_URL=$(node -e '
+          const url = new URL(process.env.PAGES_BASE_URL);
+          url.protocol = "https:";
+          process.stdout.write(url.href);
+        ')
+        STATUS=$(curl --silent --show-error --location --max-redirs 4 \
+          --proto '=https' --proto-redir '=https' \
+          --output _site/index.html --write-out '%{http_code}' "${ROOT_URL}")
+        if [ "${STATUS}" != 200 ] && [ "${STATUS}" != 404 ]; then
+          echo "::error::Published main observatory returned HTTP ${STATUS}"
+          exit 1
+        fi
+        if [ "${STATUS}" = 404 ]; then
+          install -m 0644 tag-report/index.html _site/index.html
+        fi
+        install -m 0644 _site/index.html _site/404.html
+        install -m 0644 tag-report/index.html _site/releases/index.html
+        touch _site/.nojekyll
+        test -z "$(find _site -type l -print -quit)"
+        test "$(du -sb _site | cut -f 1)" -le 10485760
+
+    - name: Upload combined GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: _site
+        retention-days: 1
+
+  deploy:
+    name: deploy-release-observatory-pages
+    needs: [resolve, render]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}releases/
+
+    steps:
+    - name: Reject a moved or deleted tag before deployment
+      uses: actions/github-script@v9
+      env:
+        CURRENT_TAG: ${{ needs.resolve.outputs.current_tag }}
+        RESOLVED_SHA: ${{ needs.resolve.outputs.current_sha }}
+      with:
+        script: |
+          const commit = (await github.rest.repos.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: process.env.CURRENT_TAG
+          })).data;
+          if (commit.sha !== process.env.RESOLVED_SHA) {
+            core.setFailed(`Refusing to deploy moved tag ${process.env.CURRENT_TAG}: expected ${process.env.RESOLVED_SHA}, got ${commit.sha}.`);
+          }
+
+    - name: Deploy release benchmark observatory
+      id: deployment
+      uses: actions/deploy-pages@v5

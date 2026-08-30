@@ -12,9 +12,13 @@ import {
     comparableJmhConfiguration,
     compareSemver,
     COVERAGE_TAXONOMY,
+    EVIDENCE_DIMENSIONS,
     parseSemver,
+    PRODUCT_CORE_INDICATORS,
     REPRESENTATIVE_BENCHMARKS,
     resolvePreviousTag,
+    summarizeReleaseMetrics,
+    updateReleaseHistory,
     validateJmhResults
 } from "./benchmark-tag-diff.mjs";
 
@@ -172,7 +176,7 @@ test("JMH validation fails closed on drift, duplication, and invalid metrics", (
     assert.throws(() => validateJmhResults(parameterized), /must not have parameters/);
 });
 
-test("HTML report is self-contained, provenance-rich, classified, and injection-safe", () => {
+test("HTML report is self-contained, 7+2 classified, provenance-rich, and injection-safe", () => {
     const report = buildTagDiffReport({
         metadata: metadata(),
         currentResults: results(1.2),
@@ -189,9 +193,15 @@ test("HTML report is self-contained, provenance-rich, classified, and injection-
     assert.match(report.html, /\+20\.00%/);
     assert.match(report.html, /No release verdict/);
     assert.match(report.html, /Release benchmark questions/);
-    assert.match(report.html, /Regression signals/);
-    assert.match(report.html, /Improvement signals/);
-    assert.match(report.html, /How complete is this comparison/);
+    assert.match(report.html, /Seven product indicators/);
+    assert.match(report.html, /Operational stability/);
+    assert.match(report.html, /Measurement confidence/);
+    assert.match(report.html, /Coverage completeness/);
+    assert.match(report.html, /Can we trust and generalize the shift/);
+    assert.match(report.html, /Which product domains remain incomplete/);
+    assert.match(report.html, /benchmark point \+ 99\.9% CI/);
+    assert.match(report.html, /not a synthesized aggregate CI/);
+    assert.match(report.html, /Is this a one-off or a trend/);
     assert.match(report.html, /What needs attention/);
     assert.match(report.html, /prefers-reduced-motion:reduce/);
     assert.match(report.html, /Content-Security-Policy/);
@@ -200,6 +210,12 @@ test("HTML report is self-contained, provenance-rich, classified, and injection-
     assert.doesNotMatch(report.html, /<script>alert/);
     for (const area of COVERAGE_TAXONOMY) assert.match(report.html, new RegExp(area.name));
     assert.equal(report.manifest.comparisonStatus, "available");
+    assert.equal(report.manifest.productMetrics.length, PRODUCT_CORE_INDICATORS.length);
+    assert.equal(report.manifest.evidenceDimensions.length, EVIDENCE_DIMENSIONS.length);
+    assert.equal(report.manifest.productMetrics.filter((metric) => metric.state === "observed").length, 1);
+    assert.equal(report.manifest.productMetrics.find((metric) => metric.id === "operational-stability").state, "unavailable");
+    assert.equal(report.manifest.evidenceDimensions.find((metric) => metric.id === "measurement-confidence").state, "observed");
+    assert.equal(report.manifest.releaseHistory.length, 1);
     assert.equal(report.manifest.measurements.length, 6);
     assert.ok(Math.abs(report.manifest.measurements[0].deltaPercent - 20) < 1e-9);
     assert.deepEqual(
@@ -208,7 +224,7 @@ test("HTML report is self-contained, provenance-rich, classified, and injection-
     );
 });
 
-test("release summary separates regressions, improvements, and inconclusive changes", () => {
+test("release summary separates product shifts from evidence confidence and method drill-down", () => {
     const previous = results();
     const current = results();
     current[1] = result(REPRESENTATIVE_BENCHMARKS[1], 24);
@@ -220,18 +236,66 @@ test("release summary separates regressions, improvements, and inconclusive chan
         generatedAt: "2026-08-30T01:02:03.000Z"
     });
 
-    assert.match(report.html, /Regression signals<\/span><span>Slower<\/span><\/div><strong>1<\/strong>/);
-    assert.match(report.html, /Improvement signals<\/span><span>Faster<\/span><\/div><strong>1<\/strong>/);
+    assert.match(report.html, /Product regressions<\/span><span>Right<\/span><\/div><strong>0<\/strong>/);
+    assert.match(report.html, /Product improvements<\/span><span>Left<\/span><\/div><strong>1<\/strong>/);
     assert.match(report.html, /Needs attention<\/span><span>Review<\/span><\/div><strong>5<\/strong>/);
+    assert.match(report.html, /Latency aggregate envelope crosses zero/);
+    assert.match(report.html, /Latency<\/h3>[\s\S]*?-0\.68%/);
+    assert.match(report.html, /Measurement confidence<\/h3>[\s\S]*?\+0\.42 pp/);
     assert.match(report.html, /nodeMatchWithWhere<\/code><strong>\+20\.00%/);
     assert.match(report.html, /simpleNodeMatch<\/code><strong>-20\.00%/);
-    assert.match(report.summary, /Regression signals: \*\*1\*\*/);
-    assert.match(report.summary, /Improvement signals: \*\*1\*\*/);
-    assert.match(report.summary, /Inconclusive comparisons: \*\*4\*\*/);
+    assert.match(report.summary, /Product regressions: \*\*0\*\*/);
+    assert.match(report.summary, /Product improvements: \*\*1\*\*/);
+    assert.match(report.summary, /Core coverage: \*\*1\/7 product indicators observed\*\*/);
     assert.deepEqual(
         report.manifest.measurements.map((measurement) => measurement.classification),
         ["inconclusive", "regression", "improvement", "inconclusive", "inconclusive", "inconclusive"]
     );
+});
+
+test("7+2 metrics keep operational stability separate from measurement confidence", () => {
+    const summary = summarizeReleaseMetrics(
+        validateJmhResults(results(1.1)),
+        validateJmhResults(results()),
+        true
+    );
+    assert.deepEqual(summary.productMetrics.map((metric) => metric.id), PRODUCT_CORE_INDICATORS.map((metric) => metric.id));
+    assert.deepEqual(summary.evidenceDimensions.map((metric) => metric.id), EVIDENCE_DIMENSIONS.map((metric) => metric.id));
+    assert.equal(summary.productMetrics.find((metric) => metric.id === "operational-stability").state, "unavailable");
+    assert.equal(summary.evidenceDimensions.find((metric) => metric.id === "measurement-confidence").state, "observed");
+    assert.equal(summary.evidenceDimensions.find((metric) => metric.id === "coverage-completeness").scope, "1/7 product indicators");
+    assert.ok(Math.abs(summary.productMetrics.find((metric) => metric.id === "latency").shift - 10) < 1e-9);
+});
+
+test("release history replaces reruns, stays semantic, and rejects incomplete 7+2 entries", () => {
+    const first = buildTagDiffReport({
+        metadata: metadata(),
+        currentResults: results(1.1),
+        previousResults: results(),
+        generatedAt: "2026-08-30T01:02:03.000Z"
+    }).manifest.releaseHistory[0];
+    const nextMetadata = metadata({
+        tag: "v2.4.4",
+        sha: "a".repeat(40),
+        refSha: "a".repeat(40),
+        harnessFingerprint: "c".repeat(64)
+    });
+    nextMetadata.current = {
+        tag: "v2.4.5",
+        sha: "d".repeat(40),
+        refSha: "d".repeat(40),
+        harnessFingerprint: "c".repeat(64)
+    };
+    const next = buildTagDiffReport({
+        metadata: nextMetadata,
+        currentResults: results(.9),
+        previousResults: results(),
+        history: [first],
+        generatedAt: "2026-08-31T01:02:03.000Z"
+    }).manifest.releaseHistory;
+    assert.deepEqual(next.map((entry) => entry.tag), ["v2.4.4", "v2.4.5"]);
+    assert.equal(updateReleaseHistory(next, { ...next[1], generatedAt: "2026-09-01T00:00:00.000Z" }).length, 2);
+    assert.throws(() => updateReleaseHistory([], { ...first, coreMetrics: first.coreMetrics.slice(1) }), /incomplete/);
 });
 
 test("first semantic tag renders an explicit unavailable baseline without a verdict", () => {
@@ -338,19 +402,31 @@ test("render CLI writes a bounded HTML report, summary, and audit manifest", () 
         assert.equal(fs.existsSync(summary), true);
         assert.equal(fs.existsSync(manifest), true);
         assert.ok(fs.statSync(output).size < 5 * 1024 * 1024);
-        assert.equal(JSON.parse(fs.readFileSync(manifest)).measurements.length, 6);
+        const audit = JSON.parse(fs.readFileSync(manifest));
+        assert.equal(audit.measurements.length, 6);
+        assert.equal(audit.productMetrics.length, 7);
+        assert.equal(audit.evidenceDimensions.length, 2);
+        const history = path.join(directory, "recovered-history.json");
+        const extract = spawnSync(process.execPath, [
+            SCRIPT, "extract-history",
+            "--input", output,
+            "--output", history
+        ], { encoding: "utf8" });
+        assert.equal(extract.status, 0, extract.stderr);
+        assert.deepEqual(JSON.parse(fs.readFileSync(history)).map((entry) => entry.tag), ["v2.4.4"]);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
 });
 
-test("tag diff workflow is tag-only, isolated from publishing, and least privilege", () => {
+test("tag diff workflow is tag-only, publishes only Pages, and stays isolated from release publishing", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark-tag-diff.yml", import.meta.url), "utf8");
     const publish = fs.readFileSync(new URL("../workflows/publish.yml", import.meta.url), "utf8");
     assert.match(workflow, /on:\n  push:\n    tags: \['v\*']\n/);
     assert.doesNotMatch(workflow, /pull_request|workflow_dispatch|repository_dispatch|workflow_call/);
     assert.match(workflow, /permissions:\n  contents: read/);
-    assert.doesNotMatch(workflow, /contents: write|actions: write|packages: write|pages: write|id-token: write/);
+    assert.doesNotMatch(workflow, /contents: write|actions: write|packages: write/);
+    assert.match(workflow, /concurrency:\n  group: pages\n  cancel-in-progress: false\n  queue: max/);
     assert.match(workflow, /actions\/checkout@v7/g);
     assert.match(workflow, /actions\/setup-java@v5/g);
     assert.match(workflow, /gradle\/actions\/setup-gradle@v6/g);
@@ -359,6 +435,14 @@ test("tag diff workflow is tag-only, isolated from publishing, and least privile
     assert.match(workflow, /persist-credentials: false/g);
     assert.match(workflow, /retention-days: 90/);
     assert.match(workflow, /steps\.report\.outputs\.artifact-url/);
+    assert.match(workflow, /benchmark-tag-diff\.mjs extract-history/);
+    assert.match(workflow, /--history tag-resolution\/history\.json/);
+    assert.match(workflow, /actions\/configure-pages@v6/);
+    assert.match(workflow, /actions\/upload-pages-artifact@v5/);
+    assert.match(workflow, /actions\/deploy-pages@v5/);
+    assert.match(workflow, /pages: write/);
+    assert.match(workflow, /id-token: write/);
+    assert.match(workflow, /_site\/releases\/index\.html/);
     assert.match(workflow, /benchmark-tag-diff\.test\.mjs/);
     assert.match(workflow, /previous_available/);
     assert.equal((workflow.match(/benchmark-jmh-isolation\.init\.gradle/g) ?? []).length, 2);

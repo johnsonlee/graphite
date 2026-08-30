@@ -258,6 +258,8 @@ test("Pages workflow is main-only and uses least-privilege official deployment a
     assert.match(workflow, /candidateTreeSha !== integrationTreeSha/);
     assert.match(workflow, /benchmark-source\/paired-provenance\.json/);
     assert.match(workflow, /--provenance benchmark-source\/paired-provenance\.json/);
+    assert.match(workflow, /Preserve the published release observatory/);
+    assert.match(workflow, /_site\/releases\/index\.html/);
     assert.doesNotMatch(workflow, /PRE_PR_95|confirm-latency|method-compatibility/);
 });
 
