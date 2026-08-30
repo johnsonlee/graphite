@@ -24,8 +24,11 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
@@ -534,6 +537,46 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `empty parallel distinct waves release rebuildable storage caches`() {
+        class EmptyIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder,
+            ReleasableStringPropertyDisjunctionCache {
+            var releases = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> = emptyList()
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+            override fun releaseStringPropertyDisjunctionCache() {
+                releases++
+            }
+        }
+
+        val first = EmptyIndexedGraph(graph)
+        val second = EmptyIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'not-present' OR " +
+                "n.callee_class CONTAINS 'not-present' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(1, first.releases)
+        assertEquals(1, second.releases)
     }
 
     @Test

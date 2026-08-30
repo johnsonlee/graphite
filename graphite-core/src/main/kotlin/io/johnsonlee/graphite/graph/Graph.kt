@@ -205,6 +205,15 @@ interface StringPropertyDisjunctionDistinctProjection {
     ): List<StringPropertyDistinctRow>?
 }
 
+/**
+ * Optional lifecycle hook for a storage backend whose disjunction accelerator is a rebuildable
+ * cache. A caller may release the cache after a completed source scan that produced no rows;
+ * implementations must keep already-returned results valid and rebuild transparently later.
+ */
+interface ReleasableStringPropertyDisjunctionCache {
+    fun releaseStringPropertyDisjunctionCache()
+}
+
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
 interface StringPropertyDisjunctionLookupStrategy {
     fun prefersSerialStringPropertyDisjunction(

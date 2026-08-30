@@ -21,6 +21,7 @@ import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -100,6 +101,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareStringPropertyDisjunctionLookup,
     WorkAwareStringPropertyDisjunctionAggregation,
     StringPropertyDisjunctionDistinctProjection,
+    ReleasableStringPropertyDisjunctionCache,
     StringPropertyDisjunctionLookupStrategy,
     StringPropertyLookupOrder,
     Closeable {
@@ -652,14 +654,18 @@ internal class MappedWebGraphBackedGraph(
     internal fun isMethodIndexInitialized(): Boolean = methodIndex != null
 
     internal fun clearStringPropertyIndexes() {
-        synchronized(callSiteStringIndexLock) {
-            callSiteStringIndex?.close()
-            callSiteStringIndex = null
-        }
+        releaseStringPropertyDisjunctionCache()
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
             rawStringMatchStates.clear()
+        }
+    }
+
+    override fun releaseStringPropertyDisjunctionCache() {
+        synchronized(callSiteStringIndexLock) {
+            callSiteStringIndex?.close()
+            callSiteStringIndex = null
         }
     }
 

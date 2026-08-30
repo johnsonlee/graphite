@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -1502,6 +1503,12 @@ class QueryPipeline private constructor(
                     distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
                 }
             })
+            if (localRows.all(List<OrderedProjectedRow>::isEmpty)) {
+                (waveStart until waveEnd).forEach { sourceIndex ->
+                    (sources[sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
+                        ?.releaseStringPropertyDisjunctionCache()
+                }
+            }
             localRows.forEach { sourceRows ->
                 sourceRows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
             }
