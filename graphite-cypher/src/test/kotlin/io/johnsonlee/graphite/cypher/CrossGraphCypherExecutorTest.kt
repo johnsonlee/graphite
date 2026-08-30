@@ -620,6 +620,139 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `non distinct broad discovery scans graphs concurrently and preserves source rows`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val workersReady = CyclicBarrier(2)
+        val returnType = TypeDescriptor("void")
+
+        fun backingGraph(graphId: String): Graph = DefaultGraph.Builder().apply {
+                repeat(2) { index ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(
+                                TypeDescriptor("example.$graphId.Target"),
+                                "call$index",
+                                emptyList(),
+                                returnType
+                            ),
+                            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+
+        fun parallelGraph(graphId: String): Graph {
+            val backing = backingGraph(graphId)
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = sequence {
+                    if (type != CallSiteNode::class.java) return@sequence
+                    val now = active.incrementAndGet()
+                    maximumActive.accumulateAndGet(now, ::maxOf)
+                    try {
+                        workersReady.await(2, TimeUnit.SECONDS)
+                        @Suppress("UNCHECKED_CAST")
+                        for (node in backing.nodes(CallSiteNode::class.java).take(limit)) yield(node as T)
+                    } finally {
+                        active.decrementAndGet()
+                    }
+                }
+            }
+        }
+
+        val result = executor(
+            "orders" to parallelGraph("orders"),
+            "billing" to parallelGraph("billing")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_name AS caller LIMIT 3"
+        )
+
+        assertEquals(listOf("orders", "orders", "billing"), result.rows.map { it["graph"] })
+        assertEquals(listOf("call0", "call1", "call0"), result.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("orders"), listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
+        assertEquals(2, maximumActive.get())
+
+        val serialResult = executor("catalog" to backingGraph("catalog")).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_name AS caller LIMIT 3"
+        )
+        assertEquals(listOf("catalog", "catalog"), serialResult.rows.map { it["graph"] })
+        assertEquals(listOf("call0", "call1"), serialResult.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("catalog"), listOf("catalog")), serialResult.rows.map(::graphIds))
+    }
+
+    @Test
+    fun `direct string conjunction pushes down its required predicate and applies residual disjunction`() {
+        val lookupCalls = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+
+        fun indexedGraph(): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                listOf("Keep", "Drop").forEachIndexed { index, methodName ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(TypeDescriptor("example.Target"), methodName, emptyList(), returnType),
+                            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    if (type != CallSiteNode::class.java) return emptySequence()
+                    lookupCalls.incrementAndGet()
+                    assertEquals(listOf("caller_class"), predicates.map { it.property })
+                    @Suppress("UNCHECKED_CAST")
+                    return backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+                }
+            }
+        }
+
+        val queryExecutor = executor(
+            "orders" to indexedGraph(),
+            "billing" to indexedGraph()
+        )
+        val result = queryExecutor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' AND " +
+                "(n.caller_name CONTAINS 'Keep' OR n.callee_name CONTAINS 'Keep') " +
+                "RETURN DISTINCT n.caller_name AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("Keep"), result.rows.map { it["caller"] })
+        assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+
+        val sourceRows = queryExecutor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' AND " +
+                "(n.caller_name CONTAINS 'Keep' OR n.callee_name CONTAINS 'Keep') " +
+                "RETURN n.graphId AS graph, n.caller_name AS caller LIMIT 10"
+        )
+        assertEquals(listOf("orders", "billing"), sourceRows.rows.map { it["graph"] })
+        assertEquals(listOf("Keep", "Keep"), sourceRows.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("orders"), listOf("billing")), sourceRows.rows.map(::graphIds))
+        assertEquals(4, lookupCalls.get())
+    }
+
+    @Test
     fun `broad discovery query preserves dynamic annotation properties`() {
         val annotation = AnnotationNode(
             NodeId(1),

@@ -60,12 +60,14 @@ internal class OpenApiSpecBuilder {
                     parameters = listOf(
                         pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id"),
                         queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
+                        cypherTimeoutParameter()
                     ),
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Graph not loaded")
                     )
@@ -74,13 +76,15 @@ internal class OpenApiSpecBuilder {
                     "Execute a Cypher query against a specific graph",
                     parameters = listOf(
                         pathParameter(API_FIELD_GRAPH_ID, TYPE_STRING, "Unique graph id"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
+                        cypherTimeoutParameter()
                     ),
                     requestBody = cypherRequestBody(),
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Graph not loaded")
                     )
@@ -95,6 +99,7 @@ internal class OpenApiSpecBuilder {
                         queryParameter(API_PARAM_GRAPH, TYPE_STRING, false, "Graph id selection; repeat or comma-separate"),
                         queryParameter(API_PARAM_MODE, TYPE_STRING, false, "cross-graph (default) or fanout"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
+                        cypherTimeoutParameter(),
                         queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
                         queryParameter(
                             API_PARAM_INCLUDE_GRAPH_ROWS,
@@ -106,7 +111,8 @@ internal class OpenApiSpecBuilder {
                     responses = mapOf(
                         "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Requested graph not loaded")
                     )
@@ -115,6 +121,7 @@ internal class OpenApiSpecBuilder {
                     "Execute one cross-graph query or explicit fanout over selected graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Maximum total result rows across queried graphs"),
+                        cypherTimeoutParameter(),
                         queryParameter(API_PARAM_PER_GRAPH_LIMIT, TYPE_INTEGER, false, "Optional maximum result rows per graph"),
                         queryParameter(
                             API_PARAM_INCLUDE_GRAPH_ROWS,
@@ -127,7 +134,8 @@ internal class OpenApiSpecBuilder {
                     responses = mapOf(
                         "200" to response("Multi-graph Cypher result with graphId-tagged rows"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected"),
                         "404" to response("Requested graph not loaded")
                     )
@@ -259,25 +267,29 @@ internal class OpenApiSpecBuilder {
                     "Execute one query over the union of all loaded graphs",
                     parameters = listOf(
                         queryParameter(API_PARAM_QUERY, TYPE_STRING, true, "Cypher query text"),
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
+                        cypherTimeoutParameter()
                     ),
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected")
                     )
                 ),
                 "post" to operation(
                     "Execute one query over the union of all loaded graphs",
                     parameters = listOf(
-                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows")
+                        queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, "Server-side maximum result rows"),
+                        cypherTimeoutParameter()
                     ),
                     requestBody = cypherRequestBody(),
                     responses = mapOf(
                         "200" to response("Cypher result"),
                         "400" to response("Missing or invalid query"),
-                        "429" to response("Cypher concurrency or work budget exceeded"),
+                        "429" to response("Cypher concurrency limit exceeded"),
+                        "504" to response("Cypher query timeout exceeded"),
                         "503" to response("Cypher cancelled while the client remained connected")
                     )
                 )
@@ -371,6 +383,11 @@ internal class OpenApiSpecBuilder {
                 API_PARAM_QUERY to mapOf(
                     API_FIELD_TYPE to TYPE_STRING,
                     FIELD_DESCRIPTION to "Cypher query text"
+                ),
+                API_PARAM_TIMEOUT_MILLIS to mapOf(
+                    API_FIELD_TYPE to TYPE_INTEGER,
+                    FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION,
+                    "minimum" to 1
                 )
             ),
             listOf(API_PARAM_QUERY)
@@ -422,6 +439,11 @@ internal class OpenApiSpecBuilder {
                 API_PARAM_INCLUDE_GRAPH_ROWS to mapOf(
                     API_FIELD_TYPE to TYPE_BOOLEAN,
                     FIELD_DESCRIPTION to "Include duplicate per-graph row arrays in graph summaries"
+                ),
+                API_PARAM_TIMEOUT_MILLIS to mapOf(
+                    API_FIELD_TYPE to TYPE_INTEGER,
+                    FIELD_DESCRIPTION to CYPHER_TIMEOUT_DESCRIPTION,
+                    "minimum" to 1
                 )
             ),
             listOf(API_PARAM_QUERY)
@@ -441,19 +463,43 @@ internal class OpenApiSpecBuilder {
             )
         )
 
-    private fun queryParameter(name: String, type: String, required: Boolean, description: String): Map<String, Any?> =
-        parameter("query", name, type, required, description)
+    private fun cypherTimeoutParameter(): Map<String, Any?> = queryParameter(
+        API_PARAM_TIMEOUT_MILLIS,
+        TYPE_INTEGER,
+        false,
+        CYPHER_TIMEOUT_DESCRIPTION,
+        minimum = 1
+    )
+
+    private fun queryParameter(
+        name: String,
+        type: String,
+        required: Boolean,
+        description: String,
+        minimum: Int? = null
+    ): Map<String, Any?> = parameter("query", name, type, required, description, minimum)
 
     private fun pathParameter(name: String, type: String, description: String): Map<String, Any?> =
         parameter("path", name, type, true, description)
 
-    private fun parameter(location: String, name: String, type: String, required: Boolean, description: String): Map<String, Any?> =
+    private fun parameter(
+        location: String,
+        name: String,
+        type: String,
+        required: Boolean,
+        description: String,
+        minimum: Int? = null
+    ): Map<String, Any?> =
         mapOf(
             "in" to location,
             API_FIELD_NAME to name,
             FIELD_REQUIRED to required,
             FIELD_DESCRIPTION to description,
-            "schema" to mapOf(API_FIELD_TYPE to type)
+            "schema" to if (minimum == null) {
+                mapOf(API_FIELD_TYPE to type)
+            } else {
+                mapOf(API_FIELD_TYPE to type, "minimum" to minimum)
+            }
         )
 
     private fun response(description: String): Map<String, Any?> =
@@ -466,6 +512,8 @@ internal class OpenApiSpecBuilder {
         private const val TYPE_INTEGER = "integer"
         private const val TYPE_OBJECT = "object"
         private const val TYPE_STRING = "string"
+        private const val CYPHER_TIMEOUT_DESCRIPTION =
+            "Positive client timeout in milliseconds, capped by the server maximum"
         private val GRAPH_LOCAL_ID_PATHS = listOf(
             "/api/node/{id}",
             "/api/node/{id}/outgoing",

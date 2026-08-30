@@ -366,6 +366,22 @@ class CypherExecutorTest {
     }
 
     @Test
+    fun `cancellation signal preserves the first cancellation reason`() {
+        val cancellation = CypherCancellationSignal()
+        assertEquals("Cypher query cancelled", cancellation.cancellationException().message)
+
+        val timeout = CypherQueryTimeoutException(25)
+        assertTrue(cancellation.cancel(timeout))
+        assertFalse(cancellation.cancel())
+        assertTrue(cancellation.isCancelled)
+        assertTrue(cancellation.cancellationException() === timeout)
+
+        val thrown = assertFailsWith<CypherQueryTimeoutException> { cancellation.throwIfCancelled() }
+        assertTrue(thrown === timeout)
+        assertEquals(25, thrown.timeoutMillis)
+    }
+
+    @Test
     fun `execution context cancellation remains active across sequential executors`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)

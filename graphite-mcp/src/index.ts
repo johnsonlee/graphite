@@ -113,12 +113,14 @@ server.tool(
       .describe("One union query across graphs, or independent per-graph fan-out"),
     limit: z.number().optional()
       .describe("Maximum total result rows for the request"),
+    timeout_ms: z.number().int().positive().optional()
+      .describe("Client timeout in milliseconds, capped by the server maximum (60 seconds by default)"),
     per_graph_limit: z.number().optional()
       .describe("Optional maximum result rows per graph for multi-graph queries"),
     include_graph_rows: z.boolean().optional().default(false)
       .describe("Include duplicate per-graph row arrays in multi-graph responses"),
   },
-  async ({ query, graph_id, all_graphs, graphs, mode, limit, per_graph_limit, include_graph_rows }) => {
+  async ({ query, graph_id, all_graphs, graphs, mode, limit, timeout_ms, per_graph_limit, include_graph_rows }) => {
     const selectedGraphs = graphs?.filter((graph: string) => graph.trim().length > 0);
     if (graph_id && (all_graphs || (selectedGraphs && selectedGraphs.length > 0))) {
       throw new Error("graph_id is mutually exclusive with all_graphs and graphs");
@@ -138,6 +140,7 @@ server.tool(
     }
     const queryParams: Record<string, string> = {};
     if (limit !== undefined) queryParams.limit = String(limit);
+    if (timeout_ms !== undefined) queryParams.timeoutMs = String(timeout_ms);
     if (per_graph_limit !== undefined) queryParams.perGraphLimit = String(per_graph_limit);
     if (include_graph_rows) queryParams.includeGraphRows = "true";
     if (graph_id) {

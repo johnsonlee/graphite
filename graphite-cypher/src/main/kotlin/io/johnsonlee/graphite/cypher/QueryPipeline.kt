@@ -766,17 +766,54 @@ class QueryPipeline private constructor(
                 limitCount
             )
         }
-        if (ret.distinct && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
+        if (nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             val directStringDisjunction = DirectStringDisjunction.compile(where.condition, variable)
             if (directStringDisjunction != null) {
-                return executeDirectStringDisjunction(
-                    nodeClass,
-                    variable,
-                    directStringDisjunction,
-                    ret.items,
-                    columns,
-                    limitCount
-                )
+                return if (ret.distinct) {
+                    executeDirectStringDisjunction(
+                        nodeClass,
+                        variable,
+                        directStringDisjunction,
+                        ret.items,
+                        columns,
+                        limitCount
+                    )
+                } else {
+                    executeDirectStringDisjunctionRows(
+                        nodeClass,
+                        variable,
+                        directStringDisjunction,
+                        ret.items,
+                        columns,
+                        limitCount
+                    )
+                }
+            }
+            val directStringConjunction = DirectStringConjunction.compile(where.condition, variable)
+            if (directStringConjunction != null) {
+                val candidates = DirectStringDisjunction(listOf(directStringConjunction.required))
+                val predicate = directStringConjunction::matches
+                return if (ret.distinct) {
+                    executeDirectStringDisjunction(
+                        nodeClass,
+                        variable,
+                        candidates,
+                        ret.items,
+                        columns,
+                        limitCount,
+                        predicate
+                    )
+                } else {
+                    executeDirectStringDisjunctionRows(
+                        nodeClass,
+                        variable,
+                        candidates,
+                        ret.items,
+                        columns,
+                        limitCount,
+                        predicate
+                    )
+                }
             }
         }
 
@@ -881,7 +918,8 @@ class QueryPipeline private constructor(
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         columns: List<String>,
-        limit: Int
+        limit: Int,
+        nodePredicate: ((Node) -> Boolean)? = null
     ): CypherResult {
         if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
             return executeDirectStringDisjunctionInParallel(
@@ -890,10 +928,65 @@ class QueryPipeline private constructor(
                 filter,
                 items,
                 columns,
-                limit
+                limit,
+                nodePredicate
             )
         }
-        return executeDirectStringDisjunctionSerial(nodeClass, variable, filter, items, columns, limit)
+        return executeDirectStringDisjunctionSerial(
+            nodeClass,
+            variable,
+            filter,
+            items,
+            columns,
+            limit,
+            nodePredicate
+        )
+    }
+
+    @Suppress("NestedBlockDepth", "ReturnCount")
+    private fun executeDirectStringDisjunctionRows(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int,
+        nodePredicate: ((Node) -> Boolean)? = null
+    ): CypherResult {
+        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
+            val rows = mutableListOf<Map<String, Any?>>()
+            for (source in sources) {
+                val candidates = directStringCandidates(source.graph, nodeClass, filter)
+                    .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
+                for (node in candidates) {
+                    val candidate = nodeValue(source, node)
+                    val bindings = mutableMapOf<String, Any?>(variable to candidate)
+                    addProvenance(bindings, candidate)
+                    rows += projectRow(items, columns, bindings)
+                    if (rows.size >= limit) return CypherResult(columns, rows)
+                }
+            }
+            return CypherResult(columns, rows)
+        }
+
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val scanners = sources.map { source ->
+            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker, nodePredicate)
+        }
+        val rows = mutableListOf<Map<String, Any?>>()
+        var waveStart = 0
+        while (waveStart < scanners.size && rows.size < limit) {
+            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + directStringParallelism))
+            val batches = runDirectStringTasks(wave.map { scanner ->
+                { scanner.nextRows(limit) }
+            })
+            batches.forEach { batch ->
+                val remaining = limit - rows.size
+                if (remaining > 0) rows += batch.take(remaining)
+            }
+            waveStart += wave.size
+        }
+        return CypherResult(columns, rows)
     }
 
     private fun executeDirectStringDisjunctionSerial(
@@ -902,11 +995,14 @@ class QueryPipeline private constructor(
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         columns: List<String>,
-        limit: Int
+        limit: Int,
+        nodePredicate: ((Node) -> Boolean)?
     ): CypherResult {
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in sources) {
-            for (node in directStringCandidates(source.graph, nodeClass, filter)) {
+            val candidates = directStringCandidates(source.graph, nodeClass, filter)
+                .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
+            for (node in candidates) {
                 val candidate = nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
                 addProvenance(bindings, candidate)
@@ -959,11 +1055,12 @@ class QueryPipeline private constructor(
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         columns: List<String>,
-        limit: Int
+        limit: Int,
+        nodePredicate: ((Node) -> Boolean)?
     ): CypherResult {
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = sources.map { source ->
-            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker)
+            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker, nodePredicate)
         }
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         var waveStart = 0
@@ -1087,12 +1184,15 @@ class QueryPipeline private constructor(
         private val variable: String,
         private val items: List<ReturnItem>,
         private val columns: List<String>,
-        private val tracker: CypherWorkTracker?
+        private val tracker: CypherWorkTracker?,
+        private val nodePredicate: ((Node) -> Boolean)? = null
     ) {
         private val graphLock = directStringGraphLock(source.graph)
         private val localRows = HashSet<Map<String, Any?>>()
         private val iterator by lazy {
-            directStringCandidates(source.graph, nodeClass, filter, tracker).iterator()
+            directStringCandidates(source.graph, nodeClass, filter, tracker)
+                .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
+                .iterator()
         }
         private var exhausted = false
         private var inspected = 0
@@ -1110,6 +1210,19 @@ class QueryPipeline private constructor(
                 pollInterrupted()
             }
             DirectStringScanBatch(rows, exhausted)
+        }
+
+        fun nextRows(maxRows: Int): List<Map<String, Any?>> = withGraphLock {
+            val rows = mutableListOf<Map<String, Any?>>()
+            while (!exhausted && rows.size < maxRows) {
+                if (!iterator.hasNext()) {
+                    exhausted = true
+                    break
+                }
+                rows += projectParallelSafeNode(iterator.next())
+                pollInterrupted()
+            }
+            rows
         }
 
         fun collectRemainingSelectedRows(
@@ -1439,6 +1552,33 @@ class QueryPipeline private constructor(
                 val argument = call.args.singleOrNull() as? CypherExpr.Property ?: return false
                 return argument.expression == CypherExpr.Variable(variable) && argument.propertyName == property
             }
+        }
+    }
+
+    private data class DirectStringConjunction(
+        val required: DirectStringFilter,
+        val anyOf: DirectStringDisjunction
+    ) {
+        fun matches(node: Node): Boolean = required.matches(node) && anyOf.matches(node)
+
+        companion object {
+            fun compile(expression: CypherExpr, variable: String): DirectStringConjunction? {
+                val and = expression as? CypherExpr.And ?: return null
+                return compile(and.left, and.right, variable) ?: compile(and.right, and.left, variable)
+            }
+
+            private fun compile(
+                requiredExpression: CypherExpr,
+                disjunctionExpression: CypherExpr,
+                variable: String
+            ): DirectStringConjunction? = DirectStringFilter.compile(requiredExpression, variable)
+                ?.takeIf { required ->
+                    DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> required.property in properties }
+                }
+                ?.let { required ->
+                    DirectStringDisjunction.compile(disjunctionExpression, variable)
+                        ?.let { anyOf -> DirectStringConjunction(required, anyOf) }
+                }
         }
     }
 

@@ -4,6 +4,7 @@ import io.javalin.Javalin
 import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
+import io.johnsonlee.graphite.cypher.CypherQueryTimeoutException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -83,6 +84,13 @@ class ServerPerformanceMetricsTest {
             task.cancel()
             release.countDown()
             assertFailsWith<CypherQueryCancelledException> { task.completion.get(5, TimeUnit.SECONDS) }
+            val timeoutTask = guard.submit(
+                CypherCancellationSignal(),
+                clientTimeoutMillis = 25
+            ) {
+                CountDownLatch(1).await()
+            }
+            assertFailsWith<CypherQueryTimeoutException> { timeoutTask.completion.get(5, TimeUnit.SECONDS) }
             assertEquals("ok", guard.execute { "ok" })
             assertFailsWith<CypherBudgetExceededException> {
                 guard.execute { throw CypherBudgetExceededException(it.executionBudget.maxWorkUnits) }
@@ -96,6 +104,7 @@ class ServerPerformanceMetricsTest {
             assertEquals(1.0, metrics.registry.get("graphite.cypher.queries.rejected").counter().count())
             assertTimerCount(metrics, CypherQueryOutcome.SUCCESS, 1)
             assertTimerCount(metrics, CypherQueryOutcome.CANCELLED, 1)
+            assertTimerCount(metrics, CypherQueryOutcome.TIMEOUT, 1)
             assertTimerCount(metrics, CypherQueryOutcome.BUDGET_EXCEEDED, 1)
             assertTimerCount(metrics, CypherQueryOutcome.FAILED, 1)
             assertTrue(metrics.registry.scrape().contains("graphite_cypher_query_duration_seconds_bucket"))
