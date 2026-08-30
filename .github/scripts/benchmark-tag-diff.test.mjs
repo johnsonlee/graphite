@@ -18,6 +18,7 @@ import {
     REPRESENTATIVE_BENCHMARKS,
     resolvePreviousTag,
     summarizeReleaseMetrics,
+    trendLabelIndices,
     updateReleaseHistory,
     validateJmhResults
 } from "./benchmark-tag-diff.mjs";
@@ -204,6 +205,10 @@ test("HTML report is self-contained, 7+2 classified, provenance-rich, and inject
     assert.match(report.html, /Latency forest plot/);
     assert.match(report.html, /All 6 methods/);
     assert.match(report.html, /\.forest-track:before\{[^}]*width:2px/);
+    assert.match(report.html, /\.axis-track:before\{[^}]*width:2px/);
+    assert.match(report.html, /\.signal-columns\{margin-bottom:1rem\}/);
+    assert.match(report.html, /\.method-table td\{vertical-align:middle\}/);
+    assert.match(report.html, /<table class="method-table">/);
     assert.match(report.html, /Primary observed shift/);
     assert.match(report.html, /Worse · shifted right/);
     assert.match(report.html, /Component-CI envelope [+-]\d+\.\d+% to [+-]\d+\.\d+%/);
@@ -304,6 +309,12 @@ test("release history replaces reruns, stays semantic, and rejects incomplete 7+
     assert.deepEqual(next.map((entry) => entry.tag), ["v2.4.4", "v2.4.5"]);
     assert.equal(updateReleaseHistory(next, { ...next[1], generatedAt: "2026-09-01T00:00:00.000Z" }).length, 2);
     assert.throws(() => updateReleaseHistory([], { ...first, coreMetrics: first.coreMetrics.slice(1) }), /incomplete/);
+});
+
+test("trend version labels show every short-history release and thin long histories", () => {
+    assert.deepEqual(trendLabelIndices(5), [0, 1, 2, 3, 4]);
+    assert.deepEqual(trendLabelIndices(100), [0, 17, 33, 50, 66, 83, 99]);
+    assert.deepEqual(trendLabelIndices(0), []);
 });
 
 test("first semantic tag renders an explicit unavailable baseline without a verdict", () => {
