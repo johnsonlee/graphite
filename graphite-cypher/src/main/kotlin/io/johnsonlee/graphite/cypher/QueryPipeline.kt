@@ -1514,7 +1514,7 @@ class QueryPipeline private constructor(
             }
             waveStart = waveEnd
         }
-        if (rows.size < limit) return null
+        if (rows.size < limit) return CypherResult(columns, rows.values.toList())
 
         val selected = rows.keys.toSet()
         val selectedValues = selected.mapNotNullTo(linkedSetOf()) { row ->

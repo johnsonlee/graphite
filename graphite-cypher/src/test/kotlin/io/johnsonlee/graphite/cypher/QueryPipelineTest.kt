@@ -580,6 +580,39 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `complete indexed projection below limit does not fall back to a second graph scan`() {
+        class PartialIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> =
+                listOf(StringPropertyDistinctRow(0, listOf("index-only"))).take(limit)
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("first", PartialIndexedGraph(graph)),
+                CypherGraph("second", PartialIndexedGraph(graph))
+            )
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("index-only"), result.rows.map { it["caller"] })
+    }
+
+    @Test
     fun `parallel indexed distinct projection verifies selected rows in every graph`() {
         class SelectedIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
