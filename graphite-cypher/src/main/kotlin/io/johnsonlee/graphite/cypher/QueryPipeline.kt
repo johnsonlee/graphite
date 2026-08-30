@@ -252,6 +252,7 @@ class QueryPipeline private constructor(
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
+            ?: tryStreamingFilteredNodeMatch(clauses)
             ?: tryStreamingFilteredMatchLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
         if (fastResult != null) return fastResult
@@ -1439,6 +1440,53 @@ class QueryPipeline private constructor(
                 return argument.expression == CypherExpr.Variable(variable) && argument.propertyName == property
             }
         }
+    }
+
+    /**
+     * Streams an unbounded, filtered single-node MATCH through projection.
+     *
+     * The general pipeline materializes every MATCH binding before applying
+     * WHERE. Besides retaining rows that the predicate will discard, that can
+     * exhaust a work budget after allocating one binding map per scanned node.
+     * Reusing the predicate binding preserves scan work accounting while only
+     * allocating result rows for actual matches.
+     */
+    @Suppress("ComplexCondition", "CyclomaticComplexMethod", "MagicNumber", "ReturnCount")
+    private fun tryStreamingFilteredNodeMatch(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 3) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val where = clauses[1] as? CypherClause.Where ?: return null
+        val ret = clauses[2] as? CypherClause.Return ?: return null
+        if (match.optional || match.where != null || match.patterns.size != 1 || ret.distinct ||
+            ret.items.any { containsAggregation(it.expression) } ||
+            ret.items.any { (it.expression as? CypherExpr.Variable)?.name == "*" }
+        ) {
+            return null
+        }
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        val variable = nodePattern.variable ?: return null
+        if (elementIdEquality(where.condition, variable) != null) return null
+        val columns = ret.items.map { it.alias ?: it.expression.toCypherString() }
+        val predicateBindings = mutableMapOf<String, Any?>(variable to null)
+        val rows = mutableListOf<Map<String, Any?>>()
+        val candidateSources = graphIdEquality(where.condition, variable)
+            ?.let { graphId -> sources.filter { it.id == graphId } }
+            ?: sources
+
+        for (candidate in nodeElementCandidates(nodePattern, emptyMap(), candidateSources)) {
+            if (!matchesNodeConstraints(candidate, nodePattern, emptyMap())) continue
+            predicateBindings[variable] = candidate
+            if (evaluator.evaluate(where.condition, predicateBindings) != true) continue
+
+            val bindings = mutableMapOf<String, Any?>(variable to candidate)
+            addProvenance(bindings, candidate)
+            rows.add(projectRow(ret.items, columns, bindings))
+        }
+        checkCancelled()
+        return CypherResult(columns, rows)
     }
 
     /**
