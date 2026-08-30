@@ -48,11 +48,30 @@ internal fun cypherValueKey(value: Any?): Any = when (value) {
         if (doubleValue.isFinite()) CypherNumberKey(value.toCypherBigDecimal().stripTrailingZeros())
         else CypherNonFiniteNumberKey(doubleValue)
     }
-    is List<*> -> CypherListKey(value.map(::cypherValueKey))
-    is Map<*, *> -> CypherMapKey(value.entries.associate { (key, item) ->
-        cypherValueKey(key) to cypherValueKey(item)
-    })
+    is List<*> -> if (value.any(::requiresCypherNormalization)) {
+        CypherListKey(value.map(::cypherValueKey))
+    } else {
+        value
+    }
+    is Map<*, *> -> if (value.entries.any { (key, item) ->
+        requiresCypherNormalization(key) || requiresCypherNormalization(item)
+    }) {
+        CypherMapKey(value.entries.associate { (key, item) ->
+            cypherValueKey(key) to cypherValueKey(item)
+        })
+    } else {
+        value
+    }
     else -> value
+}
+
+internal fun requiresCypherNormalization(value: Any?): Boolean = when (value) {
+    is Number -> true
+    is List<*> -> value.any(::requiresCypherNormalization)
+    is Map<*, *> -> value.entries.any { (key, item) ->
+        requiresCypherNormalization(key) || requiresCypherNormalization(item)
+    }
+    else -> false
 }
 
 private data object CypherNullKey

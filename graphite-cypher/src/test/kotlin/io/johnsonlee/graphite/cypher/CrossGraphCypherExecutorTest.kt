@@ -44,6 +44,31 @@ import kotlin.test.assertTrue
 class CrossGraphCypherExecutorTest {
 
     @Test
+    fun `relationship uniqueness is qualified by graph identity`() {
+        fun dataFlowGraph(): Graph {
+            val first = IntConstant(NodeId(1), 10)
+            val second = IntConstant(NodeId(2), 20)
+            return DefaultGraph.Builder()
+                .addNode(first)
+                .addNode(second)
+                .addEdge(DataFlowEdge(first.id, second.id, DataFlowKind.ASSIGN))
+                .build()
+        }
+        val executor = executor("orders" to dataFlowGraph(), "billing" to dataFlowGraph())
+
+        val result = executor.execute(
+            "MATCH (a)-[r1:DATAFLOW]->(b), (c)-[r2:DATAFLOW]->(d) " +
+                "RETURN graphId(a) AS firstGraph, graphId(c) AS secondGraph " +
+                "ORDER BY firstGraph, secondGraph"
+        )
+
+        assertEquals(
+            listOf("billing" to "orders", "orders" to "billing"),
+            result.rows.map { it["firstGraph"] to it["secondGraph"] }
+        )
+    }
+
+    @Test
     fun `shared execution context cancellation stops a cross graph scan`() {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 10), cancellation)

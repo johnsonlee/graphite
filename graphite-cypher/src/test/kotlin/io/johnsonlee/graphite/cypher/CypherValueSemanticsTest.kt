@@ -6,6 +6,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class CypherValueSemanticsTest {
     private lateinit var executor: CypherExecutor
@@ -77,6 +78,19 @@ class CypherValueSemanticsTest {
         assertNotEquals(cypherValueKey(9007199254740993L), cypherValueKey(9007199254740992.0))
         assertEquals(cypherValueKey(Double.POSITIVE_INFINITY), cypherValueKey(Float.POSITIVE_INFINITY))
         assertNotEquals(cypherValueKey(Double.POSITIVE_INFINITY), cypherValueKey(Double.NEGATIVE_INFINITY))
+    }
+
+    @Test
+    fun `value keys preserve already canonical collections`() {
+        val list = listOf("value", null)
+        val map = mapOf("key" to listOf("value"))
+
+        assertSame(list, cypherValueKey(list))
+        assertSame(map, cypherValueKey(map))
+        assertEquals(false, requiresCypherNormalization(list))
+        assertEquals(false, requiresCypherNormalization(map))
+        assertEquals(true, requiresCypherNormalization(listOf("value", 1)))
+        assertEquals(true, requiresCypherNormalization(mapOf("key" to listOf(1))))
     }
 
     @Test

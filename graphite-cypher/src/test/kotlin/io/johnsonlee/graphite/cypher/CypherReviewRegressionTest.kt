@@ -83,6 +83,23 @@ class CypherReviewRegressionTest {
     }
 
     @Test
+    fun `multi column grouping retains numeric equality on tracked and untracked paths`() {
+        val query =
+            "UNWIND [{value: 1, kind: 'same'}, {value: 1.0, kind: 'same'}, " +
+                "{value: 2, kind: 'same'}, {value: 2, kind: 'same'}] AS item " +
+                "RETURN item.value AS value, item.kind AS kind, count(*) AS count " +
+                "ORDER BY value"
+        val graph = DefaultGraph.Builder().build()
+        val expectedCounts = listOf(2L, 2L)
+
+        assertEquals(expectedCounts, CypherExecutor(graph).execute(query).rows.map { it["count"] })
+        assertEquals(
+            expectedCounts,
+            CypherExecutor(graph, CypherExecutionBudget(Long.MAX_VALUE)).execute(query).rows.map { it["count"] }
+        )
+    }
+
+    @Test
     fun `one MATCH clause never reuses a relationship across segments or comma paths`() {
         val executor = twoNodeExecutor()
 

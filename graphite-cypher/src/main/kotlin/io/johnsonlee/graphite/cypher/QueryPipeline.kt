@@ -57,8 +57,8 @@ private data class MatchedPathSegment(
 )
 
 private data class RelationshipMatchState(
-    val reserved: Set<Edge>,
-    val used: Set<Edge>
+    val reserved: Set<QualifiedEdge>,
+    val used: Set<QualifiedEdge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
@@ -2071,7 +2071,7 @@ class QueryPipeline private constructor(
         edgeClass: Class<out Edge>?
     ): Sequence<Map<String, Any?>> = sequence {
         val edges = edgesForDirection(sourceNode, rel.direction, edgeClass)
-        val unavailableRelationships = unavailableRelationships(rel, bindings)
+        val unavailableRelationships = unavailableRelationships(rel, bindings, sourceNode.source)
 
         for (edge in edges) {
             if (edge.edge in unavailableRelationships || !matchesRelationshipBinding(rel, edge.value, bindings)) continue
@@ -2089,7 +2089,7 @@ class QueryPipeline private constructor(
                 newBindings[rel.variable] = edge.value
                 addProvenance(newBindings, edge.value)
             }
-            addUsedRelationshipsIfTracked(newBindings, listOf(edge.edge))
+            addUsedRelationshipsIfTracked(newBindings, sourceNode.source, listOf(edge.edge))
             addMatchedPathSegmentIfTracked(
                 newBindings,
                 MatchedPathSegment(listOf(edge.value, targetValue), listOf(edge.edge))
@@ -2113,7 +2113,7 @@ class QueryPipeline private constructor(
         }
 
         val workTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val unavailableRelationships = unavailableRelationships(rel, bindings)
+        val unavailableRelationships = unavailableRelationships(rel, bindings, sourceNode.source)
         val nodePredicate = variablePathNodePredicate(
             rel,
             targetNodePattern,
@@ -2152,7 +2152,7 @@ class QueryPipeline private constructor(
                     newBindings[rel.variable] = relationshipValues
                     addProvenance(newBindings, relationshipValues)
                 }
-                addUsedRelationshipsIfTracked(newBindings, path.edges)
+                addUsedRelationshipsIfTracked(newBindings, sourceNode.source, path.edges)
                 if (INTERNAL_PATH_START_NODE_KEY in bindings) {
                     val pathTail = buildList {
                         path.edges.indices.forEach { index ->
@@ -2199,15 +2199,25 @@ class QueryPipeline private constructor(
 
     private fun unavailableRelationships(
         rel: PatternElement.RelationshipPattern,
-        bindings: Map<String, Any?>
+        bindings: Map<String, Any?>,
+        source: CypherGraph
     ): Set<Edge> {
         val state = bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] as? RelationshipMatchState ?: return emptySet()
-        return state.used + (state.reserved - relationshipBinding(rel.variable?.let(bindings::get)))
+        val availableBinding = relationshipBinding(rel.variable?.let(bindings::get))
+        return (state.used + (state.reserved - availableBinding))
+            .asSequence()
+            .filter { it.graphId == source.id }
+            .mapTo(linkedSetOf()) { it.edge }
     }
 
-    private fun addUsedRelationshipsIfTracked(bindings: MutableMap<String, Any?>, edges: Collection<Edge>) {
+    private fun addUsedRelationshipsIfTracked(
+        bindings: MutableMap<String, Any?>,
+        source: CypherGraph,
+        edges: Collection<Edge>
+    ) {
         val state = bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] as? RelationshipMatchState ?: return
-        bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] = state.copy(used = state.used + edges)
+        val qualifiedEdges = edges.mapTo(linkedSetOf()) { QualifiedEdge(source.id, source.graph, it) }
+        bindings[INTERNAL_RELATIONSHIP_MATCH_STATE_KEY] = state.copy(used = state.used + qualifiedEdges)
     }
 
     private fun matchesRelationshipBinding(
@@ -2216,11 +2226,15 @@ class QueryPipeline private constructor(
         bindings: Map<String, Any?>
     ): Boolean = rel.variable == null || !bindings.containsKey(rel.variable) || bindings[rel.variable] == candidate
 
-    private fun relationshipBinding(value: Any?): Set<Edge> = when (value) {
-        is Edge -> setOf(value)
-        is QualifiedEdge -> setOf(value.edge)
-        is PathFinder.Path -> value.edges.toSet()
-        is QualifiedPath -> value.edges.mapTo(linkedSetOf()) { it.edge }
+    private fun relationshipBinding(value: Any?): Set<QualifiedEdge> = when (value) {
+        is Edge -> sources.singleOrNull()?.let { source ->
+            setOf(QualifiedEdge(source.id, source.graph, value))
+        }.orEmpty()
+        is QualifiedEdge -> setOf(value)
+        is PathFinder.Path -> sources.singleOrNull()?.let { source ->
+            value.edges.mapTo(linkedSetOf()) { QualifiedEdge(source.id, source.graph, it) }
+        }.orEmpty()
+        is QualifiedPath -> value.edges.toSet()
         is List<*> -> value.flatMapTo(linkedSetOf(), ::relationshipBinding)
         else -> emptySet()
     }
@@ -2523,14 +2537,22 @@ class QueryPipeline private constructor(
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValues(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
         if (!workTrackingEnabled) return distinctByVisibleValuesUntracked(rows)
-        val byVisibleValues = LinkedHashMap<Any, MutableMap<String, Any?>>()
+        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val normalizedValues = HashMap<Any, Map<String, Any?>>()
         for ((index, row) in rows.withIndex()) {
             pollCancellation(index)
             val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-            val key = cypherValueKey(visible)
-            val existing = byVisibleValues[key]
+            val exact = byVisibleValues[visible]
+            val normalizedKey = if (exact == null && requiresCypherNormalization(visible)) {
+                cypherValueKey(visible)
+            } else {
+                null
+            }
+            val representative = normalizedKey?.let(normalizedValues::get)
+            val existing = exact ?: representative?.let(byVisibleValues::get)
             if (existing == null) {
-                byVisibleValues[key] = row.toMutableMap()
+                byVisibleValues[visible] = row.toMutableMap()
+                if (normalizedKey != null) normalizedValues[normalizedKey] = visible
             } else {
                 val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                     (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
@@ -2543,13 +2565,21 @@ class QueryPipeline private constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun distinctByVisibleValuesUntracked(rows: List<Map<String, Any?>>): List<Map<String, Any?>> {
-        val byVisibleValues = LinkedHashMap<Any, MutableMap<String, Any?>>()
+        val byVisibleValues = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val normalizedValues = HashMap<Any, Map<String, Any?>>()
         for (row in rows) {
             val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-            val key = cypherValueKey(visible)
-            val existing = byVisibleValues[key]
+            val exact = byVisibleValues[visible]
+            val normalizedKey = if (exact == null && requiresCypherNormalization(visible)) {
+                cypherValueKey(visible)
+            } else {
+                null
+            }
+            val representative = normalizedKey?.let(normalizedValues::get)
+            val existing = exact ?: representative?.let(byVisibleValues::get)
             if (existing == null) {
-                byVisibleValues[key] = row.toMutableMap()
+                byVisibleValues[visible] = row.toMutableMap()
+                if (normalizedKey != null) normalizedValues[normalizedKey] = visible
             } else {
                 val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                     (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
@@ -2645,8 +2675,8 @@ class QueryPipeline private constructor(
             } else {
                 // Group by non-aggregated columns
                 if (!workTrackingEnabled) {
-                    val groups = rows.groupBy { inputRow -> groupKey(expandedItems, groupByIndices, inputRow) }
-                    groups.map { (_, groupRows) ->
+                    val groups = groupRowsByCypherValue(expandedItems, groupByIndices, rows, trackWork = false)
+                    groups.map { groupRows ->
                         val row = mutableMapOf<String, Any?>()
                         for (i in expandedItems.indices) {
                             val col = columns[i]
@@ -2690,13 +2720,8 @@ class QueryPipeline private constructor(
         aggregateIndices: Set<Int>,
         rows: List<Map<String, Any?>>
     ): List<Map<String, Any?>> {
-        val groups = LinkedHashMap<Any, MutableList<Map<String, Any?>>>()
-        for ((index, inputRow) in rows.withIndex()) {
-            pollCancellation(index)
-            val key = groupKey(items, groupByIndices, inputRow)
-            groups.getOrPut(key, ::mutableListOf).add(inputRow)
-        }
-        return groups.values.mapIndexed { index, groupRows ->
+        val groups = groupRowsByCypherValue(items, groupByIndices, rows, trackWork = true)
+        return groups.mapIndexed { index, groupRows ->
             pollCancellation(index)
             val row = mutableMapOf<String, Any?>()
             for (i in items.indices) {
@@ -2711,11 +2736,65 @@ class QueryPipeline private constructor(
         }
     }
 
-    private fun groupKey(
+    private fun groupRowsByCypherValue(
         items: List<ReturnItem>,
         groupByIndices: List<Int>,
-        row: Map<String, Any?>
-    ): Any = cypherValueKey(groupByIndices.map { index -> evaluator.evaluate(items[index].expression, row) })
+        rows: List<Map<String, Any?>>,
+        trackWork: Boolean
+    ): List<List<Map<String, Any?>>> {
+        if (groupByIndices.size == 1) {
+            return groupRowsBySingleCypherValue(items[groupByIndices.single()], rows, trackWork)
+        }
+        val exactGroups = LinkedHashMap<List<Any?>, MutableList<Map<String, Any?>>>()
+        val normalizedGroups = HashMap<Any, List<Any?>>()
+        for ((rowIndex, row) in rows.withIndex()) {
+            if (trackWork) pollCancellation(rowIndex)
+            val exactKey = groupByIndices.map { index -> evaluator.evaluate(items[index].expression, row) }
+            val exactGroup = exactGroups[exactKey]
+            val normalizedKey = if (exactGroup == null && requiresCypherNormalization(exactKey)) {
+                cypherValueKey(exactKey)
+            } else {
+                null
+            }
+            val representative = normalizedKey?.let(normalizedGroups::get)
+            val group = exactGroup ?: representative?.let(exactGroups::get)
+            if (group != null) {
+                group.add(row)
+            } else {
+                exactGroups[exactKey] = mutableListOf(row)
+                if (normalizedKey != null) normalizedGroups[normalizedKey] = exactKey
+            }
+        }
+        return exactGroups.values.toList()
+    }
+
+    private fun groupRowsBySingleCypherValue(
+        item: ReturnItem,
+        rows: List<Map<String, Any?>>,
+        trackWork: Boolean
+    ): List<List<Map<String, Any?>>> {
+        val exactGroups = LinkedHashMap<Any?, MutableList<Map<String, Any?>>>()
+        val normalizedGroups = HashMap<Any, Any?>()
+        for ((rowIndex, row) in rows.withIndex()) {
+            if (trackWork) pollCancellation(rowIndex)
+            val exactKey = evaluator.evaluate(item.expression, row)
+            val exactGroup = exactGroups[exactKey]
+            val normalizedKey = if (exactGroup == null && requiresCypherNormalization(exactKey)) {
+                cypherValueKey(exactKey)
+            } else {
+                null
+            }
+            val representative = normalizedKey?.let(normalizedGroups::get)
+            val group = exactGroup ?: representative?.let(exactGroups::get)
+            if (group != null) {
+                group.add(row)
+            } else {
+                exactGroups[exactKey] = mutableListOf(row)
+                if (normalizedKey != null) normalizedGroups[normalizedKey] = exactKey
+            }
+        }
+        return exactGroups.values.toList()
+    }
 
     private fun projectTrackedRows(
         items: List<ReturnItem>,
