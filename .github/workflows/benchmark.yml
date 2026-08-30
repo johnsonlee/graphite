@@ -287,12 +287,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -322,7 +324,10 @@ jobs:
     - name: Build comparable Method JMH jars
       run: |
         SOURCE=graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt
-        cp "candidate/${SOURCE}" "base/${SOURCE}"
+        test ! -L "candidate/${SOURCE}"
+        rm -f -- "candidate/${SOURCE}"
+        install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+        cmp "base/${SOURCE}" "candidate/${SOURCE}"
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
 
@@ -380,7 +385,7 @@ jobs:
           local ADVISORY_ARG=()
           if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
           if [ "${ADVISORY}" = true ]; then ADVISORY_ARG=(--advisory); fi
-          node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+          node base/.github/scripts/benchmark-gate.mjs compare-jmh \
             --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}.json" \
             --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}.json" \
             "${METRIC_ARG[@]}" \
@@ -437,7 +442,7 @@ jobs:
           else
             METRIC_ARG=()
             if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-            node candidate/.github/scripts/benchmark-gate.mjs confirm-jmh \
+            node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
               --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${SLUG}-initial-status.json" \
               --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}.json" \
               --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}.json" \
@@ -484,10 +489,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout PR gate code
+    - name: Checkout trusted gate code
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.base.sha }}
+        persist-credentials: false
 
     - name: Download Method shards
       uses: actions/download-artifact@v8
@@ -578,12 +584,14 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.base.sha }}
         path: base
+        persist-credentials: false
 
     - name: Checkout PR
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        persist-credentials: false
 
     - name: Setup Java
       uses: actions/setup-java@v5
@@ -614,7 +622,10 @@ jobs:
       run: |
         for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt; do
           SOURCE="graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          cp "candidate/${SOURCE}" "base/${SOURCE}"
+          test ! -L "candidate/${SOURCE}"
+          rm -f -- "candidate/${SOURCE}"
+          install -m 0644 "base/${SOURCE}" "candidate/${SOURCE}"
+          cmp "base/${SOURCE}" "candidate/${SOURCE}"
         done
         base/gradlew -p base :explore:jmhJar --no-daemon
         candidate/gradlew -p candidate :explore:jmhJar --no-daemon
@@ -690,7 +701,7 @@ jobs:
               ($candidate_result.secondaryMetrics[$metric].score <=
                 ($base_result.secondaryMetrics[$metric].score * 1.15))
             )' >/dev/null
-        node candidate/.github/scripts/benchmark-gate.mjs compare-jmh \
+        node base/.github/scripts/benchmark-gate.mjs compare-jmh \
           --base benchmark-results/base-cypher-capacity.json \
           --candidate benchmark-results/candidate-cypher-capacity.json \
           --threshold 15 \
