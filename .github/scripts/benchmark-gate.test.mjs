@@ -1040,6 +1040,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6/);
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
+    assert.match(
+        workflow,
+        /TEST_HARNESS='graphite-webgraph\/src\/test\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/LargeCorpusPerformanceGateTest\.kt'/
+    );
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
     assert.match(workflow, /Checkout candidate reporting code for anchor rollout/);

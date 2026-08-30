@@ -125,6 +125,11 @@ gate. Explorer, Method compatibility, and Cypher capacity similarly reuse one ba
 Explorer JMH build. This removes repeated Gradle compilation from consumer jobs while checksums and
 JAR inspection fail closed on missing or corrupt build artifacts.
 
+The webgraph JMH fat JAR also packages test output. Its comparable-build step therefore overlays the
+base-owned large-corpus test harness in addition to the JMH workload sources. This prevents an
+unrelated test-only bytecode or JAR-layout change from perturbing the latency/resource fork while
+leaving candidate production classes intact for the actual regression comparison.
+
 The 17 latency keys are split across nine parallel matrix shards: four for the
 synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,
 and one for the real 36-graph case. Within

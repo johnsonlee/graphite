@@ -151,6 +151,11 @@ jobs:
           install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
           cmp "gate/${SOURCE}" "source/${SOURCE}"
         done
+        TEST_HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
+        test ! -L "source/${TEST_HARNESS}"
+        rm -f -- "source/${TEST_HARNESS}"
+        install -m 0644 "gate/${TEST_HARNESS}" "source/${TEST_HARNESS}"
+        cmp "gate/${TEST_HARNESS}" "source/${TEST_HARNESS}"
 
     - name: Build comparable wrapped-query JMH JAR
       run: |
