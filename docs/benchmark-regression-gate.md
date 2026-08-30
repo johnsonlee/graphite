@@ -95,6 +95,13 @@ candidate comparator test job. It then installs that pinned harness into both re
 pinned comparator. Any other pre-protocol base fails closed. Once `main` contains the protocol, the
 workflow automatically returns to base-owned controls and never selects candidate controls.
 
+The coverage-taxonomy rollout changes presentation only. The base-owned aggregator always writes
+the authoritative verdict and is the only status enforced by the required check. If that exact base
+does not yet render the coverage summary, a candidate renderer is allowed only when its reviewed
+SHA-256 matches and candidate gate tests pass. Its provenance and verdict must equal the
+authoritative status, which is then copied back over the rendering status. The artifact retains both
+reports for audit. Once the base renderer contains the taxonomy, the transition path is skipped.
+
 This workflow is a regression signal for non-malicious changes, not a sandbox or a tamper-resistant
 security boundary. Component jobs still execute candidate Gradle scripts and candidate benchmark
 JARs on the same GitHub-hosted runner and as the same operating-system user as sibling base

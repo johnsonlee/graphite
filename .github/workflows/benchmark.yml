@@ -19,6 +19,7 @@ env:
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
+  BENCHMARK_REPORT_TRANSITION_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
@@ -1946,6 +1947,13 @@ jobs:
         ref: ${{ github.event.pull_request.base.sha }}
         persist-credentials: false
 
+    - name: Checkout candidate reporting code for taxonomy rollout
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: reporter
+        persist-credentials: false
+
     - name: Download method-level results
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -1962,6 +1970,8 @@ jobs:
 
     - name: Build benchmark report
       if: always()
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         mkdir -p benchmark-results
         node .github/scripts/benchmark-gate.mjs aggregate \
@@ -1970,8 +1980,29 @@ jobs:
           --candidate-sha '${{ github.event.pull_request.head.sha }}' \
           --runner '${{ runner.os }}-${{ runner.arch }}' \
           --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
-          --report benchmark-results/benchmark-report.md \
-          --status benchmark-results/benchmark-status.json
+          --report benchmark-results/benchmark-authoritative-report.md \
+          --status benchmark-results/benchmark-authoritative-status.json
+        if grep -q '^### Coverage summary$' benchmark-results/benchmark-authoritative-report.md; then
+          install -m 0644 benchmark-results/benchmark-authoritative-report.md \
+            benchmark-results/benchmark-report.md
+          install -m 0644 benchmark-results/benchmark-authoritative-status.json \
+            benchmark-results/benchmark-status.json
+        else
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+          node reporter/.github/scripts/benchmark-gate.mjs aggregate \
+            --directory benchmark-results \
+            --base-sha '${{ github.event.pull_request.base.sha }}' \
+            --candidate-sha '${{ github.event.pull_request.head.sha }}' \
+            --runner '${{ runner.os }}-${{ runner.arch }}' \
+            --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            --report benchmark-results/benchmark-report.md \
+            --status benchmark-results/benchmark-render-status.json
+          node -e "const a=require('./benchmark-results/benchmark-authoritative-status.json');const r=require('./benchmark-results/benchmark-render-status.json');if(a.passed!==r.passed||JSON.stringify(a.errors)!==JSON.stringify(r.errors))process.exit(1)"
+          install -m 0644 benchmark-results/benchmark-authoritative-status.json \
+            benchmark-results/benchmark-status.json
+        fi
 
     - name: Upload aggregate benchmark report
       if: always()
@@ -1981,6 +2012,8 @@ jobs:
         path: |
           benchmark-results/benchmark-report.md
           benchmark-results/benchmark-status.json
+          benchmark-results/benchmark-authoritative-report.md
+          benchmark-results/benchmark-authoritative-status.json
         if-no-files-found: error
         overwrite: true
         retention-days: 14

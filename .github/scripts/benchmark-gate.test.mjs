@@ -1094,6 +1094,19 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
     );
     assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b625442/);
+    assert.match(
+        workflow,
+        new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(comparator)}`)
+    );
+    const aggregateJob = workflow.slice(
+        workflow.indexOf("  benchmark-regression-gate:"),
+        workflow.indexOf("  benchmark-comment:")
+    );
+    assert.match(aggregateJob, /Checkout candidate reporting code for taxonomy rollout/);
+    assert.match(workflow, /benchmark-authoritative-status\.json/);
+    assert.match(workflow, /benchmark-render-status\.json/);
+    assert.match(workflow, /grep -q '\^### Coverage summary\$'/);
+    assert.match(workflow, /install -m 0644 benchmark-results\/benchmark-authoritative-status\.json/);
     assert.match(workflow, /mode=pinned-transition/);
     assert.match(workflow, /needs: \[candidate-gate-tests\]/);
     assert.match(workflow, /compare-latency-anchor/);
