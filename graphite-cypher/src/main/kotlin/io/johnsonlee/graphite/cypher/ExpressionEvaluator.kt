@@ -27,9 +27,16 @@ private val ASCII_RANGE_SEQUENCE_TOKEN = Pattern.compile("\\[([A-Za-z0-9_])(?:-(
  * Supports all openCypher expression types: arithmetic, boolean, comparison,
  * string operators, list operators, CASE, property access, function calls.
  */
-class ExpressionEvaluator(
-    private val checkCancelled: (() -> Unit)? = null
+class ExpressionEvaluator private constructor(
+    private val checkCancelled: (() -> Unit)?,
+    private val parameterResolver: ((String) -> Any?)?
 ) {
+    constructor(checkCancelled: (() -> Unit)? = null) : this(checkCancelled, null)
+
+    internal constructor(
+        parameterResolver: (String) -> Any?,
+        checkCancelled: (() -> Unit)?
+    ) : this(checkCancelled, parameterResolver)
 
     private val regexCache = object : LinkedHashMap<String, CompiledCypherRegex>(
         MAX_REGEX_CACHE_SIZE + 1,
@@ -51,7 +58,11 @@ class ExpressionEvaluator(
             val obj = evaluate(expr.expression, bindings)
             resolveProperty(obj, expr.propertyName)
         }
-        is CypherExpr.Parameter -> bindings[expr.name]
+        is CypherExpr.Parameter -> if (parameterResolver == null) {
+            bindings[expr.name]
+        } else {
+            parameterResolver.invoke(expr.name)
+        }
         is CypherExpr.FunctionCall -> {
             checkCancelled?.invoke()
             val args = expr.args.map { evaluate(it, bindings) }
@@ -167,27 +178,25 @@ class ExpressionEvaluator(
         val left = evaluate(expr.left, bindings)
         val right = evaluate(expr.right, bindings)
 
-        if (left == null || right == null) {
-            return when (expr.op) {
-                "=" -> if (left == null && right == null) true else null
-                "<>" -> if (left == null && right == null) false else null
-                else -> null
-            }
-        }
-
         return when (expr.op) {
-            "=" -> compareValues(left, right) == 0
-            "<>" -> compareValues(left, right) != 0
-            "<" -> compareValues(left, right) < 0
-            ">" -> compareValues(left, right) > 0
-            "<=" -> compareValues(left, right) <= 0
-            ">=" -> compareValues(left, right) >= 0
-            else -> throw CypherException("Unknown comparison: ${expr.op}")
+            "=" -> cypherEquals(left, right)
+            "<>" -> cypherEquals(left, right)?.not()
+            else -> if (left == null || right == null) {
+                null
+            } else {
+                when (expr.op) {
+                    "<" -> compareValues(left, right) < 0
+                    ">" -> compareValues(left, right) > 0
+                    "<=" -> compareValues(left, right) <= 0
+                    ">=" -> compareValues(left, right) >= 0
+                    else -> throw CypherException("Unknown comparison: ${expr.op}")
+                }
+            }
         }
     }
 
     private fun compareValues(a: Any, b: Any): Int = when {
-        a is Number && b is Number -> toDouble(a).compareTo(toDouble(b))
+        a is Number && b is Number -> compareCypherNumbers(a, b)
         a is String && b is String -> a.compareTo(b)
         a is Boolean && b is Boolean -> a.compareTo(b)
         a is QualifiedNode && b is QualifiedNode ->
@@ -225,7 +234,7 @@ class ExpressionEvaluator(
             "IN" -> {
                 val element = evaluate(expr.left, bindings)
                 val list = evaluate(expr.right, bindings) as? List<*> ?: return null
-                containsWithCancellation(list, element, checkCancelled)
+                evaluateMembership(list, element, checkCancelled)
             }
             else -> throw CypherException("Unknown list op: ${expr.op}")
         }
@@ -252,10 +261,10 @@ class ExpressionEvaluator(
         val testValue = expr.test?.let { evaluate(it, bindings) }
 
         for ((condition, result) in expr.whenClauses) {
-            if (testValue != null) {
+            if (expr.test != null) {
                 // Simple CASE: compare test value with each when
                 val whenValue = evaluate(condition, bindings)
-                if (testValue == whenValue) return evaluate(result, bindings)
+                if (cypherEquals(testValue, whenValue) == true) return evaluate(result, bindings)
             } else {
                 // Generic CASE: evaluate each when as boolean
                 val condResult = evaluate(condition, bindings)
@@ -448,40 +457,112 @@ private fun appendWithCancellation(
     }
 }
 
-private fun containsWithCancellation(
+@Suppress("ReturnCount")
+private fun evaluateMembership(
     list: List<*>,
     element: Any?,
     checkCancelled: (() -> Unit)?
-): Boolean = when {
-    checkCancelled == null -> element in list
-    list is RandomAccess -> containsRandomAccessList(list, element, checkCancelled)
-    else -> containsSequentialList(list, element, checkCancelled)
+): Boolean? {
+    if (list.isEmpty()) return false
+    if (element == null) {
+        checkCancelled?.invoke()
+        return null
+    }
+    if (list is CypherRangeValues && element is Number) {
+        return evaluateRangeMembership(list, element, checkCancelled)
+    }
+
+    if (checkCancelled == null) return evaluateMembershipUntracked(list, element)
+    return if (list is RandomAccess) {
+        evaluateRandomAccessMembership(list, element, checkCancelled)
+    } else {
+        evaluateSequentialMembership(list, element, checkCancelled)
+    }
 }
 
-private fun containsRandomAccessList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+@Suppress("ReturnCount")
+private fun evaluateRangeMembership(
+    list: CypherRangeValues,
+    element: Number,
+    checkCancelled: (() -> Unit)?
+): Boolean {
+    val target = element.toExactLongOrNull()
+    if (target == null) {
+        checkCancelled?.invoke()
+        return false
+    }
+    if (checkCancelled == null) return list.contains(target)
+
     var start = 0
     while (start < list.size) {
         checkCancelled()
         val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
-        if (list.subList(start, end).contains(element)) return true
+        if (list.subList(start, end).contains(target)) return true
         start = end
     }
     checkCancelled()
     return false
 }
 
-private fun containsSequentialList(list: List<*>, element: Any?, checkCancelled: () -> Unit): Boolean {
+private fun evaluateMembershipUntracked(list: List<*>, element: Any): Boolean? {
+    var containsNullComparison = false
+    for (candidate in list) {
+        when (cypherMembershipEquals(element, candidate)) {
+            true -> return true
+            null -> containsNullComparison = true
+            false -> Unit
+        }
+    }
+    return if (containsNullComparison) null else false
+}
+
+private fun evaluateRandomAccessMembership(
+    list: List<*>,
+    element: Any,
+    checkCancelled: () -> Unit
+): Boolean? {
+    var containsNullComparison = false
+    var start = 0
+    while (start < list.size) {
+        checkCancelled()
+        val end = minOf(start + CANCELLABLE_COLLECTION_CHUNK_SIZE, list.size)
+        var index = start
+        while (index < end) {
+            when (cypherMembershipEquals(element, list[index])) {
+                true -> return true
+                null -> containsNullComparison = true
+                false -> Unit
+            }
+            index++
+        }
+        start = end
+    }
+    checkCancelled()
+    return if (containsNullComparison) null else false
+}
+
+private fun evaluateSequentialMembership(
+    list: List<*>,
+    element: Any,
+    checkCancelled: () -> Unit
+): Boolean? {
+    var containsNullComparison = false
     var index = 0
     val iterator = list.listIterator()
     while (iterator.hasNext()) {
         if ((index and CANCELLATION_POLL_MASK) == 0) checkCancelled()
-        val candidate = iterator.next()
-        if (element == candidate) return true
+        when (cypherMembershipEquals(element, iterator.next())) {
+            true -> return true
+            null -> containsNullComparison = true
+            false -> Unit
+        }
         index++
     }
     checkCancelled()
-    return false
+    return if (containsNullComparison) null else false
 }
+
+private fun cypherMembershipEquals(element: Any, candidate: Any?): Boolean? = cypherEquals(element, candidate)
 
 private const val CANCELLABLE_COLLECTION_CHUNK_SIZE = 4 * (CANCELLATION_POLL_MASK + 1)
 

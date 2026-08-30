@@ -356,8 +356,9 @@ class NodePropertyAccessorTest {
     }
 
     @Test
-    fun `resolveNodeLabel returns Node for unknown labels`() {
-        assertEquals(Node::class.java, NodePropertyAccessor.resolveNodeLabel("Unknown"))
+    fun `unknown labels remain distinguishable from an unlabelled node pattern`() {
+        assertNull(NodePropertyAccessor.resolveNodeLabelOrNull("Unknown"))
+        assertEquals(Node::class.java, NodePropertyAccessor.resolveNodeLabelOrNull("Node"))
     }
 
     @Test

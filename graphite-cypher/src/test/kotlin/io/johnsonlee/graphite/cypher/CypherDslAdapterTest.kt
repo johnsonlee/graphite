@@ -56,8 +56,25 @@ class CypherDslAdapterTest {
         val clauses = CypherDslAdapter.parse("OPTIONAL MATCH (n:IntConstant) RETURN n")
         val match = assertIs<CypherClause.Match>(clauses[0])
         assertTrue(match.optional)
+        assertNull(match.where)
         val node = assertIs<PatternElement.NodePattern>(match.patterns[0].elements[0])
         assertEquals(listOf("IntConstant"), node.labels)
+    }
+
+    @Test
+    fun `OPTIONAL MATCH WHERE remains attached to the optional operation`() {
+        val clauses = CypherDslAdapter.parse(
+            "OPTIONAL MATCH (n:IntConstant) WHERE n.value = 42 RETURN n"
+        )
+
+        assertEquals(2, clauses.size)
+        val match = assertIs<CypherClause.Match>(clauses[0])
+        assertTrue(match.optional)
+        val where = assertIs<CypherExpr.Comparison>(match.where)
+        assertEquals("=", where.op)
+        assertEquals(CypherExpr.Property(CypherExpr.Variable("n"), "value"), where.left)
+        assertEquals(CypherExpr.Literal(42), where.right)
+        assertIs<CypherClause.Return>(clauses[1])
     }
 
     @Test

@@ -300,18 +300,16 @@ class ExpressionEvaluatorTest {
 
     @Test
     fun `comparison with null - equality`() {
-        // null = null => true in Cypher comparison semantics
-        assertEquals(true, eval(CypherExpr.Comparison("=", lit(null), lit(null))))
-        // null = 1 => null
+        assertNull(eval(CypherExpr.Comparison("=", lit(null), lit(null))))
         assertNull(eval(CypherExpr.Comparison("=", lit(null), lit(1))))
+        assertNull(eval(CypherExpr.Comparison("=", lit(1), lit(null))))
     }
 
     @Test
     fun `comparison with null - not-equal`() {
-        // null <> null => false
-        assertEquals(false, eval(CypherExpr.Comparison("<>", lit(null), lit(null))))
-        // null <> 1 => null
+        assertNull(eval(CypherExpr.Comparison("<>", lit(null), lit(null))))
         assertNull(eval(CypherExpr.Comparison("<>", lit(null), lit(1))))
+        assertNull(eval(CypherExpr.Comparison("<>", lit(1), lit(null))))
     }
 
     @Test
@@ -445,6 +443,41 @@ class ExpressionEvaluatorTest {
     @Test
     fun `IN - null list returns null`() {
         assertNull(eval(CypherExpr.ListOp("IN", lit(1), lit(null))))
+    }
+
+    @Test
+    fun `IN - null comparison propagates when no element matches`() {
+        assertNull(eval(CypherExpr.ListOp("IN", lit(2), lit(listOf(1, null, 3)))))
+        assertNull(eval(CypherExpr.ListOp("IN", lit(null), lit(listOf(1, 2, 3)))))
+        assertNull(eval(CypherExpr.ListOp("IN", lit(null), lit(listOf(null)))))
+    }
+
+    @Test
+    fun `IN - matching element takes precedence over null comparison`() {
+        assertEquals(true, eval(CypherExpr.ListOp("IN", lit(2), lit(listOf(1, null, 2)))))
+    }
+
+    @Test
+    fun `IN - preserves numeric coercion and nested collection nulls`() {
+        assertEquals(true, eval(CypherExpr.ListOp("IN", lit(2), lit(listOf(2L)))))
+        assertNull(eval(CypherExpr.ListOp("IN", lit(listOf(1, null)), lit(listOf(listOf(1, null))))))
+        assertEquals(
+            false,
+            eval(CypherExpr.ListOp("IN", lit(listOf(1, null)), lit(listOf(listOf(2, null)))))
+        )
+    }
+
+    @Test
+    fun `IN - empty list returns false even for null`() {
+        assertEquals(false, eval(CypherExpr.ListOp("IN", lit(null), lit(emptyList<Any?>()))))
+    }
+
+    @Test
+    fun `equality propagates nulls nested in collections`() {
+        assertNull(eval(CypherExpr.Comparison("=", lit(listOf(1, null)), lit(listOf(1, null)))))
+        assertEquals(false, eval(CypherExpr.Comparison("=", lit(listOf(1, null)), lit(listOf(2, null)))))
+        assertEquals(true, eval(CypherExpr.Comparison("=", lit(mapOf("x" to 1)), lit(mapOf("x" to 1)))))
+        assertNull(eval(CypherExpr.Comparison("=", lit(mapOf("x" to null)), lit(mapOf("x" to null)))))
     }
 
     @Test

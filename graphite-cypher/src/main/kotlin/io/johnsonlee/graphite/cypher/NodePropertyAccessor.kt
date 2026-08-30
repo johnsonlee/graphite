@@ -38,6 +38,36 @@ object NodePropertyAccessor {
     private const val PROPERTY_CLASS = "class"
     private const val PROPERTY_FORMAT = "format"
     private const val PROPERTY_PROFILE = "profile"
+    private val nodeTypesByLabel = mapOf(
+        "callsitenode" to CallSiteNode::class.java,
+        "callsite" to CallSiteNode::class.java,
+        "intconstant" to IntConstant::class.java,
+        "stringconstant" to StringConstant::class.java,
+        "longconstant" to LongConstant::class.java,
+        "floatconstant" to FloatConstant::class.java,
+        "doubleconstant" to DoubleConstant::class.java,
+        "booleanconstant" to BooleanConstant::class.java,
+        "nullconstant" to NullConstant::class.java,
+        "enumconstant" to EnumConstant::class.java,
+        "constant" to ConstantNode::class.java,
+        "constantnode" to ConstantNode::class.java,
+        "fieldnode" to FieldNode::class.java,
+        "field" to FieldNode::class.java,
+        "parameternode" to ParameterNode::class.java,
+        "parameter" to ParameterNode::class.java,
+        "returnnode" to ReturnNode::class.java,
+        "return" to ReturnNode::class.java,
+        "resourcefilenode" to ResourceFileNode::class.java,
+        "resourcefile" to ResourceFileNode::class.java,
+        "resourcevaluenode" to ResourceValueNode::class.java,
+        "resourcevalue" to ResourceValueNode::class.java,
+        "resource" to ResourceValueNode::class.java,
+        "localvariable" to LocalVariable::class.java,
+        "local" to LocalVariable::class.java,
+        "annotationnode" to AnnotationNode::class.java,
+        "annotation" to AnnotationNode::class.java,
+        "node" to Node::class.java
+    )
 
     fun getProperty(node: Node, property: String): Any? {
         // Check global properties first (except PROPERTY_TYPE which is ambiguous)
@@ -267,28 +297,21 @@ object NodePropertyAccessor {
 
     /**
      * Maps a Cypher label string to the corresponding Graphite [Node] subclass.
+     *
+     * Unknown labels resolve to `null`. Treating an unknown label as [Node]
+     * makes `MATCH (n:MissingLabel)` indistinguishable from `MATCH (n)` and
+     * violates Cypher label semantics.
      */
-    fun resolveNodeLabel(label: String): Class<out Node> = when (label.lowercase()) {
-        "callsitenode", "callsite" -> CallSiteNode::class.java
-        "intconstant" -> IntConstant::class.java
-        "stringconstant" -> StringConstant::class.java
-        "longconstant" -> LongConstant::class.java
-        "floatconstant" -> FloatConstant::class.java
-        "doubleconstant" -> DoubleConstant::class.java
-        "booleanconstant" -> BooleanConstant::class.java
-        "nullconstant" -> NullConstant::class.java
-        "enumconstant" -> EnumConstant::class.java
-        "constant", "constantnode" -> ConstantNode::class.java
-        "fieldnode", "field" -> FieldNode::class.java
-        "parameternode", "parameter" -> ParameterNode::class.java
-        "returnnode", "return" -> ReturnNode::class.java
-        "resourcefilenode", "resourcefile" -> ResourceFileNode::class.java
-        "resourcevaluenode", "resourcevalue", "resource" -> ResourceValueNode::class.java
-        "localvariable", "local" -> LocalVariable::class.java
-        "annotationnode", "annotation" -> AnnotationNode::class.java
-        "node" -> Node::class.java
-        else -> Node::class.java
-    }
+    fun resolveNodeLabelOrNull(label: String): Class<out Node>? = nodeTypesByLabel[label.lowercase()]
+
+    /**
+     * Resolve a known Graphite node label.
+     *
+     * Prefer [resolveNodeLabelOrNull] in query execution, where an unknown
+     * label means that the pattern has no candidates.
+     */
+    fun resolveNodeLabel(label: String): Class<out Node> =
+        resolveNodeLabelOrNull(label) ?: Node::class.java
 
     /**
      * Maps a Cypher relationship type string to the corresponding Graphite [Edge] subclass.

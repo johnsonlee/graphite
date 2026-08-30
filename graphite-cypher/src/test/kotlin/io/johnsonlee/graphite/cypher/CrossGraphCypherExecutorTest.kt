@@ -44,6 +44,31 @@ import kotlin.test.assertTrue
 class CrossGraphCypherExecutorTest {
 
     @Test
+    fun `relationship uniqueness is qualified by graph identity`() {
+        fun dataFlowGraph(): Graph {
+            val first = IntConstant(NodeId(1), 10)
+            val second = IntConstant(NodeId(2), 20)
+            return DefaultGraph.Builder()
+                .addNode(first)
+                .addNode(second)
+                .addEdge(DataFlowEdge(first.id, second.id, DataFlowKind.ASSIGN))
+                .build()
+        }
+        val executor = executor("orders" to dataFlowGraph(), "billing" to dataFlowGraph())
+
+        val result = executor.execute(
+            "MATCH (a)-[r1:DATAFLOW]->(b), (c)-[r2:DATAFLOW]->(d) " +
+                "RETURN graphId(a) AS firstGraph, graphId(c) AS secondGraph " +
+                "ORDER BY firstGraph, secondGraph"
+        )
+
+        assertEquals(
+            listOf("billing" to "orders", "orders" to "billing"),
+            result.rows.map { it["firstGraph"] to it["secondGraph"] }
+        )
+    }
+
+    @Test
     fun `Method source preserves graph identity for equal indexed methods`() {
         val method = MethodDescriptor(
             TypeDescriptor("com.example.Shared"),
@@ -453,13 +478,22 @@ class CrossGraphCypherExecutorTest {
         val variablePath = executor.execute(
             "MATCH (a:IntConstant)-[r:DATAFLOW*1..2]->(b:IntConstant) RETURN r"
         )
-        assertEquals("orders", (variablePath.rows.single()["r"] as Map<*, *>)["graphId"])
+        val variableRelationships = variablePath.rows.single()["r"] as List<*>
+        assertEquals("orders", (variableRelationships.single() as Map<*, *>)["graphId"])
 
         val budgetedVariablePath = CrossGraphCypherExecutor(
             listOf(CypherGraph("orders", orders)),
             CypherExecutionBudget(maxWorkUnits = 20)
         ).execute("MATCH (a:IntConstant)-[r:DATAFLOW*1..2]->(b:IntConstant) RETURN r")
-        assertEquals("orders", (budgetedVariablePath.rows.single()["r"] as Map<*, *>)["graphId"])
+        val budgetedRelationships = budgetedVariablePath.rows.single()["r"] as List<*>
+        assertEquals("orders", (budgetedRelationships.single() as Map<*, *>)["graphId"])
+
+        val budgetedNamedPath = CrossGraphCypherExecutor(
+            listOf(CypherGraph("orders", orders)),
+            CypherExecutionBudget(maxWorkUnits = 100)
+        ).execute("MATCH p=(a:IntConstant)-[:DATAFLOW]->(b:IntConstant) RETURN a, p")
+        assertEquals("orders", (budgetedNamedPath.rows.single()["a"] as Map<*, *>)["graphId"])
+        assertEquals("orders", (budgetedNamedPath.rows.single()["p"] as Map<*, *>)["graphId"])
     }
 
     @Test

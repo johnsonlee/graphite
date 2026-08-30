@@ -27,6 +27,19 @@ import kotlin.test.assertTrue
 class MethodQueryExecutorTest {
 
     @Test
+    fun `parameterized Method query safely falls back to the general executor`() {
+        val indexedOnly = method("com.example.Parameterized", "load", emptyList(), "void")
+        val graph = DefaultGraph.Builder().apply { addMethod(indexedOnly) }.build()
+
+        val result = CypherExecutor(graph).execute(
+            "MATCH (m:Method) WHERE m.name = \$name RETURN m.signature AS signature LIMIT 1",
+            mapOf("name" to "load")
+        )
+
+        assertEquals(listOf(mapOf("signature" to indexedOnly.signature)), result.rows)
+    }
+
+    @Test
     fun `Method source returns indexed methods without graph nodes`() {
         val indexedOnly = method("com.example.Child", "qux", listOf("java.lang.String"), "int")
         val graph = DefaultGraph.Builder().apply { addMethod(indexedOnly) }.build()

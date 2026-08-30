@@ -27,7 +27,7 @@ private const val PROPERTY_NAME = "name"
 /**
  * Executes Cypher queries against a Graphite [Graph].
  *
- * Supports the full openCypher read grammar:
+ * Supports Graphite's read-oriented Cypher subset, including:
  * - `MATCH` / `OPTIONAL MATCH` with arbitrary patterns
  * - `WHERE` with all operators and functions
  * - `RETURN` / `WITH` with aggregation, `DISTINCT`, aliases
@@ -59,21 +59,34 @@ class CypherExecutor internal constructor(
         this(QueryPipeline(graph, workTrackingEnabled = true), { executionContext.workTracker })
 
     fun execute(cypher: String): CypherResult {
-        // 1. Parse Cypher text into internal AST clauses
         val clauses = CypherDslAdapter.parse(cypher)
-        return executeClauses(clauses, maxRows = null, newWorkTracker())
+        return executeClauses(clauses, emptyMap(), maxRows = null, newWorkTracker())
+    }
+
+    /** Execute [cypher] with externally supplied Cypher parameter values. */
+    fun execute(cypher: String, parameters: Map<String, Any?>): CypherResult {
+        val clauses = CypherDslAdapter.parse(cypher)
+        return executeClauses(clauses, parameters, maxRows = null, newWorkTracker())
     }
 
     fun execute(cypher: String, maxRows: Int): CypherResult {
         require(maxRows >= 0) { "maxRows must be non-negative" }
         val clauses = CypherDslAdapter.parse(cypher)
-        return executeClauses(clauses, maxRows, newWorkTracker())
+        return executeClauses(clauses, emptyMap(), maxRows, newWorkTracker())
+    }
+
+    /** Execute [cypher] with parameters while returning at most [maxRows] rows. */
+    fun execute(cypher: String, parameters: Map<String, Any?>, maxRows: Int): CypherResult {
+        require(maxRows >= 0) { "maxRows must be non-negative" }
+        val clauses = CypherDslAdapter.parse(cypher)
+        return executeClauses(clauses, parameters, maxRows, newWorkTracker())
     }
 
     private fun newWorkTracker(): CypherWorkTracker? = workTrackerFactory()
 
     private fun executeClauses(
         clauses: List<CypherClause>,
+        parameters: Map<String, Any?>,
         maxRows: Int?,
         workTracker: CypherWorkTracker?
     ): CypherResult {
@@ -81,12 +94,12 @@ class CypherExecutor internal constructor(
         // Handle UNION by splitting into sub-queries
         val unionIndex = clauses.indexOfFirst { it is CypherClause.Union }
         if (unionIndex >= 0) {
-            return executeUnion(clauses, maxRows, workTracker)
+            return executeUnion(clauses, parameters, maxRows, workTracker)
         }
 
         // Execute via pipeline
         val boundedClauses = maxRows?.let { applyMaxRows(clauses, it) } ?: clauses
-        val raw = pipeline.execute(boundedClauses, workTracker)
+        val raw = pipeline.execute(boundedClauses, parameters, workTracker)
 
         // Post-process: convert Node values to property maps
         return materializeResult(raw, workTracker)
@@ -149,6 +162,7 @@ class CypherExecutor internal constructor(
      */
     private fun executeUnion(
         clauses: List<CypherClause>,
+        parameters: Map<String, Any?>,
         maxRows: Int?,
         workTracker: CypherWorkTracker?
     ): CypherResult {
@@ -169,14 +183,15 @@ class CypherExecutor internal constructor(
         segments.add(current)
 
         return if (unionAll) {
-            executeUnionAll(segments, maxRows, workTracker)
+            executeUnionAll(segments, parameters, maxRows, workTracker)
         } else {
-            executeUnionDistinct(segments, maxRows, workTracker)
+            executeUnionDistinct(segments, parameters, maxRows, workTracker)
         }
     }
 
     private fun executeUnionAll(
         segments: List<List<CypherClause>>,
+        parameters: Map<String, Any?>,
         maxRows: Int?,
         workTracker: CypherWorkTracker?
     ): CypherResult {
@@ -187,13 +202,13 @@ class CypherExecutor internal constructor(
             val remaining = maxRows?.minus(rows.size)
             if (remaining != null && remaining <= 0) {
                 if (columns.isEmpty()) {
-                    columns = pipeline.execute(applyMaxRowsToSegment(segment, 0), workTracker).columns
+                    columns = pipeline.execute(applyMaxRowsToSegment(segment, 0), parameters, workTracker).columns
                 }
                 break
             }
 
             val boundedSegment = remaining?.let { applyMaxRowsToSegment(segment, it) } ?: segment
-            val result = pipeline.execute(boundedSegment, workTracker)
+            val result = pipeline.execute(boundedSegment, parameters, workTracker)
             if (columns.isEmpty()) columns = result.columns
             if (remaining == null) {
                 rows.addAll(result.rows)
@@ -206,22 +221,23 @@ class CypherExecutor internal constructor(
 
     private fun executeUnionDistinct(
         segments: List<List<CypherClause>>,
+        parameters: Map<String, Any?>,
         maxRows: Int?,
         workTracker: CypherWorkTracker?
     ): CypherResult {
         if (maxRows == 0) {
             val columns = segments.firstOrNull()
-                ?.let { pipeline.execute(applyMaxRowsToSegment(it, 0), workTracker).columns }
+                ?.let { pipeline.execute(applyMaxRowsToSegment(it, 0), parameters, workTracker).columns }
                 .orEmpty()
             return CypherResult(columns, emptyList())
         }
         var columns = emptyList<String>()
-        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val rows = LinkedHashMap<Any, MutableMap<String, Any?>>()
         // Later segments can still add provenance to a retained duplicate row.
         for ((segmentIndex, segment) in segments.withIndex()) {
             if ((segmentIndex and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
             val boundedSegment = maxRows?.let { applyMaxRowsToSegment(segment, it) } ?: segment
-            val result = pipeline.execute(boundedSegment, workTracker)
+            val result = pipeline.execute(boundedSegment, parameters, workTracker)
             if (columns.isEmpty()) columns = result.columns
             result.rows.forEachIndexed { index, row ->
                 if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
@@ -274,18 +290,19 @@ class CypherExecutor internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun addDistinctRow(
-        rows: MutableMap<Map<String, Any?>, MutableMap<String, Any?>>,
+        rows: MutableMap<Any, MutableMap<String, Any?>>,
         row: Map<String, Any?>,
         maxRows: Int?
     ) {
         val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
-        val existing = rows[visible]
+        val key = cypherValueKey(visible)
+        val existing = rows[key]
         if (existing != null) {
             val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
                 (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
             if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
         } else if (maxRows == null || rows.size < maxRows) {
-            rows[visible] = row.toMutableMap()
+            rows[key] = row.toMutableMap()
         }
     }
 
@@ -310,6 +327,13 @@ class CypherExecutor internal constructor(
                 materializeValue(edge, workTracker)
             }
         )
+        is PathFinder.Path -> buildList {
+            value.nodes.forEachIndexed { index, node ->
+                if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+                add(materializeValue(node, workTracker))
+                value.edges.getOrNull(index)?.let { add(materializeValue(it, workTracker)) }
+            }
+        }
         is List<*> -> value.mapIndexed { index, item ->
             if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
             materializeValue(item, workTracker)
@@ -338,6 +362,12 @@ class CypherExecutor internal constructor(
             "nodes" to value.nodes.map { materializeValue(it) },
             "relationships" to value.edges.map { materializeValue(it) }
         )
+        is PathFinder.Path -> buildList {
+            value.nodes.forEachIndexed { index, node ->
+                add(materializeValue(node))
+                value.edges.getOrNull(index)?.let { add(materializeValue(it)) }
+            }
+        }
         is List<*> -> value.map { materializeValue(it) }
         is Map<*, *> -> value.mapValues { materializeValue(it.value) }
         else -> value
@@ -465,8 +495,14 @@ class CrossGraphCypherExecutor private constructor(
 
     fun execute(cypher: String): CypherResult = delegate.execute(cypher).withExplicitMetadata()
 
+    fun execute(cypher: String, parameters: Map<String, Any?>): CypherResult =
+        delegate.execute(cypher, parameters).withExplicitMetadata()
+
     fun execute(cypher: String, maxRows: Int): CypherResult =
         delegate.execute(cypher, maxRows).withExplicitMetadata()
+
+    fun execute(cypher: String, parameters: Map<String, Any?>, maxRows: Int): CypherResult =
+        delegate.execute(cypher, parameters, maxRows).withExplicitMetadata()
 
     private fun CypherResult.withExplicitMetadata(): CypherResult = copy(
         rows = rows.map { row ->
