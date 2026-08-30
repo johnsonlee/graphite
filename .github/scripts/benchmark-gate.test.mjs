@@ -777,3 +777,31 @@ test("artifact staging does not mix stale files into a partial retry", () => {
         fs.rmSync(directory, { recursive: true, force: true });
     }
 });
+
+test("workflow component artifacts include the run attempt required by staging", () => {
+    const workflow = fs.readFileSync(
+        new URL("../workflows/benchmark.yml", import.meta.url),
+        "utf8"
+    );
+    const pullRequest = "${{ github.event.pull_request.number }}";
+    const runAttempt = "${{ github.run_attempt }}";
+    const producers = [
+        "benchmark-method",
+        "benchmark-explorer",
+        "benchmark-method-compatibility",
+        "benchmark-cypher-capacity",
+        "benchmark-budgeted-collection",
+        "benchmark-budgeted-string",
+        "benchmark-large-corpus",
+        "benchmark-latency",
+        "benchmark-latency-resources"
+    ];
+
+    for (const producer of producers) {
+        assert.ok(
+            workflow.includes(`name: ${producer}-${pullRequest}-${runAttempt}`),
+            `${producer} must identify its run attempt`
+        );
+    }
+    assert.ok(workflow.includes(`pattern: benchmark-*-${pullRequest}-*`));
+});
