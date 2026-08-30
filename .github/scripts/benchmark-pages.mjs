@@ -120,6 +120,67 @@ export function snapshotKey(result) {
     return [result.benchmark, parameters, result.mode, metric.scoreUnit].join("|");
 }
 
+const FULL_SHA = /^[0-9a-f]{40}$/i;
+
+function isStoredPairedEvidence(evidence, integrationSha) {
+    return evidence !== null && typeof evidence === "object" && evidence.schemaVersion === 1 &&
+        [
+            evidence.integrationSha,
+            evidence.integrationParentSha,
+            evidence.integrationTreeSha,
+            evidence.baseSha,
+            evidence.candidateSha,
+            evidence.candidateTreeSha
+        ].every((sha) => typeof sha === "string" && FULL_SHA.test(sha)) &&
+        evidence.integrationSha === integrationSha &&
+        evidence.baseSha === evidence.integrationParentSha &&
+        evidence.candidateTreeSha === evidence.integrationTreeSha &&
+        Number.isInteger(evidence.sourcePr) && evidence.sourcePr > 0 &&
+        Number.isSafeInteger(evidence.sourceRunId) && evidence.sourceRunId > 0 &&
+        typeof evidence.sourceRunUrl === "string" && safeUrl(evidence.sourceRunUrl) !== "#" &&
+        typeof evidence.passed === "boolean";
+}
+
+export function validatePairedEvidence({ reportMarkdown, status, provenance, commitSha }) {
+    if (typeof reportMarkdown !== "string" || reportMarkdown.trim().length === 0) {
+        return { available: false, reason: "The paired benchmark report is missing." };
+    }
+    if (status === null || typeof status !== "object" || typeof status.passed !== "boolean") {
+        return { available: false, reason: "The paired benchmark status is missing or malformed." };
+    }
+    if (status.baseSha !== provenance?.baseSha || status.candidateSha !== provenance?.candidateSha ||
+        status.runUrl !== provenance?.sourceRunUrl || status.body !== reportMarkdown
+    ) {
+        return { available: false, reason: "The paired benchmark status identifies different evidence." };
+    }
+    if (!isStoredPairedEvidence({ ...provenance, passed: status.passed }, commitSha)) {
+        return { available: false, reason: "The paired benchmark provenance does not match this integration." };
+    }
+    const basePrefix = reportMarkdown.match(/^Base:\s+`([0-9a-f]{12})`/im)?.[1];
+    const candidatePrefix = reportMarkdown.match(/^PR:\s+`([0-9a-f]{12})`/im)?.[1];
+    if (basePrefix?.toLowerCase() !== provenance.baseSha.slice(0, 12).toLowerCase() ||
+        candidatePrefix?.toLowerCase() !== provenance.candidateSha.slice(0, 12).toLowerCase()
+    ) {
+        return { available: false, reason: "The paired benchmark report identifies different base or candidate commits." };
+    }
+    return {
+        available: true,
+        evidence: {
+            schemaVersion: 1,
+            integrationSha: provenance.integrationSha,
+            integrationParentSha: provenance.integrationParentSha,
+            integrationTreeSha: provenance.integrationTreeSha,
+            baseSha: provenance.baseSha,
+            candidateSha: provenance.candidateSha,
+            candidateTreeSha: provenance.candidateTreeSha,
+            sourcePr: provenance.sourcePr,
+            sourceRunId: provenance.sourceRunId,
+            sourceRunUrl: provenance.sourceRunUrl,
+            passed: status.passed
+        }
+    };
+}
+
 export function updateBenchmarkHistory(history, current, maximumEntries = 90, maximumAgeDays = 180) {
     if (!Array.isArray(history)) throw new Error("Benchmark history must be an array");
     const now = Date.parse(current.generatedAt);
@@ -128,7 +189,9 @@ export function updateBenchmarkHistory(history, current, maximumEntries = 90, ma
     for (const entry of history) {
         if (entry?.schemaVersion !== 1 || entry.repository !== current.repository ||
             typeof entry.sha !== "string" || !Array.isArray(entry.snapshot) ||
-            !Number.isFinite(Date.parse(entry.generatedAt))
+            !Number.isFinite(Date.parse(entry.generatedAt)) ||
+            (entry.pairedEvidence !== undefined && entry.pairedEvidence !== null &&
+                !isStoredPairedEvidence(entry.pairedEvidence, entry.sha))
         ) {
             throw new Error("Published benchmark history is incompatible or malformed");
         }
@@ -208,38 +271,39 @@ function renderCoverage() {
 export function buildBenchmarkPage({
     reportMarkdown = "",
     status = null,
+    provenance = null,
     snapshot = [],
     commitSha,
     branch = "main",
     runUrl,
-    sourceRunUrl = "",
-    sourcePr = "",
     repository = "johnsonlee/graphite",
     history = [],
     generatedAt = new Date().toISOString()
 }) {
+    const paired = validatePairedEvidence({ reportMarkdown, status, provenance, commitSha });
     const currentHistoryEntry = {
         schemaVersion: 1,
         repository,
         sha: commitSha,
         generatedAt,
         runUrl,
-        snapshot
+        snapshot,
+        pairedEvidence: paired.available ? paired.evidence : null
     };
     const updatedHistory = updateBenchmarkHistory(history, currentHistoryEntry);
     const previousSnapshot = updatedHistory.length > 1
         ? updatedHistory[updatedHistory.length - 2].snapshot
         : [];
-    const verdict = status?.passed === true ? "PASS" : status?.passed === false ? "FAIL" : "UNAVAILABLE";
+    const verdict = paired.available ? (paired.evidence.passed ? "PASS" : "FAIL") : "UNAVAILABLE";
     const verdictClass = verdict === "PASS" ? "good" : verdict === "FAIL" ? "bad" : "unavailable";
     const passedCount = verdict === "PASS" ? BENCHMARK_COMPONENTS.length : "—";
-    const report = reportMarkdown.trim().length > 0
+    const report = paired.available
         ? renderMarkdown(reportMarkdown)
-        : `<div class="empty"><strong>Paired PR evidence unavailable</strong><span>This main commit has no downloadable successful PR benchmark artifact. The fresh snapshot above still belongs to this exact commit.</span></div>`;
-    const sourceLink = sourceRunUrl
-        ? `<a class="button secondary" href="${escapeHtml(safeUrl(sourceRunUrl))}">Open paired benchmark run</a>`
+        : `<div class="empty"><strong>Paired PR evidence unavailable</strong><span>${escapeHtml(paired.reason)} The fresh snapshot above still belongs to this exact commit.</span></div>`;
+    const sourceLink = paired.available
+        ? `<a class="button secondary" href="${escapeHtml(safeUrl(paired.evidence.sourceRunUrl))}">Open paired benchmark run</a>`
         : "";
-    const sourceLabel = sourcePr ? `PR #${escapeHtml(sourcePr)}` : "No associated PR artifact";
+    const sourceLabel = paired.available ? `PR #${escapeHtml(paired.evidence.sourcePr)}` : "No exact paired artifact";
     return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark light"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><title>Graphite Benchmark Observatory</title>
@@ -247,7 +311,7 @@ export function buildBenchmarkPage({
 :root{--bg:#07111f;--panel:#0e1b2c;--panel2:#14243a;--text:#eef6ff;--muted:#98abc2;--line:#29405d;--accent:#66e3c4;--accent2:#8bb8ff;--good:#53d18b;--bad:#ff6b7d;--warn:#f4c95d;--shadow:0 22px 60px #0006;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% 0,#16345c 0,transparent 34rem),radial-gradient(circle at 95% 10%,#123f3d 0,transparent 30rem),var(--bg);color:var(--text);line-height:1.55}a{color:var(--accent2)}code{font-family:"SFMono-Regular",Consolas,monospace;background:#ffffff0d;border:1px solid #ffffff12;border-radius:.4rem;padding:.08rem .32rem}p code,li code,td code,details code{overflow-wrap:anywhere;white-space:normal}main{width:min(1480px,calc(100% - 2rem));margin:auto;padding:2rem 0 5rem}.hero{position:relative;overflow:hidden;padding:clamp(1.5rem,4vw,4rem);border:1px solid #ffffff1c;border-radius:1.8rem;background:linear-gradient(135deg,#142945e8,#0b1a2be8);box-shadow:var(--shadow)}.hero:after{content:"";position:absolute;width:18rem;height:18rem;border-radius:50%;right:-5rem;top:-8rem;background:linear-gradient(135deg,var(--accent2),var(--accent));filter:blur(8px);opacity:.24}.eyebrow{margin:0;color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hero h1{max-width:850px;margin:.35rem 0 1rem;font-size:clamp(2.3rem,6vw,5.4rem);line-height:.98;letter-spacing:-.055em}.hero-copy{max-width:820px;color:var(--muted);font-size:1.05rem}.meta,.actions,.toolbar{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}.meta{margin-top:1.4rem}.pill{display:inline-flex;padding:.42rem .72rem;border:1px solid var(--line);border-radius:999px;background:#ffffff09;color:var(--muted);font-size:.84rem}.pill.good{color:var(--good);border-color:#53d18b66}.pill.bad{color:var(--bad);border-color:#ff6b7d66}.pill.unavailable{color:var(--warn);border-color:#f4c95d66}.button{display:inline-flex;align-items:center;text-decoration:none;padding:.68rem .9rem;border-radius:.75rem;background:var(--accent);color:#052019;font-weight:800}.button.secondary{background:#ffffff0d;color:var(--text);border:1px solid var(--line)}.actions{margin-top:1.4rem}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin:1rem 0}.kpi,.coverage-card,.section{min-width:0;background:linear-gradient(145deg,#13233ae8,#0b1828e8);border:1px solid #ffffff17;border-radius:1.2rem;box-shadow:0 12px 35px #0003}.kpi{padding:1.15rem}.kpi strong{display:block;font-size:1.65rem;letter-spacing:-.04em}.kpi span{color:var(--muted);font-size:.82rem}.section{margin-top:1rem;padding:clamp(1rem,2.5vw,2rem)}.section-head{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1rem}.section h2{margin:0;font-size:clamp(1.35rem,3vw,2.2rem)}.section h3,.section h4,.section h5,.section h6{scroll-margin-top:1rem}.muted,.section-head p{color:var(--muted);margin:.25rem 0}.coverage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.coverage-card{padding:1.1rem}.coverage-card h3{margin:0 0 .7rem}.gate-list{list-style:none;padding:0;margin:0}.gate-list li{display:grid;gap:.22rem;padding:.6rem 0;border-top:1px solid var(--line)}.gate-list small{color:var(--muted)}details{margin-top:.65rem}summary{cursor:pointer;color:var(--accent2);font-weight:700}.toolbar{position:sticky;top:.6rem;z-index:5;padding:.65rem;margin:.5rem 0 1rem;border:1px solid var(--line);border-radius:.9rem;background:#081525e8;backdrop-filter:blur(14px)}input{min-width:min(100%,24rem);flex:1;border:1px solid var(--line);border-radius:.65rem;padding:.65rem .8rem;background:#07111f;color:var(--text)}button{border:1px solid var(--line);border-radius:.65rem;padding:.65rem .8rem;background:var(--panel2);color:var(--text);cursor:pointer}.table-scroll{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:.8rem;margin:1rem 0}table{width:100%;border-collapse:collapse;font-size:.86rem;background:#07111f80}th,td{padding:.68rem .72rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{position:sticky;top:0;background:#172941;color:#bfd0e4;white-space:nowrap}td.number{font-variant-numeric:tabular-nums;white-space:nowrap}tr:hover{background:#ffffff08}.bar{display:block;width:8rem;height:.42rem;border-radius:999px;background:#ffffff12;overflow:hidden}.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent2))}.delta-up{color:var(--bad)}.delta-down{color:var(--good)}.empty{display:grid;gap:.25rem;padding:1.2rem;border:1px dashed #f4c95d66;border-radius:.85rem;color:var(--warn)}.empty span{color:var(--muted)}pre{max-width:100%;overflow:auto;padding:1rem;border:1px solid var(--line);border-radius:.8rem;background:#050c16}footer{padding:2rem;color:var(--muted);text-align:center}@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.coverage-grid{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}}@media(max-width:520px){main{width:min(100% - 1rem,1480px)}.kpis{grid-template-columns:1fr}.hero{border-radius:1.2rem}.bar{width:5rem}}
 </style></head><body><main>
-<header class="hero"><p class="eyebrow">Graphite performance telemetry</p><h1>Benchmark Observatory</h1><p class="hero-copy">A fresh absolute JMH snapshot for the exact main commit, paired with the authoritative PR regression evidence and its explicit coverage boundaries.</p><div class="meta"><span class="pill ${verdictClass}">${verdict}</span><span class="pill"><code>${escapeHtml(String(commitSha).slice(0, 12))}</code></span><span class="pill">${escapeHtml(branch)}</span><span class="pill">${escapeHtml(sourceLabel)}</span></div><div class="actions"><a class="button" href="${escapeHtml(safeUrl(runUrl))}">Open Pages workflow</a>${sourceLink}</div></header>
+<header class="hero"><p class="eyebrow">Graphite performance telemetry</p><h1>Benchmark Observatory</h1><p class="hero-copy">A fresh absolute JMH snapshot for the exact main commit, with authoritative PR regression evidence only when its base and candidate match this integration exactly.</p><div class="meta"><span class="pill ${verdictClass}">${verdict}</span><span class="pill"><code>${escapeHtml(String(commitSha).slice(0, 12))}</code></span><span class="pill">${escapeHtml(branch)}</span><span class="pill">${escapeHtml(sourceLabel)}</span></div><div class="actions"><a class="button" href="${escapeHtml(safeUrl(runUrl))}">Open Pages workflow</a>${sourceLink}</div></header>
 <section class="kpis"><article class="kpi"><strong>${escapeHtml(passedCount)}/${BENCHMARK_COMPONENTS.length}</strong><span>paired component reports passed</span></article><article class="kpi"><strong>${snapshot.length}</strong><span>fresh main JMH measurements</span></article><article class="kpi"><strong>${updatedHistory.length}</strong><span>main snapshots in the rolling history</span></article><article class="kpi"><strong>Nightly</strong><span>known-bad historical proof cadence</span></article></section>
 <section class="section"><div class="section-head"><div><p class="eyebrow">Exact main commit</p><h2>Fresh method-level snapshot</h2><p>Absolute scores and cross-run deltas are informational on hosted runners. Paired blocking decisions live in the evidence section.</p></div></div>${renderSnapshot(snapshot, previousSnapshot)}</section>
 <section class="section"><div class="section-head"><div><p class="eyebrow">PR #104 coverage model</p><h2>Coverage map and known gaps</h2><p>✅ means no gate-specific gap is identified. ⚠️ means implemented but intentionally incomplete. Uncovered scope does not change this run's verdict.</p></div></div><div class="coverage-grid">${renderCoverage()}</div></section>
@@ -293,12 +357,11 @@ function main() {
     const html = buildBenchmarkPage({
         reportMarkdown,
         status: readJsonIfPresent(args.status, null),
+        provenance: readJsonIfPresent(args.provenance, null),
         snapshot: readJsonIfPresent(args.snapshot, []),
         commitSha: args.sha,
         branch: args.branch ?? "main",
         runUrl: args["run-url"],
-        sourceRunUrl: args["source-run-url"] ?? "",
-        sourcePr: args["source-pr"] ?? "",
         repository: args.repository ?? "johnsonlee/graphite",
         history: readJsonIfPresent(args.history, []),
         generatedAt: args["generated-at"] ?? new Date().toISOString()

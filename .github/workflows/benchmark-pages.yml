@@ -11,10 +11,12 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: false
+  queue: max
 
 jobs:
   snapshot:
     name: benchmark-main-snapshot
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -68,6 +70,7 @@ jobs:
   render:
     name: render-benchmark-pages
     needs: [snapshot]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -97,14 +100,28 @@ jobs:
       uses: actions/github-script@v9
       with:
         script: |
+          const fs = require('fs');
           const associated = await github.paginate(
             github.rest.repos.listPullRequestsAssociatedWithCommit,
             { owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha, per_page: 100 }
           );
           const pull = associated
-            .filter((item) => item.merged_at && item.base.ref === 'main')
+            .filter((item) => item.merged_at && item.base.ref === 'main' && item.merge_commit_sha === context.sha)
             .sort((left, right) => Date.parse(right.merged_at) - Date.parse(left.merged_at))[0];
           if (!pull) {
+            core.info('Paired evidence unavailable: this main commit is not the exact merge commit of an associated PR.');
+            core.setOutput('found', 'false');
+            return;
+          }
+          const integration = (await github.rest.repos.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.sha
+          })).data;
+          const integrationParentSha = integration.parents?.[0]?.sha;
+          const integrationTreeSha = integration.commit?.tree?.sha;
+          if (!integrationParentSha || !integrationTreeSha) {
+            core.info('Paired evidence unavailable: the main integration parent or tree could not be resolved.');
             core.setOutput('found', 'false');
             return;
           }
@@ -117,17 +134,56 @@ jobs:
             head_sha: pull.head.sha,
             per_page: 100
           });
-          const run = runs
+          const successfulRuns = runs
             .filter((item) => item.conclusion === 'success')
-            .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
-          if (!run) {
+            .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at));
+          let evidence = null;
+          for (const run of successfulRuns) {
+            const detailed = (await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id
+            })).data;
+            const runPull = detailed.pull_requests?.find((item) => item.number === pull.number);
+            const baseSha = runPull?.base?.sha;
+            const candidateSha = runPull?.head?.sha;
+            if (!baseSha || !candidateSha || candidateSha !== detailed.head_sha || candidateSha !== pull.head.sha) {
+              continue;
+            }
+            const candidate = (await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: candidateSha
+            })).data;
+            const candidateTreeSha = candidate.commit?.tree?.sha;
+            if (baseSha !== integrationParentSha || !candidateTreeSha || candidateTreeSha !== integrationTreeSha) {
+              continue;
+            }
+            evidence = {
+              schemaVersion: 1,
+              integrationSha: context.sha,
+              integrationParentSha,
+              integrationTreeSha,
+              baseSha,
+              candidateSha,
+              candidateTreeSha,
+              sourcePr: pull.number,
+              sourceRunId: detailed.id,
+              sourceRunUrl: detailed.html_url
+            };
+            break;
+          }
+          if (!evidence) {
+            core.info('Paired evidence unavailable: no successful PR run matches the exact main parent and tree.');
             core.setOutput('found', 'false');
             return;
           }
+          fs.mkdirSync('benchmark-source', { recursive: true });
+          fs.writeFileSync('benchmark-source/paired-provenance.json', `${JSON.stringify(evidence, null, 2)}\n`);
           core.setOutput('found', 'true');
-          core.setOutput('run_id', String(run.id));
-          core.setOutput('run_url', run.html_url);
-          core.setOutput('source_pr', String(pull.number));
+          core.setOutput('run_id', String(evidence.sourceRunId));
+          core.setOutput('run_url', evidence.sourceRunUrl);
+          core.setOutput('source_pr', String(evidence.sourcePr));
 
     - name: Download paired PR benchmark report
       if: steps.source.outputs.found == 'true'
@@ -165,23 +221,19 @@ jobs:
         fi
 
     - name: Test and render self-contained report
-      env:
-        SOURCE_PR: ${{ steps.source.outputs.source_pr }}
-        SOURCE_RUN_URL: ${{ steps.source.outputs.run_url }}
       run: |
         node --test .github/scripts/benchmark-pages.test.mjs
         node .github/scripts/benchmark-pages.mjs build \
           --snapshot benchmark-source/main-method-jmh.json \
           --report benchmark-source/paired/benchmark-report.md \
           --status benchmark-source/paired/benchmark-status.json \
+          --provenance benchmark-source/paired-provenance.json \
           --history benchmark-source/history.json \
           --output _site \
           --sha '${{ github.sha }}' \
           --branch main \
           --repository '${{ github.repository }}' \
-          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
-          --source-run-url "${SOURCE_RUN_URL}" \
-          --source-pr "${SOURCE_PR}"
+          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         test -f _site/index.html
         test -z "$(find _site -type l -print -quit)"
         test "$(find _site -type f | wc -l)" -eq 3
@@ -196,8 +248,10 @@ jobs:
   deploy:
     name: deploy-benchmark-pages
     needs: [render]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
@@ -205,6 +259,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+    - name: Reject a stale main workflow run
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const branch = (await github.rest.repos.getBranch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            branch: 'main'
+          })).data;
+          const currentMainSha = branch.commit.sha;
+          if (currentMainSha !== context.sha) {
+            core.setFailed(`Refusing to deploy stale main snapshot ${context.sha}; current remote main is ${currentMainSha}.`);
+          }
+
     - name: Deploy benchmark observatory
       id: deployment
       uses: actions/deploy-pages@v5

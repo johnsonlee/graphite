@@ -577,6 +577,18 @@ export function compareLatencyAnchor(
         ...baseComparison.errors,
         ...anchorComparison.errors.map((error) => `known-good anchor: ${error}`)
     ];
+    for (const [revision, results] of [
+        ["known-good anchor", anchorResults],
+        ["PR base", baseResults],
+        ["candidate", candidateResults]
+    ]) {
+        for (const result of results) {
+            const score = finiteNumber(result.primaryMetric?.score);
+            if (score === null || score <= 0) {
+                errors.push(`${revision}/${benchmarkKey(result)}: latency score must be finite and positive`);
+            }
+        }
+    }
     const baseRows = new Map(baseComparison.rows.map((row) => [row.key, row]));
     const anchorRows = new Map(anchorComparison.rows.map((row) => [row.key, row]));
     const keys = expectedKeys === null
@@ -1219,7 +1231,15 @@ export function aggregateReports(directory, metadata) {
         ...(errors.length > 0 ? ["### Infrastructure errors", "", ...errors.map((error) => `- ${error}`), ""] : []),
         `[View benchmark logs and artifacts](${metadata.runUrl})`
     ].join("\n");
-    return { passed: result === "PASS", errors, body: `${body}\n` };
+    return {
+        passed: result === "PASS",
+        errors,
+        baseSha: metadata.baseSha,
+        candidateSha: metadata.candidateSha,
+        runner: metadata.runner,
+        runUrl: metadata.runUrl,
+        body: `${body}\n`
+    };
 }
 
 export function stageLatestArtifacts(directory, output) {

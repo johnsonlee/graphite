@@ -531,6 +531,23 @@ test("latency anchor fails closed on duplicate keys in every revision", () => {
     }
 });
 
+test("latency anchor rejects zero scores in every revision", () => {
+    const valid = jmhResult({ score: 1, confidence: [0.9, 1.1], unit: "ms/op" });
+    const zero = jmhResult({ score: 0, confidence: [0, 0], unit: "ms/op" });
+    for (const zeroRevision of ["anchor", "base", "candidate"]) {
+        const revisions = { anchor: [valid], base: [valid], candidate: [valid] };
+        revisions[zeroRevision] = [zero];
+        const comparison = compareLatencyAnchor(
+            revisions.anchor,
+            revisions.base,
+            revisions.candidate
+        );
+
+        assert.equal(comparison.passed, false, zeroRevision);
+        assert.match(comparison.errors.join("\n"), /latency score must be finite and positive/, zeroRevision);
+    }
+});
+
 test("resource gate accepts 4 GiB single and 8 GiB AllFixture profiles", () => {
     const base = [resourceResult(), resourceResult({ allFixture: true })];
     const candidate = [resourceResult(), resourceResult({ allFixture: true })];
@@ -873,6 +890,10 @@ test("aggregate report includes every independent benchmark gate", () => {
         });
 
         assert.equal(aggregate.passed, true);
+        assert.equal(aggregate.baseSha, "a".repeat(40));
+        assert.equal(aggregate.candidateSha, "b".repeat(40));
+        assert.equal(aggregate.runner, "test-runner");
+        assert.equal(aggregate.runUrl, "https://example.invalid/run");
         assert.match(aggregate.body, /PASS — 9\/9 component reports passed/);
         assert.match(aggregate.body, /### Coverage summary/);
         assert.match(aggregate.body, /#### Semantic correctness/);
@@ -992,9 +1013,22 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
     assert.match(workflow, /Checkout candidate reporting code for anchor rollout/);
+    const anchorEnforcementStart = workflow.indexOf(
+        "    - name: Enforce known-good anchor and current-base regression gate",
+    );
+    const anchorEnforcementEnd = workflow.indexOf(
+        "    - name: Upload wrapped-query latency results",
+        anchorEnforcementStart,
+    );
+    assert.notEqual(anchorEnforcementStart, -1, "anchor enforcement step must exist");
+    assert.notEqual(anchorEnforcementEnd, -1, "wrapped-query latency upload step must exist");
+    assert.ok(
+        anchorEnforcementEnd > anchorEnforcementStart,
+        "wrapped-query latency upload must follow anchor enforcement",
+    );
     const anchorEnforcement = workflow.slice(
-        workflow.indexOf("    - name: Enforce known-good anchor and current-base regression gate"),
-        workflow.indexOf("    - name: Upload latency shard results"),
+        anchorEnforcementStart,
+        anchorEnforcementEnd,
     );
     assert.match(
         anchorEnforcement,
@@ -1009,6 +1043,30 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     for (const revision of ["reference", "base", "candidate"]) {
         assert.match(workflow, new RegExp(`jmh-wrapped-query-${revision}`));
     }
+    const wrappedQueryBuildStart = workflow.indexOf("  build-wrapped-query-jmh:");
+    const wrappedQueryBuildEnd = workflow.indexOf("  method-level:", wrappedQueryBuildStart);
+    assert.notEqual(wrappedQueryBuildStart, -1, "shared wrapped-query JMH build job must exist");
+    assert.notEqual(wrappedQueryBuildEnd, -1, "method-level job boundary must exist");
+    const wrappedQueryBuild = workflow.slice(wrappedQueryBuildStart, wrappedQueryBuildEnd);
+    const harnessOverlayStart = wrappedQueryBuild.indexOf(
+        "    - name: Install base-owned wrapped-query harnesses",
+    );
+    const harnessOverlayEnd = wrappedQueryBuild.indexOf(
+        "    - name: Build comparable wrapped-query JMH JAR",
+        harnessOverlayStart,
+    );
+    assert.notEqual(harnessOverlayStart, -1, "base-owned wrapped-query overlay step must exist");
+    assert.notEqual(harnessOverlayEnd, -1, "wrapped-query build step boundary must exist");
+    const harnessOverlay = wrappedQueryBuild.slice(harnessOverlayStart, harnessOverlayEnd);
+    const overlaidHarnesses = [...harnessOverlay.matchAll(/^          ([A-Za-z0-9]+\.kt)(?= |;)/gm)]
+        .map((match) => match[1]);
+    assert.deepEqual(overlaidHarnesses, [
+        "BenchmarkCorpus.kt",
+        "AllFixtureBenchmarkGraphPreparation.kt",
+        "WrappedDiscoveryLatencyBenchmark.kt",
+        "AllFixtureWrappedDiscoveryLatencyBenchmark.kt",
+        "WrappedDiscoveryResourceBenchmark.kt",
+    ]);
     assert.doesNotMatch(workflow, /name: jmh-(?:explore|wrapped-query)-[^\n]*run_attempt/);
     const fixturePreparation = workflow.slice(
         workflow.indexOf("  prepare-latency-fixtures:"),

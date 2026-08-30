@@ -47,6 +47,25 @@ official GitHub Pages artifact path and deployed by a separate `github-pages` en
 only `pages: write` and `id-token: write`. The live destination is
 `https://johnsonlee.io/graphite/`.
 
+## Release-tag benchmark diff
+
+Every pushed release tag matching `v*` independently runs
+`.github/workflows/benchmark-tag-diff.yml`. The resolver peels annotated tags, validates the exact
+event commit, and selects the highest valid semantic-version tag below the current version. Current
+and previous JMH JARs are built from their exact commits, then six representative
+`CypherBenchmark` methods run sequentially on one hosted runner with a bounded one-fork protocol.
+
+The resulting self-contained HTML artifact records both full commit SHAs, scores, confidence
+bounds, signed release-to-release deltas, and the same PR #104 coverage taxonomy and known gaps used
+by the pull-request and Pages reports. It is retained with its manifest, tag-resolution metadata,
+and raw JMH JSON for 90 days. If no earlier semantic tag exists, the report preserves the current
+measurements but explicitly marks the baseline and deltas unavailable.
+
+This comparison is informational: it produces no release pass/fail verdict and has no dependency
+edge to `.github/workflows/publish.yml`, so a benchmark or rendering failure cannot block artifact
+publishing. Only latency for the representative method set is observed; correctness, throughput,
+resource usage, scalability, and build/persistence lifecycle coverage remain explicitly unmeasured.
+
 ## Integrity model and limitations
 
 Comparator commands, expected benchmark keys, workload harnesses, fixture-preparation harnesses,
@@ -59,8 +78,10 @@ The known-good-anchor rollout has one compatibility exception for a pull request
 predates the anchor comparator command: its latency shards and latency-shard combiner may use the
 candidate comparator only when the base comparator matches the pinned reviewed SHA-256 and
 `candidate-gate-tests` passes. Any other pre-anchor base fails closed. The CODEOWNERS boundary must
-review that bootstrap change. When the base exposes the anchor command, the workflow always selects
-the base-owned comparator; the final nine-component aggregate remains base-owned in either case.
+review that bootstrap change for actors without ruleset bypass. Repository owners and holders of
+bypass credentials are part of the trusted boundary. When the base exposes the anchor command, the
+workflow always selects the base-owned comparator; the final nine-component aggregate remains
+base-owned in either case.
 
 This workflow is a regression signal for non-malicious changes, not a sandbox or a tamper-resistant
 security boundary. Component jobs still execute candidate Gradle scripts and candidate benchmark
@@ -77,10 +98,12 @@ and limit write authority; they do not isolate files or processes on a mixed ben
 
 `.github/CODEOWNERS` assigns the workflow, comparator, JMH workloads, and large-corpus gate harness
 to the repository owner, and the active `main` ruleset requires code-owner review. Code-owner review
-is the repository-local security boundary for gate changes. Fully defending against hostile build
-or runtime code requires base and candidate execution on separate runners, raw artifact comparison
-in a fresh base-only job, or an external required workflow/GitHub App. That isolation is not provided
-by this workflow.
+protects these gate files from changes by actors who cannot bypass that ruleset. It does not protect
+against a repository owner exercising approval authority or a holder using bypass credentials; those
+actors and credentials are within the repository-local trusted boundary. Fully defending against
+hostile build or runtime code requires base and candidate execution on separate runners, raw artifact
+comparison in a fresh base-only job, or an external required workflow/GitHub App. That isolation is
+not provided by this workflow.
 
 ## Wrapped case-insensitive latency gate
 
@@ -269,11 +292,15 @@ full-scan regression into the moving base.
 Test the comparison and report generation logic:
 
 ```bash
-node --test .github/scripts/benchmark-gate.test.mjs .github/scripts/benchmark-pages.test.mjs
+node --test .github/scripts/benchmark-*.test.mjs
 actionlint .github/workflows/benchmark.yml \
   .github/workflows/benchmark-historical-latency.yml \
-  .github/workflows/benchmark-pages.yml
+  .github/workflows/benchmark-pages.yml \
+  .github/workflows/benchmark-tag-diff.yml
 ```
+
+`concurrency.queue: max` is supported by GitHub Actions but may require a current `actionlint`
+release; older schemas can report that key as unknown even when the remaining workflow validates.
 
 Run the two benchmark sources directly:
 

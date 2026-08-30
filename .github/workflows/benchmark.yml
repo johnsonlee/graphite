@@ -141,6 +141,7 @@ jobs:
       run: |
         for HARNESS in \
           BenchmarkCorpus.kt \
+          AllFixtureBenchmarkGraphPreparation.kt \
           WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
