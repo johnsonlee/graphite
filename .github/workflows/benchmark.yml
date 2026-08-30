@@ -1490,6 +1490,7 @@ jobs:
       env:
         BENCHMARK_FILTER: ${{ matrix.filter }}
         BENCHMARK_PARAMETERS: ${{ matrix.parameters }}
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         SHARD: ${{ matrix.shard }}
       run: |
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs

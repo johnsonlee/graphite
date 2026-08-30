@@ -992,7 +992,14 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
     assert.match(workflow, /Checkout candidate reporting code for anchor rollout/);
-    assert.match(workflow, /CANDIDATE_GATE_TEST_JOB/);
+    const anchorEnforcement = workflow.slice(
+        workflow.indexOf("    - name: Enforce known-good anchor and current-base regression gate"),
+        workflow.indexOf("    - name: Upload latency shard results"),
+    );
+    assert.match(
+        anchorEnforcement,
+        /CANDIDATE_GATE_TEST_JOB: \$\{\{ needs\.candidate-gate-tests\.result \}\}/,
+    );
     assert.equal((workflow.match(/^        - graph_count: (4|17|36)$/gm) ?? []).length, 12);
     assert.equal((workflow.match(/^          group: (position|string|scan|aggregate)$/gm) ?? []).length, 12);
     assert.match(workflow, /length == 33 and/);
