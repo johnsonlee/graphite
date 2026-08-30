@@ -11,6 +11,7 @@ import {
     updateBenchmarkHistory,
     validatePairedEvidence
 } from "./benchmark-pages.mjs";
+import { EVIDENCE_DIMENSIONS, PRODUCT_CORE_INDICATORS } from "./benchmark-tag-diff.mjs";
 
 const BASE_SHA = "a".repeat(40);
 const CANDIDATE_SHA = "b".repeat(40);
@@ -227,6 +228,63 @@ test("CLI creates a bounded Pages artifact and can recover its history", () => {
         ], { encoding: "utf8" });
         assert.equal(extract.status, 0, extract.stderr);
         assert.equal(JSON.parse(fs.readFileSync(history))[0].sha, "c".repeat(40));
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("main history recovery treats a validated tag-first release bootstrap as empty main history", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-tag-first-pages-"));
+    try {
+        const releaseHistory = [{
+            schemaVersion: 1,
+            tag: "v2.4.4",
+            sha: "e".repeat(40),
+            harnessFingerprint: "f".repeat(64),
+            generatedAt: "2026-08-30T00:00:00.000Z",
+            coreMetrics: [...PRODUCT_CORE_INDICATORS, ...EVIDENCE_DIMENSIONS].map(({ id }) => ({
+                id,
+                shift: null,
+                currentValue: null
+            }))
+        }];
+        const payload = Buffer.from(JSON.stringify(releaseHistory)).toString("base64");
+        const published = path.join(directory, "published.html");
+        const recovered = path.join(directory, "history.json");
+        fs.writeFileSync(published, `<main>Release bootstrap</main><template id="benchmark-release-history">${payload}</template>`);
+
+        const extract = spawnSync(process.execPath, [
+            new URL("./benchmark-pages.mjs", import.meta.url).pathname,
+            "extract-history",
+            "--input", published,
+            "--output", recovered
+        ], { encoding: "utf8" });
+
+        assert.equal(extract.status, 0, extract.stderr);
+        assert.deepEqual(JSON.parse(fs.readFileSync(recovered)), []);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("main history recovery rejects a malformed release bootstrap", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-malformed-release-pages-"));
+    try {
+        const published = path.join(directory, "published.html");
+        const recovered = path.join(directory, "history.json");
+        const payload = Buffer.from(JSON.stringify([{ schemaVersion: 1 }])).toString("base64");
+        fs.writeFileSync(published, `<template id="benchmark-release-history">${payload}</template>`);
+
+        const extract = spawnSync(process.execPath, [
+            new URL("./benchmark-pages.mjs", import.meta.url).pathname,
+            "extract-history",
+            "--input", published,
+            "--output", recovered
+        ], { encoding: "utf8" });
+
+        assert.notEqual(extract.status, 0);
+        assert.match(extract.stderr, /release benchmark history is incompatible or malformed/i);
+        assert.equal(fs.existsSync(recovered), false);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }

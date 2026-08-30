@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { BENCHMARK_COMPONENTS, BENCHMARK_COVERAGE_DOMAINS } from "./benchmark-gate.mjs";
+import { extractReleaseHistoryFromHtml } from "./benchmark-tag-diff.mjs";
 
 function escapeHtml(value) {
     return String(value)
@@ -345,8 +346,16 @@ function main() {
         if (!args.input || !args.output) throw new Error("extract-history requires --input and --output");
         const html = fs.readFileSync(args.input, "utf8");
         const match = html.match(/<script id="benchmark-history" type="application\/json">([^]*?)<\/script>/);
-        if (match === null) throw new Error("Published benchmark page has no compatible history payload");
-        const history = JSON.parse(match[1]);
+        let history;
+        if (match === null) {
+            if (!html.includes('<template id="benchmark-release-history">')) {
+                throw new Error("Published benchmark page has no compatible history payload");
+            }
+            extractReleaseHistoryFromHtml(html);
+            history = [];
+        } else {
+            history = JSON.parse(match[1]);
+        }
         if (!Array.isArray(history)) throw new Error("Published benchmark history is not an array");
         fs.writeFileSync(args.output, `${JSON.stringify(history, null, 2)}\n`);
         return;

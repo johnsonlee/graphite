@@ -781,6 +781,15 @@ function validateReleaseHistoryEntry(entry) {
     if (actualIds.size !== expectedIds.size) throw new Error("Published release benchmark core metric set is incomplete");
 }
 
+export function extractReleaseHistoryFromHtml(html) {
+    const match = String(html).match(/<template id="benchmark-release-history">([A-Za-z0-9+/=]+)<\/template>/);
+    if (match === null) throw new Error("Published release observatory has no compatible history payload");
+    const history = JSON.parse(Buffer.from(match[1], "base64").toString("utf8"));
+    if (!Array.isArray(history)) throw new Error("Published release benchmark history is malformed");
+    for (const entry of history) validateReleaseHistoryEntry(entry);
+    return history;
+}
+
 export function updateReleaseHistory(history, current, maximumEntries = 120) {
     if (!Array.isArray(history) || !Number.isInteger(maximumEntries) || maximumEntries < 1) {
         throw new Error("Release benchmark history input is invalid");
@@ -1140,11 +1149,7 @@ function renderCommand(args) {
 
 function extractHistoryCommand(args) {
     const html = fs.readFileSync(required(args, "input"), "utf8");
-    const match = html.match(/<template id="benchmark-release-history">([A-Za-z0-9+/=]+)<\/template>/);
-    if (match === null) throw new Error("Published release observatory has no compatible history payload");
-    const history = JSON.parse(Buffer.from(match[1], "base64").toString("utf8"));
-    if (!Array.isArray(history)) throw new Error("Published release benchmark history is malformed");
-    for (const entry of history) validateReleaseHistoryEntry(entry);
+    const history = extractReleaseHistoryFromHtml(html);
     writeJson(required(args, "output"), history);
 }
 
