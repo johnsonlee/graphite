@@ -181,13 +181,19 @@ test("HTML report is self-contained, provenance-rich, classified, and injection-
         runUrl: "https://example.invalid/run",
         generatedAt: "2026-08-30T01:02:03.000Z"
     });
-    assert.match(report.html, /Tag benchmark diff/);
+    assert.match(report.html, /Release Benchmark Observatory/);
     assert.match(report.html, /v2\.4\.4/);
     assert.match(report.html, new RegExp("a{40}"));
     assert.match(report.html, /v2\.4\.3/);
     assert.match(report.html, new RegExp("b{40}"));
     assert.match(report.html, /\+20\.00%/);
-    assert.match(report.html, /No verdict/);
+    assert.match(report.html, /No release verdict/);
+    assert.match(report.html, /Release benchmark questions/);
+    assert.match(report.html, /Regression signals/);
+    assert.match(report.html, /Improvement signals/);
+    assert.match(report.html, /How complete is this comparison/);
+    assert.match(report.html, /What needs attention/);
+    assert.match(report.html, /prefers-reduced-motion:reduce/);
     assert.match(report.html, /Content-Security-Policy/);
     assert.doesNotMatch(report.html, /<script[ >]/);
     assert.doesNotMatch(report.html, /<link[^>]+stylesheet/);
@@ -196,6 +202,36 @@ test("HTML report is self-contained, provenance-rich, classified, and injection-
     assert.equal(report.manifest.comparisonStatus, "available");
     assert.equal(report.manifest.measurements.length, 6);
     assert.ok(Math.abs(report.manifest.measurements[0].deltaPercent - 20) < 1e-9);
+    assert.deepEqual(
+        report.manifest.measurements.map((measurement) => measurement.classification),
+        ["inconclusive", "regression", "regression", "regression", "regression", "regression"]
+    );
+});
+
+test("release summary separates regressions, improvements, and inconclusive changes", () => {
+    const previous = results();
+    const current = results();
+    current[1] = result(REPRESENTATIVE_BENCHMARKS[1], 24);
+    current[2] = result(REPRESENTATIVE_BENCHMARKS[2], 24);
+    const report = buildTagDiffReport({
+        metadata: metadata(),
+        currentResults: current,
+        previousResults: previous,
+        generatedAt: "2026-08-30T01:02:03.000Z"
+    });
+
+    assert.match(report.html, /Regression signals<\/span><span>Slower<\/span><\/div><strong>1<\/strong>/);
+    assert.match(report.html, /Improvement signals<\/span><span>Faster<\/span><\/div><strong>1<\/strong>/);
+    assert.match(report.html, /Needs attention<\/span><span>Review<\/span><\/div><strong>5<\/strong>/);
+    assert.match(report.html, /nodeMatchWithWhere<\/code><strong>\+20\.00%/);
+    assert.match(report.html, /simpleNodeMatch<\/code><strong>-20\.00%/);
+    assert.match(report.summary, /Regression signals: \*\*1\*\*/);
+    assert.match(report.summary, /Improvement signals: \*\*1\*\*/);
+    assert.match(report.summary, /Inconclusive comparisons: \*\*4\*\*/);
+    assert.deepEqual(
+        report.manifest.measurements.map((measurement) => measurement.classification),
+        ["inconclusive", "regression", "improvement", "inconclusive", "inconclusive", "inconclusive"]
+    );
 });
 
 test("first semantic tag renders an explicit unavailable baseline without a verdict", () => {
@@ -211,6 +247,7 @@ test("first semantic tag renders an explicit unavailable baseline without a verd
     assert.match(report.summary, /baseline unavailable/i);
     assert.equal(report.manifest.comparisonStatus, "baseline-unavailable");
     assert.ok(report.manifest.measurements.every((measurement) => measurement.deltaPercent === null));
+    assert.ok(report.manifest.measurements.every((measurement) => measurement.classification === "unavailable"));
     assert.throws(() => buildTagDiffReport({
         metadata: metadata(null),
         currentResults: results(),
