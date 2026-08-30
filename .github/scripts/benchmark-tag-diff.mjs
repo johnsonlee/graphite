@@ -20,6 +20,12 @@ export const HARNESS_FINGERPRINT_PATHS = [
     "graphite-cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/CypherBenchmark.kt"
 ];
 
+export const JMH_CONFIG_FINGERPRINT_PATHS = [
+    "build.gradle.kts",
+    "gradle/libs.versions.toml",
+    "graphite-cypher/build.gradle.kts"
+];
+
 const BENCHMARK_PROTOCOL = {
     mode: "avgt",
     forks: 1,
@@ -231,6 +237,70 @@ export function comparableHarnessSource(source) {
     ].join("\n\n");
 }
 
+function exactlyOneLine(source, pattern, label) {
+    const lines = source.split(/\r?\n/).filter((line) => pattern.test(line));
+    if (lines.length !== 1) throw new Error(`Expected exactly one ${label}, found ${lines.length}`);
+    return lines[0].trim();
+}
+
+export function comparableJmhConfiguration(sources) {
+    const rootBuild = sources["build.gradle.kts"];
+    const versions = sources["gradle/libs.versions.toml"];
+    const moduleBuild = sources["graphite-cypher/build.gradle.kts"];
+    if ([rootBuild, versions, moduleBuild].some((source) => typeof source !== "string")) {
+        throw new Error("JMH configuration fingerprint inputs are incomplete");
+    }
+    const pluginVersion = exactlyOneLine(
+        rootBuild,
+        /^\s*id\("me\.champeau\.jmh"\)\s+version\s+"[^"]+"\s+apply\s+false\s*$/,
+        "root JMH plugin declaration"
+    );
+    const runtimeVersion = exactlyOneLine(
+        versions,
+        /^\s*jmh\s*=\s*"[^"]+"\s*(?:#.*)?$/,
+        "JMH runtime version"
+    );
+    const coreLibrary = exactlyOneLine(
+        versions,
+        /^\s*jmh-core\s*=\s*\{[^\n]+\}\s*(?:#.*)?$/,
+        "JMH core catalog entry"
+    );
+    const generatorLibrary = exactlyOneLine(
+        versions,
+        /^\s*jmh-generator\s*=\s*\{[^\n]+\}\s*(?:#.*)?$/,
+        "JMH generator catalog entry"
+    );
+    const modulePlugin = exactlyOneLine(
+        moduleBuild,
+        /^\s*id\("me\.champeau\.jmh"\)\s*$/,
+        "module JMH plugin declaration"
+    );
+    const coreDependency = exactlyOneLine(
+        moduleBuild,
+        /^\s*jmh\([^\n]+\)\s*$/,
+        "module JMH core dependency"
+    );
+    const generatorDependency = exactlyOneLine(
+        moduleBuild,
+        /^\s*jmhAnnotationProcessor\([^\n]+\)\s*$/,
+        "module JMH generator dependency"
+    );
+    const blockMatch = /^\s*jmh\s*\{/m.exec(moduleBuild);
+    if (blockMatch === null) throw new Error("Module jmh configuration block is missing");
+    const blockOpening = moduleBuild.indexOf("{", blockMatch.index);
+    const jmhBlock = moduleBuild.slice(blockMatch.index, kotlinBlockEnd(moduleBuild, blockOpening)).trim();
+    return [
+        pluginVersion,
+        runtimeVersion,
+        coreLibrary,
+        generatorLibrary,
+        modulePlugin,
+        coreDependency,
+        generatorDependency,
+        jmhBlock
+    ].join("\n");
+}
+
 function harnessFingerprint(commitSha, cwd) {
     const hash = createHash("sha256");
     hash.update("graphite-tag-benchmark-harness-v1\0");
@@ -247,6 +317,17 @@ function harnessFingerprint(commitSha, cwd) {
         hash.update(comparableHarnessSource(contents.toString("utf8")));
         hash.update("\0");
     }
+    const configurationSources = {};
+    for (const file of JMH_CONFIG_FINGERPRINT_PATHS) {
+        configurationSources[file] = execFileSync("git", ["show", `${commitSha}:${file}`], {
+            cwd,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "pipe"]
+        });
+    }
+    hash.update("jmh-configuration\0");
+    hash.update(comparableJmhConfiguration(configurationSources));
+    hash.update("\0");
     return hash.digest("hex");
 }
 

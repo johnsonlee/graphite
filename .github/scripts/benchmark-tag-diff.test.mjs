@@ -9,6 +9,7 @@ import test from "node:test";
 import {
     buildTagDiffReport,
     comparableHarnessSource,
+    comparableJmhConfiguration,
     compareSemver,
     COVERAGE_TAXONOMY,
     parseSemver,
@@ -50,6 +51,27 @@ ${methods.map((name) => `    @Benchmark
     }`).join("\n\n")}
 }
 `;
+}
+
+function jmhConfigurationSources(version = "1.37") {
+    return {
+        "build.gradle.kts": 'plugins {\n    id("me.champeau.jmh") version "0.7.2" apply false\n}\n',
+        "gradle/libs.versions.toml": `[versions]\njmh = "${version}"\n\n[libraries]\njmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }\njmh-generator = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }\n`,
+        "graphite-cypher/build.gradle.kts": `plugins {
+    id("me.champeau.jmh")
+}
+
+dependencies {
+    jmh(libs.jmh.core)
+    jmhAnnotationProcessor(libs.jmh.generator)
+}
+
+jmh {
+    warmupIterations.set(3)
+    iterations.set(5)
+}
+`
+    };
 }
 
 function metadata(previous = {
@@ -102,6 +124,16 @@ test("harness fingerprint source ignores unrelated benchmarks but includes selec
     );
     assert.equal(comparableHarnessSource(withUnrelatedBenchmark), comparableHarnessSource(base));
     assert.notEqual(comparableHarnessSource(harnessSource(2)), comparableHarnessSource(base));
+});
+
+test("JMH configuration fingerprint includes runtime version, plugin, dependencies, and module options", () => {
+    const base = comparableJmhConfiguration(jmhConfigurationSources("1.37"));
+    const runtimeDrift = comparableJmhConfiguration(jmhConfigurationSources("1.38"));
+    assert.notEqual(runtimeDrift, base);
+
+    const unrelatedTask = jmhConfigurationSources("1.37");
+    unrelatedTask["graphite-cypher/build.gradle.kts"] += "\ntasks.register(\"unrelatedTest\")\n";
+    assert.equal(comparableJmhConfiguration(unrelatedTask), base);
 });
 
 test("JMH validation fails closed on drift, duplication, and invalid metrics", () => {
@@ -179,6 +211,11 @@ test("resolve CLI peels annotated tags and disables deltas when a method body ch
         );
         fs.mkdirSync(path.dirname(harness), { recursive: true });
         fs.writeFileSync(harness, harnessSource(1));
+        for (const [file, contents] of Object.entries(jmhConfigurationSources())) {
+            const target = path.join(directory, file);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.writeFileSync(target, contents);
+        }
         execFileSync("git", ["add", "."], { cwd: directory });
         execFileSync("git", ["commit", "-q", "-m", "one"], { cwd: directory });
         execFileSync("git", ["tag", "v1.0.0"], { cwd: directory });
