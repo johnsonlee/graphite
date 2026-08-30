@@ -63,9 +63,16 @@ open class ServeCommand : Callable<Int> {
 
     @Option(
         names = ["--cypher-work-budget"],
-        description = ["Maximum graph work units per Cypher request"]
+        description = ["Deprecated and ignored; Cypher execution is limited by timeout instead"]
     )
+    @Deprecated("Ignored; configure --cypher-max-timeout-ms instead")
     var cypherWorkBudget: Long = DEFAULT_CYPHER_WORK_BUDGET
+
+    @Option(
+        names = ["--cypher-max-timeout-ms"],
+        description = ["Maximum Cypher request timeout in milliseconds"]
+    )
+    var cypherMaxTimeoutMillis: Long = DEFAULT_CYPHER_MAX_TIMEOUT_MILLIS
 
     @Option(
         names = ["--metrics"],
@@ -75,8 +82,8 @@ open class ServeCommand : Callable<Int> {
 
     @Suppress("ReturnCount", "TooGenericExceptionCaught")
     override fun call(): Int {
-        if (maxConcurrentCypher <= 0 || cypherWorkBudget <= 0) {
-            System.err.println("Error: Cypher concurrency and work budget must be positive")
+        if (maxConcurrentCypher <= 0 || cypherMaxTimeoutMillis <= 0) {
+            System.err.println("Error: Cypher concurrency and maximum timeout must be positive")
             return 1
         }
         val hasInitialGraphs = graphDir != null || graphSpecs.isNotEmpty()
@@ -125,7 +132,7 @@ open class ServeCommand : Callable<Int> {
                     "${topologySummary.relationCount} relations"
             )
             System.err.println(
-                "Cypher limits: $maxConcurrentCypher concurrent, $cypherWorkBudget work units per request"
+                "Cypher limits: $maxConcurrentCypher concurrent, ${cypherMaxTimeoutMillis}ms maximum timeout"
             )
             System.err.println("Press Ctrl+C to stop")
 
@@ -140,7 +147,13 @@ open class ServeCommand : Callable<Int> {
     }
 
     internal fun registerApiRoutes(app: Javalin, graph: Graph) {
-        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget)).register(app, graph)
+        ExploreRoutes(
+            CypherQueryGuard(
+                maxConcurrent = maxConcurrentCypher,
+                maxWorkUnits = Long.MAX_VALUE,
+                maxTimeoutMillis = cypherMaxTimeoutMillis
+            )
+        ).register(app, graph)
     }
 
     internal fun registerApiRoutes(
@@ -150,7 +163,14 @@ open class ServeCommand : Callable<Int> {
         performanceMetrics: ServerPerformanceMetrics? = null
     ) {
         val recorder = performanceMetrics?.cypherRecorder(maxConcurrentCypher) ?: NoOpCypherPerformanceRecorder
-        ExploreRoutes(CypherQueryGuard(maxConcurrentCypher, cypherWorkBudget, recorder)).register(app, registry, topology)
+        ExploreRoutes(
+            CypherQueryGuard(
+                maxConcurrent = maxConcurrentCypher,
+                maxWorkUnits = Long.MAX_VALUE,
+                performance = recorder,
+                maxTimeoutMillis = cypherMaxTimeoutMillis
+            )
+        ).register(app, registry, topology)
     }
 
     internal fun buildSubgraph(graph: Graph, center: NodeId, depth: Int): Map<String, Any> =

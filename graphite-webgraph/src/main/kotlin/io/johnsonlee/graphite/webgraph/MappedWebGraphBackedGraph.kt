@@ -710,21 +710,30 @@ internal class RawStringMatchStates(
     private val maxRetainedBytes: Long = MAX_RAW_STRING_MATCH_STATE_BYTES.toLong(),
     private val maxEntries: Int = MAX_RAW_STRING_MATCH_STATES
 ) {
-    private val states = LinkedHashMap<RawStringMatchKey, ByteArray>()
+    private val states = LinkedHashMap<RawStringMatchKey, ByteArray>(
+        maxEntries.coerceAtLeast(1) + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
     private var bytes = 0L
 
     @Synchronized
     fun stateFor(key: RawStringMatchKey, stringCount: Int): ByteArray? {
-        val existing = states[key]
+        var state = states[key]
         val requiredBytes = estimatedRawStringMatchStateBytes(key, stringCount)
-        return when {
-            existing != null -> existing
-            states.size >= maxEntries || requiredBytes > maxRetainedBytes - bytes -> null
-            else -> ByteArray(stringCount).also { state ->
-                states[key] = state
-                bytes += requiredBytes
+        if (state == null && maxEntries > 0 && requiredBytes <= maxRetainedBytes) {
+            while (states.isNotEmpty() &&
+                (states.size >= maxEntries || requiredBytes > maxRetainedBytes - bytes)
+            ) {
+                val eldest = states.entries.iterator().next()
+                bytes -= estimatedRawStringMatchStateBytes(eldest.key, eldest.value.size)
+                states.remove(eldest.key)
             }
+            state = ByteArray(stringCount)
+            states[key] = state
+            bytes += requiredBytes
         }
+        return state
     }
 
     @Synchronized

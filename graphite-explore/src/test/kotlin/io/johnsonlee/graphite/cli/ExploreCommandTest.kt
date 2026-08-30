@@ -68,6 +68,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+@Suppress("DEPRECATION")
 class ExploreCommandTest {
 
     companion object {
@@ -1507,10 +1508,13 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val post = cypher["post"] as Map<String, Any?>
         assertTrue(post.containsKey("requestBody"))
+        assertTrue(post["requestBody"].toString().contains(API_PARAM_TIMEOUT_MILLIS))
         @Suppress("UNCHECKED_CAST")
         val responses = post["responses"] as Map<String, Any?>
         assertTrue(responses.containsKey("429"))
+        assertTrue(responses.containsKey("504"))
         assertTrue(responses.containsKey("503"))
+        assertFalse(responses.getValue("429").toString().contains("work budget"))
     }
 
     @Test
@@ -2089,6 +2093,7 @@ class ExploreCommandTest {
         assertEquals(1_000_000L, DEFAULT_CYPHER_WORK_BUDGET)
         assertEquals(4, explore.maxConcurrentCypher)
         assertEquals(1_000_000L, explore.cypherWorkBudget)
+        assertEquals(60_000L, explore.cypherMaxTimeoutMillis)
         assertFalse(explore.metricsEnabled)
     }
 
@@ -2102,17 +2107,30 @@ class ExploreCommandTest {
     }
 
     @Test
-    fun `serve rejects non-positive cypher limits`() {
+    fun `serve help marks cypher work budget deprecated and documents timeout replacement`() {
+        val usage = CommandLine(ServeCommand()).usageMessage
+
+        assertTrue(usage.contains("--cypher-work-budget"), usage)
+        assertTrue(usage.contains("Deprecated and ignored"), usage)
+        assertTrue(usage.contains("--cypher-max-timeout-ms"), usage)
+    }
+
+    @Test
+    fun `serve rejects non-positive active cypher limits and ignores deprecated work budget`() {
         val concurrency = ServeCommand().apply { maxConcurrentCypher = 0 }
+        val timeout = ServeCommand().apply { cypherMaxTimeoutMillis = 0 }
         val work = ServeCommand().apply { cypherWorkBudget = 0 }
 
         val (_, concurrencyError, concurrencyCode) = captureOutput { concurrency.call() }
+        val (_, timeoutError, timeoutCode) = captureOutput { timeout.call() }
         val (_, workError, workCode) = captureOutput { work.call() }
 
         assertEquals(1, concurrencyCode)
+        assertEquals(1, timeoutCode)
         assertEquals(1, workCode)
         assertTrue(concurrencyError.contains("must be positive"), concurrencyError)
-        assertTrue(workError.contains("must be positive"), workError)
+        assertTrue(timeoutError.contains("must be positive"), timeoutError)
+        assertTrue(workError.contains("--data"), workError)
     }
 
     @Test
@@ -3572,6 +3590,96 @@ class ExploreCommandTest {
             )
             assertEquals(200, metadataCode, metadataBody)
         }
+    }
+
+    @Test
+    fun `serve command accepts but ignores deprecated cypher work budget`() {
+        val graph = DefaultGraph.Builder()
+            .addNode(IntConstant(NodeId.next(), 1))
+            .addNode(IntConstant(NodeId.next(), 2))
+            .build()
+        val localApp = Javalin.create { config ->
+            config.jsonMapper(JavalinGson(GsonBuilder().setPrettyPrinting().create()))
+        }.start(0)
+        try {
+            ServeCommand().apply {
+                cypherWorkBudget = 1
+                registerApiRoutes(localApp, graph)
+            }
+            val (code, body) = post(
+                localApp.port(),
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id"}"""
+            )
+            assertEquals(200, code, body)
+            val response: Map<String, Any?> = parseJson(body)
+            assertEquals(2.0, response[API_FIELD_ROW_COUNT])
+        } finally {
+            localApp.stop()
+        }
+    }
+
+    @Test
+    fun `cypher endpoint caps client timeout cancels work and releases capacity`() {
+        val started = CountDownLatch(1)
+        val interrupted = CountDownLatch(1)
+        val blockFirstScan = AtomicBoolean(true)
+        val backing = DefaultGraph.Builder().addNode(IntConstant(NodeId.next(), 1)).build()
+        val blockingGraph = object : Graph by backing {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                if (blockFirstScan.compareAndSet(true, false)) {
+                    started.countDown()
+                    try {
+                        CountDownLatch(1).await()
+                    } catch (error: InterruptedException) {
+                        interrupted.countDown()
+                        throw error
+                    }
+                }
+                yieldAll(backing.nodes(type))
+            }
+        }
+        val routes = ExploreRoutes(
+            CypherQueryGuard(
+                maxConcurrent = 1,
+                maxWorkUnits = Long.MAX_VALUE,
+                maxTimeoutMillis = 50
+            )
+        )
+
+        withExploreApp(blockingGraph, routes) { targetPort ->
+            val (timeoutCode, timeoutBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) WHERE n.missing IS NOT NULL RETURN n.id","timeoutMs":500}"""
+            )
+            assertEquals(504, timeoutCode, timeoutBody)
+            assertTrue(timeoutBody.contains("cypher_query_timeout"), timeoutBody)
+            val timeoutResponse: Map<String, Any?> = parseJson(timeoutBody)
+            assertEquals(50.0, timeoutResponse[API_PARAM_TIMEOUT_MILLIS])
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertTrue(interrupted.await(5, TimeUnit.SECONDS))
+
+            val (nextCode, nextBody) = post(
+                targetPort,
+                "/api/cypher",
+                """{"query":"MATCH (n) RETURN n.id LIMIT 1"}"""
+            )
+            assertEquals(200, nextCode, nextBody)
+        }
+    }
+
+    @Test
+    fun `cypher endpoint rejects invalid timeout before consuming capacity`() {
+        val (invalidCode, invalidBody) = post(
+            "/api/cypher",
+            """{"query":"RETURN 1","timeoutMs":0}"""
+        )
+        assertEquals(400, invalidCode, invalidBody)
+        assertTrue(invalidBody.contains("timeoutMs"), invalidBody)
+
+        val (nextCode, nextBody) = post("/api/cypher", """{"query":"RETURN 1"}""")
+        assertEquals(200, nextCode, nextBody)
     }
 
     @Test

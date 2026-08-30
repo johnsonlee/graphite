@@ -107,6 +107,7 @@ private object PerformanceHistogramFilter : MeterFilter {
 internal enum class CypherQueryOutcome(val tagValue: String) {
     SUCCESS("success"),
     CANCELLED("cancelled"),
+    TIMEOUT("timeout"),
     BUDGET_EXCEEDED("budget_exceeded"),
     FAILED("failed")
 }
