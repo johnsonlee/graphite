@@ -1,6 +1,6 @@
 package io.johnsonlee.graphite.cypher
 
-import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -75,14 +75,14 @@ class CypherBudgetExceededException(
 internal class CypherWorkTracker(
     private val budget: CypherExecutionBudget,
     private val cancellationSignal: CypherCancellationSignal = CypherCancellationSignal()
-) : GraphWorkConsumer {
+) : GraphWorkBatchConsumer {
     private val remaining = AtomicLong(budget.maxWorkUnits)
 
     override fun consume() = consume(1)
 
     fun checkCancelled() = cancellationSignal.throwIfCancelled()
 
-    fun consume(workUnits: Long) {
+    override fun consume(workUnits: Long) {
         require(workUnits >= 0) { "workUnits must be non-negative" }
         checkCancelled()
         while (true) {

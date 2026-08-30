@@ -25,6 +25,24 @@ internal class StringTable private constructor(
      */
     fun indexOf(s: String): Int = indexMap?.get(s) ?: -1
 
+    /** Finds an id in both builder and loaded tables; persisted tables remain sorted. */
+    @Suppress("ReturnCount")
+    internal fun findId(s: String): Int {
+        indexMap?.get(s)?.let { return it }
+        var low = 0
+        var high = list.size - 1
+        while (low <= high) {
+            val middle = (low + high).ushr(1)
+            val comparison = list.get(middle).toString().compareTo(s)
+            when {
+                comparison < 0 -> low = middle + 1
+                comparison > 0 -> high = middle - 1
+                else -> return middle
+            }
+        }
+        return -1
+    }
+
     /**
      * Returns the string at the given [index].
      */

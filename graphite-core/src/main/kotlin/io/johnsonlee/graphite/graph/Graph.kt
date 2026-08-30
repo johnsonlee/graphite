@@ -24,7 +24,8 @@ data class ClassOverview(
 enum class StringMatchMode {
     STARTS_WITH,
     ENDS_WITH,
-    CONTAINS
+    CONTAINS,
+    EQUALS
 }
 
 /** Exact value transformation applied before a storage-backed string match. */
@@ -59,6 +60,13 @@ interface StringPropertyLookup {
 /** Receives one callback for each storage item inspected by a graph lookup. */
 fun interface GraphWorkConsumer {
     fun consume()
+}
+
+/** A work consumer that can charge a batch without one atomic update per graph item. */
+interface GraphWorkBatchConsumer : GraphWorkConsumer {
+    fun consume(workUnits: Long)
+
+    override fun consume() = consume(1L)
 }
 
 /** Polls request cancellation while a storage backend scans method metadata. */
@@ -149,6 +157,52 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>?
+}
+
+/** Storage-level result for a string-disjunction aggregate without node materialization. */
+data class StringPropertyDisjunctionAggregate(
+    val count: Long,
+    val distinctValues: Set<String>? = null
+)
+
+/** Optional capability for counting or deduplicating indexed string matches in storage. */
+interface StringPropertyDisjunctionAggregation {
+    fun aggregateStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        distinctProperty: String? = null
+    ): StringPropertyDisjunctionAggregate?
+}
+
+/** Storage aggregation that preserves query work-budget and cancellation accounting. */
+interface WorkAwareStringPropertyDisjunctionAggregation : StringPropertyDisjunctionAggregation {
+    fun aggregateStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        distinctProperty: String? = null,
+        workConsumer: GraphWorkConsumer
+    ): StringPropertyDisjunctionAggregate?
+}
+
+/** One storage-projected distinct row in the backend's canonical node encounter order. */
+data class StringPropertyDistinctRow(
+    val encounterOrder: Long,
+    val values: List<String?>
+)
+
+/**
+ * Optional storage capability for DISTINCT string-property projections. When [selectedValues] is
+ * non-null, implementations return only selected tuples that occur anywhere in the match set.
+ */
+interface StringPropertyDisjunctionDistinctProjection {
+    fun distinctStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        selectedValues: Set<List<String?>>? = null,
+        workConsumer: GraphWorkConsumer? = null
+    ): List<StringPropertyDistinctRow>?
 }
 
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */

@@ -280,7 +280,8 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped disjunction hands warm small graphs back to property indexes`() {
+    @Suppress("LongMethod")
+    fun `mapped disjunction builds and clears one combined CallSite string index`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(3) { index ->
@@ -325,17 +326,49 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
+                val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
                 val cold = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(1), cold)
-                assertNull(
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        predicates
-                    )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.callSiteStringIndexBytes() > 0L)
+                val aggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(1L, aggregate?.count)
+                assertEquals(setOf("example.VoucherCaller1"), aggregate?.distinctValues)
+                val projectedValues = listOf("example.VoucherCaller1", "create1", null)
+                val projected = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "class"),
+                    limit = 10
+                )
+                assertEquals(listOf(projectedValues), projected?.map { it.values })
+                val selected = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "class"),
+                    limit = 10,
+                    selectedValues = setOf(projectedValues, listOf("missing", "missing", null))
+                )
+                assertEquals(listOf(projectedValues), selected?.map { it.values })
+                val absent = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates.map { it.copy(expected = "missing") },
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(0L, absent?.count)
+                assertEquals(emptySet(), absent?.distinctValues)
+                assertEquals(
+                    listOf(1),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+                        .orEmpty().map { it.id.value }.toList()
                 )
                 assertTrue(
                     loaded.nodesByStringPropertyDisjunction(
@@ -352,6 +385,8 @@ class GraphStoreTest {
                 )
 
                 loaded.clearStringPropertyIndexes()
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 var consumed = 0
                 val reset = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -360,7 +395,124 @@ class GraphStoreTest {
                     GraphWorkConsumer { consumed++ }
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(1), reset)
-                assertEquals(3, consumed)
+                assertEquals(1, consumed)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `combined CallSite string index preserves modes order limits and conjunction residuals`() {
+        val returnType = TypeDescriptor("void")
+        fun callSite(id: Int, callerClass: String, callerName: String, calleeClass: String, calleeName: String) =
+            CallSiteNode(
+                NodeId(id),
+                MethodDescriptor(TypeDescriptor(callerClass), callerName, emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor(calleeClass), calleeName, emptyList(), returnType),
+                id,
+                null,
+                emptyList()
+            )
+        val graph = DefaultGraph.Builder()
+            .addNode(callSite(0, "Example.Alpha", "loadFirst", "deps.AKeyStore", "fetch"))
+            .addNode(callSite(1, "example.Beta", "makeSecond", "deps.Repository", "provideTail"))
+            .addNode(callSite(2, "Example.Alpha", "finishThird", "deps.OtherAKey", "close"))
+            .addNode(callSite(3, "example.Other", "skip", "deps.Repository", "ignore"))
+            .build()
+        val dir = Files.createTempDirectory("webgraph-combined-callsite-index")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                fun ids(
+                    property: String,
+                    mode: StringMatchMode,
+                    expected: String,
+                    transform: StringValueTransform? = null,
+                    limit: Int = Int.MAX_VALUE,
+                    consume: (() -> Unit)? = null
+                ): List<Int> {
+                    val predicate = StringPropertyPredicate(property, transform, mode, expected)
+                    val sequence = if (consume == null) {
+                        loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate), limit)
+                    } else {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            limit,
+                            GraphWorkConsumer { consume() }
+                        )
+                    }
+                    return sequence.orEmpty().map { it.id.value }.toList()
+                }
+
+                assertEquals(listOf(0, 2), ids("caller_class", StringMatchMode.EQUALS, "Example.Alpha"))
+                assertEquals(
+                    listOf(0, 2),
+                    ids(
+                        "caller_class",
+                        StringMatchMode.EQUALS,
+                        "example.alpha",
+                        StringValueTransform.LOWERCASE
+                    )
+                )
+                assertEquals(listOf(0, 2), ids("callee_class", StringMatchMode.CONTAINS, "AKey"))
+                assertEquals(listOf(0), ids("caller_name", StringMatchMode.STARTS_WITH, "load"))
+                assertEquals(listOf(1), ids("callee_name", StringMatchMode.ENDS_WITH, "Tail"))
+                assertTrue(ids("caller_class", StringMatchMode.EQUALS, "missing").isEmpty())
+
+                val overlapping = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "Example.Alpha"),
+                    StringPropertyPredicate("callee_class", null, StringMatchMode.CONTAINS, "AKey")
+                )
+                assertEquals(
+                    listOf(0, 2),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, overlapping)
+                        .orEmpty().map { it.id.value }.toList()
+                )
+
+                var consumed = 0
+                val exactOr = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "Example.Alpha"),
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "example.Beta")
+                )
+                assertEquals(
+                    listOf(0, 1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        exactOr,
+                        2,
+                        GraphWorkConsumer { consumed++ }
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+                assertEquals(2, consumed)
+
+                loaded.clearStringPropertyIndexes()
+                val exactOrRows = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' OR n.caller_class = 'example.Beta' " +
+                        "RETURN DISTINCT n.caller_class AS caller, n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(
+                    listOf("loadFirst", "makeSecond", "finishThird"),
+                    exactOrRows.map { it["method"] }
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+
+                val exactAndContains = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' AND n.callee_class CONTAINS 'AKey' " +
+                        "RETURN DISTINCT n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(listOf("loadFirst", "finishThird"), exactAndContains.map { it["method"] })
+
+                val exactAndDisjunction = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' AND " +
+                        "(n.callee_class CONTAINS 'Store' OR n.callee_name ENDS WITH 'close') " +
+                        "RETURN DISTINCT n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(listOf("loadFirst", "finishThird"), exactAndDisjunction.map { it["method"] })
             } finally {
                 loaded.close()
             }
@@ -399,6 +551,20 @@ class GraphStoreTest {
                     isAccessible = true
                     set(loaded, RawStringMatchStates(maxRetainedBytes = 0, maxEntries = 0))
                 }
+                val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<CancellationException> {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate)
+                        ).orEmpty().toList()
+                    }
+                } finally {
+                    Thread.interrupted()
+                }
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 assertEquals(
                     listOf(0),
                     loaded.nodesByStringPropertyDisjunction(
@@ -678,7 +844,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped raw string scan caches repeated match states and accounts budgeted work`() {
+    fun `mapped raw string scan keeps match states query local and accounts budgeted work`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(261) { index ->
                 val value = when (index) {
@@ -708,8 +874,8 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(256, 257, 260), unbudgeted)
-                assertEquals(1, loaded.rawStringMatchStateCount())
-                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+                assertEquals(0, loaded.rawStringMatchStateCount())
+                assertEquals(0L, loaded.rawStringMatchStateBytes())
 
                 loaded.clearStringPropertyIndexes()
                 var consumed = 0
@@ -725,8 +891,8 @@ class GraphStoreTest {
 
                 assertEquals(listOf(256, 257, 260), budgeted)
                 assertEquals(261, consumed)
-                assertEquals(1, loaded.rawStringMatchStateCount())
-                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+                assertEquals(0, loaded.rawStringMatchStateCount())
+                assertEquals(0L, loaded.rawStringMatchStateBytes())
             } finally {
                 loaded.close()
             }
@@ -778,6 +944,24 @@ class GraphStoreTest {
         ))
         assertEquals(0, oversizedKeyStates.size())
         assertEquals(0L, oversizedKeyStates.retainedBytes())
+    }
+
+    @Test
+    fun `combined CallSite index estimates CSR retention and rejects budget overflow`() {
+        assertEquals(384L, estimatedMappedCallSiteStringIndexCountBytes(stringCount = 20))
+        assertEquals(
+            896L,
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = 10,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4, 5)
+            )
+        )
+
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val unavailable = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore + 1L
+        assertNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(unavailable))
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test

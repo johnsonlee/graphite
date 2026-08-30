@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 private const val INITIAL_METHOD_RESULT_CAPACITY = 1_024
-private const val MAX_PARALLEL_METHOD_ROWS = 1_024
+private const val MAX_PARALLEL_METHOD_ROWS = 5_000
+private const val MAX_BUFFERED_PARALLEL_METHOD_ROWS = 20_000
 
 internal val METHOD_GRAPH_SCAN_PARALLELISM: Int =
     Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
@@ -249,7 +250,7 @@ internal object MethodQueryExecutor {
         val requested = saturatedAdd(skipCount, limitCount)
         val rows = ArrayList<Map<String, Any?>>(minOf(limitCount, INITIAL_METHOD_RESULT_CAPACITY))
         var matched = 0
-        for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
+        for (wave in execution.sources.chunked(methodGraphWaveSize(requested))) {
             execution.checkCancelled()
             val batches = runMethodGraphTasks(wave.map { source ->
                 { checkPeerCancelled -> executeSourceRows(execution, source, requested, checkPeerCancelled) }
@@ -295,7 +296,7 @@ internal object MethodQueryExecutor {
             return executeOrderedRowsSequential(execution, skipCount, limitCount, requested, comparator)
         }
         val topRows = PriorityQueue<Map<String, Any?>>(requested, comparator.reversed())
-        for (wave in execution.sources.chunked(METHOD_GRAPH_SCAN_PARALLELISM)) {
+        for (wave in execution.sources.chunked(methodGraphWaveSize(requested))) {
             execution.checkCancelled()
             val batches = runMethodGraphTasks(wave.map { source ->
                 { checkPeerCancelled ->
@@ -476,6 +477,11 @@ internal object MethodQueryExecutor {
     private fun saturatedAdd(left: Int, right: Int): Int =
         (left.toLong() + right.toLong()).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
 
+    private fun methodGraphWaveSize(requested: Int): Int = minOf(
+        METHOD_GRAPH_SCAN_PARALLELISM,
+        (MAX_BUFFERED_PARALLEL_METHOD_ROWS / requested.coerceAtLeast(1)).coerceAtLeast(1)
+    )
+
     private fun containsAggregation(expression: CypherExpr): Boolean = when (expression) {
         is CypherExpr.CountStar -> true
         is CypherExpr.FunctionCall -> CypherFunctions.isAggregation(expression.name) ||
@@ -549,7 +555,7 @@ internal object MethodQueryExecutor {
     ): LinkedHashMap<List<Any?>, MethodCountGroup>? {
         val groups = linkedMapOf<List<Any?>, MethodCountGroup>()
         val sourceBounded = hasSourceBoundedGroups(groupItems, execution.variable)
-        if (groupItems.isNotEmpty() && (!sourceBounded || groupLimit > MAX_PARALLEL_METHOD_ROWS)) {
+        if (groupItems.isNotEmpty() && !sourceBounded) {
             for (source in execution.sources) {
                 execution.checkCancelled()
                 if (!countGroupedSourceMethods(execution, source, groupItems, groups, groupLimit)) return null

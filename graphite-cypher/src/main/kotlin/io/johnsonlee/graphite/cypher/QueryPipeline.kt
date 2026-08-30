@@ -1,3 +1,13 @@
+@file:Suppress(
+    "ComplexCondition",
+    "CyclomaticComplexMethod",
+    "LongMethod",
+    "MagicNumber",
+    "NestedBlockDepth",
+    "ReturnCount",
+    "StringLiteralDuplication"
+)
+
 package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.AnnotationNode
@@ -18,10 +28,13 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
@@ -63,7 +76,8 @@ private data class RelationshipMatchState(
     val used: Set<QualifiedEdge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
-private const val DEFAULT_DIRECT_STRING_PARALLELISM = 2
+private const val DEFAULT_DIRECT_STRING_PARALLELISM = 8
+private const val DIRECT_ORDER_SOURCE_SHIFT = 56
 
 private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
     labels.firstOrNull()?.let(NodePropertyAccessor::resolveNodeLabelOrNull)
@@ -146,6 +160,12 @@ private val DIRECT_STRING_NODE_PROPERTIES = listOf(
         "callee_class",
         "callee_name"
     )
+)
+private val CALL_SITE_DIRECT_STRING_PROPERTIES = setOf(
+    "caller_class",
+    "caller_name",
+    "callee_class",
+    "callee_name"
 )
 
 /**
@@ -234,6 +254,7 @@ class QueryPipeline private constructor(
     @Suppress("CyclomaticComplexMethod", "ReturnCount")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
+        if (hasUnknownNodeLabel(clauses)) return executeGeneralClauses(clauses)
         if (MethodQueryExecutor.referencesMethod(clauses)) {
             if (activeParameters.get().orEmpty().isEmpty()) {
                 val methodResult = MethodQueryExecutor.tryExecute(
@@ -251,6 +272,7 @@ class QueryPipeline private constructor(
             ?: tryFastLabelHistogram(clauses)
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
+            ?: tryFastFilteredStringCount(clauses)
             ?: tryFastFilteredNodeLimit(clauses)
             ?: tryStreamingFilteredNodeMatch(clauses)
             ?: tryStreamingFilteredMatchLimit(clauses)
@@ -258,6 +280,17 @@ class QueryPipeline private constructor(
         if (fastResult != null) return fastResult
 
         return executeGeneralClauses(clauses)
+    }
+
+    private fun hasUnknownNodeLabel(clauses: List<CypherClause>): Boolean = clauses.any { clause ->
+        clause is CypherClause.Match && clause.patterns.any { pattern ->
+            pattern.elements.filterIsInstance<PatternElement.NodePattern>().any { node ->
+                node.labels.any { label ->
+                    !MethodQueryExecutor.isMethodLabel(label) &&
+                        NodePropertyAccessor.resolveNodeLabelOrNull(label) == null
+                }
+            }
+        }
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -724,6 +757,227 @@ class QueryPipeline private constructor(
         return property?.propertyName?.takeIf { owner?.name == variable }
     }
 
+    /** Streams COUNT and COUNT(DISTINCT ...) over indexed string candidates without MATCH materialization. */
+    @Suppress("ComplexCondition", "ReturnCount", "UNCHECKED_CAST")
+    private fun tryFastFilteredStringCount(clauses: List<CypherClause>): CypherResult? {
+        if (clauses.size != 3) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val where = clauses[1] as? CypherClause.Where ?: return null
+        val ret = clauses[2] as? CypherClause.Return ?: return null
+        if (match.optional || match.patterns.size != 1 || ret.distinct || ret.items.size != 1) return null
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+        val nodePattern = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        if (nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+        val variable = nodePattern.variable ?: return null
+        val countExpression = ret.items.single().expression
+        val column = ret.items.single().alias ?: countExpression.toCypherString()
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(
+            listOf(column),
+            listOf(mapOf(column to 0L))
+        )
+        val countedExpression = when (countExpression) {
+            CypherExpr.CountStar -> null
+            is CypherExpr.FunctionCall -> countExpression.args.singleOrNull()
+                ?.takeIf { countExpression.name.equals("count", ignoreCase = true) }
+                ?: return null
+            else -> return null
+        }
+        val parameters = activeParameters.get().orEmpty()
+        val candidatePlan = DirectStringCandidatePlan.compile(where.condition, variable, parameters) ?: return null
+        val distinct = (countExpression as? CypherExpr.FunctionCall)?.distinct == true
+        val exactCandidatePredicate = DirectStringFilter.compile(where.condition, variable, parameters) != null ||
+            DirectStringDisjunction.compile(where.condition, variable, parameters) != null
+        val rawCountExpression = countedExpression == null || countedExpression is CypherExpr.Property &&
+            countedExpression.expression == CypherExpr.Variable(variable) &&
+            countedExpression.propertyName !in QUALIFIED_NODE_PROPERTIES
+        val useRawNodes = exactCandidatePredicate && rawCountExpression
+        val sharedWorkTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val parallel = qualified && sources.size > 1 && directStringParallelism > 1 &&
+            !directStringWorkerActive.get()
+        val partials = if (parallel) {
+            runDirectStringTasks(sources.map { source ->
+                {
+                    filteredStringCountPartial(
+                        source,
+                        nodeClass,
+                        variable,
+                        candidatePlan,
+                        where.condition,
+                        countedExpression,
+                        distinct,
+                        useRawNodes,
+                        parameters,
+                        sharedWorkTracker
+                    )
+                }
+            })
+        } else {
+            sources.map { source ->
+                filteredStringCountPartial(
+                    source,
+                    nodeClass,
+                    variable,
+                    candidatePlan,
+                    where.condition,
+                    countedExpression,
+                    distinct,
+                    useRawNodes,
+                    parameters,
+                    sharedWorkTracker
+                )
+            }
+        }
+        val distinctValues = if (distinct) HashSet<Any>() else null
+        val count = if (distinctValues == null) {
+            partials.sumOf(FilteredStringCountPartial::count)
+        } else {
+            partials.forEach { partial -> distinctValues.addAll(partial.distinctValues.orEmpty()) }
+            distinctValues.size.toLong()
+        }
+        val row = mutableMapOf<String, Any?>(column to count)
+        if (qualified) {
+            partials.mapNotNullTo(linkedSetOf()) { partial ->
+                partial.sourceId.takeIf { partial.matchedWhere }
+            }.takeIf { it.isNotEmpty() }?.let { graphIds -> row[INTERNAL_PROVENANCE_KEY] = graphIds }
+        }
+        return CypherResult(listOf(column), listOf(row))
+    }
+
+    @Suppress("LongParameterList")
+    private fun filteredStringCountPartial(
+        source: CypherGraph,
+        nodeClass: Class<out Node>,
+        variable: String,
+        candidatePlan: DirectStringCandidatePlan,
+        condition: CypherExpr,
+        countedExpression: CypherExpr?,
+        distinct: Boolean,
+        useRawNodes: Boolean,
+        parameters: Map<String, Any?>,
+        workTracker: CypherWorkTracker?
+    ): FilteredStringCountPartial {
+        if (useRawNodes) return exactStringCountPartial(
+            source,
+            nodeClass,
+            candidatePlan.candidates,
+            countedExpression,
+            distinct,
+            workTracker
+        )
+        val localEvaluator = if (directStringWorkerActive.get()) {
+            ExpressionEvaluator(
+                parameterResolver = parameters::get,
+                checkCancelled = {
+                    if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                }
+            )
+        } else {
+            evaluator
+        }
+        val bindings = mutableMapOf<String, Any?>(variable to null)
+        val distinctValues = if (distinct) HashSet<Any>() else null
+        var count = 0L
+        var matchedWhere = false
+        var inspected = 0
+        for (node in directStringCandidates(source.graph, nodeClass, candidatePlan.candidates, workTracker)) {
+            val candidate = if (useRawNodes) node else nodeValue(source, node)
+            bindings[variable] = candidate
+            if (!useRawNodes && localEvaluator.evaluate(condition, bindings) != true) continue
+            matchedWhere = true
+            if (countedExpression == null) {
+                count++
+            } else {
+                val value = localEvaluator.evaluate(countedExpression, bindings) ?: continue
+                if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
+            }
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CypherQueryCancelledException()
+            }
+        }
+        return FilteredStringCountPartial(source.id, count, distinctValues, matchedWhere)
+    }
+
+    @Suppress("LongParameterList")
+    private fun exactStringCountPartial(
+        source: CypherGraph,
+        nodeClass: Class<out Node>,
+        disjunction: DirectStringDisjunction,
+        countedExpression: CypherExpr?,
+        distinct: Boolean,
+        workTracker: CypherWorkTracker?
+    ): FilteredStringCountPartial {
+        val countedProperty = (countedExpression as? CypherExpr.Property)?.propertyName
+        val distinctValues = if (distinct) HashSet<Any>() else null
+        val storageAggregation = source.graph as? StringPropertyDisjunctionAggregation
+        var count = 0L
+        var matchedWhere = false
+        for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
+            if (!nodeClass.isAssignableFrom(candidateType)) continue
+            val filters = disjunction.filters.filter { it.property in properties }
+            if (filters.isEmpty()) continue
+            val predicates = filters.map { filter ->
+                StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
+            }
+            val canAggregateProperty = countedExpression == null || countedProperty in properties
+            val aggregate = if (canAggregateProperty) {
+                if (workTracker == null) {
+                    storageAggregation?.aggregateStringPropertyDisjunction(
+                        candidateType,
+                        predicates,
+                        countedProperty.takeIf { distinct }
+                    )
+                } else {
+                    (storageAggregation as? WorkAwareStringPropertyDisjunctionAggregation)
+                        ?.aggregateStringPropertyDisjunction(
+                            candidateType,
+                            predicates,
+                            countedProperty.takeIf { distinct },
+                            workTracker
+                        )
+                }
+            } else {
+                null
+            }
+            if (aggregate != null) {
+                if (aggregate.count > 0L) matchedWhere = true
+                if (distinctValues == null) {
+                    count += aggregate.count
+                } else {
+                    aggregate.distinctValues.orEmpty().mapTo(distinctValues, ::cypherValueKey)
+                }
+                continue
+            }
+
+            val candidates = directStringCandidates(
+                source.graph,
+                candidateType,
+                DirectStringDisjunction(filters),
+                workTracker
+            )
+            for (node in candidates) {
+                matchedWhere = true
+                if (countedExpression == null) {
+                    count++
+                } else {
+                    val value = countedProperty?.let { property ->
+                        NodePropertyAccessor.getProperty(node, property)
+                    } ?: continue
+                    if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
+                }
+            }
+        }
+        if (distinctValues != null) count = distinctValues.size.toLong()
+        return FilteredStringCountPartial(source.id, count, distinctValues, matchedWhere)
+    }
+
+    private data class FilteredStringCountPartial(
+        val sourceId: String,
+        val count: Long,
+        val distinctValues: Set<Any>?,
+        val matchedWhere: Boolean
+    )
+
     /**
      * Fast path for:
      *
@@ -754,8 +1008,8 @@ class QueryPipeline private constructor(
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
         val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
-        val directStringFilter = (where.condition as? CypherExpr.StringOp)
-            ?.let { DirectStringFilter.compile(it, variable) }
+        val stringParameters = activeParameters.get().orEmpty()
+        val directStringFilter = DirectStringFilter.compile(where.condition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
                 nodeClass,
@@ -766,8 +1020,24 @@ class QueryPipeline private constructor(
                 limitCount
             )
         }
+        if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
+            nodePattern.properties.isEmpty() && hasTypedDirectStringCandidate(nodeClass, directStringFilter)
+        ) {
+            return executeDirectStringDisjunction(
+                nodeClass,
+                variable,
+                DirectStringDisjunction(listOf(directStringFilter)),
+                ret.items,
+                columns,
+                limitCount
+            )
+        }
         if (nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
-            val directStringDisjunction = DirectStringDisjunction.compile(where.condition, variable)
+            val directStringDisjunction = DirectStringDisjunction.compile(
+                where.condition,
+                variable,
+                stringParameters
+            )
             if (directStringDisjunction != null) {
                 return if (ret.distinct) {
                     executeDirectStringDisjunction(
@@ -789,7 +1059,11 @@ class QueryPipeline private constructor(
                     )
                 }
             }
-            val directStringConjunction = DirectStringConjunction.compile(where.condition, variable)
+            val directStringConjunction = DirectStringConjunction.compile(
+                where.condition,
+                variable,
+                stringParameters
+            )
             if (directStringConjunction != null) {
                 val candidates = DirectStringDisjunction(listOf(directStringConjunction.required))
                 val predicate = directStringConjunction::matches
@@ -808,6 +1082,39 @@ class QueryPipeline private constructor(
                         nodeClass,
                         variable,
                         candidates,
+                        ret.items,
+                        columns,
+                        limitCount,
+                        predicate
+                    )
+                }
+            }
+            val candidatePlan = DirectStringCandidatePlan.compile(
+                where.condition,
+                variable,
+                stringParameters
+            )
+            if (candidatePlan != null) {
+                val predicateBindings = mutableMapOf<String, Any?>(variable to null)
+                val predicate: (Node) -> Boolean = { node ->
+                    predicateBindings[variable] = node
+                    evaluator.evaluate(where.condition, predicateBindings) == true
+                }
+                return if (ret.distinct) {
+                    executeDirectStringDisjunction(
+                        nodeClass,
+                        variable,
+                        candidatePlan.candidates,
+                        ret.items,
+                        columns,
+                        limitCount,
+                        predicate
+                    )
+                } else {
+                    executeDirectStringDisjunctionRows(
+                        nodeClass,
+                        variable,
+                        candidatePlan.candidates,
                         ret.items,
                         columns,
                         limitCount,
@@ -890,18 +1197,27 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int
     ): CypherResult {
+        val hasTypedCandidate = hasTypedDirectStringCandidate(nodeClass, filter)
+        if (hasTypedCandidate) {
+            return executeDirectStringDisjunctionRows(
+                nodeClass,
+                variable,
+                DirectStringDisjunction(listOf(filter)),
+                items,
+                columns,
+                limit
+            )
+        }
+
         val rows = mutableListOf<Map<String, Any?>>()
         for (source in sources) {
-            val indexedNodes = stringPropertyCandidates(
+            val candidates = stringPropertyCandidates(
                 source.graph,
                 nodeClass,
                 filter,
                 limit - rows.size
-            )
-            val candidates = indexedNodes
-                ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
+            ) ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
             for (node in candidates) {
-
                 val candidate = nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
                 addProvenance(bindings, candidate)
@@ -910,6 +1226,13 @@ class QueryPipeline private constructor(
             }
         }
         return CypherResult(columns, rows)
+    }
+
+    private fun hasTypedDirectStringCandidate(
+        nodeClass: Class<out Node>,
+        filter: DirectStringFilter
+    ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
+        nodeClass.isAssignableFrom(candidateType) && filter.property in properties
     }
 
     private fun executeDirectStringDisjunction(
@@ -1058,6 +1381,16 @@ class QueryPipeline private constructor(
         limit: Int,
         nodePredicate: ((Node) -> Boolean)?
     ): CypherResult {
+        if (nodePredicate == null) {
+            executeIndexedDistinctStringProjection(
+                nodeClass,
+                variable,
+                filter,
+                items,
+                columns,
+                limit
+            )?.let { return it }
+        }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = sources.map { source ->
             DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker, nodePredicate)
@@ -1098,6 +1431,160 @@ class QueryPipeline private constructor(
         }
         return CypherResult(columns, rows.values.toList())
     }
+
+    @Suppress("LongMethod", "NestedBlockDepth", "ReturnCount")
+    private fun executeIndexedDistinctStringProjection(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int
+    ): CypherResult? {
+        if (!nodeClass.isAssignableFrom(CallSiteNode::class.java)) return null
+        val projectedProperties = items.map { item ->
+            val property = item.expression as? CypherExpr.Property ?: return null
+            if (property.expression != CypherExpr.Variable(variable)) return null
+            property.propertyName
+        }
+        val callSiteFilters = filter.filters.filter { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
+        if (callSiteFilters.isEmpty()) return null
+        val predicates = callSiteFilters.map { candidate ->
+            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
+        }
+        val projections = sources.map { source ->
+            source.graph as? StringPropertyDisjunctionDistinctProjection ?: return null
+        }
+        val orders = sources.map { source -> source.graph as? StringPropertyLookupOrder ?: return null }
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+
+        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        var waveStart = 0
+        while (waveStart < sources.size && rows.size < limit) {
+            val waveEnd = minOf(sources.size, waveStart + directStringParallelism)
+            val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
+                {
+                    val source = sources[sourceIndex]
+                    val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties,
+                        limit,
+                        selectedValues = null,
+                        workConsumer = tracker
+                    ) ?: error("Distinct projection capability became unavailable")
+                    val sourceRows = projected.map { raw ->
+                        OrderedProjectedRow(
+                            raw.encounterOrder,
+                            rawProjectionRow(raw.values, columns, source.id)
+                        )
+                    }.toMutableList()
+
+                    val seenGeneric = HashSet<Map<String, Any?>>()
+                    for (node in directStringCandidates(
+                        source.graph,
+                        nodeClass,
+                        filter,
+                        tracker,
+                        excludedTypes = setOf(CallSiteNode::class.java)
+                    )) {
+                        val row = projectedNodeRow(source, node, projectedProperties, columns)
+                        val visible = visibleRow(row)
+                        if (seenGeneric.add(visible)) {
+                            sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
+                            if (seenGeneric.size >= limit) break
+                        }
+                    }
+                    val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+                    sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
+                        addDistinctRow(distinct, ordered.row, limit)
+                    }
+                    distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
+                }
+            })
+            localRows.forEach { sourceRows ->
+                sourceRows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
+            }
+            waveStart = waveEnd
+        }
+        if (rows.size < limit) return null
+
+        val selected = rows.keys.toSet()
+        val selectedValues = selected.mapNotNullTo(linkedSetOf()) { row ->
+            val values = columns.map(row::get)
+            if (values.all { value -> value == null || value is String }) {
+                @Suppress("UNCHECKED_CAST")
+                values as List<String?>
+            } else {
+                null
+            }
+        }
+        val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
+        val hits = runDirectStringTasks(sources.indices.map { sourceIndex ->
+            {
+                val source = sources[sourceIndex]
+                val rawHits = projections[sourceIndex].distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    projectedProperties,
+                    selectedValues.size,
+                    selectedValues,
+                    tracker
+                ).orEmpty().mapTo(mutableSetOf()) { hit ->
+                    visibleRow(rawProjectionRow(hit.values, columns, source.id))
+                }
+                val matcher = selectedMatcher.cursor(source)
+                for (node in directStringCandidates(
+                    source.graph,
+                    nodeClass,
+                    filter,
+                    tracker,
+                    excludedTypes = setOf(CallSiteNode::class.java)
+                )) {
+                    matcher.match(node)?.let(rawHits::add)
+                    if (rawHits.size >= selected.size) break
+                }
+                rawHits
+            }
+        })
+        hits.forEachIndexed { sourceIndex, visibleRows ->
+            val graphId = sources[sourceIndex].id
+            visibleRows.forEach { visible ->
+                val row = rows.getValue(visible)
+                @Suppress("UNCHECKED_CAST")
+                val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
+                row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
+            }
+        }
+        return CypherResult(columns, rows.values.toList())
+    }
+
+    private fun rawProjectionRow(
+        values: List<String?>,
+        columns: List<String>,
+        graphId: String
+    ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
+        columns.indices.forEach { index -> this[columns[index]] = values[index] }
+        put(INTERNAL_PROVENANCE_KEY, setOf(graphId))
+    }
+
+    private fun projectedNodeRow(
+        source: CypherGraph,
+        node: Node,
+        projectedProperties: List<String>,
+        columns: List<String>
+    ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
+        columns.indices.forEach { index -> this[columns[index]] = NodePropertyAccessor.getProperty(node, projectedProperties[index]) }
+        put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+    }
+
+    private fun visibleRow(row: Map<String, Any?>): Map<String, Any?> =
+        row.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY }
+
+    private data class OrderedProjectedRow(
+        val encounterOrder: Long,
+        val row: MutableMap<String, Any?>
+    )
 
     private fun mergeDirectStringBatch(
         target: LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>,
@@ -1326,10 +1813,12 @@ class QueryPipeline private constructor(
         graph: Graph,
         nodeClass: Class<out Node>,
         disjunction: DirectStringDisjunction,
-        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
+        excludedTypes: Set<Class<out Node>> = emptySet()
     ): Sequence<Node> {
         val candidateSequences = mutableListOf<Sequence<Node>>()
         for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
+            if (candidateType in excludedTypes) continue
             if (!nodeClass.isAssignableFrom(candidateType)) continue
             val filters = disjunction.filters.filter { it.property in properties }
             if (filters.isEmpty()) continue
@@ -1452,6 +1941,7 @@ class QueryPipeline private constructor(
                 StringValueTransform.LOWERCASE -> raw.lowercase()
             }
             return when (mode) {
+                StringMatchMode.EQUALS -> actual == expected
                 StringMatchMode.STARTS_WITH -> actual.startsWith(expected)
                 StringMatchMode.ENDS_WITH -> actual.endsWith(expected)
                 StringMatchMode.CONTAINS -> actual.contains(expected)
@@ -1460,23 +1950,60 @@ class QueryPipeline private constructor(
 
         companion object {
             @Suppress("ReturnCount")
-            fun compile(expression: CypherExpr, variable: String): DirectStringFilter? {
-                val stringOp = expression as? CypherExpr.StringOp ?: return null
-                val operand = compileOperand(stringOp.left) ?: return null
+            fun compile(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?> = emptyMap()
+            ): DirectStringFilter? {
+                if (expression is CypherExpr.RegexMatch) {
+                    val pattern = stringConstant(expression.right, parameters) ?: return null
+                    val expected = regexContainsLiteral(pattern) ?: return null
+                    return compile(
+                        CypherExpr.StringOp("CONTAINS", expression.left, CypherExpr.Literal(expected)),
+                        variable,
+                        parameters
+                    )
+                }
+                val (left, right, mode) = when (expression) {
+                    is CypherExpr.StringOp -> Triple(
+                        expression.left,
+                        expression.right,
+                        when (expression.op) {
+                            "STARTS WITH" -> StringMatchMode.STARTS_WITH
+                            "ENDS WITH" -> StringMatchMode.ENDS_WITH
+                            "CONTAINS" -> StringMatchMode.CONTAINS
+                            else -> return null
+                        }
+                    )
+                    is CypherExpr.Comparison -> {
+                        if (expression.op != "=") return null
+                        Triple(expression.left, expression.right, StringMatchMode.EQUALS)
+                    }
+                    else -> return null
+                }
+                val operand = compileOperand(left) ?: return null
                 val property = operand.property
                 val owner = property.expression as? CypherExpr.Variable ?: return null
-                val literal = stringOp.right as? CypherExpr.Literal ?: return null
-                val expected = literal.value as? String ?: return null
+                val expected = stringConstant(right, parameters) ?: return null
                 if (owner.name != variable) return null
                 if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
                 if (operand.coalescesMissingToEmpty && expected.isEmpty()) return null
-                val mode = when (stringOp.op) {
-                    "STARTS WITH" -> StringMatchMode.STARTS_WITH
-                    "ENDS WITH" -> StringMatchMode.ENDS_WITH
-                    "CONTAINS" -> StringMatchMode.CONTAINS
-                    else -> return null
-                }
                 return DirectStringFilter(property.propertyName, mode, expected, operand.transform)
+            }
+
+            private fun stringConstant(expression: CypherExpr, parameters: Map<String, Any?>): String? =
+                when (expression) {
+                    is CypherExpr.Literal -> expression.value as? String
+                    is CypherExpr.Parameter -> parameters[expression.name] as? String
+                    else -> null
+                }
+
+            private fun regexContainsLiteral(pattern: String): String? {
+                val quotedPrefix = ".*\\Q"
+                val quotedSuffix = "\\E.*"
+                if (!pattern.startsWith(quotedPrefix) || !pattern.endsWith(quotedSuffix)) return null
+                val literal = pattern.substring(quotedPrefix.length, pattern.length - quotedSuffix.length)
+                return literal.takeIf { it.isNotEmpty() && "\\E" !in it }
             }
 
             @Suppress("ComplexCondition", "ReturnCount")
@@ -1516,10 +2043,16 @@ class QueryPipeline private constructor(
 
         companion object {
             @Suppress("ReturnCount")
-            fun compile(expression: CypherExpr, variable: String): DirectStringDisjunction? {
+            fun compile(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?> = emptyMap()
+            ): DirectStringDisjunction? {
                 val terms = flattenOr(expression)
-                if (terms.size < 2) return null
-                val filters = terms.map { guardedFilter(it, variable) ?: return null }.distinct()
+                val filters = terms.flatMap { term ->
+                    guardedFilters(term, variable, parameters) ?: return null
+                }.distinct()
+                if (filters.isEmpty()) return null
                 if (filters.any { filter ->
                         DIRECT_STRING_NODE_PROPERTIES.none { (_, properties) -> filter.property in properties }
                     }
@@ -1535,13 +2068,28 @@ class QueryPipeline private constructor(
             }
 
             @Suppress("ReturnCount")
-            private fun guardedFilter(expression: CypherExpr, variable: String): DirectStringFilter? {
-                DirectStringFilter.compile(expression, variable)?.let { return it }
+            private fun guardedFilters(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?>
+            ): List<DirectStringFilter>? {
+                DirectStringFilter.compile(expression, variable, parameters)?.let { return listOf(it) }
+                val membership = expression as? CypherExpr.ListOp
+                if (membership?.op.equals("IN", ignoreCase = true)) {
+                    val values = membership?.right as? CypherExpr.ListLiteral ?: return null
+                    return values.elements.map { value ->
+                        DirectStringFilter.compile(
+                            CypherExpr.Comparison("=", membership.left, value),
+                            variable,
+                            parameters
+                        ) ?: return null
+                    }
+                }
                 val and = expression as? CypherExpr.And ?: return null
-                val left = DirectStringFilter.compile(and.left, variable)
-                if (left != null && isExistenceGuard(and.right, variable, left.property)) return left
-                val right = DirectStringFilter.compile(and.right, variable)
-                if (right != null && isExistenceGuard(and.left, variable, right.property)) return right
+                val left = DirectStringFilter.compile(and.left, variable, parameters)
+                if (left != null && isExistenceGuard(and.right, variable, left.property)) return listOf(left)
+                val right = DirectStringFilter.compile(and.right, variable, parameters)
+                if (right != null && isExistenceGuard(and.left, variable, right.property)) return listOf(right)
                 return null
             }
 
@@ -1562,23 +2110,80 @@ class QueryPipeline private constructor(
         fun matches(node: Node): Boolean = required.matches(node) && anyOf.matches(node)
 
         companion object {
-            fun compile(expression: CypherExpr, variable: String): DirectStringConjunction? {
+            @Suppress("ReturnCount")
+            fun compile(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?> = emptyMap()
+            ): DirectStringConjunction? {
                 val and = expression as? CypherExpr.And ?: return null
-                return compile(and.left, and.right, variable) ?: compile(and.right, and.left, variable)
+                val left = DirectStringFilter.compile(and.left, variable, parameters)
+                val right = DirectStringFilter.compile(and.right, variable, parameters)
+                if (left != null && right != null) {
+                    val (required, residual) = if (
+                        right.mode == StringMatchMode.EQUALS && left.mode != StringMatchMode.EQUALS
+                    ) {
+                        right to left
+                    } else {
+                        left to right
+                    }
+                    return DirectStringConjunction(required, DirectStringDisjunction(listOf(residual)))
+                }
+                return compile(and.left, and.right, variable, parameters)
+                    ?: compile(and.right, and.left, variable, parameters)
             }
 
             private fun compile(
                 requiredExpression: CypherExpr,
                 disjunctionExpression: CypherExpr,
-                variable: String
-            ): DirectStringConjunction? = DirectStringFilter.compile(requiredExpression, variable)
+                variable: String,
+                parameters: Map<String, Any?>
+            ): DirectStringConjunction? = DirectStringFilter.compile(requiredExpression, variable, parameters)
                 ?.takeIf { required ->
                     DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> required.property in properties }
                 }
                 ?.let { required ->
-                    DirectStringDisjunction.compile(disjunctionExpression, variable)
+                    DirectStringDisjunction.compile(disjunctionExpression, variable, parameters)
                         ?.let { anyOf -> DirectStringConjunction(required, anyOf) }
                 }
+        }
+    }
+
+    private data class DirectStringCandidatePlan(val candidates: DirectStringDisjunction) {
+        companion object {
+            fun compile(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?>
+            ): DirectStringCandidatePlan? {
+                DirectStringFilter.compile(expression, variable, parameters)?.let { filter ->
+                    if (DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> filter.property in properties }) {
+                        return DirectStringCandidatePlan(DirectStringDisjunction(listOf(filter)))
+                    }
+                }
+                DirectStringDisjunction.compile(expression, variable, parameters)?.let { disjunction ->
+                    return DirectStringCandidatePlan(disjunction)
+                }
+                val and = expression as? CypherExpr.And ?: return null
+                return listOfNotNull(
+                    compile(and.left, variable, parameters),
+                    compile(and.right, variable, parameters)
+                ).minByOrNull(DirectStringCandidatePlan::selectivityRank)
+            }
+        }
+
+        private fun selectivityRank(): Int = candidates.filters.sumOf { filter ->
+            val modeRank = when (filter.mode) {
+                StringMatchMode.EQUALS -> 0
+                StringMatchMode.STARTS_WITH -> 100
+                StringMatchMode.ENDS_WITH -> 200
+                StringMatchMode.CONTAINS -> 300
+            }
+            val propertyRank = when (filter.property) {
+                "caller_name", "callee_name", "name" -> 0
+                else -> 20
+            }
+            modeRank + propertyRank - filter.expected.length.coerceAtMost(64)
         }
     }
 
@@ -1667,7 +2272,51 @@ class QueryPipeline private constructor(
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
 
-        val matches = matchPatternLazily(
+        val directMatches = (pattern.elements.singleOrNull() as? PatternElement.NodePattern)?.let { node ->
+            directStringBindings(node, where.condition, candidateSources)
+        }
+        if (orderBy == null && ret.distinct) {
+            val directNode = pattern.elements.singleOrNull() as? PatternElement.NodePattern
+            val variable = directNode?.variable
+            if (directNode != null && variable != null && directNode.labels.size <= 1 &&
+                directNode.properties.isEmpty()
+            ) {
+                val nodeClass = resolveNodeClass(directNode.labels)
+                val disjunction = DirectStringDisjunction.compile(
+                    where.condition,
+                    variable,
+                    activeParameters.get().orEmpty()
+                )
+                if (nodeClass != null && disjunction != null) {
+                    executeIndexedDistinctStringProjection(
+                        nodeClass,
+                        variable,
+                        disjunction,
+                        ret.items,
+                        columns,
+                        retainedCount.toInt()
+                    )?.let { indexed ->
+                        return CypherResult(columns, indexed.rows.drop(skipCount))
+                    }
+                }
+            }
+        }
+        if (orderBy != null) {
+            val directNode = pattern.elements.singleOrNull() as? PatternElement.NodePattern
+            if (directNode != null) {
+                projectOrderedDirectStringRows(
+                    directNode,
+                    where,
+                    ret,
+                    orderBy,
+                    columns,
+                    skipCount,
+                    retainedCount.toInt(),
+                    candidateSources
+                )?.let { return it }
+            }
+        }
+        val matches = directMatches ?: matchPatternLazily(
             pattern,
             emptyMap(),
             candidateSources,
@@ -1697,6 +2346,123 @@ class QueryPipeline private constructor(
             if (rows.size >= limitCount) break
         }
         return CypherResult(columns, rows)
+    }
+
+    private fun directStringBindings(
+        nodePattern: PatternElement.NodePattern,
+        condition: CypherExpr,
+        candidateSources: List<CypherGraph>
+    ): Sequence<Map<String, Any?>>? {
+        if (nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+        val variable = nodePattern.variable ?: return null
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return emptySequence()
+        val plan = DirectStringCandidatePlan.compile(
+            condition,
+            variable,
+            activeParameters.get().orEmpty()
+        ) ?: return null
+        return candidateSources.asSequence().flatMap { source ->
+            directStringCandidates(source.graph, nodeClass, plan.candidates).map { node ->
+                mutableMapOf<String, Any?>(variable to nodeValue(source, node)).also { bindings ->
+                    addProvenance(bindings, bindings[variable])
+                }
+            }
+        }
+    }
+
+    @Suppress("LongParameterList", "NestedBlockDepth", "ReturnCount")
+    private fun projectOrderedDirectStringRows(
+        nodePattern: PatternElement.NodePattern,
+        where: CypherClause.Where,
+        ret: CypherClause.Return,
+        orderBy: CypherClause.OrderBy,
+        columns: List<String>,
+        skipCount: Int,
+        retainedCount: Int,
+        candidateSources: List<CypherGraph>
+    ): CypherResult? {
+        if (ret.distinct || nodePattern.labels.size > 1 || nodePattern.properties.isNotEmpty()) return null
+        val variable = nodePattern.variable ?: return null
+        val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
+        val parameters = activeParameters.get().orEmpty()
+        val plan = DirectStringCandidatePlan.compile(where.condition, variable, parameters) ?: return null
+        if (candidateSources.size <= 1 || directStringParallelism <= 1 ||
+            directStringWorkerActive.get() || !shouldParallelizeStringScan(nodeClass, plan.candidates)
+        ) {
+            return null
+        }
+
+        val comparator = rankedRowComparator(orderBy)
+        val topRows = PriorityQueue<RankedProjectedRow>(retainedCount, comparator.reversed())
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        var waveStart = 0
+        while (waveStart < candidateSources.size) {
+            val waveEnd = minOf(candidateSources.size, waveStart + directStringParallelism)
+            val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
+                {
+                    val source = candidateSources[sourceIndex]
+                    val localEvaluator = ExpressionEvaluator(
+                        parameterResolver = parameters::get,
+                        checkCancelled = {
+                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                        }
+                    )
+                    val bindings = mutableMapOf<String, Any?>(variable to null)
+                    val localComparator = rankedRowComparator(orderBy)
+                    val localTopRows = PriorityQueue<RankedProjectedRow>(retainedCount, localComparator.reversed())
+                    var localOrder = 0L
+                    for (node in directStringCandidates(source.graph, nodeClass, plan.candidates, tracker)) {
+                        val candidate = nodeValue(source, node)
+                        bindings[variable] = candidate
+                        if (localEvaluator.evaluate(where.condition, bindings) != true) continue
+                        val projected = mutableMapOf<String, Any?>().also { row ->
+                            ret.items.indices.forEach { index ->
+                                row[columns[index]] = localEvaluator.evaluate(ret.items[index].expression, bindings)
+                            }
+                            addProvenance(row, candidate)
+                        }
+                        val orderContext = bindings.toMutableMap().apply { putAll(projected) }
+                        val ranked = RankedProjectedRow(
+                            row = projected,
+                            encounterOrder = (sourceIndex.toLong() shl DIRECT_ORDER_SOURCE_SHIFT) + localOrder++,
+                            sortValues = orderBy.items.map { item ->
+                                val expression = item.expression
+                                if (expression is CypherExpr.Variable) {
+                                    orderContext[expression.name]
+                                } else {
+                                    localEvaluator.evaluate(expression, orderContext)
+                                }
+                            }
+                        )
+                        addOrderedTopRow(localTopRows, ranked, retainedCount, localComparator)
+                    }
+                    localTopRows.toList()
+                }
+            })
+            localRows.forEach { rows ->
+                rows.forEach { ranked -> addOrderedTopRow(topRows, ranked, retainedCount, comparator) }
+            }
+            waveStart = waveEnd
+        }
+        checkCancelled()
+        return CypherResult(
+            columns,
+            topRows.toList().sortedWith(comparator).drop(skipCount).map(RankedProjectedRow::row)
+        )
+    }
+
+    private fun addOrderedTopRow(
+        rows: PriorityQueue<RankedProjectedRow>,
+        row: RankedProjectedRow,
+        limit: Int,
+        comparator: Comparator<RankedProjectedRow>
+    ) {
+        if (rows.size < limit) {
+            rows.add(row)
+        } else if (comparator.compare(row, rows.peek()) < 0) {
+            rows.poll()
+            rows.add(row)
+        }
     }
 
     private fun projectDistinctFilteredRows(

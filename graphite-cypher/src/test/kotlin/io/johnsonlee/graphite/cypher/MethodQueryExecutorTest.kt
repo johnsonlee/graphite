@@ -487,43 +487,83 @@ class MethodQueryExecutorTest {
     }
 
     @Test
-    fun `large Method result limits scan graph sources serially`() {
+    fun `large Method result limits use a bounded parallel graph wave`() {
+        if (METHOD_GRAPH_SCAN_PARALLELISM == 1) return
+        val waveSize = minOf(4, METHOD_GRAPH_SCAN_PARALLELISM)
+        val firstWaveStarted = CountDownLatch(waveSize)
+        val releaseFirstWave = CountDownLatch(1)
         val active = AtomicInteger()
         val peak = AtomicInteger()
-        val sources = (0 until 4).map { index ->
+        val sources = (0..waveSize).map { index ->
             val indexedMethod = method("com.example.Large", "method$index", emptyList(), "void")
-            val graph = object : Graph by DefaultGraph.Builder().build() {
-                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor> {
+            val graph = object : Graph by DefaultGraph.Builder().build(), StreamingMethodLookup {
+                override fun methods(
+                    pattern: MethodPattern,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): Sequence<MethodDescriptor> = sequenceOf(indexedMethod).filter(pattern::matches)
+
+                override fun methodSlice(
+                    pattern: MethodPattern,
+                    limit: Int,
+                    scanConsumer: MethodMetadataScanConsumer
+                ): List<MethodDescriptor> {
                     val current = active.incrementAndGet()
                     peak.updateAndGet { previous -> maxOf(previous, current) }
                     return try {
+                        if (index < waveSize) {
+                            firstWaveStarted.countDown()
+                            check(releaseFirstWave.await(5, TimeUnit.SECONDS)) {
+                                "bounded Method graph wave was not released"
+                            }
+                        }
                         listOf(indexedMethod).filter(pattern::matches).take(limit)
                     } finally {
                         active.decrementAndGet()
                     }
                 }
+
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> =
+                    sequenceOf(indexedMethod).filter(pattern::matches)
             }
             CypherGraph("graph-$index", graph)
         }
 
-        val result = CrossGraphCypherExecutor(sources).execute(
-            "MATCH (m:Method) WHERE m.class = 'com.example.Large' " +
-                "RETURN graphId(m) AS graph LIMIT 5000"
-        )
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            val query = executor.submit<CypherResult> {
+                CrossGraphCypherExecutor(sources).execute(
+                    "MATCH (m:Method) WHERE m.class = 'com.example.Large' " +
+                        "RETURN graphId(m) AS graph LIMIT 5000"
+                )
+            }
+            assertTrue(firstWaveStarted.await(5, TimeUnit.SECONDS))
+            assertEquals(waveSize, active.get())
+            assertEquals(waveSize, peak.get())
+            releaseFirstWave.countDown()
 
-        assertEquals((0 until 4).map { "graph-$it" }, result.rows.map { it["graph"] })
-        assertEquals(1, peak.get())
+            val result = query.get(5, TimeUnit.SECONDS)
+            assertEquals((0..waveSize).map { "graph-$it" }, result.rows.map { it["graph"] })
+            assertEquals(waveSize, peak.get())
+        } finally {
+            releaseFirstWave.countDown()
+            executor.shutdownNow()
+        }
     }
 
     @Test
-    fun `large source-bounded Method counts scan graph sources serially`() {
+    fun `large source-bounded Method counts scan graph sources in parallel`() {
+        val workerCount = minOf(4, METHOD_GRAPH_SCAN_PARALLELISM)
+        if (workerCount == 1) return
         val caller = Thread.currentThread().name
+        val started = CountDownLatch(workerCount)
         val workers = ConcurrentHashMap.newKeySet<String>()
-        val sources = (0 until 4).map { index ->
+        val sources = (0 until workerCount).map { index ->
             val indexedMethod = method("com.example.Count", "method$index", emptyList(), "void")
             val graph = object : Graph by DefaultGraph.Builder().build() {
                 override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> = sequence {
                     workers += Thread.currentThread().name
+                    started.countDown()
+                    check(started.await(5, TimeUnit.SECONDS)) { "Method count scans did not run concurrently" }
                     if (pattern.matches(indexedMethod)) yield(indexedMethod)
                 }
             }
@@ -532,12 +572,43 @@ class MethodQueryExecutorTest {
 
         val result = CrossGraphCypherExecutor(sources).execute(
             "MATCH (m:Method) WHERE m.class = 'com.example.Count' " +
-                "RETURN graphId(m) AS graph, count(m) AS total LIMIT 5000"
+            "RETURN graphId(m) AS graph, count(m) AS total LIMIT 5000"
         )
 
-        assertEquals((0 until 4).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertEquals((0 until workerCount).map { "graph-$it" }, result.rows.map { it["graph"] })
         assertTrue(result.rows.all { it["total"] == 1L })
-        assertEquals(setOf(caller), workers)
+        assertEquals(workerCount, workers.size)
+        assertTrue(caller !in workers)
+    }
+
+    @Test
+    fun `large ordered Method limits scan graph sources in parallel and preserve top k order`() {
+        val workerCount = minOf(4, METHOD_GRAPH_SCAN_PARALLELISM)
+        if (workerCount == 1) return
+        val started = CountDownLatch(workerCount)
+        val workers = ConcurrentHashMap.newKeySet<String>()
+        val sources = (0 until workerCount).map { index ->
+            val indexedMethod = method("com.example.Ordered", "method$index", emptyList(), "void")
+            val graph = object : Graph by DefaultGraph.Builder().build() {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> = sequence {
+                    workers += Thread.currentThread().name
+                    started.countDown()
+                    check(started.await(5, TimeUnit.SECONDS)) { "ordered Method scans did not run concurrently" }
+                    if (pattern.matches(indexedMethod)) yield(indexedMethod)
+                }
+            }
+            CypherGraph("graph-$index", graph)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (m:Method) WHERE m.class = 'com.example.Ordered' " +
+                "RETURN graphId(m) AS graph, m.name AS name " +
+                "ORDER BY graph DESC, name DESC LIMIT 5000"
+        )
+
+        assertEquals((workerCount - 1 downTo 0).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertEquals((workerCount - 1 downTo 0).map { "method$it" }, result.rows.map { it["name"] })
+        assertEquals(workerCount, workers.size)
     }
 
     @Test
