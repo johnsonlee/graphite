@@ -283,18 +283,20 @@ class GraphStoreTest {
     @Test
     fun `missing CallSite disjunction skips the combined index`() {
         val returnType = TypeDescriptor("void")
-        val graph = DefaultGraph.Builder()
-            .addNode(
-                CallSiteNode(
-                    NodeId(0),
-                    MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), returnType),
-                    MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
-                    0,
-                    null,
-                    emptyList()
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
                 )
-            )
-            .build()
+            }
+        }.build()
         val predicates = listOf(
             StringPropertyPredicate(
                 "caller_class",

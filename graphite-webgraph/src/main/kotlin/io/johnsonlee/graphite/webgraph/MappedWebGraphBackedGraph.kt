@@ -255,7 +255,7 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (callSiteStringIndex == null && callSitePredicatesCannotMatch(predicates)) {
+        if (shouldPreflightCallSitePredicates() && callSitePredicatesCannotMatch(predicates)) {
             return StringPropertyDisjunctionAggregate(
                 count = 0,
                 distinctValues = if (distinctProperty == null) null else emptySet()
@@ -280,7 +280,7 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (callSiteStringIndex == null && callSitePredicatesCannotMatch(predicates)) return emptyList()
+        if (shouldPreflightCallSitePredicates() && callSitePredicatesCannotMatch(predicates)) return emptyList()
         val index = callSiteStringIndex(type) ?: return null
         return index.distinctProjection(
             predicates,
@@ -300,7 +300,7 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
-        if (type == CallSiteNode::class.java && callSiteStringIndex == null &&
+        if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates() &&
             callSitePredicatesCannotMatch(predicates)
         ) return emptySequence()
         callSiteStringIndex(type)?.let { index ->
@@ -397,6 +397,10 @@ internal class MappedWebGraphBackedGraph(
         }
         return true
     }
+
+    private fun shouldPreflightCallSitePredicates(): Boolean =
+        callSiteStringIndex == null &&
+            nodeTypeIndex.count(CallSiteNode::class.java) >= MIN_CALL_SITE_STRING_PREFLIGHT_NODES
 
     @Suppress("ReturnCount")
     override fun prefersSerialStringPropertyDisjunction(
@@ -965,6 +969,7 @@ private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val ASCII_MAX_CODE = 0x7f
 private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
 private const val MAX_STRING_PROPERTY_INDEXES = 4
+private const val MIN_CALL_SITE_STRING_PREFLIGHT_NODES = 4_096L
 private const val MAX_STRING_PROPERTY_ADMISSION_NODES = 256
 private const val MAX_STRING_PROPERTY_ADMISSIONS = 32
 private const val MAX_STRING_PROPERTY_ADMISSION_BYTES = 64L * 1024
