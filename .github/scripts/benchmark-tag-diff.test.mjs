@@ -201,6 +201,14 @@ test("HTML report is self-contained, 7+2 classified, provenance-rich, and inject
     assert.match(report.html, /Which product domains remain incomplete/);
     assert.match(report.html, /benchmark point \+ 99\.9% CI/);
     assert.match(report.html, /not a synthesized aggregate CI/);
+    assert.match(report.html, /Latency forest plot/);
+    assert.match(report.html, /All 6 methods/);
+    assert.match(report.html, /\.forest-track:before\{[^}]*width:2px/);
+    assert.match(report.html, /Primary observed shift/);
+    assert.match(report.html, /Worse · shifted right/);
+    assert.match(report.html, /Component-CI envelope [+-]\d+\.\d+% to [+-]\d+\.\d+%/);
+    assert.match(report.html, /Exact values · 1 release/);
+    assert.doesNotMatch(report.html, /<ol class="trend-values">/);
     assert.match(report.html, /Is this a one-off or a trend/);
     assert.match(report.html, /What needs attention/);
     assert.match(report.html, /prefers-reduced-motion:reduce/);
