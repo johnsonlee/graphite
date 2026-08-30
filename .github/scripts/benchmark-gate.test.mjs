@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { validatePairedEvidence } from "./benchmark-pages.mjs";
 import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
@@ -957,6 +958,62 @@ test("aggregate report includes every independent benchmark gate", () => {
     }
 });
 
+test("taxonomy rollout publishes an exact Pages-compatible report and status pair", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-rollout-"));
+    try {
+        for (const component of BENCHMARK_COMPONENTS) {
+            fs.writeFileSync(path.join(directory, component.report), `${component.name} report\n`);
+            fs.writeFileSync(path.join(directory, component.status), JSON.stringify({ passed: true }));
+        }
+        const baseSha = "a".repeat(40);
+        const candidateSha = "b".repeat(40);
+        const runUrl = "https://example.invalid/transition-run";
+        const rendered = aggregateReports(directory, {
+            baseSha,
+            candidateSha,
+            runner: "Linux-X64",
+            runUrl
+        });
+        const authoritative = {
+            passed: true,
+            errors: [],
+            body: "## Benchmark Regression Gate\n\n**PASS**\n",
+            baseSha,
+            candidateSha,
+            runner: "Linux-X64",
+            runUrl
+        };
+        assert.notEqual(authoritative.body, rendered.body);
+        for (const key of ["passed", "baseSha", "candidateSha", "runner", "runUrl"]) {
+            assert.equal(rendered[key], authoritative[key]);
+        }
+        assert.deepEqual(rendered.errors, authoritative.errors);
+
+        const integrationSha = "c".repeat(40);
+        const integrationTreeSha = "d".repeat(40);
+        const validation = validatePairedEvidence({
+            reportMarkdown: rendered.body,
+            status: rendered,
+            provenance: {
+                schemaVersion: 1,
+                integrationSha,
+                integrationParentSha: baseSha,
+                integrationTreeSha,
+                baseSha,
+                candidateSha,
+                candidateTreeSha: integrationTreeSha,
+                sourcePr: 106,
+                sourceRunId: 789,
+                sourceRunUrl: runUrl
+            },
+            commitSha: integrationSha
+        });
+        assert.equal(validation.available, true);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
 test("artifact staging keeps successful jobs and selects only the latest producer attempt", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-artifacts-"));
     const output = path.join(directory, "staged");
@@ -1106,7 +1163,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /benchmark-authoritative-status\.json/);
     assert.match(workflow, /benchmark-render-status\.json/);
     assert.match(workflow, /grep -q '\^### Coverage summary\$'/);
-    assert.match(workflow, /install -m 0644 benchmark-results\/benchmark-authoritative-status\.json/);
+    assert.match(workflow, /install -m 0644 benchmark-results\/benchmark-render-status\.json/);
+    assert.match(aggregateJob, /for\(const k of \['passed','baseSha','candidateSha','runner','runUrl'\]\)/);
+    const enforcement = aggregateJob.slice(aggregateJob.indexOf("    - name: Enforce benchmark gate"));
+    assert.match(enforcement, /benchmark-authoritative-status\.json/);
+    assert.doesNotMatch(enforcement, /require\('\.\/benchmark-results\/benchmark-status\.json'\)/);
     assert.match(workflow, /mode=pinned-transition/);
     assert.match(workflow, /needs: \[candidate-gate-tests\]/);
     assert.match(workflow, /compare-latency-anchor/);

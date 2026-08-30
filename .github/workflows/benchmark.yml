@@ -1972,35 +1972,42 @@ jobs:
       if: always()
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        BENCHMARK_RUNNER: ${{ runner.os }}-${{ runner.arch }}
+        BENCHMARK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         mkdir -p benchmark-results
         node .github/scripts/benchmark-gate.mjs aggregate \
           --directory benchmark-results \
-          --base-sha '${{ github.event.pull_request.base.sha }}' \
-          --candidate-sha '${{ github.event.pull_request.head.sha }}' \
-          --runner '${{ runner.os }}-${{ runner.arch }}' \
-          --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+          --base-sha "${BASE_SHA}" \
+          --candidate-sha "${CANDIDATE_SHA}" \
+          --runner "${BENCHMARK_RUNNER}" \
+          --run-url "${BENCHMARK_RUN_URL}" \
           --report benchmark-results/benchmark-authoritative-report.md \
           --status benchmark-results/benchmark-authoritative-status.json
+        node -e "const fs=require('fs');const p='./benchmark-results/benchmark-authoritative-status.json';const body=fs.readFileSync('./benchmark-results/benchmark-authoritative-report.md','utf8');const s=JSON.parse(fs.readFileSync(p));if(s.body!==body)process.exit(1);Object.assign(s,{baseSha:process.env.BASE_SHA,candidateSha:process.env.CANDIDATE_SHA,runner:process.env.BENCHMARK_RUNNER,runUrl:process.env.BENCHMARK_RUN_URL});fs.writeFileSync(p,JSON.stringify(s,null,2)+'\\n')"
         if grep -q '^### Coverage summary$' benchmark-results/benchmark-authoritative-report.md; then
           install -m 0644 benchmark-results/benchmark-authoritative-report.md \
             benchmark-results/benchmark-report.md
           install -m 0644 benchmark-results/benchmark-authoritative-status.json \
             benchmark-results/benchmark-status.json
+          install -m 0644 benchmark-results/benchmark-authoritative-status.json \
+            benchmark-results/benchmark-render-status.json
         else
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
           node reporter/.github/scripts/benchmark-gate.mjs aggregate \
             --directory benchmark-results \
-            --base-sha '${{ github.event.pull_request.base.sha }}' \
-            --candidate-sha '${{ github.event.pull_request.head.sha }}' \
-            --runner '${{ runner.os }}-${{ runner.arch }}' \
-            --run-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --runner "${BENCHMARK_RUNNER}" \
+            --run-url "${BENCHMARK_RUN_URL}" \
             --report benchmark-results/benchmark-report.md \
             --status benchmark-results/benchmark-render-status.json
-          node -e "const a=require('./benchmark-results/benchmark-authoritative-status.json');const r=require('./benchmark-results/benchmark-render-status.json');if(a.passed!==r.passed||JSON.stringify(a.errors)!==JSON.stringify(r.errors))process.exit(1)"
-          install -m 0644 benchmark-results/benchmark-authoritative-status.json \
+          node -e "const a=require('./benchmark-results/benchmark-authoritative-status.json');const r=require('./benchmark-results/benchmark-render-status.json');for(const k of ['passed','baseSha','candidateSha','runner','runUrl'])if(a[k]!==r[k])process.exit(1);if(JSON.stringify(a.errors)!==JSON.stringify(r.errors)||r.body!==require('fs').readFileSync('./benchmark-results/benchmark-report.md','utf8'))process.exit(1)"
+          install -m 0644 benchmark-results/benchmark-render-status.json \
             benchmark-results/benchmark-status.json
         fi
 
@@ -2014,6 +2021,7 @@ jobs:
           benchmark-results/benchmark-status.json
           benchmark-results/benchmark-authoritative-report.md
           benchmark-results/benchmark-authoritative-status.json
+          benchmark-results/benchmark-render-status.json
         if-no-files-found: error
         overwrite: true
         retention-days: 14
@@ -2043,7 +2051,7 @@ jobs:
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi
-        node -e "const s=require('./benchmark-results/benchmark-status.json'); if(!s.passed) process.exit(1)"
+        node -e "const s=require('./benchmark-results/benchmark-authoritative-status.json'); if(!s.passed) process.exit(1)"
 
   benchmark-comment:
     name: benchmark-comment
