@@ -342,6 +342,15 @@ class GraphStoreTest {
                 )
                 assertEquals(1L, aggregate?.count)
                 assertEquals(setOf("example.VoucherCaller1"), aggregate?.distinctValues)
+                var aggregateWork = 0
+                val trackedAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "caller_class",
+                    workConsumer = GraphWorkConsumer { aggregateWork++ }
+                )
+                assertEquals(1L, trackedAggregate?.count)
+                assertEquals(1, aggregateWork)
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -358,6 +367,14 @@ class GraphStoreTest {
                     selectedValues = setOf(projectedValues, listOf("missing", "missing", null))
                 )
                 assertEquals(listOf(projectedValues), selected?.map { it.values })
+                val selectedWithLimit = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "class"),
+                    limit = 1,
+                    selectedValues = setOf(projectedValues)
+                )
+                assertEquals(listOf(projectedValues), selectedWithLimit?.map { it.values })
                 val absent = loaded.aggregateStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates.map { it.copy(expected = "missing") },
@@ -961,6 +978,99 @@ class GraphStoreTest {
         val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
         val unavailable = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore + 1L
         assertNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(unavailable))
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        assertNull(
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = -1,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4, 5)
+            )
+        )
+        assertNull(
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = 10,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4)
+            )
+        )
+        val emptyReservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(0)
+        assertNotNull(emptyReservation)
+        emptyReservation.shrinkTo(0)
+        emptyReservation.close()
+        emptyReservation.close()
+    }
+
+    @Test
+    fun `mapped CallSite disjunction falls back to bounded raw scan when index budget is occupied`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke$index", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Caller1"),
+            StringPropertyPredicate("callee_name", null, StringMatchMode.EQUALS, "missing")
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-budget-fallback")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+            MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+        )
+        assertNotNull(reservation)
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                var work = 0
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { work++ }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(1), ids)
+                assertEquals(3, work)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertNull(
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = "caller_class"
+                    )
+                )
+                assertNull(
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        limit = 10
+                    )
+                )
+                assertNull(
+                    loaded.aggregateStringPropertyDisjunction(
+                        StringConstant::class.java,
+                        predicates,
+                        distinctProperty = null
+                    )
+                )
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            reservation.close()
+            dir.toFile().deleteRecursively()
+        }
         assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 

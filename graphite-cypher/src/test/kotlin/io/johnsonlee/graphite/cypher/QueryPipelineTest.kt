@@ -872,6 +872,70 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `parallel filtered counts evaluate residual predicates and distinct expressions`() {
+        fun lookupGraph(): Graph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+        val executor = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", lookupGraph()), CypherGraph("second", lookupGraph()))
+        )
+
+        val count = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' AND n.line > 5 " +
+                "RETURN count(n.caller_name) AS matches"
+        )
+        val distinct = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' AND n.line > 5 " +
+                "RETURN count(DISTINCT n.callee_name) AS methods"
+        )
+
+        assertEquals(4L, count.rows.single()["matches"])
+        assertEquals(2L, distinct.rows.single()["methods"])
+    }
+
+    @Test
+    fun `parallel ordered direct string projection keeps global order and pagination`() {
+        fun lookupGraph(): Graph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", lookupGraph()), CypherGraph("second", lookupGraph()))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN n.callee_name AS method ORDER BY method DESC SKIP 1 LIMIT 2"
+        )
+
+        assertEquals(listOf("save", "log"), result.rows.map { it["method"] })
+    }
+
+    @Test
+    fun `two direct string conjuncts choose exact candidates and retain residual matching`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n) WHERE n.caller_class = 'com.example.Service' " +
+                "AND n.callee_name CONTAINS 'save' " +
+                "RETURN DISTINCT n.callee_name AS method LIMIT 10"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["method"] })
+    }
+
+    @Test
     fun `filtered distinct string disjunction consumes candidates lazily`() {
         val caller = MethodDescriptor(TypeDescriptor("com.example.Service"), "call", emptyList(), stringType)
         val callee = MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), stringType)
