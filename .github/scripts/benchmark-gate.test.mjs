@@ -1174,6 +1174,13 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         )
     );
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const realOnlyResourceHarness = fs.readFileSync(
+        new URL(
+            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+                "WrappedDiscoveryResourceBenchmark.kt",
+            import.meta.url
+        )
+    );
     const isolationInit = fs.readFileSync(
         new URL("./benchmark-jmh-isolation.init.gradle", import.meta.url)
     );
@@ -1190,6 +1197,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         new RegExp(`JMH_ISOLATION_VERIFIER_SHA256: ${sha256(isolationVerifier)}`)
     );
     assert.match(workflow, /Checkout candidate build controls/);
+    assert.match(workflow, /HARNESS_SOURCE="controls\/\$\{SOURCE\}"/);
+    assert.match(
+        workflow,
+        /grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "\$\{HARNESS_SOURCE\}"/
+    );
     assert.match(workflow, /Select trusted JMH isolation controls/);
     assert.match(workflow, /benchmark-jmh-isolation\.init\.gradle/);
     assert.match(workflow, /verify-jmh-jar-isolation\.sh/);
@@ -1212,6 +1224,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(
         workflow,
         new RegExp(`REAL_ONLY_LATENCY_COMPARATOR_SHA256: ${sha256(comparator)}`)
+    );
+    assert.match(
+        workflow,
+        new RegExp(`REAL_ONLY_RESOURCE_HARNESS_SHA256: ${sha256(realOnlyResourceHarness)}`)
     );
     const aggregateJob = workflow.slice(
         workflow.indexOf("  benchmark-regression-gate:"),

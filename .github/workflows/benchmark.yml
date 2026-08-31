@@ -21,6 +21,7 @@ env:
   LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
   BENCHMARK_REPORT_TRANSITION_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
+  REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
@@ -130,6 +131,7 @@ jobs:
 
   build-wrapped-query-jmh:
     name: build-wrapped-query-jmh-${{ matrix.revision }}
+    needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -178,10 +180,19 @@ jobs:
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          HARNESS_SOURCE="gate/${SOURCE}"
+          if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ] && \
+            grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then
+            test "${{ needs.candidate-gate-tests.result }}" = success
+            HARNESS_SOURCE="controls/${SOURCE}"
+            test "$(sha256sum "${HARNESS_SOURCE}" | cut -d ' ' -f 1)" = \
+              "${REAL_ONLY_RESOURCE_HARNESS_SHA256}"
+            if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then exit 1; fi
+          fi
           test ! -L "source/${SOURCE}"
           rm -f -- "source/${SOURCE}"
-          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
-          cmp "gate/${SOURCE}" "source/${SOURCE}"
+          install -m 0644 "${HARNESS_SOURCE}" "source/${SOURCE}"
+          cmp "${HARNESS_SOURCE}" "source/${SOURCE}"
         done
 
     - name: Select trusted JMH isolation controls
