@@ -121,6 +121,34 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir)
             try {
                 val mapped = loaded as MappedWebGraphBackedGraph
+                listOf(
+                    "caller_class" to "example.Owner",
+                    "caller_name" to "callerFeature",
+                    "callee_class" to "example.Target",
+                    "callee_name" to "billingFeature"
+                ).forEach { (property, expected) ->
+                    assertEquals(
+                        listOf(2),
+                        loaded.nodesByStringProperty(
+                            CallSiteNode::class.java,
+                            property,
+                            StringMatchMode.EQUALS,
+                            expected,
+                            limit = 1
+                        ).orEmpty().map { it.id.value }.toList()
+                    )
+                }
+                assertEquals(
+                    listOf(7),
+                    loaded.nodesByStringPropertyDisjunction(
+                        ResourceFileNode::class.java,
+                        listOf(
+                            StringPropertyPredicate("path", null, StringMatchMode.CONTAINS, "config"),
+                            StringPropertyPredicate("source", null, StringMatchMode.CONTAINS, "resources")
+                        ),
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
                 assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
                 assertBroadDiscoveryQuery(loaded)
                 assertNull(
@@ -566,6 +594,35 @@ class GraphStoreTest {
                             "RETURN count(*) AS total"
                     )
                 }
+                val mapped = loaded as MappedWebGraphBackedGraph
+                val sparse = mapped.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.EQUALS,
+                            "example.Caller31"
+                        )
+                    ),
+                    distinctProperty = "callee_name"
+                )
+                assertEquals(1L, sparse?.count)
+                assertEquals(setOf("invoke"), sparse?.distinctValues)
+                val broad = mapped.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "example.Caller"
+                        )
+                    ),
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(32L, broad?.count)
+                assertEquals(32, broad?.distinctValues?.size)
             } finally {
                 (loaded as Closeable).close()
             }

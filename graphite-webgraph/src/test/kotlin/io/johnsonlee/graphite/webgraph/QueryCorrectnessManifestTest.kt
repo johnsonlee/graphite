@@ -75,6 +75,31 @@ class QueryCorrectnessManifestTest {
         }
     }
 
+    @Test
+    fun `manifest decoding rejects malformed hard gate records`() {
+        val valid = record("query-a").encode()
+        val malformed = listOf(
+            "too|few|columns",
+            valid.replaceFirst("query-a", ""),
+            valid.replace("|success|", "|unknown|"),
+            valid.replace("|10|success|", "|not-a-number|success|"),
+            valid.replace("|10|success|", "|-1|success|"),
+            valid.replace("a".repeat(64), "UPPERCASE")
+        )
+
+        malformed.forEachIndexed { index, line ->
+            assertFailsWith<IllegalArgumentException> {
+                QueryCorrectnessRecord.decode(line, "manifest", index + 1)
+            }
+        }
+        assertFailsWith<IllegalArgumentException> {
+            QueryCorrectnessManifest.selectCompleteOracle(listOf(record("query-a")), emptySet(), "oracle")
+        }
+        assertFailsWith<IllegalStateException> {
+            QueryCorrectnessManifest.requireRecordable(listOf(record("query-a")), setOf("query-b"))
+        }
+    }
+
     private fun record(
         id: String,
         outcome: String = "success",

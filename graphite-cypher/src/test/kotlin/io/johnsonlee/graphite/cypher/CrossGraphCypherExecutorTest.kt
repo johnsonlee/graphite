@@ -1711,6 +1711,16 @@ class CrossGraphCypherExecutorTest {
         assertEquals("orders", property(path, "graphId"))
         assertEquals(1, property(path, "length"))
         assertNull(property(path, "unknown"))
+
+        fun lessThan(left: Any, right: Any): Any? = evaluator.evaluate(
+            CypherExpr.Comparison("<", CypherExpr.Literal(left), CypherExpr.Literal(right)),
+            emptyMap()
+        )
+
+        assertEquals(false, lessThan(node, sameNodeId))
+        assertEquals(true, lessThan(node, QualifiedNode("orders", graph, second)))
+        assertEquals(false, lessThan(qualifiedEdge, sameEdge))
+        assertEquals(true, lessThan(qualifiedEdge, resourceEdge))
     }
 
     @Test
