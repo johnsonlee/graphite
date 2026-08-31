@@ -64,14 +64,14 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 private val callSiteScanWorkerNumber = AtomicInteger()
-private val callSiteScanParallelism: Int by lazy {
+internal val callSiteScanParallelism: Int by lazy {
     val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     System.getProperty(CALL_SITE_SCAN_PARALLELISM_PROPERTY)
         ?.toIntOrNull()
         ?.coerceIn(1, processors)
         ?: minOf(DEFAULT_CALL_SITE_SCAN_PARALLELISM, processors)
 }
-private val callSiteScanExecutor by lazy {
+internal val callSiteScanExecutor by lazy {
     Executors.newFixedThreadPool(callSiteScanParallelism) { runnable ->
         Thread(runnable, "graphite-callsite-scan-${callSiteScanWorkerNumber.incrementAndGet()}").apply {
             isDaemon = true
@@ -709,8 +709,7 @@ internal class MappedWebGraphBackedGraph(
                 nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                 nodeIdCapacity = nodeOffsets.size,
                 rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                reservation = reservation,
-                buildWorkConsumer = workConsumer
+                reservation = reservation
             )
             val published = synchronized(callSiteStringIndexLock) {
                 if (callSiteStringIndex == null) {
@@ -1230,8 +1229,7 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                    reservation = reservation,
-                    buildWorkConsumer = workConsumer
+                    reservation = reservation
                 ).also { built ->
                     callSiteStringIndex = built
                 }
