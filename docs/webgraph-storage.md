@@ -15,6 +15,7 @@ graph-dir/
 ├── graph.typeindex    Mmap node type -> Node ID ranges lookup
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
 ├── graph.classoverview Persisted explorer overview summary
+├── graph.resources    Persisted text resources, including an explicit empty store
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
@@ -42,8 +43,11 @@ transpose construction during load.
 | graph.typeindex | `GRT` | `0x47525403` |
 | graph.classoverview | `GRO` | `0x47524F03` |
 | graph.comparisons | `GRC` | `0x47524303` |
+| graph.resources | `GRR` | `0x47525201` |
 
-Current writers emit version `3`. Readers accept legacy version `1` and transitional version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current build is upgraded to version `3`.
+Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
+version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
+build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
 
 ### Edge Label Encoding (8-bit)
 
@@ -67,6 +71,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
                                  5. Labels + label prefix + comparisons write
                                  6. Nodedata + node indexes write
                                  7. Metadata write
+                                 8. Class overview + resource store write
 ```
 
 ### Save Flow
@@ -84,6 +89,7 @@ graph TD
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
     G --> H[7. Write metadata]
+    H --> I[8. Write class overview + resource store]
 ```
 
 ### Load Flow

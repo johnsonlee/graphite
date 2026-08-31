@@ -500,6 +500,7 @@ internal data class NodeIndexData(
  * - `graph.nodedata`           -- sequential binary node data with string table indices
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
  * - `graph.classoverview`      -- class-level call counts and dependency weights
+ * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
  */
 object GraphStore {
 
