@@ -53,9 +53,12 @@ import java.nio.file.StandardOpenOption
 import java.util.LinkedHashMap
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 private val callSiteScanWorkerNumber = AtomicInteger()
 private val callSiteScanParallelism: Int by lazy {
@@ -158,6 +161,9 @@ internal class MappedWebGraphBackedGraph(
     private val callSiteStringIndexLock = Any()
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
+    private val callSiteParallelScanCount = AtomicLong()
+    private val callSiteScanActiveWorkers = AtomicInteger()
+    private val callSiteScanPeakActiveWorkers = AtomicInteger()
     private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
         MAX_STRING_PROPERTY_INDEXES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
@@ -417,66 +423,91 @@ internal class MappedWebGraphBackedGraph(
                 ByteArray(stringTable.size())
             }
         }
-        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
+        val scanRanges = (0 until workerCount).mapNotNull { workerIndex ->
             val start = (workerIndex * chunkSize).toInt()
             val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
             if (start >= end) return@mapNotNull null
-            Callable {
-                val matches = IntArrayList(minOf(limit, end - start))
-                val accounting = BufferedGraphWorkConsumer(workConsumer)
-                var inspected = 0
+            Triple(workerIndex, start, end)
+        }
+        val abort = AtomicBoolean()
+        val completion = ExecutorCompletionService<Pair<Int, IntArray>>(callSiteScanExecutor)
+        val tasks = scanRanges.map { (workerIndex, start, end) ->
+            Callable<Pair<Int, IntArray>> {
+                val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
+                callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
-                    for (nodeId in nodeTypeIndex.ids(type, start, end)) {
-                        if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                            Thread.currentThread().isInterrupted
-                        ) {
-                            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
-                        }
-                        accounting.consume()
-                        val matched = predicates.indices.any { index ->
-                            val predicate = predicates[index]
-                            val stringId = rawStringPropertyIndex(nodeId, type, predicate.property)
-                                ?: return@any false
-                            val states = matchStates[index]
-                            when (states[stringId]) {
-                                RAW_STRING_MATCH -> true
-                                RAW_STRING_MISS -> false
-                                else -> stringMatches(
-                                    stringTable.get(stringId),
-                                    predicate.transform,
-                                    predicate.mode,
-                                    predicate.expected
-                                ).also { result ->
-                                    // Deterministic byte writes are safe to race: a stale read only repeats verification.
-                                    states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                    val matches = IntArrayList(minOf(limit, end - start))
+                    val accounting = BufferedGraphWorkConsumer(workConsumer)
+                    var inspected = 0
+                    try {
+                        for (nodeId in nodeTypeIndex.ids(type, start, end)) {
+                            if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                                (abort.get() || Thread.currentThread().isInterrupted)
+                            ) {
+                                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                            }
+                            accounting.consume()
+                            val matched = predicates.indices.any { index ->
+                                val predicate = predicates[index]
+                                val stringId = rawStringPropertyIndex(nodeId, type, predicate.property)
+                                    ?: return@any false
+                                val states = matchStates[index]
+                                when (states[stringId]) {
+                                    RAW_STRING_MATCH -> true
+                                    RAW_STRING_MISS -> false
+                                    else -> stringMatches(
+                                        stringTable.get(stringId),
+                                        predicate.transform,
+                                        predicate.mode,
+                                        predicate.expected
+                                    ).also { result ->
+                                        // A stale byte read only repeats the same deterministic verification.
+                                        states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                                    }
                                 }
                             }
+                            if (matched) {
+                                matches.add(nodeId)
+                                if (matches.size == limit) break
+                            }
                         }
-                        if (matched) {
-                            matches.add(nodeId)
-                            if (matches.size == limit) break
-                        }
+                        workerIndex to matches.toIntArray()
+                    } finally {
+                        accounting.flush()
                     }
-                    matches.toIntArray()
                 } finally {
-                    accounting.flush()
+                    callSiteScanActiveWorkers.decrementAndGet()
                 }
             }
         }
-        val futures = tasks.map(callSiteScanExecutor::submit)
-        var completed = false
-        try {
-            val matchedNodeIds = futures.flatMap { future -> future.get().asIterable() }.take(limit)
-            completed = true
-            return matchedNodeIds.asSequence().mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
-        } catch (error: InterruptedException) {
+        callSiteParallelScanCount.incrementAndGet()
+        tasks.forEach(completion::submit)
+        val results = arrayOfNulls<IntArray>(tasks.size)
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < tasks.size) {
+            try {
+                val (workerIndex, workerResult) = completion.take().get()
+                results[workerIndex] = workerResult
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                if (failure == null) failure = error.cause ?: error
+                received++
+            }
+        }
+        interruption?.let { error ->
             Thread.currentThread().interrupt()
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
-        } catch (error: ExecutionException) {
-            throw error.cause ?: error
-        } finally {
-            if (!completed) futures.forEach { future -> future.cancel(true) }
         }
+        failure?.let { throw it }
+        val matchedNodeIds = results.asSequence().filterNotNull()
+            .flatMap(IntArray::asSequence).take(limit)
+        return matchedNodeIds.mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
     }
 
     private fun callSitePredicatesCannotMatch(
@@ -819,6 +850,16 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun isCallSiteTrigramIndexInitialized(): Boolean =
         callSiteStringIndex?.isTrigramPostingsInitialized() == true
+
+    internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
+
+    internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
+
+    internal fun resetCallSiteScanMetrics() {
+        check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
+        callSiteParallelScanCount.set(0L)
+        callSiteScanPeakActiveWorkers.set(0)
+    }
 
     internal fun stringPropertyIndexCount(
         type: Class<out Node>? = null,

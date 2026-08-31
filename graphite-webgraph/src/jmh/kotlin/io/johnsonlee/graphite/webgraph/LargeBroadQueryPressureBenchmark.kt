@@ -119,8 +119,10 @@ open class LargeBroadQueryPressureBenchmark {
     @Setup(Level.Invocation)
     fun setupInvocation() {
         graphs.forEach(MappedWebGraphBackedGraph::clearStringPropertyIndexes)
+        resetCallSiteScanMetrics()
         if (indexState == WARM_INDEX_STATE) {
             enforceCorrectness(replay(validateResults = true))
+            resetCallSiteScanMetrics()
         }
         forcePressureGc()
         sampler.start()
@@ -342,6 +344,12 @@ open class LargeBroadQueryPressureBenchmark {
         val indexMetrics = callSiteIndexMetrics()
         counters.callSiteIndexAdmittedGraphs = indexMetrics.first
         counters.callSiteIndexRetainedBytes = indexMetrics.second
+        counters.callSiteParallelScanCount = graphs.sumOf { graph ->
+            (invokeInternalMetric(graph, "callSiteParallelScanCount") as? Number)?.toLong() ?: 0L
+        }
+        counters.callSiteScanPeakActiveWorkers = graphs.maxOfOrNull { graph ->
+            (invokeInternalMetric(graph, "callSiteScanPeakActiveWorkers") as? Number)?.toLong() ?: 0L
+        } ?: 0L
     }
 
     private fun familyP95(samples: List<BroadQuerySample>, family: BroadQueryFamily): Long =
@@ -368,6 +376,10 @@ open class LargeBroadQueryPressureBenchmark {
             bytes += retained?.toLong() ?: 0L
         }
         return admitted to bytes
+    }
+
+    private fun resetCallSiteScanMetrics() {
+        graphs.forEach { graph -> invokeInternalMetric(graph, "resetCallSiteScanMetrics") }
     }
 
     private fun invokeInternalMetric(graph: MappedWebGraphBackedGraph, prefix: String): Any? = runCatching {
@@ -504,6 +516,8 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var rawStringMatchStateBytes: Long = 0
     @JvmField var callSiteIndexAdmittedGraphs: Long = 0
     @JvmField var callSiteIndexRetainedBytes: Long = 0
+    @JvmField var callSiteParallelScanCount: Long = 0
+    @JvmField var callSiteScanPeakActiveWorkers: Long = 0
 }
 
 private data class BroadQueryCase(

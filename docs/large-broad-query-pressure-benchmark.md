@@ -117,14 +117,18 @@ graph. If the combined CallSite index is not already resident, that graph partit
 CallSite type index into ordered ordinal ranges and scans them on `graphite-callsite-scan-N`
 workers. The default worker count is `min(8, Runtime.availableProcessors())`; override it with
 `-Dgraphite.webgraph.callSiteScanParallelism=N`. Results are concatenated in persisted node order,
-all workers share the request work/cancellation budget, and a worker failure cancels the remaining
-tasks. `graphite-cypher-scan-N` names the separate cross-graph source pool and is not evidence that
+all workers share the request work/cancellation budget, and a worker failure stops and joins the
+remaining tasks before the query returns. `graphite-cypher-scan-N` names the separate cross-graph source pool and is not evidence that
 a query already restricted to one graph used intra-graph parallelism.
 
 During a real run, verify actual use in JFR/VisualVM by filtering for
 `graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
 during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
 ratio is the numeric utilization baseline; thread count alone is not sufficient.
+The harness also records the number of bounded intra-graph scans and the peak number of workers
+simultaneously inside one scan. The real64 comparator fails closed unless the candidate executes at
+least one such scan and observes at least two active workers; merely creating eight threads cannot
+satisfy the gate.
 
 For the API reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
@@ -200,6 +204,10 @@ correctness manifests, `provenance.json`, JVM/host details, and raw CPU/heap/RSS
 JMH JSON exposes the suite and family P50/P95/max latency, timeouts, process CPU time and effective
 core utilization, sampled peak process CPU load, heap before/peak/after, committed/max heap, RSS
 before/peak/after, GC count/time, raw match-state bytes, and admitted/retained CallSite indexes.
+The graph-routing comparison report prints base-to-candidate effective CPU cores, peak heap, peak
+RSS, GC count/time, retained-index memory, parallel-scan count, and peak active workers alongside
+latency. These are measured diffs rather than a requirement to consume the full 8 GiB heap: `-Xmx8g`
+is a ceiling, not a utilization target.
 Keep timeout samples in percentile calculation at the configured timeout. Report both overall and
 selectivity/family percentiles, then diff every observation row by id so a fast family cannot hide
 a regression in another shape.

@@ -615,8 +615,26 @@ export function compareGraphIdPressure(
         }
         return result;
     };
-    selectResult(baseResults, "base");
-    selectResult(candidateResults, "candidate");
+    const baseResult = selectResult(baseResults, "base");
+    const candidateResult = selectResult(candidateResults, "candidate");
+    const resourceMetricNames = [
+        "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
+        "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
+        "callSiteParallelScanCount", "callSiteScanPeakActiveWorkers"
+    ];
+    const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
+        const value = pressureMetric(result, name);
+        if (value === null || value < 0) errors.push(`${revision}: ${name} requires a non-negative finite value`);
+        return [name, value ?? 0];
+    }));
+    const baseResources = resourceSnapshot(baseResult, "base");
+    const candidateResources = resourceSnapshot(candidateResult, "candidate");
+    if (candidateResources.callSiteParallelScanCount <= 0) {
+        errors.push("candidate: selected-graph workload did not execute an intra-graph parallel scan");
+    }
+    if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
+        errors.push("candidate: selected-graph workload did not prove at least two simultaneously active scan workers");
+    }
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
     const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
@@ -820,12 +838,19 @@ export function compareGraphIdPressure(
         graphParameterP95Regression,
         routingOverheadP50,
         routingOverheadP95,
+        resources: {
+            base: baseResources,
+            candidate: candidateResources
+        },
         rows,
         graphParameterLatencyRows
     };
 }
 
 export function renderGraphIdPressureReport(comparison) {
+    const baseResources = comparison.resources.base;
+    const candidateResources = comparison.resources.candidate;
+    const gibibytes = (bytes) => `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
     const lines = [
         "### 64-real-graph graphId pressure gate",
         "",
@@ -838,6 +863,20 @@ export function renderGraphIdPressureReport(comparison) {
         `- API graph-parameter P95 speedup: **${comparison.graphParameterP95Speedup.toFixed(2)}x**`,
         `- Candidate graphId/API-reference latency ratio: ` +
             `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
+        `- Candidate intra-graph scans: **${candidateResources.callSiteParallelScanCount.toFixed(0)}**; ` +
+            `peak simultaneously active workers: **${candidateResources.callSiteScanPeakActiveWorkers.toFixed(0)}**`,
+        `- Effective CPU cores: **${(baseResources.cpuCoreUtilizationPermille / 1000).toFixed(2)} → ` +
+            `${(candidateResources.cpuCoreUtilizationPermille / 1000).toFixed(2)}**`,
+        `- Peak used heap: **${gibibytes(baseResources.peakUsedHeapBytes)} → ` +
+            `${gibibytes(candidateResources.peakUsedHeapBytes)}**`,
+        `- Peak RSS: **${gibibytes(baseResources.peakResidentSetBytes)} → ` +
+            `${gibibytes(candidateResources.peakResidentSetBytes)}**`,
+        `- Query GC: **${baseResources.gcCount.toFixed(0)} / ${baseResources.gcMillis.toFixed(0)}ms → ` +
+            `${candidateResources.gcCount.toFixed(0)} / ${candidateResources.gcMillis.toFixed(0)}ms**`,
+        `- Retained CallSite index: **${baseResources.callSiteIndexAdmittedGraphs.toFixed(0)} graphs / ` +
+            `${gibibytes(baseResources.callSiteIndexRetainedBytes)} → ` +
+            `${candidateResources.callSiteIndexAdmittedGraphs.toFixed(0)} graphs / ` +
+            `${gibibytes(candidateResources.callSiteIndexRetainedBytes)}**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"

@@ -726,7 +726,33 @@ class GraphStoreTest {
                 assertEquals(listOf(0), ids)
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-callsite-scan-") })
-                if (Runtime.getRuntime().availableProcessors() > 1) assertTrue(workerThreads.size > 1)
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                if (Runtime.getRuntime().availableProcessors() > 1) {
+                    assertTrue(workerThreads.size > 1)
+                    assertTrue(loaded.callSiteScanPeakActiveWorkers() > 1)
+                }
+
+                loaded.resetCallSiteScanMetrics()
+                val qualified = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("selected", loaded))
+                ).execute(
+                    """
+                    MATCH (n:CallSiteNode)
+                    WHERE n.graphId = 'selected' AND (
+                        toLower(n.caller_class) CONTAINS 'target' OR
+                        toLower(n.caller_name) CONTAINS 'target' OR
+                        toLower(n.callee_class) CONTAINS 'target' OR
+                        toLower(n.callee_name) CONTAINS 'target'
+                    )
+                    RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1
+                    """.trimIndent()
+                )
+                assertEquals(listOf("selected"), qualified.rows.map { row -> row["graph"] })
+                assertEquals(listOf("example.TargetCaller0"), qualified.rows.map { row -> row["caller"] })
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                if (Runtime.getRuntime().availableProcessors() > 1) {
+                    assertTrue(loaded.callSiteScanPeakActiveWorkers() > 1)
+                }
 
                 val failure = assertFailsWith<IllegalStateException> {
                     loaded.nodesByStringPropertyDisjunction(
@@ -746,6 +772,9 @@ class GraphStoreTest {
                     ).orEmpty().toList()
                 }
                 assertEquals("parallel scan budget failure", failure.message)
+                loaded.resetCallSiteScanMetrics()
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
             } finally {
                 loaded.close()
             }

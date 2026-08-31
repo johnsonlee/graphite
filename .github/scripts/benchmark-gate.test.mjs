@@ -31,6 +31,7 @@ import {
     renderLatencyBaselineReport,
     renderLatencyAnchorReport,
     renderLargeCorpusReport,
+    renderGraphIdPressureReport,
     selectJmhMetric,
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
@@ -48,6 +49,15 @@ function graphIdPressureResult(overrides = {}) {
         coverageShapeCount: 4,
         coverageFamilyCount: 2,
         coverageSelectivityCount: 3,
+        cpuCoreUtilizationPermille: 1_000,
+        peakUsedHeapBytes: 3 * 1024 ** 3,
+        peakResidentSetBytes: 4 * 1024 ** 3,
+        gcCount: 2,
+        gcMillis: 25,
+        callSiteIndexAdmittedGraphs: 0,
+        callSiteIndexRetainedBytes: 0,
+        callSiteParallelScanCount: 768,
+        callSiteScanPeakActiveWorkers: 8,
         ...overrides
     };
     return jmhResult({
@@ -118,6 +128,10 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(passed.graphParameterP95Speedup, 20);
     assert.equal(passed.gateP50Speedup, 20);
     assert.equal(passed.gateP95Speedup, 20);
+    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 768);
+    assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 8);
+    assert.match(renderGraphIdPressureReport(passed), /Effective CPU cores/);
+    assert.match(renderGraphIdPressureReport(passed), /Peak used heap/);
 
     const tooSlow = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -128,6 +142,16 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(tooSlow.passed, false);
     assert.equal(tooSlow.p50Speedup, 9);
     assert.equal(tooSlow.p95Speedup, 9);
+
+    const serialCandidate = compareGraphIdPressure(
+        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 })],
+        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 1 })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(serialCandidate.passed, false);
+    assert.match(serialCandidate.errors.join("\n"), /did not execute an intra-graph parallel scan/);
+    assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
