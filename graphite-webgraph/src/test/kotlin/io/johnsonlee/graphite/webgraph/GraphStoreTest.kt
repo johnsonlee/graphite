@@ -429,6 +429,58 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `cold distinct CallSite projection builds the combined index and rejects an invalid type`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().addNode(
+            CallSiteNode(
+                NodeId(0),
+                MethodDescriptor(TypeDescriptor("example.VoucherCaller"), "create", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                0,
+                null,
+                emptyList()
+            )
+        ).build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "voucher"
+            )
+        )
+        val dir = Files.createTempDirectory("webgraph-cold-distinct-projection")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    listOf(listOf("example.VoucherCaller", null)),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties = listOf("caller_class", "graphId"),
+                        limit = 1
+                    )?.map { row -> row.values }
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertNull(
+                    loaded.projectStringPropertyDisjunction(
+                        StringConstant::class.java,
+                        predicates,
+                        projectedProperties = listOf("caller_class"),
+                        limit = 1
+                    )
+                )
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     @Suppress("LongMethod")
     fun `mapped disjunction builds and clears one combined CallSite string index`() {
         val returnType = TypeDescriptor("void")
@@ -665,6 +717,36 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `trigram posting sort accounts temporary memory and declines when the index budget is full`() {
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val accepted = checkNotNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(0L))
+        try {
+            val postings = LongArray((1 shl 20) + 1) { index -> -index.toLong() }
+            assertTrue(sortCallSiteTrigramPostings(postings, accepted))
+            assertEquals(0L, accepted.bytes)
+            assertTrue((1 until postings.size).all { index -> postings[index - 1] <= postings[index] })
+        } finally {
+            accepted.close()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+        val available = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+        val saturated = checkNotNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(available))
+        try {
+            val postings = LongArray((1 shl 20) + 1) { index -> index.toLong() }
+            assertFalse(sortCallSiteTrigramPostings(postings, saturated))
+            assertEquals(available, saturated.bytes)
+        } finally {
+            saturated.close()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+        val small = longArrayOf(4L, Long.MIN_VALUE, 0L, Long.MAX_VALUE, -1L)
+        assertTrue(sortCallSiteTrigramPostings(small))
+        assertEquals(listOf(Long.MIN_VALUE, -1L, 0L, 4L, Long.MAX_VALUE), small.toList())
+    }
+
+    @Test
     fun `mapped CallSite trigram postings preserve Unicode matching and prune zero hits`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -848,6 +930,13 @@ class GraphStoreTest {
                 assertTrue(firstWork > repeatedWork)
                 assertEquals(first.size.toLong(), repeatedWork)
                 assertEquals(retainedAfterFirst, loaded.callSiteStringIndexBytes())
+
+                repeat(40) { cacheIndex ->
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicates.first().copy(expected = "cache-miss-$cacheIndex"))
+                    ).orEmpty().toList()
+                }
 
                 val projectedProperties = listOf("caller_class", "caller_name", "callee_class", "callee_name")
                 val storedProjection = assertNotNull(
