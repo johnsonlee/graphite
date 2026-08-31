@@ -68,6 +68,10 @@ open class CrossGraphCypherBenchmark {
         check(search.rows.size == 1 && search.rows.single()["id"] == "$TARGET_GRAPH_ID:0")
         val chain = executor.execute(callChainQuery(search.rows.single().getValue("id") as String))
         check(chain.rows.size == CALL_CHAIN_DEPTH)
+        check(
+            executor.execute(GRAPH_IDS_QUERY).rows.map { it["graphId"] } ==
+                (0 until CROSS_GRAPH_COUNT).map { "graph-$it" }.sorted()
+        )
     }
 
     @Benchmark
@@ -87,6 +91,9 @@ open class CrossGraphCypherBenchmark {
         return executor.execute(callChainQuery(seed))
     }
 
+    @Benchmark
+    fun orderedDistinctGraphIds(): CypherResult = executor.execute(GRAPH_IDS_QUERY)
+
     private fun callChainQuery(seed: String): String =
         "MATCH (a:StringConstant) WHERE elementId(a) = '$seed' " +
             "WITH a MATCH (a)-[:DATAFLOW*1..$CALL_CHAIN_DEPTH]->(b:StringConstant) " +
@@ -98,5 +105,7 @@ open class CrossGraphCypherBenchmark {
         const val KEYWORD_QUERY =
             "MATCH (n:StringConstant) WHERE n.value CONTAINS '$TARGET_VALUE' " +
                 "RETURN elementId(n) AS id, n.value AS value LIMIT 20"
+        const val GRAPH_IDS_QUERY =
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100"
     }
 }

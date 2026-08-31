@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
+private const val ORDERED_DISTINCT_GRAPH_ID_QUERY_CLAUSES = 4
 private const val DISTINCT_LIMIT_QUERY_CLAUSES = 3
 private const val FILTERED_LIMIT_QUERY_CLAUSES = 4
 private const val SINGLE_HOP_LIMIT_QUERY_CLAUSES = 3
@@ -242,6 +243,7 @@ class QueryPipeline private constructor(
         }
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
+            ?: tryFastOrderedDistinctGraphIdLimit(clauses)
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredStringCount(clauses)
@@ -608,6 +610,65 @@ class QueryPipeline private constructor(
         val encounterOrder: Long,
         val sortValues: List<Any?> = emptyList()
     )
+
+    /**
+     * Answers graph catalog discovery without materializing every node in every source.
+     *
+     * `graphId` is constant within a qualified source and source ids are unique, so the
+     * first matching node proves the sole distinct value contributed by that source.
+     */
+    @Suppress("ComplexCondition", "ReturnCount")
+    private fun tryFastOrderedDistinctGraphIdLimit(clauses: List<CypherClause>): CypherResult? {
+        if (!qualified || clauses.size != ORDERED_DISTINCT_GRAPH_ID_QUERY_CLAUSES) return null
+        val match = clauses[0] as? CypherClause.Match ?: return null
+        val ret = clauses[1] as? CypherClause.Return ?: return null
+        val orderBy = clauses[2] as? CypherClause.OrderBy ?: return null
+        val limit = clauses[3] as? CypherClause.Limit ?: return null
+        if (match.optional || match.where != null || match.patterns.size != 1 || !ret.distinct ||
+            ret.items.size != 1 || orderBy.items.size != 1
+        ) return null
+
+        val pattern = match.patterns.single()
+        if (pattern.pathVariable != null || pattern.elements.size != 1) return null
+        val node = pattern.elements.single() as? PatternElement.NodePattern ?: return null
+        val variable = node.variable ?: return null
+        if (node.labels.isNotEmpty() || node.properties.isNotEmpty()) return null
+
+        val item = ret.items.single()
+        val property = item.expression as? CypherExpr.Property ?: return null
+        if (property.expression != CypherExpr.Variable(variable) || property.propertyName != GRAPH_ID_PROPERTY) {
+            return null
+        }
+        val column = item.alias ?: item.expression.toCypherString()
+        val sort = orderBy.items.single()
+        val sortsProjectedGraphId = sort.expression == item.expression ||
+            sort.expression == CypherExpr.Variable(column)
+        if (!sortsProjectedGraphId) return null
+
+        val limitCount = literalLimitCount(limit.count) ?: return null
+        if (limitCount <= 0) return CypherResult(listOf(column), emptyList())
+        val orderedSources = if (sort.ascending) {
+            sources.sortedBy(CypherGraph::id)
+        } else {
+            sources.sortedByDescending(CypherGraph::id)
+        }
+        val rows = ArrayList<Map<String, Any?>>(minOf(limitCount, sources.size))
+        for (source in orderedSources) {
+            checkCancelled()
+            val nodeCount = source.graph.nodeCount(Node::class.java)
+            val hasNode = nodeCount?.let { it > 0L } ?: run {
+                val candidates = trackWork(source.graph.nodes(Node::class.java)).iterator()
+                candidates.hasNext() && candidates.next().let { true }
+            }
+            if (!hasNode) continue
+            rows += linkedMapOf<String, Any?>(
+                column to source.id,
+                INTERNAL_PROVENANCE_KEY to setOf(source.id)
+            )
+            if (rows.size >= limitCount) break
+        }
+        return CypherResult(listOf(column), rows)
+    }
 
     private data class OrderedPropertyLimitQuery(
         val nodeClass: Class<out Node>,
