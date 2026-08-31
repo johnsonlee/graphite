@@ -344,6 +344,9 @@ open class LargeBroadQueryPressureBenchmark {
         val indexMetrics = callSiteIndexMetrics()
         counters.callSiteIndexAdmittedGraphs = indexMetrics.first
         counters.callSiteIndexRetainedBytes = indexMetrics.second
+        counters.callSiteTrigramIndexedGraphs = graphs.count { graph ->
+            invokeInternalMetric(graph, "isCallSiteTrigramIndexInitialized") == true
+        }.toLong()
         counters.callSiteParallelScanCount = graphs.sumOf { graph ->
             (invokeInternalMetric(graph, "callSiteParallelScanCount") as? Number)?.toLong() ?: 0L
         }
@@ -516,6 +519,7 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var rawStringMatchStateBytes: Long = 0
     @JvmField var callSiteIndexAdmittedGraphs: Long = 0
     @JvmField var callSiteIndexRetainedBytes: Long = 0
+    @JvmField var callSiteTrigramIndexedGraphs: Long = 0
     @JvmField var callSiteParallelScanCount: Long = 0
     @JvmField var callSiteScanPeakActiveWorkers: Long = 0
 }

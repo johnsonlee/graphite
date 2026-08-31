@@ -617,10 +617,18 @@ export function compareGraphIdPressure(
     };
     const baseResult = selectResult(baseResults, "base");
     const candidateResult = selectResult(candidateResults, "candidate");
+    const baseIndexState = baseResult?.params?.indexState;
+    const candidateIndexState = candidateResult?.params?.indexState;
+    if (!new Set(["cold", "warm"]).has(baseIndexState)) {
+        errors.push(`base: invalid graph-routing indexState=${baseIndexState}`);
+    }
+    if (candidateIndexState !== baseIndexState) {
+        errors.push(`candidate: indexState=${candidateIndexState}; expected ${baseIndexState}`);
+    }
     const resourceMetricNames = [
         "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
-        "callSiteParallelScanCount", "callSiteScanPeakActiveWorkers"
+        "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteScanPeakActiveWorkers"
     ];
     const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
         const value = pressureMetric(result, name);
@@ -629,11 +637,19 @@ export function compareGraphIdPressure(
     }));
     const baseResources = resourceSnapshot(baseResult, "base");
     const candidateResources = resourceSnapshot(candidateResult, "candidate");
-    if (candidateResources.callSiteParallelScanCount <= 0) {
-        errors.push("candidate: selected-graph workload did not execute an intra-graph parallel scan");
-    }
-    if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
-        errors.push("candidate: selected-graph workload did not prove at least two simultaneously active scan workers");
+    if (candidateIndexState === "cold") {
+        if (candidateResources.callSiteParallelScanCount <= 0) {
+            errors.push("candidate: cold selected-graph workload did not execute an intra-graph parallel scan");
+        }
+        if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
+            errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
+        }
+    } else if (candidateIndexState === "warm") {
+        if (candidateResources.callSiteIndexAdmittedGraphs <= 0 ||
+            candidateResources.callSiteTrigramIndexedGraphs <= 0
+        ) {
+            errors.push("candidate: warm selected-graph workload did not execute the retained trigram index path");
+        }
     }
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
@@ -838,6 +854,7 @@ export function compareGraphIdPressure(
         graphParameterP95Regression,
         routingOverheadP50,
         routingOverheadP95,
+        indexState: candidateIndexState,
         resources: {
             base: baseResources,
             candidate: candidateResources
@@ -853,6 +870,8 @@ export function renderGraphIdPressureReport(comparison) {
     const gibibytes = (bytes) => `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
     const lines = [
         "### 64-real-graph graphId pressure gate",
+        "",
+        `Index state: **${comparison.indexState}**`,
         "",
         `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for both P50 and P95 on ` +
             "query-level graphId and API graph-parameter routing.",
@@ -877,6 +896,8 @@ export function renderGraphIdPressureReport(comparison) {
             `${gibibytes(baseResources.callSiteIndexRetainedBytes)} → ` +
             `${candidateResources.callSiteIndexAdmittedGraphs.toFixed(0)} graphs / ` +
             `${gibibytes(candidateResources.callSiteIndexRetainedBytes)}**`,
+        `- Trigram-indexed graphs: **${baseResources.callSiteTrigramIndexedGraphs.toFixed(0)} → ` +
+            `${candidateResources.callSiteTrigramIndexedGraphs.toFixed(0)}**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"

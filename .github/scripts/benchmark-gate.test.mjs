@@ -36,7 +36,7 @@ import {
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
 
-function graphIdPressureResult(overrides = {}) {
+function graphIdPressureResult(overrides = {}, indexState = "cold") {
     const values = {
         graphCount: 64,
         distinctGraphPathCount: 64,
@@ -56,6 +56,7 @@ function graphIdPressureResult(overrides = {}) {
         gcMillis: 25,
         callSiteIndexAdmittedGraphs: 0,
         callSiteIndexRetainedBytes: 0,
+        callSiteTrigramIndexedGraphs: 0,
         callSiteParallelScanCount: 768,
         callSiteScanPeakActiveWorkers: 8,
         ...overrides
@@ -66,7 +67,7 @@ function graphIdPressureResult(overrides = {}) {
         score: 1,
         confidence: [1, 1],
         unit: "s/op",
-        params: { graphCount: "64", coverageFamily: "graph-routing", indexState: "cold" },
+        params: { graphCount: "64", coverageFamily: "graph-routing", indexState },
         secondaryMetrics: Object.fromEntries(
             Object.entries(values).map(([name, score]) => [name, { score, scoreUnit: "#" }])
         )
@@ -152,6 +153,36 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(serialCandidate.passed, false);
     assert.match(serialCandidate.errors.join("\n"), /did not execute an intra-graph parallel scan/);
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
+});
+
+test("64-real-graph warm pressure proves the trigram path instead of requiring a raw scan", () => {
+    const warmBase = graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 }, "warm");
+    const warmCandidate = graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 64,
+        callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64,
+        callSiteParallelScanCount: 0,
+        callSiteScanPeakActiveWorkers: 0
+    }, "warm");
+    const passed = compareGraphIdPressure(
+        [warmBase],
+        [warmCandidate],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(passed.passed, true);
+    assert.equal(passed.indexState, "warm");
+    assert.match(renderGraphIdPressureReport(passed), /Index state: \*\*warm\*\*/);
+    assert.match(renderGraphIdPressureReport(passed), /Trigram-indexed graphs: \*\*0 → 64\*\*/);
+
+    const missingTrigram = compareGraphIdPressure(
+        [warmBase],
+        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 }, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(missingTrigram.passed, false);
+    assert.match(missingTrigram.errors.join("\n"), /did not execute the retained trigram index path/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
