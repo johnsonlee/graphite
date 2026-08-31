@@ -115,7 +115,7 @@ graphId forms. The queries preserve the production non-`DISTINCT`, four-property
 For this finite-limit shape, the query layer passes the remaining `LIMIT` into the selected mapped
 graph. If the combined CallSite index is not already resident, that graph partitions its mapped
 CallSite type index into ordered ordinal ranges and scans them on `graphite-callsite-scan-N`
-workers. The default worker count is `min(16, Runtime.availableProcessors())`; override it with
+workers. The default worker count is `min(8, Runtime.availableProcessors())`; override it with
 `-Dgraphite.webgraph.callSiteScanParallelism=N`. Results are concatenated in persisted node order,
 all workers share the request work/cancellation budget, and a worker failure stops and joins the
 remaining tasks before the query returns. `graphite-cypher-scan-N` names the separate cross-graph source pool and is not evidence that
