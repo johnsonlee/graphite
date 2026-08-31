@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.UnavailableResourceAccessor
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayInputStream
@@ -36,7 +37,7 @@ internal class PersistedResourceAccessor(
             ?: throw java.io.IOException("Resource not found: $path")
 }
 
-internal object MissingPersistedResourceAccessor : ResourceAccessor {
+internal object MissingPersistedResourceAccessor : ResourceAccessor, UnavailableResourceAccessor {
     override val unavailableReason: String =
         "Persisted resources are unavailable because graph.resources is missing; " +
             "rebuild this graph with the current Graphite CLI"

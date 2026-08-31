@@ -21,6 +21,7 @@ import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.unavailableReason
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.IOException
 import java.nio.file.Path

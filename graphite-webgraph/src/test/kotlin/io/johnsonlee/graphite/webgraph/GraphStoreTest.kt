@@ -59,6 +59,7 @@ import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.unavailableReason
 import it.unimi.dsi.fastutil.io.BinIO
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

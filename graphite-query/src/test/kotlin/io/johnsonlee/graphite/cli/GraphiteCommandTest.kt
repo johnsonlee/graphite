@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cli
 
+import io.johnsonlee.graphite.input.unavailableReason
 import io.johnsonlee.graphite.webgraph.GraphStore
 import picocli.CommandLine
 import java.io.ByteArrayOutputStream

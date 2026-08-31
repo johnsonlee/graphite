@@ -11,16 +11,6 @@ import java.io.InputStream
  * Spring Boot fat JAR / WAR.
  */
 interface ResourceAccessor {
-
-    /**
-     * Explains why resources cannot be queried, or `null` when this accessor is usable.
-     *
-     * An available accessor may still contain no matching resources. This distinction lets
-     * persisted graphs report a missing legacy resource store instead of silently appearing empty.
-     */
-    val unavailableReason: String?
-        get() = null
-
     /**
      * List resource entries matching a glob pattern.
      *
@@ -43,6 +33,25 @@ interface ResourceAccessor {
     @Throws(java.io.IOException::class)
     fun open(path: String): InputStream
 }
+
+/**
+ * Capability implemented by accessors that cannot serve resources.
+ *
+ * This is deliberately separate from [ResourceAccessor] so implementations compiled against an
+ * older Graphite release remain binary compatible.
+ */
+interface UnavailableResourceAccessor {
+    val unavailableReason: String
+}
+
+/**
+ * Explains why resources cannot be queried, or `null` when this accessor is usable.
+ *
+ * An available accessor may still contain no matching resources. This distinction lets persisted
+ * graphs report a missing legacy resource store instead of silently appearing empty.
+ */
+val ResourceAccessor.unavailableReason: String?
+    get() = (this as? UnavailableResourceAccessor)?.unavailableReason
 
 /**
  * A resource file entry within a project archive.
