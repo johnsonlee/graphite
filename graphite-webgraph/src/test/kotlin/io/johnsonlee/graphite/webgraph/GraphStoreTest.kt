@@ -924,6 +924,29 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
+                val handoffCancellation = assertFailsWith<CancellationException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                StringValueTransform.LOWERCASE,
+                                StringMatchMode.CONTAINS,
+                                "definitely-absent"
+                            )
+                        ),
+                        limit = 1,
+                        workConsumer = ParallelGraphWorkBatchConsumer {
+                            if (!Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
+                                throw CancellationException("cancelled during optional cache handoff")
+                            }
+                        }
+                    ).orEmpty().toList()
+                }
+                assertEquals("cancelled during optional cache handoff", handoffCancellation.message)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(0L, loaded.callSiteStringIndexLookupCount())

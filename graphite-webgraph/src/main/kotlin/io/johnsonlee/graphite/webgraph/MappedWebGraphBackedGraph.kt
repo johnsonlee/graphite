@@ -578,6 +578,8 @@ internal class MappedWebGraphBackedGraph(
             if (completed.size == tasks.size && completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)) {
                 try {
                     buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (_: Exception) {
                     // The bounded scan already produced a complete query result. Index publication is
                     // an optional cache handoff, so a budget/admission/build failure must not replace it.
