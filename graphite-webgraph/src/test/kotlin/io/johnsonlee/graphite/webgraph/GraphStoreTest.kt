@@ -3620,22 +3620,32 @@ class GraphStoreTest {
         val builder = DefaultGraph.Builder()
         val first = IntConstant(NodeId(0), 1)
         val second = IntConstant(NodeId(2), 2)
+        val third = StringConstant(NodeId(3), "three")
         builder.addNode(first)
         builder.addNode(second)
+        builder.addNode(third)
 
         val dir = Files.createTempDirectory("webgraph-mapped-index-test")
         try {
             GraphStore.save(builder.build(), dir)
 
             val offsets = MappedNodeOffsetIndex.load(dir.resolve("graph.nodeoffsets"))
-            assertEquals(3, offsets.size)
+            assertEquals(4, offsets.size)
             assertTrue(offsets.offset(first.id.value) >= 0L)
             assertEquals(-1L, offsets.offset(1))
             assertTrue(offsets.offset(second.id.value) > offsets.offset(first.id.value))
 
             val typeIndex = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
             assertEquals(2L, typeIndex.count(IntConstant::class.java))
-            assertEquals(listOf(0, 2), typeIndex.ids(IntConstant::class.java).toList().sorted())
+            val intIds = typeIndex.ids(IntConstant::class.java)
+            assertEquals(listOf(0, 2), intIds.toList().sorted())
+            assertEquals(listOf(0, 2), intIds.toList().sorted())
+            assertEquals(listOf(0, 2, 3), typeIndex.ids(Node::class.java).toList().sorted())
+            val exhausted = intIds.iterator()
+            assertEquals(0, exhausted.next())
+            assertEquals(2, exhausted.next())
+            assertFalse(exhausted.hasNext())
+            assertFailsWith<NoSuchElementException> { exhausted.next() }
             val rangedIds = mutableListOf<Int>()
             typeIndex.forEachIdWhile(IntConstant::class.java, 1, 2) { nodeId ->
                 rangedIds += nodeId
@@ -3655,7 +3665,7 @@ class GraphStoreTest {
             assertFailsWith<IllegalArgumentException> {
                 typeIndex.forEachIdWhile(IntConstant::class.java, 2, 1) { true }
             }
-            assertEquals(2L, typeIndex.count(Node::class.java))
+            assertEquals(3L, typeIndex.count(Node::class.java))
         } finally {
             dir.toFile().deleteRecursively()
         }

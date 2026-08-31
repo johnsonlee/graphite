@@ -45,15 +45,7 @@ internal class MappedNodeTypeIndex private constructor(
 ) : NodeTypeIndex {
 
     override fun ids(type: Class<out Node>): Sequence<Int> =
-        ranges(type).asSequence().flatMap { range ->
-            sequence {
-                var offset = range.offset
-                repeat(range.count) {
-                    yield(buffer.getInt(offset))
-                    offset += Int.SIZE_BYTES
-                }
-            }
-        }
+        Sequence { MappedNodeIdIterator(buffer, ranges(type)) }
 
     override fun forEachIdWhile(
         type: Class<out Node>,
@@ -123,6 +115,32 @@ internal data class NodeTypeRange(
     val count: Int,
     val offset: Int
 )
+
+private class MappedNodeIdIterator(
+    private val buffer: MappedByteBuffer,
+    private val ranges: List<NodeTypeRange>
+) : IntIterator() {
+    private var rangeIndex = -1
+    private var offset = 0
+    private var remaining = 0
+
+    override fun hasNext(): Boolean {
+        while (remaining == 0 && ++rangeIndex < ranges.size) {
+            val range = ranges[rangeIndex]
+            offset = range.offset
+            remaining = range.count
+        }
+        return remaining > 0
+    }
+
+    override fun nextInt(): Int {
+        if (!hasNext()) throw NoSuchElementException()
+        val nodeId = buffer.getInt(offset)
+        offset += Int.SIZE_BYTES
+        remaining--
+        return nodeId
+    }
+}
 
 internal fun nodeClassForTag(tag: Int): Class<out Node>? = NODE_CLASSES_BY_TAG.getOrNull(tag)
 
