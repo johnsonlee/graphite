@@ -184,7 +184,7 @@ reviewed oracle, run the repository-owned driver on the machine that has the 64 
   https://github.com/johnsonlee/graphite/pull/109#issuecomment-EXAMPLE
 ```
 
-The driver verifies both SHAs against GitHub, checks out detached worktrees for those exact commits,
+The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
 JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,
 both built JARs, graph manifest, and correctness oracle in `provenance.json`; caller-supplied JARs

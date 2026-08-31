@@ -22,6 +22,7 @@ HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/La
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
+REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 
 for INPUT in "${MANIFEST}" "${ORACLE}"; do
   test -f "${INPUT}"
@@ -46,23 +47,20 @@ sha256_file() {
 for REVISION_SHA in "${BASE_SHA}" "${CANDIDATE_SHA}"; do
   REMOTE_SHA=$(gh api "repos/${REPOSITORY}/commits/${REVISION_SHA}" --jq .sha)
   test "${REMOTE_SHA}" = "${REVISION_SHA}"
-  if ! git -C "${REPOSITORY_ROOT}" cat-file -e "${REVISION_SHA}^{commit}" 2>/dev/null; then
-    git -C "${REPOSITORY_ROOT}" fetch origin "${REVISION_SHA}"
-  fi
 done
 
 BUILD_ROOT=$(mktemp -d)
 BASE_TREE=${BUILD_ROOT}/base
 CANDIDATE_TREE=${BUILD_ROOT}/candidate
 cleanup() {
-  git -C "${REPOSITORY_ROOT}" worktree remove --force "${BASE_TREE}" >/dev/null 2>&1 || true
-  git -C "${REPOSITORY_ROOT}" worktree remove --force "${CANDIDATE_TREE}" >/dev/null 2>&1 || true
   rm -rf "${BUILD_ROOT}"
 }
 trap cleanup EXIT
 
-git -C "${REPOSITORY_ROOT}" worktree add --detach "${BASE_TREE}" "${BASE_SHA}" >/dev/null
-git -C "${REPOSITORY_ROOT}" worktree add --detach "${CANDIDATE_TREE}" "${CANDIDATE_SHA}" >/dev/null
+git clone --no-checkout "${REPOSITORY_URL}" "${BASE_TREE}" >/dev/null
+git clone --no-checkout "${REPOSITORY_URL}" "${CANDIDATE_TREE}" >/dev/null
+git -C "${BASE_TREE}" checkout --detach "${BASE_SHA}" >/dev/null
+git -C "${CANDIDATE_TREE}" checkout --detach "${CANDIDATE_SHA}" >/dev/null
 test "$(git -C "${BASE_TREE}" rev-parse HEAD)" = "${BASE_SHA}"
 test "$(git -C "${CANDIDATE_TREE}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
 test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"

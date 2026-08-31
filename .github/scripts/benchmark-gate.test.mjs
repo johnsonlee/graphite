@@ -211,8 +211,9 @@ test("real64 driver builds commit-bound JARs and records cryptographic provenanc
     );
 
     assert.doesNotMatch(driver, /<base-jmh\.jar>|<candidate-jmh\.jar>/);
-    assert.match(driver, /worktree add --detach "\$\{BASE_TREE\}" "\$\{BASE_SHA\}"/);
-    assert.match(driver, /worktree add --detach "\$\{CANDIDATE_TREE\}" "\$\{CANDIDATE_SHA\}"/);
+    assert.equal((driver.match(/git clone --no-checkout/g) ?? []).length, 2);
+    assert.match(driver, /checkout --detach "\$\{BASE_SHA\}"/);
+    assert.match(driver, /checkout --detach "\$\{CANDIDATE_SHA\}"/);
     assert.match(driver, /cmp -s "\$0" "\$\{CANDIDATE_TREE\}\/\$\{SCRIPT_PATH\}"/);
     assert.match(
         driver,
