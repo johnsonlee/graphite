@@ -738,6 +738,18 @@ class QueryPipelineTest {
         assertEquals(listOf("first", "second"), result.rows.map { it["graphId"] })
         assertEquals(1, first.selectedLookups)
         assertEquals(1, second.selectedLookups)
+
+        val skipped = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.graphId AS graphId SKIP 1 LIMIT 1"
+        )
+
+        assertEquals(listOf("second"), skipped.rows.map { it["graphId"] })
+        assertEquals(2, first.selectedLookups)
+        assertEquals(2, second.selectedLookups)
     }
 
     @Test

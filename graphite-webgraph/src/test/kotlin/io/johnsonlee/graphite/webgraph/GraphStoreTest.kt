@@ -428,6 +428,24 @@ class GraphStoreTest {
                 )
                 assertEquals(1L, trackedAggregate?.count)
                 assertEquals(2, aggregateWork)
+                var denseAggregateWork = 0
+                val denseAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "example"
+                        )
+                    ),
+                    distinctProperty = "caller_name",
+                    workConsumer = GraphWorkConsumer { denseAggregateWork++ }
+                )
+                assertEquals(3L, denseAggregate?.count)
+                assertEquals(setOf("create0", "create1", "create2"), denseAggregate?.distinctValues)
+                assertTrue(denseAggregateWork >= 6)
+                assertTrue(loaded.prefersSerialStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -1081,6 +1099,7 @@ class GraphStoreTest {
         val graph = DefaultGraph.Builder().apply {
             repeat(261) { index ->
                 val value = when (index) {
+                    0 -> "TÄRGET"
                     256, 257, 260 -> "TaRgEt"
                     258, 259 -> "other"
                     else -> "prefix-$index"
@@ -1109,6 +1128,29 @@ class GraphStoreTest {
                 assertEquals(listOf(256, 257, 260), unbudgeted)
                 assertEquals(0, loaded.rawStringMatchStateCount())
                 assertEquals(0L, loaded.rawStringMatchStateBytes())
+
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "tärget",
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+                assertEquals(
+                    listOf(256),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "target",
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
 
                 loaded.clearStringPropertyIndexes()
                 var consumed = 0
