@@ -51,7 +51,7 @@ internal class MappedCallSiteStringIndex(
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
+            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
         }
         if (ranges.isEmpty()) return emptySequence()
         return ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
@@ -62,7 +62,7 @@ internal class MappedCallSiteStringIndex(
         distinctProperty: String?,
         workConsumer: GraphWorkConsumer?
     ): StringPropertyDisjunctionAggregate {
-        val ranges = matchingRanges(predicates, workConsumer)
+        val ranges = matchingRanges(predicates)
         if (ranges.isEmpty()) {
             return StringPropertyDisjunctionAggregate(0L, distinctProperty?.let { emptySet() })
         }
@@ -77,17 +77,14 @@ internal class MappedCallSiteStringIndex(
         )
     }
 
-    private fun matchingRanges(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: GraphWorkConsumer?
-    ): PostingRanges {
+    private fun matchingRanges(predicates: List<StringPropertyPredicate>): PostingRanges {
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
+            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
         }
         return ranges
     }
@@ -101,7 +98,7 @@ internal class MappedCallSiteStringIndex(
     ): List<StringPropertyDistinctRow> {
         if (limit <= 0) return emptyList()
         val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
-        val ranges = matchingRanges(predicates, workConsumer)
+        val ranges = matchingRanges(predicates)
         if (ranges.isEmpty()) return emptyList()
         return if (selectedValues == null) {
             distinctProjectionPrefix(ranges, propertyIndexes, limit, workConsumer)
@@ -227,28 +224,20 @@ internal class MappedCallSiteStringIndex(
         fun collectMatchingRanges(
             propertyIndex: Int,
             runtime: PredicateRuntime,
-            target: PostingRanges,
-            workConsumer: GraphWorkConsumer?
+            target: PostingRanges
         ) {
             runtime.exactStringId?.let { exactStringId ->
-                consumeGraphWork(workConsumer, 1L)
                 if (exactStringId >= 0) {
                     val row = java.util.Arrays.binarySearch(usedStringIds, exactStringId)
                     if (row >= 0) addRange(propertyIndex, row, target)
                 }
                 return
             }
-            val accounting = BufferedGraphWorkConsumer(workConsumer)
-            try {
-                for (row in usedStringIds.indices) {
-                    if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                        checkCallSiteIndexInterrupted()
-                    }
-                    accounting.consume()
-                    if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
+            for (row in usedStringIds.indices) {
+                if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                    checkCallSiteIndexInterrupted()
                 }
-            } finally {
-                accounting.flush()
+                if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
             }
         }
 
@@ -404,7 +393,7 @@ internal class MappedCallSiteStringIndex(
                         accounting.consume()
                         yielded++
                         previousNodeId = nodeId
-                        if (yielded >= limit) accounting.flush()
+                        accounting.flush()
                         yield(nodeId)
                         if (yielded >= limit) break
                     }

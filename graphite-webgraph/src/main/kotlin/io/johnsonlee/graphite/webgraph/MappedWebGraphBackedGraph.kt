@@ -364,7 +364,7 @@ internal class MappedWebGraphBackedGraph(
                         val matchedNode = node(NodeId(nodeId)) as? T
                         if (matchedNode != null) {
                             yielded++
-                            if (yielded >= limit) accounting.flush()
+                            accounting.flush()
                             yield(matchedNode)
                             if (yielded >= limit) break
                         }
@@ -1221,7 +1221,7 @@ internal class MappedStringPropertyIndex(
                     accounting.consume()
                     if (java.util.Arrays.binarySearch(matchedStrings, stringIds[index]) >= 0) {
                         yielded++
-                        if (yielded >= limit) accounting.flush()
+                        accounting.flush()
                         yield(nodeIds[index])
                         if (yielded >= limit) break
                     }

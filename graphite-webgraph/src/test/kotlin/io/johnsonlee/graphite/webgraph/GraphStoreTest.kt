@@ -37,6 +37,11 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
+import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
+import io.johnsonlee.graphite.cypher.CypherExecutionBudget
+import io.johnsonlee.graphite.cypher.CypherExecutionContext
+import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
@@ -422,7 +427,7 @@ class GraphStoreTest {
                     workConsumer = GraphWorkConsumer { aggregateWork++ }
                 )
                 assertEquals(1L, trackedAggregate?.count)
-                assertEquals(1, aggregateWork)
+                assertEquals(5, aggregateWork)
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -484,9 +489,148 @@ class GraphStoreTest {
                     GraphWorkConsumer { consumed++ }
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(1), reset)
-                assertEquals(1, consumed)
+                assertTrue(consumed.toLong() > checkNotNull(graph.nodeCount(CallSiteNode::class.java)))
             } finally {
                 loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `cold mapped aggregate charges inspected call sites to the query budget`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(32) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-cold-aggregate-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    CypherExecutionBudget(maxWorkUnits = 1)
+                )
+
+                assertFailsWith<CypherBudgetExceededException> {
+                    executor.execute(
+                        "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'missing' " +
+                            "RETURN count(*) AS total"
+                    )
+                }
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped limited lookup flushes work before the lazy sequence is abandoned`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Target"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            null,
+            StringMatchMode.CONTAINS,
+            "Target"
+        )
+        val dir = Files.createTempDirectory("webgraph-limited-lookup-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertNotNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1
+                    )?.single()
+                )
+                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    context
+                )
+                val query = "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                    "RETURN n.caller_class AS caller LIMIT 1"
+
+                assertEquals("example.Target", executor.execute(query).rows.single()["caller"])
+                assertFailsWith<CypherBudgetExceededException> { executor.execute(query) }
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun mappedDistinctProjectionFallsBackForUnsupportedCallSiteProperties() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            listOf(7, 9).forEachIndexed { index, line ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Target"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        line,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-unsupported-distinct-projection")
+        try {
+            GraphStore.save(graph, dir)
+            val first = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val second = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val result = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("first", first), CypherGraph("second", second))
+                ).execute(
+                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                        "RETURN DISTINCT n.line AS line LIMIT 1"
+                )
+
+                assertEquals(listOf(7), result.rows.map { it["line"] })
+            } finally {
+                second.close()
+                first.close()
             }
         } finally {
             dir.toFile().deleteRecursively()
