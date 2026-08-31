@@ -253,7 +253,7 @@ class GraphStoreTest {
                     GraphWorkConsumer { disjunctionWork++ }
                 )?.map { it.id.value }?.toList()
                 assertEquals(listOf(2), disjunction)
-                assertEquals(1, disjunctionWork)
+                assertEquals(3, disjunctionWork)
                 assertNull(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -486,7 +486,7 @@ class GraphStoreTest {
                     workConsumer = GraphWorkConsumer { aggregateWork++ }
                 )
                 assertEquals(1L, trackedAggregate?.count)
-                assertEquals(4, aggregateWork)
+                assertEquals(16, aggregateWork)
                 val sparseCalleeAggregate = loaded.aggregateStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
@@ -521,14 +521,14 @@ class GraphStoreTest {
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
-                    listOf("caller_class", "caller_name", "class"),
+                    listOf("caller_class", "caller_name", "graphId"),
                     limit = 10
                 )
                 assertEquals(listOf(projectedValues), projected?.map { it.values })
                 val selected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
-                    listOf("caller_class", "caller_name", "class"),
+                    listOf("caller_class", "caller_name", "graphId"),
                     limit = 10,
                     selectedValues = setOf(projectedValues, listOf("missing", "missing", null))
                 )
@@ -536,7 +536,7 @@ class GraphStoreTest {
                 val selectedWithLimit = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
-                    listOf("caller_class", "caller_name", "class"),
+                    listOf("caller_class", "caller_name", "graphId"),
                     limit = 1,
                     selectedValues = setOf(projectedValues)
                 )
@@ -663,6 +663,59 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `warm mapped zero hit aggregate charges inspected strings to the query budget`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(32) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-warm-zero-aggregate-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val predicates = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Caller")
+                )
+                assertEquals(
+                    32L,
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = null
+                    )?.count
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    CypherExecutionBudget(maxWorkUnits = 1)
+                )
+                assertFailsWith<CypherBudgetExceededException> {
+                    executor.execute(
+                        "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'missing' " +
+                            "RETURN count(*) AS total"
+                    )
+                }
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped limited lookup flushes work before the lazy sequence is abandoned`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -697,7 +750,7 @@ class GraphStoreTest {
                         limit = 1
                     )?.single()
                 )
-                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 2))
                 val executor = CrossGraphCypherExecutor(
                     listOf(CypherGraph("mapped", loaded)),
                     context
@@ -738,6 +791,21 @@ class GraphStoreTest {
             val first = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             val second = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
+                assertNull(
+                    first.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "Target"
+                            )
+                        ),
+                        projectedProperties = listOf("line"),
+                        limit = 1
+                    )
+                )
                 val result = CrossGraphCypherExecutor(
                     listOf(CypherGraph("first", first), CypherGraph("second", second))
                 ).execute(
@@ -887,7 +955,7 @@ class GraphStoreTest {
                         GraphWorkConsumer { consumed++ }
                     ).orEmpty().map { it.id.value }.toList()
                 )
-                assertEquals(2, consumed)
+                assertTrue(consumed > exactOr.size)
 
                 loaded.clearStringPropertyIndexes()
                 val exactOrRows = loaded.query(

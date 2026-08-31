@@ -51,14 +51,7 @@ internal class MappedCallSiteStringIndex(
         limit: Int = Int.MAX_VALUE
     ): Sequence<Int> {
         if (limit <= 0) return emptySequence()
-        val ranges = PostingRanges(properties)
-        val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
-        predicates.forEach { predicate ->
-            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
-            if (propertyIndex < 0) return@forEach
-            val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
-        }
+        val ranges = matchingRanges(predicates, workConsumer)
         if (ranges.isEmpty()) return emptySequence()
         return ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
     }
@@ -68,7 +61,7 @@ internal class MappedCallSiteStringIndex(
         distinctProperty: String?,
         workConsumer: GraphWorkConsumer?
     ): StringPropertyDisjunctionAggregate {
-        val ranges = matchingRanges(predicates)
+        val ranges = matchingRanges(predicates, workConsumer)
         if (ranges.isEmpty()) {
             return StringPropertyDisjunctionAggregate(0L, distinctProperty?.let { emptySet() })
         }
@@ -83,14 +76,17 @@ internal class MappedCallSiteStringIndex(
         )
     }
 
-    private fun matchingRanges(predicates: List<StringPropertyPredicate>): PostingRanges {
+    private fun matchingRanges(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): PostingRanges {
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
+            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
         }
         return ranges
     }
@@ -104,7 +100,7 @@ internal class MappedCallSiteStringIndex(
     ): List<StringPropertyDistinctRow> {
         if (limit <= 0) return emptyList()
         val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
-        val ranges = matchingRanges(predicates)
+        val ranges = matchingRanges(predicates, workConsumer)
         if (ranges.isEmpty()) return emptyList()
         return if (selectedValues == null) {
             distinctProjectionPrefix(ranges, propertyIndexes, limit, workConsumer)
@@ -230,21 +226,43 @@ internal class MappedCallSiteStringIndex(
         fun collectMatchingRanges(
             propertyIndex: Int,
             runtime: PredicateRuntime,
-            target: PostingRanges
+            target: PostingRanges,
+            workConsumer: GraphWorkConsumer?
         ) {
-            runtime.exactStringId?.let { exactStringId ->
-                if (exactStringId >= 0) {
-                    val row = java.util.Arrays.binarySearch(usedStringIds, exactStringId)
-                    if (row >= 0) addRange(propertyIndex, row, target)
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                runtime.exactStringId?.let { exactStringId ->
+                    if (exactStringId >= 0) {
+                        val row = findStringRow(exactStringId, accounting)
+                        if (row >= 0) addRange(propertyIndex, row, target)
+                    }
+                    return
                 }
-                return
-            }
-            for (row in usedStringIds.indices) {
-                if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                    checkCallSiteIndexInterrupted()
+                for (row in usedStringIds.indices) {
+                    if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                        checkCallSiteIndexInterrupted()
+                    }
+                    accounting.consume()
+                    if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
                 }
-                if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
+            } finally {
+                accounting.flush()
             }
+        }
+
+        private fun findStringRow(stringId: Int, accounting: BufferedGraphWorkConsumer): Int {
+            var low = 0
+            var high = usedStringIds.lastIndex
+            while (low <= high) {
+                accounting.consume()
+                val middle = (low + high).ushr(1)
+                when {
+                    usedStringIds[middle] < stringId -> low = middle + 1
+                    usedStringIds[middle] > stringId -> high = middle - 1
+                    else -> return middle
+                }
+            }
+            return -1
         }
 
         fun postingNodeId(position: Int): Int = postingNodeIds[position]

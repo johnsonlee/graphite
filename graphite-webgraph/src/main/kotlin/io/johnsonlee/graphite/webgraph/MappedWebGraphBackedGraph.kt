@@ -276,7 +276,10 @@ internal class MappedWebGraphBackedGraph(
         workConsumer: GraphWorkConsumer?
     ): List<StringPropertyDistinctRow>? {
         if (type != CallSiteNode::class.java || predicates.isEmpty() ||
-            predicates.any { !supportsRawStringProperty(type, it.property) }
+            predicates.any { !supportsRawStringProperty(type, it.property) } ||
+            projectedProperties.any { property ->
+                property != GRAPH_ID_PROJECTION_PROPERTY && !supportsRawStringProperty(type, property)
+            }
         ) {
             return null
         }
@@ -970,6 +973,7 @@ internal class MappedWebGraphBackedGraph(
 
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
 private const val ASCII_MAX_CODE = 0x7f
 private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
 private const val MAX_STRING_PROPERTY_INDEXES = 4

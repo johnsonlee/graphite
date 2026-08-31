@@ -625,6 +625,68 @@ class QueryPipelineTest {
     }
 
     @Test
+    fun `selected provenance pass does not rebuild a released zero hit cache`() {
+        class RebuildTrackingIndexedGraph(
+            private val delegate: Graph,
+            private val values: List<StringPropertyDistinctRow>
+        ) : Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder,
+            ReleasableStringPropertyDisjunctionCache {
+            var cacheBuilds = 0
+            var projectionCalls = 0
+            var releases = 0
+            private var cacheRetained = false
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                projectionCalls++
+                if (!cacheRetained) {
+                    cacheBuilds++
+                    cacheRetained = true
+                }
+                return values
+                    .filter { row -> selectedValues == null || row.values in selectedValues }
+                    .take(limit)
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+            override fun releaseStringPropertyDisjunctionCache() {
+                releases++
+                cacheRetained = false
+            }
+        }
+
+        val hit = RebuildTrackingIndexedGraph(
+            graph,
+            listOf(StringPropertyDistinctRow(0, listOf("com.example.Service")))
+        )
+        val miss = RebuildTrackingIndexedGraph(graph, emptyList())
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("hit", hit), CypherGraph("miss", miss))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(2, hit.projectionCalls)
+        assertEquals(1, hit.cacheBuilds)
+        assertEquals(0, hit.releases)
+        assertEquals(1, miss.projectionCalls)
+        assertEquals(1, miss.cacheBuilds)
+        assertEquals(1, miss.releases)
+    }
+
+    @Test
     fun `complete indexed projection below limit does not fall back to a second graph scan`() {
         class PartialIndexedGraph(private val delegate: Graph) :
             Graph by delegate,

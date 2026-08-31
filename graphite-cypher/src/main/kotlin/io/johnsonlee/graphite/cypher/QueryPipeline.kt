@@ -1468,6 +1468,7 @@ class QueryPipeline private constructor(
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
 
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+        val zeroHitSources = BooleanArray(sources.size)
         var waveStart = 0
         while (waveStart < sources.size && rows.size < limit) {
             val waveEnd = minOf(sources.size, waveStart + directStringParallelism)
@@ -1514,6 +1515,7 @@ class QueryPipeline private constructor(
             localRows.forEachIndexed { localIndex, sourceRows ->
                 if (sourceRows.isEmpty()) {
                     val sourceIndex = waveStart + localIndex
+                    zeroHitSources[sourceIndex] = true
                     (sources[sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
                         ?.releaseStringPropertyDisjunctionCache()
                 }
@@ -1536,7 +1538,10 @@ class QueryPipeline private constructor(
             }
         }
         val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
-        val hits = runDirectStringTasks(sources.indices.map { sourceIndex ->
+        val provenanceSourceIndexes = sources.indices.filterNot { sourceIndex ->
+            zeroHitSources[sourceIndex]
+        }
+        val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
             {
                 val source = sources[sourceIndex]
                 val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
@@ -1567,7 +1572,8 @@ class QueryPipeline private constructor(
                 rawHits
             }
         })
-        hits.forEachIndexed { sourceIndex, visibleRows ->
+        hits.forEachIndexed { hitIndex, visibleRows ->
+            val sourceIndex = provenanceSourceIndexes[hitIndex]
             val graphId = sources[sourceIndex].id
             visibleRows.forEach { visible ->
                 val row = rows.getValue(visible)
