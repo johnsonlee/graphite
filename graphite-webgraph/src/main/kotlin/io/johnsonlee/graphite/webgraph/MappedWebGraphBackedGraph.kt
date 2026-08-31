@@ -511,15 +511,13 @@ internal class MappedWebGraphBackedGraph(
         admission: StringPropertyAdmissionKey,
         workConsumer: GraphWorkConsumer?
     ): Sequence<T> = sequence {
-        val accounting = BufferedGraphWorkConsumer(workConsumer)
         var inspected = 0
         var yielded = 0
         var admitted = false
         var matchStates: ByteArray? = null
-        try {
-            for (nodeId in nodeTypeIndex.ids(type)) {
-                accounting.consume()
-                inspected++
+        for (nodeId in nodeTypeIndex.ids(type)) {
+            workConsumer?.consume()
+            inspected++
             if (!admitted && inspected > MAX_STRING_PROPERTY_ADMISSION_NODES) {
                 synchronized(stringPropertyIndexLock) {
                     if (admission.property !in stringPropertyIndexes) {
@@ -544,18 +542,14 @@ internal class MappedWebGraphBackedGraph(
                     }
                 }
             }
-                if (matches) {
-                    val matchedNode = node(NodeId(nodeId)) as? T
-                    if (matchedNode != null) {
-                        yielded++
-                        if (yielded >= limit) accounting.flush()
-                        yield(matchedNode)
-                        if (yielded >= limit) break
-                    }
+            if (matches) {
+                val matchedNode = node(NodeId(nodeId)) as? T
+                if (matchedNode != null) {
+                    yield(matchedNode)
+                    yielded++
+                    if (yielded >= limit) break
                 }
             }
-        } finally {
-            accounting.flush()
         }
     }
 
