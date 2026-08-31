@@ -180,7 +180,8 @@ class QueryPipeline private constructor(
         this(graphs, true, workTrackingEnabled)
 
     init {
-        require(sources.map { it.id }.distinct().size == sources.size) { "Graph ids must be unique" }
+        val graphIds = HashSet<String>(sources.size)
+        require(sources.all { source -> graphIds.add(source.id) }) { "Graph ids must be unique" }
     }
 
     private val graph: Graph get() = sources.single().graph
@@ -260,6 +261,11 @@ class QueryPipeline private constructor(
             }
             return executeGeneralClauses(clauses)
         }
+        // This fast path performs its own graphId source selection and residual-predicate
+        // validation. Trying it before generic source scoping avoids traversing the same AST
+        // twice and constructing a throwaway single-source pipeline for the common bounded
+        // wide-string query.
+        tryFastFilteredNodeLimit(clauses)?.let { return it }
         graphScopedSources(clauses)?.let { scopedSources ->
             if (scopedSources != sources) {
                 return QueryPipeline(
@@ -278,7 +284,6 @@ class QueryPipeline private constructor(
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredStringCount(clauses)
-            ?: tryFastFilteredNodeLimit(clauses)
             ?: tryStreamingFilteredNodeMatch(clauses)
             ?: tryStreamingFilteredMatchLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
@@ -1097,13 +1102,14 @@ class QueryPipeline private constructor(
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
         val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
-        val routedGraphId = graphIdEquality(where.condition, variable)
+        val graphRoute = conjunctiveGraphIdRoute(where.condition, variable)
+        val routedGraphId = graphRoute.graphId
         val candidateSources = routedGraphId
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
         val filterCondition = routedGraphId
-            ?.takeIf { graphId -> graphIdEqualities(where.condition, setOf(variable)) == setOf(graphId) }
-            ?.let { graphId -> stripConjunctiveGraphIdEquality(where.condition, variable, graphId) }
+            ?.takeUnless { graphRoute.conflicting }
+            ?.let { graphRoute.residual }
             ?: where.condition
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
@@ -1421,7 +1427,8 @@ class QueryPipeline private constructor(
                     source.graph,
                     nodeClass,
                     filter,
-                    limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE
+                    limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
+                    storageSourceCount = candidateSources.size
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
@@ -1521,7 +1528,12 @@ class QueryPipeline private constructor(
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in candidateSources) {
             val nodePredicate = nodePredicateFactory?.invoke(source)
-            val candidates = directStringCandidates(source.graph, nodeClass, filter)
+            val candidates = directStringCandidates(
+                source.graph,
+                nodeClass,
+                filter,
+                storageSourceCount = candidateSources.size
+            )
                 .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             for (node in candidates) {
                 val candidate = nodeValue(source, node)
@@ -2065,7 +2077,8 @@ class QueryPipeline private constructor(
         disjunction: DirectStringDisjunction,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
         excludedTypes: Set<Class<out Node>> = emptySet(),
-        limit: Int = Int.MAX_VALUE
+        limit: Int = Int.MAX_VALUE,
+        storageSourceCount: Int = sources.size
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
         val candidateSequences = mutableListOf<Sequence<Node>>()
@@ -2085,7 +2098,8 @@ class QueryPipeline private constructor(
                 candidateType,
                 filters,
                 completeScanLimit,
-                tracker
+                tracker,
+                storageSourceCount
             )
             if (fused != null) {
                 candidateSequences += fused
@@ -2889,44 +2903,64 @@ class QueryPipeline private constructor(
         return CypherResult(columns, rows)
     }
 
+    private data class ConjunctiveGraphIdRoute(
+        val graphId: String?,
+        val conflicting: Boolean,
+        val residual: CypherExpr?
+    )
+
+    private fun conjunctiveGraphIdRoute(
+        expression: CypherExpr,
+        variable: String
+    ): ConjunctiveGraphIdRoute {
+        var graphId: String? = null
+        var conflicting = false
+
+        fun visit(candidate: CypherExpr): CypherExpr? = when (candidate) {
+            is CypherExpr.And -> {
+                val left = visit(candidate.left)
+                val right = visit(candidate.right)
+                when {
+                    left == null -> right
+                    right == null -> left
+                    left === candidate.left && right === candidate.right -> candidate
+                    else -> CypherExpr.And(left, right)
+                }
+            }
+            is CypherExpr.Comparison -> {
+                val value = graphIdEqualityValue(candidate, variable)
+                if (value == null) {
+                    candidate
+                } else {
+                    val selected = graphId
+                    if (selected == null) graphId = value else if (selected != value) conflicting = true
+                    null
+                }
+            }
+            else -> candidate
+        }
+
+        val residual = visit(expression)
+        return ConjunctiveGraphIdRoute(graphId, conflicting, residual)
+    }
+
     private fun graphIdEquality(expression: CypherExpr, variable: String): String? = when (expression) {
         is CypherExpr.And -> graphIdEquality(expression.left, variable)
             ?: graphIdEquality(expression.right, variable)
-        is CypherExpr.Comparison -> if (expression.op == "=") {
-            when {
-                isGraphIdReference(expression.left, variable) ->
-                    graphIdValue(expression.right)
-                isGraphIdReference(expression.right, variable) ->
-                    graphIdValue(expression.left)
-                else -> null
-            }
-        } else null
+        is CypherExpr.Comparison -> graphIdEqualityValue(expression, variable)
         else -> null
     }
 
-    private fun stripConjunctiveGraphIdEquality(
-        expression: CypherExpr,
-        variable: String,
-        graphId: String
-    ): CypherExpr? = when (expression) {
-        is CypherExpr.And -> {
-            val left = stripConjunctiveGraphIdEquality(expression.left, variable, graphId)
-            val right = stripConjunctiveGraphIdEquality(expression.right, variable, graphId)
+    private fun graphIdEqualityValue(expression: CypherExpr.Comparison, variable: String): String? =
+        if (expression.op == "=") {
             when {
-                left == null -> right
-                right == null -> left
-                else -> CypherExpr.And(left, right)
+                isGraphIdReference(expression.left, variable) -> graphIdValue(expression.right)
+                isGraphIdReference(expression.right, variable) -> graphIdValue(expression.left)
+                else -> null
             }
+        } else {
+            null
         }
-        is CypherExpr.Comparison -> expression.takeUnless { comparison ->
-            comparison.op == "=" && when {
-                isGraphIdReference(comparison.left, variable) -> graphIdValue(comparison.right) == graphId
-                isGraphIdReference(comparison.right, variable) -> graphIdValue(comparison.left) == graphId
-                else -> false
-            }
-        }
-        else -> expression
-    }
 
     private fun graphIdEqualities(expression: CypherExpr, variables: Set<String>): Set<String> = when (expression) {
         is CypherExpr.And -> graphIdEqualities(expression.left, variables) +
@@ -3784,12 +3818,13 @@ class QueryPipeline private constructor(
         type: Class<T>,
         filters: List<DirectStringFilter>,
         limit: Int,
-        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null
+        tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
+        sourceCount: Int = sources.size
     ): Sequence<T>? {
         val predicates = filters.map { filter ->
             StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
         }
-        val storageWorkConsumer = stringStorageWorkConsumer(sources.size, tracker)
+        val storageWorkConsumer = stringStorageWorkConsumer(sourceCount, tracker)
         val workAware = graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
         return if (workAware != null || tracker != null) {
             workAware

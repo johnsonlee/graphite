@@ -491,7 +491,6 @@ class CrossGraphCypherExecutor private constructor(
         this(graphs, true, { executionContext.workTracker })
 
     init {
-        require(graphs.map { it.id }.distinct().size == graphs.size) { "Graph ids must be unique" }
         delegate = CypherExecutor(
             QueryPipeline(graphs, workTrackingEnabled),
             workTrackerFactory
