@@ -21,6 +21,7 @@ env:
   LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 97244e56e211b83b6372569d76843bf53cfb9f591565d53ace90810002630cb5
   BENCHMARK_REPORT_TRANSITION_SHA256: 97244e56e211b83b6372569d76843bf53cfb9f591565d53ace90810002630cb5
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: 97244e56e211b83b6372569d76843bf53cfb9f591565d53ace90810002630cb5
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 97244e56e211b83b6372569d76843bf53cfb9f591565d53ace90810002630cb5
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1611,13 +1612,19 @@ jobs:
         SHARD: ${{ matrix.shard }}
       run: |
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-latency-anchor' "${COMPARATOR}"; then
-          # Bootstrap is restricted to the reviewed pre-anchor comparator blob.
-          test "$(sha256sum "${COMPARATOR}" | cut -d ' ' -f 1)" = \
-            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+        POINT_ESTIMATE_POLICY='const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold, true);'
+        if ! grep -Fq "${POINT_ESTIMATE_POLICY}" "${COMPARATOR}"; then
+          # Transition only: the base comparator has the anchor command but still lets
+          # confidence overlap suppress a point-estimate regression. Use the reviewed,
+          # hash-pinned candidate policy only after its contract tests pass.
           test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+            "${LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256}"
           COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
-          grep -q 'compare-latency-anchor' "${COMPARATOR}"
+          grep -Fq "${POINT_ESTIMATE_POLICY}" "${COMPARATOR}"
+          grep -Fq \
+            'const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold, true);' \
+            "${COMPARATOR}"
         fi
         if node "${COMPARATOR}" compare-latency-anchor \
           --anchor "benchmark-results/reference-latency-${SHARD}.json" \

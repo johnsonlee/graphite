@@ -1494,6 +1494,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     );
     assert.match(
         workflow,
+        new RegExp(`LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ${sha256(comparator)}`)
+    );
+    assert.match(
+        workflow,
         new RegExp(`REAL_ONLY_RESOURCE_HARNESS_SHA256: ${sha256(realOnlyResourceHarness)}`)
     );
     const aggregateJob = workflow.slice(
@@ -1540,6 +1544,34 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         anchorEnforcement,
         /CANDIDATE_GATE_TEST_JOB: \$\{\{ needs\.candidate-gate-tests\.result \}\}/,
     );
+    assert.match(anchorEnforcement, /COMPARATOR=base\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.doesNotMatch(
+        anchorEnforcement,
+        /if ! grep -q 'compare-latency-anchor' "\$\{COMPARATOR\}"/,
+        "a base that merely has the command must not bypass the point-estimate policy transition",
+    );
+    assert.match(
+        anchorEnforcement,
+        /POINT_ESTIMATE_POLICY='const baseComparison = compareJmh\(baseResults, candidateResults, regressionThreshold, true\);'/,
+    );
+    assert.match(
+        anchorEnforcement,
+        /if ! grep -Fq "\$\{POINT_ESTIMATE_POLICY\}" "\$\{COMPARATOR\}"/,
+    );
+    assert.match(anchorEnforcement, /test "\$\{CANDIDATE_GATE_TEST_JOB\}" = success/);
+    assert.match(
+        anchorEnforcement,
+        /sha256sum candidate\/\.github\/scripts\/benchmark-gate\.mjs/,
+    );
+    assert.match(
+        anchorEnforcement,
+        /"\$\{LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256\}"/,
+    );
+    assert.match(anchorEnforcement, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.match(
+        anchorEnforcement,
+        /const anchorComparison = compareJmh\(anchorResults, candidateResults, anchorThreshold, true\);/,
+    );
     assert.equal((workflow.match(/^        - graph_count: (4|17|36)$/gm) ?? []).length, 12);
     assert.equal((workflow.match(/^          group: (position|string|scan|aggregate)$/gm) ?? []).length, 12);
     assert.match(workflow, /length == 33 and/);
@@ -1579,6 +1611,25 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     );
     assert.match(fixturePreparation, /Download candidate wrapped-query JMH JAR/);
     assert.doesNotMatch(fixturePreparation, /:webgraph:jmhJar/);
+});
+
+test("latency workflow transitions when base has the anchor command but lacks point-estimate enforcement", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const start = workflow.indexOf("    - name: Enforce known-good anchor and current-base regression gate");
+    const end = workflow.indexOf("    - name: Upload wrapped-query latency results", start);
+    const enforcement = workflow.slice(start, end);
+    const policy = enforcement.match(/POINT_ESTIMATE_POLICY='([^']+)'/)?.[1];
+    const oldBaseWithAnchorCommand = "else if (command === 'compare-latency-anchor') compareLatencyAnchorCommand(args);";
+    const reviewedCandidate = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url), "utf8");
+
+    assert.ok(oldBaseWithAnchorCommand.includes("compare-latency-anchor"));
+    assert.equal(typeof policy, "string");
+    assert.equal(oldBaseWithAnchorCommand.includes(policy), false);
+    assert.equal(reviewedCandidate.includes(policy), true);
+    assert.match(enforcement, /if ! grep -Fq "\$\{POINT_ESTIMATE_POLICY\}" "\$\{COMPARATOR\}"/);
+    assert.match(enforcement, /test "\$\{CANDIDATE_GATE_TEST_JOB\}" = success/);
+    assert.match(enforcement, /sha256sum candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
+    assert.match(enforcement, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
 });
 
 test("historical known-bad latency proof runs only in the scheduled workflow", () => {
