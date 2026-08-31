@@ -77,6 +77,18 @@ private val callSiteScanExecutor by lazy {
     }
 }
 
+private data class ParallelCallSiteScanResult(
+    val workerIndex: Int,
+    val matches: IntArray,
+    val nodeIds: IntArray?,
+    val propertyStringIds: Array<IntArray>?,
+    val scannedCount: Int,
+    val expectedCount: Int
+) {
+    val capturedCompleteIndex: Boolean
+        get() = nodeIds != null && propertyStringIds != null && scannedCount == expectedCount
+}
+
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
  *
@@ -405,7 +417,7 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod", "ThrowsCount", "TooGenericExceptionCaught")
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "ThrowsCount", "TooGenericExceptionCaught")
     private fun <T : Node> parallelRawCallSiteStringDisjunction(
         type: Class<T>,
         predicates: List<StringPropertyPredicate>,
@@ -419,6 +431,11 @@ internal class MappedWebGraphBackedGraph(
 
         val workerCount = minOf(callSiteScanParallelism, nodeCount.toInt())
         val chunkSize = (nodeCount + workerCount - 1L) / workerCount
+        val predicatePropertyIndexes = predicates.map { predicate ->
+            callSiteStringPropertyIndex(predicate.property).also { propertyIndex ->
+                check(propertyIndex >= 0) { "Unsupported CallSite string property: ${predicate.property}" }
+            }
+        }
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
         val matchStates = predicates.map { predicate ->
             sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
@@ -431,50 +448,83 @@ internal class MappedWebGraphBackedGraph(
             if (start >= end) return@mapNotNull null
             Triple(workerIndex, start, end)
         }
+        var indexReservation = if (callSiteStringIndex == null) {
+            estimatedMappedCallSiteStringIndexCountBytes(stringTable.size())
+                ?.let(MappedCallSiteStringIndexMemoryBudget::tryReserve)
+        } else {
+            null
+        }
         val abort = AtomicBoolean()
-        val completion = ExecutorCompletionService<Pair<Int, IntArray>>(callSiteScanExecutor)
+        val completion = ExecutorCompletionService<ParallelCallSiteScanResult>(callSiteScanExecutor)
         val tasks = scanRanges.map { (workerIndex, start, end) ->
-            Callable<Pair<Int, IntArray>> {
+            Callable {
                 val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
                 callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
+                    val expectedCount = end - start
                     val matches = IntArrayList(minOf(limit, end - start))
+                    val capturedNodeIds = indexReservation?.let { IntArray(expectedCount) }
+                    val capturedStringIds = indexReservation?.let {
+                        Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(expectedCount) }
+                    }
                     val accounting = BufferedGraphWorkConsumer(workConsumer)
                     var inspected = 0
                     try {
                         for (nodeId in nodeTypeIndex.ids(type, start, end)) {
-                            if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                            if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                                 (abort.get() || Thread.currentThread().isInterrupted)
                             ) {
                                 if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
                                 throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                             }
                             accounting.consume()
-                            val matched = predicates.indices.any { index ->
-                                val predicate = predicates[index]
-                                val stringId = rawStringPropertyIndex(nodeId, type, predicate.property)
-                                    ?: return@any false
-                                val states = matchStates[index]
-                                when (states[stringId]) {
-                                    RAW_STRING_MATCH -> true
-                                    RAW_STRING_MISS -> false
-                                    else -> stringMatches(
-                                        stringTable.get(stringId),
-                                        predicate.transform,
-                                        predicate.mode,
-                                        predicate.expected
-                                    ).also { result ->
-                                        // A stale byte read only repeats the same deterministic verification.
-                                        states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                            var matched = false
+                            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                                capturedNodeIds?.set(inspected, nodeId)
+                                capturedStringIds?.let { stringIds ->
+                                    stringIds[CALLER_CLASS_PROPERTY_INDEX][inspected] = callerClass
+                                    stringIds[CALLER_NAME_PROPERTY_INDEX][inspected] = callerName
+                                    stringIds[CALLEE_CLASS_PROPERTY_INDEX][inspected] = calleeClass
+                                    stringIds[CALLEE_NAME_PROPERTY_INDEX][inspected] = calleeName
+                                }
+                                matched = predicates.indices.any { index ->
+                                    val predicate = predicates[index]
+                                    val stringId = when (predicatePropertyIndexes[index]) {
+                                        CALLER_CLASS_PROPERTY_INDEX -> callerClass
+                                        CALLER_NAME_PROPERTY_INDEX -> callerName
+                                        CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
+                                        else -> calleeName
+                                    }
+                                    val states = matchStates[index]
+                                    when (states[stringId]) {
+                                        RAW_STRING_MATCH -> true
+                                        RAW_STRING_MISS -> false
+                                        else -> stringMatches(
+                                            stringTable.get(stringId),
+                                            predicate.transform,
+                                            predicate.mode,
+                                            predicate.expected
+                                        ).also { result ->
+                                            // A stale byte read only repeats the same deterministic verification.
+                                            states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                                        }
                                     }
                                 }
                             }
+                            inspected++
                             if (matched) {
                                 matches.add(nodeId)
                                 if (matches.size == limit) break
                             }
                         }
-                        workerIndex to matches.toIntArray()
+                        ParallelCallSiteScanResult(
+                            workerIndex,
+                            matches.toIntArray(),
+                            capturedNodeIds,
+                            capturedStringIds,
+                            inspected,
+                            expectedCount
+                        )
                     } finally {
                         accounting.flush()
                     }
@@ -488,14 +538,14 @@ internal class MappedWebGraphBackedGraph(
         }
         callSiteParallelScanCount.incrementAndGet()
         tasks.forEach(completion::submit)
-        val results = arrayOfNulls<IntArray>(tasks.size)
+        val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
         var received = 0
         var failure: Throwable? = null
         var interruption: InterruptedException? = null
         while (received < tasks.size) {
             try {
-                val (workerIndex, workerResult) = completion.take().get()
-                results[workerIndex] = workerResult
+                val workerResult = completion.take().get()
+                results[workerResult.workerIndex] = workerResult
                 received++
             } catch (error: InterruptedException) {
                 abort.set(true)
@@ -510,13 +560,142 @@ internal class MappedWebGraphBackedGraph(
             }
         }
         interruption?.let { error ->
+            indexReservation?.close()
+            indexReservation = null
             Thread.currentThread().interrupt()
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
         }
-        failure?.let { throw it }
+        failure?.let { error ->
+            indexReservation?.close()
+            indexReservation = null
+            throw error
+        }
+        indexReservation?.let { reservation ->
+            indexReservation = null
+            val completed = results.filterNotNull()
+            if (completed.size == tasks.size && completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)) {
+                buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+            } else {
+                reservation.close()
+            }
+        }
         val matchedNodeIds = results.asSequence().filterNotNull()
-            .flatMap(IntArray::asSequence).take(limit)
+            .flatMap { result -> result.matches.asSequence() }.take(limit)
         return matchedNodeIds.mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
+    }
+
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth", "TooGenericExceptionCaught")
+    private fun buildAndPublishCallSiteStringIndex(
+        scanResults: List<ParallelCallSiteScanResult>,
+        nodeCount: Long,
+        reservation: MappedCallSiteStringIndexMemoryBudget.Reservation,
+        workConsumer: GraphWorkConsumer?
+    ) {
+        try {
+            val stringCount = stringTable.size()
+            val endsByStringId = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(stringCount) }
+            val countAccounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                scanResults.forEach { result ->
+                    val stringIds = checkNotNull(result.propertyStringIds)
+                    repeat(result.scannedCount) { index ->
+                        countAccounting.consume()
+                        stringIds.indices.forEach { propertyIndex ->
+                            endsByStringId[propertyIndex][stringIds[propertyIndex][index]]++
+                        }
+                    }
+                }
+            } finally {
+                countAccounting.flush()
+            }
+            val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                endsByStringId[propertyIndex].count { count -> count > 0 }
+            }
+            val retainedBytes = estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount,
+                stringCount,
+                uniqueCounts
+            ) ?: run {
+                reservation.close()
+                return
+            }
+            if (!reservation.tryGrowTo(retainedBytes)) {
+                reservation.close()
+                return
+            }
+            val capacity = nodeCount.toInt()
+            val usedStringIds = Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                IntArray(uniqueCounts[propertyIndex])
+            }
+            val postingEnds = Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                IntArray(uniqueCounts[propertyIndex])
+            }
+            val postings = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(capacity) }
+            endsByStringId.indices.forEach { propertyIndex ->
+                val ends = endsByStringId[propertyIndex]
+                val used = usedStringIds[propertyIndex]
+                var usedIndex = 0
+                var postingOffset = 0
+                for (stringId in ends.indices) {
+                    val count = ends[stringId]
+                    if (count == 0) continue
+                    used[usedIndex++] = stringId
+                    ends[stringId] = postingOffset
+                    postingOffset += count
+                }
+                check(usedIndex == used.size && postingOffset == capacity)
+            }
+            val postingAccounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                scanResults.forEach { result ->
+                    val nodeIds = checkNotNull(result.nodeIds)
+                    val stringIds = checkNotNull(result.propertyStringIds)
+                    repeat(result.scannedCount) { index ->
+                        postingAccounting.consume()
+                        stringIds.indices.forEach { propertyIndex ->
+                            postings[propertyIndex][endsByStringId[propertyIndex][stringIds[propertyIndex][index]]++] =
+                                nodeIds[index]
+                        }
+                    }
+                }
+            } finally {
+                postingAccounting.flush()
+            }
+            postingEnds.indices.forEach { propertyIndex ->
+                val used = usedStringIds[propertyIndex]
+                val ends = endsByStringId[propertyIndex]
+                val compactEnds = postingEnds[propertyIndex]
+                compactEnds.indices.forEach { row -> compactEnds[row] = ends[used[row]] }
+            }
+            reservation.shrinkTo(retainedBytes)
+            val built = MappedCallSiteStringIndex(
+                Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                    MappedCallSiteStringIndex.PropertyCsr(
+                        postingEnds[propertyIndex],
+                        usedStringIds[propertyIndex],
+                        postings[propertyIndex]
+                    )
+                },
+                stringTable,
+                nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
+                nodeIdCapacity = nodeOffsets.size,
+                rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                reservation = reservation,
+                buildWorkConsumer = workConsumer
+            )
+            val published = synchronized(callSiteStringIndexLock) {
+                if (callSiteStringIndex == null) {
+                    callSiteStringIndex = built
+                    true
+                } else {
+                    false
+                }
+            }
+            if (!published) built.close()
+        } catch (error: Throwable) {
+            reservation.close()
+            throw error
+        }
     }
 
     private fun callSitePredicatesCannotMatch(
@@ -1045,20 +1224,28 @@ internal class MappedWebGraphBackedGraph(
                     throw CancellationException("Mapped CallSite string index build interrupted")
                 }
                 accounting.consume()
-                val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
-                val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
-                val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
-                action(
-                    nodeId,
-                    mappedNodeData.getInt(fields),
-                    mappedNodeData.getInt(fields + Int.SIZE_BYTES),
-                    mappedNodeData.getInt(calleeFields),
-                    mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
-                )
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    action(nodeId, callerClass, callerName, calleeClass, calleeName)
+                }
             }
         } finally {
             accounting.flush()
         }
+    }
+
+    private inline fun withRawCallSiteStringIds(
+        nodeId: Int,
+        action: (Int, Int, Int, Int) -> Unit
+    ) {
+        val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
+        val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+        val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
+        action(
+            mappedNodeData.getInt(fields),
+            mappedNodeData.getInt(fields + Int.SIZE_BYTES),
+            mappedNodeData.getInt(calleeFields),
+            mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
+        )
     }
 
     @Suppress("CyclomaticComplexMethod")

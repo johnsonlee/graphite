@@ -182,7 +182,22 @@ test("64-real-graph warm pressure proves the trigram path instead of requiring a
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(missingTrigram.passed, false);
-    assert.match(missingTrigram.errors.join("\n"), /did not execute the retained trigram index path/);
+    assert.match(missingTrigram.errors.join("\n"), /all 64 graphs/);
+
+    const partialWarmCoverage = compareGraphIdPressure(
+        [warmBase],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 63,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 63,
+            callSiteParallelScanCount: 0,
+            callSiteScanPeakActiveWorkers: 0
+        }, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(partialWarmCoverage.passed, false);
+    assert.match(partialWarmCoverage.errors.join("\n"), /admitted=63, trigram=63/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {

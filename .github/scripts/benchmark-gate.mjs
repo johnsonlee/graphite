@@ -645,10 +645,12 @@ export function compareGraphIdPressure(
             errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
         }
     } else if (candidateIndexState === "warm") {
-        if (candidateResources.callSiteIndexAdmittedGraphs <= 0 ||
-            candidateResources.callSiteTrigramIndexedGraphs <= 0
+        if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
+            candidateResources.callSiteTrigramIndexedGraphs !== 64
         ) {
-            errors.push("candidate: warm selected-graph workload did not execute the retained trigram index path");
+            errors.push("candidate: warm selected-graph workload must execute the retained trigram index path " +
+                `for all 64 graphs; admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
+                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
         }
     }
 

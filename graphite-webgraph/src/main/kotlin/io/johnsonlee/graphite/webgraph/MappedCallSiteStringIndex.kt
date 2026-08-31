@@ -718,7 +718,7 @@ internal data class CallSitePredicateKey(
 
 internal object MappedCallSiteStringIndexMemoryBudget {
     private const val BUDGET_PROPERTY = "graphite.webgraph.callSiteStringIndexBudgetBytes"
-    private const val DEFAULT_MAX_HEAP_FRACTION = 4L
+    private const val DEFAULT_MAX_HEAP_FRACTION = 2L
     private var retainedBytes = 0L
 
     val maxBytes: Long by lazy {

@@ -130,6 +130,12 @@ simultaneously inside one scan. The real64 comparator fails closed unless the ca
 least one such scan and observes at least two active workers; merely creating eight threads cannot
 satisfy the gate.
 
+When a bounded scan reaches the end of the selected graph, the candidate reuses the already-read
+node and string ids to publish the combined CallSite CSR index instead of discarding them and later
+performing two more mapped-file passes. Subsequent routing queries for that graph use the retained
+index. The global CallSite-index budget defaults to half of `-Xmx` (4 GiB under this gate's 8 GiB
+heap) and can be overridden with `-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
+
 For the API reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
 verify singular JSON and query-string `graph` parsing; the pressure timing deliberately excludes
@@ -154,7 +160,9 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
 The comparator fails unless both revisions report exactly 64 distinct graph paths, all 768 queries
 complete without timeout/failure, every manifest graph id has all four routing forms at all three
 selectivities, and both query-level graphId and API graph-parameter P50/P95 are each at least 10x
-faster. It independently
+faster. A warm result is rejected unless all 64 graphs retain the combined CallSite index and all
+64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
+coverage. It independently
 rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
 workload cannot pass. This prevents source pruning alone from satisfying the goal while the
 already-selected single-graph API path remains slow.

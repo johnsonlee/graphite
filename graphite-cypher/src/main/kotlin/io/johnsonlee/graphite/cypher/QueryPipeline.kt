@@ -227,19 +227,6 @@ class QueryPipeline private constructor(
     @Suppress("CyclomaticComplexMethod", "ReturnCount")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
-        graphScopedSources(clauses)?.let { scopedSources ->
-            if (scopedSources != sources) {
-                return QueryPipeline(
-                    scopedSources,
-                    qualified = true,
-                    workTrackingEnabled = workTrackingEnabled
-                ).execute(
-                    clauses,
-                    activeParameters.get().orEmpty(),
-                    activeWorkTracker.get()
-                )
-            }
-        }
         if (hasUnknownNodeLabel(clauses)) return executeGeneralClauses(clauses)
         if (MethodQueryExecutor.referencesMethod(clauses)) {
             if (activeParameters.get().orEmpty().isEmpty()) {
@@ -253,6 +240,19 @@ class QueryPipeline private constructor(
                 if (methodResult != null) return methodResult
             }
             return executeGeneralClauses(clauses)
+        }
+        graphScopedSources(clauses)?.let { scopedSources ->
+            if (scopedSources != sources) {
+                return QueryPipeline(
+                    scopedSources,
+                    qualified = true,
+                    workTrackingEnabled = workTrackingEnabled
+                ).execute(
+                    clauses,
+                    activeParameters.get().orEmpty(),
+                    activeWorkTracker.get()
+                )
+            }
         }
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)

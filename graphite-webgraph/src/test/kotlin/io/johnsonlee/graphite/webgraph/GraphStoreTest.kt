@@ -837,6 +837,69 @@ class GraphStoreTest {
                     assertTrue(interruptedFlag.get())
                     assertEquals(expectedWorkers.toLong(), loaded.callSiteScanAbortedWorkers())
                 }
+
+                loaded.clearStringPropertyIndexes()
+                loaded.resetCallSiteScanMetrics()
+                val coldZero = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-absent"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = ParallelGraphWorkBatchConsumer { }
+                ).orEmpty().toList()
+                assertTrue(coldZero.isEmpty())
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
+
+                val warm = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "target"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = ParallelGraphWorkBatchConsumer { }
+                ).orEmpty().map { it.id.value }.toList()
+                assertEquals(listOf(0), warm)
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+
+                loaded.clearStringPropertyIndexes()
+                val budgetBeforeFailedHandoff = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                val handoffFailure = assertFailsWith<IllegalStateException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                StringValueTransform.LOWERCASE,
+                                StringMatchMode.CONTAINS,
+                                "definitely-absent"
+                            )
+                        ),
+                        limit = 1,
+                        workConsumer = ParallelGraphWorkBatchConsumer {
+                            check(Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
+                                "fused index budget failure"
+                            }
+                        }
+                    ).orEmpty().toList()
+                }
+                assertEquals("fused index budget failure", handoffFailure.message)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(0, loaded.callSiteScanPeakActiveWorkers())

@@ -92,6 +92,13 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })
         assertTrue(result.rows.all { it["signature"] == method.signature })
         assertEquals(listOf(listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
+
+        val selected = executor.execute(
+            "MATCH (m:Method) WHERE m.graphId = 'billing' AND m.signature = '${method.signature}' " +
+                "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10"
+        )
+        assertEquals(listOf("billing"), selected.rows.map { it["graph"] })
+        assertEquals(listOf(method.signature), selected.rows.map { it["signature"] })
     }
 
     @Test
