@@ -971,8 +971,8 @@ export function compareLatencyAnchor(
     anchorThreshold = 50,
     expectedKeys = null
 ) {
-    const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold);
-    const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold);
+    const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold, true);
+    const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold, true);
     const errors = [
         ...baseComparison.errors,
         ...anchorComparison.errors.map((error) => `known-good anchor: ${error}`)
@@ -1235,7 +1235,8 @@ export function renderLatencyAnchorReport(comparison) {
         "### Wrapped case-insensitive query latency",
         "",
         "The candidate may not regress more than 50% against the pinned known-good anchor or 15%",
-        "against the current PR base. Suspected failures must repeat in reverse execution order.",
+        "against the current PR base. Every point estimate beyond either threshold triggers a",
+        "reverse-order confirmation and blocks only when the same benchmark repeats the regression.",
         "All measured rows use real persisted graph fixtures; synthetic graphs are excluded.",
         "",
         "| Benchmark | Known-good | PR base | PR | Regression vs anchor | Regression vs base | Confirmation | Gate |",

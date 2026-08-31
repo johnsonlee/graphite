@@ -774,6 +774,20 @@ test("latency anchor blocks drift against either comparator", () => {
     assert.equal(baseBlocked.rows[0].blocked, true);
 });
 
+test("latency anchor confirms point regressions despite overlapping confidence intervals", () => {
+    const common = { unit: "ms/op", confidence: [1, 30] };
+    const comparison = compareLatencyAnchor(
+        [jmhResult({ ...common, score: 10 })],
+        [jmhResult({ ...common, score: 10 })],
+        [jmhResult({ ...common, score: 12 })]
+    );
+
+    assert.equal(comparison.rows[0].confidenceSeparated, false);
+    assert.equal(comparison.rows[0].aboveThreshold, true);
+    assert.equal(comparison.rows[0].blocked, true);
+    assert.equal(comparison.passed, false);
+});
+
 test("latency anchor confirmation evaluates only initially blocked keys", () => {
     const first = "example.First.query";
     const second = "example.Second.query";
