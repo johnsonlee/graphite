@@ -7,8 +7,11 @@ import java.io.PrintStream
 import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -143,6 +146,56 @@ class GraphiteCommandTest {
         } finally {
             classesDir.toFile().deleteRecursively()
             outputDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `build from jar without persistable resources writes loadable empty store`() {
+        val root = Files.createTempDirectory("build-empty-resource-jar-test")
+        val classesDir = Files.createDirectories(root.resolve("classes"))
+        val fixtureJar = root.resolve("class-only-fixture.jar")
+        val outputDir = root.resolve("graph")
+        try {
+            val javaFile = root.resolve("ClassOnlySample.java")
+            Files.writeString(
+                javaFile,
+                """
+                package sample;
+                public class ClassOnlySample {
+                    public int value() { return 42; }
+                }
+                """.trimIndent()
+            )
+            val compiler = requireNotNull(javax.tools.ToolProvider.getSystemJavaCompiler())
+            assertEquals(
+                0,
+                compiler.run(null, null, null, "-d", classesDir.toString(), javaFile.toString()),
+                "Java fixture compilation should succeed"
+            )
+
+            JarOutputStream(Files.newOutputStream(fixtureJar)).use { jar ->
+                jar.putNextEntry(JarEntry("sample/ClassOnlySample.class"))
+                Files.copy(classesDir.resolve("sample/ClassOnlySample.class"), jar)
+                jar.closeEntry()
+            }
+
+            val cmd = BuildCommand().apply {
+                input = fixtureJar
+                output = outputDir
+                includePackages = listOf("sample")
+            }
+            val (_, err, code) = captureOutput { cmd.call() }
+            assertEquals(0, code, "JAR graph build should succeed, stderr: $err")
+
+            val resourceStore = outputDir.resolve("graph.resources")
+            assertTrue(Files.isRegularFile(resourceStore))
+            assertEquals(8L, Files.size(resourceStore), "An empty persisted resource store is header-only")
+
+            val loaded = GraphStore.load(outputDir)
+            assertNull(loaded.resources.unavailableReason)
+            assertEquals(emptyList(), loaded.resources.list("**").toList())
+        } finally {
+            root.toFile().deleteRecursively()
         }
     }
 
