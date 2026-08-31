@@ -72,8 +72,13 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -682,10 +687,11 @@ class GraphStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod", "NestedBlockDepth")
     fun `bounded mapped CallSite scan uses ordered intra graph workers before index admission`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
-            repeat(4_096) { index ->
+            repeat(32_768) { index ->
                 val marker = if (index == 100 || index % 512 == 0) "Target" else "Feature"
                 addNode(
                     CallSiteNode(
@@ -754,33 +760,113 @@ class GraphStoreTest {
                     assertTrue(loaded.callSiteScanPeakActiveWorkers() > 1)
                 }
 
-                val failure = assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                null,
-                                StringMatchMode.CONTAINS,
-                                "Target"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = object : GraphWorkBatchConsumer {
-                            override fun consume(workUnits: Long): Unit = error("parallel scan budget failure")
+                if (Runtime.getRuntime().availableProcessors() > 1) {
+                    loaded.resetCallSiteScanMetrics()
+                    val expectedWorkers = minOf(8, Runtime.getRuntime().availableProcessors())
+                    val firstBatchReached = CountDownLatch(expectedWorkers)
+                    val failureClaimed = AtomicBoolean()
+                    val consumedWork = AtomicLong()
+                    val failure = assertFailsWith<IllegalStateException> {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(
+                                StringPropertyPredicate(
+                                    "caller_class",
+                                    null,
+                                    StringMatchMode.CONTAINS,
+                                    "NeverMatches"
+                                )
+                            ),
+                            limit = 1,
+                            workConsumer = object : GraphWorkBatchConsumer {
+                                override fun consume(workUnits: Long) {
+                                    consumedWork.addAndGet(workUnits)
+                                    val failThisWorker = failureClaimed.compareAndSet(false, true)
+                                    firstBatchReached.countDown()
+                                    check(firstBatchReached.await(5, TimeUnit.SECONDS))
+                                    if (failThisWorker) error("parallel scan budget failure")
+                                    while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
+                                        Thread.onSpinWait()
+                                    }
+                                }
+                            }
+                        ).orEmpty().toList()
+                    }
+                    assertEquals("parallel scan budget failure", failure.message)
+                    assertEquals(expectedWorkers * 1_024L, consumedWork.get())
+                    assertEquals(expectedWorkers - 1L, loaded.callSiteScanAbortedWorkers())
+
+                    loaded.resetCallSiteScanMetrics()
+                    val interruptionBatchReached = CountDownLatch(expectedWorkers)
+                    val releaseInterruptedWorkers = CountDownLatch(1)
+                    val interruptedFailure = AtomicReference<Throwable>()
+                    val interruptedFlag = AtomicBoolean()
+                    val interruptedRequest = Thread {
+                        try {
+                            loaded.nodesByStringPropertyDisjunction(
+                                CallSiteNode::class.java,
+                                listOf(
+                                    StringPropertyPredicate(
+                                        "caller_class",
+                                        null,
+                                        StringMatchMode.CONTAINS,
+                                        "NeverMatches"
+                                    )
+                                ),
+                                limit = 1,
+                                workConsumer = object : GraphWorkBatchConsumer {
+                                    override fun consume(workUnits: Long) {
+                                        interruptionBatchReached.countDown()
+                                        check(releaseInterruptedWorkers.await(5, TimeUnit.SECONDS))
+                                    }
+                                }
+                            ).orEmpty().toList()
+                            interruptedFailure.set(AssertionError("Interrupted scan completed normally"))
+                        } catch (error: Throwable) {
+                            interruptedFailure.set(error)
+                            interruptedFlag.set(Thread.currentThread().isInterrupted)
                         }
-                    ).orEmpty().toList()
+                    }
+                    interruptedRequest.start()
+                    try {
+                        assertTrue(interruptionBatchReached.await(5, TimeUnit.SECONDS))
+                        interruptedRequest.interrupt()
+                    } finally {
+                        releaseInterruptedWorkers.countDown()
+                    }
+                    interruptedRequest.join(5_000)
+                    assertFalse(interruptedRequest.isAlive)
+                    assertTrue(interruptedFailure.get() is CancellationException)
+                    assertEquals("Mapped string-property scan interrupted", interruptedFailure.get().message)
+                    assertTrue(interruptedFlag.get())
+                    assertEquals(expectedWorkers.toLong(), loaded.callSiteScanAbortedWorkers())
                 }
-                assertEquals("parallel scan budget failure", failure.message)
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
+                assertEquals(0L, loaded.callSiteScanAbortedWorkers())
             } finally {
                 loaded.close()
             }
         } finally {
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `buffered graph work does not replay a failed batch`() {
+        var calls = 0
+        val accounting = BufferedGraphWorkConsumer(object : GraphWorkBatchConsumer {
+            override fun consume(workUnits: Long) {
+                calls++
+                error("work rejected")
+            }
+        })
+
+        repeat(1_023) { accounting.consume() }
+        assertEquals("work rejected", assertFailsWith<IllegalStateException> { accounting.consume() }.message)
+        accounting.flush()
+        assertEquals(1, calls)
     }
 
     @Test

@@ -164,6 +164,7 @@ internal class MappedWebGraphBackedGraph(
     private val callSiteParallelScanCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
     private val callSiteScanPeakActiveWorkers = AtomicInteger()
+    private val callSiteScanAbortedWorkers = AtomicLong()
     private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
         MAX_STRING_PROPERTY_INDEXES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
@@ -403,7 +404,7 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod", "ThrowsCount")
+    @Suppress("CyclomaticComplexMethod", "ThrowsCount", "TooGenericExceptionCaught")
     private fun <T : Node> parallelRawCallSiteStringDisjunction(
         type: Class<T>,
         predicates: List<StringPropertyPredicate>,
@@ -444,6 +445,7 @@ internal class MappedWebGraphBackedGraph(
                             if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                                 (abort.get() || Thread.currentThread().isInterrupted)
                             ) {
+                                if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
                                 throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                             }
                             accounting.consume()
@@ -475,6 +477,9 @@ internal class MappedWebGraphBackedGraph(
                     } finally {
                         accounting.flush()
                     }
+                } catch (error: Throwable) {
+                    abort.set(true)
+                    throw error
                 } finally {
                     callSiteScanActiveWorkers.decrementAndGet()
                 }
@@ -496,7 +501,10 @@ internal class MappedWebGraphBackedGraph(
                 if (interruption == null) interruption = error
             } catch (error: ExecutionException) {
                 abort.set(true)
-                if (failure == null) failure = error.cause ?: error
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
                 received++
             }
         }
@@ -855,10 +863,15 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
 
+    internal fun callSiteScanActiveWorkers(): Int = callSiteScanActiveWorkers.get()
+
+    internal fun callSiteScanAbortedWorkers(): Long = callSiteScanAbortedWorkers.get()
+
     internal fun resetCallSiteScanMetrics() {
         check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
         callSiteParallelScanCount.set(0L)
         callSiteScanPeakActiveWorkers.set(0)
+        callSiteScanAbortedWorkers.set(0L)
     }
 
     internal fun stringPropertyIndexCount(
@@ -1597,8 +1610,9 @@ internal class BufferedGraphWorkConsumer(private val delegate: GraphWorkConsumer
 
     fun flush() {
         if (pending == 0L) return
-        consumeGraphWork(delegate, pending)
+        val batch = pending
         pending = 0L
+        consumeGraphWork(delegate, batch)
     }
 }
 
