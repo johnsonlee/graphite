@@ -353,12 +353,13 @@ open class LargeBroadQueryPressureBenchmark {
         counters.callSiteParallelScanGraphCount = graphs.count { graph ->
             ((invokeInternalMetric(graph, "callSiteParallelScanCount") as? Number)?.toLong() ?: 0L) > 0L
         }.toLong()
-        counters.callSiteStringIndexLookupCount = graphs.sumOf { graph ->
+        val indexLookupCounts = graphs.map { graph ->
             (invokeInternalMetric(graph, "callSiteStringIndexLookupCount") as? Number)?.toLong() ?: 0L
         }
-        counters.callSiteStringIndexLookupGraphCount = graphs.count { graph ->
-            ((invokeInternalMetric(graph, "callSiteStringIndexLookupCount") as? Number)?.toLong() ?: 0L) > 0L
-        }.toLong()
+        counters.callSiteStringIndexLookupCount = indexLookupCounts.sum()
+        counters.callSiteStringIndexLookupGraphCount = indexLookupCounts.count { count -> count > 0L }.toLong()
+        counters.callSiteStringIndexLookupMinPerGraph = indexLookupCounts.minOrNull() ?: 0L
+        counters.callSiteStringIndexLookupMaxPerGraph = indexLookupCounts.maxOrNull() ?: 0L
         counters.callSiteScanPeakActiveWorkers = graphs.maxOfOrNull { graph ->
             (invokeInternalMetric(graph, "callSiteScanPeakActiveWorkers") as? Number)?.toLong() ?: 0L
         } ?: 0L
@@ -533,6 +534,8 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var callSiteParallelScanGraphCount: Long = 0
     @JvmField var callSiteStringIndexLookupCount: Long = 0
     @JvmField var callSiteStringIndexLookupGraphCount: Long = 0
+    @JvmField var callSiteStringIndexLookupMinPerGraph: Long = 0
+    @JvmField var callSiteStringIndexLookupMaxPerGraph: Long = 0
     @JvmField var callSiteScanPeakActiveWorkers: Long = 0
 }
 

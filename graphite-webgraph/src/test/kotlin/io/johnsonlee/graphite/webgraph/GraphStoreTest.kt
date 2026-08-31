@@ -879,26 +879,48 @@ class GraphStoreTest {
 
                 loaded.clearStringPropertyIndexes()
                 val budgetBeforeFailedHandoff = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
-                val handoffFailure = assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                StringValueTransform.LOWERCASE,
-                                StringMatchMode.CONTAINS,
-                                "definitely-absent"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = ParallelGraphWorkBatchConsumer {
-                            check(Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
-                                "fused index budget failure"
-                            }
+                val handoffResult = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-absent"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = ParallelGraphWorkBatchConsumer {
+                        check(Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
+                            "fused index budget failure"
                         }
-                    ).orEmpty().toList()
-                }
-                assertEquals("fused index budget failure", handoffFailure.message)
+                    }
+                ).orEmpty().toList()
+                assertTrue(handoffResult.isEmpty())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+                val scanWork = 32_768L
+                val handoffWorkLimit = 40_000L
+                val consumedWork = AtomicLong()
+                val budgetedHandoffResult = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-absent"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
+                        val total = consumedWork.addAndGet(workUnits)
+                        check(total <= handoffWorkLimit) { "fused index exceeded request budget" }
+                    }
+                ).orEmpty().toList()
+                assertTrue(budgetedHandoffResult.isEmpty())
+                assertTrue(consumedWork.get() in (scanWork + 1)..(scanWork * 3))
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 

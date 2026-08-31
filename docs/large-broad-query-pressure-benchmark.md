@@ -131,7 +131,9 @@ exactly one such scan on each of the 64 graphs and observes at least two active 
 creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
 The cold fork must report 64 scans followed by exactly 704 index lookups (11 remaining queries per
 graph). After warmup metrics are reset, the warm fork must report zero scans and exactly 768 index
-lookups, with all 64 graphs represented in both cases. This rejects an implementation that happens
+lookups (12 per graph), with all 64 graphs represented in both cases. The comparator requires the
+per-graph lookup minimum and maximum to both be 11 cold and both be 12 warm; aggregate totals alone
+cannot hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens
 to meet the percentile target while routing only part of the workload or silently falling back to
 raw scans.
 

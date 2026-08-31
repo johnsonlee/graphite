@@ -630,6 +630,7 @@ export function compareGraphIdPressure(
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
         "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
         "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
+        "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
         "callSiteScanPeakActiveWorkers"
     ];
     const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
@@ -652,12 +653,16 @@ export function compareGraphIdPressure(
             errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
         }
         if (candidateResources.callSiteStringIndexLookupCount !== 704 ||
-            candidateResources.callSiteStringIndexLookupGraphCount !== 64
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== 11 ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 11
         ) {
             errors.push("candidate: cold selected-graph workload must reuse the retained index for the " +
                 "remaining 11 queries on each graph; " +
                 `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
-                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}`);
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
+                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
+                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
         }
     } else if (candidateIndexState === "warm") {
         if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
@@ -675,12 +680,16 @@ export function compareGraphIdPressure(
                 `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
         }
         if (candidateResources.callSiteStringIndexLookupCount !== 768 ||
-            candidateResources.callSiteStringIndexLookupGraphCount !== 64
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== 12 ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 12
         ) {
             errors.push("candidate: warm selected-graph workload must execute exactly one retained-index " +
                 "lookup per query across all 64 graphs; " +
                 `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
-                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}`);
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
+                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
+                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
         }
     }
 
@@ -918,7 +927,9 @@ export function renderGraphIdPressureReport(comparison) {
             `graphs scanned: **${candidateResources.callSiteParallelScanGraphCount.toFixed(0)}**; ` +
             `peak simultaneously active workers: **${candidateResources.callSiteScanPeakActiveWorkers.toFixed(0)}**`,
         `- Candidate retained-index lookups: **${candidateResources.callSiteStringIndexLookupCount.toFixed(0)}**; ` +
-            `graphs covered: **${candidateResources.callSiteStringIndexLookupGraphCount.toFixed(0)}**`,
+            `graphs covered: **${candidateResources.callSiteStringIndexLookupGraphCount.toFixed(0)}**; ` +
+            `per graph: **${candidateResources.callSiteStringIndexLookupMinPerGraph.toFixed(0)}..` +
+            `${candidateResources.callSiteStringIndexLookupMaxPerGraph.toFixed(0)}**`,
         `- Effective CPU cores: **${(baseResources.cpuCoreUtilizationPermille / 1000).toFixed(2)} → ` +
             `${(candidateResources.cpuCoreUtilizationPermille / 1000).toFixed(2)}**`,
         `- Peak used heap: **${gibibytes(baseResources.peakUsedHeapBytes)} → ` +

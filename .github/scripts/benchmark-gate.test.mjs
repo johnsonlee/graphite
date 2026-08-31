@@ -62,6 +62,8 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteParallelScanGraphCount: warm ? 0 : 64,
         callSiteStringIndexLookupCount: warm ? 768 : 704,
         callSiteStringIndexLookupGraphCount: 64,
+        callSiteStringIndexLookupMinPerGraph: warm ? 12 : 11,
+        callSiteStringIndexLookupMaxPerGraph: warm ? 12 : 11,
         callSiteScanPeakActiveWorkers: warm ? 0 : 8,
         ...overrides
     };
@@ -234,6 +236,32 @@ test("64-real-graph warm pressure proves the trigram path instead of requiring a
     );
     assert.equal(partialIndexUse.passed, false);
     assert.match(partialIndexUse.errors.join("\n"), /exactly one retained-index lookup per query/);
+
+    const imbalancedColdIndexUse = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            callSiteStringIndexLookupMinPerGraph: 1,
+            callSiteStringIndexLookupMaxPerGraph: 641
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(imbalancedColdIndexUse.passed, false);
+    assert.match(imbalancedColdIndexUse.errors.join("\n"), /perGraph=1\.\.641/);
+
+    const imbalancedWarmIndexUse = compareGraphIdPressure(
+        [warmBase],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteStringIndexLookupMinPerGraph: 1,
+            callSiteStringIndexLookupMaxPerGraph: 705
+        }, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(imbalancedWarmIndexUse.passed, false);
+    assert.match(imbalancedWarmIndexUse.errors.join("\n"), /perGraph=1\.\.705/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {

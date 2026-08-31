@@ -20,6 +20,7 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
@@ -81,8 +82,22 @@ class CrossGraphCypherExecutorTest {
             emptyList(),
             TypeDescriptor("void")
         )
-        fun methodGraph(): Graph = DefaultGraph.Builder().apply { addMethod(method) }.build()
-        val executor = executor("orders" to methodGraph(), "billing" to methodGraph())
+        val lookupCounts = mapOf("orders" to AtomicInteger(), "billing" to AtomicInteger())
+        fun methodGraph(graphId: String): Graph {
+            val backing = DefaultGraph.Builder().apply { addMethod(method) }.build()
+            return object : Graph by backing {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> {
+                    lookupCounts.getValue(graphId).incrementAndGet()
+                    return backing.methods(pattern)
+                }
+
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? {
+                    lookupCounts.getValue(graphId).incrementAndGet()
+                    return backing.methodSlice(pattern, limit)
+                }
+            }
+        }
+        val executor = executor("orders" to methodGraph("orders"), "billing" to methodGraph("billing"))
 
         val result = executor.execute(
             "MATCH (m:Method) WHERE m.signature = '${method.signature}' " +
@@ -93,12 +108,23 @@ class CrossGraphCypherExecutorTest {
         assertTrue(result.rows.all { it["signature"] == method.signature })
         assertEquals(listOf(listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
 
-        val selected = executor.execute(
-            "MATCH (m:Method) WHERE m.graphId = 'billing' AND m.signature = '${method.signature}' " +
-                "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10"
+        val graphPredicates = listOf(
+            "m.graphId = 'billing'" to emptyMap(),
+            "graphId(m) = 'billing'" to emptyMap(),
+            "m.graphId = \$graph" to mapOf("graph" to "billing")
         )
-        assertEquals(listOf("billing"), selected.rows.map { it["graph"] })
-        assertEquals(listOf(method.signature), selected.rows.map { it["signature"] })
+        for ((graphPredicate, parameters) in graphPredicates) {
+            lookupCounts.values.forEach { count -> count.set(0) }
+            val selected = executor.execute(
+                "MATCH (m:Method) WHERE $graphPredicate AND m.signature = '${method.signature}' " +
+                    "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10",
+                parameters
+            )
+            assertEquals(listOf("billing"), selected.rows.map { it["graph"] })
+            assertEquals(listOf(method.signature), selected.rows.map { it["signature"] })
+            assertEquals(0, lookupCounts.getValue("orders").get())
+            assertTrue(lookupCounts.getValue("billing").get() > 0)
+        }
     }
 
     @Test

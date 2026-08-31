@@ -576,7 +576,12 @@ internal class MappedWebGraphBackedGraph(
             indexReservation = null
             val completed = results.filterNotNull()
             if (completed.size == tasks.size && completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)) {
-                buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+                try {
+                    buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+                } catch (_: Exception) {
+                    // The bounded scan already produced a complete query result. Index publication is
+                    // an optional cache handoff, so a budget/admission/build failure must not replace it.
+                }
             } else {
                 reservation.close()
             }
