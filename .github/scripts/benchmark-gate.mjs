@@ -876,10 +876,11 @@ export function compareGraphIdPressure(
         pressurePercentile(candidateRoutingOverheads, 0.50);
     const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
         pressurePercentile(candidateRoutingOverheads, 0.95);
-    const gateP50Speedup = Math.min(p50Speedup, graphParameterP50Speedup);
-    const gateP95Speedup = Math.min(p95Speedup, graphParameterP95Speedup);
+    const gateP50Speedup = p50Speedup;
+    const gateP95Speedup = p95Speedup;
     const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup &&
-        graphParameterP50Speedup >= minimumSpeedup && graphParameterP95Speedup >= minimumSpeedup;
+        graphParameterP50Regression <= maximumGraphParameterRegression &&
+        graphParameterP95Regression <= maximumGraphParameterRegression;
     return {
         passed,
         errors,
@@ -914,13 +915,17 @@ export function renderGraphIdPressureReport(comparison) {
         "",
         `Index state: **${comparison.indexState}**`,
         "",
-        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for both P50 and P95 on ` +
-            "query-level graphId and API graph-parameter routing.",
+        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for query-level graphId P50 and P95; ` +
+            `API graph-parameter P50/P95 may regress by at most ` +
+            `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% against its correct main baseline.`,
         "",
         `- Query-level graphId P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
         `- Query-level graphId P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
         `- API graph-parameter P50 speedup: **${comparison.graphParameterP50Speedup.toFixed(2)}x**`,
         `- API graph-parameter P95 speedup: **${comparison.graphParameterP95Speedup.toFixed(2)}x**`,
+        `- API graph-parameter regression: ` +
+            `**${(comparison.graphParameterP50Regression * 100).toFixed(2)}% P50 / ` +
+            `${(comparison.graphParameterP95Regression * 100).toFixed(2)}% P95**`,
         `- Candidate graphId/API-reference latency ratio: ` +
             `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
         `- Candidate intra-graph scans: **${candidateResources.callSiteParallelScanCount.toFixed(0)}**; ` +

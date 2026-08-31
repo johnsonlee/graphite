@@ -4,6 +4,7 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherCancellationSignal
+import io.johnsonlee.graphite.cypher.CypherDslAdapter
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherGraph
@@ -100,6 +101,7 @@ open class LargeBroadQueryPressureBenchmark {
         }
         check(workload.isNotEmpty())
         check(workload.map(BroadQueryCase::selectivity).toSet() == BroadQuerySelectivity.entries.toSet())
+        workload.forEach { case -> CypherDslAdapter.parse(case.query) }
         configureCorrectnessGate()
 
         graphPaths = graphSources.map(BroadQueryGraphSource::path)

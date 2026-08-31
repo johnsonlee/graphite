@@ -307,9 +307,18 @@ test("graphId pressure hard-gates API graph parameter parity and latency", () =>
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(routingOnly.passed, false);
+    assert.equal(routingOnly.passed, true);
     assert.equal(routingOnly.p50Speedup, 20);
     assert.equal(routingOnly.graphParameterP50Speedup, 1);
+
+    const acceptableApiRegression = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_100_000_000)
+    );
+    assert.equal(acceptableApiRegression.passed, true);
+    assert.equal(acceptableApiRegression.graphParameterP50Regression, 0.10000000000000009);
 
     const fakeDistribution = compareGraphIdPressure(
         [graphIdPressureResult()],

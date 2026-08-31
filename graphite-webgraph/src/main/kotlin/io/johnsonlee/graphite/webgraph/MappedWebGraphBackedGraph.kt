@@ -26,7 +26,9 @@ import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -137,6 +139,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareTransformedStringPropertyLookup,
     WorkAwareStringPropertyDisjunctionLookup,
     WorkAwareStringPropertyDisjunctionAggregation,
+    StringPropertyDisjunctionProjection,
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
     StringPropertyDisjunctionLookupStrategy,
@@ -339,6 +342,24 @@ internal class MappedWebGraphBackedGraph(
         )
     }
 
+    override fun projectStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyProjectionRow>? {
+        if (type != CallSiteNode::class.java || predicates.isEmpty() || limit < 0 ||
+            predicates.any { !supportsRawStringProperty(type, it.property) } ||
+            projectedProperties.any { !supportsRawStringProperty(type, it) }
+        ) {
+            return null
+        }
+        val index = callSiteStringIndex ?: return null
+        callSiteStringIndexLookupCount.incrementAndGet()
+        return index.projectRows(predicates, projectedProperties, limit, workConsumer)
+    }
+
     @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")
     private fun <T : Node> lookupStringPropertyDisjunction(
         type: Class<T>,
@@ -352,7 +373,8 @@ internal class MappedWebGraphBackedGraph(
             callSiteStringIndex?.let { index ->
                 callSiteStringIndexLookupCount.incrementAndGet()
                 return index.matchingNodeIds(predicates, workConsumer, limit)
-                    .mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
+                    .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                    .map(type::cast)
             }
             parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
         }
@@ -360,11 +382,9 @@ internal class MappedWebGraphBackedGraph(
             callSitePredicatesCannotMatch(predicates, workConsumer)
         ) return emptySequence()
         callSiteStringIndex(type, workConsumer)?.let { index ->
-            return index.matchingNodeIds(
-                predicates,
-                workConsumer,
-                limit
-            ).mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
+            return index.matchingNodeIds(predicates, workConsumer, limit)
+                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                .map(type::cast)
         }
         if (prefersSerialStringPropertyDisjunction(type, predicates)) return null
         return sequence {

@@ -3,7 +3,8 @@
     "LoopWithTooManyJumpStatements",
     "MagicNumber",
     "NestedBlockDepth",
-    "ReturnCount"
+    "ReturnCount",
+    "TooManyFunctions"
 )
 
 package io.johnsonlee.graphite.webgraph
@@ -13,6 +14,7 @@ import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
@@ -42,6 +44,24 @@ internal class MappedCallSiteStringIndex(
     }
     private var trigramPostingsInitialized = false
     private var trigramPostings: LongArray? = null
+    private val matchingStringIds = LinkedHashMap<CallSitePredicateKey, CachedMatchingStringIds>(
+        MAX_CALL_SITE_STRING_MATCH_CACHE_ENTRIES + 1,
+        CALL_SITE_STRING_MATCH_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var matchingStringCacheBytes = 0L
+    private val matchingNodeIds = LinkedHashMap<CallSiteNodeMatchKey, CachedMatchingNodeIds>(
+        MAX_CALL_SITE_NODE_MATCH_CACHE_ENTRIES + 1,
+        CALL_SITE_STRING_MATCH_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var matchingNodeCacheBytes = 0L
+    private val projectedRows = LinkedHashMap<CallSiteProjectionKey, CachedProjectionRows>(
+        MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES + 1,
+        CALL_SITE_STRING_MATCH_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var projectedRowCacheBytes = 0L
 
     val retainedBytes: Long
         get() = reservation.bytes
@@ -55,9 +75,97 @@ internal class MappedCallSiteStringIndex(
         limit: Int = Int.MAX_VALUE
     ): Sequence<Int> {
         if (limit <= 0) return emptySequence()
+        val cacheKey = if (limit <= MAX_CALL_SITE_NODE_MATCH_CACHE_LIMIT) {
+            CallSiteNodeMatchKey(predicates.toList(), limit)
+        } else {
+            null
+        }
+        cacheKey?.let { key ->
+            synchronized(this) {
+                matchingNodeIds[key]?.let { cached ->
+                    consumeGraphWork(workConsumer, cached.nodeIds.size.coerceAtLeast(1).toLong())
+                    return cached.nodeIds.asSequence()
+                }
+            }
+        }
         val ranges = matchingRanges(predicates, workConsumer)
-        if (ranges.isEmpty()) return emptySequence()
+        if (ranges.isEmpty()) {
+            val empty = IntArray(0)
+            cacheKey?.let { key -> cacheMatchingNodeIds(key, empty) }
+            return empty.asSequence()
+        }
+        cacheKey?.let { key ->
+            val nodeIds = ranges.mergedNodeIds(nodeOrder, workConsumer, limit).toList().toIntArray()
+            cacheMatchingNodeIds(key, nodeIds)
+            return nodeIds.asSequence()
+        }
         return ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
+    }
+
+    fun projectRows(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyProjectionRow> {
+        if (limit <= 0) return emptyList()
+        val key = CallSiteProjectionKey(predicates.toList(), projectedProperties.toList(), limit)
+        synchronized(this) {
+            projectedRows[key]?.let { cached ->
+                consumeGraphWork(workConsumer, cached.rows.size.coerceAtLeast(1).toLong())
+                return cached.rows
+            }
+        }
+        val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
+        require(propertyIndexes.all { it >= 0 })
+        val rows = matchingNodeIds(predicates, workConsumer, limit).map { nodeId ->
+            StringPropertyProjectionRow(propertyIndexes.map { propertyIndex ->
+                stringTable.get(rawStringPropertyId(nodeId, propertyIndex))
+            })
+        }.toList()
+        cacheProjectedRows(key, rows)
+        return rows
+    }
+
+    @Synchronized
+    private fun cacheProjectedRows(key: CallSiteProjectionKey, rows: List<StringPropertyProjectionRow>) {
+        if (projectedRows.containsKey(key)) return
+        val retainedRows = rows.toList()
+        val entryBytes = estimatedCallSiteProjectionCacheBytes(key, retainedRows)
+        if (entryBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES) return
+        while (projectedRows.isNotEmpty() &&
+            (projectedRows.size >= MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES ||
+                projectedRowCacheBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES - entryBytes)
+        ) {
+            val eldest = projectedRows.entries.iterator().next()
+            projectedRows.remove(eldest.key)
+            projectedRowCacheBytes -= eldest.value.retainedBytes
+            reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
+        }
+        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return
+        if (!reservation.tryGrowTo(retainedAfter)) return
+        projectedRows[key] = CachedProjectionRows(retainedRows, entryBytes)
+        projectedRowCacheBytes += entryBytes
+    }
+
+    @Synchronized
+    private fun cacheMatchingNodeIds(key: CallSiteNodeMatchKey, nodeIds: IntArray) {
+        if (matchingNodeIds.containsKey(key)) return
+        val entryBytes = estimatedCallSiteNodeMatchCacheBytes(key, nodeIds)
+        if (entryBytes > MAX_CALL_SITE_NODE_MATCH_CACHE_BYTES) return
+        while (matchingNodeIds.isNotEmpty() &&
+            (matchingNodeIds.size >= MAX_CALL_SITE_NODE_MATCH_CACHE_ENTRIES ||
+                matchingNodeCacheBytes > MAX_CALL_SITE_NODE_MATCH_CACHE_BYTES - entryBytes)
+        ) {
+            val eldest = matchingNodeIds.entries.iterator().next()
+            matchingNodeIds.remove(eldest.key)
+            matchingNodeCacheBytes -= eldest.value.retainedBytes
+            reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
+        }
+        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return
+        if (!reservation.tryGrowTo(retainedAfter)) return
+        matchingNodeIds[key] = CachedMatchingNodeIds(nodeIds, entryBytes)
+        matchingNodeCacheBytes += entryBytes
     }
 
     fun aggregate(
@@ -86,26 +194,82 @@ internal class MappedCallSiteStringIndex(
     ): PostingRanges {
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
-        val sharedCandidates = mutableMapOf<CallSitePredicateKey, IntArray?>()
+        val sharedMatches = mutableMapOf<CallSitePredicateKey, IntArray?>()
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
             val key = CallSitePredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            val candidateStringIds = if (sharedCandidates.containsKey(key)) {
-                sharedCandidates[key]
+            val matchedStringIds = if (sharedMatches.containsKey(key)) {
+                sharedMatches[key]
             } else {
-                candidateStringIds(predicate, workConsumer).also { sharedCandidates[key] = it }
+                matchingStringIds(predicate, workConsumer).also { sharedMatches[key] = it }
             }
             properties[propertyIndex].collectMatchingRanges(
                 propertyIndex,
                 runtime,
-                candidateStringIds,
+                matchedStringIds,
+                candidatesAreKnownMatches = matchedStringIds != null,
                 ranges,
                 workConsumer
             )
         }
         return ranges
+    }
+
+    private fun matchingStringIds(
+        predicate: StringPropertyPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): IntArray? {
+        if (predicate.transform != StringValueTransform.LOWERCASE ||
+            predicate.mode == StringMatchMode.EQUALS ||
+            predicate.expected.length < MIN_CALL_SITE_TRIGRAM_LENGTH
+        ) {
+            return null
+        }
+        val key = CallSitePredicateKey(predicate.transform, predicate.mode, predicate.expected)
+        synchronized(this) {
+            matchingStringIds[key]?.let { return it.stringIds }
+        }
+        val candidates = candidateStringIds(predicate, workConsumer) ?: return null
+        val runtime = PredicateRuntime(predicate, mutableMapOf(), stringTable, trigramSignatures)
+        val matched = IntArray(candidates.size)
+        var size = 0
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            candidates.forEachIndexed { index, stringId ->
+                if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                    checkCallSiteIndexInterrupted()
+                }
+                accounting.consume()
+                if (runtime.matches(stringId)) matched[size++] = stringId
+            }
+        } finally {
+            accounting.flush()
+        }
+        val result = matched.copyOf(size)
+        cacheMatchingStringIds(key, result)
+        return result
+    }
+
+    @Synchronized
+    private fun cacheMatchingStringIds(key: CallSitePredicateKey, result: IntArray) {
+        if (matchingStringIds.containsKey(key)) return
+        val entryBytes = estimatedCallSiteStringMatchCacheBytes(key, result)
+        if (entryBytes > MAX_CALL_SITE_STRING_MATCH_CACHE_BYTES) return
+        while (matchingStringIds.isNotEmpty() &&
+            (matchingStringIds.size >= MAX_CALL_SITE_STRING_MATCH_CACHE_ENTRIES ||
+                matchingStringCacheBytes > MAX_CALL_SITE_STRING_MATCH_CACHE_BYTES - entryBytes)
+        ) {
+            val eldest = matchingStringIds.entries.iterator().next()
+            matchingStringIds.remove(eldest.key)
+            matchingStringCacheBytes -= eldest.value.retainedBytes
+            reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
+        }
+        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return
+        if (!reservation.tryGrowTo(retainedAfter)) return
+        matchingStringIds[key] = CachedMatchingStringIds(result, entryBytes)
+        matchingStringCacheBytes += entryBytes
     }
 
     private fun candidateStringIds(
@@ -337,7 +501,16 @@ internal class MappedCallSiteStringIndex(
         id.takeIf { it >= 0 }?.let(stringTable::get)
     }
 
-    override fun close() = reservation.close()
+    @Synchronized
+    override fun close() {
+        matchingStringIds.clear()
+        matchingStringCacheBytes = 0L
+        matchingNodeIds.clear()
+        matchingNodeCacheBytes = 0L
+        projectedRows.clear()
+        projectedRowCacheBytes = 0L
+        reservation.close()
+    }
 
     internal class PropertyCsr(
         private val postingEnds: IntArray,
@@ -359,6 +532,7 @@ internal class MappedCallSiteStringIndex(
             propertyIndex: Int,
             runtime: PredicateRuntime,
             candidateStringIds: IntArray?,
+            candidatesAreKnownMatches: Boolean,
             target: PostingRanges,
             workConsumer: GraphWorkConsumer?
         ) {
@@ -375,7 +549,9 @@ internal class MappedCallSiteStringIndex(
                     for (stringId in candidates) {
                         accounting.consume()
                         val row = findStringRow(stringId, accounting)
-                        if (row >= 0 && runtime.matches(stringId)) addRange(propertyIndex, row, target)
+                        if (row >= 0 && (candidatesAreKnownMatches || runtime.matches(stringId))) {
+                            addRange(propertyIndex, row, target)
+                        }
                     }
                     return
                 }
@@ -716,6 +892,89 @@ internal data class CallSitePredicateKey(
     val expected: String
 )
 
+private data class CachedMatchingStringIds(
+    val stringIds: IntArray,
+    val retainedBytes: Long
+)
+
+private data class CallSiteNodeMatchKey(
+    val predicates: List<StringPropertyPredicate>,
+    val limit: Int
+)
+
+private data class CachedMatchingNodeIds(
+    val nodeIds: IntArray,
+    val retainedBytes: Long
+)
+
+private data class CallSiteProjectionKey(
+    val predicates: List<StringPropertyPredicate>,
+    val projectedProperties: List<String>,
+    val limit: Int
+)
+
+private data class CachedProjectionRows(
+    val rows: List<StringPropertyProjectionRow>,
+    val retainedBytes: Long
+)
+
+private fun estimatedCallSiteStringMatchCacheBytes(
+    key: CallSitePredicateKey,
+    stringIds: IntArray
+): Long = try {
+    Math.addExact(
+        CALL_SITE_STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES +
+            CALL_SITE_STRING_MATCH_CACHE_STRING_HEADER_ESTIMATED_BYTES +
+            PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+        Math.addExact(
+            Math.multiplyExact(key.expected.length.toLong(), Char.SIZE_BYTES.toLong()),
+            Math.multiplyExact(stringIds.size.toLong(), Int.SIZE_BYTES.toLong())
+        )
+    )
+} catch (_: ArithmeticException) {
+    Long.MAX_VALUE
+}
+
+private fun estimatedCallSiteNodeMatchCacheBytes(
+    key: CallSiteNodeMatchKey,
+    nodeIds: IntArray
+): Long = try {
+    val keyCharacters = key.predicates.sumOf { predicate ->
+        predicate.property.length.toLong() + predicate.expected.length
+    }
+    Math.addExact(
+        CALL_SITE_NODE_MATCH_CACHE_ENTRY_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+        Math.addExact(
+            Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
+            Math.multiplyExact(nodeIds.size.toLong(), Int.SIZE_BYTES.toLong())
+        )
+    )
+} catch (_: ArithmeticException) {
+    Long.MAX_VALUE
+}
+
+private fun estimatedCallSiteProjectionCacheBytes(
+    key: CallSiteProjectionKey,
+    rows: List<StringPropertyProjectionRow>
+): Long = try {
+    val keyCharacters = key.predicates.sumOf { predicate ->
+        predicate.property.length.toLong() + predicate.expected.length
+    } + key.projectedProperties.sumOf { property -> property.length.toLong() }
+    val valueReferences = rows.sumOf { row -> row.values.size.toLong() }
+    Math.addExact(
+        CALL_SITE_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES,
+        Math.addExact(
+            Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
+            Math.addExact(
+                Math.multiplyExact(rows.size.toLong(), CALL_SITE_PROJECTION_ROW_ESTIMATED_BYTES),
+                Math.multiplyExact(valueReferences, REFERENCE_ESTIMATED_BYTES)
+            )
+        )
+    )
+} catch (_: ArithmeticException) {
+    Long.MAX_VALUE
+}
+
 internal object MappedCallSiteStringIndexMemoryBudget {
     private const val BUDGET_PROPERTY = "graphite.webgraph.callSiteStringIndexBudgetBytes"
     private const val DEFAULT_MAX_HEAP_FRACTION = 2L
@@ -883,6 +1142,20 @@ private const val MAPPED_CALL_SITE_STRING_INDEX_RETAINED_ARRAYS = 3L * CALL_SITE
 private const val MAPPED_CALL_SITE_STRING_INDEX_OBJECT_ESTIMATED_BYTES = 256L
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MAX_SERIAL_CALL_SITE_STRING_INDEX_SCAN_BYTES = 1024L * 1024
+private const val MAX_CALL_SITE_STRING_MATCH_CACHE_ENTRIES = 32
+private const val MAX_CALL_SITE_STRING_MATCH_CACHE_BYTES = 2L * 1024 * 1024
+private const val CALL_SITE_STRING_MATCH_CACHE_LOAD_FACTOR = 0.75f
+private const val CALL_SITE_STRING_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 64L
+private const val CALL_SITE_STRING_MATCH_CACHE_STRING_HEADER_ESTIMATED_BYTES = 24L
+private const val MAX_CALL_SITE_NODE_MATCH_CACHE_ENTRIES = 32
+private const val MAX_CALL_SITE_NODE_MATCH_CACHE_BYTES = 2L * 1024 * 1024
+private const val MAX_CALL_SITE_NODE_MATCH_CACHE_LIMIT = 200
+private const val CALL_SITE_NODE_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 128L
+private const val MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES = 32
+private const val MAX_CALL_SITE_PROJECTION_CACHE_BYTES = 2L * 1024 * 1024
+private const val CALL_SITE_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES = 128L
+private const val CALL_SITE_PROJECTION_ROW_ESTIMATED_BYTES = 64L
+private const val REFERENCE_ESTIMATED_BYTES = 8L
 private const val INITIAL_POSTING_RANGES = 16
 private const val BITSET_WORD_SHIFT = 6
 private const val BITSET_WORD_MASK = Long.SIZE_BITS - 1

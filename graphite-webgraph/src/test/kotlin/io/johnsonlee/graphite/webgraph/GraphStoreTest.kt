@@ -688,6 +688,106 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped CallSite index reuses verified trigram matches within its memory reservation`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(256) { index ->
+                val marker = if (index == 137 || index == 138) "Voucher" else "Feature"
+                val propertySuffix = if (index == 138) 137 else index
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.${marker}Caller$propertySuffix"),
+                            "create$propertySuffix",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$propertySuffix"),
+                            "invoke$propertySuffix",
+                            emptyList(),
+                            returnType
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            "caller_class",
+            "caller_name",
+            "callee_class",
+            "callee_name"
+        ).map { property ->
+            StringPropertyPredicate(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "voucher"
+            )
+        }
+        val dir = Files.createTempDirectory("webgraph-callsite-match-cache")
+        val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates.map { predicate -> predicate.copy(expected = "feature") }
+                ).orEmpty().take(1).toList()
+
+                var firstWork = 0L
+                val first = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    200,
+                    GraphWorkConsumer { firstWork++ }
+                ).orEmpty().map { it.id.value }.toList()
+                val retainedAfterFirst = loaded.callSiteStringIndexBytes()
+
+                var repeatedWork = 0L
+                val repeated = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    200,
+                    GraphWorkConsumer { repeatedWork++ }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(137, 138), first)
+                assertEquals(first, repeated)
+                assertTrue(firstWork > repeatedWork)
+                assertEquals(first.size.toLong(), repeatedWork)
+                assertEquals(retainedAfterFirst, loaded.callSiteStringIndexBytes())
+
+                val projected = CrossGraphCypherExecutor(listOf(CypherGraph("mapped", loaded))).execute(
+                    "MATCH (n:CallSiteNode) WHERE " +
+                        "toLower(n.caller_class) CONTAINS 'voucher' OR " +
+                        "toLower(n.caller_name) CONTAINS 'voucher' OR " +
+                        "toLower(n.callee_class) CONTAINS 'voucher' OR " +
+                        "toLower(n.callee_name) CONTAINS 'voucher' " +
+                        "RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200"
+                )
+                assertEquals(2, projected.rows.size)
+                assertEquals(projected.rows[0], projected.rows[1])
+                assertEquals("example.VoucherCaller137", projected.rows[0]["n.caller_class"])
+                assertEquals("create137", projected.rows[0]["n.caller_name"])
+
+                loaded.clearStringPropertyIndexes()
+                assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
     @Suppress("LongMethod", "NestedBlockDepth")
     fun `bounded mapped CallSite scan uses ordered intra graph workers before index admission`() {
         val returnType = TypeDescriptor("void")

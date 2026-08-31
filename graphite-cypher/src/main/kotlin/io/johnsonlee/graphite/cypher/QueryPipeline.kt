@@ -32,6 +32,7 @@ import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -1337,6 +1338,16 @@ class QueryPipeline private constructor(
         nodePredicateFactory: DirectNodePredicateFactory? = null,
         candidateSources: List<CypherGraph> = sources
     ): CypherResult {
+        executeIndexedStringProjectionRows(
+            nodeClass,
+            variable,
+            filter,
+            items,
+            columns,
+            limit,
+            nodePredicateFactory,
+            candidateSources
+        )?.let { return it }
         if (workTrackingEnabled ||
             !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)
         ) {
@@ -1388,6 +1399,51 @@ class QueryPipeline private constructor(
             waveStart += wave.size
         }
         return CypherResult(columns, rows)
+    }
+
+    @Suppress("LongParameterList", "ReturnCount")
+    private fun executeIndexedStringProjectionRows(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int,
+        nodePredicateFactory: DirectNodePredicateFactory?,
+        candidateSources: List<CypherGraph>
+    ): CypherResult? {
+        if (nodeClass != CallSiteNode::class.java || nodePredicateFactory != null || candidateSources.size != 1) {
+            return null
+        }
+        val projectedProperties = items.map { item ->
+            val property = item.expression as? CypherExpr.Property ?: return null
+            if (property.expression != CypherExpr.Variable(variable) ||
+                property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES
+            ) {
+                return null
+            }
+            property.propertyName
+        }
+        val predicates = filter.filters.map { candidate ->
+            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
+            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
+        }
+        val source = candidateSources.single()
+        val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val projectedRows = projection.projectStringPropertyDisjunction(
+            CallSiteNode::class.java,
+            predicates,
+            projectedProperties,
+            limit,
+            tracker
+        ) ?: return null
+        return CypherResult(columns, projectedRows.map { projected ->
+            buildMap {
+                columns.forEachIndexed { index, column -> put(column, projected.values[index]) }
+                put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
+            }
+        })
     }
 
     @Suppress("LongParameterList")

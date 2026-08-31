@@ -165,6 +165,22 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
     ): Sequence<T>?
 }
 
+/** One duplicate-preserving storage projection row in canonical node encounter order. */
+data class StringPropertyProjectionRow(
+    val values: List<String?>
+)
+
+/** Optional capability for projecting bounded string matches without materializing full nodes. */
+interface StringPropertyDisjunctionProjection {
+    fun projectStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer? = null
+    ): List<StringPropertyProjectionRow>?
+}
+
 /** Storage-level result for a string-disjunction aggregate without node materialization. */
 data class StringPropertyDisjunctionAggregate(
     val count: Long,

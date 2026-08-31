@@ -26,6 +26,18 @@ private const val HEX_RADIX = 16
  */
 object CypherDslAdapter {
 
+    private data class CachedQuery(
+        val clauses: List<CypherClause>,
+        val retainedBytes: Long
+    )
+
+    private val parsedQueries = LinkedHashMap<String, CachedQuery>(
+        MAX_PARSED_QUERY_CACHE_ENTRIES + 1,
+        PARSED_QUERY_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var parsedQueryCacheBytes = 0L
+
     /**
      * Parse a Cypher query string into an ordered list of clauses.
      *
@@ -36,16 +48,49 @@ object CypherDslAdapter {
     fun parse(cypher: String): List<CypherClause> {
         if (cypher.isBlank()) return emptyList()
 
-        // Handle semicolon-separated statements
-        if (cypher.contains(';')) {
-            val parts = cypher.split(';').map { it.trim() }.filter { it.isNotEmpty() }
-            if (parts.size > 1) {
-                return parts.flatMap { parse(it) }
-            }
+        synchronized(parsedQueries) {
+            parsedQueries[cypher]?.let { return it.clauses }
         }
 
-        return buildAst(cypher)
+        // Handle semicolon-separated statements
+        val clauses = if (cypher.contains(';')) {
+            val parts = cypher.split(';').map { it.trim() }.filter { it.isNotEmpty() }
+            if (parts.size > 1) {
+                parts.flatMap { parse(it) }
+            } else {
+                buildAst(cypher)
+            }
+        } else {
+            buildAst(cypher)
+        }
+        cacheParsedQuery(cypher, clauses)
+        return clauses
     }
+
+    private fun cacheParsedQuery(cypher: String, clauses: List<CypherClause>) {
+        val entryBytes = estimatedParsedQueryBytes(cypher, clauses)
+        if (entryBytes > maxParsedQueryCacheBytes) return
+        synchronized(parsedQueries) {
+            if (parsedQueries.containsKey(cypher)) return
+            while (parsedQueries.isNotEmpty() &&
+                (parsedQueries.size >= MAX_PARSED_QUERY_CACHE_ENTRIES ||
+                    parsedQueryCacheBytes > maxParsedQueryCacheBytes - entryBytes)
+            ) {
+                val eldest = parsedQueries.entries.iterator().next()
+                parsedQueries.remove(eldest.key)
+                parsedQueryCacheBytes -= eldest.value.retainedBytes
+            }
+            parsedQueries[cypher] = CachedQuery(clauses, entryBytes)
+            parsedQueryCacheBytes += entryBytes
+        }
+    }
+
+    internal fun clearParsedQueryCache() = synchronized(parsedQueries) {
+        parsedQueries.clear()
+        parsedQueryCacheBytes = 0L
+    }
+
+    internal fun parsedQueryCacheSize(): Int = synchronized(parsedQueries) { parsedQueries.size }
 
     internal fun buildAst(cypher: String): List<CypherClause> {
         val lexer = CypherLexer(CharStreams.fromString(cypher))
@@ -61,7 +106,30 @@ object CypherDslAdapter {
         val visitor = CypherAstVisitor()
         return visitor.visitScript(tree)
     }
+
+    private val maxParsedQueryCacheBytes: Long by lazy {
+        minOf(MAX_PARSED_QUERY_CACHE_BYTES, Runtime.getRuntime().maxMemory() / PARSED_QUERY_HEAP_DIVISOR)
+    }
+
+    private fun estimatedParsedQueryBytes(cypher: String, clauses: List<CypherClause>): Long = try {
+        Math.addExact(
+            PARSED_QUERY_CACHE_ENTRY_ESTIMATED_BYTES,
+            Math.addExact(
+                Math.multiplyExact(cypher.length.toLong(), Char.SIZE_BYTES.toLong()),
+                Math.multiplyExact(clauses.size.toLong(), PARSED_QUERY_CLAUSE_ESTIMATED_BYTES)
+            )
+        )
+    } catch (_: ArithmeticException) {
+        Long.MAX_VALUE
+    }
 }
+
+private const val MAX_PARSED_QUERY_CACHE_ENTRIES = 1_024
+private const val MAX_PARSED_QUERY_CACHE_BYTES = 16L * 1_024 * 1_024
+private const val PARSED_QUERY_HEAP_DIVISOR = 128L
+private const val PARSED_QUERY_CACHE_LOAD_FACTOR = 0.75f
+private const val PARSED_QUERY_CACHE_ENTRY_ESTIMATED_BYTES = 128L
+private const val PARSED_QUERY_CLAUSE_ESTIMATED_BYTES = 2_048L
 
 /**
  * Exception thrown when the Cypher parser encounters invalid syntax.

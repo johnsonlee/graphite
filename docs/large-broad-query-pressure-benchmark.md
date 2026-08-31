@@ -166,8 +166,9 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
 
 The comparator fails unless both revisions report exactly 64 distinct graph paths, all 768 queries
 complete without timeout/failure, every manifest graph id has all four routing forms at all three
-selectivities, and both query-level graphId and API graph-parameter P50/P95 are each at least 10x
-faster. A warm result is rejected unless all 64 graphs retain the combined CallSite index and all
+selectivities, query-level graphId P50/P95 are each at least 10x faster, and the already-correct API
+graph-parameter P50/P95 do not regress by more than 15%. A warm result is rejected unless all 64
+graphs retain the combined CallSite index and all
 64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
 coverage. It independently
 rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
