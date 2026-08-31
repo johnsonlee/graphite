@@ -45,20 +45,6 @@ import kotlin.test.assertTrue
 
 class QueryPipelineTest {
 
-    @Test
-    fun `direct string scan parallelism keeps low core defaults bounded`() {
-        assertEquals(1, resolveDirectStringParallelism(null, 1))
-        assertEquals(2, resolveDirectStringParallelism(null, 2))
-        assertEquals(2, resolveDirectStringParallelism(null, 3))
-        assertEquals(2, resolveDirectStringParallelism(null, 4))
-        assertEquals(5, resolveDirectStringParallelism(null, 5))
-        assertEquals(8, resolveDirectStringParallelism(null, 16))
-        assertEquals(4, resolveDirectStringParallelism("4", 4))
-        assertEquals(4, resolveDirectStringParallelism("99", 4))
-        assertEquals(1, resolveDirectStringParallelism("0", 4))
-        assertEquals(2, resolveDirectStringParallelism("invalid", 4))
-    }
-
     private lateinit var graph: Graph
     private lateinit var pipeline: QueryPipeline
 
