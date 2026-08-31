@@ -132,6 +132,26 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `unaliased graph id ordering preserves generic execution semantics`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf("空", "Ω", "graph-2", "graph-10", "a:colon", "z").map { id ->
+                CypherGraph(id, graph(IntConstant(NodeId(1), 1)))
+            }
+        )
+
+        val result = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId ORDER BY n.graphId LIMIT 1"
+        )
+        val generic = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId ORDER BY n.graphId SKIP 0 LIMIT 1"
+        )
+
+        assertEquals(generic.columns, result.columns)
+        assertEquals(generic.rows, result.rows)
+        assertEquals(listOf("空"), result.rows.map { it["n.graphId"] })
+    }
+
+    @Test
     fun `relationship uniqueness is qualified by graph identity`() {
         fun dataFlowGraph(): Graph {
             val first = IntConstant(NodeId(1), 10)

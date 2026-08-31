@@ -641,9 +641,7 @@ class QueryPipeline private constructor(
         }
         val column = item.alias ?: item.expression.toCypherString()
         val sort = orderBy.items.single()
-        val sortsProjectedGraphId = sort.expression == item.expression ||
-            sort.expression == CypherExpr.Variable(column)
-        if (!sortsProjectedGraphId) return null
+        if (sort.expression != CypherExpr.Variable(column)) return null
 
         val limitCount = literalLimitCount(limit.count) ?: return null
         if (limitCount <= 0) return CypherResult(listOf(column), emptyList())
