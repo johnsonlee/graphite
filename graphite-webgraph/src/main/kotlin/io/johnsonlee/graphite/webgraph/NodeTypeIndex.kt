@@ -26,8 +26,16 @@ import java.nio.file.StandardOpenOption
 
 internal interface NodeTypeIndex {
     fun ids(type: Class<out Node>): Sequence<Int>
-    fun ids(type: Class<out Node>, startIndex: Int, endIndex: Int): Sequence<Int> =
-        ids(type).drop(startIndex).take(endIndex - startIndex)
+    fun forEachIdWhile(
+        type: Class<out Node>,
+        startIndex: Int,
+        endIndex: Int,
+        action: (Int) -> Boolean
+    ) {
+        for (nodeId in ids(type).drop(startIndex).take(endIndex - startIndex)) {
+            if (!action(nodeId)) return
+        }
+    }
     fun count(type: Class<out Node>): Long
 }
 
@@ -47,24 +55,27 @@ internal class MappedNodeTypeIndex private constructor(
             }
         }
 
-    override fun ids(type: Class<out Node>, startIndex: Int, endIndex: Int): Sequence<Int> {
+    override fun forEachIdWhile(
+        type: Class<out Node>,
+        startIndex: Int,
+        endIndex: Int,
+        action: (Int) -> Boolean
+    ) {
         require(startIndex >= 0 && endIndex >= startIndex)
-        return sequence {
-            var ordinal = 0
-            for (range in ranges(type)) {
-                val rangeEnd = ordinal + range.count
-                if (startIndex < rangeEnd && endIndex > ordinal) {
-                    val localStart = (startIndex - ordinal).coerceAtLeast(0)
-                    val localEnd = (endIndex - ordinal).coerceAtMost(range.count)
-                    var offset = range.offset + localStart * Int.SIZE_BYTES
-                    repeat(localEnd - localStart) {
-                        yield(buffer.getInt(offset))
-                        offset += Int.SIZE_BYTES
-                    }
+        var ordinal = 0
+        for (range in ranges(type)) {
+            val rangeEnd = ordinal + range.count
+            if (startIndex < rangeEnd && endIndex > ordinal) {
+                val localStart = (startIndex - ordinal).coerceAtLeast(0)
+                val localEnd = (endIndex - ordinal).coerceAtMost(range.count)
+                var offset = range.offset + localStart * Int.SIZE_BYTES
+                repeat(localEnd - localStart) {
+                    if (!action(buffer.getInt(offset))) return
+                    offset += Int.SIZE_BYTES
                 }
-                ordinal = rangeEnd
-                if (ordinal >= endIndex) break
             }
+            ordinal = rangeEnd
+            if (ordinal >= endIndex) break
         }
     }
 

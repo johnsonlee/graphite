@@ -586,7 +586,7 @@ internal class MappedWebGraphBackedGraph(
                     val accounting = BufferedGraphWorkConsumer(workConsumer)
                     var inspected = 0
                     try {
-                        for (nodeId in nodeTypeIndex.ids(type, start, end)) {
+                        nodeTypeIndex.forEachIdWhile(type, start, end) { nodeId ->
                             if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                                 (abort.get() || Thread.currentThread().isInterrupted)
                             ) {
@@ -630,8 +630,8 @@ internal class MappedWebGraphBackedGraph(
                             inspected++
                             if (matched) {
                                 matches.add(nodeId)
-                                if (matches.size == limit) break
                             }
+                            matches.size != limit
                         }
                         ParallelCallSiteScanResult(
                             workerIndex,

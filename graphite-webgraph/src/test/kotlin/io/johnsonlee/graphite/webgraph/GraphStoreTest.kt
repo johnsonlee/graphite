@@ -3636,10 +3636,46 @@ class GraphStoreTest {
             val typeIndex = MappedNodeTypeIndex.load(dir.resolve("graph.typeindex"))
             assertEquals(2L, typeIndex.count(IntConstant::class.java))
             assertEquals(listOf(0, 2), typeIndex.ids(IntConstant::class.java).toList().sorted())
+            val rangedIds = mutableListOf<Int>()
+            typeIndex.forEachIdWhile(IntConstant::class.java, 1, 2) { nodeId ->
+                rangedIds += nodeId
+                true
+            }
+            assertEquals(listOf(2), rangedIds)
+
+            val stoppedIds = mutableListOf<Int>()
+            typeIndex.forEachIdWhile(IntConstant::class.java, 0, 2) { nodeId ->
+                stoppedIds += nodeId
+                false
+            }
+            assertEquals(listOf(0), stoppedIds)
+            assertFailsWith<IllegalArgumentException> {
+                typeIndex.forEachIdWhile(IntConstant::class.java, -1, 1) { true }
+            }
+            assertFailsWith<IllegalArgumentException> {
+                typeIndex.forEachIdWhile(IntConstant::class.java, 2, 1) { true }
+            }
             assertEquals(2L, typeIndex.count(Node::class.java))
         } finally {
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `node type index default ranged traversal stops early`() {
+        val typeIndex = object : NodeTypeIndex {
+            override fun ids(type: Class<out Node>): Sequence<Int> = sequenceOf(3, 5, 8, 13)
+
+            override fun count(type: Class<out Node>): Long = 4
+        }
+        val visited = mutableListOf<Int>()
+
+        typeIndex.forEachIdWhile(IntConstant::class.java, 1, 4) { nodeId ->
+            visited += nodeId
+            nodeId != 8
+        }
+
+        assertEquals(listOf(5, 8), visited)
     }
 
     @Test
