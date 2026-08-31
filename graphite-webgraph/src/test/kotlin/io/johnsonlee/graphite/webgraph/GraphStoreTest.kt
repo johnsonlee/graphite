@@ -87,7 +87,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
@@ -690,6 +692,7 @@ class GraphStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `mapped CallSite index reuses verified trigram matches within its memory reservation`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -737,15 +740,27 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
+                val featurePredicates = predicates.map { predicate -> predicate.copy(expected = "feature") }
                 loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    predicates.map { predicate -> predicate.copy(expected = "feature") }
+                    featurePredicates,
+                    201
                 ).orEmpty().take(1).toList()
+                val retainedBeforePartial = loaded.callSiteStringIndexBytes()
+
+                var partialWork = 0L
+                val partial = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    featurePredicates,
+                    200,
+                    GraphWorkConsumer { partialWork++ }
+                ).orEmpty().take(1).map { it.id.value }.toList()
+                assertEquals(retainedBeforePartial, loaded.callSiteStringIndexBytes())
 
                 var firstWork = 0L
                 val first = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    predicates,
+                    featurePredicates,
                     200,
                     GraphWorkConsumer { firstWork++ }
                 ).orEmpty().map { it.id.value }.toList()
@@ -754,16 +769,49 @@ class GraphStoreTest {
                 var repeatedWork = 0L
                 val repeated = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    predicates,
+                    featurePredicates,
                     200,
                     GraphWorkConsumer { repeatedWork++ }
                 ).orEmpty().map { it.id.value }.toList()
 
-                assertEquals(listOf(137, 138), first)
+                assertEquals(200, first.size)
+                assertEquals(first.size, first.toSet().size)
+                assertTrue(first.none { it == 137 || it == 138 })
+                assertTrue(first.all { it in 0 until 256 })
+                assertEquals(first.take(1), partial)
                 assertEquals(first, repeated)
+                assertTrue(partialWork < firstWork)
                 assertTrue(firstWork > repeatedWork)
                 assertEquals(first.size.toLong(), repeatedWork)
                 assertEquals(retainedAfterFirst, loaded.callSiteStringIndexBytes())
+
+                val projectedProperties = listOf("caller_class", "caller_name", "callee_class", "callee_name")
+                val storedProjection = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties,
+                        200
+                    )
+                )
+                assertFailsWith<UnsupportedOperationException> {
+                    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                    (storedProjection as java.util.List<*>).clear()
+                }
+                assertFailsWith<UnsupportedOperationException> {
+                    @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                    (storedProjection.first().values as java.util.List<String?>).set(0, "poisoned")
+                }
+                val repeatedProjection = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties,
+                        200
+                    )
+                )
+                assertSame(storedProjection, repeatedProjection)
+                assertEquals("example.VoucherCaller137", repeatedProjection.first().values.first())
 
                 val executor = CrossGraphCypherExecutor(listOf(CypherGraph("mapped", loaded)))
                 val projectionQuery = "MATCH (n) WHERE " +
@@ -796,6 +844,163 @@ class GraphStoreTest {
 
                 loaded.clearStringPropertyIndexes()
                 assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
+    fun `projection cache evicts its least recently used entry at the entry cap`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().addNode(
+            CallSiteNode(
+                NodeId(1),
+                MethodDescriptor(TypeDescriptor("example.FeatureCaller"), "call", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+        ).build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "feature"
+            )
+        )
+        val properties = listOf("caller_class", "caller_name", "callee_class", "callee_name")
+        val dir = Files.createTempDirectory("webgraph-projection-lru")
+        val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    1,
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        1,
+                        GraphWorkConsumer { }
+                    ).orEmpty().count()
+                )
+                val first = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        properties,
+                        1
+                    )
+                )
+                for (limit in 2..33) {
+                    assertNotNull(
+                        loaded.projectStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            predicates,
+                            properties,
+                            limit
+                        )
+                    )
+                }
+                val admittedAgain = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        properties,
+                        1
+                    )
+                )
+
+                assertEquals(first, admittedAgain)
+                assertNotSame(first, admittedAgain)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
+    fun `projection cache rejects decoded string payload beyond its retained byte cap`() {
+        val returnType = TypeDescriptor("void")
+        val padding = "x".repeat(1_400)
+        val graph = DefaultGraph.Builder().apply {
+            repeat(257) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.NeedleCaller$index$padding"),
+                            "call$index$padding",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index$padding"),
+                            "invoke$index$padding",
+                            emptyList(),
+                            returnType
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val properties = listOf("caller_class", "caller_name", "callee_class", "callee_name")
+        val predicates = properties.map { property ->
+            StringPropertyPredicate(
+                property,
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "needle"
+            )
+        }
+        val dir = Files.createTempDirectory("webgraph-long-projection-cache")
+        val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val matches = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    200,
+                    GraphWorkConsumer { }
+                ).orEmpty().toList()
+                assertEquals(200, matches.size)
+                val retainedBeforeProjection = loaded.callSiteStringIndexBytes()
+
+                val first = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        properties,
+                        200
+                    )
+                )
+                val second = assertNotNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        properties,
+                        200
+                    )
+                )
+
+                assertEquals(200, first.size)
+                assertEquals(first, second)
+                assertNotSame(first, second)
+                assertEquals(retainedBeforeProjection, loaded.callSiteStringIndexBytes())
             } finally {
                 loaded.close()
             }

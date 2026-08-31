@@ -16,9 +16,11 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
 import java.util.Arrays
+import java.util.Collections
 import java.util.concurrent.CancellationException
 
 /** Compact CSR indexes for the four strings searched by broad CallSite queries. */
@@ -95,11 +97,24 @@ internal class MappedCallSiteStringIndex(
             return empty.asSequence()
         }
         cacheKey?.let { key ->
-            val nodeIds = ranges.mergedNodeIds(nodeOrder, workConsumer, limit).toList().toIntArray()
-            cacheMatchingNodeIds(key, nodeIds)
-            return nodeIds.asSequence()
+            return cacheMatchingNodeIdsOnComplete(
+                key,
+                ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
+            )
         }
         return ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
+    }
+
+    private fun cacheMatchingNodeIdsOnComplete(
+        key: CallSiteNodeMatchKey,
+        source: Sequence<Int>
+    ): Sequence<Int> = sequence {
+        val consumed = IntArrayList()
+        for (nodeId in source) {
+            consumed.add(nodeId)
+            yield(nodeId)
+        }
+        cacheMatchingNodeIds(key, consumed.toIntArray())
     }
 
     fun projectRows(
@@ -132,9 +147,11 @@ internal class MappedCallSiteStringIndex(
         rows: List<StringPropertyProjectionRow>
     ): List<StringPropertyProjectionRow> {
         projectedRows[key]?.let { return it.rows }
-        val retainedRows = rows.toList()
+        val retainedRows = Collections.unmodifiableList(rows.map { row ->
+            StringPropertyProjectionRow(Collections.unmodifiableList(row.values.toList()))
+        })
         val entryBytes = estimatedCallSiteProjectionCacheBytes(key, retainedRows)
-        if (entryBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES) return rows
+        if (entryBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES) return retainedRows
         while (projectedRows.isNotEmpty() &&
             (projectedRows.size >= MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES ||
                 projectedRowCacheBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES - entryBytes)
@@ -144,8 +161,9 @@ internal class MappedCallSiteStringIndex(
             projectedRowCacheBytes -= eldest.value.retainedBytes
             reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
         }
-        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return rows
-        if (!reservation.tryGrowTo(retainedAfter)) return rows
+        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull()
+            ?: return retainedRows
+        if (!reservation.tryGrowTo(retainedAfter)) return retainedRows
         projectedRows[key] = CachedProjectionRows(retainedRows, entryBytes)
         projectedRowCacheBytes += entryBytes
         return retainedRows
@@ -964,13 +982,30 @@ private fun estimatedCallSiteProjectionCacheBytes(
         predicate.property.length.toLong() + predicate.expected.length
     } + key.projectedProperties.sumOf { property -> property.length.toLong() }
     val valueReferences = rows.sumOf { row -> row.values.size.toLong() }
+    var decodedStringBytes = 0L
+    rows.forEach { row ->
+        row.values.forEach { value ->
+            if (value != null) {
+                decodedStringBytes = Math.addExact(
+                    decodedStringBytes,
+                    Math.addExact(
+                        CALL_SITE_PROJECTION_STRING_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                        Math.multiplyExact(value.length.toLong(), Char.SIZE_BYTES.toLong())
+                    )
+                )
+            }
+        }
+    }
     Math.addExact(
         CALL_SITE_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES,
         Math.addExact(
             Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
             Math.addExact(
                 Math.multiplyExact(rows.size.toLong(), CALL_SITE_PROJECTION_ROW_ESTIMATED_BYTES),
-                Math.multiplyExact(valueReferences, REFERENCE_ESTIMATED_BYTES)
+                Math.addExact(
+                    Math.multiplyExact(valueReferences, REFERENCE_ESTIMATED_BYTES),
+                    decodedStringBytes
+                )
             )
         )
     )
@@ -1158,6 +1193,7 @@ private const val MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES = 32
 private const val MAX_CALL_SITE_PROJECTION_CACHE_BYTES = 2L * 1024 * 1024
 private const val CALL_SITE_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES = 128L
 private const val CALL_SITE_PROJECTION_ROW_ESTIMATED_BYTES = 64L
+private const val CALL_SITE_PROJECTION_STRING_ESTIMATED_BYTES = 24L
 private const val REFERENCE_ESTIMATED_BYTES = 8L
 private const val INITIAL_POSTING_RANGES = 16
 private const val BITSET_WORD_SHIFT = 6

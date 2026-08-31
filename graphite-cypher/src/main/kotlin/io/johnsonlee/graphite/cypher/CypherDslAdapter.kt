@@ -62,7 +62,7 @@ object CypherDslAdapter {
             }
         } else {
             buildAst(cypher)
-        }
+        }.toImmutableCypherAst()
         cacheParsedQuery(cypher, clauses)
         return clauses
     }

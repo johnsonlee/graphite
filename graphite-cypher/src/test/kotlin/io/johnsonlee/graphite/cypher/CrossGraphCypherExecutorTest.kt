@@ -28,7 +28,9 @@ import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
@@ -48,6 +50,59 @@ import kotlin.test.assertTrue
 
 @Suppress("LargeClass")
 class CrossGraphCypherExecutorTest {
+
+    @Test
+    fun `selected graph projects bounded CallSite strings without materializing nodes`() {
+        val projectedRows = listOf(
+            StringPropertyProjectionRow(listOf("example.FeatureCaller", "invoke"))
+        )
+        var projectedType: Class<out Node>? = null
+        var projectedPredicates = emptyList<StringPropertyPredicate>()
+        var capturedProjectedProperties = emptyList<String>()
+        var projectedLimit = -1
+        var projectedWorkConsumer: GraphWorkConsumer? = GraphWorkConsumer { }
+        val backing = graph()
+        val selected = object : Graph by backing, StringPropertyDisjunctionProjection {
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow> {
+                projectedType = type
+                projectedPredicates = predicates
+                capturedProjectedProperties = projectedProperties
+                projectedLimit = limit
+                projectedWorkConsumer = workConsumer
+                return projectedRows
+            }
+        }
+        val result = executor("selected" to selected, "other" to graph()).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId = 'selected' AND " +
+                "toLower(n.caller_class) CONTAINS 'feature' " +
+                "RETURN n.caller_class AS caller, n.callee_name AS callee LIMIT 200"
+        )
+
+        assertEquals(CallSiteNode::class.java, projectedType)
+        assertEquals(
+            listOf(
+                StringPropertyPredicate(
+                    "caller_class",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "feature"
+                )
+            ),
+            projectedPredicates
+        )
+        assertEquals(listOf("caller_class", "callee_name"), capturedProjectedProperties)
+        assertEquals(200, projectedLimit)
+        assertNull(projectedWorkConsumer)
+        assertEquals("example.FeatureCaller", result.rows.single()["caller"])
+        assertEquals("invoke", result.rows.single()["callee"])
+        assertEquals(listOf("selected"), graphIds(result.rows.single()))
+    }
 
     @Test
     fun `relationship uniqueness is qualified by graph identity`() {

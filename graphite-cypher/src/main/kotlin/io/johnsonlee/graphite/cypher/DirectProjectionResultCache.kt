@@ -122,6 +122,7 @@ internal object DirectProjectionResultCache {
     ): Long = try {
         val characters = graphId.length.toLong() + columns.sumOf { it.length.toLong() }
         val projectedReferences = projectedRows.sumOf { it.values.size.toLong() }
+        val projectedStringBytes = estimatedProjectedStringBytes(projectedRows)
         val publicMapEntries = Math.multiplyExact(
             projectedRows.size.toLong(),
             columns.size.toLong() + 1L
@@ -134,13 +135,32 @@ internal object DirectProjectionResultCache {
                     Math.multiplyExact(projectedRows.size.toLong(), DIRECT_PROJECTION_ROW_ESTIMATED_BYTES),
                     Math.addExact(
                         Math.multiplyExact(projectedReferences, REFERENCE_ESTIMATED_BYTES),
-                        Math.multiplyExact(publicMapEntries, MAP_ENTRY_ESTIMATED_BYTES)
+                        Math.addExact(
+                            Math.multiplyExact(publicMapEntries, MAP_ENTRY_ESTIMATED_BYTES),
+                            projectedStringBytes
+                        )
                     )
                 )
             )
         )
     } catch (_: ArithmeticException) {
         Long.MAX_VALUE
+    }
+
+    private fun estimatedProjectedStringBytes(rows: List<StringPropertyProjectionRow>): Long {
+        var bytes = 0L
+        rows.forEach { row ->
+            row.values.filterNotNull().forEach { value ->
+                bytes = Math.addExact(
+                    bytes,
+                    Math.addExact(
+                        STRING_OBJECT_ESTIMATED_BYTES + PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                        Math.multiplyExact(value.length.toLong(), Char.SIZE_BYTES.toLong())
+                    )
+                )
+            }
+        }
+        return bytes
     }
 }
 
@@ -153,4 +173,6 @@ private const val DIRECT_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES = 256L
 private const val DIRECT_PROJECTION_ROW_ESTIMATED_BYTES = 256L
 private const val MAP_ENTRY_ESTIMATED_BYTES = 48L
 private const val REFERENCE_ESTIMATED_BYTES = 8L
+private const val STRING_OBJECT_ESTIMATED_BYTES = 24L
+private const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
 private const val HASH_FACTOR = 31

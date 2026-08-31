@@ -43,6 +43,15 @@ class GraphCapabilityTest {
                 workConsumer: GraphWorkConsumer?
             ) = listOf(StringPropertyDistinctRow(7, projectedProperties))
         }
+        val duplicateProjection = object : StringPropertyDisjunctionProjection {
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ) = listOf(StringPropertyProjectionRow(projectedProperties))
+        }
         var released = false
         val cache = object : ReleasableStringPropertyDisjunctionCache {
             override fun releaseStringPropertyDisjunctionCache() {
@@ -70,6 +79,15 @@ class GraphCapabilityTest {
         assertEquals(
             listOf("caller_name"),
             projection.distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                emptyList(),
+                listOf("caller_name"),
+                1
+            )?.single()?.values
+        )
+        assertEquals(
+            listOf("caller_name"),
+            duplicateProjection.projectStringPropertyDisjunction(
                 CallSiteNode::class.java,
                 emptyList(),
                 listOf("caller_name"),

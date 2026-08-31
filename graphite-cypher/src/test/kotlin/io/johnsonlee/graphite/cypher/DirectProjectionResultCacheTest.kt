@@ -61,4 +61,35 @@ class DirectProjectionResultCacheTest {
         assertTrue(DirectProjectionResultCache.entryCount() <= 32)
         assertTrue(DirectProjectionResultCache.retainedBytes() <= DirectProjectionResultCache.maxRetainedBytes())
     }
+
+    @Test
+    fun `cache rejects a decoded string payload larger than its byte budget`() {
+        val columns = listOf("callerClass", "callerName", "calleeClass", "calleeName")
+        val projectedRows = List(200) { row ->
+            StringPropertyProjectionRow(
+                List(columns.size) { column -> "value-$row-$column-${"x".repeat(1_400)}" }
+            )
+        }
+
+        val first = DirectProjectionResultCache.getOrCreate(projectedRows, columns, "large-graph")
+        val repeated = DirectProjectionResultCache.getOrCreate(projectedRows, columns, "large-graph")
+
+        assertEquals(0, DirectProjectionResultCache.entryCount())
+        assertNotSame(first, repeated)
+        assertEquals(first, repeated)
+    }
+
+    @Test
+    fun `cache rejects storage rows whose width differs from projected columns`() {
+        val error = assertFailsWith<IllegalStateException> {
+            DirectProjectionResultCache.getOrCreate(
+                listOf(StringPropertyProjectionRow(listOf("caller-only"))),
+                listOf("caller", "callee"),
+                "broken-graph"
+            )
+        }
+
+        assertTrue(error.message.orEmpty().contains("does not match"))
+        assertEquals(0, DirectProjectionResultCache.entryCount())
+    }
 }

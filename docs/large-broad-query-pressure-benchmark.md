@@ -179,8 +179,9 @@ graphs retain the combined CallSite index and all
 64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
 coverage. It independently
 rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
-workload cannot pass. This prevents source pruning alone from satisfying the goal while the
-already-selected single-graph API path remains slow.
+workload cannot pass. This prevents accepting a graphId speedup when the already-selected
+single-graph API path regresses. The API path is the correctness reference and a non-regression
+guardrail; the 10x target applies to query-level graphId routing.
 
 The candidate in-process hard gate checks all routing results against the trusted external oracle.
 The comparator additionally requires every candidate graphId result to match its API-selected
