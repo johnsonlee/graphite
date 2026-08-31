@@ -37,6 +37,7 @@ import {
 } from "./benchmark-gate.mjs";
 
 function graphIdPressureResult(overrides = {}, indexState = "cold") {
+    const warm = indexState === "warm";
     const values = {
         graphCount: 64,
         distinctGraphPathCount: 64,
@@ -57,8 +58,11 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteIndexAdmittedGraphs: 0,
         callSiteIndexRetainedBytes: 0,
         callSiteTrigramIndexedGraphs: 0,
-        callSiteParallelScanCount: 768,
-        callSiteScanPeakActiveWorkers: 8,
+        callSiteParallelScanCount: warm ? 0 : 64,
+        callSiteParallelScanGraphCount: warm ? 0 : 64,
+        callSiteStringIndexLookupCount: warm ? 768 : 704,
+        callSiteStringIndexLookupGraphCount: 64,
+        callSiteScanPeakActiveWorkers: warm ? 0 : 8,
         ...overrides
     };
     return jmhResult({
@@ -129,7 +133,8 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(passed.graphParameterP95Speedup, 20);
     assert.equal(passed.gateP50Speedup, 20);
     assert.equal(passed.gateP95Speedup, 20);
-    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 768);
+    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 64);
+    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 704);
     assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 8);
     assert.match(renderGraphIdPressureReport(passed), /Effective CPU cores/);
     assert.match(renderGraphIdPressureReport(passed), /Peak used heap/);
@@ -145,24 +150,27 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(tooSlow.p95Speedup, 9);
 
     const serialCandidate = compareGraphIdPressure(
-        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 })],
-        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 1 })],
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            callSiteParallelScanCount: 0,
+            callSiteParallelScanGraphCount: 0,
+            callSiteScanPeakActiveWorkers: 1
+        })],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(serialCandidate.passed, false);
-    assert.match(serialCandidate.errors.join("\n"), /did not execute an intra-graph parallel scan/);
+    assert.match(serialCandidate.errors.join("\n"), /exactly one intra-graph parallel scan on each graph/);
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
 });
 
 test("64-real-graph warm pressure proves the trigram path instead of requiring a raw scan", () => {
-    const warmBase = graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 }, "warm");
+    const warmBase = graphIdPressureResult({}, "warm");
     const warmCandidate = graphIdPressureResult({
         callSiteIndexAdmittedGraphs: 64,
         callSiteIndexRetainedBytes: 1024,
         callSiteTrigramIndexedGraphs: 64,
-        callSiteParallelScanCount: 0,
-        callSiteScanPeakActiveWorkers: 0
+        callSiteParallelScanCount: 0
     }, "warm");
     const passed = compareGraphIdPressure(
         [warmBase],
@@ -177,7 +185,7 @@ test("64-real-graph warm pressure proves the trigram path instead of requiring a
 
     const missingTrigram = compareGraphIdPressure(
         [warmBase],
-        [graphIdPressureResult({ callSiteParallelScanCount: 0, callSiteScanPeakActiveWorkers: 0 }, "warm")],
+        [graphIdPressureResult({}, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -190,14 +198,42 @@ test("64-real-graph warm pressure proves the trigram path instead of requiring a
             callSiteIndexAdmittedGraphs: 63,
             callSiteIndexRetainedBytes: 1024,
             callSiteTrigramIndexedGraphs: 63,
-            callSiteParallelScanCount: 0,
-            callSiteScanPeakActiveWorkers: 0
+            callSiteParallelScanCount: 0
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(partialWarmCoverage.passed, false);
     assert.match(partialWarmCoverage.errors.join("\n"), /admitted=63, trigram=63/);
+
+    const hiddenWarmScan = compareGraphIdPressure(
+        [warmBase],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteParallelScanCount: 1,
+            callSiteParallelScanGraphCount: 1,
+            callSiteScanPeakActiveWorkers: 8
+        }, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(hiddenWarmScan.passed, false);
+    assert.match(hiddenWarmScan.errors.join("\n"), /must not fall back to raw scans/);
+
+    const partialIndexUse = compareGraphIdPressure(
+        [warmBase],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteStringIndexLookupCount: 767,
+            callSiteStringIndexLookupGraphCount: 63
+        }, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(partialIndexUse.passed, false);
+    assert.match(partialIndexUse.errors.join("\n"), /exactly one retained-index lookup per query/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {

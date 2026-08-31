@@ -127,8 +127,13 @@ during one selected-graph query. The benchmark's process-CPU-time / wall-time ef
 ratio is the numeric utilization baseline; thread count alone is not sufficient.
 The harness also records the number of bounded intra-graph scans and the peak number of workers
 simultaneously inside one scan. The real64 comparator fails closed unless the candidate executes at
-least one such scan and observes at least two active workers; merely creating eight threads cannot
-satisfy the gate.
+exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
+creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
+The cold fork must report 64 scans followed by exactly 704 index lookups (11 remaining queries per
+graph). After warmup metrics are reset, the warm fork must report zero scans and exactly 768 index
+lookups, with all 64 graphs represented in both cases. This rejects an implementation that happens
+to meet the percentile target while routing only part of the workload or silently falling back to
+raw scans.
 
 When a bounded scan reaches the end of the selected graph, the candidate reuses the already-read
 node and string ids to publish the combined CallSite CSR index instead of discarding them and later

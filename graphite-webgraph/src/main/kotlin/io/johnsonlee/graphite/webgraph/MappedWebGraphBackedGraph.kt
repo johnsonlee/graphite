@@ -175,6 +175,7 @@ internal class MappedWebGraphBackedGraph(
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
     private val callSiteParallelScanCount = AtomicLong()
+    private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
     private val callSiteScanPeakActiveWorkers = AtomicInteger()
     private val callSiteScanAbortedWorkers = AtomicLong()
@@ -349,6 +350,7 @@ internal class MappedWebGraphBackedGraph(
         if (limit <= 0) return emptySequence()
         if (type == CallSiteNode::class.java) {
             callSiteStringIndex?.let { index ->
+                callSiteStringIndexLookupCount.incrementAndGet()
                 return index.matchingNodeIds(predicates, workConsumer, limit)
                     .mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
             }
@@ -1041,6 +1043,8 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
 
+    internal fun callSiteStringIndexLookupCount(): Long = callSiteStringIndexLookupCount.get()
+
     internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
 
     internal fun callSiteScanActiveWorkers(): Int = callSiteScanActiveWorkers.get()
@@ -1050,6 +1054,7 @@ internal class MappedWebGraphBackedGraph(
     internal fun resetCallSiteScanMetrics() {
         check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
         callSiteParallelScanCount.set(0L)
+        callSiteStringIndexLookupCount.set(0L)
         callSiteScanPeakActiveWorkers.set(0)
         callSiteScanAbortedWorkers.set(0L)
     }

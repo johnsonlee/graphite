@@ -855,6 +855,7 @@ class GraphStoreTest {
                 ).orEmpty().toList()
                 assertTrue(coldZero.isEmpty())
                 assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
                 assertTrue(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isCallSiteTrigramIndexInitialized())
 
@@ -873,6 +874,7 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(0), warm)
                 assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
                 assertTrue(loaded.isCallSiteTrigramIndexInitialized())
 
                 loaded.clearStringPropertyIndexes()
@@ -902,6 +904,7 @@ class GraphStoreTest {
 
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
                 assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
                 assertEquals(0L, loaded.callSiteScanAbortedWorkers())
             } finally {

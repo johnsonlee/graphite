@@ -628,7 +628,9 @@ export function compareGraphIdPressure(
     const resourceMetricNames = [
         "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
-        "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteScanPeakActiveWorkers"
+        "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
+        "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
+        "callSiteScanPeakActiveWorkers"
     ];
     const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
         const value = pressureMetric(result, name);
@@ -638,11 +640,24 @@ export function compareGraphIdPressure(
     const baseResources = resourceSnapshot(baseResult, "base");
     const candidateResources = resourceSnapshot(candidateResult, "candidate");
     if (candidateIndexState === "cold") {
-        if (candidateResources.callSiteParallelScanCount <= 0) {
-            errors.push("candidate: cold selected-graph workload did not execute an intra-graph parallel scan");
+        if (candidateResources.callSiteParallelScanCount !== 64 ||
+            candidateResources.callSiteParallelScanGraphCount !== 64
+        ) {
+            errors.push("candidate: cold selected-graph workload must execute exactly one intra-graph " +
+                "parallel scan on each graph; " +
+                `scans=${candidateResources.callSiteParallelScanCount}, ` +
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
         }
         if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
             errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
+        }
+        if (candidateResources.callSiteStringIndexLookupCount !== 704 ||
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64
+        ) {
+            errors.push("candidate: cold selected-graph workload must reuse the retained index for the " +
+                "remaining 11 queries on each graph; " +
+                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}`);
         }
     } else if (candidateIndexState === "warm") {
         if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
@@ -651,6 +666,21 @@ export function compareGraphIdPressure(
             errors.push("candidate: warm selected-graph workload must execute the retained trigram index path " +
                 `for all 64 graphs; admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
                 `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
+        }
+        if (candidateResources.callSiteParallelScanCount !== 0 ||
+            candidateResources.callSiteParallelScanGraphCount !== 0
+        ) {
+            errors.push("candidate: warm selected-graph workload must not fall back to raw scans; " +
+                `scans=${candidateResources.callSiteParallelScanCount}, ` +
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
+        }
+        if (candidateResources.callSiteStringIndexLookupCount !== 768 ||
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64
+        ) {
+            errors.push("candidate: warm selected-graph workload must execute exactly one retained-index " +
+                "lookup per query across all 64 graphs; " +
+                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}`);
         }
     }
 
@@ -885,7 +915,10 @@ export function renderGraphIdPressureReport(comparison) {
         `- Candidate graphId/API-reference latency ratio: ` +
             `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
         `- Candidate intra-graph scans: **${candidateResources.callSiteParallelScanCount.toFixed(0)}**; ` +
+            `graphs scanned: **${candidateResources.callSiteParallelScanGraphCount.toFixed(0)}**; ` +
             `peak simultaneously active workers: **${candidateResources.callSiteScanPeakActiveWorkers.toFixed(0)}**`,
+        `- Candidate retained-index lookups: **${candidateResources.callSiteStringIndexLookupCount.toFixed(0)}**; ` +
+            `graphs covered: **${candidateResources.callSiteStringIndexLookupGraphCount.toFixed(0)}**`,
         `- Effective CPU cores: **${(baseResources.cpuCoreUtilizationPermille / 1000).toFixed(2)} → ` +
             `${(candidateResources.cpuCoreUtilizationPermille / 1000).toFixed(2)}**`,
         `- Peak used heap: **${gibibytes(baseResources.peakUsedHeapBytes)} → ` +
