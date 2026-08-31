@@ -69,6 +69,12 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
     override fun consume() = consume(1L)
 }
 
+/**
+ * A thread-safe batch consumer that explicitly permits one storage lookup to invoke it
+ * concurrently from multiple scan workers.
+ */
+fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()

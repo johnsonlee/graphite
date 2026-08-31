@@ -27,6 +27,7 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
@@ -3660,7 +3661,12 @@ class QueryPipeline private constructor(
         return if (tracker == null) {
             graph.nodesByStringPropertyDisjunction(type, predicates, limit)
         } else {
-            graph.nodesByStringPropertyDisjunction(type, predicates, limit, tracker)
+            val storageWorkConsumer = if (sources.size == 1) {
+                ParallelGraphWorkBatchConsumer(tracker::consume)
+            } else {
+                tracker
+            }
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
         }
     }
 

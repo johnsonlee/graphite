@@ -48,6 +48,7 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
@@ -722,10 +723,8 @@ class GraphStoreTest {
                         )
                     ),
                     limit = 1,
-                    workConsumer = object : GraphWorkBatchConsumer {
-                        override fun consume(workUnits: Long) {
-                            workerThreads += Thread.currentThread().name
-                        }
+                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
+                        workerThreads += Thread.currentThread().name
                     }
                 ).orEmpty().map { it.id.value }.toList()
 
@@ -740,7 +739,8 @@ class GraphStoreTest {
 
                 loaded.resetCallSiteScanMetrics()
                 val qualified = CrossGraphCypherExecutor(
-                    listOf(CypherGraph("selected", loaded))
+                    listOf(CypherGraph("selected", loaded)),
+                    CypherExecutionBudget(maxWorkUnits = 100_000)
                 ).execute(
                     """
                     MATCH (n:CallSiteNode)
@@ -778,16 +778,14 @@ class GraphStoreTest {
                                 )
                             ),
                             limit = 1,
-                            workConsumer = object : GraphWorkBatchConsumer {
-                                override fun consume(workUnits: Long) {
-                                    consumedWork.addAndGet(workUnits)
-                                    val failThisWorker = failureClaimed.compareAndSet(false, true)
-                                    firstBatchReached.countDown()
-                                    check(firstBatchReached.await(5, TimeUnit.SECONDS))
-                                    if (failThisWorker) error("parallel scan budget failure")
-                                    while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
-                                        Thread.onSpinWait()
-                                    }
+                            workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
+                                consumedWork.addAndGet(workUnits)
+                                val failThisWorker = failureClaimed.compareAndSet(false, true)
+                                firstBatchReached.countDown()
+                                check(firstBatchReached.await(5, TimeUnit.SECONDS))
+                                if (failThisWorker) error("parallel scan budget failure")
+                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
+                                    Thread.onSpinWait()
                                 }
                             }
                         ).orEmpty().toList()
@@ -814,11 +812,9 @@ class GraphStoreTest {
                                     )
                                 ),
                                 limit = 1,
-                                workConsumer = object : GraphWorkBatchConsumer {
-                                    override fun consume(workUnits: Long) {
-                                        interruptionBatchReached.countDown()
-                                        check(releaseInterruptedWorkers.await(5, TimeUnit.SECONDS))
-                                    }
+                                workConsumer = ParallelGraphWorkBatchConsumer {
+                                    interruptionBatchReached.countDown()
+                                    check(releaseInterruptedWorkers.await(5, TimeUnit.SECONDS))
                                 }
                             ).orEmpty().toList()
                             interruptedFailure.set(AssertionError("Interrupted scan completed normally"))

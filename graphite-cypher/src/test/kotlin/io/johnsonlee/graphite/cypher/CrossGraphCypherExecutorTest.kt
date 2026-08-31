@@ -20,6 +20,7 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
@@ -1522,6 +1523,7 @@ class CrossGraphCypherExecutorTest {
     fun `graph id equality prunes unselected sources from broad string limit scans`() {
         val scanCounts = List(4) { AtomicInteger() }
         val lookupLimits = List(4) { mutableListOf<Int>() }
+        val parallelPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
         val returnType = TypeDescriptor("void")
         val graphs = scanCounts.indices.map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -1568,6 +1570,7 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
+                    parallelPermissions[graphIndex] += workConsumer is ParallelGraphWorkBatchConsumer
                     workConsumer.consume()
                     return nodesByStringPropertyDisjunction(type, predicates, limit)
                 }
@@ -1604,7 +1607,16 @@ class CrossGraphCypherExecutorTest {
             assertTrue(scanCounts.last().get() > 0)
             assertEquals(250, lookupLimits.last().first())
             assertTrue(lookupLimits.last().all { limit -> limit in 0..250 })
+            assertTrue(parallelPermissions.last().all { it })
         }
+
+        parallelPermissions.forEach { it.clear() }
+        val unqualified = executor.execute(
+            "MATCH (n) WHERE $broadPredicate " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
+        )
+        assertEquals(graphs.map { it.id }.toSet(), unqualified.rows.map { it["graph"] }.toSet())
+        assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.none { it } })
 
         scanCounts.forEach { it.set(0) }
         lookupLimits.forEach(MutableList<Int>::clear)

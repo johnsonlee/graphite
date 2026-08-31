@@ -19,6 +19,7 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
@@ -412,7 +413,7 @@ internal class MappedWebGraphBackedGraph(
         workConsumer: GraphWorkConsumer?
     ): Sequence<T>? {
         if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE || callSiteScanParallelism <= 1) return null
-        if (workConsumer != null && workConsumer !is GraphWorkBatchConsumer) return null
+        if (workConsumer !is ParallelGraphWorkBatchConsumer) return null
         val nodeCount = nodeTypeIndex.count(type)
         if (nodeCount < MIN_PARALLEL_CALL_SITE_SCAN_NODES || nodeCount > Int.MAX_VALUE || limit >= nodeCount) return null
 
