@@ -427,7 +427,7 @@ class GraphStoreTest {
                     workConsumer = GraphWorkConsumer { aggregateWork++ }
                 )
                 assertEquals(1L, trackedAggregate?.count)
-                assertEquals(5, aggregateWork)
+                assertEquals(2, aggregateWork)
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
