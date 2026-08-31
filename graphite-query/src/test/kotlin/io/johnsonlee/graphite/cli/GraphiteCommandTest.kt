@@ -8,8 +8,10 @@ import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarEntry
+import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -196,6 +198,39 @@ class GraphiteCommandTest {
             assertEquals(emptyList(), loaded.resources.list("**").toList())
         } finally {
             root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `build from published jar preserves persisted resource bytes`() {
+        val fixtureJar = Path.of(requireNotNull(System.getProperty("spring.jcl.jar.path")))
+        val resourcePath = "META-INF/license.txt"
+        val expectedContent = JarFile(fixtureJar.toFile()).use { jar ->
+            val entry = requireNotNull(jar.getJarEntry(resourcePath)) {
+                "Published fixture does not contain $resourcePath"
+            }
+            jar.getInputStream(entry).use { it.readBytes() }
+        }
+        val outputDir = Files.createTempDirectory("build-published-resource-jar-test")
+        try {
+            val cmd = BuildCommand().apply {
+                input = fixtureJar
+                output = outputDir
+                includePackages = listOf("org.apache.commons.logging")
+            }
+            val (_, err, code) = captureOutput { cmd.call() }
+            assertEquals(0, code, "Published JAR graph build should succeed, stderr: $err")
+
+            val resourceStore = outputDir.resolve("graph.resources")
+            assertTrue(Files.size(resourceStore) > 8L, "Published JAR must produce a non-empty resource store")
+
+            val loaded = GraphStore.load(outputDir)
+            val entry = loaded.resources.list(resourcePath).single()
+            assertEquals(resourcePath, entry.path)
+            assertEquals(fixtureJar.fileName.toString(), entry.source)
+            assertContentEquals(expectedContent, loaded.resources.open(resourcePath).use { it.readBytes() })
+        } finally {
+            outputDir.toFile().deleteRecursively()
         }
     }
 

@@ -23,6 +23,7 @@ guava = { module = "com.google.guava:guava", version.ref = "guava" }
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
 ff4j-core = { module = "org.ff4j:ff4j-core", version.ref = "ff4j" }
 spring-web = { module = "org.springframework:spring-web", version.ref = "spring" }
+spring-jcl = { module = "org.springframework:spring-jcl", version.ref = "spring" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
