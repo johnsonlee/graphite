@@ -83,6 +83,18 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
+    fun `node string collection accepts an iterable batch`() {
+        val strings = linkedSetOf<String>()
+
+        NodeSerializer.collectNodeStrings(
+            listOf(StringConstant(NodeId(0), "feature-alpha")),
+            strings
+        )
+
+        assertEquals(setOf("feature-alpha"), strings)
+    }
+
+    @Test
     @Suppress("LongMethod")
     fun `mapped string property lookup uses raw node fields and falls back when unsupported`() {
         val owner = TypeDescriptor("example.Owner")
