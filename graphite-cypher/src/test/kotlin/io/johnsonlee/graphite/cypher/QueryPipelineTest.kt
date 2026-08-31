@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
@@ -24,9 +25,14 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
@@ -532,6 +538,652 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `empty parallel distinct waves release rebuildable storage caches`() {
+        class EmptyIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder,
+            ReleasableStringPropertyDisjunctionCache {
+            var releases = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> = emptyList()
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+            override fun releaseStringPropertyDisjunctionCache() {
+                releases++
+            }
+        }
+
+        val first = EmptyIndexedGraph(graph)
+        val second = EmptyIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'not-present' OR " +
+                "n.callee_class CONTAINS 'not-present' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(1, first.releases)
+        assertEquals(1, second.releases)
+    }
+
+    @Test
+    fun `targeted parallel distinct waves release only zero hit source caches`() {
+        class IndexedGraph(
+            private val delegate: Graph,
+            private val values: List<StringPropertyDistinctRow>
+        ) : Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder,
+            ReleasableStringPropertyDisjunctionCache {
+            var releases = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> = values.take(limit)
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+            override fun releaseStringPropertyDisjunctionCache() {
+                releases++
+            }
+        }
+
+        val hit = IndexedGraph(
+            graph,
+            listOf(StringPropertyDistinctRow(0, listOf("com.example.Service")))
+        )
+        val miss = IndexedGraph(graph, emptyList())
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("hit", hit), CypherGraph("miss", miss))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(0, hit.releases)
+        assertEquals(1, miss.releases)
+    }
+
+    @Test
+    fun `selected provenance pass does not rebuild a released zero hit cache`() {
+        class RebuildTrackingIndexedGraph(
+            private val delegate: Graph,
+            private val values: List<StringPropertyDistinctRow>
+        ) : Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder,
+            ReleasableStringPropertyDisjunctionCache {
+            var cacheBuilds = 0
+            var projectionCalls = 0
+            var releases = 0
+            private var cacheRetained = false
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                projectionCalls++
+                if (!cacheRetained) {
+                    cacheBuilds++
+                    cacheRetained = true
+                }
+                return values
+                    .filter { row -> selectedValues == null || row.values in selectedValues }
+                    .take(limit)
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+
+            override fun releaseStringPropertyDisjunctionCache() {
+                releases++
+                cacheRetained = false
+            }
+        }
+
+        val hit = RebuildTrackingIndexedGraph(
+            graph,
+            listOf(StringPropertyDistinctRow(0, listOf("com.example.Service")))
+        )
+        val miss = RebuildTrackingIndexedGraph(graph, emptyList())
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("hit", hit), CypherGraph("miss", miss))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(2, hit.projectionCalls)
+        assertEquals(1, hit.cacheBuilds)
+        assertEquals(0, hit.releases)
+        assertEquals(1, miss.projectionCalls)
+        assertEquals(1, miss.cacheBuilds)
+        assertEquals(1, miss.releases)
+    }
+
+    @Test
+    fun `complete indexed projection below limit does not fall back to a second graph scan`() {
+        class PartialIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> =
+                listOf(StringPropertyDistinctRow(0, listOf("index-only"))).take(limit)
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("first", PartialIndexedGraph(graph)),
+                CypherGraph("second", PartialIndexedGraph(graph))
+            )
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(listOf("index-only"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `indexed projection merges matching dynamic properties from non CallSite nodes`() {
+        val returnType = TypeDescriptor("void")
+        val mixed = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(100),
+                    MethodDescriptor(TypeDescriptor("example.Other"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            )
+            .addNode(
+                AnnotationNode(
+                    NodeId(101),
+                    "example.DynamicCall",
+                    "example.Owner",
+                    "call",
+                    mapOf("caller_class" to "example.Target")
+                )
+            )
+            .build()
+        val indexed = object : Graph by mixed,
+            StringPropertyDisjunctionLookup,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T>? = if (type == CallSiteNode::class.java) emptySequence() else null
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> = emptyList()
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", indexed), CypherGraph("second", indexed))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS \$term " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10",
+            mapOf("term" to "Target")
+        )
+
+        assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `parallel indexed distinct projection verifies selected rows in every graph`() {
+        class SelectedIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            var selectedLookups = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                val values = listOf("com.example.Service")
+                if (selectedValues != null) {
+                    selectedLookups++
+                    return listOf(StringPropertyDistinctRow(0, values)).takeIf { values in selectedValues }.orEmpty()
+                }
+                return listOf(StringPropertyDistinctRow(0, values))
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val first = SelectedIndexedGraph(graph)
+        val second = SelectedIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(1, first.selectedLookups)
+        assertEquals(1, second.selectedLookups)
+    }
+
+    @Test
+    fun `parallel indexed distinct projection injects and verifies graph ids`() {
+        class GraphIdIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            var selectedLookups = 0
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                assertEquals(listOf("graphId"), projectedProperties)
+                if (selectedValues != null) {
+                    selectedLookups++
+                    assertEquals(setOf(listOf(null)), selectedValues)
+                }
+                return listOf(StringPropertyDistinctRow(0, listOf(null))).take(limit)
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val first = GraphIdIndexedGraph(graph)
+        val second = GraphIdIndexedGraph(graph)
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.graphId AS graphId LIMIT 2"
+        )
+
+        assertEquals(listOf("first", "second"), result.rows.map { it["graphId"] })
+        assertEquals(1, first.selectedLookups)
+        assertEquals(1, second.selectedLookups)
+
+        val skipped = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' OR " +
+                "n.callee_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.graphId AS graphId SKIP 1 LIMIT 1"
+        )
+
+        assertEquals(listOf("second"), skipped.rows.map { it["graphId"] })
+        assertEquals(2, first.selectedLookups)
+        assertEquals(2, second.selectedLookups)
+    }
+
+    @Test
+    fun `single unlabeled string filter uses typed property lookup instead of a full node scan`() {
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("single direct string filter unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                assertEquals(listOf("caller_class"), predicates.map { it.property })
+                assertEquals(listOf("example"), predicates.map { it.expected })
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `parameterized string disjunction retains the direct lookup path`() {
+        val observed = mutableListOf<StringPropertyPredicate>()
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("parameterized direct string filter unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                observed += predicates
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS \$term OR n.callee_class CONTAINS \$term " +
+                "RETURN n.caller_class AS caller LIMIT 1",
+            mapOf("term" to "example")
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(listOf("caller_class", "callee_class"), observed.map { it.property })
+        assertTrue(observed.all { it.expected == "example" })
+    }
+
+    @Test
+    fun `string IN predicate expands into exact direct lookup candidates`() {
+        val observed = mutableListOf<StringPropertyPredicate>()
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("string IN predicate unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                observed += predicates
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(1).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.callee_name IN ['save', 'load'] " +
+                "RETURN n.callee_name AS callee LIMIT 2"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["callee"] })
+        assertEquals(listOf("save", "load"), observed.map { it.expected })
+        assertTrue(observed.all { it.property == "callee_name" && it.mode == StringMatchMode.EQUALS })
+    }
+
+    @Test
+    fun `quoted contains regex uses direct string lookup`() {
+        val observed = mutableListOf<StringPropertyPredicate>()
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("quoted contains regex unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                observed += predicates
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(1).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.callee_name =~ \$pattern RETURN n.callee_name AS callee LIMIT 2",
+            mapOf("pattern" to ".*\\Qav\\E.*")
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["callee"] })
+        assertEquals(listOf("av"), observed.map { it.expected })
+        assertTrue(observed.all { it.property == "callee_name" && it.mode == StringMatchMode.CONTAINS })
+    }
+
+    @Test
+    fun `general regex is not lowered to a contains predicate`() {
+        var directLookups = 0
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                directLookups++
+                return emptySequence()
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n:CallSiteNode) WHERE n.callee_name =~ 'sa.*' RETURN n.callee_name AS callee"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["callee"] })
+        assertEquals(0, directLookups)
+    }
+
+    @Test
+    fun `ordered string pagination consumes direct candidates`() {
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("ordered direct string query unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                assertEquals(listOf("caller_class"), predicates.map { it.property })
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN n.callee_name AS callee ORDER BY callee SKIP 1 LIMIT 1"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["callee"] })
+    }
+
+    @Test
+    fun `positive string conjunct supplies candidates for a residual NOT predicate`() {
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("boolean direct string query unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                assertEquals(listOf("caller_class"), predicates.map { it.property })
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "AND NOT n.callee_class CONTAINS 'Logger' " +
+                "RETURN n.callee_class AS callee LIMIT 2"
+        )
+
+        assertEquals(listOf("com.example.Repository"), result.rows.map { it["callee"] })
+    }
+
+    @Test
+    fun `AND of string disjunctions chooses the narrower candidate family`() {
+        val observedProperties = mutableListOf<String>()
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("AND of disjunctions unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                observedProperties += predicates.map { it.property }
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+
+        val result = CypherExecutor(lookupGraph).execute(
+            "MATCH (n) " +
+                "WHERE (n.caller_class CONTAINS 'e' OR n.callee_class CONTAINS 'e') " +
+                "AND (n.caller_name CONTAINS 'e' OR n.callee_name CONTAINS 'e') " +
+                "RETURN n.callee_name AS callee LIMIT 1"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["callee"] })
+        assertEquals(listOf("caller_name", "callee_name"), observedProperties)
+    }
+
+    @Test
+    fun `filtered string counts stream direct candidates without materializing MATCH rows`() {
+        val lookupGraph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                error("filtered string count unexpectedly used a full node scan")
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+        val executor = CypherExecutor(lookupGraph)
+
+        val count = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' RETURN count(*) AS matches"
+        )
+        val distinct = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN count(DISTINCT n.caller_class) AS classes"
+        )
+
+        assertEquals(2L, count.rows.single()["matches"])
+        assertEquals(1L, distinct.rows.single()["classes"])
+    }
+
+    @Test
+    fun `parallel filtered counts evaluate residual predicates and distinct expressions`() {
+        fun lookupGraph(): Graph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+        val executor = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", lookupGraph()), CypherGraph("second", lookupGraph()))
+        )
+
+        val count = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' AND n.line > 5 " +
+                "RETURN count(n.caller_name) AS matches"
+        )
+        val distinct = executor.execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' AND n.line > 5 " +
+                "RETURN count(DISTINCT n.callee_name) AS methods"
+        )
+
+        assertEquals(4L, count.rows.single()["matches"])
+        assertEquals(2L, distinct.rows.single()["methods"])
+    }
+
+    @Test
+    fun `parallel ordered direct string projection keeps global order and pagination`() {
+        fun lookupGraph(): Graph = object : Graph by graph, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> {
+                if (type != CallSiteNode::class.java) return emptySequence()
+                @Suppress("UNCHECKED_CAST")
+                return graph.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+            }
+        }
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", lookupGraph()), CypherGraph("second", lookupGraph()))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN n.callee_name AS method ORDER BY method DESC SKIP 1 LIMIT 2"
+        )
+
+        assertEquals(listOf("save", "log"), result.rows.map { it["method"] })
+    }
+
+    @Test
+    fun `two direct string conjuncts choose exact candidates and retain residual matching`() {
+        val result = CypherExecutor(graph).execute(
+            "MATCH (n) WHERE n.caller_class = 'com.example.Service' " +
+                "AND n.callee_name CONTAINS 'save' " +
+                "RETURN DISTINCT n.callee_name AS method LIMIT 10"
+        )
+
+        assertEquals(listOf("save"), result.rows.map { it["method"] })
     }
 
     @Test

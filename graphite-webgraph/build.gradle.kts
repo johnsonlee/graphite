@@ -17,7 +17,13 @@ kover {
     reports {
         filters {
             excludes {
-                classes("*Benchmark*", "*GraphBuildPersist*")
+                classes(
+                    "*Benchmark*",
+                    "*LargeBroadQueryPressureCounters",
+                    "*GraphBuildPersist*",
+                    "io.johnsonlee.graphite.webgraph.BroadQuery*",
+                    "io.johnsonlee.graphite.webgraph.GcSnapshot"
+                )
             }
         }
     }

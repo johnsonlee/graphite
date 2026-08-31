@@ -36,8 +36,6 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
-import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
-import io.johnsonlee.graphite.graph.MethodPattern
 import java.io.DataInput
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -752,47 +750,6 @@ internal object NodeSerializer {
     fun readMetadataMethodCount(dis: DataInput): Int {
         readHeader(dis, MAGIC_METADATA)
         return dis.readInt()
-    }
-
-    fun readMetadataMethodSlice(
-        dis: DataInput,
-        strings: StringTable,
-        pattern: MethodPattern,
-        limit: Int,
-        scanConsumer: MethodMetadataScanConsumer? = null
-    ): List<MethodDescriptor> {
-        readHeader(dis, MAGIC_METADATA)
-        val methodCount = dis.readInt()
-        val boundedLimit = limit.coerceAtLeast(0)
-        if (boundedLimit == 0) return emptyList()
-
-        val result = ArrayList<MethodDescriptor>(minOf(methodCount, boundedLimit))
-        var remaining = methodCount
-        while (remaining > 0 && result.size < boundedLimit) {
-            val method = readMethodDescriptor(dis, strings)
-            scanConsumer?.inspect()
-            if (pattern.matches(method)) {
-                result.add(method)
-            }
-            remaining--
-        }
-        return result
-    }
-
-    /** Lazily reads method descriptors without materializing the metadata method map. */
-    fun readMetadataMethods(
-        dis: DataInput,
-        strings: StringTable,
-        pattern: MethodPattern,
-        scanConsumer: MethodMetadataScanConsumer? = null
-    ): Sequence<MethodDescriptor> = sequence {
-        readHeader(dis, MAGIC_METADATA)
-        val methodCount = dis.readInt()
-        repeat(methodCount) {
-            val method = readMethodDescriptor(dis, strings)
-            scanConsumer?.inspect()
-            if (pattern.matches(method)) yield(method)
-        }
     }
 
     // ========================================================================

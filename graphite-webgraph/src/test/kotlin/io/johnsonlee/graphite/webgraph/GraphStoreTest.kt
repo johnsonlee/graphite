@@ -37,6 +37,11 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
+import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
+import io.johnsonlee.graphite.cypher.CypherExecutionBudget
+import io.johnsonlee.graphite.cypher.CypherExecutionContext
+import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
@@ -46,6 +51,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
@@ -75,6 +81,18 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
+
+    @Test
+    fun `node string collection accepts an iterable batch`() {
+        val strings = linkedSetOf<String>()
+
+        NodeSerializer.collectNodeStrings(
+            listOf(StringConstant(NodeId(0), "feature-alpha")),
+            strings
+        )
+
+        assertEquals(setOf("feature-alpha"), strings)
+    }
 
     @Test
     @Suppress("LongMethod")
@@ -115,6 +133,34 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir)
             try {
                 val mapped = loaded as MappedWebGraphBackedGraph
+                listOf(
+                    "caller_class" to "example.Owner",
+                    "caller_name" to "callerFeature",
+                    "callee_class" to "example.Target",
+                    "callee_name" to "billingFeature"
+                ).forEach { (property, expected) ->
+                    assertEquals(
+                        listOf(2),
+                        loaded.nodesByStringProperty(
+                            CallSiteNode::class.java,
+                            property,
+                            StringMatchMode.EQUALS,
+                            expected,
+                            limit = 1
+                        ).orEmpty().map { it.id.value }.toList()
+                    )
+                }
+                assertEquals(
+                    listOf(7),
+                    loaded.nodesByStringPropertyDisjunction(
+                        ResourceFileNode::class.java,
+                        listOf(
+                            StringPropertyPredicate("path", null, StringMatchMode.CONTAINS, "config"),
+                            StringPropertyPredicate("source", null, StringMatchMode.CONTAINS, "resources")
+                        ),
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
                 assertEarlyLimitedLookupsDoNotBuildIndex(mapped)
                 assertBroadDiscoveryQuery(loaded)
                 assertNull(
@@ -132,6 +178,25 @@ class GraphStoreTest {
                     "alpha"
                 )?.map { it.value }?.toList()
                 assertEquals(1, mapped.stringPropertyIndexCount())
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.EQUALS,
+                        "definitely-missing"
+                    ).orEmpty().none()
+                )
+                assertEquals(
+                    listOf("feature-alpha"),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "feature-alpha",
+                        limit = Int.MAX_VALUE
+                    ).orEmpty().map { it.value }.toList()
+                )
                 loaded.nodesByStringProperty(
                     CallSiteNode::class.java,
                     "caller_name",
@@ -188,7 +253,7 @@ class GraphStoreTest {
                     GraphWorkConsumer { disjunctionWork++ }
                 )?.map { it.id.value }?.toList()
                 assertEquals(listOf(2), disjunction)
-                assertEquals(1, disjunctionWork)
+                assertEquals(3, disjunctionWork)
                 assertNull(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -280,7 +345,79 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped disjunction hands warm small graphs back to property indexes`() {
+    fun `long missing contains skips the combined index while prefix builds it`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "definitely-not-present"
+            )
+        )
+        val dir = Files.createTempDirectory("webgraph-missing-disjunction")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    emptyList(),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+                        .orEmpty().toList()
+                )
+                assertEquals(
+                    StringPropertyDisjunctionAggregate(0, emptySet()),
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = "caller_class"
+                    )
+                )
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        limit = 10
+                    )
+                )
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    emptyList(),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates.map { predicate ->
+                            predicate.copy(mode = StringMatchMode.STARTS_WITH)
+                        }
+                    ).orEmpty().toList()
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `mapped disjunction builds and clears one combined CallSite string index`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(3) { index ->
@@ -325,17 +462,96 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
+                val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
                 val cold = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(1), cold)
-                assertNull(
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        predicates
-                    )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.callSiteStringIndexBytes() > 0L)
+                val aggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(1L, aggregate?.count)
+                assertEquals(setOf("example.VoucherCaller1"), aggregate?.distinctValues)
+                var aggregateWork = 0
+                val trackedAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "caller_class",
+                    workConsumer = GraphWorkConsumer { aggregateWork++ }
+                )
+                assertEquals(1L, trackedAggregate?.count)
+                assertEquals(16, aggregateWork)
+                val sparseCalleeAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "callee_name"
+                )
+                assertEquals(setOf("invoke1"), sparseCalleeAggregate?.distinctValues)
+                var denseAggregateWork = 0
+                val denseAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "example"
+                        ),
+                        StringPropertyPredicate(
+                            "caller_name",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "create"
+                        )
+                    ),
+                    distinctProperty = "callee_name",
+                    workConsumer = GraphWorkConsumer { denseAggregateWork++ }
+                )
+                assertEquals(3L, denseAggregate?.count)
+                assertEquals(setOf("invoke0", "invoke1", "invoke2"), denseAggregate?.distinctValues)
+                assertTrue(denseAggregateWork >= 6)
+                assertTrue(loaded.prefersSerialStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                val projectedValues = listOf("example.VoucherCaller1", "create1", null)
+                val projected = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "graphId"),
+                    limit = 10
+                )
+                assertEquals(listOf(projectedValues), projected?.map { it.values })
+                val selected = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "graphId"),
+                    limit = 10,
+                    selectedValues = setOf(projectedValues, listOf("missing", "missing", null))
+                )
+                assertEquals(listOf(projectedValues), selected?.map { it.values })
+                val selectedWithLimit = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class", "caller_name", "graphId"),
+                    limit = 1,
+                    selectedValues = setOf(projectedValues)
+                )
+                assertEquals(listOf(projectedValues), selectedWithLimit?.map { it.values })
+                val absent = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates.map { it.copy(expected = "missing") },
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(0L, absent?.count)
+                assertEquals(emptySet(), absent?.distinctValues)
+                assertEquals(
+                    listOf(1),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+                        .orEmpty().map { it.id.value }.toList()
                 )
                 assertTrue(
                     loaded.nodesByStringPropertyDisjunction(
@@ -352,6 +568,8 @@ class GraphStoreTest {
                 )
 
                 loaded.clearStringPropertyIndexes()
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 var consumed = 0
                 val reset = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -360,7 +578,408 @@ class GraphStoreTest {
                     GraphWorkConsumer { consumed++ }
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(1), reset)
-                assertEquals(3, consumed)
+                assertTrue(consumed.toLong() > checkNotNull(graph.nodeCount(CallSiteNode::class.java)))
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `cold mapped aggregate charges inspected call sites to the query budget`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(32) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-cold-aggregate-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir)
+            try {
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    CypherExecutionBudget(maxWorkUnits = 1)
+                )
+
+                assertFailsWith<CypherBudgetExceededException> {
+                    executor.execute(
+                        "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'missing' " +
+                            "RETURN count(*) AS total"
+                    )
+                }
+                val mapped = loaded as MappedWebGraphBackedGraph
+                val sparse = mapped.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.EQUALS,
+                            "example.Caller31"
+                        )
+                    ),
+                    distinctProperty = "callee_name"
+                )
+                assertEquals(1L, sparse?.count)
+                assertEquals(setOf("invoke"), sparse?.distinctValues)
+                val broad = mapped.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "example.Caller"
+                        )
+                    ),
+                    distinctProperty = "caller_class"
+                )
+                assertEquals(32L, broad?.count)
+                assertEquals(32, broad?.distinctValues?.size)
+            } finally {
+                (loaded as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `warm mapped zero hit aggregate charges inspected strings to the query budget`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(32) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-warm-zero-aggregate-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val predicates = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Caller")
+                )
+                assertEquals(
+                    32L,
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = null
+                    )?.count
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    CypherExecutionBudget(maxWorkUnits = 1)
+                )
+                assertFailsWith<CypherBudgetExceededException> {
+                    executor.execute(
+                        "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'missing' " +
+                            "RETURN count(*) AS total"
+                    )
+                }
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped limited lookup flushes work before the lazy sequence is abandoned`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Target"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            null,
+            StringMatchMode.CONTAINS,
+            "Target"
+        )
+        val dir = Files.createTempDirectory("webgraph-limited-lookup-budget")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertNotNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1
+                    )?.single()
+                )
+                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 2))
+                val executor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("mapped", loaded)),
+                    context
+                )
+                val query = "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                    "RETURN n.caller_class AS caller LIMIT 1"
+
+                assertEquals("example.Target", executor.execute(query).rows.single()["caller"])
+                assertFailsWith<CypherBudgetExceededException> { executor.execute(query) }
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun mappedDistinctProjectionFallsBackForUnsupportedCallSiteProperties() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            listOf(7, 9).forEachIndexed { index, line ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Target"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        line,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-unsupported-distinct-projection")
+        try {
+            GraphStore.save(graph, dir)
+            val first = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val second = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertNull(
+                    first.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "Target"
+                            )
+                        ),
+                        projectedProperties = listOf("line"),
+                        limit = 1
+                    )
+                )
+                val result = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("first", first), CypherGraph("second", second))
+                ).execute(
+                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                        "RETURN DISTINCT n.line AS line LIMIT 1"
+                )
+
+                assertEquals(listOf(7), result.rows.map { it["line"] })
+            } finally {
+                second.close()
+                first.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped indexed distinct projection preserves matching non CallSite nodes`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.Other"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            )
+            .addNode(
+                AnnotationNode(
+                    NodeId(1),
+                    "example.DynamicCall",
+                    "example.Owner",
+                    "call",
+                    mapOf("caller_class" to "example.Target")
+                )
+            )
+            .build()
+        val dir = Files.createTempDirectory("webgraph-mixed-distinct-projection")
+        try {
+            GraphStore.save(graph, dir)
+            val first = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val second = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val result = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("first", first), CypherGraph("second", second))
+                ).execute(
+                    "MATCH (n) WHERE n.caller_class CONTAINS \$term " +
+                        "RETURN DISTINCT n.caller_class AS caller LIMIT 10",
+                    mapOf("term" to "Target")
+                )
+
+                assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+            } finally {
+                second.close()
+                first.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `combined CallSite string index preserves modes order limits and conjunction residuals`() {
+        val returnType = TypeDescriptor("void")
+        fun callSite(id: Int, callerClass: String, callerName: String, calleeClass: String, calleeName: String) =
+            CallSiteNode(
+                NodeId(id),
+                MethodDescriptor(TypeDescriptor(callerClass), callerName, emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor(calleeClass), calleeName, emptyList(), returnType),
+                id,
+                null,
+                emptyList()
+            )
+        val graph = DefaultGraph.Builder()
+            .addNode(callSite(0, "Example.Alpha", "loadFirst", "deps.AKeyStore", "fetch"))
+            .addNode(callSite(1, "example.Beta", "makeSecond", "deps.Repository", "provideTail"))
+            .addNode(callSite(2, "Example.Alpha", "finishThird", "deps.OtherAKey", "close"))
+            .addNode(callSite(3, "example.Other", "skip", "deps.Repository", "ignore"))
+            .build()
+        val dir = Files.createTempDirectory("webgraph-combined-callsite-index")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                fun ids(
+                    property: String,
+                    mode: StringMatchMode,
+                    expected: String,
+                    transform: StringValueTransform? = null,
+                    limit: Int = Int.MAX_VALUE,
+                    consume: (() -> Unit)? = null
+                ): List<Int> {
+                    val predicate = StringPropertyPredicate(property, transform, mode, expected)
+                    val sequence = if (consume == null) {
+                        loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate), limit)
+                    } else {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            limit,
+                            GraphWorkConsumer { consume() }
+                        )
+                    }
+                    return sequence.orEmpty().map { it.id.value }.toList()
+                }
+
+                assertEquals(listOf(0, 2), ids("caller_class", StringMatchMode.EQUALS, "Example.Alpha"))
+                assertEquals(
+                    listOf(0, 2),
+                    ids(
+                        "caller_class",
+                        StringMatchMode.EQUALS,
+                        "example.alpha",
+                        StringValueTransform.LOWERCASE
+                    )
+                )
+                assertEquals(listOf(0, 2), ids("callee_class", StringMatchMode.CONTAINS, "AKey"))
+                assertEquals(listOf(0), ids("caller_name", StringMatchMode.STARTS_WITH, "load"))
+                assertEquals(listOf(1), ids("callee_name", StringMatchMode.ENDS_WITH, "Tail"))
+                assertTrue(ids("caller_class", StringMatchMode.EQUALS, "missing").isEmpty())
+
+                val overlapping = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "Example.Alpha"),
+                    StringPropertyPredicate("callee_class", null, StringMatchMode.CONTAINS, "AKey")
+                )
+                assertEquals(
+                    listOf(0, 2),
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, overlapping)
+                        .orEmpty().map { it.id.value }.toList()
+                )
+
+                var consumed = 0
+                val exactOr = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "Example.Alpha"),
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.EQUALS, "example.Beta")
+                )
+                assertEquals(
+                    listOf(0, 1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        exactOr,
+                        2,
+                        GraphWorkConsumer { consumed++ }
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+                assertTrue(consumed > exactOr.size)
+
+                loaded.clearStringPropertyIndexes()
+                val exactOrRows = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' OR n.caller_class = 'example.Beta' " +
+                        "RETURN DISTINCT n.caller_class AS caller, n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(
+                    listOf("loadFirst", "makeSecond", "finishThird"),
+                    exactOrRows.map { it["method"] }
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+
+                val exactAndContains = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' AND n.callee_class CONTAINS 'AKey' " +
+                        "RETURN DISTINCT n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(listOf("loadFirst", "finishThird"), exactAndContains.map { it["method"] })
+
+                val exactAndDisjunction = loaded.query(
+                    "MATCH (n) WHERE n.caller_class = 'Example.Alpha' AND " +
+                        "(n.callee_class CONTAINS 'Store' OR n.callee_name ENDS WITH 'close') " +
+                        "RETURN DISTINCT n.caller_name AS method LIMIT 10"
+                ).rows
+                assertEquals(listOf("loadFirst", "finishThird"), exactAndDisjunction.map { it["method"] })
             } finally {
                 loaded.close()
             }
@@ -399,6 +1018,20 @@ class GraphStoreTest {
                     isAccessible = true
                     set(loaded, RawStringMatchStates(maxRetainedBytes = 0, maxEntries = 0))
                 }
+                val budgetBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<CancellationException> {
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate)
+                        ).orEmpty().toList()
+                    }
+                } finally {
+                    Thread.interrupted()
+                }
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 assertEquals(
                     listOf(0),
                     loaded.nodesByStringPropertyDisjunction(
@@ -678,10 +1311,11 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `mapped raw string scan caches repeated match states and accounts budgeted work`() {
+    fun `mapped raw string scan keeps match states query local and accounts budgeted work`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(261) { index ->
                 val value = when (index) {
+                    0 -> "TÄRGET"
                     256, 257, 260 -> "TaRgEt"
                     258, 259 -> "other"
                     else -> "prefix-$index"
@@ -708,8 +1342,31 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(256, 257, 260), unbudgeted)
-                assertEquals(1, loaded.rawStringMatchStateCount())
-                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+                assertEquals(0, loaded.rawStringMatchStateCount())
+                assertEquals(0L, loaded.rawStringMatchStateBytes())
+
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "tärget",
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
+                assertEquals(
+                    listOf(256),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "target",
+                        limit = 1
+                    ).orEmpty().map { it.id.value }.toList()
+                )
 
                 loaded.clearStringPropertyIndexes()
                 var consumed = 0
@@ -725,8 +1382,8 @@ class GraphStoreTest {
 
                 assertEquals(listOf(256, 257, 260), budgeted)
                 assertEquals(261, consumed)
-                assertEquals(1, loaded.rawStringMatchStateCount())
-                assertTrue(loaded.rawStringMatchStateBytes() > 0)
+                assertEquals(0, loaded.rawStringMatchStateCount())
+                assertEquals(0L, loaded.rawStringMatchStateBytes())
             } finally {
                 loaded.close()
             }
@@ -778,6 +1435,117 @@ class GraphStoreTest {
         ))
         assertEquals(0, oversizedKeyStates.size())
         assertEquals(0L, oversizedKeyStates.retainedBytes())
+    }
+
+    @Test
+    fun `combined CallSite index estimates CSR retention and rejects budget overflow`() {
+        assertEquals(384L, estimatedMappedCallSiteStringIndexCountBytes(stringCount = 20))
+        assertEquals(
+            896L,
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = 10,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4, 5)
+            )
+        )
+
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val unavailable = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore + 1L
+        assertNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(unavailable))
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        assertNull(
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = -1,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4, 5)
+            )
+        )
+        assertNull(
+            estimatedMappedCallSiteStringIndexRetainedBytes(
+                nodeCount = 10,
+                stringCount = 20,
+                uniqueCounts = intArrayOf(2, 3, 4)
+            )
+        )
+        val emptyReservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(0)
+        assertNotNull(emptyReservation)
+        emptyReservation.shrinkTo(0)
+        emptyReservation.close()
+        emptyReservation.close()
+    }
+
+    @Test
+    fun `mapped CallSite disjunction falls back to bounded raw scan when index budget is occupied`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke$index", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Caller1"),
+            StringPropertyPredicate("callee_name", null, StringMatchMode.EQUALS, "missing")
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-budget-fallback")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+            MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+        )
+        assertNotNull(reservation)
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                var work = 0
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { work++ }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(1), ids)
+                assertEquals(3, work)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertNull(
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        distinctProperty = "caller_class"
+                    )
+                )
+                assertNull(
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        limit = 10
+                    )
+                )
+                assertNull(
+                    loaded.aggregateStringPropertyDisjunction(
+                        StringConstant::class.java,
+                        predicates,
+                        distinctProperty = null
+                    )
+                )
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            reservation.close()
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test

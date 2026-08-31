@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import it.unimi.dsi.fastutil.io.BinIO
+import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
 import java.nio.file.Path
 
@@ -25,10 +26,31 @@ internal class StringTable private constructor(
      */
     fun indexOf(s: String): Int = indexMap?.get(s) ?: -1
 
+    /** Finds an id in both builder and loaded tables; persisted tables remain sorted. */
+    @Suppress("ReturnCount")
+    internal fun findId(s: String): Int {
+        indexMap?.get(s)?.let { return it }
+        var low = 0
+        var high = list.size - 1
+        while (low <= high) {
+            val middle = (low + high).ushr(1)
+            val comparison = list.get(middle).toString().compareTo(s)
+            when {
+                comparison < 0 -> low = middle + 1
+                comparison > 0 -> high = middle - 1
+                else -> return middle
+            }
+        }
+        return -1
+    }
+
     /**
      * Returns the string at the given [index].
      */
     fun get(index: Int): String = list.get(index).toString()
+
+    /** Decodes into a reusable buffer for allocation-sensitive table scans. */
+    internal fun get(index: Int, target: MutableString) = list.get(index, target)
 
     /**
      * Returns the number of strings in the table.

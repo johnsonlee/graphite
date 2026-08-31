@@ -19,7 +19,9 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
@@ -27,6 +29,7 @@ import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
@@ -694,6 +697,180 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `parallel residual string predicates keep graph local bindings`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val returnType = TypeDescriptor("void")
+        val sources = (0 until 8).map { graphIndex ->
+            val backing = DefaultGraph.Builder().apply {
+                repeat(20_000) { index ->
+                    val outcome = if (index and 1 == 0) "Accept" else "Reject"
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(
+                                TypeDescriptor("example.Target$graphIndex"),
+                                "call$index",
+                                emptyList(),
+                                returnType
+                            ),
+                            MethodDescriptor(
+                                TypeDescriptor("example.$outcome"),
+                                "invoke$index",
+                                emptyList(),
+                                returnType
+                            ),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            CypherGraph("graph-$graphIndex", backing)
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "AND NOT n.callee_class CONTAINS 'Reject' " +
+                "RETURN DISTINCT n.graphId AS graph, n.callee_class AS callee LIMIT 16"
+        )
+
+        assertEquals((0 until 8).map { "graph-$it" }, result.rows.map { it["graph"] })
+        assertEquals(List(8) { "example.Accept" }, result.rows.map { it["callee"] })
+    }
+
+    @Test
+    fun quotedContainsRegexPreservesJavaNewlineSemantics() {
+        val returnType = TypeDescriptor("void")
+        val graph = graph(
+            CallSiteNode(
+                NodeId(1),
+                MethodDescriptor(
+                    TypeDescriptor("example\nTarget"),
+                    "call",
+                    emptyList(),
+                    returnType
+                ),
+                MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+        )
+
+        val result = executor("newline" to graph).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class =~ '.*\\QTarget\\E.*' " +
+                "RETURN n.caller_class AS caller LIMIT 10"
+        )
+
+        assertTrue(result.rows.isEmpty())
+    }
+
+    @Test
+    fun parallelNonDistinctLimitDoesNotSpendTheLimitPerGraph() {
+        val returnType = TypeDescriptor("void")
+        fun matchingGraph(graphId: String): Graph = DefaultGraph.Builder().apply {
+            repeat(20) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.$graphId.Target"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val executor = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("orders", matchingGraph("orders")),
+                CypherGraph("billing", matchingGraph("billing"))
+            ),
+            CypherExecutionBudget(maxWorkUnits = 10)
+        )
+
+        val result = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 10"
+        )
+
+        assertEquals(10, result.rows.size)
+        assertTrue(result.rows.all { it["caller"] == "example.orders.Target" })
+    }
+
+    @Test
+    fun concurrentBroadQueriesDoNotSerializeOnTheSameGraph() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val entered = CountDownLatch(2)
+        val release = CountDownLatch(1)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+        val backing = graph(
+            CallSiteNode(
+                NodeId(1),
+                MethodDescriptor(TypeDescriptor("example.Target"), "call", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+        )
+        val shared = object : Graph by backing, StringPropertyDisjunctionLookup {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> = sequence {
+                if (type != CallSiteNode::class.java) return@sequence
+                val now = active.incrementAndGet()
+                maximumActive.accumulateAndGet(now, ::maxOf)
+                entered.countDown()
+                try {
+                    check(release.await(5, TimeUnit.SECONDS))
+                    @Suppress("UNCHECKED_CAST")
+                    yieldAll(backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>)
+                } finally {
+                    active.decrementAndGet()
+                }
+            }
+        }
+        fun queryExecutor(suffix: String) = CrossGraphCypherExecutor(
+            listOf(CypherGraph("shared-$suffix", shared), CypherGraph("empty-$suffix", graph()))
+        )
+        val requests = Executors.newFixedThreadPool(2)
+        val first = requests.submit<CypherResult> {
+            queryExecutor("first").execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                    "RETURN n.caller_class AS caller LIMIT 1"
+            )
+        }
+        val second = requests.submit<CypherResult> {
+            queryExecutor("second").execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                    "RETURN n.caller_class AS caller LIMIT 1"
+            )
+        }
+        try {
+            assertTrue(entered.await(2, TimeUnit.SECONDS))
+            assertEquals(2, maximumActive.get())
+            release.countDown()
+            assertEquals("example.Target", first.get(5, TimeUnit.SECONDS).rows.single()["caller"])
+            assertEquals("example.Target", second.get(5, TimeUnit.SECONDS).rows.single()["caller"])
+        } finally {
+            release.countDown()
+            requests.shutdownNow()
+        }
+    }
+
+    @Test
     fun `direct string conjunction pushes down its required predicate and applies residual disjunction`() {
         val lookupCalls = AtomicInteger()
         val returnType = TypeDescriptor("void")
@@ -899,6 +1076,130 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `filtered string counts aggregate graph-local scans in parallel`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+
+        fun countingGraph(vararg callerClasses: String): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                callerClasses.forEachIndexed { index, callerClass ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    if (type != CallSiteNode::class.java) return emptySequence()
+                    @Suppress("UNCHECKED_CAST")
+                    val nodes = backing.nodes(CallSiteNode::class.java) as Sequence<T>
+                    return sequence {
+                        val now = active.incrementAndGet()
+                        maximumActive.accumulateAndGet(now, ::maxOf)
+                        try {
+                            barrier.await(2, TimeUnit.SECONDS)
+                            yieldAll(nodes.take(limit))
+                        } finally {
+                            active.decrementAndGet()
+                        }
+                    }
+                }
+            }
+        }
+
+        val executor = executor(
+            "orders" to countingGraph("example.TargetA", "example.TargetB"),
+            "billing" to countingGraph("example.TargetA", "example.TargetC")
+        )
+        val predicate = "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target'"
+        val count = executor.execute("MATCH (n:CallSiteNode) WHERE $predicate RETURN count(*) AS total")
+        val distinct = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE $predicate RETURN count(DISTINCT n.caller_class) AS total"
+        )
+
+        assertEquals(4L, count.rows.single()["total"])
+        assertEquals(3L, distinct.rows.single()["total"])
+        assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
+        assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
+        assertEquals(2, maximumActive.get())
+    }
+
+    @Test
+    fun `work tracked filtered counts use budget aware storage aggregation in parallel`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val untrackedCalls = AtomicInteger()
+
+        fun aggregatingGraph(vararg callerClasses: String): Graph {
+            val backing = graph()
+            return object : Graph by backing, WorkAwareStringPropertyDisjunctionAggregation {
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?
+                ): StringPropertyDisjunctionAggregate? {
+                    untrackedCalls.incrementAndGet()
+                    return null
+                }
+
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?,
+                    workConsumer: GraphWorkConsumer
+                ): StringPropertyDisjunctionAggregate? {
+                    if (type != CallSiteNode::class.java) return null
+                    val now = active.incrementAndGet()
+                    maximumActive.accumulateAndGet(now, ::maxOf)
+                    return try {
+                        barrier.await(2, TimeUnit.SECONDS)
+                        callerClasses.forEach { _ -> workConsumer.consume() }
+                        StringPropertyDisjunctionAggregate(
+                            callerClasses.size.toLong(),
+                            distinctProperty?.let { callerClasses.toSet() }
+                        )
+                    } finally {
+                        active.decrementAndGet()
+                    }
+                }
+            }
+        }
+
+        val sources = listOf(
+            CypherGraph("orders", aggregatingGraph("example.TargetA", "example.TargetB")),
+            CypherGraph("billing", aggregatingGraph("example.TargetA", "example.TargetC"))
+        )
+        val context = CypherExecutionContext(CypherExecutionBudget(100))
+        val executor = CrossGraphCypherExecutor(sources, context)
+        val predicate = "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target'"
+        val count = executor.execute("MATCH (n:CallSiteNode) WHERE $predicate RETURN count(*) AS total")
+        val distinct = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE $predicate RETURN count(DISTINCT n.caller_class) AS total"
+        )
+
+        assertEquals(4L, count.rows.single()["total"])
+        assertEquals(3L, distinct.rows.single()["total"])
+        assertEquals(2, maximumActive.get())
+        assertEquals(0, untrackedCalls.get())
+    }
+
+    @Test
     fun `small ordered graph scans stay serial`() {
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
@@ -956,6 +1257,59 @@ class CrossGraphCypherExecutorTest {
 
         assertEquals(listOf("example.TargetA", "example.TargetB"), result.rows.map { it["caller"] })
         assertEquals(1, maximumActive.get())
+    }
+
+    @Test
+    fun `ordered filtered rows scan graphs in parallel and preserve global order and skip`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val active = AtomicInteger()
+        val maximumActive = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+
+        fun orderedGraph(vararg callerClasses: String): Graph {
+            val nodes = callerClasses.mapIndexed { index, callerClass ->
+                CallSiteNode(
+                    NodeId(index),
+                    MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                    index,
+                    null,
+                    emptyList()
+                )
+            }
+            val backing = DefaultGraph.Builder().apply { nodes.forEach(::addNode) }.build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup, StringPropertyLookupOrder {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = sequence {
+                    val now = active.incrementAndGet()
+                    maximumActive.accumulateAndGet(now, ::maxOf)
+                    try {
+                        barrier.await(2, TimeUnit.SECONDS)
+                        @Suppress("UNCHECKED_CAST")
+                        yieldAll(nodes.asSequence().take(limit) as Sequence<T>)
+                    } finally {
+                        active.decrementAndGet()
+                    }
+                }
+
+                override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+            }
+        }
+
+        val result = executor(
+            "orders" to orderedGraph("example.TargetZ", "example.TargetA"),
+            "billing" to orderedGraph("example.TargetB", "example.TargetC")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller ORDER BY caller SKIP 1 LIMIT 2"
+        )
+
+        assertEquals(listOf("example.TargetB", "example.TargetC"), result.rows.map { it["caller"] })
+        assertEquals(2, maximumActive.get())
     }
 
     @Test
@@ -1101,7 +1455,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `parallel scan failure interrupts a task waiting for the same graph`() {
+    fun `parallel scan failure interrupts peer tasks`() {
         if (Runtime.getRuntime().availableProcessors() < 2) return
         val returnType = TypeDescriptor("void")
         val sharedGraph = graph(
@@ -1114,23 +1468,6 @@ class CrossGraphCypherExecutorTest {
                 emptyList()
             )
         )
-        val graphLock = directStringGraphLock(sharedGraph)
-        val holderStarted = CountDownLatch(1)
-        val releaseHolder = CountDownLatch(1)
-        val holderThread = Executors.newSingleThreadExecutor()
-        holderThread.submit {
-            synchronized(sharedGraph) {
-                graphLock.lock()
-                try {
-                    holderStarted.countDown()
-                    check(releaseHolder.await(5, TimeUnit.SECONDS))
-                } finally {
-                    graphLock.unlock()
-                }
-            }
-        }
-        assertTrue(holderStarted.await(2, TimeUnit.SECONDS))
-
         val failingBacking = graph()
         val failingGraph = object : Graph by failingBacking, StringPropertyDisjunctionLookup {
             override fun <T : Node> nodesByStringPropertyDisjunction(
@@ -1157,9 +1494,7 @@ class CrossGraphCypherExecutorTest {
             assertTrue(failure.cause is IllegalStateException)
             assertEquals("intentional parallel scan failure", failure.cause?.message)
         } finally {
-            releaseHolder.countDown()
             queryThread.shutdownNow()
-            holderThread.shutdownNow()
         }
     }
 
@@ -1376,6 +1711,16 @@ class CrossGraphCypherExecutorTest {
         assertEquals("orders", property(path, "graphId"))
         assertEquals(1, property(path, "length"))
         assertNull(property(path, "unknown"))
+
+        fun lessThan(left: Any, right: Any): Any? = evaluator.evaluate(
+            CypherExpr.Comparison("<", CypherExpr.Literal(left), CypherExpr.Literal(right)),
+            emptyMap()
+        )
+
+        assertEquals(false, lessThan(node, sameNodeId))
+        assertEquals(true, lessThan(node, QualifiedNode("orders", graph, second)))
+        assertEquals(false, lessThan(qualifiedEdge, sameEdge))
+        assertEquals(true, lessThan(qualifiedEdge, resourceEdge))
     }
 
     @Test

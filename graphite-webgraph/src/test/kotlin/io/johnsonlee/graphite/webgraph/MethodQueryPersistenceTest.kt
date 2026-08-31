@@ -9,8 +9,11 @@ import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import java.nio.file.Files
+import java.util.concurrent.CancellationException
+import java.util.regex.Pattern
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -108,6 +111,103 @@ class MethodQueryPersistenceTest {
                 assertFalse(graph.isMetadataInitialized())
             } finally {
                 graph.close()
+            }
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped method index preserves pattern order limits and cancellation scans`() {
+        val methods = listOf(
+            MethodDescriptor(
+                TypeDescriptor("com.example.Alpha"),
+                "findOne",
+                listOf(TypeDescriptor("java.lang.String")),
+                TypeDescriptor("java.lang.Object")
+            ),
+            MethodDescriptor(
+                TypeDescriptor("com.example.Beta"),
+                "skip",
+                emptyList(),
+                TypeDescriptor("void")
+            ),
+            MethodDescriptor(
+                TypeDescriptor("com.example.Alpha"),
+                "findTwo",
+                listOf(TypeDescriptor("int"), TypeDescriptor("long")),
+                TypeDescriptor("int")
+            ),
+            MethodDescriptor(
+                TypeDescriptor("org.example.Alpha"),
+                "findThree",
+                listOf(TypeDescriptor("java.lang.String")),
+                TypeDescriptor("java.lang.Object")
+            )
+        )
+        val directory = Files.createTempDirectory("mapped-method-index")
+        try {
+            GraphStore.save(DefaultGraph.Builder().apply { methods.forEach(::addMethod) }.build(), directory)
+            val eager = GraphStore.load(directory)
+            val graph = GraphStore.loadMapped(directory) as MappedWebGraphBackedGraph
+            try {
+                val persistedOrder = eager.methods(MethodPattern()).toList()
+                assertFalse(graph.isMethodIndexInitialized())
+                assertTrue(graph.methodSlice(MethodPattern(), 0).isEmpty())
+                assertFalse(graph.isMethodIndexInitialized())
+
+                assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
+                assertTrue(graph.isMethodIndexInitialized())
+                assertFalse(graph.isMetadataInitialized())
+
+                val patterns = listOf(
+                    MethodPattern(declaringClass = "com.example.*", name = "find*"),
+                    MethodPattern(
+                        declaringClass = "com\\.example\\..*",
+                        name = "find.*",
+                        useRegex = true
+                    ),
+                    MethodPattern(
+                        declaringClass = Pattern.quote("com.example.Alpha"),
+                        name = Pattern.quote("findOne"),
+                        parameterTypes = listOf(Pattern.quote("java.lang.String")),
+                        returnType = Pattern.quote("java.lang.Object"),
+                        useRegex = true
+                    ),
+                    MethodPattern(parameterTypes = listOf("int", "long"), returnType = "int")
+                )
+                patterns.forEach { pattern ->
+                    assertEquals(
+                        persistedOrder.filter(pattern::matches),
+                        graph.methods(pattern).toList()
+                    )
+                }
+                assertEquals(persistedOrder.take(2), graph.methodSlice(MethodPattern(), 2))
+
+                var inspected = 0
+                val first = graph.methodSlice(
+                    MethodPattern(),
+                    1,
+                    MethodMetadataScanConsumer { inspected++ }
+                )
+                assertEquals(persistedOrder.take(1), first)
+                assertEquals(1, inspected)
+
+                inspected = 0
+                assertFailsWith<CancellationException> {
+                    graph.methods(
+                        MethodPattern(name = "missing"),
+                        MethodMetadataScanConsumer {
+                            inspected++
+                            if (inspected == 2) throw CancellationException("cancelled")
+                        }
+                    ).toList()
+                }
+                assertEquals(2, inspected)
+                assertFalse(graph.isMetadataInitialized())
+            } finally {
+                graph.close()
+                (eager as? AutoCloseable)?.close()
             }
         } finally {
             directory.toFile().deleteRecursively()
