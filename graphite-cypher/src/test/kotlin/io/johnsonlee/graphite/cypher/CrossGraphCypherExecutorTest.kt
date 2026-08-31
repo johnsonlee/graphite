@@ -1607,6 +1607,21 @@ class CrossGraphCypherExecutorTest {
         }
 
         scanCounts.forEach { it.set(0) }
+        lookupLimits.forEach(MutableList<Int>::clear)
+        val rightHandGraphId = executor.execute(
+            "MATCH (n) WHERE n.caller_name = 'createVoucher' AND $broadPredicate AND " +
+                "n.graphId = 'graph-3' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+        )
+        assertEquals(1, rightHandGraphId.rows.size)
+        assertEquals("graph-3", rightHandGraphId.rows.single()["graph"])
+        assertEquals("com.example.Voucher3Service", rightHandGraphId.rows.single()["caller"])
+        assertTrue(scanCounts.take(3).all { it.get() == 0 })
+        assertTrue(scanCounts.last().get() > 0)
+        assertTrue(lookupLimits.take(3).all(MutableList<Int>::isEmpty))
+        assertTrue(lookupLimits.last().isNotEmpty())
+
+        scanCounts.forEach { it.set(0) }
         val missing = executor.execute(
             "MATCH (n) WHERE n.graphId = 'missing' AND $broadPredicate " +
                 "RETURN n.graphId AS graph LIMIT 250"
