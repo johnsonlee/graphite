@@ -756,6 +756,54 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped indexed distinct projection preserves matching non CallSite nodes`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.Other"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            )
+            .addNode(
+                AnnotationNode(
+                    NodeId(1),
+                    "example.DynamicCall",
+                    "example.Owner",
+                    "call",
+                    mapOf("caller_class" to "example.Target")
+                )
+            )
+            .build()
+        val dir = Files.createTempDirectory("webgraph-mixed-distinct-projection")
+        try {
+            GraphStore.save(graph, dir)
+            val first = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val second = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val result = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("first", first), CypherGraph("second", second))
+                ).execute(
+                    "MATCH (n) WHERE n.caller_class CONTAINS \$term " +
+                        "RETURN DISTINCT n.caller_class AS caller LIMIT 10",
+                    mapOf("term" to "Target")
+                )
+
+                assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+            } finally {
+                second.close()
+                first.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `combined CallSite string index preserves modes order limits and conjunction residuals`() {
         val returnType = TypeDescriptor("void")
         fun callSite(id: Int, callerClass: String, callerName: String, calleeClass: String, calleeName: String) =

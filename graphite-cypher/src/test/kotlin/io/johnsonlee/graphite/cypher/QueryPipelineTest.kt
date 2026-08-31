@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
 import io.johnsonlee.graphite.core.CallSiteNode
@@ -654,6 +655,63 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("index-only"), result.rows.map { it["caller"] })
+    }
+
+    @Test
+    fun `indexed projection merges matching dynamic properties from non CallSite nodes`() {
+        val returnType = TypeDescriptor("void")
+        val mixed = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(100),
+                    MethodDescriptor(TypeDescriptor("example.Other"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            )
+            .addNode(
+                AnnotationNode(
+                    NodeId(101),
+                    "example.DynamicCall",
+                    "example.Owner",
+                    "call",
+                    mapOf("caller_class" to "example.Target")
+                )
+            )
+            .build()
+        val indexed = object : Graph by mixed,
+            StringPropertyDisjunctionLookup,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T>? = if (type == CallSiteNode::class.java) emptySequence() else null
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> = emptyList()
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", indexed), CypherGraph("second", indexed))
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS \$term " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 10",
+            mapOf("term" to "Target")
+        )
+
+        assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
     }
 
     @Test

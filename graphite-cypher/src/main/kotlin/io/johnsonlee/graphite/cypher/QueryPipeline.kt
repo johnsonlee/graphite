@@ -1464,6 +1464,7 @@ class QueryPipeline private constructor(
         val projections = sources.map { source ->
             source.graph as? StringPropertyDisjunctionDistinctProjection ?: return null
         }
+        val orders = sources.map { source -> source.graph as? StringPropertyLookupOrder ?: return null }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
 
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
@@ -1488,6 +1489,21 @@ class QueryPipeline private constructor(
                         )
                     }.toMutableList()
 
+                    val seenGeneric = HashSet<Map<String, Any?>>()
+                    for (node in directStringCandidates(
+                        source.graph,
+                        nodeClass,
+                        filter,
+                        tracker,
+                        excludedTypes = setOf(CallSiteNode::class.java)
+                    )) {
+                        val row = projectedNodeRow(source, node, projectedProperties, columns)
+                        val visible = visibleRow(row)
+                        if (seenGeneric.add(visible)) {
+                            sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
+                            if (seenGeneric.size >= limit) break
+                        }
+                    }
                     val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
                     sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
                         addDistinctRow(distinct, ordered.row, limit)
@@ -1593,6 +1609,22 @@ class QueryPipeline private constructor(
                 }
             }
         }
+    }
+
+    private fun projectedNodeRow(
+        source: CypherGraph,
+        node: Node,
+        projectedProperties: List<String>,
+        columns: List<String>
+    ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
+        columns.indices.forEach { index ->
+            this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
+                source.id
+            } else {
+                NodePropertyAccessor.getProperty(node, projectedProperties[index])
+            }
+        }
+        put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
     }
 
     private fun visibleRow(row: Map<String, Any?>): Map<String, Any?> =
