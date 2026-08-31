@@ -204,6 +204,37 @@ test("graphId pressure requires every target graph and all three graphId spellin
     assert.match(comparison.errors.join("\n"), /zero\/targeted\/dense coverage is incomplete/);
 });
 
+test("real64 driver builds commit-bound JARs and records cryptographic provenance", () => {
+    const driver = fs.readFileSync(
+        new URL("./run-real64-graph-routing.sh", import.meta.url),
+        "utf8"
+    );
+
+    assert.doesNotMatch(driver, /<base-jmh\.jar>|<candidate-jmh\.jar>/);
+    assert.match(driver, /worktree add --detach "\$\{BASE_TREE\}" "\$\{BASE_SHA\}"/);
+    assert.match(driver, /worktree add --detach "\$\{CANDIDATE_TREE\}" "\$\{CANDIDATE_SHA\}"/);
+    assert.match(driver, /cmp -s "\$0" "\$\{CANDIDATE_TREE\}\/\$\{SCRIPT_PATH\}"/);
+    assert.match(
+        driver,
+        /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{HARNESS_PATH\}"/
+    );
+    assert.equal((driver.match(/:webgraph:jmhJar --no-daemon/g) ?? []).length, 2);
+    for (const field of [
+        "baseSha",
+        "candidateSha",
+        "harnessSha256",
+        "comparatorSha256",
+        "scriptSha256",
+        "baseJarSha256",
+        "candidateJarSha256",
+        "manifestSha256",
+        "oracleSha256",
+    ]) {
+        assert.match(driver, new RegExp(`--arg ${field} `));
+    }
+    assert.match(driver, /> "\$\{OUTPUT_DIR\}\/provenance\.json"/);
+});
+
 function jmhResult({
     benchmark = "io.johnsonlee.graphite.cypher.CypherBenchmark.query",
     mode = "avgt",

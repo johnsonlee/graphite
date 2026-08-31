@@ -180,18 +180,20 @@ reviewed oracle, run the repository-owned driver on the machine that has the 64 
 .github/scripts/run-real64-graph-routing.sh \
   /absolute/path/to/graphs.tsv \
   /absolute/path/to/reviewed-oracle.manifest \
-  /absolute/path/to/base-webgraph-jmh.jar \
-  /absolute/path/to/candidate-webgraph-jmh.jar \
   "$BASE_SHA" "$CANDIDATE_SHA" \
   https://github.com/johnsonlee/graphite/pull/109#issuecomment-EXAMPLE
 ```
 
-The driver runs base then candidate sequentially for independent cold and warm forks, verifies the
-candidate against the reviewed oracle, invokes `compare-graph-id-pressure` for both states, and
-publishes the trusted commit status only after both comparisons pass. Set
+The driver verifies both SHAs against GitHub, checks out detached worktrees for those exact commits,
+copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
+JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,
+both built JARs, graph manifest, and correctness oracle in `provenance.json`; caller-supplied JARs
+are not accepted. It then runs base and candidate sequentially for independent cold and warm forks,
+verifies the candidate against the reviewed oracle, invokes `compare-graph-id-pressure` for both
+states, and publishes the trusted commit status only after both comparisons pass. Set
 `GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. The linked
 evidence report should retain both comparator reports plus the JMH JSON, observation TSV,
-correctness manifests, exact manifest hash, JVM/host details, and raw CPU/heap/RSS/GC counters.
+correctness manifests, `provenance.json`, JVM/host details, and raw CPU/heap/RSS/GC counters.
 
 ## Baseline metrics
 
