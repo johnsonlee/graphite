@@ -18,7 +18,8 @@ internal class MappedCallSiteStringIndex(
     private val nodeOrder: (Int) -> Long,
     private val nodeIdCapacity: Int,
     private val rawStringPropertyId: (Int, Int) -> Int,
-    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
+    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation,
+    buildWorkConsumer: GraphWorkConsumer? = null
 ) : Closeable {
 
     init {
@@ -27,7 +28,9 @@ internal class MappedCallSiteStringIndex(
     }
 
     private val trigramSignatures = LongArray(stringTable.size()).also { signatures ->
-        properties.forEach { property -> property.populateTrigramSignatures(signatures, stringTable) }
+        properties.forEach { property ->
+            property.populateTrigramSignatures(signatures, stringTable, buildWorkConsumer)
+        }
     }
 
     val retainedBytes: Long
@@ -48,7 +51,7 @@ internal class MappedCallSiteStringIndex(
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
+            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
         }
         if (ranges.isEmpty()) return emptySequence()
         return ranges.mergedNodeIds(nodeOrder, workConsumer, limit)
@@ -56,25 +59,35 @@ internal class MappedCallSiteStringIndex(
 
     fun aggregate(
         predicates: List<StringPropertyPredicate>,
-        distinctProperty: String?
+        distinctProperty: String?,
+        workConsumer: GraphWorkConsumer?
     ): StringPropertyDisjunctionAggregate {
-        val ranges = matchingRanges(predicates)
+        val ranges = matchingRanges(predicates, workConsumer)
         if (ranges.isEmpty()) {
             return StringPropertyDisjunctionAggregate(0L, distinctProperty?.let { emptySet() })
         }
         val distinctPropertyIndex = distinctProperty?.let(::callSiteStringPropertyIndex)
         require(distinctPropertyIndex == null || distinctPropertyIndex >= 0)
-        return ranges.aggregate(nodeIdCapacity, distinctPropertyIndex, rawStringPropertyId, stringTable)
+        return ranges.aggregate(
+            nodeIdCapacity,
+            distinctPropertyIndex,
+            rawStringPropertyId,
+            stringTable,
+            workConsumer
+        )
     }
 
-    private fun matchingRanges(predicates: List<StringPropertyPredicate>): PostingRanges {
+    private fun matchingRanges(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): PostingRanges {
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges)
+            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
         }
         return ranges
     }
@@ -88,7 +101,7 @@ internal class MappedCallSiteStringIndex(
     ): List<StringPropertyDistinctRow> {
         if (limit <= 0) return emptyList()
         val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
-        val ranges = matchingRanges(predicates)
+        val ranges = matchingRanges(predicates, workConsumer)
         if (ranges.isEmpty()) return emptyList()
         return if (selectedValues == null) {
             distinctProjectionPrefix(ranges, propertyIndexes, limit, workConsumer)
@@ -144,7 +157,7 @@ internal class MappedCallSiteStringIndex(
 
         val hits = mutableListOf<StringPropertyDistinctRow>()
         val hitValues = mutableSetOf<List<String?>>()
-        val matchedNodeIds = ranges.matchedNodeBitSet(nodeIdCapacity)
+        val matchedNodeIds = ranges.matchedNodeBitSet(nodeIdCapacity, workConsumer)
         var inspected = 0L
         for (wordIndex in matchedNodeIds.indices) {
             var remaining = matchedNodeIds[wordIndex]
@@ -214,52 +227,82 @@ internal class MappedCallSiteStringIndex(
         fun collectMatchingRanges(
             propertyIndex: Int,
             runtime: PredicateRuntime,
-            target: PostingRanges
+            target: PostingRanges,
+            workConsumer: GraphWorkConsumer?
         ) {
             runtime.exactStringId?.let { exactStringId ->
+                consumeGraphWork(workConsumer, 1L)
                 if (exactStringId >= 0) {
                     val row = java.util.Arrays.binarySearch(usedStringIds, exactStringId)
                     if (row >= 0) addRange(propertyIndex, row, target)
                 }
                 return
             }
-            for (row in usedStringIds.indices) {
-                if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) checkCallSiteIndexInterrupted()
-                if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (row in usedStringIds.indices) {
+                    if ((row and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                        checkCallSiteIndexInterrupted()
+                    }
+                    accounting.consume()
+                    if (runtime.matches(usedStringIds[row])) addRange(propertyIndex, row, target)
+                }
+            } finally {
+                accounting.flush()
             }
         }
 
         fun postingNodeId(position: Int): Int = postingNodeIds[position]
 
-        fun collectDistinctValues(matchedNodeIds: LongArray, stringTable: StringTable): Set<String> {
+        fun collectDistinctValues(
+            matchedNodeIds: LongArray,
+            stringTable: StringTable,
+            workConsumer: GraphWorkConsumer?
+        ): Set<String> {
             val values = linkedSetOf<String>()
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
             var start = 0
-            for (row in usedStringIds.indices) {
-                val end = postingEnds[row]
-                var position = start
-                while (position < end) {
-                    val nodeId = postingNodeIds[position++]
-                    if (matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] and
-                        (1L shl (nodeId and BITSET_WORD_MASK)) != 0L
-                    ) {
-                        values += stringTable.get(usedStringIds[row])
-                        break
+            try {
+                for (row in usedStringIds.indices) {
+                    val end = postingEnds[row]
+                    var position = start
+                    while (position < end) {
+                        accounting.consume()
+                        val nodeId = postingNodeIds[position++]
+                        if (matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] and
+                            (1L shl (nodeId and BITSET_WORD_MASK)) != 0L
+                        ) {
+                            values += stringTable.get(usedStringIds[row])
+                            break
+                        }
                     }
+                    start = end
                 }
-                start = end
+            } finally {
+                accounting.flush()
             }
             return values
         }
 
-        fun populateTrigramSignatures(target: LongArray, stringTable: StringTable) {
-            for (index in usedStringIds.indices) {
-                if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                    checkCallSiteIndexInterrupted()
+        fun populateTrigramSignatures(
+            target: LongArray,
+            stringTable: StringTable,
+            workConsumer: GraphWorkConsumer?
+        ) {
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (index in usedStringIds.indices) {
+                    if ((index and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                        checkCallSiteIndexInterrupted()
+                    }
+                    accounting.consume()
+                    val stringId = usedStringIds[index]
+                    if (target[stringId] == 0L) {
+                        target[stringId] = callSiteTrigramSignature(stringTable.get(stringId))
+                    }
                 }
-                val stringId = usedStringIds[index]
-                if (target[stringId] == 0L) {
-                    target[stringId] = callSiteTrigramSignature(stringTable.get(stringId))
-                }
+            } finally {
+                accounting.flush()
             }
         }
 
@@ -381,24 +424,31 @@ internal class MappedCallSiteStringIndex(
             nodeIdCapacity: Int,
             distinctPropertyIndex: Int?,
             rawStringPropertyId: (Int, Int) -> Int,
-            stringTable: StringTable
+            stringTable: StringTable,
+            workConsumer: GraphWorkConsumer?
         ): StringPropertyDisjunctionAggregate {
             val wordCount = ((nodeIdCapacity.toLong() + BITSET_WORD_MASK) ushr BITSET_WORD_SHIFT).toInt()
             val matchedNodeIds = LongArray(wordCount)
             var inspected = 0
-            for (range in 0 until size) {
-                var position = positions[range]
-                val end = ends[range]
-                val property = properties[propertyIndexes[range]]
-                while (position < end) {
-                    if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                        checkCallSiteIndexInterrupted()
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (range in 0 until size) {
+                    var position = positions[range]
+                    val end = ends[range]
+                    val property = properties[propertyIndexes[range]]
+                    while (position < end) {
+                        if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                            checkCallSiteIndexInterrupted()
+                        }
+                        accounting.consume()
+                        val nodeId = property.postingNodeId(position++)
+                        matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] =
+                            matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] or
+                            (1L shl (nodeId and BITSET_WORD_MASK))
                     }
-                    val nodeId = property.postingNodeId(position++)
-                    matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] =
-                        matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] or
-                        (1L shl (nodeId and BITSET_WORD_MASK))
                 }
+            } finally {
+                accounting.flush()
             }
             val count = matchedNodeIds.sumOf { word -> java.lang.Long.bitCount(word).toLong() }
             val distinctValues = distinctPropertyIndex?.let { propertyIndex ->
@@ -408,32 +458,39 @@ internal class MappedCallSiteStringIndex(
                         matchedNodeIds,
                         propertyIndex,
                         rawStringPropertyId,
-                        stringTable
+                        stringTable,
+                        workConsumer
                     )
                 } else {
-                    property.collectDistinctValues(matchedNodeIds, stringTable)
+                    property.collectDistinctValues(matchedNodeIds, stringTable, workConsumer)
                 }
             }
             return StringPropertyDisjunctionAggregate(count, distinctValues?.takeIf { it.isNotEmpty() })
         }
 
-        fun matchedNodeBitSet(nodeIdCapacity: Int): LongArray {
+        fun matchedNodeBitSet(nodeIdCapacity: Int, workConsumer: GraphWorkConsumer?): LongArray {
             val wordCount = ((nodeIdCapacity.toLong() + BITSET_WORD_MASK) ushr BITSET_WORD_SHIFT).toInt()
             val matchedNodeIds = LongArray(wordCount)
             var inspected = 0
-            for (range in 0 until size) {
-                var position = positions[range]
-                val end = ends[range]
-                val property = properties[propertyIndexes[range]]
-                while (position < end) {
-                    if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
-                        checkCallSiteIndexInterrupted()
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (range in 0 until size) {
+                    var position = positions[range]
+                    val end = ends[range]
+                    val property = properties[propertyIndexes[range]]
+                    while (position < end) {
+                        if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                            checkCallSiteIndexInterrupted()
+                        }
+                        accounting.consume()
+                        val nodeId = property.postingNodeId(position++)
+                        matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] =
+                            matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] or
+                            (1L shl (nodeId and BITSET_WORD_MASK))
                     }
-                    val nodeId = property.postingNodeId(position++)
-                    matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] =
-                        matchedNodeIds[nodeId ushr BITSET_WORD_SHIFT] or
-                        (1L shl (nodeId and BITSET_WORD_MASK))
                 }
+            } finally {
+                accounting.flush()
             }
             return matchedNodeIds
         }
@@ -442,17 +499,24 @@ internal class MappedCallSiteStringIndex(
             matchedNodeIds: LongArray,
             propertyIndex: Int,
             rawStringPropertyId: (Int, Int) -> Int,
-            stringTable: StringTable
+            stringTable: StringTable,
+            workConsumer: GraphWorkConsumer?
         ): Set<String> {
             val values = linkedSetOf<String>()
-            for (wordIndex in matchedNodeIds.indices) {
-                var remaining = matchedNodeIds[wordIndex]
-                while (remaining != 0L) {
-                    val bit = java.lang.Long.numberOfTrailingZeros(remaining)
-                    val nodeId = (wordIndex shl BITSET_WORD_SHIFT) + bit
-                    values += stringTable.get(rawStringPropertyId(nodeId, propertyIndex))
-                    remaining = remaining and (remaining - 1L)
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (wordIndex in matchedNodeIds.indices) {
+                    var remaining = matchedNodeIds[wordIndex]
+                    while (remaining != 0L) {
+                        accounting.consume()
+                        val bit = java.lang.Long.numberOfTrailingZeros(remaining)
+                        val nodeId = (wordIndex shl BITSET_WORD_SHIFT) + bit
+                        values += stringTable.get(rawStringPropertyId(nodeId, propertyIndex))
+                        remaining = remaining and (remaining - 1L)
+                    }
                 }
+            } finally {
+                accounting.flush()
             }
             return values
         }

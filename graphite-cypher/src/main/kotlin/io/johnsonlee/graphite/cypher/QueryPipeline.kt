@@ -41,8 +41,6 @@ import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
-import java.lang.ref.ReferenceQueue
-import java.lang.ref.WeakReference
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
@@ -51,7 +49,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.ReentrantLock
 
 private const val COUNT_QUERY_CLAUSES = 2
 private const val LABEL_HISTOGRAM_QUERY_CLAUSES = 5
@@ -79,6 +76,7 @@ private data class RelationshipMatchState(
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val DEFAULT_DIRECT_STRING_PARALLELISM = 8
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
+private typealias DirectNodePredicateFactory = () -> (Node) -> Boolean
 
 private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
     labels.firstOrNull()?.let(NodePropertyAccessor::resolveNodeLabelOrNull)
@@ -86,33 +84,6 @@ private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
 
 private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
-private val directStringGraphReferenceQueue = ReferenceQueue<Graph>()
-private val directStringGraphLocks = mutableMapOf<IdentityWeakGraphReference, ReentrantLock>()
-
-internal fun directStringGraphLock(graph: Graph): ReentrantLock = synchronized(directStringGraphLocks) {
-    while (true) {
-        val expired = directStringGraphReferenceQueue.poll() as? IdentityWeakGraphReference ?: break
-        directStringGraphLocks.remove(expired)
-    }
-    directStringGraphLocks[IdentityWeakGraphReference(graph)] ?: ReentrantLock().also { lock ->
-        directStringGraphLocks[IdentityWeakGraphReference(graph, directStringGraphReferenceQueue)] = lock
-    }
-}
-
-private class IdentityWeakGraphReference(
-    graph: Graph,
-    queue: ReferenceQueue<Graph>? = null
-) : WeakReference<Graph>(graph, queue) {
-    private val identityHash = System.identityHashCode(graph)
-
-    override fun hashCode(): Int = identityHash
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        val graph = get() ?: return false
-        return other is IdentityWeakGraphReference && graph === other.get()
-    }
-}
 
 private val directStringParallelism: Int by lazy {
     val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
@@ -1067,7 +1038,9 @@ class QueryPipeline private constructor(
             )
             if (directStringConjunction != null) {
                 val candidates = DirectStringDisjunction(listOf(directStringConjunction.required))
-                val predicate = directStringConjunction::matches
+                val predicateFactory: DirectNodePredicateFactory = {
+                    { node: Node -> directStringConjunction.matches(node) }
+                }
                 return if (ret.distinct) {
                     executeDirectStringDisjunction(
                         nodeClass,
@@ -1076,7 +1049,7 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        predicate
+                        predicateFactory
                     )
                 } else {
                     executeDirectStringDisjunctionRows(
@@ -1086,7 +1059,7 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        predicate
+                        predicateFactory
                     )
                 }
             }
@@ -1096,10 +1069,21 @@ class QueryPipeline private constructor(
                 stringParameters
             )
             if (candidatePlan != null) {
-                val predicateBindings = mutableMapOf<String, Any?>(variable to null)
-                val predicate: (Node) -> Boolean = { node ->
-                    predicateBindings[variable] = node
-                    evaluator.evaluate(where.condition, predicateBindings) == true
+                val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+                val predicateFactory: DirectNodePredicateFactory = {
+                    val predicateBindings = mutableMapOf<String, Any?>(variable to null)
+                    val localEvaluator = ExpressionEvaluator(
+                        parameterResolver = stringParameters::get,
+                        checkCancelled = {
+                            tracker?.checkCancelled()
+                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                        }
+                    )
+                    val predicate: (Node) -> Boolean = { node ->
+                        predicateBindings[variable] = node
+                        localEvaluator.evaluate(where.condition, predicateBindings) == true
+                    }
+                    predicate
                 }
                 return if (ret.distinct) {
                     executeDirectStringDisjunction(
@@ -1109,7 +1093,7 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        predicate
+                        predicateFactory
                     )
                 } else {
                     executeDirectStringDisjunctionRows(
@@ -1119,7 +1103,7 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        predicate
+                        predicateFactory
                     )
                 }
             }
@@ -1243,7 +1227,7 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        nodePredicate: ((Node) -> Boolean)? = null
+        nodePredicateFactory: DirectNodePredicateFactory? = null
     ): CypherResult {
         if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
             return executeDirectStringDisjunctionInParallel(
@@ -1253,7 +1237,7 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 limit,
-                nodePredicate
+                nodePredicateFactory
             )
         }
         return executeDirectStringDisjunctionSerial(
@@ -1263,7 +1247,7 @@ class QueryPipeline private constructor(
             items,
             columns,
             limit,
-            nodePredicate
+            nodePredicateFactory
         )
     }
 
@@ -1275,11 +1259,12 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        nodePredicate: ((Node) -> Boolean)? = null
+        nodePredicateFactory: DirectNodePredicateFactory? = null
     ): CypherResult {
-        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
+        if (workTrackingEnabled || !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items)) {
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in sources) {
+                val nodePredicate = nodePredicateFactory?.invoke()
                 val candidates = directStringCandidates(source.graph, nodeClass, filter)
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
@@ -1295,7 +1280,16 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = sources.map { source ->
-            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker, nodePredicate)
+            DirectStringSourceScanner(
+                source,
+                nodeClass,
+                filter,
+                variable,
+                items,
+                columns,
+                tracker,
+                nodePredicateFactory
+            )
         }
         val rows = mutableListOf<Map<String, Any?>>()
         var waveStart = 0
@@ -1320,10 +1314,11 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        nodePredicate: ((Node) -> Boolean)?
+        nodePredicateFactory: DirectNodePredicateFactory?
     ): CypherResult {
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in sources) {
+            val nodePredicate = nodePredicateFactory?.invoke()
             val candidates = directStringCandidates(source.graph, nodeClass, filter)
                 .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             for (node in candidates) {
@@ -1380,9 +1375,9 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        nodePredicate: ((Node) -> Boolean)?
+        nodePredicateFactory: DirectNodePredicateFactory?
     ): CypherResult {
-        if (nodePredicate == null) {
+        if (nodePredicateFactory == null) {
             executeIndexedDistinctStringProjection(
                 nodeClass,
                 variable,
@@ -1394,7 +1389,16 @@ class QueryPipeline private constructor(
         }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = sources.map { source ->
-            DirectStringSourceScanner(source, nodeClass, filter, variable, items, columns, tracker, nodePredicate)
+            DirectStringSourceScanner(
+                source,
+                nodeClass,
+                filter,
+                variable,
+                items,
+                columns,
+                tracker,
+                nodePredicateFactory
+            )
         }
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         var waveStart = 0
@@ -1449,7 +1453,7 @@ class QueryPipeline private constructor(
             property.propertyName
         }
         if (projectedProperties.any { property ->
-                property == ELEMENT_ID_PROPERTY || property == QUALIFIED_ID_PROPERTY
+                property != GRAPH_ID_PROPERTY && property !in CALL_SITE_DIRECT_STRING_PROPERTIES
             }
         ) return null
         val callSiteFilters = filter.filters.filter { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
@@ -1507,8 +1511,9 @@ class QueryPipeline private constructor(
                     distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
                 }
             })
-            if (localRows.all(List<OrderedProjectedRow>::isEmpty)) {
-                for (sourceIndex in waveStart until waveEnd) {
+            localRows.forEachIndexed { localIndex, sourceRows ->
+                if (sourceRows.isEmpty()) {
+                    val sourceIndex = waveStart + localIndex
                     (sources[sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
                         ?.releaseStringPropertyDisjunctionCache()
                 }
@@ -1716,9 +1721,9 @@ class QueryPipeline private constructor(
         private val items: List<ReturnItem>,
         private val columns: List<String>,
         private val tracker: CypherWorkTracker?,
-        private val nodePredicate: ((Node) -> Boolean)? = null
+        nodePredicateFactory: DirectNodePredicateFactory? = null
     ) {
-        private val graphLock = directStringGraphLock(source.graph)
+        private val nodePredicate = nodePredicateFactory?.invoke()
         private val localRows = HashSet<Map<String, Any?>>()
         private val iterator by lazy {
             directStringCandidates(source.graph, nodeClass, filter, tracker)
@@ -1728,7 +1733,7 @@ class QueryPipeline private constructor(
         private var exhausted = false
         private var inspected = 0
 
-        fun nextDistinctRows(maxRows: Int): DirectStringScanBatch = withGraphLock {
+        fun nextDistinctRows(maxRows: Int): DirectStringScanBatch {
             val rows = mutableListOf<Map<String, Any?>>()
             while (!exhausted && rows.size < maxRows) {
                 if (!iterator.hasNext()) {
@@ -1740,10 +1745,10 @@ class QueryPipeline private constructor(
                 if (localRows.add(visible)) rows += row
                 pollInterrupted()
             }
-            DirectStringScanBatch(rows, exhausted)
+            return DirectStringScanBatch(rows, exhausted)
         }
 
-        fun nextRows(maxRows: Int): List<Map<String, Any?>> = withGraphLock {
+        fun nextRows(maxRows: Int): List<Map<String, Any?>> {
             val rows = mutableListOf<Map<String, Any?>>()
             while (!exhausted && rows.size < maxRows) {
                 if (!iterator.hasNext()) {
@@ -1753,38 +1758,23 @@ class QueryPipeline private constructor(
                 rows += projectParallelSafeNode(iterator.next())
                 pollInterrupted()
             }
-            rows
+            return rows
         }
 
         fun collectRemainingSelectedRows(
             selected: DirectStringSelectedRowMatcher
-        ): Set<Map<String, Any?>> =
-            withGraphLock {
-                val hits = mutableSetOf<Map<String, Any?>>()
-                val matcher = selected.cursor(source)
-                while (!exhausted) {
-                    if (!iterator.hasNext()) {
-                        exhausted = true
-                        break
-                    }
-                    matcher.match(iterator.next())?.let(hits::add)
-                    pollInterrupted()
+        ): Set<Map<String, Any?>> {
+            val hits = mutableSetOf<Map<String, Any?>>()
+            val matcher = selected.cursor(source)
+            while (!exhausted) {
+                if (!iterator.hasNext()) {
+                    exhausted = true
+                    break
                 }
-                hits
+                matcher.match(iterator.next())?.let(hits::add)
+                pollInterrupted()
             }
-
-        private fun <T> withGraphLock(action: () -> T): T {
-            try {
-                graphLock.lockInterruptibly()
-            } catch (_: InterruptedException) {
-                Thread.currentThread().interrupt()
-                throw CypherQueryCancelledException()
-            }
-            return try {
-                action()
-            } finally {
-                graphLock.unlock()
-            }
+            return hits
         }
 
         private fun projectParallelSafeNode(node: Node): Map<String, Any?> {
@@ -1999,15 +1989,6 @@ class QueryPipeline private constructor(
                 variable: String,
                 parameters: Map<String, Any?> = emptyMap()
             ): DirectStringFilter? {
-                if (expression is CypherExpr.RegexMatch) {
-                    val pattern = stringConstant(expression.right, parameters) ?: return null
-                    val expected = regexContainsLiteral(pattern) ?: return null
-                    return compile(
-                        CypherExpr.StringOp("CONTAINS", expression.left, CypherExpr.Literal(expected)),
-                        variable,
-                        parameters
-                    )
-                }
                 val (left, right, mode) = when (expression) {
                     is CypherExpr.StringOp -> Triple(
                         expression.left,
@@ -2033,6 +2014,21 @@ class QueryPipeline private constructor(
                 if (property.propertyName in QUALIFIED_NODE_PROPERTIES) return null
                 if (operand.coalescesMissingToEmpty && expected.isEmpty()) return null
                 return DirectStringFilter(property.propertyName, mode, expected, operand.transform)
+            }
+
+            fun compileRegexCandidate(
+                expression: CypherExpr,
+                variable: String,
+                parameters: Map<String, Any?>
+            ): DirectStringFilter? {
+                val regex = expression as? CypherExpr.RegexMatch ?: return null
+                val pattern = stringConstant(regex.right, parameters) ?: return null
+                val expected = regexContainsLiteral(pattern) ?: return null
+                return compile(
+                    CypherExpr.StringOp("CONTAINS", regex.left, CypherExpr.Literal(expected)),
+                    variable,
+                    parameters
+                )
             }
 
             private fun stringConstant(expression: CypherExpr, parameters: Map<String, Any?>): String? =
@@ -2207,6 +2203,11 @@ class QueryPipeline private constructor(
                 }
                 DirectStringDisjunction.compile(expression, variable, parameters)?.let { disjunction ->
                     return DirectStringCandidatePlan(disjunction)
+                }
+                DirectStringFilter.compileRegexCandidate(expression, variable, parameters)?.let { filter ->
+                    if (DIRECT_STRING_NODE_PROPERTIES.any { (_, properties) -> filter.property in properties }) {
+                        return DirectStringCandidatePlan(DirectStringDisjunction(listOf(filter)))
+                    }
                 }
                 val and = expression as? CypherExpr.And ?: return null
                 return listOfNotNull(

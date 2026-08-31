@@ -68,11 +68,10 @@ jobs:
             if (taskMatch && i + 1 < lines.length) {
               const covMatch = lines[i + 1].match(/application line coverage: ([\d.]+)%/);
               if (covMatch) {
-              const module = taskMatch[1];
-              const pct = parseFloat(covMatch[1]);
-              const threshold = ['cypher', 'webgraph'].includes(module) ? 95 : 98;
-              const icon = pct >= threshold ? ':white_check_mark:' : pct >= 50 ? ':large_orange_diamond:' : ':red_circle:';
-              rows.push(`| ${module} | ${icon} ${pct.toFixed(1)}% (min ${threshold}%) |`);
+                const module = taskMatch[1];
+                const pct = parseFloat(covMatch[1]);
+                const icon = pct >= 98 ? ':white_check_mark:' : pct >= 50 ? ':large_orange_diamond:' : ':red_circle:';
+                rows.push(`| ${module} | ${icon} ${pct.toFixed(1)}% |`);
               }
             }
           }
@@ -125,12 +124,8 @@ jobs:
           if [[ "$line" == *"application line coverage:"* ]]; then
             PCT=${line#*coverage: }
             PCT=${PCT%%\%*}
-            THRESHOLD=98
-            if [[ "$MODULE" == "cypher" || "$MODULE" == "webgraph" ]]; then
-              THRESHOLD=95
-            fi
-            if awk "BEGIN{exit !($PCT < $THRESHOLD)}"; then
-              echo "::error::Module $MODULE coverage is ${PCT}%, below ${THRESHOLD}% threshold"
+            if awk "BEGIN{exit !($PCT < 98)}"; then
+              echo "::error::Module $MODULE coverage is ${PCT}%, below 98% threshold"
               FAILED=true
             fi
           fi

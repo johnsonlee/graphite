@@ -255,16 +255,16 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (shouldPreflightCallSitePredicates(predicates) && callSitePredicatesCannotMatch(predicates)) {
+        if (shouldPreflightCallSitePredicates(predicates) &&
+            callSitePredicatesCannotMatch(predicates, workConsumer)
+        ) {
             return StringPropertyDisjunctionAggregate(
                 count = 0,
                 distinctValues = if (distinctProperty == null) null else emptySet()
             )
         }
-        val index = callSiteStringIndex(type) ?: return null
-        return index.aggregate(predicates, distinctProperty).also { aggregate ->
-            consumeGraphWork(workConsumer, aggregate.count)
-        }
+        val index = callSiteStringIndex(type, workConsumer) ?: return null
+        return index.aggregate(predicates, distinctProperty, workConsumer)
     }
 
     override fun distinctStringPropertyDisjunction(
@@ -280,10 +280,12 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (shouldPreflightCallSitePredicates(predicates) && callSitePredicatesCannotMatch(predicates)) {
+        if (shouldPreflightCallSitePredicates(predicates) &&
+            callSitePredicatesCannotMatch(predicates, workConsumer)
+        ) {
             return emptyList()
         }
-        val index = callSiteStringIndex(type) ?: return null
+        val index = callSiteStringIndex(type, workConsumer) ?: return null
         return index.distinctProjection(
             predicates,
             projectedProperties,
@@ -303,9 +305,9 @@ internal class MappedWebGraphBackedGraph(
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
         if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates(predicates) &&
-            callSitePredicatesCannotMatch(predicates)
+            callSitePredicatesCannotMatch(predicates, workConsumer)
         ) return emptySequence()
-        callSiteStringIndex(type)?.let { index ->
+        callSiteStringIndex(type, workConsumer)?.let { index ->
             return index.matchingNodeIds(
                 predicates,
                 workConsumer,
@@ -374,30 +376,40 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    private fun callSitePredicatesCannotMatch(predicates: List<StringPropertyPredicate>): Boolean {
+    private fun callSitePredicatesCannotMatch(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): Boolean {
         val predicateKeys = predicates.mapTo(linkedSetOf()) { predicate ->
             StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
         }
-        for (predicate in predicateKeys) {
-            if (Thread.currentThread().isInterrupted) {
-                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
-            }
-            if (predicate.transform == null && predicate.mode == StringMatchMode.EQUALS) {
-                if (stringTable.findId(predicate.expected) >= 0) return false
-                continue
-            }
-            val actual = MutableString()
-            for (stringId in 0 until stringTable.size()) {
-                if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                    Thread.currentThread().isInterrupted
-                ) {
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            for (predicate in predicateKeys) {
+                if (Thread.currentThread().isInterrupted) {
                     throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                 }
-                stringTable.get(stringId, actual)
-                if (reusableStringMatches(actual, predicate)) return false
+                if (predicate.transform == null && predicate.mode == StringMatchMode.EQUALS) {
+                    accounting.consume()
+                    if (stringTable.findId(predicate.expected) >= 0) return false
+                    continue
+                }
+                val actual = MutableString()
+                for (stringId in 0 until stringTable.size()) {
+                    if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                        Thread.currentThread().isInterrupted
+                    ) {
+                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                    }
+                    accounting.consume()
+                    stringTable.get(stringId, actual)
+                    if (reusableStringMatches(actual, predicate)) return false
+                }
             }
+            return true
+        } finally {
+            accounting.flush()
         }
-        return true
     }
 
     private fun shouldPreflightCallSitePredicates(predicates: List<StringPropertyPredicate>): Boolean =
@@ -768,7 +780,10 @@ internal class MappedWebGraphBackedGraph(
     }
 
     @Suppress("CyclomaticComplexMethod", "ReturnCount", "TooGenericExceptionCaught")
-    private fun callSiteStringIndex(type: Class<out Node>): MappedCallSiteStringIndex? {
+    private fun callSiteStringIndex(
+        type: Class<out Node>,
+        workConsumer: GraphWorkConsumer? = null
+    ): MappedCallSiteStringIndex? {
         if (type != CallSiteNode::class.java) return null
         callSiteStringIndex?.let { return it }
         return synchronized(callSiteStringIndexLock) {
@@ -782,7 +797,8 @@ internal class MappedWebGraphBackedGraph(
             try {
                 val capacity = nodeCount.toInt()
                 val endsByStringId = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(stringCount) }
-                forEachRawCallSiteStringIds { _, callerClass, callerName, calleeClass, calleeName ->
+                forEachRawCallSiteStringIds(workConsumer) {
+                        _, callerClass, callerName, calleeClass, calleeName ->
                     endsByStringId[CALLER_CLASS_PROPERTY_INDEX][callerClass]++
                     endsByStringId[CALLER_NAME_PROPERTY_INDEX][callerName]++
                     endsByStringId[CALLEE_CLASS_PROPERTY_INDEX][calleeClass]++
@@ -824,7 +840,8 @@ internal class MappedWebGraphBackedGraph(
                     }
                     check(usedIndex == used.size && postingOffset == capacity)
                 }
-                forEachRawCallSiteStringIds { nodeId, callerClass, callerName, calleeClass, calleeName ->
+                forEachRawCallSiteStringIds(workConsumer) {
+                        nodeId, callerClass, callerName, calleeClass, calleeName ->
                     postings[CALLER_CLASS_PROPERTY_INDEX][
                         endsByStringId[CALLER_CLASS_PROPERTY_INDEX][callerClass]++
                     ] = nodeId
@@ -857,7 +874,8 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                    reservation = reservation
+                    reservation = reservation,
+                    buildWorkConsumer = workConsumer
                 ).also { built ->
                     callSiteStringIndex = built
                 }
@@ -868,22 +886,33 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    private inline fun forEachRawCallSiteStringIds(action: (Int, Int, Int, Int, Int) -> Unit) {
+    private inline fun forEachRawCallSiteStringIds(
+        workConsumer: GraphWorkConsumer?,
+        action: (Int, Int, Int, Int, Int) -> Unit
+    ) {
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
         var index = 0
-        for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
-            if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CancellationException("Mapped CallSite string index build interrupted")
+        try {
+            for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
+                if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException("Mapped CallSite string index build interrupted")
+                }
+                accounting.consume()
+                val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
+                val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
+                action(
+                    nodeId,
+                    mappedNodeData.getInt(fields),
+                    mappedNodeData.getInt(fields + Int.SIZE_BYTES),
+                    mappedNodeData.getInt(calleeFields),
+                    mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
+                )
             }
-            val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
-            val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
-            val calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
-            action(
-                nodeId,
-                mappedNodeData.getInt(fields),
-                mappedNodeData.getInt(fields + Int.SIZE_BYTES),
-                mappedNodeData.getInt(calleeFields),
-                mappedNodeData.getInt(calleeFields + Int.SIZE_BYTES)
-            )
+        } finally {
+            accounting.flush()
         }
     }
 
