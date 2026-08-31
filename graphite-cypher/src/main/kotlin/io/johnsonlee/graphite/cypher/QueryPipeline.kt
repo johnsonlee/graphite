@@ -228,6 +228,32 @@ class QueryPipeline private constructor(
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
         if (hasUnknownNodeLabel(clauses)) return executeGeneralClauses(clauses)
+        if (MethodQueryExecutor.referencesMethod(clauses)) {
+            if (activeParameters.get().orEmpty().isEmpty()) {
+                val methodResult = MethodQueryExecutor.tryExecute(
+                    clauses,
+                    sources,
+                    qualified,
+                    ::checkCancelled,
+                    activeWorkTracker.get()
+                )
+                if (methodResult != null) return methodResult
+            }
+            graphScopedSources(clauses)?.let { scopedSources ->
+                if (scopedSources != sources) {
+                    return QueryPipeline(
+                        scopedSources,
+                        qualified = true,
+                        workTrackingEnabled = workTrackingEnabled
+                    ).execute(
+                        clauses,
+                        activeParameters.get().orEmpty(),
+                        activeWorkTracker.get()
+                    )
+                }
+            }
+            return executeGeneralClauses(clauses)
+        }
         graphScopedSources(clauses)?.let { scopedSources ->
             if (scopedSources != sources) {
                 return QueryPipeline(
@@ -240,19 +266,6 @@ class QueryPipeline private constructor(
                     activeWorkTracker.get()
                 )
             }
-        }
-        if (MethodQueryExecutor.referencesMethod(clauses)) {
-            if (activeParameters.get().orEmpty().isEmpty()) {
-                val methodResult = MethodQueryExecutor.tryExecute(
-                    clauses,
-                    sources,
-                    qualified,
-                    ::checkCancelled,
-                    activeWorkTracker.get()
-                )
-                if (methodResult != null) return methodResult
-            }
-            return executeGeneralClauses(clauses)
         }
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)

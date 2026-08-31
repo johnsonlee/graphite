@@ -159,12 +159,15 @@ internal object MethodQueryExecutor {
         val limitCount = literalCount(limit?.count, default = Int.MAX_VALUE) ?: return null
         val requested = saturatedAdd(skipCount, limitCount)
         val scan = scanPlan(nodePattern, variable, where) ?: return null
+        val selectedSources = scan.sourceGraphId?.let { graphId ->
+            sources.filter { source -> source.id == graphId }
+        } ?: sources
         val execution = MethodExecution(
             ret,
             variable,
             where,
             scan,
-            sources,
+            selectedSources,
             qualified,
             checkCancelled,
             workTracker
@@ -199,7 +202,7 @@ internal object MethodQueryExecutor {
             if (!predicate.addEquality(property, value)) return null
         }
         val fullyPushed = where == null || predicate.addConjuncts(where.condition)
-        return MethodScanPlan(predicate.pattern(), fullyPushed)
+        return MethodScanPlan(predicate.pattern(), fullyPushed, predicate.sourceGraphId())
     }
 
     private fun executeStreamingRows(
@@ -649,7 +652,11 @@ internal object MethodQueryExecutor {
 
     fun isMethodLabel(label: String): Boolean = label.equals(METHOD_LABEL, ignoreCase = true)
 
-    private data class MethodScanPlan(val pattern: MethodPattern, val fullyPushed: Boolean)
+    private data class MethodScanPlan(
+        val pattern: MethodPattern,
+        val fullyPushed: Boolean,
+        val sourceGraphId: String?
+    )
 
     private data class MethodExecution(
         val ret: CypherClause.Return,
@@ -704,6 +711,7 @@ private class MethodPredicate(private val variable: String) {
     private var name: String? = null
     private var parameterTypes: List<String>? = null
     private var returnType: String? = null
+    private var graphId: String? = null
 
     fun pattern(): MethodPattern = MethodPattern(
         declaringClass = declaringClass,
@@ -712,6 +720,8 @@ private class MethodPredicate(private val variable: String) {
         returnType = returnType,
         useRegex = true
     )
+
+    fun sourceGraphId(): String? = graphId
 
     fun addConjuncts(expression: CypherExpr): Boolean = if (expression is CypherExpr.And) {
         val left = addConjuncts(expression.left)
@@ -732,6 +742,7 @@ private class MethodPredicate(private val variable: String) {
     fun addEquality(property: String, value: CypherExpr): Boolean {
         val raw = literal(value) ?: return false
         return when (property) {
+            GRAPH_ID_PROPERTY -> setOnce(graphId, raw as? String) { graphId = it }
             METHOD_SIGNATURE_PROPERTY -> addSignature(raw as? String)
             METHOD_PARAMETER_TYPES_PROPERTY -> {
                 val parameters = (raw as? List<*>)?.map { it as? String ?: return false } ?: return false
@@ -745,10 +756,23 @@ private class MethodPredicate(private val variable: String) {
         val leftProperty = property(left)
         val rightProperty = property(right)
         return when {
+            isGraphIdReference(left) -> addGraphId(right)
+            isGraphIdReference(right) -> addGraphId(left)
             leftProperty != null -> addEquality(leftProperty, right)
             rightProperty != null -> addEquality(rightProperty, left)
             else -> false
         }
+    }
+
+    private fun addGraphId(expression: CypherExpr): Boolean =
+        setOnce(graphId, literal(expression) as? String) { graphId = it }
+
+    private fun isGraphIdReference(expression: CypherExpr): Boolean = when (expression) {
+        is CypherExpr.Property -> expression.expression == CypherExpr.Variable(variable) &&
+            expression.propertyName == GRAPH_ID_PROPERTY
+        is CypherExpr.FunctionCall -> expression.name.equals("graphId", ignoreCase = true) &&
+            !expression.distinct && expression.args.singleOrNull() == CypherExpr.Variable(variable)
+        else -> false
     }
 
     private fun addStringOperation(expression: CypherExpr.StringOp): Boolean {
