@@ -23,6 +23,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
+import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -333,6 +334,24 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return emptyList()
         }
+        callSiteStringIndex?.let { index ->
+            return index.distinctProjection(
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues,
+                workConsumer
+            )
+        }
+        if (workConsumer is SerialGraphWorkBatchConsumer) {
+            return rawDistinctCallSiteStringProjection(
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues,
+                workConsumer
+            )
+        }
         val index = callSiteStringIndex(type, workConsumer) ?: return null
         return index.distinctProjection(
             predicates,
@@ -341,6 +360,78 @@ internal class MappedWebGraphBackedGraph(
             selectedValues,
             workConsumer
         )
+    }
+
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "LoopWithTooManyJumpStatements", "NestedBlockDepth")
+    private fun rawDistinctCallSiteStringProjection(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        selectedValues: Set<List<String?>>?,
+        workConsumer: GraphWorkConsumer
+    ): List<StringPropertyDistinctRow> {
+        if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
+        val predicatePropertyIndexes = predicates.map { predicate ->
+            callSiteStringPropertyIndex(predicate.property).also { propertyIndex ->
+                check(propertyIndex >= 0) { "Unsupported CallSite string property: ${predicate.property}" }
+            }
+        }
+        val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
+        val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
+        val matchStates = predicates.map { predicate ->
+            sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
+                ByteArray(stringTable.size())
+            }
+        }
+        val rows = mutableListOf<StringPropertyDistinctRow>()
+        val seenValues = HashSet<List<String?>>()
+        val targetSize = minOf(limit, selectedValues?.size ?: limit)
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        var inspected = 0
+        try {
+            for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                accounting.consume()
+                var matched = false
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                    stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                    stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                    stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+                    matched = predicates.indices.any { index ->
+                        val stringId = stringIds[predicatePropertyIndexes[index]]
+                        val states = matchStates[index]
+                        when (states[stringId]) {
+                            RAW_STRING_MATCH -> true
+                            RAW_STRING_MISS -> false
+                            else -> stringMatches(
+                                stringTable.get(stringId),
+                                predicates[index].transform,
+                                predicates[index].mode,
+                                predicates[index].expected
+                            ).also { result ->
+                                states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                            }
+                        }
+                    }
+                }
+                if (!matched) continue
+                val values = projectedPropertyIndexes.map { propertyIndex ->
+                    if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex]).toString()
+                }
+                if ((selectedValues != null && values !in selectedValues) || !seenValues.add(values)) continue
+                rows += StringPropertyDistinctRow(nodeOffsets.offset(nodeId), values)
+                if (rows.size >= targetSize) break
+            }
+            return rows
+        } finally {
+            accounting.flush()
+        }
     }
 
     override fun projectStringPropertyDisjunction(
@@ -382,10 +473,12 @@ internal class MappedWebGraphBackedGraph(
         if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates(predicates) &&
             callSitePredicatesCannotMatch(predicates, workConsumer)
         ) return emptySequence()
-        callSiteStringIndex(type, workConsumer)?.let { index ->
-            return index.matchingNodeIds(predicates, workConsumer, limit)
-                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
-                .map(type::cast)
+        if (workConsumer !is SerialGraphWorkBatchConsumer) {
+            callSiteStringIndex(type, workConsumer)?.let { index ->
+                return index.matchingNodeIds(predicates, workConsumer, limit)
+                    .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                    .map(type::cast)
+            }
         }
         if (prefersSerialStringPropertyDisjunction(type, predicates)) return null
         return sequence {

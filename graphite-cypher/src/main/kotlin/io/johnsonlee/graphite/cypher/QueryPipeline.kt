@@ -25,10 +25,12 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
+import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -65,6 +67,8 @@ private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
 private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relationshipMatchState"
 private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
+private val noOpSerialGraphWorkConsumer = SerialGraphWorkBatchConsumer { }
+private val noOpParallelGraphWorkConsumer = ParallelGraphWorkBatchConsumer { }
 
 private data class MatchedPathSegment(
     val tail: List<Any>,
@@ -1612,6 +1616,7 @@ class QueryPipeline private constructor(
         }
         val orders = candidateSources.map { source -> source.graph as? StringPropertyLookupOrder ?: return null }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
 
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         val zeroHitSources = BooleanArray(candidateSources.size)
@@ -1627,7 +1632,7 @@ class QueryPipeline private constructor(
                         projectedProperties,
                         limit,
                         selectedValues = null,
-                        workConsumer = tracker
+                        workConsumer = storageWorkConsumer
                     ) ?: error("Distinct projection capability became unavailable")
                     val sourceRows = projected.map { raw ->
                         OrderedProjectedRow(
@@ -1699,7 +1704,7 @@ class QueryPipeline private constructor(
                         projectedProperties,
                         sourceSelectedValues.size,
                         sourceSelectedValues,
-                        tracker
+                        storageWorkConsumer
                     ).orEmpty().mapTo(rawHits) { hit ->
                         visibleRow(rawProjectionRow(hit.values, projectedProperties, columns, source.id))
                     }
@@ -3725,16 +3730,24 @@ class QueryPipeline private constructor(
         val predicates = filters.map { filter ->
             StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
         }
-        return if (tracker == null) {
-            graph.nodesByStringPropertyDisjunction(type, predicates, limit)
+        val storageWorkConsumer = stringStorageWorkConsumer(sources.size, tracker)
+        val workAware = graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
+        return if (workAware != null || tracker != null) {
+            workAware
         } else {
-            val storageWorkConsumer = if (sources.size == 1) {
-                ParallelGraphWorkBatchConsumer(tracker::consume)
-            } else {
-                tracker
-            }
-            graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
+            graph.nodesByStringPropertyDisjunction(type, predicates, limit)
         }
+    }
+
+    private fun stringStorageWorkConsumer(
+        sourceCount: Int,
+        tracker: CypherWorkTracker?
+    ): GraphWorkConsumer = if (sourceCount == 1) {
+        tracker?.let { activeTracker -> ParallelGraphWorkBatchConsumer(activeTracker::consume) }
+            ?: noOpParallelGraphWorkConsumer
+    } else {
+        tracker?.let { activeTracker -> SerialGraphWorkBatchConsumer(activeTracker::consume) }
+            ?: noOpSerialGraphWorkConsumer
     }
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {

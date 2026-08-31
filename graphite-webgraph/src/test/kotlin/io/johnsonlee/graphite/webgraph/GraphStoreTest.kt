@@ -51,6 +51,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
@@ -1052,6 +1053,51 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
+                val serialWork = AtomicLong()
+                val serialIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "Target"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = SerialGraphWorkBatchConsumer(serialWork::addAndGet)
+                ).orEmpty().map { it.id.value }.toList()
+                assertEquals(listOf(0), serialIds)
+                assertTrue(serialWork.get() > 0L)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+
+                val rawProjectionWork = AtomicLong()
+                val rawProjection = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "Target"
+                        )
+                    ),
+                    projectedProperties = listOf("caller_class", "graphId"),
+                    limit = 2,
+                    workConsumer = SerialGraphWorkBatchConsumer(rawProjectionWork::addAndGet)
+                )
+                val expectedRawProjection = loaded.nodes(CallSiteNode::class.java)
+                    .filter { node -> "Target" in node.caller.declaringClass.className }
+                    .take(2)
+                    .map { node -> listOf(node.caller.declaringClass.className, null) }
+                    .toList()
+                assertEquals(
+                    expectedRawProjection,
+                    rawProjection?.map { row -> row.values }
+                )
+                assertTrue(rawProjectionWork.get() in 1L..32_768L)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+
                 val workerThreads = ConcurrentHashMap.newKeySet<String>()
                 val ids = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,

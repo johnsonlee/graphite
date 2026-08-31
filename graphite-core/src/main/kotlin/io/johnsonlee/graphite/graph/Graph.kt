@@ -75,6 +75,13 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
  */
 fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
+/**
+ * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
+ * already parallelizes independent graph sources. This avoids nested scan pools while preserving
+ * the same shared work and cancellation accounting.
+ */
+fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()
