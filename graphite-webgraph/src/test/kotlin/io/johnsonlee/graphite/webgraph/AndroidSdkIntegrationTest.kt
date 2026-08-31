@@ -10,7 +10,9 @@ import org.junit.Assume.assumeTrue
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.jar.JarFile
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
 
 /**
@@ -64,15 +66,33 @@ class AndroidSdkIntegrationTest {
 
     @Test
     fun `save and load Android graph`() {
+        val resourcePath = "AndroidManifest.xml"
+        val expectedResource = JarFile(androidJar!!.toFile()).use { jar ->
+            val entry = requireNotNull(jar.getJarEntry(resourcePath)) {
+                "Android fixture does not contain $resourcePath"
+            }
+            jar.getInputStream(entry).use { it.readBytes() }
+        }
         val original = loadGraph()
         val dir = Files.createTempDirectory("android-webgraph")
         try {
+            assertContentEquals(
+                expectedResource,
+                original.resources.open(resourcePath).use { it.readBytes() },
+                "Source graph must expose the real Android fixture resource"
+            )
             GraphStore.save(original, dir)
+            assertTrue(Files.isRegularFile(dir.resolve("graph.resources")))
             val loaded = GraphStore.load(dir)
             try {
                 val originalCount = original.nodes(Node::class.java).count()
                 val loadedCount = loaded.nodes(Node::class.java).count()
                 assertTrue(loadedCount == originalCount, "Node count should match: $originalCount vs $loadedCount")
+                assertContentEquals(
+                    expectedResource,
+                    loaded.resources.open(resourcePath).use { it.readBytes() },
+                    "Persisted graph must preserve the real Android fixture resource"
+                )
             } finally {
                 closeQuietly(loaded)
             }

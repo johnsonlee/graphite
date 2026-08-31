@@ -1,9 +1,9 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.UnavailableResourceAccessor
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayInputStream
@@ -37,6 +37,16 @@ internal class PersistedResourceAccessor(
             ?: throw java.io.IOException("Resource not found: $path")
 }
 
+internal object MissingPersistedResourceAccessor : ResourceAccessor, UnavailableResourceAccessor {
+    override val unavailableReason: String =
+        "Persisted resources are unavailable because graph.resources is missing; " +
+            "rebuild this graph with the current Graphite CLI"
+
+    override fun list(pattern: String): Sequence<ResourceEntry> = emptySequence()
+
+    override fun open(path: String): InputStream = throw java.io.IOException(unavailableReason)
+}
+
 internal object PersistedResourceStore {
     private const val FILE_NAME = "graph.resources"
     private const val MAGIC = 0x47525200 // "GRR" + version byte
@@ -45,7 +55,6 @@ internal object PersistedResourceStore {
 
     fun save(graph: Graph, dir: Path) {
         val resources = collect(graph)
-        if (resources.isEmpty()) return
 
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(dir.resolve(FILE_NAME)))).use { dos ->
             writeHeader(dos)
@@ -61,7 +70,7 @@ internal object PersistedResourceStore {
 
     fun load(dir: Path): ResourceAccessor {
         val file = dir.resolve(FILE_NAME)
-        if (!Files.exists(file)) return EmptyResourceAccessor
+        if (!Files.exists(file)) return MissingPersistedResourceAccessor
         DataInputStream(BufferedInputStream(Files.newInputStream(file))).use { dis ->
             readHeader(dis)
             val count = dis.readInt()

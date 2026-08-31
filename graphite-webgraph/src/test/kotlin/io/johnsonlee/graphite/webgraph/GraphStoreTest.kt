@@ -64,6 +64,7 @@ import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.unavailableReason
 import it.unimi.dsi.fastutil.io.BinIO
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -3949,6 +3950,58 @@ class GraphStoreTest {
             assertEquals("application.properties", entries.single().path)
             val content = loaded.resources.open("application.properties").bufferedReader().readText()
             assertTrue(content.contains("feature.mode=shadow"))
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `saving a graph without resources writes an empty resource store`() {
+        val graph = DefaultGraph.Builder().build()
+        val dir = Files.createTempDirectory("webgraph-empty-resources-test")
+        try {
+            GraphStore.save(graph, dir)
+
+            assertTrue(Files.isRegularFile(dir.resolve("graph.resources")))
+            assertEquals(emptyList(), GraphStore.load(dir).resources.list("**").toList())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `saving a graph without resources replaces stale persisted resources`() {
+        val dir = Files.createTempDirectory("webgraph-stale-resources-test")
+        try {
+            GraphStore.save(buildTestGraph(), dir)
+            assertEquals(1, GraphStore.load(dir).resources.list("**").count())
+
+            GraphStore.save(DefaultGraph.Builder().build(), dir)
+
+            assertEquals(emptyList(), GraphStore.load(dir).resources.list("**").toList())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `loading a graph without a resource store reports resources unavailable`() {
+        val dir = Files.createTempDirectory("webgraph-missing-resources-test")
+        try {
+            GraphStore.save(DefaultGraph.Builder().build(), dir)
+            Files.delete(dir.resolve("graph.resources"))
+
+            val loaded = GraphStore.load(dir)
+            assertTrue(loaded.resources.unavailableReason.orEmpty().contains("rebuild this graph"))
+            assertEquals(emptyList(), loaded.resources.list("**").toList())
+            assertFailsWith<java.io.IOException> { loaded.resources.open("application.properties") }
+
+            val mapped = GraphStore.loadMapped(dir)
+            try {
+                assertTrue(mapped.resources.unavailableReason.orEmpty().contains("rebuild this graph"))
+            } finally {
+                (mapped as Closeable).close()
+            }
         } finally {
             dir.toFile().deleteRecursively()
         }

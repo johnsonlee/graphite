@@ -21,6 +21,7 @@ import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.ResourceEntry
+import io.johnsonlee.graphite.input.unavailableReason
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.IOException
 import java.nio.file.Path
@@ -191,6 +192,7 @@ internal class ExploreRoutes(
             val pattern = ctx.queryParam(API_PARAM_PATTERN) ?: "**"
             val limit = boundedLimit(ctx, DEFAULT_RESOURCE_LIMIT, MAX_RESOURCE_LIMIT)
             withAllGraphs(ctx, acquire) { leases ->
+                if (!requireResourceStores(ctx, leases)) return@withAllGraphs
                 val limits = distributedLimits(leases.size, limit)
                 val results = leases.mapIndexed { index, lease ->
                     val graphLimit = limits[index]
@@ -216,6 +218,7 @@ internal class ExploreRoutes(
                 return@get
             }
             withAllGraphs(ctx, acquire) { leases ->
+                if (!requireResourceStores(ctx, leases)) return@withAllGraphs
                 try {
                     var remainingBytes = MAX_RESOURCE_BYTES
                     val results = leases.mapNotNull { lease ->
@@ -339,6 +342,7 @@ internal class ExploreRoutes(
 
         app.get("$prefix/resources") { ctx ->
             withGraph(ctx, provider) { graph ->
+                if (!requireResourceStore(ctx, graph)) return@withGraph
                 val pattern = ctx.queryParam(API_PARAM_PATTERN) ?: "**"
                 val limit = boundedLimit(ctx, DEFAULT_RESOURCE_LIMIT, MAX_RESOURCE_LIMIT)
                 val resources = listResources(graph, pattern, limit)
@@ -355,6 +359,7 @@ internal class ExploreRoutes(
 
         app.get("$prefix/resources/<path>") { ctx ->
             withGraph(ctx, provider) { graph ->
+                if (!requireResourceStore(ctx, graph)) return@withGraph
                 val path = ctx.pathParam("path").trimStart('/')
                 if (path.isBlank()) {
                     ctx.status(HTTP_NOT_FOUND).result(API_ERROR_RESOURCE_NOT_FOUND)
@@ -1068,6 +1073,28 @@ internal class ExploreRoutes(
     private fun resolveResourceEntry(graph: Graph, path: String): ResourceEntry? =
         graph.resources.list("**").firstOrNull { it.path == path }
 
+    private fun requireResourceStore(ctx: Context, graph: Graph): Boolean {
+        val reason = graph.resources.unavailableReason ?: return true
+        ctx.status(HTTP_CONFLICT).json(mapOf(API_FIELD_ERROR to reason))
+        return false
+    }
+
+    private fun requireResourceStores(ctx: Context, leases: List<GraphLease>): Boolean {
+        val unavailable = leases.mapNotNull { lease ->
+            lease.graph.resources.unavailableReason?.let { reason ->
+                mapOf(API_FIELD_GRAPH_ID to lease.id, API_FIELD_ERROR to reason)
+            }
+        }
+        if (unavailable.isEmpty()) return true
+        ctx.status(HTTP_CONFLICT).json(
+            mapOf(
+                API_FIELD_ERROR to "Persisted resources are unavailable for one or more graphs",
+                API_FIELD_RESULTS to unavailable
+            )
+        )
+        return false
+    }
+
     private fun listResources(graph: Graph, pattern: String, limit: Int): List<Map<String, Any?>> {
         return graph.resources.list(pattern)
             .map { entry ->
@@ -1193,6 +1220,7 @@ internal class ExploreRoutes(
         private const val API_ROOT = "/api"
         private const val HTTP_NO_CONTENT = 204
         private const val HTTP_BAD_REQUEST = 400
+        private const val HTTP_CONFLICT = 409
         private const val HTTP_NOT_FOUND = 404
         private const val HTTP_PAYLOAD_TOO_LARGE = 413
         private const val HTTP_TOO_MANY_REQUESTS = 429
