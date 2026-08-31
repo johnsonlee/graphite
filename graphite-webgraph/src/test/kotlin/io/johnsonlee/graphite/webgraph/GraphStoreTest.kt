@@ -2822,6 +2822,29 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `loading a graph without a resource store reports resources unavailable`() {
+        val dir = Files.createTempDirectory("webgraph-missing-resources-test")
+        try {
+            GraphStore.save(DefaultGraph.Builder().build(), dir)
+            Files.delete(dir.resolve("graph.resources"))
+
+            val loaded = GraphStore.load(dir)
+            assertTrue(loaded.resources.unavailableReason.orEmpty().contains("rebuild this graph"))
+            assertEquals(emptyList(), loaded.resources.list("**").toList())
+            assertFailsWith<java.io.IOException> { loaded.resources.open("application.properties") }
+
+            val mapped = GraphStore.loadMapped(dir)
+            try {
+                assertTrue(mapped.resources.unavailableReason.orEmpty().contains("rebuild this graph"))
+            } finally {
+                (mapped as Closeable).close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
     // ========================================================================
     // Type hierarchy on loaded graph
     // ========================================================================

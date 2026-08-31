@@ -13,6 +13,15 @@ import java.io.InputStream
 interface ResourceAccessor {
 
     /**
+     * Explains why resources cannot be queried, or `null` when this accessor is usable.
+     *
+     * An available accessor may still contain no matching resources. This distinction lets
+     * persisted graphs report a missing legacy resource store instead of silently appearing empty.
+     */
+    val unavailableReason: String?
+        get() = null
+
+    /**
      * List resource entries matching a glob pattern.
      *
      * Supported patterns:

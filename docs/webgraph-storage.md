@@ -49,6 +49,11 @@ Current node and metadata writers emit version `3`. Their readers accept legacy 
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
 
+Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
+exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
+not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an
+instruction to rebuild the graph using the current CLI.
+
 ### Edge Label Encoding (8-bit)
 
 ```

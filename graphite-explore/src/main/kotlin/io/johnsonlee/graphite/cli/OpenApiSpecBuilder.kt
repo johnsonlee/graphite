@@ -200,7 +200,10 @@ internal class OpenApiSpecBuilder {
                         queryParameter(API_PARAM_PATTERN, TYPE_STRING, false, "Glob pattern, defaults to **"),
                         queryParameter(API_PARAM_LIMIT, TYPE_INTEGER, false, API_OPENAPI_MAX_RESULTS)
                     ),
-                    responses = mapOf("200" to response("Resource listing"))
+                    responses = mapOf(
+                        "200" to response("Resource listing"),
+                        "409" to response("Graph was built without a persisted resource store and must be rebuilt")
+                    )
                 )
             ),
             "/api/resources/{path}" to mapOf(
@@ -211,6 +214,7 @@ internal class OpenApiSpecBuilder {
                     ),
                     responses = mapOf(
                         "200" to response("Raw resource content"),
+                        "409" to response("Graph was built without a persisted resource store and must be rebuilt"),
                         "413" to response("Resource exceeds maximum response size"),
                         "404" to response(API_ERROR_RESOURCE_NOT_FOUND)
                     )

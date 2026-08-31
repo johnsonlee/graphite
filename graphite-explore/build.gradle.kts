@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.micrometer.core)
     implementation(libs.micrometer.registry.prometheus)
 
+    testImplementation(project(":query"))
+
     add(integrationFixtures.name, libs.android.all)
 
     jmh(project(":sootup"))

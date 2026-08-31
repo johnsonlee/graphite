@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.input
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ResourceAccessorTest {
@@ -11,6 +12,7 @@ class ResourceAccessorTest {
     fun `EmptyResourceAccessor list returns empty sequence`() {
         val result = EmptyResourceAccessor.list("**/*.json").toList()
         assertTrue(result.isEmpty())
+        assertNull(EmptyResourceAccessor.unavailableReason)
     }
 
     @Test
