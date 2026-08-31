@@ -106,6 +106,111 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `ordered distinct graph id limit reads the source catalog instead of scanning nodes`() {
+        val nodeScans = AtomicInteger()
+        fun catalogGraph(populated: Boolean): Graph {
+            val delegate = if (populated) graph(IntConstant(NodeId(1), 1)) else graph()
+            return object : Graph by delegate {
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+                    nodeScans.incrementAndGet()
+                    error("catalog graph nodes must not be scanned")
+                }
+            }
+        }
+        val populatedIds = (0 until 125).map { index -> "graph-${index.toString().padStart(3, '0')}" }
+        val sources = populatedIds.map { id -> CypherGraph(id, catalogGraph(populated = true)) } +
+            CypherGraph("graph-050-empty", catalogGraph(populated = false))
+        val executor = CrossGraphCypherExecutor(sources.reversed())
+
+        val result = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100"
+        )
+        val descending = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS id ORDER BY id DESC LIMIT 3"
+        )
+        val zero = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 0"
+        )
+        val noSources = CrossGraphCypherExecutor(emptyList()).execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100"
+        )
+        val externallyBounded = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100",
+            maxRows = 1
+        )
+        val singleGraph = CypherExecutor(graph(IntConstant(NodeId(1), 1))).execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100"
+        )
+
+        assertEquals(listOf("graphId"), result.columns)
+        assertEquals(populatedIds.sorted().take(100), result.rows.map { it["graphId"] })
+        assertEquals(populatedIds.sortedDescending().take(3), descending.rows.map { it["id"] })
+        assertTrue(zero.rows.isEmpty())
+        assertEquals(listOf("graphId"), noSources.columns)
+        assertTrue(noSources.rows.isEmpty())
+        assertEquals(listOf(populatedIds.min()), externallyBounded.rows.map { it["graphId"] })
+        assertEquals(listOf(null), singleGraph.rows.map { it["graphId"] })
+        assertTrue(result.rows.all { row -> graphIds(row) == listOf(row["graphId"]) })
+        assertEquals(0, nodeScans.get())
+    }
+
+    @Test
+    fun `ordered distinct graph id limit probes one node when a source has no count`() {
+        val inspectedNodes = AtomicInteger()
+        fun uncountedGraph(populated: Boolean): Graph {
+            val delegate = if (populated) {
+                graph(IntConstant(NodeId(1), 1), IntConstant(NodeId(2), 2))
+            } else {
+                graph()
+            }
+            return object : Graph by delegate {
+                override fun nodeCount(type: Class<out Node>): Long? = null
+
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> = sequence {
+                    val first = delegate.nodes(type).firstOrNull() ?: return@sequence
+                    inspectedNodes.incrementAndGet()
+                    yield(first)
+                    error("catalog fallback must stop after the first node")
+                }
+            }
+        }
+        val executor = CrossGraphCypherExecutor(
+            listOf(
+                CypherGraph("populated", uncountedGraph(populated = true)),
+                CypherGraph("empty", uncountedGraph(populated = false))
+            )
+        )
+
+        val result = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId AS graphId ORDER BY graphId LIMIT 100"
+        )
+
+        assertEquals(listOf("populated"), result.rows.map { it["graphId"] })
+        assertEquals(1, inspectedNodes.get())
+        assertEquals(listOf("populated"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `unaliased graph id ordering preserves generic execution semantics`() {
+        val executor = CrossGraphCypherExecutor(
+            listOf("空", "Ω", "graph-2", "graph-10", "a:colon", "z").map { id ->
+                CypherGraph(id, graph(IntConstant(NodeId(1), 1)))
+            }
+        )
+
+        val result = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId ORDER BY n.graphId LIMIT 1"
+        )
+        val generic = executor.execute(
+            "MATCH (n) RETURN DISTINCT n.graphId ORDER BY n.graphId SKIP 0 LIMIT 1"
+        )
+
+        assertEquals(generic.columns, result.columns)
+        assertEquals(generic.rows, result.rows)
+        assertEquals(listOf("空"), result.rows.map { it["n.graphId"] })
+    }
+
+    @Test
     fun `relationship uniqueness is qualified by graph identity`() {
         fun dataFlowGraph(): Graph {
             val first = IntConstant(NodeId(1), 10)
