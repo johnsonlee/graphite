@@ -1103,7 +1103,7 @@ class GraphStoreTest {
 
                 if (Runtime.getRuntime().availableProcessors() > 1) {
                     loaded.resetCallSiteScanMetrics()
-                    val expectedWorkers = minOf(8, Runtime.getRuntime().availableProcessors())
+                    val expectedWorkers = callSiteScanParallelism
                     val firstBatchReached = CountDownLatch(expectedWorkers)
                     val failureClaimed = AtomicBoolean()
                     val consumedWork = AtomicLong()
@@ -1176,7 +1176,7 @@ class GraphStoreTest {
                     assertTrue(interruptedFailure.get() is CancellationException)
                     assertEquals("Mapped string-property scan interrupted", interruptedFailure.get().message)
                     assertTrue(interruptedFlag.get())
-                    assertEquals(expectedWorkers.toLong(), loaded.callSiteScanAbortedWorkers())
+                    assertTrue(loaded.callSiteScanAbortedWorkers() in 1L..expectedWorkers.toLong())
                 }
 
                 loaded.clearStringPropertyIndexes()

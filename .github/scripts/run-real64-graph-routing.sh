@@ -106,7 +106,7 @@ run_revision() {
     -p graphCount=64 -p coverageFamily=graph-routing -p indexState="${INDEX_STATE}" \
     -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -foe true -prof gc -rf json \
     -rff "${RESULT_PREFIX}.json" \
-    -jvmArgsAppend "-Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
+    -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
       -Dgraphite.broad.pressure.output=${RESULT_PREFIX}.correctness \
       -Dgraphite.broad.pressure.observations.output=${RESULT_PREFIX}.tsv"
 }

@@ -363,6 +363,9 @@ test("real64 driver builds commit-bound JARs and records cryptographic provenanc
         /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{HARNESS_PATH\}"/
     );
     assert.equal((driver.match(/:webgraph:jmhJar --no-daemon/g) ?? []).length, 2);
+    assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 1);
+    assert.match(driver, /-jvmArgs "-Xmx8g /);
+    assert.doesNotMatch(driver, /-jvmArgsAppend/);
     for (const field of [
         "baseSha",
         "candidateSha",
