@@ -612,11 +612,56 @@ class GraphStoreTest {
             }
         }
 
-        sortCallSiteTrigramPostings(postings)
+        assertTrue(sortCallSiteTrigramPostings(postings))
 
         assertEquals(Long.MIN_VALUE, postings.first())
         assertEquals(Long.MAX_VALUE - 1, postings.last())
         assertTrue((1 until size).all { index -> postings[index - 1] <= postings[index] })
+    }
+
+    @Test
+    fun `large trigram posting sort stays on bounded workers and stops when request is interrupted`() {
+        val expectedWorkers = callSiteScanParallelism
+        val postings = LongArray((1 shl 20) + 1) { index ->
+            index.toLong() * -7_046_029_254_386_353_131L xor (index.toLong() shl 21)
+        }
+        val workersStarted = CountDownLatch(expectedWorkers)
+        val releaseWorkers = CountDownLatch(1)
+        val workerThreads = ConcurrentHashMap.newKeySet<String>()
+        val failure = AtomicReference<Throwable>()
+        val interruptedFlag = AtomicBoolean()
+        val request = Thread {
+            try {
+                sortCallSiteTrigramPostings(postings) {
+                    workerThreads += Thread.currentThread().name
+                    workersStarted.countDown()
+                    check(releaseWorkers.await(5, TimeUnit.SECONDS))
+                }
+            } catch (error: Throwable) {
+                failure.set(error)
+                interruptedFlag.set(Thread.currentThread().isInterrupted)
+            }
+        }.apply {
+            isDaemon = true
+            name = "trigram-sort-interruption-test"
+        }
+
+        request.start()
+        assertTrue(workersStarted.await(5, TimeUnit.SECONDS))
+        assertEquals(expectedWorkers, workerThreads.size)
+        assertTrue(workerThreads.all { name -> name.startsWith("graphite-callsite-scan-") })
+        request.interrupt()
+        releaseWorkers.countDown()
+        request.join(500)
+        val stoppedPromptly = !request.isAlive
+        if (!stoppedPromptly) {
+            request.interrupt()
+            request.join(5_000)
+        }
+
+        assertTrue(stoppedPromptly)
+        assertTrue(failure.get() is CancellationException)
+        assertTrue(interruptedFlag.get())
     }
 
     @Test
