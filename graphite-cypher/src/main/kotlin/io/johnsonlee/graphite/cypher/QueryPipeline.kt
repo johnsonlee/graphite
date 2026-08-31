@@ -243,7 +243,6 @@ class QueryPipeline private constructor(
         }
         val fastResult = tryFastNodeCount(clauses)
             ?: tryFastLabelHistogram(clauses)
-            ?: tryFastOrderedDistinctGraphIdLimit(clauses)
             ?: tryFastOrderedPropertyLimit(clauses)
             ?: tryFastDistinctPropertyLimit(clauses)
             ?: tryFastFilteredStringCount(clauses)
@@ -562,6 +561,7 @@ class QueryPipeline private constructor(
      */
     @Suppress("ReturnCount")
     private fun tryFastOrderedPropertyLimit(clauses: List<CypherClause>): CypherResult? {
+        tryFastOrderedDistinctGraphIdLimit(clauses)?.let { return it }
         val query = OrderedPropertyLimitQuery.compile(clauses) ?: return null
         if (query.limit <= 0) return CypherResult(query.columns, emptyList())
 
