@@ -2793,6 +2793,35 @@ class GraphStoreTest {
         }
     }
 
+    @Test
+    fun `saving a graph without resources writes an empty resource store`() {
+        val graph = DefaultGraph.Builder().build()
+        val dir = Files.createTempDirectory("webgraph-empty-resources-test")
+        try {
+            GraphStore.save(graph, dir)
+
+            assertTrue(Files.isRegularFile(dir.resolve("graph.resources")))
+            assertEquals(emptyList(), GraphStore.load(dir).resources.list("**").toList())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `saving a graph without resources replaces stale persisted resources`() {
+        val dir = Files.createTempDirectory("webgraph-stale-resources-test")
+        try {
+            GraphStore.save(buildTestGraph(), dir)
+            assertEquals(1, GraphStore.load(dir).resources.list("**").count())
+
+            GraphStore.save(DefaultGraph.Builder().build(), dir)
+
+            assertEquals(emptyList(), GraphStore.load(dir).resources.list("**").toList())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
     // ========================================================================
     // Type hierarchy on loaded graph
     // ========================================================================

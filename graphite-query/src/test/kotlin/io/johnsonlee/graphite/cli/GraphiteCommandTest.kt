@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cli
 
+import io.johnsonlee.graphite.webgraph.GraphStore
 import picocli.CommandLine
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -120,6 +121,7 @@ class GraphiteCommandTest {
             Files.createDirectories(sampleDir)
             val compileResult = compiler.run(null, null, null, "-d", classesDir.toString(), javaFile.toString())
             assertEquals(0, compileResult, "Java compilation should succeed")
+            Files.writeString(classesDir.resolve("application.properties"), "feature.mode=shadow\n")
 
             val cmd = BuildCommand()
             cmd.input = classesDir
@@ -132,6 +134,12 @@ class GraphiteCommandTest {
             assertTrue(err.contains("Graph built"), "Should show graph built message, got: $err")
             assertTrue(err.contains("Saving to"), "Should show saving message, got: $err")
             assertTrue(err.contains("Done"), "Should show done message, got: $err")
+            assertTrue(Files.isRegularFile(outputDir.resolve("graph.resources")))
+            val loaded = GraphStore.load(outputDir)
+            assertEquals(
+                "feature.mode=shadow\n",
+                loaded.resources.open("application.properties").bufferedReader().use { it.readText() }
+            )
         } finally {
             classesDir.toFile().deleteRecursively()
             outputDir.toFile().deleteRecursively()

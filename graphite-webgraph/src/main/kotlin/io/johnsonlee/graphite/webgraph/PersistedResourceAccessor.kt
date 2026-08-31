@@ -45,7 +45,6 @@ internal object PersistedResourceStore {
 
     fun save(graph: Graph, dir: Path) {
         val resources = collect(graph)
-        if (resources.isEmpty()) return
 
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(dir.resolve(FILE_NAME)))).use { dos ->
             writeHeader(dos)
