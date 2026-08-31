@@ -68,10 +68,10 @@ for INDEX_STATE in cold warm; do
   jq -e '.passed == true' "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json" >/dev/null
 done
 
-COLD_P50=$(jq -r '.p50Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
-COLD_P95=$(jq -r '.p95Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
-WARM_P50=$(jq -r '.p50Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
-WARM_P95=$(jq -r '.p95Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
+COLD_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
+COLD_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
+WARM_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
+WARM_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
 DESCRIPTION=$(printf 'real64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx correct=pass' \
   "${BASE_SHA}" "${COLD_P50}" "${COLD_P95}" "${WARM_P50}" "${WARM_P95}")
 test "${#DESCRIPTION}" -le 140

@@ -112,6 +112,20 @@ so the API-selected single-graph result is a direct semantic reference for the t
 graphId forms. The queries preserve the production non-`DISTINCT`, four-property wrapped
 `CONTAINS`, and `LIMIT 200` shape.
 
+For this finite-limit shape, the query layer passes the remaining `LIMIT` into the selected mapped
+graph. If the combined CallSite index is not already resident, that graph partitions its mapped
+CallSite type index into ordered ordinal ranges and scans them on `graphite-callsite-scan-N`
+workers. The default worker count is `min(8, Runtime.availableProcessors())`; override it with
+`-Dgraphite.webgraph.callSiteScanParallelism=N`. Results are concatenated in persisted node order,
+all workers share the request work/cancellation budget, and a worker failure cancels the remaining
+tasks. `graphite-cypher-scan-N` names the separate cross-graph source pool and is not evidence that
+a query already restricted to one graph used intra-graph parallelism.
+
+During a real run, verify actual use in JFR/VisualVM by filtering for
+`graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
+during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
+ratio is the numeric utilization baseline; thread count alone is not sufficient.
+
 For the API reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
 verify singular JSON and query-string `graph` parsing; the pressure timing deliberately excludes
@@ -135,10 +149,11 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
 
 The comparator fails unless both revisions report exactly 64 distinct graph paths, all 768 queries
 complete without timeout/failure, every manifest graph id has all four routing forms at all three
-selectivities, and candidate graphId P50 and P95 are each at least 10x faster. It independently
+selectivities, and both query-level graphId and API graph-parameter P50/P95 are each at least 10x
+faster. It independently
 rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
-workload cannot pass. The API graph-parameter reference path may not regress by more than 15% at
-P50 or P95.
+workload cannot pass. This prevents source pruning alone from satisfying the goal while the
+already-selected single-graph API path remains slow.
 
 The candidate in-process hard gate checks all routing results against the trusted external oracle.
 The comparator additionally requires every candidate graphId result to match its API-selected

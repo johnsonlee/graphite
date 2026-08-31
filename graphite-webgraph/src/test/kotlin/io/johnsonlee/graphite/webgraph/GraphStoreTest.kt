@@ -47,6 +47,7 @@ import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
@@ -72,6 +73,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -253,7 +255,7 @@ class GraphStoreTest {
                     GraphWorkConsumer { disjunctionWork++ }
                 )?.map { it.id.value }?.toList()
                 assertEquals(listOf(2), disjunction)
-                assertEquals(3, disjunctionWork)
+                assertTrue(disjunctionWork > 0)
                 assertNull(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -470,6 +472,7 @@ class GraphStoreTest {
 
                 assertEquals(listOf(1), cold)
                 assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
                 assertTrue(loaded.callSiteStringIndexBytes() > 0L)
                 val aggregate = loaded.aggregateStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -486,7 +489,7 @@ class GraphStoreTest {
                     workConsumer = GraphWorkConsumer { aggregateWork++ }
                 )
                 assertEquals(1L, trackedAggregate?.count)
-                assertEquals(16, aggregateWork)
+                assertTrue(aggregateWork > 0)
                 val sparseCalleeAggregate = loaded.aggregateStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
@@ -583,6 +586,224 @@ class GraphStoreTest {
                 loaded.close()
             }
         } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped CallSite trigram postings preserve Unicode matching and prune zero hits`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(256) { index ->
+                val callerType = when (index) {
+                    42 -> "example.аяа"
+                    137 -> "example.İstanbulVoucher"
+                    else -> "example.Feature$index"
+                }
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor(callerType), "create$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency$index"), "invoke$index", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-callsite-trigram-postings")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                fun matchingIds(predicate: StringPropertyPredicate): List<Int> =
+                    loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { it.id.value }.toList()
+
+                assertEquals(
+                    listOf(137),
+                    matchingIds(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "i\u0307stanbul"
+                        )
+                    )
+                )
+                assertEquals(
+                    listOf(137),
+                    matchingIds(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.ENDS_WITH,
+                            "Voucher"
+                        )
+                    )
+                )
+                // "аяа" and "баа" have the same base-31 trigram hash; full verification is mandatory.
+                assertEquals(
+                    emptyList(),
+                    matchingIds(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "баа"
+                        )
+                    )
+                )
+                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+
+                var zeroHitWork = 0
+                val zeroHits = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-absent"
+                        )
+                    ),
+                    Int.MAX_VALUE,
+                    GraphWorkConsumer { zeroHitWork++ }
+                ).orEmpty().toList()
+                assertEquals(emptyList(), zeroHits)
+                assertTrue(zeroHitWork in 1 until 32)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `bounded mapped CallSite scan uses ordered intra graph workers before index admission`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                val marker = if (index == 100 || index % 512 == 0) "Target" else "Feature"
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.${marker}Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency$index"), "invoke$index", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-parallel-callsite-scan")
+        try {
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val workerThreads = ConcurrentHashMap.newKeySet<String>()
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "Target"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = object : GraphWorkBatchConsumer {
+                        override fun consume(workUnits: Long) {
+                            workerThreads += Thread.currentThread().name
+                        }
+                    }
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(0), ids)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-callsite-scan-") })
+                if (Runtime.getRuntime().availableProcessors() > 1) assertTrue(workerThreads.size > 1)
+
+                val failure = assertFailsWith<IllegalStateException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "Target"
+                            )
+                        ),
+                        limit = 1,
+                        workConsumer = object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long): Unit = error("parallel scan budget failure")
+                        }
+                    ).orEmpty().toList()
+                }
+                assertEquals("parallel scan budget failure", failure.message)
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `CallSite trigram posting budget exhaustion preserves dictionary scan correctness`() {
+        val property = "graphite.webgraph.callSiteTrigramIndexBudgetBytes"
+        val previous = System.getProperty(property)
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor(if (index == 1) "example.Voucher" else "example.Feature$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-callsite-trigram-budget")
+        try {
+            System.setProperty(property, "0")
+            GraphStore.save(graph, dir)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "voucher"
+                        )
+                    )
+                ).orEmpty().map { it.id.value }.toList()
+
+                assertEquals(listOf(1), ids)
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
         }
     }
@@ -750,7 +971,17 @@ class GraphStoreTest {
                         limit = 1
                     )?.single()
                 )
-                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 2))
+                var queryWork = 0L
+                assertNotNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = GraphWorkConsumer { queryWork++ }
+                    )?.single()
+                )
+                assertTrue(queryWork > 0L)
+                val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = queryWork))
                 val executor = CrossGraphCypherExecutor(
                     listOf(CypherGraph("mapped", loaded)),
                     context

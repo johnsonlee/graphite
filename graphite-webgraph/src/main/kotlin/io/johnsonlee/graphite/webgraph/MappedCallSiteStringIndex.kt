@@ -14,7 +14,9 @@ import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
+import java.util.Arrays
 import java.util.concurrent.CancellationException
 
 /** Compact CSR indexes for the four strings searched by broad CallSite queries. */
@@ -38,6 +40,8 @@ internal class MappedCallSiteStringIndex(
             property.populateTrigramSignatures(signatures, stringTable, buildWorkConsumer)
         }
     }
+    private var trigramPostingsInitialized = false
+    private var trigramPostings: LongArray? = null
 
     val retainedBytes: Long
         get() = reservation.bytes
@@ -82,14 +86,142 @@ internal class MappedCallSiteStringIndex(
     ): PostingRanges {
         val ranges = PostingRanges(properties)
         val sharedStates = mutableMapOf<CallSitePredicateKey, ByteArray?>()
+        val sharedCandidates = mutableMapOf<CallSitePredicateKey, IntArray?>()
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
             if (propertyIndex < 0) return@forEach
             val runtime = PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
-            properties[propertyIndex].collectMatchingRanges(propertyIndex, runtime, ranges, workConsumer)
+            val key = CallSitePredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            val candidateStringIds = if (sharedCandidates.containsKey(key)) {
+                sharedCandidates[key]
+            } else {
+                candidateStringIds(predicate, workConsumer).also { sharedCandidates[key] = it }
+            }
+            properties[propertyIndex].collectMatchingRanges(
+                propertyIndex,
+                runtime,
+                candidateStringIds,
+                ranges,
+                workConsumer
+            )
         }
         return ranges
     }
+
+    private fun candidateStringIds(
+        predicate: StringPropertyPredicate,
+        workConsumer: GraphWorkConsumer?
+    ): IntArray? {
+        if (predicate.transform != StringValueTransform.LOWERCASE ||
+            predicate.mode == StringMatchMode.EQUALS ||
+            predicate.expected.length < MIN_CALL_SITE_TRIGRAM_LENGTH
+        ) {
+            return null
+        }
+        val postings = callSiteTrigramPostings(workConsumer) ?: return null
+        val expected = predicate.expected
+        val seen = IntOpenHashSet()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var shortestStart = 0
+        var shortestEnd = Int.MAX_VALUE
+        try {
+            for (position in 0..expected.length - MIN_CALL_SITE_TRIGRAM_LENGTH) {
+                val trigram = callSiteTrigramHash(expected, position)
+                if (!seen.add(trigram)) continue
+                accounting.consume()
+                val start = lowerBound(postings, trigramKey(trigram, 0))
+                accounting.consume()
+                val end = upperBound(postings, trigramKey(trigram, -1))
+                if (start == end) return IntArray(0)
+                if (end - start < shortestEnd - shortestStart) {
+                    shortestStart = start
+                    shortestEnd = end
+                }
+            }
+        } finally {
+            accounting.flush()
+        }
+        if (shortestEnd == Int.MAX_VALUE) return null
+        return IntArray(shortestEnd - shortestStart) { offset ->
+            postings[shortestStart + offset].toInt()
+        }
+    }
+
+    @Synchronized
+    private fun callSiteTrigramPostings(workConsumer: GraphWorkConsumer?): LongArray? {
+        if (trigramPostingsInitialized) return trigramPostings
+        trigramPostings = buildCallSiteTrigramPostings(workConsumer)
+        trigramPostingsInitialized = true
+        return trigramPostings
+    }
+
+    private fun buildCallSiteTrigramPostings(workConsumer: GraphWorkConsumer?): LongArray? {
+        val used = BooleanArray(stringTable.size())
+        val seenTrigrams = IntOpenHashSet()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var postingCount = 0L
+        try {
+            properties.forEach { property ->
+                property.forEachUsedStringId { stringId ->
+                    if (used[stringId]) return@forEachUsedStringId
+                    used[stringId] = true
+                    accounting.consume()
+                    val value = stringTable.get(stringId).lowercase()
+                    seenTrigrams.clear()
+                    for (position in 0..value.length - MIN_CALL_SITE_TRIGRAM_LENGTH) {
+                        if (seenTrigrams.add(callSiteTrigramHash(value, position))) postingCount++
+                    }
+                }
+            }
+        } finally {
+            accounting.flush()
+        }
+        if (postingCount == 0L || postingCount > Int.MAX_VALUE) return null
+        val postingBytes = runCatching {
+            Math.addExact(PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES, Math.multiplyExact(postingCount, Long.SIZE_BYTES.toLong()))
+        }.getOrNull() ?: return null
+        val maximumBytes = System.getProperty(CALL_SITE_TRIGRAM_INDEX_BUDGET_PROPERTY)
+            ?.toLongOrNull()
+            ?.coerceAtLeast(0L)
+            ?: Runtime.getRuntime().maxMemory() / DEFAULT_CALL_SITE_TRIGRAM_HEAP_DIVISOR
+        if (postingBytes > maximumBytes) return null
+        val retainedBefore = reservation.bytes
+        val retainedAfter = runCatching { Math.addExact(retainedBefore, postingBytes) }.getOrNull() ?: return null
+        if (!reservation.tryGrowTo(retainedAfter)) return null
+
+        var completed = false
+        return try {
+            Arrays.fill(used, false)
+            val result = LongArray(postingCount.toInt())
+            var resultIndex = 0
+            val fillAccounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                properties.forEach { property ->
+                    property.forEachUsedStringId { stringId ->
+                        if (used[stringId]) return@forEachUsedStringId
+                        used[stringId] = true
+                        fillAccounting.consume()
+                        val value = stringTable.get(stringId).lowercase()
+                        seenTrigrams.clear()
+                        for (position in 0..value.length - MIN_CALL_SITE_TRIGRAM_LENGTH) {
+                            val trigram = callSiteTrigramHash(value, position)
+                            if (seenTrigrams.add(trigram)) result[resultIndex++] = trigramKey(trigram, stringId)
+                        }
+                    }
+                }
+            } finally {
+                fillAccounting.flush()
+            }
+            check(resultIndex == result.size)
+            Arrays.sort(result)
+            completed = true
+            result
+        } finally {
+            if (!completed) reservation.shrinkTo(retainedBefore)
+        }
+    }
+
+    internal fun isTrigramPostingsInitialized(): Boolean = trigramPostingsInitialized && trigramPostings != null
 
     fun distinctProjection(
         predicates: List<StringPropertyPredicate>,
@@ -226,6 +358,7 @@ internal class MappedCallSiteStringIndex(
         fun collectMatchingRanges(
             propertyIndex: Int,
             runtime: PredicateRuntime,
+            candidateStringIds: IntArray?,
             target: PostingRanges,
             workConsumer: GraphWorkConsumer?
         ) {
@@ -235,6 +368,14 @@ internal class MappedCallSiteStringIndex(
                     if (exactStringId >= 0) {
                         val row = findStringRow(exactStringId, accounting)
                         if (row >= 0) addRange(propertyIndex, row, target)
+                    }
+                    return
+                }
+                candidateStringIds?.let { candidates ->
+                    for (stringId in candidates) {
+                        accounting.consume()
+                        val row = findStringRow(stringId, accounting)
+                        if (row >= 0 && runtime.matches(stringId)) addRange(propertyIndex, row, target)
                     }
                     return
                 }
@@ -266,6 +407,8 @@ internal class MappedCallSiteStringIndex(
         }
 
         fun postingNodeId(position: Int): Int = postingNodeIds[position]
+
+        fun forEachUsedStringId(action: (Int) -> Unit) = usedStringIds.forEach(action)
 
         fun collectDistinctValues(
             matchedNodeIds: LongArray,
@@ -699,6 +842,33 @@ private fun callSiteTrigramSignature(value: String): Long {
     return signature
 }
 
+private fun callSiteTrigramHash(value: String, position: Int): Int =
+    (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
+        value[position + 2].code
+
+private fun trigramKey(trigram: Int, stringId: Int): Long =
+    (trigram.toLong() shl Int.SIZE_BITS) or (stringId.toLong() and INT_UNSIGNED_MASK)
+
+private fun lowerBound(values: LongArray, target: Long): Int {
+    var low = 0
+    var high = values.size
+    while (low < high) {
+        val middle = (low + high).ushr(1)
+        if (values[middle] < target) low = middle + 1 else high = middle
+    }
+    return low
+}
+
+private fun upperBound(values: LongArray, target: Long): Int {
+    var low = 0
+    var high = values.size
+    while (low < high) {
+        val middle = (low + high).ushr(1)
+        if (values[middle] <= target) low = middle + 1 else high = middle
+    }
+    return low
+}
+
 internal const val CALLER_CLASS_PROPERTY = "caller_class"
 internal const val CALLER_NAME_PROPERTY = "caller_name"
 internal const val CALLEE_CLASS_PROPERTY = "callee_class"
@@ -721,3 +891,6 @@ private const val MIN_CALL_SITE_TRIGRAM_LENGTH = 3
 private const val ASCII_LIMIT = 128
 private const val STRING_HASH_FACTOR = 31
 private const val TRIGRAM_SIGNATURE_MASK = Long.SIZE_BITS - 1
+private const val INT_UNSIGNED_MASK = 0xffff_ffffL
+private const val CALL_SITE_TRIGRAM_INDEX_BUDGET_PROPERTY = "graphite.webgraph.callSiteTrigramIndexBudgetBytes"
+private const val DEFAULT_CALL_SITE_TRIGRAM_HEAP_DIVISOR = 8L

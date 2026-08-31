@@ -51,7 +51,27 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.StandardOpenOption
 import java.util.LinkedHashMap
+import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+
+private val callSiteScanWorkerNumber = AtomicInteger()
+private val callSiteScanParallelism: Int by lazy {
+    val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    System.getProperty(CALL_SITE_SCAN_PARALLELISM_PROPERTY)
+        ?.toIntOrNull()
+        ?.coerceIn(1, processors)
+        ?: minOf(DEFAULT_CALL_SITE_SCAN_PARALLELISM, processors)
+}
+private val callSiteScanExecutor by lazy {
+    Executors.newFixedThreadPool(callSiteScanParallelism) { runnable ->
+        Thread(runnable, "graphite-callsite-scan-${callSiteScanWorkerNumber.incrementAndGet()}").apply {
+            isDaemon = true
+        }
+    }
+}
 
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
@@ -307,6 +327,13 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
+        if (type == CallSiteNode::class.java) {
+            callSiteStringIndex?.let { index ->
+                return index.matchingNodeIds(predicates, workConsumer, limit)
+                    .mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
+            }
+            parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
+        }
         if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates(predicates) &&
             callSitePredicatesCannotMatch(predicates, workConsumer)
         ) return emptySequence()
@@ -367,6 +394,88 @@ internal class MappedWebGraphBackedGraph(
             } finally {
                 accounting.flush()
             }
+        }
+    }
+
+    @Suppress("CyclomaticComplexMethod", "ThrowsCount")
+    private fun <T : Node> parallelRawCallSiteStringDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE || callSiteScanParallelism <= 1) return null
+        if (workConsumer != null && workConsumer !is GraphWorkBatchConsumer) return null
+        val nodeCount = nodeTypeIndex.count(type)
+        if (nodeCount < MIN_PARALLEL_CALL_SITE_SCAN_NODES || nodeCount > Int.MAX_VALUE || limit >= nodeCount) return null
+
+        val workerCount = minOf(callSiteScanParallelism, nodeCount.toInt())
+        val chunkSize = (nodeCount + workerCount - 1L) / workerCount
+        val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
+        val matchStates = predicates.map { predicate ->
+            sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
+                ByteArray(stringTable.size())
+            }
+        }
+        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
+            val start = (workerIndex * chunkSize).toInt()
+            val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
+            if (start >= end) return@mapNotNull null
+            Callable {
+                val matches = IntArrayList(minOf(limit, end - start))
+                val accounting = BufferedGraphWorkConsumer(workConsumer)
+                var inspected = 0
+                try {
+                    for (nodeId in nodeTypeIndex.ids(type, start, end)) {
+                        if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                            Thread.currentThread().isInterrupted
+                        ) {
+                            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                        }
+                        accounting.consume()
+                        val matched = predicates.indices.any { index ->
+                            val predicate = predicates[index]
+                            val stringId = rawStringPropertyIndex(nodeId, type, predicate.property)
+                                ?: return@any false
+                            val states = matchStates[index]
+                            when (states[stringId]) {
+                                RAW_STRING_MATCH -> true
+                                RAW_STRING_MISS -> false
+                                else -> stringMatches(
+                                    stringTable.get(stringId),
+                                    predicate.transform,
+                                    predicate.mode,
+                                    predicate.expected
+                                ).also { result ->
+                                    // Deterministic byte writes are safe to race: a stale read only repeats verification.
+                                    states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                                }
+                            }
+                        }
+                        if (matched) {
+                            matches.add(nodeId)
+                            if (matches.size == limit) break
+                        }
+                    }
+                    matches.toIntArray()
+                } finally {
+                    accounting.flush()
+                }
+            }
+        }
+        val futures = tasks.map(callSiteScanExecutor::submit)
+        var completed = false
+        try {
+            val matchedNodeIds = futures.flatMap { future -> future.get().asIterable() }.take(limit)
+            completed = true
+            return matchedNodeIds.asSequence().mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
+        } catch (error: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        } catch (error: ExecutionException) {
+            throw error.cause ?: error
+        } finally {
+            if (!completed) futures.forEach { future -> future.cancel(true) }
         }
     }
 
@@ -708,6 +817,9 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
 
+    internal fun isCallSiteTrigramIndexInitialized(): Boolean =
+        callSiteStringIndex?.isTrigramPostingsInitialized() == true
+
     internal fun stringPropertyIndexCount(
         type: Class<out Node>? = null,
         property: String? = null
@@ -976,6 +1088,9 @@ private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
 private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
 private const val ASCII_MAX_CODE = 0x7f
 private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
+private const val CALL_SITE_SCAN_PARALLELISM_PROPERTY = "graphite.webgraph.callSiteScanParallelism"
+private const val DEFAULT_CALL_SITE_SCAN_PARALLELISM = 8
+private const val MIN_PARALLEL_CALL_SITE_SCAN_NODES = 4_096L
 private const val MAX_STRING_PROPERTY_INDEXES = 4
 private const val MIN_CALL_SITE_STRING_PREFLIGHT_NODES = 4_096L
 private const val MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH = 16

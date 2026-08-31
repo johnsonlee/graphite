@@ -30,6 +30,7 @@ import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
@@ -1520,6 +1521,7 @@ class CrossGraphCypherExecutorTest {
     @Test
     fun `graph id equality prunes unselected sources from broad string limit scans`() {
         val scanCounts = List(4) { AtomicInteger() }
+        val lookupLimits = List(4) { mutableListOf<Int>() }
         val returnType = TypeDescriptor("void")
         val graphs = scanCounts.indices.map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -1544,10 +1546,10 @@ class CrossGraphCypherExecutorTest {
                     )
                 )
             }.build()
-            val measured = object : Graph by backing, StringPropertyDisjunctionLookup {
+            val measured = object : Graph by backing, WorkAwareStringPropertyDisjunctionLookup {
                 override fun nodeCount(type: Class<out Node>): Long? {
                     scanCounts[graphIndex].incrementAndGet()
-                    return backing.nodeCount(type)
+                    return if (type == CallSiteNode::class.java) 10_000L else backing.nodeCount(type)
                 }
 
                 override fun <T : Node> nodesByStringPropertyDisjunction(
@@ -1556,7 +1558,18 @@ class CrossGraphCypherExecutorTest {
                     limit: Int
                 ): Sequence<T> {
                     scanCounts[graphIndex].incrementAndGet()
+                    lookupLimits[graphIndex] += limit
                     return backing.nodes(type).take(limit)
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    workConsumer.consume()
+                    return nodesByStringPropertyDisjunction(type, predicates, limit)
                 }
             }
             CypherGraph("graph-$graphIndex", measured)
@@ -1577,6 +1590,7 @@ class CrossGraphCypherExecutorTest {
         )
         for ((graphPredicate, parameters) in graphPredicates) {
             scanCounts.forEach { it.set(0) }
+            lookupLimits.forEach(MutableList<Int>::clear)
             val result = executor.execute(
                 "MATCH (n) WHERE $graphPredicate AND $broadPredicate " +
                     "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250",
@@ -1588,6 +1602,8 @@ class CrossGraphCypherExecutorTest {
             assertEquals(listOf("graph-3"), graphIds(result.rows.single()))
             assertTrue(scanCounts.take(3).all { it.get() == 0 })
             assertTrue(scanCounts.last().get() > 0)
+            assertEquals(250, lookupLimits.last().first())
+            assertTrue(lookupLimits.last().all { limit -> limit in 0..250 })
         }
 
         scanCounts.forEach { it.set(0) }
@@ -1597,6 +1613,12 @@ class CrossGraphCypherExecutorTest {
         )
         assertTrue(missing.rows.isEmpty())
         assertTrue(scanCounts.all { it.get() == 0 })
+
+        val contradictory = executor.execute(
+            "MATCH (n) WHERE n.graphId = 'graph-3' AND graphId(n) = 'graph-2' AND $broadPredicate " +
+                "RETURN n.graphId AS graph LIMIT 250"
+        )
+        assertTrue(contradictory.rows.isEmpty())
 
         scanCounts.forEach { it.set(0) }
         val count = executor.execute(

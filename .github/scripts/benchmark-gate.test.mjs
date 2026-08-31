@@ -108,18 +108,22 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     const passed = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
-        graphIdObservations(20_000_000_000),
-        graphIdObservations(1_000_000_000)
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(passed.passed, true);
     assert.equal(passed.p50Speedup, 20);
     assert.equal(passed.p95Speedup, 20);
+    assert.equal(passed.graphParameterP50Speedup, 20);
+    assert.equal(passed.graphParameterP95Speedup, 20);
+    assert.equal(passed.gateP50Speedup, 20);
+    assert.equal(passed.gateP95Speedup, 20);
 
     const tooSlow = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
-        graphIdObservations(9_000_000_000),
-        graphIdObservations(1_000_000_000)
+        graphIdObservations(9_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(tooSlow.passed, false);
     assert.equal(tooSlow.p50Speedup, 9);
@@ -130,7 +134,7 @@ test("graphId pressure rejects repeated graph paths and failed candidate queries
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 768 })],
-        graphIdObservations(20_000_000_000),
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "failed")
     );
     assert.equal(comparison.passed, false);
@@ -140,12 +144,12 @@ test("graphId pressure rejects repeated graph paths and failed candidate queries
 });
 
 test("graphId pressure hard-gates API graph parameter parity and latency", () => {
-    const correct = graphIdObservations(1_000_000_000);
+    const correct = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
     const wrongDigest = correct.replace("digest-1-targeted", "wrong-digest");
     const incorrect = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
-        graphIdObservations(20_000_000_000),
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         wrongDigest
     );
     assert.equal(incorrect.passed, false);
@@ -160,11 +164,23 @@ test("graphId pressure hard-gates API graph parameter parity and latency", () =>
     assert.equal(regressed.passed, false);
     assert.equal(regressed.graphParameterP50Regression, 1);
     assert.equal(regressed.graphParameterP95Regression, 1);
+    assert.equal(regressed.graphParameterP50Speedup, 0.5);
+    assert.equal(regressed.graphParameterP95Speedup, 0.5);
+
+    const routingOnly = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(routingOnly.passed, false);
+    assert.equal(routingOnly.p50Speedup, 20);
+    assert.equal(routingOnly.graphParameterP50Speedup, 1);
 
     const fakeDistribution = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
-        graphIdObservations(20_000_000_000, "success", 1_000_000_000, true),
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000, true),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000, true)
     );
     assert.equal(fakeDistribution.passed, false);
@@ -172,7 +188,7 @@ test("graphId pressure hard-gates API graph parameter parity and latency", () =>
 });
 
 test("graphId pressure requires every target graph and all three graphId spellings", () => {
-    const complete = graphIdObservations(1_000_000_000);
+    const complete = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
     const missingSpelling = complete.replaceAll(
         "graph-id-function-wrapped-contains",
         "graph-id-property-wrapped-contains"
@@ -180,7 +196,7 @@ test("graphId pressure requires every target graph and all three graphId spellin
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
-        complete,
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         missingSpelling
     );
 

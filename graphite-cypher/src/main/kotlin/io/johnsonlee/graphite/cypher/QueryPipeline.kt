@@ -1019,11 +1019,16 @@ class QueryPipeline private constructor(
         if (limitCount <= 0) return CypherResult(columns, emptyList())
 
         val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
-        val candidateSources = graphIdEquality(where.condition, variable)
+        val routedGraphId = graphIdEquality(where.condition, variable)
+        val candidateSources = routedGraphId
             ?.let { graphId -> sources.filter { it.id == graphId } }
             ?: sources
+        val filterCondition = routedGraphId
+            ?.takeIf { graphId -> graphIdEqualities(where.condition, setOf(variable)) == setOf(graphId) }
+            ?.let { graphId -> stripConjunctiveGraphIdEquality(where.condition, variable, graphId) }
+            ?: where.condition
         val stringParameters = activeParameters.get().orEmpty()
-        val directStringFilter = DirectStringFilter.compile(where.condition, variable, stringParameters)
+        val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             return executeDirectStringFilter(
                 nodeClass,
@@ -1050,7 +1055,7 @@ class QueryPipeline private constructor(
         }
         if (nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
             val directStringDisjunction = DirectStringDisjunction.compile(
-                where.condition,
+                filterCondition,
                 variable,
                 stringParameters
             )
@@ -1078,7 +1083,7 @@ class QueryPipeline private constructor(
                 }
             }
             val directStringConjunction = DirectStringConjunction.compile(
-                where.condition,
+                filterCondition,
                 variable,
                 stringParameters
             )
@@ -1112,7 +1117,7 @@ class QueryPipeline private constructor(
                 }
             }
             val candidatePlan = DirectStringCandidatePlan.compile(
-                where.condition,
+                filterCondition,
                 variable,
                 stringParameters
             )
@@ -1129,7 +1134,7 @@ class QueryPipeline private constructor(
                     )
                     val predicate: (Node) -> Boolean = { node ->
                         predicateBindings[variable] = nodeValue(source, node)
-                        localEvaluator.evaluate(where.condition, predicateBindings) == true
+                        localEvaluator.evaluate(filterCondition, predicateBindings) == true
                     }
                     predicate
                 }
@@ -1324,7 +1329,12 @@ class QueryPipeline private constructor(
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in candidateSources) {
                 val nodePredicate = nodePredicateFactory?.invoke(source)
-                val candidates = directStringCandidates(source.graph, nodeClass, filter)
+                val candidates = directStringCandidates(
+                    source.graph,
+                    nodeClass,
+                    filter,
+                    limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE
+                )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
                     val candidate = nodeValue(source, node)
@@ -1922,8 +1932,10 @@ class QueryPipeline private constructor(
         nodeClass: Class<out Node>,
         disjunction: DirectStringDisjunction,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
-        excludedTypes: Set<Class<out Node>> = emptySet()
+        excludedTypes: Set<Class<out Node>> = emptySet(),
+        limit: Int = Int.MAX_VALUE
     ): Sequence<Node> {
+        if (limit <= 0) return emptySequence()
         val candidateSequences = mutableListOf<Sequence<Node>>()
         for ((candidateType, properties) in DIRECT_STRING_NODE_PROPERTIES) {
             if (candidateType in excludedTypes) continue
@@ -1934,7 +1946,8 @@ class QueryPipeline private constructor(
             val completeScanLimit = graph.nodeCount(candidateType)
                 ?.takeIf { it < Int.MAX_VALUE }
                 ?.toInt()
-                ?: Int.MAX_VALUE
+                ?.let { count -> minOf(count, limit) }
+                ?: limit
             val fused = stringPropertyDisjunctionCandidates(
                 graph,
                 candidateType,
@@ -2757,6 +2770,30 @@ class QueryPipeline private constructor(
             }
         } else null
         else -> null
+    }
+
+    private fun stripConjunctiveGraphIdEquality(
+        expression: CypherExpr,
+        variable: String,
+        graphId: String
+    ): CypherExpr? = when (expression) {
+        is CypherExpr.And -> {
+            val left = stripConjunctiveGraphIdEquality(expression.left, variable, graphId)
+            val right = stripConjunctiveGraphIdEquality(expression.right, variable, graphId)
+            when {
+                left == null -> right
+                right == null -> left
+                else -> CypherExpr.And(left, right)
+            }
+        }
+        is CypherExpr.Comparison -> expression.takeUnless { comparison ->
+            comparison.op == "=" && when {
+                isGraphIdReference(comparison.left, variable) -> graphIdValue(comparison.right) == graphId
+                isGraphIdReference(comparison.right, variable) -> graphIdValue(comparison.left) == graphId
+                else -> false
+            }
+        }
+        else -> expression
     }
 
     private fun graphIdEqualities(expression: CypherExpr, variables: Set<String>): Set<String> = when (expression) {

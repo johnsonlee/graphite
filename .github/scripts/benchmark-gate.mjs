@@ -784,6 +784,12 @@ export function compareGraphIdPressure(
         pressurePercentile(baseLatencies, 0.95) / pressurePercentile(candidateLatencies, 0.95);
     const baseGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.baseLatencyNanos);
     const candidateGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.candidateLatencyNanos);
+    const graphParameterP50Speedup = graphParameterLatencyRows.length === 0 ? 0 :
+        pressurePercentile(baseGraphParameterLatencies, 0.50) /
+            pressurePercentile(candidateGraphParameterLatencies, 0.50);
+    const graphParameterP95Speedup = graphParameterLatencyRows.length === 0 ? 0 :
+        pressurePercentile(baseGraphParameterLatencies, 0.95) /
+            pressurePercentile(candidateGraphParameterLatencies, 0.95);
     const graphParameterP50Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
         pressurePercentile(candidateGraphParameterLatencies, 0.50) /
             pressurePercentile(baseGraphParameterLatencies, 0.50) - 1;
@@ -795,15 +801,20 @@ export function compareGraphIdPressure(
         pressurePercentile(candidateRoutingOverheads, 0.50);
     const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
         pressurePercentile(candidateRoutingOverheads, 0.95);
+    const gateP50Speedup = Math.min(p50Speedup, graphParameterP50Speedup);
+    const gateP95Speedup = Math.min(p95Speedup, graphParameterP95Speedup);
     const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup &&
-        graphParameterP50Regression <= maximumGraphParameterRegression &&
-        graphParameterP95Regression <= maximumGraphParameterRegression;
+        graphParameterP50Speedup >= minimumSpeedup && graphParameterP95Speedup >= minimumSpeedup;
     return {
         passed,
         errors,
         minimumSpeedup,
         p50Speedup,
         p95Speedup,
+        graphParameterP50Speedup,
+        graphParameterP95Speedup,
+        gateP50Speedup,
+        gateP95Speedup,
         maximumGraphParameterRegression,
         graphParameterP50Regression,
         graphParameterP95Regression,
@@ -818,12 +829,13 @@ export function renderGraphIdPressureReport(comparison) {
     const lines = [
         "### 64-real-graph graphId pressure gate",
         "",
-        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for both P50 and P95.`,
+        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for both P50 and P95 on ` +
+            "query-level graphId and API graph-parameter routing.",
         "",
-        `- P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
-        `- P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
-        `- API graph-parameter P50 regression: **${(comparison.graphParameterP50Regression * 100).toFixed(1)}%**`,
-        `- API graph-parameter P95 regression: **${(comparison.graphParameterP95Regression * 100).toFixed(1)}%**`,
+        `- Query-level graphId P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
+        `- Query-level graphId P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
+        `- API graph-parameter P50 speedup: **${comparison.graphParameterP50Speedup.toFixed(2)}x**`,
+        `- API graph-parameter P95 speedup: **${comparison.graphParameterP95Speedup.toFixed(2)}x**`,
         `- Candidate graphId/API-reference latency ratio: ` +
             `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
         "",
