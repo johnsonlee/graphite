@@ -1352,6 +1352,8 @@ class GraphStoreTest {
 
                 loaded.clearStringPropertyIndexes()
                 val budgetBeforeFailedHandoff = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                val scanWork = 32_768L
+                val failedHandoffWork = AtomicLong()
                 val handoffResult = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -1363,8 +1365,8 @@ class GraphStoreTest {
                         )
                     ),
                     limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer {
-                        check(Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
+                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
+                        check(failedHandoffWork.addAndGet(workUnits) <= scanWork) {
                             "fused index budget failure"
                         }
                     }
@@ -1373,7 +1375,6 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
-                val scanWork = 32_768L
                 val handoffWorkLimit = 40_000L
                 val consumedWork = AtomicLong()
                 val budgetedHandoffResult = loaded.nodesByStringPropertyDisjunction(
@@ -1397,6 +1398,7 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
+                val cancellationWork = AtomicLong()
                 val handoffCancellation = assertFailsWith<CancellationException> {
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -1409,8 +1411,8 @@ class GraphStoreTest {
                             )
                         ),
                         limit = 1,
-                        workConsumer = ParallelGraphWorkBatchConsumer {
-                            if (!Thread.currentThread().name.startsWith("graphite-callsite-scan-")) {
+                        workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
+                            if (cancellationWork.addAndGet(workUnits) > scanWork) {
                                 throw CancellationException("cancelled during optional cache handoff")
                             }
                         }

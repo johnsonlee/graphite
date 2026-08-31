@@ -62,6 +62,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 private val callSiteScanWorkerNumber = AtomicInteger()
 internal val callSiteScanParallelism: Int by lazy {
@@ -623,22 +624,25 @@ internal class MappedWebGraphBackedGraph(
         try {
             val stringCount = stringTable.size()
             val endsByStringId = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(stringCount) }
-            val countAccounting = BufferedGraphWorkConsumer(workConsumer)
-            try {
-                scanResults.forEach { result ->
-                    val stringIds = checkNotNull(result.propertyStringIds)
-                    repeat(result.scannedCount) { index ->
-                        countAccounting.consume()
-                        stringIds.indices.forEach { propertyIndex ->
-                            endsByStringId[propertyIndex][stringIds[propertyIndex][index]]++
+            val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+            forEachCallSiteStringProperty(workConsumer) { propertyIndex, abort ->
+                val countAccounting = BufferedGraphWorkConsumer(
+                    workConsumer.takeIf { propertyIndex == 0 }
+                )
+                val ends = endsByStringId[propertyIndex]
+                try {
+                    scanResults.forEach { result ->
+                        val stringIds = checkNotNull(result.propertyStringIds)[propertyIndex]
+                        repeat(result.scannedCount) { index ->
+                            checkCallSiteIndexBuildWorker(index, abort)
+                            countAccounting.consume()
+                            ends[stringIds[index]]++
                         }
                     }
+                } finally {
+                    countAccounting.flush()
                 }
-            } finally {
-                countAccounting.flush()
-            }
-            val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
-                endsByStringId[propertyIndex].count { count -> count > 0 }
+                uniqueCounts[propertyIndex] = ends.count { count -> count > 0 }
             }
             val retainedBytes = estimatedMappedCallSiteStringIndexRetainedBytes(
                 nodeCount,
@@ -660,12 +664,13 @@ internal class MappedWebGraphBackedGraph(
                 IntArray(uniqueCounts[propertyIndex])
             }
             val postings = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(capacity) }
-            endsByStringId.indices.forEach { propertyIndex ->
+            forEachCallSiteStringProperty(workConsumer) { propertyIndex, abort ->
                 val ends = endsByStringId[propertyIndex]
                 val used = usedStringIds[propertyIndex]
                 var usedIndex = 0
                 var postingOffset = 0
                 for (stringId in ends.indices) {
+                    checkCallSiteIndexBuildWorker(stringId, abort)
                     val count = ends[stringId]
                     if (count == 0) continue
                     used[usedIndex++] = stringId
@@ -673,28 +678,27 @@ internal class MappedWebGraphBackedGraph(
                     postingOffset += count
                 }
                 check(usedIndex == used.size && postingOffset == capacity)
-            }
-            val postingAccounting = BufferedGraphWorkConsumer(workConsumer)
-            try {
-                scanResults.forEach { result ->
-                    val nodeIds = checkNotNull(result.nodeIds)
-                    val stringIds = checkNotNull(result.propertyStringIds)
-                    repeat(result.scannedCount) { index ->
-                        postingAccounting.consume()
-                        stringIds.indices.forEach { propertyIndex ->
-                            postings[propertyIndex][endsByStringId[propertyIndex][stringIds[propertyIndex][index]]++] =
-                                nodeIds[index]
+                val postingAccounting = BufferedGraphWorkConsumer(
+                    workConsumer.takeIf { propertyIndex == 0 }
+                )
+                try {
+                    scanResults.forEach { result ->
+                        val nodeIds = checkNotNull(result.nodeIds)
+                        val stringIds = checkNotNull(result.propertyStringIds)[propertyIndex]
+                        repeat(result.scannedCount) { index ->
+                            checkCallSiteIndexBuildWorker(index, abort)
+                            postingAccounting.consume()
+                            postings[propertyIndex][ends[stringIds[index]]++] = nodeIds[index]
                         }
                     }
+                } finally {
+                    postingAccounting.flush()
                 }
-            } finally {
-                postingAccounting.flush()
-            }
-            postingEnds.indices.forEach { propertyIndex ->
-                val used = usedStringIds[propertyIndex]
-                val ends = endsByStringId[propertyIndex]
                 val compactEnds = postingEnds[propertyIndex]
-                compactEnds.indices.forEach { row -> compactEnds[row] = ends[used[row]] }
+                compactEnds.indices.forEach { row ->
+                    checkCallSiteIndexBuildWorker(row, abort)
+                    compactEnds[row] = ends[used[row]]
+                }
             }
             reservation.shrinkTo(retainedBytes)
             val built = MappedCallSiteStringIndex(
@@ -723,6 +727,64 @@ internal class MappedWebGraphBackedGraph(
         } catch (error: Throwable) {
             reservation.close()
             throw error
+        }
+    }
+
+    @Suppress("CyclomaticComplexMethod", "InstanceOfCheckForException", "ThrowsCount", "TooGenericExceptionCaught")
+    private fun forEachCallSiteStringProperty(
+        workConsumer: GraphWorkConsumer?,
+        action: (propertyIndex: Int, abort: AtomicBoolean) -> Unit
+    ) {
+        val abort = AtomicBoolean()
+        if (workConsumer !is ParallelGraphWorkBatchConsumer || callSiteScanParallelism <= 1) {
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex -> action(propertyIndex, abort) }
+            return
+        }
+        val completion = ExecutorCompletionService<Unit>(callSiteScanExecutor)
+        val primaryFailure = AtomicReference<Throwable>()
+        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+            completion.submit(Callable {
+                try {
+                    action(propertyIndex, abort)
+                } catch (error: Throwable) {
+                    if (abort.compareAndSet(false, true) || error !is CancellationException) {
+                        primaryFailure.compareAndSet(null, error)
+                    }
+                    throw error
+                }
+            })
+        }
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < CALL_SITE_STRING_PROPERTY_COUNT) {
+            try {
+                completion.take().get()
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
+                received++
+            }
+        }
+        interruption?.let { error ->
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        primaryFailure.get()?.let { throw it }
+        failure?.let { throw it }
+    }
+
+    private fun checkCallSiteIndexBuildWorker(index: Int, abort: AtomicBoolean) {
+        if ((index and RAW_SCAN_INTERRUPTION_POLL_MASK) != 0) return
+        if (abort.get() || Thread.currentThread().isInterrupted) {
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
         }
     }
 
