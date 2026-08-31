@@ -1518,6 +1518,133 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `graph id equality prunes unselected sources from broad string limit scans`() {
+        val scanCounts = List(4) { AtomicInteger() }
+        val returnType = TypeDescriptor("void")
+        val graphs = scanCounts.indices.map { graphIndex ->
+            val backing = DefaultGraph.Builder().apply {
+                addNode(
+                    CallSiteNode(
+                        NodeId(graphIndex),
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Voucher${graphIndex}Service"),
+                            "createVoucher",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Repository"),
+                            "saveVoucher",
+                            emptyList(),
+                            returnType
+                        ),
+                        graphIndex,
+                        null,
+                        emptyList()
+                    )
+                )
+            }.build()
+            val measured = object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? {
+                    scanCounts[graphIndex].incrementAndGet()
+                    return backing.nodeCount(type)
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    scanCounts[graphIndex].incrementAndGet()
+                    return backing.nodes(type).take(limit)
+                }
+            }
+            CypherGraph("graph-$graphIndex", measured)
+        }
+        val executor = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        )
+        val broadPredicate = "(" + listOf("caller_class", "caller_name", "callee_class", "callee_name")
+            .joinToString(" OR ") { property ->
+                "toLower(coalesce(n.$property, '')) CONTAINS 'voucher'"
+            } + ")"
+
+        val graphPredicates = listOf(
+            "n.graphId = 'graph-3'" to emptyMap(),
+            "graphId(n) = 'graph-3'" to emptyMap(),
+            "n.graphId = \$graph" to mapOf("graph" to "graph-3")
+        )
+        for ((graphPredicate, parameters) in graphPredicates) {
+            scanCounts.forEach { it.set(0) }
+            val result = executor.execute(
+                "MATCH (n) WHERE $graphPredicate AND $broadPredicate " +
+                    "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250",
+                parameters
+            )
+
+            assertEquals(listOf("graph-3"), result.rows.map { it["graph"] })
+            assertEquals(listOf("com.example.Voucher3Service"), result.rows.map { it["caller"] })
+            assertEquals(listOf("graph-3"), graphIds(result.rows.single()))
+            assertTrue(scanCounts.take(3).all { it.get() == 0 })
+            assertTrue(scanCounts.last().get() > 0)
+        }
+
+        scanCounts.forEach { it.set(0) }
+        val missing = executor.execute(
+            "MATCH (n) WHERE n.graphId = 'missing' AND $broadPredicate " +
+                "RETURN n.graphId AS graph LIMIT 250"
+        )
+        assertTrue(missing.rows.isEmpty())
+        assertTrue(scanCounts.all { it.get() == 0 })
+
+        scanCounts.forEach { it.set(0) }
+        val count = executor.execute(
+            "MATCH (n) WHERE graphId(n) = 'graph-3' AND $broadPredicate RETURN count(*) AS total"
+        )
+        assertEquals(1L, count.rows.single()["total"])
+        assertTrue(scanCounts.take(3).all { it.get() == 0 })
+        assertTrue(scanCounts.last().get() > 0)
+    }
+
+    @Test
+    fun `graph id source pruning preserves disjunctions and independent cross graph patterns`() {
+        val returnType = TypeDescriptor("void")
+        fun callSite(id: Int, callerClass: String) = CallSiteNode(
+            NodeId(id),
+            MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), returnType),
+            id,
+            null,
+            emptyList()
+        )
+        val executor = executor(
+            "orders" to graph(callSite(1, "com.example.OrderService")),
+            "billing" to graph(callSite(2, "com.example.BillingOnlyService"))
+        )
+
+        val disjunction = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId = 'orders' OR " +
+                "n.caller_class CONTAINS 'BillingOnly' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 10"
+        )
+        assertEquals(listOf("orders", "billing"), disjunction.rows.map { it["graph"] })
+        assertEquals(
+            listOf("com.example.OrderService", "com.example.BillingOnlyService"),
+            disjunction.rows.map { it["caller"] }
+        )
+
+        val independent = executor.execute(
+            "MATCH (a:CallSiteNode), (b:CallSiteNode) " +
+                "WHERE a.graphId = 'orders' AND b.graphId = 'billing' " +
+                "RETURN a.graphId AS leftGraph, b.graphId AS rightGraph LIMIT 10"
+        )
+        assertEquals(1, independent.rows.size)
+        assertEquals("orders", independent.rows.single()["leftGraph"])
+        assertEquals("billing", independent.rows.single()["rightGraph"])
+    }
+
+    @Test
     fun `fast string filters preserve qualified identity and provenance`() {
         val executor = executor(
             "orders" to graph(StringConstant(NodeId(1), "feature-order-handler")),

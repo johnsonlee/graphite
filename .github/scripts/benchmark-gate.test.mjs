@@ -24,6 +24,7 @@ import {
     compareLatencyBaseline,
     compareLatencyAnchor,
     compareLargeCorpus,
+    compareGraphIdPressure,
     parseLargeCorpusLog,
     makeJmhAdvisory,
     renderJmhReport,
@@ -33,6 +34,109 @@ import {
     selectJmhMetric,
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
+
+function graphIdPressureResult(overrides = {}) {
+    const values = {
+        graphCount: 64,
+        distinctGraphPathCount: 64,
+        queryCount: 192,
+        successCount: 192,
+        timeoutCount: 0,
+        failureCount: 0,
+        graphIdTargetCount: 64,
+        coverageShapeCount: 3,
+        coverageFamilyCount: 1,
+        coverageSelectivityCount: 3,
+        ...overrides
+    };
+    return jmhResult({
+        benchmark: "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries",
+        mode: "ss",
+        score: 1,
+        confidence: [1, 1],
+        unit: "s/op",
+        params: { graphCount: "64", coverageFamily: "graph-id", indexState: "cold" },
+        secondaryMetrics: Object.fromEntries(
+            Object.entries(values).map(([name, score]) => [name, { score, scoreUnit: "#" }])
+        )
+    });
+}
+
+function graphIdObservations(latencyNanos, outcome = "success") {
+    const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
+        "targetGraphId\toutcome\trowCount\tresponseBytes\tlatencyNanos";
+    const rows = [];
+    const shapes = [
+        "graph-id-property-wrapped-contains",
+        "graph-id-function-wrapped-contains",
+        "graph-id-parameter-wrapped-contains"
+    ];
+    const selectivities = ["zero", "targeted", "dense"];
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (let shapeIndex = 0; shapeIndex < shapes.length; shapeIndex++) {
+            const shape = shapes[shapeIndex];
+            const selectivity = selectivities[(targetIndex + shapeIndex) % selectivities.length];
+            rows.push([
+                `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                "graph-id", shape, selectivity, "contains", "graph-routing",
+                "properties", "200", `graph-${targetIndex}`, outcome, "1", "128", String(latencyNanos)
+            ].join("\t"));
+        }
+    }
+    return `${header}\n${rows.join("\n")}\n`;
+}
+
+test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
+    const passed = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000),
+        graphIdObservations(1_000_000_000)
+    );
+    assert.equal(passed.passed, true);
+    assert.equal(passed.p50Speedup, 20);
+    assert.equal(passed.p95Speedup, 20);
+
+    const tooSlow = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(9_000_000_000),
+        graphIdObservations(1_000_000_000)
+    );
+    assert.equal(tooSlow.passed, false);
+    assert.equal(tooSlow.p50Speedup, 9);
+    assert.equal(tooSlow.p95Speedup, 9);
+});
+
+test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
+    const comparison = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 192 })],
+        graphIdObservations(20_000_000_000),
+        graphIdObservations(1_000_000_000, "failed")
+    );
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /distinctGraphPathCount=4/);
+    assert.match(comparison.errors.join("\n"), /candidate: successCount=0/);
+    assert.match(comparison.errors.join("\n"), /successful positive latency samples/);
+});
+
+test("graphId pressure requires every target graph and all three graphId spellings", () => {
+    const complete = graphIdObservations(1_000_000_000);
+    const missingSpelling = complete.replaceAll(
+        "graph-id-function-wrapped-contains",
+        "graph-id-property-wrapped-contains"
+    );
+    const comparison = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        complete,
+        missingSpelling
+    );
+
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /property\/function\/parameter coverage is incomplete/);
+});
 
 function jmhResult({
     benchmark = "io.johnsonlee.graphite.cypher.CypherBenchmark.query",
@@ -67,15 +171,15 @@ function eventMetric(value, scoreUnit = "#") {
     return { score: value * 3, scoreUnit, rawData: [[value, value, value]] };
 }
 
-function resourceResult({ allFixture = false, overrides = {}, jvmArgs } = {}) {
-    const maxHeapBytes = (allFixture ? 8 : 4) * 1024 ** 3;
+function resourceResult({ overrides = {}, jvmArgs } = {}) {
+    const maxHeapBytes = 8 * 1024 ** 3;
     return jmhResult({
-        benchmark: LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[allFixture ? 1 : 0],
+        benchmark: LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0],
         mode: "ss",
         score: 1,
         confidence: [0.9, 1.1],
         unit: "ms/op",
-        jvmArgs: jvmArgs ?? [`-Xmx${allFixture ? 8 : 4}g`],
+        jvmArgs: jvmArgs ?? ["-Xmx8g"],
         secondaryMetrics: {
             maxHeapBytes: eventMetric(maxHeapBytes),
             loadedHeapBytes: eventMetric(100 * 1024 ** 2),
@@ -378,10 +482,8 @@ test("latency baseline fails closed when one graph-count parameter is missing", 
     assert.match(comparison.errors.join("\n"), /graphCount=64/);
 });
 
-test("latency expected keys include geometric synthetic scaling and real 36-graph coverage", () => {
-    for (const graphCount of [1, 4, 16, 64]) {
-        assert.ok(LATENCY_EXPECTED_BENCHMARK_KEYS.some((key) => key.includes(`graphCount=${graphCount}]`)));
-    }
+test("latency expected keys contain only real persisted graph coverage", () => {
+    assert.ok(LATENCY_EXPECTED_BENCHMARK_KEYS.every((key) => !key.includes("graphCount=")));
     assert.ok(LATENCY_EXPECTED_BENCHMARK_KEYS.some((key) => key.includes("ThirtySixRealGraphs")));
 });
 
@@ -394,36 +496,6 @@ test("multi-graph latency requires a ten-times fixed-baseline factor", () => {
 
     assert.equal(comparison.passed, false);
     assert.equal(comparison.rows[0].minimumSpeedup, 900);
-});
-
-test("synthetic graph-count curves use the normal fixed-baseline floor", () => {
-    const params = { graphCount: "64" };
-    const fixed = jmhResult({ score: 100, confidence: [98, 102], params });
-    const base = jmhResult({ score: 20, confidence: [19, 21], params });
-    const candidate = jmhResult({ score: 20, confidence: [19, 21], params });
-    const comparison = compareLatencyBaseline([fixed], [base], [candidate]);
-
-    assert.equal(comparison.passed, true);
-    assert.equal(comparison.rows[0].minimumSpeedup, 50);
-});
-
-test("synthetic latency ignores sub-half-millisecond changes but blocks larger regressions", () => {
-    const benchmark = "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery";
-    const params = { graphCount: "64" };
-    const common = { benchmark, unit: "ms/op", params };
-    const fixed = jmhResult({ ...common, score: 10, confidence: [9.8, 10.2] });
-    const base = jmhResult({ ...common, score: 0.58, confidence: [0.56, 0.60] });
-    const noise = jmhResult({ ...common, score: 0.87, confidence: [0.85, 0.89] });
-    const regression = jmhResult({ ...common, score: 1.20, confidence: [1.18, 1.22] });
-
-    const accepted = compareLatencyBaseline([fixed], [base], [noise]);
-    const blocked = compareLatencyBaseline([fixed], [base], [regression]);
-
-    assert.equal(accepted.passed, true);
-    assert.equal(accepted.rows[0].aboveThreshold, true);
-    assert.equal(accepted.rows[0].belowAbsoluteNoiseFloor, true);
-    assert.equal(blocked.passed, false);
-    assert.equal(blocked.rows[0].belowAbsoluteNoiseFloor, false);
 });
 
 test("latency anchor requires both the known-good and current-base guardrails", () => {
@@ -456,20 +528,6 @@ test("latency anchor blocks drift against either comparator", () => {
     assert.equal(anchorBlocked.rows[0].anchorBlocked, true);
     assert.equal(baseBlocked.passed, false);
     assert.equal(baseBlocked.rows[0].blocked, true);
-});
-
-test("latency anchor keeps the synthetic half-millisecond noise floor", () => {
-    const benchmark = "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery";
-    const common = { benchmark, unit: "ms/op", params: { graphCount: "1" } };
-    const comparison = compareLatencyAnchor(
-        [jmhResult({ ...common, score: 0.5, confidence: [0.48, 0.52] })],
-        [jmhResult({ ...common, score: 0.6, confidence: [0.58, 0.62] })],
-        [jmhResult({ ...common, score: 0.9, confidence: [0.88, 0.92] })]
-    );
-
-    assert.equal(comparison.passed, true);
-    assert.equal(comparison.rows[0].anchorBelowAbsoluteNoiseFloor, true);
-    assert.equal(comparison.rows[0].baseBelowAbsoluteNoiseFloor, true);
 });
 
 test("latency anchor confirmation evaluates only initially blocked keys", () => {
@@ -550,49 +608,45 @@ test("latency anchor rejects zero scores in every revision", () => {
     }
 });
 
-test("resource gate accepts 4 GiB single and 8 GiB AllFixture profiles", () => {
-    const base = [resourceResult(), resourceResult({ allFixture: true })];
-    const candidate = [resourceResult(), resourceResult({ allFixture: true })];
+test("resource gate accepts the 8 GiB real persisted graph profile", () => {
+    const base = [resourceResult()];
+    const candidate = [resourceResult()];
 
     assert.equal(compareLatencyResources(base, candidate).passed, true);
 });
 
 test("resource gate reads per-invocation gauges instead of summed AuxCounters scores", () => {
-    const base = [resourceResult(), resourceResult({ allFixture: true })];
-    const candidate = [resourceResult(), resourceResult({ allFixture: true })];
+    const base = [resourceResult()];
+    const candidate = [resourceResult()];
 
-    assert.equal(candidate[0].secondaryMetrics.maxHeapBytes.score, 12 * 1024 ** 3);
-    assert.equal(candidate[1].secondaryMetrics.maxHeapBytes.score, 24 * 1024 ** 3);
+    assert.equal(candidate[0].secondaryMetrics.maxHeapBytes.score, 24 * 1024 ** 3);
     assert.equal(compareLatencyResources(base, candidate).passed, true);
 });
 
-test("resource gate fails closed on the wrong single-graph max heap", () => {
-    const base = [resourceResult(), resourceResult({ allFixture: true })];
-    const candidate = [resourceResult({ jvmArgs: ["-Xmx8g"] }), resourceResult({ allFixture: true })];
+test("resource gate fails closed on the wrong real-graph max heap", () => {
+    const base = [resourceResult()];
+    const candidate = [resourceResult({ jvmArgs: ["-Xmx4g"] })];
     const comparison = compareLatencyResources(base, candidate);
 
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /expected exactly -Xmx4g/);
+    assert.match(comparison.errors.join("\n"), /expected exactly -Xmx8g/);
 });
 
 test("resource gate requires GC, retained, and peak metrics", () => {
     const missingGc = resourceResult({ overrides: { "gc.time": undefined } });
     const invalidHeap = resourceResult({ overrides: { retainedHeapBytes: eventMetric(300 * 1024 ** 2) } });
-    const allFixture = resourceResult({ allFixture: true });
-
-    assert.match(compareLatencyResources([resourceResult(), allFixture], [missingGc, allFixture]).errors.join("\n"),
+    assert.match(compareLatencyResources([resourceResult()], [missingGc]).errors.join("\n"),
         /gc.time/);
-    assert.match(compareLatencyResources([resourceResult(), allFixture], [invalidHeap, allFixture]).errors.join("\n"),
+    assert.match(compareLatencyResources([resourceResult()], [invalidHeap]).errors.join("\n"),
         /invalid loaded\/retained\/peak/);
 });
 
 test("resource confirmation aligns the same metric before blocking", () => {
-    const base = [resourceResult(), resourceResult({ allFixture: true })];
+    const base = [resourceResult()];
     const firstCandidate = [
-        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } }),
-        resourceResult({ allFixture: true })
+        resourceResult({ overrides: { retainedHeapDeltaBytes: eventMetric(80 * 1024 ** 2) } })
     ];
-    const retryCandidate = [resourceResult(), resourceResult({ allFixture: true })];
+    const retryCandidate = [resourceResult()];
     const initial = compareLatencyResources(base, firstCandidate);
     const confirmed = confirmLatencyResources(initial, compareLatencyResources(base, retryCandidate));
 
@@ -1155,6 +1209,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         workflow,
         new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(comparator)}`)
     );
+    assert.match(
+        workflow,
+        new RegExp(`REAL_ONLY_LATENCY_COMPARATOR_SHA256: ${sha256(comparator)}`)
+    );
     const aggregateJob = workflow.slice(
         workflow.indexOf("  benchmark-regression-gate:"),
         workflow.indexOf("  benchmark-comment:")
@@ -1173,6 +1231,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
     assert.match(workflow, /Checkout candidate reporting code for anchor rollout/);
+    assert.match(workflow, /grep -q '\"synthetic-1\"'/);
+    assert.match(workflow, /if grep -q '\"synthetic-1\"' "\$\{COMBINER\}"; then exit 1; fi/);
+    assert.match(workflow, /needs: \[candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh\]/);
+    assert.match(workflow, /grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark'/);
+    assert.match(workflow, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
     const anchorEnforcementStart = workflow.indexOf(
         "    - name: Enforce known-good anchor and current-base regression gate",
     );
@@ -1223,7 +1286,6 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.deepEqual(overlaidHarnesses, [
         "BenchmarkCorpus.kt",
         "AllFixtureBenchmarkGraphPreparation.kt",
-        "WrappedDiscoveryLatencyBenchmark.kt",
         "AllFixtureWrappedDiscoveryLatencyBenchmark.kt",
         "WrappedDiscoveryResourceBenchmark.kt",
     ]);

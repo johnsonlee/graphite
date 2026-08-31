@@ -18,8 +18,9 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
-  BENCHMARK_REPORT_TRANSITION_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
+  BENCHMARK_REPORT_TRANSITION_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: a244c7de3c127c13e63baeaba49a8d0623285d1df9676f1bf4bcd58de62826d9
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
@@ -174,7 +175,6 @@ jobs:
         for HARNESS in \
           BenchmarkCorpus.kt \
           AllFixtureBenchmarkGraphPreparation.kt \
-          WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
@@ -1448,28 +1448,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - shard: synthetic-1
-          real: false
-          correctness: false
-          # The sub-millisecond warm path is still tier-compiling after the class-level
-          # two-iteration warmup. Stabilize it before applying the 15% relative gate.
-          parameters: '-p graphCount=1 -wi 5 -i 6'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-4
-          real: false
-          correctness: false
-          parameters: '-p graphCount=4'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-16
-          real: false
-          correctness: false
-          parameters: '-p graphCount=16'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-64
-          real: false
-          correctness: false
-          parameters: '-p graphCount=64'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
         - shard: real-a
           real: true
           correctness: true
@@ -1707,34 +1685,6 @@ jobs:
         path: candidate-reporting
         persist-credentials: false
 
-    - name: Download synthetic-1 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-1-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-1
-
-    - name: Download synthetic-4 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-4-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-4
-
-    - name: Download synthetic-16 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-16-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-16
-
-    - name: Download synthetic-64 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-64-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-64
-
     - name: Download real-a results
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -1776,7 +1726,7 @@ jobs:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         mkdir -p benchmark-results
-        for SHARD in synthetic-1 synthetic-4 synthetic-16 synthetic-64 real-a real-b real-c real-d real-36; do
+        for SHARD in real-a real-b real-c real-d real-36; do
           for FILE in "latency-report-${SHARD}.md" "latency-status-${SHARD}.json"; do
             SOURCE="shard-results/${SHARD}/${FILE}"
             if [ -f "${SOURCE}" ] && [ ! -L "${SOURCE}" ]; then
@@ -1785,15 +1735,23 @@ jobs:
           done
         done
         COMBINER=.github/scripts/benchmark-gate.mjs
-        # Bootstrap only: a base predating the anchor command cannot render anchor rows.
+        # Bootstrap only: a base predating the anchor command cannot render anchor rows,
+        # and the first real-only policy revision must not require retired synthetic shards.
         # Candidate execution is allowed only after its comparator contract tests pass;
         # once this workflow is in the base, the base-owned combiner is always selected.
-        if ! grep -q 'compare-latency-anchor' "${COMBINER}"; then
-          test "$(sha256sum "${COMBINER}" | cut -d ' ' -f 1)" = \
-            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+        if ! grep -q 'compare-latency-anchor' "${COMBINER}" || \
+          grep -q '"synthetic-1"' "${COMBINER}"; then
+          if grep -q '"synthetic-1"' "${COMBINER}"; then
+            test "$(sha256sum candidate-reporting/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+              "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+          else
+            test "$(sha256sum "${COMBINER}" | cut -d ' ' -f 1)" = \
+              "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+          fi
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           COMBINER=candidate-reporting/.github/scripts/benchmark-gate.mjs
           grep -q 'compare-latency-anchor' "${COMBINER}"
+          if grep -q '"synthetic-1"' "${COMBINER}"; then exit 1; fi
         fi
         node "${COMBINER}" combine-latency-shards \
           --directory benchmark-results \
@@ -1819,7 +1777,7 @@ jobs:
 
   wrapped-query-resources:
     name: wrapped-query-resources
-    needs: [prepare-latency-fixtures, build-wrapped-query-jmh]
+    needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -1884,7 +1842,7 @@ jobs:
         BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
         CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
-        FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+        FILTER='io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint'
         GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
@@ -1895,8 +1853,18 @@ jobs:
           -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/candidate-latency-resources.json"
 
     - name: Enforce resource guardrails
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
-        if node base/.github/scripts/benchmark-gate.mjs compare-latency-resources \
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+            "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+          if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then exit 1; fi
+        fi
+        if node "${COMPARATOR}" compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
           --candidate benchmark-results/candidate-latency-resources.json \
           --report benchmark-results/initial-latency-resource-report.md \
@@ -1906,7 +1874,7 @@ jobs:
         else
           BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
           CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-          FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+          FILTER='io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint'
           GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
@@ -1917,7 +1885,7 @@ jobs:
           java -jar "${BASE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
             -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-resources-confirmation.json"
-          node base/.github/scripts/benchmark-gate.mjs confirm-latency-resources \
+          node "${COMPARATOR}" confirm-latency-resources \
             --initial benchmark-results/initial-latency-resource-status.json \
             --base benchmark-results/base-latency-resources-confirmation.json \
             --candidate benchmark-results/candidate-latency-resources-confirmation.json \

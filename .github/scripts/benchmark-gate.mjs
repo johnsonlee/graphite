@@ -112,16 +112,7 @@ export const BENCHMARK_COMPONENTS = [
 ];
 
 const MIB = 1024 * 1024;
-const SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS = 0.5;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=4]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=16]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=64]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=4]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=16]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.broadlyDistributedClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.denseDistributedMethodContainsCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.earlyGraphClassPrefixCaseInsensitiveDiscovery",
@@ -133,17 +124,14 @@ export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs"
 ];
 export const LATENCY_EXPECTED_SHARDS = [
-    "synthetic-1", "synthetic-4", "synthetic-16", "synthetic-64",
     "real-a", "real-b", "real-c", "real-d", "real-36"
 ];
 export const LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS = [
-    "io.johnsonlee.graphite.webgraph.SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint"
 ];
 const GIB = 1024 * MIB;
 const LATENCY_RESOURCE_PROFILES = new Map([
-    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 4 * GIB }],
-    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[1], { maxHeapBytes: 8 * GIB }]
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 8 * GIB }]
 ]);
 const LATENCY_RESOURCE_METRICS = [
     { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
@@ -537,11 +525,6 @@ export function compareLatencyBaseline(
         const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
             confidenceSeparates(candidateBounds, fixedBounds, true);
         const improvementBlocked = speedup < requiredSpeedup || !improvementSeparated;
-        const syntheticScale = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
-        const absoluteRegression = candidateScore - baseRow.baseScore;
-        const belowAbsoluteNoiseFloor = syntheticScale && baseRow.unit === "ms/op" &&
-            absoluteRegression < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
-        const regressionBlocked = baseRow.blocked && !belowAbsoluteNoiseFloor;
         rows.push({
             ...baseRow,
             fixedScore,
@@ -549,10 +532,7 @@ export function compareLatencyBaseline(
             minimumSpeedup: requiredSpeedup,
             improvementSeparated,
             improvementBlocked,
-            absoluteRegression,
-            absoluteNoiseFloor: syntheticScale ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
-            belowAbsoluteNoiseFloor,
-            blocked: regressionBlocked || improvementBlocked
+            blocked: baseRow.blocked || improvementBlocked
         });
     }
 
@@ -562,6 +542,170 @@ export function compareLatencyBaseline(
         errors,
         rows
     };
+}
+
+function parsePressureObservations(contents, revision, errors) {
+    const lines = contents.trim().split(/\r?\n/);
+    if (lines.length < 2) {
+        errors.push(`${revision}: pressure observations are empty`);
+        return [];
+    }
+    const headers = lines[0].split("\t");
+    const required = [
+        "id", "family", "shape", "selectivity", "targetGraphId", "outcome", "rowCount",
+        "responseBytes", "latencyNanos"
+    ];
+    for (const header of required) {
+        if (!headers.includes(header)) errors.push(`${revision}: pressure observations missing ${header}`);
+    }
+    const rows = lines.slice(1).map((line) => {
+        const values = line.split("\t");
+        return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+    }).filter((row) => row.family === "graph-id");
+    const seen = new Set();
+    for (const row of rows) {
+        if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-id observation ${row.id}`);
+        seen.add(row.id);
+    }
+    return rows;
+}
+
+function pressureMetric(result, name) {
+    return finiteNumber(result?.secondaryMetrics?.[name]?.score);
+}
+
+function pressurePercentile(values, fraction) {
+    const sorted = [...values].sort((left, right) => left - right);
+    return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)];
+}
+
+export function compareGraphIdPressure(
+    baseResults,
+    candidateResults,
+    baseObservations,
+    candidateObservations,
+    minimumSpeedup = 10
+) {
+    const errors = [];
+    const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
+    const selectResult = (results, revision) => {
+        const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
+            result.params?.graphCount === "64" && result.params?.coverageFamily === "graph-id");
+        if (matches.length !== 1) {
+            errors.push(`${revision}: expected exactly one 64-graph graph-id pressure result`);
+            return null;
+        }
+        const result = matches[0];
+        for (const [metric, expected] of [
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 192],
+            ["successCount", 192], ["timeoutCount", 0], ["failureCount", 0],
+            ["graphIdTargetCount", 64],
+            ["coverageShapeCount", 3], ["coverageFamilyCount", 1], ["coverageSelectivityCount", 3]
+        ]) {
+            const actual = pressureMetric(result, metric);
+            if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
+        }
+        return result;
+    };
+    selectResult(baseResults, "base");
+    selectResult(candidateResults, "candidate");
+
+    const baseRows = parsePressureObservations(baseObservations, "base", errors);
+    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const baseById = new Map(baseRows.map((row) => [row.id, row]));
+    const candidateById = new Map(candidateRows.map((row) => [row.id, row]));
+    const ids = [...new Set([...baseById.keys(), ...candidateById.keys()])].sort();
+    if (ids.length !== 192) errors.push(`expected 192 graph-id observations, found ${ids.length}`);
+    const rows = [];
+    for (const id of ids) {
+        const base = baseById.get(id);
+        const candidate = candidateById.get(id);
+        if (base === undefined || candidate === undefined) {
+            errors.push(`${id}: missing from base or candidate observations`);
+            continue;
+        }
+        if (base.targetGraphId !== candidate.targetGraphId) {
+            errors.push(`${id}: target graph id differs between base and candidate`);
+            continue;
+        }
+        const baseLatencyNanos = finiteNumber(base.latencyNanos);
+        const candidateLatencyNanos = finiteNumber(candidate.latencyNanos);
+        if (base.outcome !== "success" || candidate.outcome !== "success" ||
+            baseLatencyNanos === null || candidateLatencyNanos === null ||
+            baseLatencyNanos <= 0 || candidateLatencyNanos <= 0
+        ) {
+            errors.push(`${id}: both revisions require successful positive latency samples`);
+            continue;
+        }
+        rows.push({
+            id,
+            targetGraphId: candidate.targetGraphId,
+            baseLatencyNanos,
+            candidateLatencyNanos,
+            speedup: baseLatencyNanos / candidateLatencyNanos
+        });
+    }
+    const groupByTarget = (observations) => observations.reduce((grouped, row) => {
+        const rowsForTarget = grouped.get(row.targetGraphId) ?? [];
+        rowsForTarget.push(row);
+        grouped.set(row.targetGraphId, rowsForTarget);
+        return grouped;
+    }, new Map());
+    const baseTargetCounts = groupByTarget(baseRows);
+    const candidateTargetCounts = groupByTarget(candidateRows);
+    const expectedShapes = new Set([
+        "graph-id-property-wrapped-contains",
+        "graph-id-function-wrapped-contains",
+        "graph-id-parameter-wrapped-contains"
+    ]);
+    const targetIds = [...new Set([...baseTargetCounts.keys(), ...candidateTargetCounts.keys()])];
+    if (targetIds.length !== 64 || targetIds.includes("")) {
+        errors.push(`expected 64 non-empty target graph ids, found ${targetIds.filter(Boolean).length}`);
+    }
+    for (const targetId of targetIds) {
+        const baseTargetRows = baseTargetCounts.get(targetId) ?? [];
+        const candidateTargetRows = candidateTargetCounts.get(targetId) ?? [];
+        if (baseTargetRows.length !== 3 || candidateTargetRows.length !== 3) {
+            errors.push(`${targetId}: expected three graph-id spellings in both revisions`);
+            continue;
+        }
+        const baseShapes = new Set(baseTargetRows.map((row) => row.shape));
+        const candidateShapes = new Set(candidateTargetRows.map((row) => row.shape));
+        if (baseShapes.size !== expectedShapes.size || candidateShapes.size !== expectedShapes.size ||
+            [...expectedShapes].some((shape) => !baseShapes.has(shape) || !candidateShapes.has(shape))) {
+            errors.push(`${targetId}: graph-id property/function/parameter coverage is incomplete`);
+        }
+    }
+    const baseLatencies = rows.map((row) => row.baseLatencyNanos);
+    const candidateLatencies = rows.map((row) => row.candidateLatencyNanos);
+    const p50Speedup = rows.length === 0 ? 0 :
+        pressurePercentile(baseLatencies, 0.50) / pressurePercentile(candidateLatencies, 0.50);
+    const p95Speedup = rows.length === 0 ? 0 :
+        pressurePercentile(baseLatencies, 0.95) / pressurePercentile(candidateLatencies, 0.95);
+    const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup;
+    return { passed, errors, minimumSpeedup, p50Speedup, p95Speedup, rows };
+}
+
+export function renderGraphIdPressureReport(comparison) {
+    const lines = [
+        "### 64-real-graph graphId pressure gate",
+        "",
+        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for both P50 and P95.`,
+        "",
+        `- P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
+        `- P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
+        "",
+        "| Query | Target graph | Base | PR | Speedup |",
+        "|---|---|---:|---:|---:|"
+    ];
+    for (const row of comparison.rows) {
+        lines.push(`| \`${row.id}\` | \`${row.targetGraphId}\` | ${(row.baseLatencyNanos / 1e9).toFixed(3)}s | ` +
+            `${(row.candidateLatencyNanos / 1e9).toFixed(3)}s | ${row.speedup.toFixed(2)}x |`);
+    }
+    if (comparison.errors.length > 0) {
+        lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    }
+    return `${lines.join("\n")}\n`;
 }
 
 export function compareLatencyAnchor(
@@ -620,22 +764,14 @@ export function compareLatencyAnchor(
             errors.push(`${key}: missing from anchor, PR base, or candidate results`);
             continue;
         }
-        const synthetic = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
-        const baseNoise = synthetic && baseRow.unit === "ms/op" &&
-            baseRow.candidateScore - baseRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
-        const anchorNoise = synthetic && anchorRow.unit === "ms/op" &&
-            anchorRow.candidateScore - anchorRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
         rows.push({
             ...baseRow,
             anchorScore: anchorRow.baseScore,
             anchorDelta: anchorRow.delta,
             anchorThreshold: anchorRow.threshold,
             anchorConfidenceSeparated: anchorRow.confidenceSeparated,
-            anchorBlocked: anchorRow.blocked && !anchorNoise,
-            baseBelowAbsoluteNoiseFloor: baseNoise,
-            anchorBelowAbsoluteNoiseFloor: anchorNoise,
-            absoluteNoiseFloor: synthetic ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
-            blocked: (baseRow.blocked && !baseNoise) || (anchorRow.blocked && !anchorNoise)
+            anchorBlocked: anchorRow.blocked,
+            blocked: baseRow.blocked || anchorRow.blocked
         });
     }
     if (rows.length === 0) errors.push("No comparable latency benchmarks were found");
@@ -845,7 +981,7 @@ export function renderLatencyAnchorReport(comparison) {
         "",
         "The candidate may not regress more than 50% against the pinned known-good anchor or 15%",
         "against the current PR base. Suspected failures must repeat in reverse execution order.",
-        "Synthetic changes below the 0.5 ms absolute noise floor remain informational.",
+        "All measured rows use real persisted graph fixtures; synthetic graphs are excluded.",
         "",
         "| Benchmark | Known-good | PR base | PR | Regression vs anchor | Regression vs base | Confirmation | Gate |",
         "|---|---:|---:|---:|---:|---:|---:|:---:|"
@@ -1329,6 +1465,19 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareGraphIdPressureCommand(args) {
+    const comparison = compareGraphIdPressure(
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        fs.readFileSync(requireArg(args, "base-observations"), "utf8"),
+        fs.readFileSync(requireArg(args, "candidate-observations"), "utf8"),
+        Number(args["minimum-speedup"] ?? 10)
+    );
+    writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function compareLatencyAnchorCommand(args) {
     const comparison = compareLatencyAnchor(
         readJson(requireArg(args, "anchor")),
@@ -1452,6 +1601,7 @@ function main(argv) {
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
+    else if (command === "compare-graph-id-pressure") compareGraphIdPressureCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "compare-latency-anchor") compareLatencyAnchorCommand(args);
     else if (command === "confirm-latency-anchor") confirmLatencyAnchorCommand(args);

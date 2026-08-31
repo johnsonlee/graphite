@@ -9,6 +9,12 @@
 
 ## Verification and Benchmarks
 
+- Synthetic graphs may be used only for correctness checks, planner/path coverage, deterministic
+  source-access assertions, and other non-performance verification. They must not be used to
+  establish or gate latency, throughput, CPU, memory, allocation, scalability, or speedup claims.
+- Performance benchmarks and performance regression gates must use real persisted graph datasets
+  representative of the production workload. If the required real graphs are unavailable, report
+  the performance evidence as unavailable; never substitute synthetic measurements.
 - After fixing or tightening unit tests for a performance-sensitive path, rerun the relevant module tests and lint gate.
 - Every PR must pass the required `benchmark-regression-gate` check. The check runs the base and PR revisions on the same GitHub runner and updates a benchmark result comment on the PR.
 - The benchmark comment is the standard method-level and end-to-end evidence. A PR body may link to it instead of copying the same tables.
