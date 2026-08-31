@@ -81,7 +81,9 @@ private data class RelationshipMatchState(
     val used: Set<QualifiedEdge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
-private const val DEFAULT_DIRECT_STRING_PARALLELISM = 8
+private const val MAX_DIRECT_STRING_PARALLELISM = 8
+private const val LOW_CORE_DIRECT_STRING_PARALLELISM = 2
+private const val LOW_CORE_PROCESSOR_THRESHOLD = 4
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
 private typealias DirectNodePredicateFactory = (CypherGraph) -> (Node) -> Boolean
 
@@ -93,11 +95,20 @@ private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
 
 private val directStringParallelism: Int by lazy {
-    val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-    System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
-        ?.toIntOrNull()
-        ?.coerceIn(1, processors)
-        ?: minOf(DEFAULT_DIRECT_STRING_PARALLELISM, processors)
+    resolveDirectStringParallelism(
+        System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
+        Runtime.getRuntime().availableProcessors()
+    )
+}
+
+internal fun resolveDirectStringParallelism(configured: String?, availableProcessors: Int): Int {
+    val processors = availableProcessors.coerceAtLeast(1)
+    // Cross-graph mapped scans compete for memory bandwidth. On low-core hosts, leaving
+    // scheduler headroom is faster than filling every reported processor with scan work.
+    return configured?.toIntOrNull()?.coerceIn(1, processors) ?: when {
+        processors <= LOW_CORE_PROCESSOR_THRESHOLD -> minOf(LOW_CORE_DIRECT_STRING_PARALLELISM, processors)
+        else -> minOf(MAX_DIRECT_STRING_PARALLELISM, processors)
+    }
 }
 private val directStringExecutor by lazy {
     Executors.newFixedThreadPool(directStringParallelism) { runnable ->
