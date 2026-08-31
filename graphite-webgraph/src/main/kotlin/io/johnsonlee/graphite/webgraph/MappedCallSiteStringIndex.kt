@@ -1,4 +1,10 @@
-@file:Suppress("ComplexCondition", "LoopWithTooManyJumpStatements", "MagicNumber", "ReturnCount")
+@file:Suppress(
+    "ComplexCondition",
+    "LoopWithTooManyJumpStatements",
+    "MagicNumber",
+    "NestedBlockDepth",
+    "ReturnCount"
+)
 
 package io.johnsonlee.graphite.webgraph
 

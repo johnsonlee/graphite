@@ -1,4 +1,4 @@
-@file:Suppress("ComplexCondition", "ReturnCount")
+@file:Suppress("ComplexCondition", "NestedBlockDepth", "ReturnCount")
 
 package io.johnsonlee.graphite.webgraph
 
