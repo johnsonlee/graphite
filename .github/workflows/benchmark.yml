@@ -18,9 +18,9 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 9b9fe3e1859347b919746e33ad511964de8214c6c4d4a3aab430ed782721dab4
-  BENCHMARK_REPORT_TRANSITION_SHA256: 9b9fe3e1859347b919746e33ad511964de8214c6c4d4a3aab430ed782721dab4
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 9b9fe3e1859347b919746e33ad511964de8214c6c4d4a3aab430ed782721dab4
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 96876329ab9e125a98cdb3d533ab793ca9212439e0585b966775565958dd249d
+  BENCHMARK_REPORT_TRANSITION_SHA256: 96876329ab9e125a98cdb3d533ab793ca9212439e0585b966775565958dd249d
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 96876329ab9e125a98cdb3d533ab793ca9212439e0585b966775565958dd249d
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1913,10 +1913,94 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  graph-routing-pressure-evidence:
+    name: graph-routing-pressure-evidence
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
+
+    steps:
+    - name: Verify trusted 64-real-graph evidence status
+      uses: actions/github-script@v9
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        TRUSTED_EVIDENCE_ACTOR: johnsonlee
+        EVIDENCE_CONTEXT: graphite/real64-graph-routing
+      with:
+        script: |
+          const fs = require('fs');
+          const errors = [];
+          const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: process.env.CANDIDATE_SHA,
+            per_page: 100
+          });
+          const status = statuses.find(item => item.context === process.env.EVIDENCE_CONTEXT);
+          if (!status) errors.push(`Missing ${process.env.EVIDENCE_CONTEXT} status for candidate SHA`);
+          if (status && status.state !== 'success') errors.push(`External evidence state is ${status.state}`);
+          if (status && status.creator?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+            errors.push(`External evidence actor is ${status.creator?.login || 'unknown'}`);
+          }
+          if (status && !status.target_url?.startsWith('https://')) {
+            errors.push('External evidence must link to an HTTPS report');
+          }
+          const pattern = /^real64 base=([0-9a-f]{12}) cold=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x warm=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x correct=pass$/;
+          const match = status?.description?.match(pattern);
+          if (!match) errors.push('External evidence description has an invalid contract');
+          const expectedBase = process.env.BASE_SHA.slice(0, 12);
+          if (match && match[1] !== expectedBase) {
+            errors.push(`External evidence base ${match[1]} does not match ${expectedBase}`);
+          }
+          const speedups = match ? match.slice(2).map(Number) : [];
+          if (speedups.some(value => !Number.isFinite(value) || value < 10)) {
+            errors.push(`Every cold/warm P50/P95 speedup must be >=10x: ${speedups.join(', ')}`);
+          }
+          const passed = errors.length === 0;
+          const report = [
+            '##### 64-real-graph graph routing pressure',
+            '',
+            passed ? '**PASS**' : '**FAIL**',
+            '',
+            status?.description || 'No trusted external evidence status was found.',
+            '',
+            status?.target_url ? `[Evidence report](${status.target_url})` : '',
+            ...(errors.length ? ['', 'Errors:', ...errors.map(error => `- ${error}`)] : [])
+          ].join('\n') + '\n';
+          fs.mkdirSync('benchmark-results', { recursive: true });
+          fs.writeFileSync('benchmark-results/graph-routing-report.md', report);
+          fs.writeFileSync('benchmark-results/graph-routing-status.json', JSON.stringify({
+            passed,
+            errors,
+            baseSha: process.env.BASE_SHA,
+            candidateSha: process.env.CANDIDATE_SHA,
+            evidenceActor: status?.creator?.login || null,
+            evidenceUrl: status?.target_url || null,
+            coldP50Speedup: speedups[0] ?? null,
+            coldP95Speedup: speedups[1] ?? null,
+            warmP50Speedup: speedups[2] ?? null,
+            warmP95Speedup: speedups[3] ?? null
+          }, null, 2) + '\n');
+
+    - name: Upload graph-routing evidence result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-graph-routing-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce graph-routing evidence
+      if: always()
+      run: jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence]
     runs-on: ubuntu-latest
 
     steps:
@@ -1957,7 +2041,15 @@ jobs:
         BENCHMARK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         mkdir -p benchmark-results
-        node .github/scripts/benchmark-gate.mjs aggregate \
+        COMPARATOR=.github/scripts/benchmark-gate.mjs
+        if ! grep -q '"graph-routing-pressure"' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
+          grep -q '"graph-routing-pressure"' "${COMPARATOR}"
+        fi
+        node "${COMPARATOR}" aggregate \
           --directory benchmark-results \
           --base-sha "${BASE_SHA}" \
           --candidate-sha "${CANDIDATE_SHA}" \
@@ -2018,6 +2110,7 @@ jobs:
         LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
+        GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
@@ -2026,7 +2119,8 @@ jobs:
           [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then
+          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
+          [ "${GRAPH_ROUTING_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi

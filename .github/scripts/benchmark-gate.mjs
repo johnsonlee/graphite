@@ -19,7 +19,8 @@ export const BENCHMARK_COVERAGE_DOMAINS = [
             "method-level",
             "budgeted-collection",
             "budgeted-mapped-string",
-            "wrapped-query-latency"
+            "wrapped-query-latency",
+            "graph-routing-pressure"
         ],
         missing: ["cross-graph-dataflow-latency", "storage-load-stage-latency"]
     },
@@ -108,6 +109,13 @@ export const BENCHMARK_COMPONENTS = [
         status: "latency-resource-status.json",
         coverage: "partial",
         gap: "Exact point probes only; no long-duration leak or soak proof."
+    },
+    {
+        name: "graph-routing-pressure",
+        report: "graph-routing-report.md",
+        status: "graph-routing-status.json",
+        coverage: "complete",
+        gap: "No gate-specific gap identified."
     }
 ];
 
@@ -597,8 +605,8 @@ export function compareGraphIdPressure(
         }
         const result = matches[0];
         for (const [metric, expected] of [
-            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 256],
-            ["successCount", 256], ["timeoutCount", 0], ["failureCount", 0],
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 768],
+            ["successCount", 768], ["timeoutCount", 0], ["failureCount", 0],
             ["graphIdTargetCount", 64], ["graphParameterTargetCount", 64],
             ["coverageShapeCount", 4], ["coverageFamilyCount", 2], ["coverageSelectivityCount", 3]
         ]) {
@@ -619,7 +627,7 @@ export function compareGraphIdPressure(
     const baseById = new Map(baseGraphIdRows.map((row) => [row.id, row]));
     const candidateById = new Map(candidateGraphIdRows.map((row) => [row.id, row]));
     const ids = [...new Set([...baseById.keys(), ...candidateById.keys()])].sort();
-    if (ids.length !== 192) errors.push(`expected 192 graph-id observations, found ${ids.length}`);
+    if (ids.length !== 576) errors.push(`expected 576 graph-id observations, found ${ids.length}`);
     const rows = [];
     for (const id of ids) {
         const base = baseById.get(id);
@@ -669,15 +677,20 @@ export function compareGraphIdPressure(
     for (const targetId of targetIds) {
         const baseTargetRows = baseTargetCounts.get(targetId) ?? [];
         const candidateTargetRows = candidateTargetCounts.get(targetId) ?? [];
-        if (baseTargetRows.length !== 3 || candidateTargetRows.length !== 3) {
-            errors.push(`${targetId}: expected three graph-id spellings in both revisions`);
+        if (baseTargetRows.length !== 9 || candidateTargetRows.length !== 9) {
+            errors.push(`${targetId}: expected three selectivities for all three graph-id spellings`);
             continue;
         }
-        const baseShapes = new Set(baseTargetRows.map((row) => row.shape));
-        const candidateShapes = new Set(candidateTargetRows.map((row) => row.shape));
-        if (baseShapes.size !== expectedShapes.size || candidateShapes.size !== expectedShapes.size ||
-            [...expectedShapes].some((shape) => !baseShapes.has(shape) || !candidateShapes.has(shape))) {
-            errors.push(`${targetId}: graph-id property/function/parameter coverage is incomplete`);
+        for (const shape of expectedShapes) {
+            const baseSelectivities = new Set(baseTargetRows.filter((row) => row.shape === shape)
+                .map((row) => row.selectivity));
+            const candidateSelectivities = new Set(candidateTargetRows.filter((row) => row.shape === shape)
+                .map((row) => row.selectivity));
+            if (baseSelectivities.size !== 3 || candidateSelectivities.size !== 3 ||
+                ["zero", "targeted", "dense"].some((selectivity) =>
+                    !baseSelectivities.has(selectivity) || !candidateSelectivities.has(selectivity))) {
+                errors.push(`${targetId}: ${shape} zero/targeted/dense coverage is incomplete`);
+            }
         }
     }
     const graphParameterShape = "api-graph-parameter-wrapped-contains";
@@ -687,13 +700,17 @@ export function compareGraphIdPressure(
             if (row.shape !== graphParameterShape) {
                 errors.push(`${revision}/${row.id}: unexpected graph-parameter shape ${row.shape}`);
             }
-            if (result.has(row.targetGraphId)) {
-                errors.push(`${revision}: duplicate graph-parameter target ${row.targetGraphId}`);
+            const key = `${row.targetGraphId}\u0000${row.selectivity}`;
+            if (result.has(key)) {
+                errors.push(`${revision}: duplicate graph-parameter target/selectivity ` +
+                    `${row.targetGraphId}/${row.selectivity}`);
             }
-            result.set(row.targetGraphId, row);
+            result.set(key, row);
         }
-        if (result.size !== 64 || result.has("")) {
-            errors.push(`${revision}: expected 64 non-empty graph-parameter targets, found ${result.size}`);
+        const targets = new Set(observations.map((row) => row.targetGraphId).filter(Boolean));
+        if (result.size !== 192 || targets.size !== 64) {
+            errors.push(`${revision}: expected 64 graph-parameter targets x 3 selectivities, found ` +
+                `${targets.size} targets and ${result.size} rows`);
         }
         return result;
     };
@@ -702,40 +719,60 @@ export function compareGraphIdPressure(
     const graphParameterLatencyRows = [];
     const candidateRoutingOverheads = [];
     for (const targetId of targetIds) {
-        const baseReference = baseGraphParameterByTarget.get(targetId);
-        const candidateReference = candidateGraphParameterByTarget.get(targetId);
-        if (baseReference === undefined || candidateReference === undefined) {
-            errors.push(`${targetId}: graph-parameter reference is missing from base or candidate`);
-            continue;
-        }
-        const baseReferenceLatency = finiteNumber(baseReference.latencyNanos);
-        const candidateReferenceLatency = finiteNumber(candidateReference.latencyNanos);
-        if (baseReference.outcome !== "success" || candidateReference.outcome !== "success" ||
-            baseReferenceLatency === null || candidateReferenceLatency === null ||
-            baseReferenceLatency <= 0 || candidateReferenceLatency <= 0
-        ) {
-            errors.push(`${targetId}: graph-parameter references require successful positive latency samples`);
-            continue;
-        }
-        for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
-            if (baseReference[field] !== candidateReference[field]) {
-                errors.push(`${targetId}: graph-parameter ${field} differs between base and candidate`);
+        for (const selectivity of ["zero", "targeted", "dense"]) {
+            const referenceKey = `${targetId}\u0000${selectivity}`;
+            const baseReference = baseGraphParameterByTarget.get(referenceKey);
+            const candidateReference = candidateGraphParameterByTarget.get(referenceKey);
+            if (baseReference === undefined || candidateReference === undefined) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter reference is missing from base or candidate`);
+                continue;
             }
-        }
-        graphParameterLatencyRows.push({
-            targetGraphId: targetId,
-            baseLatencyNanos: baseReferenceLatency,
-            candidateLatencyNanos: candidateReferenceLatency
-        });
-        for (const candidateRow of candidateTargetCounts.get(targetId) ?? []) {
+            const baseReferenceLatency = finiteNumber(baseReference.latencyNanos);
+            const candidateReferenceLatency = finiteNumber(candidateReference.latencyNanos);
+            const baseReferenceRows = finiteNumber(baseReference.rowCount);
+            const candidateReferenceRows = finiteNumber(candidateReference.rowCount);
+            if (baseReference.outcome !== "success" || candidateReference.outcome !== "success" ||
+                baseReferenceLatency === null || candidateReferenceLatency === null ||
+                baseReferenceLatency <= 0 || candidateReferenceLatency <= 0 ||
+                baseReferenceRows === null || candidateReferenceRows === null
+            ) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter references require successful samples`);
+                continue;
+            }
+            const validDistribution = selectivity === "zero" ? candidateReferenceRows === 0 :
+                selectivity === "targeted" ? candidateReferenceRows >= 1 && candidateReferenceRows < 200 :
+                    candidateReferenceRows === 200;
+            if (!validDistribution) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter rowCount=${candidateReferenceRows} ` +
+                    "does not satisfy zero=0, targeted=1..199, dense=200");
+            }
             for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
-                if (candidateRow[field] !== candidateReference[field]) {
-                    errors.push(`${candidateRow.id}: candidate result ${field} differs from the graph-parameter reference`);
+                if (baseReference[field] !== candidateReference[field]) {
+                    errors.push(`${targetId}/${selectivity}: graph-parameter ${field} differs between base and candidate`);
                 }
             }
-            const latencyNanos = finiteNumber(candidateRow.latencyNanos);
-            if (latencyNanos !== null && latencyNanos > 0) {
-                candidateRoutingOverheads.push(latencyNanos / candidateReferenceLatency);
+            graphParameterLatencyRows.push({
+                targetGraphId: targetId,
+                selectivity,
+                baseLatencyNanos: baseReferenceLatency,
+                candidateLatencyNanos: candidateReferenceLatency
+            });
+            const candidateRowsForReference = (candidateTargetCounts.get(targetId) ?? [])
+                .filter((row) => row.selectivity === selectivity);
+            if (candidateRowsForReference.length !== 3) {
+                errors.push(`${targetId}/${selectivity}: expected three candidate graphId reference matches`);
+            }
+            for (const candidateRow of candidateRowsForReference) {
+                for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
+                    if (candidateRow[field] !== candidateReference[field]) {
+                        errors.push(`${candidateRow.id}: candidate result ${field} differs from ` +
+                            "the graph-parameter reference");
+                    }
+                }
+                const latencyNanos = finiteNumber(candidateRow.latencyNanos);
+                if (latencyNanos !== null && latencyNanos > 0) {
+                    candidateRoutingOverheads.push(latencyNanos / candidateReferenceLatency);
+                }
             }
         }
     }

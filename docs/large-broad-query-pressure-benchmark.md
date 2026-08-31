@@ -4,7 +4,8 @@
 searches across 64 mapped graph handles under an exact `-Xmx8g` cap. The number of queries is a
 result of the coverage matrix, not a target: 32 non-routing shapes are crossed with zero-hit,
 targeted, and dense selectivity, while three graphId spellings plus the `/api/cypher/graphs`
-`graph`-parameter reference path cover every graph in the manifest. This produces 352 queries
+`graph`-parameter reference path cover every graph and every selectivity in the manifest. This
+produces 864 queries
 today.
 
 The matrix borrows the useful taxonomy from the openCypher TCK, but not the TCK datasets or its
@@ -29,17 +30,20 @@ in topology traversal look like a regression in broad search.
 
 Performance runs require a tab-separated manifest with exactly 64 unique graph ids and 64 distinct
 real persisted graph paths. Synthetic graphs and repeated fixture paths are rejected and may only
-be used outside this harness for correctness verification. Each line is
-`<graph-id><TAB><absolute-persisted-graph-path>`:
+be used outside this harness for correctness verification. Each graph also supplies reviewed terms
+whose observed result counts define the three non-overlapping selectivity bands. Each line is
+`<graph-id><TAB><absolute-path><TAB><zero-term><TAB><targeted-term><TAB><dense-term>`:
 
 ```text
-app-000	/graphs/app-000
-app-001	/graphs/app-001
+app-000	/graphs/app-000	GraphiteAbsentApp000	com.acme.rare.Feature	java
+app-001	/graphs/app-001	GraphiteAbsentApp001	org.example.checkout	get
 ```
 
 Set it on the fork with
 `-Dgraphite.broad.pressure.graphs=/absolute/path/to/graphs.tsv`. The harness rejects a manifest
-whose entry count differs from `graphCount` or whose ids are duplicated.
+whose entry count differs from `graphCount`, whose ids or paths are duplicated, or whose three terms
+are blank or equal. The API-selected reference query must prove `zero=0`, `targeted=1..199`, and
+`dense=200` rows under `LIMIT 200`; otherwise the fork fails before its timing can be accepted.
 
 ## Correctness hard gate
 
@@ -50,7 +54,8 @@ unique. During warmup and measurement the gate compares, per query:
 
 - family, shape, selectivity, operator, clause boundary, projection, and limit;
 - outcome, complete row count, and serialized response size;
-- SHA-256 over complete columns, ordered rows, values, and graph provenance.
+- SHA-256 over complete columns, ordered rows, and values; graph-routing query ids bind each
+  signature to its target manifest slot.
 
 Missing, duplicate, or unexpected cases; timeout/failure results; and any signature difference
 fail the JMH fork. A faster run that fails this gate is not a performance improvement.
@@ -100,12 +105,12 @@ Run cold and warm in independent forks. Do not run base and candidate families c
 
 ## graphId and API graph-parameter routing gate
 
-The `graph-routing` family contains 256 queries. Every one of the 64 graph ids is exercised through
-property, `graphId(n)`, parameterized graphId, and API `graph`-parameter routing. For a given target,
-all four forms use the same selectivity and search term, so the API-selected single-graph result is
-a direct semantic reference for the three query-level graphId forms. Zero-hit, targeted, and dense
-terms are rotated across targets. The queries preserve the production non-`DISTINCT`, four-property
-wrapped `CONTAINS`, and `LIMIT 200` shape.
+The `graph-routing` family contains 768 queries. Every one of the 64 graph ids is exercised through
+property, `graphId(n)`, parameterized graphId, and API `graph`-parameter routing at zero, targeted,
+and dense selectivity. For a given target and selectivity, all four forms use the same reviewed term,
+so the API-selected single-graph result is a direct semantic reference for the three query-level
+graphId forms. The queries preserve the production non-`DISTINCT`, four-property wrapped
+`CONTAINS`, and `LIMIT 200` shape.
 
 For the API reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
@@ -128,10 +133,12 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
   --status results/graph-id-cold-status.json
 ```
 
-The comparator fails unless both revisions report exactly 64 distinct graph paths, all 256 queries
-complete without timeout/failure, every manifest graph id has all four routing forms, and candidate
-graphId P50 and P95 are each at least 10x faster. The API graph-parameter reference path may not
-regress by more than 15% at P50 or P95.
+The comparator fails unless both revisions report exactly 64 distinct graph paths, all 768 queries
+complete without timeout/failure, every manifest graph id has all four routing forms at all three
+selectivities, and candidate graphId P50 and P95 are each at least 10x faster. It independently
+rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
+workload cannot pass. The API graph-parameter reference path may not regress by more than 15% at
+P50 or P95.
 
 The candidate in-process hard gate checks all routing results against the trusted external oracle.
 The comparator additionally requires every candidate graphId result to match its API-selected
@@ -141,6 +148,35 @@ retained only as the latency baseline and is never accepted as a correctness ora
 TSV contains one row per query with family, shape, selectivity, operator, clause boundary,
 projection, limit, target graph, outcome, row count, response bytes, digest, and latency nanoseconds.
 Repeat with warm forks; both cold and warm statuses are required evidence.
+
+## Required external evidence check
+
+The hosted GitHub runner does not contain the private 64-graph corpus. The normal
+`benchmark-regression-gate` therefore depends on `graph-routing-pressure-evidence`, which fails
+closed until the exact candidate commit has a trusted `graphite/real64-graph-routing` commit status.
+The status is accepted only when it was published by `johnsonlee`, names the current base SHA,
+links to an HTTPS evidence report, reports correctness pass, and records cold and warm P50/P95
+speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the gate.
+
+After building base and candidate JMH jars with the identical benchmark harness and preparing the
+reviewed oracle, run the repository-owned driver on the machine that has the 64 real graphs:
+
+```bash
+.github/scripts/run-real64-graph-routing.sh \
+  /absolute/path/to/graphs.tsv \
+  /absolute/path/to/reviewed-oracle.manifest \
+  /absolute/path/to/base-webgraph-jmh.jar \
+  /absolute/path/to/candidate-webgraph-jmh.jar \
+  "$BASE_SHA" "$CANDIDATE_SHA" \
+  https://github.com/johnsonlee/graphite/pull/109#issuecomment-EXAMPLE
+```
+
+The driver runs base then candidate sequentially for independent cold and warm forks, verifies the
+candidate against the reviewed oracle, invokes `compare-graph-id-pressure` for both states, and
+publishes the trusted commit status only after both comparisons pass. Set
+`GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. The linked
+evidence report should retain both comparator reports plus the JMH JSON, observation TSV,
+correctness manifests, exact manifest hash, JVM/host details, and raw CPU/heap/RSS/GC counters.
 
 ## Baseline metrics
 

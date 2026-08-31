@@ -87,7 +87,7 @@ open class LargeBroadQueryPressureBenchmark {
         require(indexState == COLD_INDEX_STATE || indexState == WARM_INDEX_STATE)
         require(graphCount in 1..MAX_GRAPH_COUNT)
         val graphSources = broadQueryGraphSources(graphCount)
-        val fullCoverage = broadQueryCoverageWorkload(graphSources.map(BroadQueryGraphSource::id))
+        val fullCoverage = broadQueryCoverageWorkload(graphSources)
         workload = when (coverageFamily) {
             ALL_COVERAGE_FAMILIES -> fullCoverage
             GRAPH_ROUTING_COVERAGE_FAMILY -> fullCoverage.filter { case -> case.family.isGraphRouting() }
@@ -216,6 +216,11 @@ open class LargeBroadQueryPressureBenchmark {
             ).also { sample ->
                 if (validateResults && case.expectZeroRows) check(sample.rowCount == 0L) {
                     "${case.id} expected zero rows, got ${sample.rowCount}"
+                }
+                if (validateResults && case.expectedRowCountRange != null) {
+                    check(sample.rowCount in case.expectedRowCountRange) {
+                        "${case.id} expected ${case.expectedRowCountRange} rows, got ${sample.rowCount}"
+                    }
                 }
             }
         } catch (_: TimeoutException) {
@@ -515,6 +520,7 @@ private data class BroadQueryCase(
     val expectZeroRows: Boolean,
     val targetGraphId: String? = null,
     val requestGraphId: String? = null,
+    val expectedRowCountRange: LongRange? = null,
     val configuredTimeoutMillis: Long? = null
 ) {
     fun timeoutMillis(defaultMillis: Long): Long = configuredTimeoutMillis ?: defaultMillis
@@ -736,7 +742,11 @@ private data class BroadQueryCoverageSpec(
     val build: (BroadQueryTerms) -> String
 )
 
-private data class BroadQueryGraphSource(val id: String, val path: Path)
+private data class BroadQueryGraphSource(
+    val id: String,
+    val path: Path,
+    val routingTerms: Map<BroadQuerySelectivity, String>
+)
 
 private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource> {
     val configured = requireNotNull(System.getProperty(GRAPH_MANIFEST_PROPERTY)) {
@@ -748,13 +758,18 @@ private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource>
     val sources = Files.readAllLines(manifest).mapIndexedNotNull { lineIndex, rawLine ->
         val line = rawLine.trim()
         if (line.isEmpty() || line.startsWith('#')) return@mapIndexedNotNull null
-        val columns = line.split('\t', limit = 2)
-        require(columns.size == 2 && columns.all(String::isNotBlank)) {
-            "$manifest:${lineIndex + 1} must contain <graph-id><TAB><persisted-graph-path>"
+        val columns = line.split('\t')
+        require(columns.size == GRAPH_MANIFEST_COLUMN_COUNT && columns.all(String::isNotBlank)) {
+            "$manifest:${lineIndex + 1} must contain <graph-id><TAB><persisted-graph-path>" +
+                "<TAB><zero-term><TAB><targeted-term><TAB><dense-term>"
         }
-        val path = Path.of(columns[1]).toAbsolutePath().normalize()
+        val path = Path.of(columns[1].trim()).toRealPath()
         require(Files.isDirectory(path)) { "$manifest:${lineIndex + 1} graph path not found: $path" }
-        BroadQueryGraphSource(columns[0], path)
+        val terms = BroadQuerySelectivity.entries.zip(columns.drop(2).map(String::trim)).toMap()
+        require(terms.values.map(String::lowercase).toSet().size == BroadQuerySelectivity.entries.size) {
+            "$manifest:${lineIndex + 1} zero, targeted, and dense terms must be distinct"
+        }
+        BroadQueryGraphSource(columns[0].trim(), path, terms)
     }
     require(sources.size == graphCount) {
         "$manifest contains ${sources.size} graphs; graphCount=$graphCount requires exactly $graphCount"
@@ -769,24 +784,42 @@ private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource>
     return sources
 }
 
-private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryCase> = buildList {
-    require(graphIds.isNotEmpty())
+private data class BroadQueryTarget(
+    val graphId: String,
+    val graphIndex: Int,
+    val selectivity: BroadQuerySelectivity,
+    val routingTerm: String? = null
+)
+
+private fun broadQueryCoverageWorkload(graphSources: List<BroadQueryGraphSource>): List<BroadQueryCase> = buildList {
+    require(graphSources.isNotEmpty())
     BROAD_QUERY_COVERAGE.forEachIndexed { shapeIndex, spec ->
         val targets = if (spec.family.isGraphRouting()) {
-            graphIds.mapIndexed { graphIndex, graphId ->
-                graphId to BroadQuerySelectivity.entries[graphIndex % BroadQuerySelectivity.entries.size]
+            graphSources.flatMapIndexed { graphIndex, source ->
+                BroadQuerySelectivity.entries.map { selectivity ->
+                    BroadQueryTarget(
+                        source.id,
+                        graphIndex,
+                        selectivity,
+                        source.routingTerms.getValue(selectivity)
+                    )
+                }
             }
         } else {
-            BroadQuerySelectivity.entries.map { selectivity -> graphIds.last() to selectivity }
+            BroadQuerySelectivity.entries.map { selectivity ->
+                BroadQueryTarget(graphSources.last().id, graphSources.lastIndex, selectivity)
+            }
         }
-        targets.forEachIndexed { targetIndex, (targetGraphId, selectivity) ->
-            val termIndex = if (spec.family.isGraphRouting()) targetIndex else shapeIndex
+        targets.forEach { target ->
+            val targetGraphId = target.graphId
+            val selectivity = target.selectivity
+            val termIndex = if (spec.family.isGraphRouting()) target.graphIndex else shapeIndex
             val absent = if (spec.family.isGraphRouting()) {
-                "GraphitePressureRouteAbsent${targetIndex.toString().padStart(2, '0')}${selectivity.id}X"
+                checkNotNull(target.routingTerm)
             } else {
                 "GraphitePressureAbsent${shapeIndex.toString().padStart(2, '0')}${selectivity.id}X"
             }
-            val term = when (selectivity) {
+            val term = target.routingTerm ?: when (selectivity) {
                 BroadQuerySelectivity.ZERO -> absent
                 BroadQuerySelectivity.TARGETED -> TARGETED_TERMS[termIndex % TARGETED_TERMS.size]
                 BroadQuerySelectivity.DENSE -> DENSE_TERMS[termIndex % DENSE_TERMS.size]
@@ -803,7 +836,7 @@ private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryC
             }
             val terms = BroadQueryTerms(term, exactClass, exactName, absent, targetGraphId)
             val targetSuffix = if (spec.family.isGraphRouting()) {
-                "-target-${targetIndex.toString().padStart(2, '0')}"
+                "-target-${target.graphIndex.toString().padStart(2, '0')}"
             } else {
                 ""
             }
@@ -821,11 +854,22 @@ private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryC
                     parameters = spec.parameters(terms),
                     expectZeroRows = spec.zeroReturnsNoRows && selectivity == BroadQuerySelectivity.ZERO,
                     targetGraphId = targetGraphId.takeIf { spec.family.isGraphRouting() },
-                    requestGraphId = targetGraphId.takeIf { spec.family == BroadQueryFamily.GRAPH_PARAMETER }
+                    requestGraphId = targetGraphId.takeIf { spec.family == BroadQueryFamily.GRAPH_PARAMETER },
+                    expectedRowCountRange = if (spec.family == BroadQueryFamily.GRAPH_PARAMETER) {
+                        selectivity.expectedReferenceRows()
+                    } else {
+                        null
+                    }
                 )
             )
         }
     }
+}
+
+private fun BroadQuerySelectivity.expectedReferenceRows(): LongRange = when (this) {
+    BroadQuerySelectivity.ZERO -> 0L..0L
+    BroadQuerySelectivity.TARGETED -> 1L until ROUTING_RESULT_LIMIT
+    BroadQuerySelectivity.DENSE -> ROUTING_RESULT_LIMIT..ROUTING_RESULT_LIMIT
 }
 
 private fun singleContains(term: String): String = """
@@ -1314,6 +1358,8 @@ private const val COLD_INDEX_STATE = "cold"
 private const val WARM_INDEX_STATE = "warm"
 private const val ALL_COVERAGE_FAMILIES = "all"
 private const val GRAPH_ROUTING_COVERAGE_FAMILY = "graph-routing"
+private const val GRAPH_MANIFEST_COLUMN_COUNT = 5
+private const val ROUTING_RESULT_LIMIT = 200L
 private const val OUTPUT_PROPERTY = "graphite.broad.pressure.output"
 private const val OBSERVATIONS_OUTPUT_PROPERTY = "graphite.broad.pressure.observations.output"
 private const val GRAPH_MANIFEST_PROPERTY = "graphite.broad.pressure.graphs"

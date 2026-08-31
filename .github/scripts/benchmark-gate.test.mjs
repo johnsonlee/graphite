@@ -39,8 +39,8 @@ function graphIdPressureResult(overrides = {}) {
     const values = {
         graphCount: 64,
         distinctGraphPathCount: 64,
-        queryCount: 256,
-        successCount: 256,
+        queryCount: 768,
+        successCount: 768,
         timeoutCount: 0,
         failureCount: 0,
         graphIdTargetCount: 64,
@@ -63,7 +63,12 @@ function graphIdPressureResult(overrides = {}) {
     });
 }
 
-function graphIdObservations(latencyNanos, outcome = "success", graphParameterLatencyNanos = 1_000_000_000) {
+function graphIdObservations(
+    latencyNanos,
+    outcome = "success",
+    graphParameterLatencyNanos = 1_000_000_000,
+    forceZeroRows = false
+) {
     const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
         "targetGraphId\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
     const rows = [];
@@ -74,29 +79,27 @@ function graphIdObservations(latencyNanos, outcome = "success", graphParameterLa
     ];
     const selectivities = ["zero", "targeted", "dense"];
     for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
-        for (let shapeIndex = 0; shapeIndex < shapes.length; shapeIndex++) {
-            const shape = shapes[shapeIndex];
-            const selectivity = selectivities[targetIndex % selectivities.length];
-            const rowCount = selectivity === "zero" ? "0" : "1";
-            const responseBytes = selectivity === "zero" ? "64" : "128";
+        for (const selectivity of selectivities) {
+            const rowCount = forceZeroRows || selectivity === "zero" ? "0" :
+                selectivity === "targeted" ? "10" : "200";
+            const responseBytes = rowCount === "0" ? "64" : "128";
             const digest = `digest-${targetIndex}-${selectivity}`;
+            for (const shape of shapes) {
+                rows.push([
+                    `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                    "graph-id", shape, selectivity, "contains", "graph-routing",
+                    "properties", "200", `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
+                    String(latencyNanos)
+                ].join("\t"));
+            }
             rows.push([
-                `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
-                "graph-id", shape, selectivity, "contains", "graph-routing",
-                "properties", "200", `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
-                String(latencyNanos)
+                `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                "graph-parameter", "api-graph-parameter-wrapped-contains", selectivity,
+                "request-graph-selection-and-wrapped-contains", "api-graph-parameter", "properties", "200",
+                `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
+                String(graphParameterLatencyNanos)
             ].join("\t"));
         }
-        const selectivity = selectivities[targetIndex % selectivities.length];
-        const rowCount = selectivity === "zero" ? "0" : "1";
-        const responseBytes = selectivity === "zero" ? "64" : "128";
-        rows.push([
-            `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
-            "graph-parameter", "api-graph-parameter-wrapped-contains", selectivity,
-            "request-graph-selection-and-wrapped-contains", "api-graph-parameter", "properties", "200",
-            `graph-${targetIndex}`, outcome, rowCount, responseBytes, `digest-${targetIndex}-${selectivity}`,
-            String(graphParameterLatencyNanos)
-        ].join("\t"));
     }
     return `${header}\n${rows.join("\n")}\n`;
 }
@@ -126,7 +129,7 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 256 })],
+        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 768 })],
         graphIdObservations(20_000_000_000),
         graphIdObservations(1_000_000_000, "failed")
     );
@@ -157,6 +160,15 @@ test("graphId pressure hard-gates API graph parameter parity and latency", () =>
     assert.equal(regressed.passed, false);
     assert.equal(regressed.graphParameterP50Regression, 1);
     assert.equal(regressed.graphParameterP95Regression, 1);
+
+    const fakeDistribution = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 1_000_000_000, true),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000, true)
+    );
+    assert.equal(fakeDistribution.passed, false);
+    assert.match(fakeDistribution.errors.join("\n"), /does not satisfy zero=0, targeted=1\.\.199, dense=200/);
 });
 
 test("graphId pressure requires every target graph and all three graphId spellings", () => {
@@ -173,7 +185,7 @@ test("graphId pressure requires every target graph and all three graphId spellin
     );
 
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /property\/function\/parameter coverage is incomplete/);
+    assert.match(comparison.errors.join("\n"), /zero\/targeted\/dense coverage is incomplete/);
 });
 
 function jmhResult({
@@ -984,6 +996,7 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.match(aggregate.body, /method-compatibility: result artifact is missing/);
         assert.match(aggregate.body, /cypher-capacity: result artifact is missing/);
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
+        assert.match(aggregate.body, /graph-routing-pressure: result artifact is missing/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -1001,7 +1014,8 @@ test("aggregate report includes every independent benchmark gate", () => {
             ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
             ["large-corpus-report.md", "large-corpus-status.json", "large report"],
             ["latency-report.md", "latency-status.json", "latency report"],
-            ["latency-resource-report.md", "latency-resource-status.json", "resource report"]
+            ["latency-resource-report.md", "latency-resource-status.json", "resource report"],
+            ["graph-routing-report.md", "graph-routing-status.json", "graph routing report"]
         ]) {
             fs.writeFileSync(path.join(directory, report), `${body}\n`);
             fs.writeFileSync(path.join(directory, status), JSON.stringify({ passed: true }));
@@ -1018,7 +1032,7 @@ test("aggregate report includes every independent benchmark gate", () => {
         assert.equal(aggregate.candidateSha, "b".repeat(40));
         assert.equal(aggregate.runner, "test-runner");
         assert.equal(aggregate.runUrl, "https://example.invalid/run");
-        assert.match(aggregate.body, /PASS — 9\/9 component reports passed/);
+        assert.match(aggregate.body, /PASS — 10\/10 component reports passed/);
         assert.match(aggregate.body, /### Coverage summary/);
         assert.match(aggregate.body, /#### Semantic correctness/);
         assert.match(aggregate.body, /#### Latency regression/);
@@ -1034,6 +1048,7 @@ test("aggregate report includes every independent benchmark gate", () => {
         assert.match(aggregate.body, /Method migration report/);
         assert.match(aggregate.body, /capacity report/);
         assert.match(aggregate.body, /budgeted report/);
+        assert.match(aggregate.body, /graph routing report/);
 
         fs.writeFileSync(path.join(directory, "method-status.json"), JSON.stringify({ passed: false }));
         const failed = aggregateReports(directory, {
@@ -1043,7 +1058,7 @@ test("aggregate report includes every independent benchmark gate", () => {
             runUrl: "https://example.invalid/run"
         });
         assert.equal(failed.passed, false);
-        assert.match(failed.body, /FAIL — 8\/9 component reports passed/);
+        assert.match(failed.body, /FAIL — 9\/10 component reports passed/);
         assert.match(failed.body, /`method-level` \| \*\*FAIL\*\*/);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
@@ -1171,7 +1186,8 @@ test("workflow component artifacts include the run attempt required by staging",
         "benchmark-budgeted-string",
         "benchmark-large-corpus",
         "benchmark-latency",
-        "benchmark-latency-resources"
+        "benchmark-latency-resources",
+        "benchmark-graph-routing"
     ];
 
     for (const producer of producers) {
@@ -1190,6 +1206,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6/);
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
+    assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
+    assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/real64-graph-routing/);
+    assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
+    assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
+    assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),
         "utf8"
