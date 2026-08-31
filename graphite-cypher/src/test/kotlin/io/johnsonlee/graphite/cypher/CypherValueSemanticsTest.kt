@@ -50,6 +50,23 @@ class CypherValueSemanticsTest {
     }
 
     @Test
+    fun `budgeted range membership polls cancellation without changing semantics`() {
+        val tracked = CypherExecutor(
+            DefaultGraph.Builder().build(),
+            CypherExecutionBudget(maxWorkUnits = Long.MAX_VALUE)
+        )
+        val row = tracked.execute(
+            "RETURN 9999 IN range(1, 10000) AS lateMatch, " +
+                "10001 IN range(1, 10000) AS miss, " +
+                "2.5 IN range(1, 10000) AS fractionalMiss"
+        ).rows.single()
+
+        assertEquals(true, row["lateMatch"])
+        assertEquals(false, row["miss"])
+        assertEquals(false, row["fractionalMiss"])
+    }
+
+    @Test
     fun `count and collect ignore null inputs end to end`() {
         val result = executor.execute(
             "UNWIND [1, null, 2, null] AS value " +

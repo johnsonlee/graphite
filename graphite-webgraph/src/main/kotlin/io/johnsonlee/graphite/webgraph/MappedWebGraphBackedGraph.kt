@@ -389,11 +389,6 @@ internal class MappedWebGraphBackedGraph(
                 if (Thread.currentThread().isInterrupted) {
                     throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                 }
-                if (predicate.transform == null && predicate.mode == StringMatchMode.EQUALS) {
-                    accounting.consume()
-                    if (stringTable.findId(predicate.expected) >= 0) return false
-                    continue
-                }
                 val actual = MutableString()
                 for (stringId in 0 until stringTable.size()) {
                     if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
@@ -403,7 +398,7 @@ internal class MappedWebGraphBackedGraph(
                     }
                     accounting.consume()
                     stringTable.get(stringId, actual)
-                    if (reusableStringMatches(actual, predicate)) return false
+                    if (reusableContains(actual, predicate.transform, predicate.expected)) return false
                 }
             }
             return true
@@ -1420,36 +1415,22 @@ internal fun stringMatches(
     }
 }
 
-private fun reusableStringMatches(
+private fun reusableContains(
     actual: MutableString,
-    predicate: StringPredicateKey
+    transform: StringValueTransform?,
+    expected: String
 ): Boolean {
-    if (predicate.transform == StringValueTransform.LOWERCASE) {
+    if (transform == StringValueTransform.LOWERCASE) {
         var index = 0
         while (index < actual.length) {
             if (actual[index].code > ASCII_MAX_CODE) {
-                return stringMatches(actual.toString(), predicate.transform, predicate.mode, predicate.expected)
+                return stringMatches(actual.toString(), transform, StringMatchMode.CONTAINS, expected)
             }
             index++
         }
         actual.toLowerCase()
     }
-    return when (predicate.mode) {
-        StringMatchMode.EQUALS -> reusableStringEquals(actual, predicate.expected)
-        StringMatchMode.STARTS_WITH -> actual.startsWith(predicate.expected)
-        StringMatchMode.ENDS_WITH -> actual.endsWith(predicate.expected)
-        StringMatchMode.CONTAINS -> actual.indexOf(predicate.expected) >= 0
-    }
-}
-
-private fun reusableStringEquals(actual: MutableString, expected: String): Boolean {
-    if (actual.length != expected.length) return false
-    var index = 0
-    while (index < expected.length) {
-        if (actual[index] != expected[index]) return false
-        index++
-    }
-    return true
+    return actual.indexOf(expected) >= 0
 }
 
 internal fun consumeGraphWork(consumer: GraphWorkConsumer?, workUnits: Long) {

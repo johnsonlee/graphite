@@ -427,7 +427,13 @@ class GraphStoreTest {
                     workConsumer = GraphWorkConsumer { aggregateWork++ }
                 )
                 assertEquals(1L, trackedAggregate?.count)
-                assertEquals(2, aggregateWork)
+                assertEquals(4, aggregateWork)
+                val sparseCalleeAggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    distinctProperty = "callee_name"
+                )
+                assertEquals(setOf("invoke1"), sparseCalleeAggregate?.distinctValues)
                 var denseAggregateWork = 0
                 val denseAggregate = loaded.aggregateStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -437,13 +443,19 @@ class GraphStoreTest {
                             StringValueTransform.LOWERCASE,
                             StringMatchMode.CONTAINS,
                             "example"
+                        ),
+                        StringPropertyPredicate(
+                            "caller_name",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "create"
                         )
                     ),
-                    distinctProperty = "caller_name",
+                    distinctProperty = "callee_name",
                     workConsumer = GraphWorkConsumer { denseAggregateWork++ }
                 )
                 assertEquals(3L, denseAggregate?.count)
-                assertEquals(setOf("create0", "create1", "create2"), denseAggregate?.distinctValues)
+                assertEquals(setOf("invoke0", "invoke1", "invoke2"), denseAggregate?.distinctValues)
                 assertTrue(denseAggregateWork >= 6)
                 assertTrue(loaded.prefersSerialStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
