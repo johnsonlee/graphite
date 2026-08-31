@@ -1412,9 +1412,13 @@ class QueryPipeline private constructor(
         nodePredicateFactory: DirectNodePredicateFactory?,
         candidateSources: List<CypherGraph>
     ): CypherResult? {
-        if (nodeClass != CallSiteNode::class.java || nodePredicateFactory != null || candidateSources.size != 1) {
+        if ((nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) ||
+            nodePredicateFactory != null || candidateSources.size != 1
+        ) {
             return null
         }
+        val source = candidateSources.single()
+        if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
             if (property.expression != CypherExpr.Variable(variable) ||
@@ -1428,7 +1432,6 @@ class QueryPipeline private constructor(
             if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
             StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
         }
-        val source = candidateSources.single()
         val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val projectedRows = projection.projectStringPropertyDisjunction(
@@ -1438,12 +1441,7 @@ class QueryPipeline private constructor(
             limit,
             tracker
         ) ?: return null
-        return CypherResult(columns, projectedRows.map { projected ->
-            buildMap {
-                columns.forEachIndexed { index, column -> put(column, projected.values[index]) }
-                put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
-            }
-        })
+        return DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
     }
 
     @Suppress("LongParameterList")

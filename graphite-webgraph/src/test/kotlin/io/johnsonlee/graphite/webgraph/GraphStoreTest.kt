@@ -42,6 +42,8 @@ import io.johnsonlee.graphite.cypher.CypherBudgetExceededException
 import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherGraph
+import io.johnsonlee.graphite.cypher.RESULT_GRAPH_IDS_KEY
+import io.johnsonlee.graphite.cypher.RESULT_METADATA_KEY
 import io.johnsonlee.graphite.cypher.query
 import io.johnsonlee.graphite.graph.ClassDependency
 import io.johnsonlee.graphite.graph.ClassOverview
@@ -763,18 +765,34 @@ class GraphStoreTest {
                 assertEquals(first.size.toLong(), repeatedWork)
                 assertEquals(retainedAfterFirst, loaded.callSiteStringIndexBytes())
 
-                val projected = CrossGraphCypherExecutor(listOf(CypherGraph("mapped", loaded))).execute(
-                    "MATCH (n:CallSiteNode) WHERE " +
+                val executor = CrossGraphCypherExecutor(listOf(CypherGraph("mapped", loaded)))
+                val projectionQuery = "MATCH (n) WHERE " +
                         "toLower(n.caller_class) CONTAINS 'voucher' OR " +
                         "toLower(n.caller_name) CONTAINS 'voucher' OR " +
                         "toLower(n.callee_class) CONTAINS 'voucher' OR " +
                         "toLower(n.callee_name) CONTAINS 'voucher' " +
                         "RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200"
-                )
+                val projected = executor.execute(projectionQuery)
                 assertEquals(2, projected.rows.size)
                 assertEquals(projected.rows[0], projected.rows[1])
                 assertEquals("example.VoucherCaller137", projected.rows[0]["n.caller_class"])
                 assertEquals("create137", projected.rows[0]["n.caller_name"])
+                assertFailsWith<UnsupportedOperationException> {
+                    @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                    (projected.rows[0] as java.util.Map<String, Any?>).put("n.caller_name", "mutated")
+                }
+                assertEquals(1, executor.execute("$projectionQuery UNION $projectionQuery").rows.size)
+                assertEquals(4, executor.execute("$projectionQuery UNION ALL $projectionQuery").rows.size)
+                val crossGraphExecutor = CrossGraphCypherExecutor(
+                    listOf(CypherGraph("left", loaded), CypherGraph("right", loaded))
+                )
+                val leftQuery = projectionQuery.replace("WHERE ", "WHERE graphId(n) = 'left' AND ")
+                val rightQuery = projectionQuery.replace("WHERE ", "WHERE graphId(n) = 'right' AND ")
+                val crossGraphUnion = crossGraphExecutor.execute("$leftQuery UNION $rightQuery")
+                assertEquals(1, crossGraphUnion.rows.size)
+                @Suppress("UNCHECKED_CAST")
+                val metadata = crossGraphUnion.rows.single().getValue(RESULT_METADATA_KEY) as Map<String, Any?>
+                assertEquals(listOf("left", "right"), metadata[RESULT_GRAPH_IDS_KEY])
 
                 loaded.clearStringPropertyIndexes()
                 assertEquals(budgetBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
@@ -1415,6 +1433,13 @@ class GraphStoreTest {
                 )
 
                 assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+                val nonDistinct = CrossGraphCypherExecutor(listOf(CypherGraph("first", first))).execute(
+                    "MATCH (n) WHERE n.caller_class CONTAINS ${'$'}term " +
+                        "RETURN n.caller_class AS caller, n.caller_name AS callerName LIMIT 10",
+                    mapOf("term" to "Target")
+                )
+                assertEquals(listOf("example.Target"), nonDistinct.rows.map { it["caller"] })
+                assertEquals(listOf(null), nonDistinct.rows.map { it["callerName"] })
             } finally {
                 second.close()
                 first.close()

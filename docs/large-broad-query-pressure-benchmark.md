@@ -143,6 +143,13 @@ performing two more mapped-file passes. Subsequent routing queries for that grap
 index. The global CallSite-index budget defaults to half of `-Xmx` (4 GiB under this gate's 8 GiB
 heap) and can be overridden with `-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
 
+The Cypher boundary also reuses immutable materialized rows for repeated bounded projections. This
+is a process-wide LRU keyed by the storage projection generation, column layout, and graph id, so
+releasing a mapped string index cannot return stale rows. It retains at most 32 entries and at most
+`min(2 MiB, maxHeap / 2048)` estimated bytes; override the latter with
+`-Dgraphite.cypher.directProjectionCacheBytes=N`. Storage lookup and work-budget accounting still
+run on every request before this result cache is consulted.
+
 For the API reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
 verify singular JSON and query-string `graph` parsing; the pressure timing deliberately excludes

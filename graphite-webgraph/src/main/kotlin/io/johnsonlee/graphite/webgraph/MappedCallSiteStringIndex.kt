@@ -123,16 +123,18 @@ internal class MappedCallSiteStringIndex(
                 stringTable.get(rawStringPropertyId(nodeId, propertyIndex))
             })
         }.toList()
-        cacheProjectedRows(key, rows)
-        return rows
+        return cacheProjectedRows(key, rows)
     }
 
     @Synchronized
-    private fun cacheProjectedRows(key: CallSiteProjectionKey, rows: List<StringPropertyProjectionRow>) {
-        if (projectedRows.containsKey(key)) return
+    private fun cacheProjectedRows(
+        key: CallSiteProjectionKey,
+        rows: List<StringPropertyProjectionRow>
+    ): List<StringPropertyProjectionRow> {
+        projectedRows[key]?.let { return it.rows }
         val retainedRows = rows.toList()
         val entryBytes = estimatedCallSiteProjectionCacheBytes(key, retainedRows)
-        if (entryBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES) return
+        if (entryBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES) return rows
         while (projectedRows.isNotEmpty() &&
             (projectedRows.size >= MAX_CALL_SITE_PROJECTION_CACHE_ENTRIES ||
                 projectedRowCacheBytes > MAX_CALL_SITE_PROJECTION_CACHE_BYTES - entryBytes)
@@ -142,10 +144,11 @@ internal class MappedCallSiteStringIndex(
             projectedRowCacheBytes -= eldest.value.retainedBytes
             reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
         }
-        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return
-        if (!reservation.tryGrowTo(retainedAfter)) return
+        val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return rows
+        if (!reservation.tryGrowTo(retainedAfter)) return rows
         projectedRows[key] = CachedProjectionRows(retainedRows, entryBytes)
         projectedRowCacheBytes += entryBytes
+        return retainedRows
     }
 
     @Synchronized

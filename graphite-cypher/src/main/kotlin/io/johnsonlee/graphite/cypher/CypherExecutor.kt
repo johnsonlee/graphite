@@ -253,7 +253,9 @@ class CypherExecutor internal constructor(
      * When a result value is a [GraphiteNode], convert it to a property map
      * so that callers receive serializable data rather than internal objects.
      */
+    @Suppress("ReturnCount")
     private fun materializeResult(raw: CypherResult, workTracker: CypherWorkTracker?): CypherResult {
+        materializeDirectProjectionRows(raw, workTracker)?.let { return it }
         if (workTracker == null) return materializeResult(raw)
         val rows = raw.rows.mapIndexed { index, row ->
             if ((index and CANCELLATION_POLL_MASK) == 0) workTracker.checkCancelled()
@@ -272,9 +274,9 @@ class CypherExecutor internal constructor(
         return CypherResult(raw.columns, rows)
     }
 
-    private fun materializeResult(raw: CypherResult): CypherResult = CypherResult(
-        raw.columns,
-        raw.rows.map { row ->
+    private fun materializeResult(raw: CypherResult): CypherResult {
+        materializeDirectProjectionRows(raw, workTracker = null)?.let { return it }
+        return CypherResult(raw.columns, raw.rows.map { row ->
             buildMap {
                 row.forEach { (key, value) ->
                     if (key != INTERNAL_PROVENANCE_KEY) put(key, materializeValue(value))
@@ -285,8 +287,8 @@ class CypherExecutor internal constructor(
                     put(RESULT_METADATA_KEY, mapOf(RESULT_GRAPH_IDS_KEY to graphIds.sorted()))
                 }
             }
-        }
-    )
+        })
+    }
 
     @Suppress("UNCHECKED_CAST")
     private fun addDistinctRow(
@@ -294,15 +296,18 @@ class CypherExecutor internal constructor(
         row: Map<String, Any?>,
         maxRows: Int?
     ) {
-        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY }
+        val visible = row.filterKeys { it != INTERNAL_PROVENANCE_KEY && it != RESULT_METADATA_KEY }
         val key = cypherValueKey(visible)
         val existing = rows[key]
         if (existing != null) {
             val graphIds = (existing[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty() +
-                (row[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
+                row.provenanceGraphIds()
             if (graphIds.isNotEmpty()) existing[INTERNAL_PROVENANCE_KEY] = graphIds
         } else if (maxRows == null || rows.size < maxRows) {
-            rows[key] = row.toMutableMap()
+            rows[key] = visible.toMutableMap().apply {
+                row.provenanceGraphIds().takeIf { it.isNotEmpty() }
+                    ?.let { put(INTERNAL_PROVENANCE_KEY, it) }
+            }
         }
     }
 
@@ -568,6 +573,23 @@ data class PropertyFilter(
         return op(aNum, bNum)
     }
 }
+
+private fun materializeDirectProjectionRows(
+    raw: CypherResult,
+    workTracker: CypherWorkTracker?
+): CypherResult? {
+    if (raw.rows.any { it !is DirectProjectionCypherRow }) return null
+    raw.rows.forEachIndexed { index, _ ->
+        if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
+    }
+    workTracker?.checkCancelled()
+    return raw
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun Map<String, Any?>.provenanceGraphIds(): Set<String> =
+    (this as? DirectProjectionCypherRow)?.graphIds
+        ?: (this[INTERNAL_PROVENANCE_KEY] as? Set<String>).orEmpty()
 
 enum class FilterOperator {
     EQUALS, NOT_EQUALS,
