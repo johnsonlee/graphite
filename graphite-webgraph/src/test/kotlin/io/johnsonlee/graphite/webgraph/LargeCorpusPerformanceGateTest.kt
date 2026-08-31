@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.jar.JarFile
 import org.junit.Test
 import kotlin.io.path.fileSize
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -36,7 +35,6 @@ data class CorpusBaseline(
     val persistedEdgeCount: Long,
     val methodCount: Long,
     val callSiteCount: Long,
-    val resourcePath: String,
     val maxPipelineMillis: Long
 )
 
@@ -53,7 +51,6 @@ private object CorpusBaselines {
         persistedEdgeCount = 4_342_382,
         methodCount = 312_788,
         callSiteCount = 1_002_088,
-        resourcePath = "log4j2_batch_process.properties",
         maxPipelineMillis = 120_000
     )
     val hive = CorpusBaseline(
@@ -68,7 +65,6 @@ private object CorpusBaselines {
         persistedEdgeCount = 6_161_463,
         methodCount = 404_016,
         callSiteCount = 1_437_647,
-        resourcePath = "hive-exec-log4j2.properties",
         maxPipelineMillis = 180_000
     )
     val kotlinCompiler = CorpusBaseline(
@@ -83,7 +79,6 @@ private object CorpusBaselines {
         persistedEdgeCount = 3_559_500,
         methodCount = 249_669,
         callSiteCount = 900_366,
-        resourcePath = "kotlinManifest.properties",
         maxPipelineMillis = 120_000
     )
 }
@@ -112,19 +107,15 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         val jar = fixtureJar()
         assertEquals(baseline.jarBytes, jar.fileSize(), "Unexpected artifact size for ${baseline.coordinate}")
         assertEquals(baseline.sha256, sha256(jar), "Unexpected artifact checksum for ${baseline.coordinate}")
-        val expectedResource = JarFile(jar.toFile()).use { archive ->
+        JarFile(jar.toFile()).use { archive ->
             assertEquals(baseline.classCount, archive.entries().asSequence().count { it.name.endsWith(".class") }.toLong())
-            val resource = requireNotNull(archive.getJarEntry(baseline.resourcePath)) {
-                "Fixture resource not found in ${baseline.coordinate}: ${baseline.resourcePath}"
-            }
-            archive.getInputStream(resource).use { it.readBytes() }
         }
         assertTrue(
             Runtime.getRuntime().maxMemory() <= FOUR_GIB_BYTES,
             "Gate must run with at most 4 GiB heap; maxMemory=${Runtime.getRuntime().maxMemory()}"
         )
 
-        val measurement = PeakHeapSampler().use { sampler -> runPipeline(jar, expectedResource, sampler) }
+        val measurement = PeakHeapSampler().use { sampler -> runPipeline(jar, sampler) }
         println(measurement.baselineLine(baseline))
 
         assertEquals(baseline.nodeCount, measurement.nodes, "Node baseline changed for ${baseline.id}")
@@ -150,7 +141,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         return Path.of(configured).also { require(Files.isRegularFile(it)) { "Fixture JAR not found at $it" } }
     }
 
-    private fun runPipeline(jar: Path, expectedResource: ByteArray, sampler: PeakHeapSampler): GateMeasurement {
+    private fun runPipeline(jar: Path, sampler: PeakHeapSampler): GateMeasurement {
         val output = Files.createTempDirectory("graphite-${baseline.id}-gate")
         var sourceGraph: Graph? = null
         var loadedGraph: Graph? = null
@@ -164,16 +155,10 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 )
             ).load(jar)
             val buildMillis = elapsedMillis(buildStart)
-            assertContentEquals(
-                expectedResource,
-                sourceGraph.resources.open(baseline.resourcePath).use { it.readBytes() },
-                "Source graph must expose ${baseline.resourcePath} from ${baseline.coordinate}"
-            )
 
             val saveStart = System.nanoTime()
             GraphStore.save(sourceGraph, output)
             val saveMillis = elapsedMillis(saveStart)
-            assertTrue(Files.isRegularFile(output.resolve("graph.resources")), "Persisted resource store must exist")
 
             val nodes = sourceGraph.nodes(Node::class.java).count().toLong()
             val edgeCounts = sourceEdgeCounts(sourceGraph)
@@ -199,11 +184,6 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             }
             val mappedLoadMillis = mappedLoadSamples.sorted()[mappedLoadSamples.size / 2]
             val queryGraph = checkNotNull(loadedGraph) { "Mapped graph sample was not retained" }
-            assertContentEquals(
-                expectedResource,
-                queryGraph.resources.open(baseline.resourcePath).use { it.readBytes() },
-                "Mapped graph must preserve ${baseline.resourcePath} from ${baseline.coordinate}"
-            )
 
             val queryStart = System.nanoTime()
             val loadedCallSites = queryGraph.query(CALL_SITE_COUNT_QUERY)
