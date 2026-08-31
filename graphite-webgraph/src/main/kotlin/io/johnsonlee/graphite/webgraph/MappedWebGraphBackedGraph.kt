@@ -468,11 +468,13 @@ internal class MappedWebGraphBackedGraph(
                     .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
                     .map(type::cast)
             }
+            if (shouldPreflightCallSitePredicates(predicates) &&
+                callSitePredicatesCannotMatch(predicates, workConsumer)
+            ) {
+                return emptySequence()
+            }
             parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
         }
-        if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates(predicates) &&
-            callSitePredicatesCannotMatch(predicates, workConsumer)
-        ) return emptySequence()
         if (workConsumer !is SerialGraphWorkBatchConsumer) {
             callSiteStringIndex(type, workConsumer)?.let { index ->
                 return index.matchingNodeIds(predicates, workConsumer, limit)

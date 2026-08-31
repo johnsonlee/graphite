@@ -392,6 +392,7 @@ class GraphStoreTest {
                     loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, predicates)
                         .orEmpty().toList()
                 )
+                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     StringPropertyDisjunctionAggregate(0, emptySet()),
                     loaded.aggregateStringPropertyDisjunction(
