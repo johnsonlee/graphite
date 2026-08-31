@@ -62,7 +62,8 @@ For LLMs, this difference is critical. A syntax tree tells you what code *looks 
 ```bash
 # Install via Homebrew
 brew tap johnsonlee/tap
-brew install graphite
+brew install johnsonlee/tap/graphite
+graphite --version
 
 # Build a graph from your JAR
 graphite build app.jar -o /data/app-graph --include com.example
@@ -98,6 +99,21 @@ graphite serve --data /data/graphs \
 curl -X PUT http://localhost:8080/api/graphs/orders \
   -H 'Content-Type: application/json' \
   -d '{"path":"/data/graphs/orders-graph-v2"}'
+```
+
+### Upgrading a legacy installation
+
+An older installer may have placed `~/.graphite/bin/graphite` before Homebrew in `PATH`. In that case, installing or
+upgrading the formula does not change the executable invoked by `graphite`. Move the legacy installation aside,
+refresh command lookup, and rebuild saved graphs so they contain the current resource store:
+
+```bash
+type -a graphite
+mv ~/.graphite ~/.graphite.legacy
+hash -r
+brew upgrade johnsonlee/tap/graphite
+graphite --version
+graphite build app.jar -o /data/app-graph --include com.example
 ```
 
 For APK inputs, Graphite uses Android platform jars to resolve the APK's target

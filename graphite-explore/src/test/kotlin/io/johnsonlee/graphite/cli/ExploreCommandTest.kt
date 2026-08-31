@@ -52,6 +52,7 @@ import org.junit.AfterClass
 import org.junit.BeforeClass
 import picocli.CommandLine
 import java.io.ByteArrayInputStream
+import java.io.Closeable
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URI
@@ -62,6 +63,9 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
+import javax.tools.ToolProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -1415,6 +1419,128 @@ class ExploreCommandTest {
     // ========================================================================
 
     @Test
+    fun `real jar build persists and serves resource content`() {
+        val root = Files.createTempDirectory("explore-jar-resource-test")
+        val classesDir = Files.createDirectories(root.resolve("classes"))
+        val graphOutput = root.resolve("graph")
+        val fixtureJar = root.resolve("resource-fixture.jar")
+        val resourcePath = "config/application.properties"
+        val resourceContent = "feature.mode=jar-e2e\n"
+        try {
+            val javaSource = root.resolve("ResourceSample.java")
+            Files.writeString(
+                javaSource,
+                """
+                package sample;
+                public class ResourceSample {
+                    public String mode() { return "jar-e2e"; }
+                }
+                """.trimIndent()
+            )
+            val compiler = requireNotNull(ToolProvider.getSystemJavaCompiler())
+            assertEquals(
+                0,
+                compiler.run(null, null, null, "-d", classesDir.toString(), javaSource.toString()),
+                "Java fixture compilation should succeed"
+            )
+
+            JarOutputStream(Files.newOutputStream(fixtureJar)).use { jar ->
+                jar.putNextEntry(JarEntry("sample/ResourceSample.class"))
+                Files.copy(classesDir.resolve("sample/ResourceSample.class"), jar)
+                jar.closeEntry()
+                jar.putNextEntry(JarEntry(resourcePath))
+                jar.write(resourceContent.toByteArray())
+                jar.closeEntry()
+            }
+
+            val build = BuildCommand().apply {
+                input = fixtureJar
+                output = graphOutput
+                includePackages = listOf("sample")
+            }
+            val (_, error, code) = captureOutput { build.call() }
+            assertEquals(0, code, "JAR graph build should succeed, stderr: $error")
+            assertTrue(Files.isRegularFile(graphOutput.resolve("graph.resources")))
+
+            val loaded = GraphStore.loadMapped(graphOutput)
+            try {
+                withExploreApp(loaded) { targetPort ->
+                    val (status, body) = get(targetPort, "/api/resources/$resourcePath")
+                    assertEquals(200, status, "Expected persisted JAR resource, body: $body")
+                    val result: Map<String, Any?> = parseJson(body)
+                    assertEquals(resourcePath, result["path"])
+                    assertEquals(fixtureJar.fileName.toString(), result["source"])
+                    assertEquals(false, result["derived"])
+                    assertEquals(resourceContent, result["content"])
+                }
+            } finally {
+                (loaded as? Closeable)?.close()
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `resources API distinguishes an empty store from a missing legacy store`() {
+        val root = Files.createTempDirectory("explore-resource-store-state-test")
+        val currentDir = root.resolve("current")
+        val legacyDir = root.resolve("legacy")
+        try {
+            val emptyGraph = DefaultGraph.Builder().build()
+            GraphStore.save(emptyGraph, currentDir)
+            GraphStore.save(emptyGraph, legacyDir)
+            Files.delete(legacyDir.resolve("graph.resources"))
+
+            val current = GraphStore.loadMapped(currentDir)
+            try {
+                withExploreApp(current) { targetPort ->
+                    val (status, body) = get(targetPort, "/api/resources")
+                    assertEquals(200, status, "Current empty resource store should remain queryable: $body")
+                    val result: Map<String, Any?> = parseJson(body)
+                    assertEquals(0.0, result["count"])
+                }
+            } finally {
+                (current as Closeable).close()
+            }
+
+            val legacy = GraphStore.loadMapped(legacyDir)
+            try {
+                withExploreApp(legacy) { targetPort ->
+                    val (listStatus, listBody) = get(targetPort, "/api/resources")
+                    assertEquals(409, listStatus, "Missing resource store must not appear empty: $listBody")
+                    assertTrue(listBody.contains("graph.resources is missing"))
+                    assertTrue(listBody.contains("rebuild this graph"))
+
+                    val (readStatus, readBody) = get(targetPort, "/api/resources/application.properties")
+                    assertEquals(409, readStatus, "Missing resource store must explain failed reads: $readBody")
+                    assertTrue(readBody.contains("rebuild this graph"))
+                }
+            } finally {
+                (legacy as Closeable).close()
+            }
+
+            val registry = GraphRegistry(Files.createDirectories(root.resolve("registry")), GraphStore.LoadMode.MAPPED)
+            registry.load("current", currentDir)
+            registry.load("legacy", legacyDir)
+            withRegistryApp(registry) { targetPort ->
+                val (rootStatus, rootBody) = get(targetPort, "/api/resources")
+                assertEquals(409, rootStatus, "All-graph resources must identify unavailable stores: $rootBody")
+                assertTrue(rootBody.contains("legacy"))
+                assertTrue(rootBody.contains("rebuild this graph"))
+
+                val (currentStatus, currentBody) = get(targetPort, "/api/graphs/current/resources")
+                assertEquals(200, currentStatus, "A current graph must remain independently queryable: $currentBody")
+
+                val (legacyStatus, legacyBody) = get(targetPort, "/api/graphs/legacy/resources")
+                assertEquals(409, legacyStatus, "A legacy graph must expose the rebuild instruction: $legacyBody")
+            }
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `GET api resources returns matching resources`() {
         val (code, body) = get("/api/resources?pattern=**&limit=10")
         assertEquals(200, code, "Expected 200, body: $body")
@@ -1735,6 +1861,9 @@ class ExploreCommandTest {
         @Suppress("UNCHECKED_CAST")
         val parameters = get["parameters"] as List<Map<String, Any?>>
         assertEquals("path", parameters.single()["name"])
+        @Suppress("UNCHECKED_CAST")
+        val responses = get["responses"] as Map<String, Any?>
+        assertTrue(responses.containsKey("409"))
         @Suppress("UNCHECKED_CAST")
         val c4 = paths["/api/architecture/c4"] as Map<String, Map<String, Any?>>
         @Suppress("UNCHECKED_CAST")

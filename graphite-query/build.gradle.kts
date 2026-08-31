@@ -11,6 +11,9 @@ application {
     applicationName = "graphite"
 }
 
+val resourceFixture: Configuration by configurations.creating
+resourceFixture.isTransitive = false
+
 dependencies {
     implementation(project(":core"))
     implementation(project(":cypher"))
@@ -19,6 +22,7 @@ dependencies {
     implementation(project(":webgraph"))
     implementation(libs.picocli)
     implementation(libs.gson)
+    add(resourceFixture.name, libs.spring.jcl)
 }
 
 tasks.jar {
@@ -71,6 +75,9 @@ kover {
 
 tasks.test {
     systemProperty("graphite.version", project.version.toString())
+    doFirst {
+        systemProperty("spring.jcl.jar.path", resourceFixture.singleFile.absolutePath)
+    }
     testLogging {
         events("passed", "skipped", "failed")
         showExceptions = true

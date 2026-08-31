@@ -1,13 +1,20 @@
 package io.johnsonlee.graphite.cli
 
+import io.johnsonlee.graphite.input.unavailableReason
+import io.johnsonlee.graphite.webgraph.GraphStore
 import picocli.CommandLine
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -120,6 +127,7 @@ class GraphiteCommandTest {
             Files.createDirectories(sampleDir)
             val compileResult = compiler.run(null, null, null, "-d", classesDir.toString(), javaFile.toString())
             assertEquals(0, compileResult, "Java compilation should succeed")
+            Files.writeString(classesDir.resolve("application.properties"), "feature.mode=shadow\n")
 
             val cmd = BuildCommand()
             cmd.input = classesDir
@@ -132,8 +140,97 @@ class GraphiteCommandTest {
             assertTrue(err.contains("Graph built"), "Should show graph built message, got: $err")
             assertTrue(err.contains("Saving to"), "Should show saving message, got: $err")
             assertTrue(err.contains("Done"), "Should show done message, got: $err")
+            assertTrue(Files.isRegularFile(outputDir.resolve("graph.resources")))
+            val loaded = GraphStore.load(outputDir)
+            assertEquals(
+                "feature.mode=shadow\n",
+                loaded.resources.open("application.properties").bufferedReader().use { it.readText() }
+            )
         } finally {
             classesDir.toFile().deleteRecursively()
+            outputDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `build from jar without persistable resources writes loadable empty store`() {
+        val root = Files.createTempDirectory("build-empty-resource-jar-test")
+        val classesDir = Files.createDirectories(root.resolve("classes"))
+        val fixtureJar = root.resolve("class-only-fixture.jar")
+        val outputDir = root.resolve("graph")
+        try {
+            val javaFile = root.resolve("ClassOnlySample.java")
+            Files.writeString(
+                javaFile,
+                """
+                package sample;
+                public class ClassOnlySample {
+                    public int value() { return 42; }
+                }
+                """.trimIndent()
+            )
+            val compiler = requireNotNull(javax.tools.ToolProvider.getSystemJavaCompiler())
+            assertEquals(
+                0,
+                compiler.run(null, null, null, "-d", classesDir.toString(), javaFile.toString()),
+                "Java fixture compilation should succeed"
+            )
+
+            JarOutputStream(Files.newOutputStream(fixtureJar)).use { jar ->
+                jar.putNextEntry(JarEntry("sample/ClassOnlySample.class"))
+                Files.copy(classesDir.resolve("sample/ClassOnlySample.class"), jar)
+                jar.closeEntry()
+            }
+
+            val cmd = BuildCommand().apply {
+                input = fixtureJar
+                output = outputDir
+                includePackages = listOf("sample")
+            }
+            val (_, err, code) = captureOutput { cmd.call() }
+            assertEquals(0, code, "JAR graph build should succeed, stderr: $err")
+
+            val resourceStore = outputDir.resolve("graph.resources")
+            assertTrue(Files.isRegularFile(resourceStore))
+            assertEquals(8L, Files.size(resourceStore), "An empty persisted resource store is header-only")
+
+            val loaded = GraphStore.load(outputDir)
+            assertNull(loaded.resources.unavailableReason)
+            assertEquals(emptyList(), loaded.resources.list("**").toList())
+        } finally {
+            root.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `build from published jar preserves persisted resource bytes`() {
+        val fixtureJar = Path.of(requireNotNull(System.getProperty("spring.jcl.jar.path")))
+        val resourcePath = "META-INF/license.txt"
+        val expectedContent = JarFile(fixtureJar.toFile()).use { jar ->
+            val entry = requireNotNull(jar.getJarEntry(resourcePath)) {
+                "Published fixture does not contain $resourcePath"
+            }
+            jar.getInputStream(entry).use { it.readBytes() }
+        }
+        val outputDir = Files.createTempDirectory("build-published-resource-jar-test")
+        try {
+            val cmd = BuildCommand().apply {
+                input = fixtureJar
+                output = outputDir
+                includePackages = listOf("org.apache.commons.logging")
+            }
+            val (_, err, code) = captureOutput { cmd.call() }
+            assertEquals(0, code, "Published JAR graph build should succeed, stderr: $err")
+
+            val resourceStore = outputDir.resolve("graph.resources")
+            assertTrue(Files.size(resourceStore) > 8L, "Published JAR must produce a non-empty resource store")
+
+            val loaded = GraphStore.load(outputDir)
+            val entry = loaded.resources.list(resourcePath).single()
+            assertEquals(resourcePath, entry.path)
+            assertEquals(fixtureJar.fileName.toString(), entry.source)
+            assertContentEquals(expectedContent, loaded.resources.open(resourcePath).use { it.readBytes() })
+        } finally {
             outputDir.toFile().deleteRecursively()
         }
     }
