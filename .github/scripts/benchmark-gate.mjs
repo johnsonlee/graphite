@@ -553,7 +553,7 @@ function parsePressureObservations(contents, revision, errors) {
     const headers = lines[0].split("\t");
     const required = [
         "id", "family", "shape", "selectivity", "targetGraphId", "outcome", "rowCount",
-        "responseBytes", "latencyNanos"
+        "responseBytes", "digest", "latencyNanos"
     ];
     for (const header of required) {
         if (!headers.includes(header)) errors.push(`${revision}: pressure observations missing ${header}`);
@@ -561,10 +561,10 @@ function parsePressureObservations(contents, revision, errors) {
     const rows = lines.slice(1).map((line) => {
         const values = line.split("\t");
         return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
-    }).filter((row) => row.family === "graph-id");
+    }).filter((row) => row.family === "graph-id" || row.family === "graph-parameter");
     const seen = new Set();
     for (const row of rows) {
-        if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-id observation ${row.id}`);
+        if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-routing observation ${row.id}`);
         seen.add(row.id);
     }
     return rows;
@@ -590,17 +590,17 @@ export function compareGraphIdPressure(
     const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
     const selectResult = (results, revision) => {
         const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
-            result.params?.graphCount === "64" && result.params?.coverageFamily === "graph-id");
+            result.params?.graphCount === "64" && result.params?.coverageFamily === "graph-routing");
         if (matches.length !== 1) {
-            errors.push(`${revision}: expected exactly one 64-graph graph-id pressure result`);
+            errors.push(`${revision}: expected exactly one 64-graph graph-routing pressure result`);
             return null;
         }
         const result = matches[0];
         for (const [metric, expected] of [
-            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 192],
-            ["successCount", 192], ["timeoutCount", 0], ["failureCount", 0],
-            ["graphIdTargetCount", 64],
-            ["coverageShapeCount", 3], ["coverageFamilyCount", 1], ["coverageSelectivityCount", 3]
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 256],
+            ["successCount", 256], ["timeoutCount", 0], ["failureCount", 0],
+            ["graphIdTargetCount", 64], ["graphParameterTargetCount", 64],
+            ["coverageShapeCount", 4], ["coverageFamilyCount", 2], ["coverageSelectivityCount", 3]
         ]) {
             const actual = pressureMetric(result, metric);
             if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
@@ -612,8 +612,12 @@ export function compareGraphIdPressure(
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
     const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
-    const baseById = new Map(baseRows.map((row) => [row.id, row]));
-    const candidateById = new Map(candidateRows.map((row) => [row.id, row]));
+    const baseGraphIdRows = baseRows.filter((row) => row.family === "graph-id");
+    const candidateGraphIdRows = candidateRows.filter((row) => row.family === "graph-id");
+    const baseGraphParameterRows = baseRows.filter((row) => row.family === "graph-parameter");
+    const candidateGraphParameterRows = candidateRows.filter((row) => row.family === "graph-parameter");
+    const baseById = new Map(baseGraphIdRows.map((row) => [row.id, row]));
+    const candidateById = new Map(candidateGraphIdRows.map((row) => [row.id, row]));
     const ids = [...new Set([...baseById.keys(), ...candidateById.keys()])].sort();
     if (ids.length !== 192) errors.push(`expected 192 graph-id observations, found ${ids.length}`);
     const rows = [];
@@ -651,8 +655,8 @@ export function compareGraphIdPressure(
         grouped.set(row.targetGraphId, rowsForTarget);
         return grouped;
     }, new Map());
-    const baseTargetCounts = groupByTarget(baseRows);
-    const candidateTargetCounts = groupByTarget(candidateRows);
+    const baseTargetCounts = groupByTarget(baseGraphIdRows);
+    const candidateTargetCounts = groupByTarget(candidateGraphIdRows);
     const expectedShapes = new Set([
         "graph-id-property-wrapped-contains",
         "graph-id-function-wrapped-contains",
@@ -676,14 +680,101 @@ export function compareGraphIdPressure(
             errors.push(`${targetId}: graph-id property/function/parameter coverage is incomplete`);
         }
     }
+    const graphParameterShape = "api-graph-parameter-wrapped-contains";
+    const graphParameterByTarget = (observations, revision) => {
+        const result = new Map();
+        for (const row of observations) {
+            if (row.shape !== graphParameterShape) {
+                errors.push(`${revision}/${row.id}: unexpected graph-parameter shape ${row.shape}`);
+            }
+            if (result.has(row.targetGraphId)) {
+                errors.push(`${revision}: duplicate graph-parameter target ${row.targetGraphId}`);
+            }
+            result.set(row.targetGraphId, row);
+        }
+        if (result.size !== 64 || result.has("")) {
+            errors.push(`${revision}: expected 64 non-empty graph-parameter targets, found ${result.size}`);
+        }
+        return result;
+    };
+    const baseGraphParameterByTarget = graphParameterByTarget(baseGraphParameterRows, "base");
+    const candidateGraphParameterByTarget = graphParameterByTarget(candidateGraphParameterRows, "candidate");
+    const graphParameterLatencyRows = [];
+    const candidateRoutingOverheads = [];
+    for (const targetId of targetIds) {
+        const baseReference = baseGraphParameterByTarget.get(targetId);
+        const candidateReference = candidateGraphParameterByTarget.get(targetId);
+        if (baseReference === undefined || candidateReference === undefined) {
+            errors.push(`${targetId}: graph-parameter reference is missing from base or candidate`);
+            continue;
+        }
+        const baseReferenceLatency = finiteNumber(baseReference.latencyNanos);
+        const candidateReferenceLatency = finiteNumber(candidateReference.latencyNanos);
+        if (baseReference.outcome !== "success" || candidateReference.outcome !== "success" ||
+            baseReferenceLatency === null || candidateReferenceLatency === null ||
+            baseReferenceLatency <= 0 || candidateReferenceLatency <= 0
+        ) {
+            errors.push(`${targetId}: graph-parameter references require successful positive latency samples`);
+            continue;
+        }
+        for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
+            if (baseReference[field] !== candidateReference[field]) {
+                errors.push(`${targetId}: graph-parameter ${field} differs between base and candidate`);
+            }
+        }
+        graphParameterLatencyRows.push({
+            targetGraphId: targetId,
+            baseLatencyNanos: baseReferenceLatency,
+            candidateLatencyNanos: candidateReferenceLatency
+        });
+        for (const candidateRow of candidateTargetCounts.get(targetId) ?? []) {
+            for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
+                if (candidateRow[field] !== candidateReference[field]) {
+                    errors.push(`${candidateRow.id}: candidate result ${field} differs from the graph-parameter reference`);
+                }
+            }
+            const latencyNanos = finiteNumber(candidateRow.latencyNanos);
+            if (latencyNanos !== null && latencyNanos > 0) {
+                candidateRoutingOverheads.push(latencyNanos / candidateReferenceLatency);
+            }
+        }
+    }
     const baseLatencies = rows.map((row) => row.baseLatencyNanos);
     const candidateLatencies = rows.map((row) => row.candidateLatencyNanos);
     const p50Speedup = rows.length === 0 ? 0 :
         pressurePercentile(baseLatencies, 0.50) / pressurePercentile(candidateLatencies, 0.50);
     const p95Speedup = rows.length === 0 ? 0 :
         pressurePercentile(baseLatencies, 0.95) / pressurePercentile(candidateLatencies, 0.95);
-    const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup;
-    return { passed, errors, minimumSpeedup, p50Speedup, p95Speedup, rows };
+    const baseGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.baseLatencyNanos);
+    const candidateGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.candidateLatencyNanos);
+    const graphParameterP50Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateGraphParameterLatencies, 0.50) /
+            pressurePercentile(baseGraphParameterLatencies, 0.50) - 1;
+    const graphParameterP95Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateGraphParameterLatencies, 0.95) /
+            pressurePercentile(baseGraphParameterLatencies, 0.95) - 1;
+    const maximumGraphParameterRegression = 0.15;
+    const routingOverheadP50 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateRoutingOverheads, 0.50);
+    const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateRoutingOverheads, 0.95);
+    const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup &&
+        graphParameterP50Regression <= maximumGraphParameterRegression &&
+        graphParameterP95Regression <= maximumGraphParameterRegression;
+    return {
+        passed,
+        errors,
+        minimumSpeedup,
+        p50Speedup,
+        p95Speedup,
+        maximumGraphParameterRegression,
+        graphParameterP50Regression,
+        graphParameterP95Regression,
+        routingOverheadP50,
+        routingOverheadP95,
+        rows,
+        graphParameterLatencyRows
+    };
 }
 
 export function renderGraphIdPressureReport(comparison) {
@@ -694,6 +785,10 @@ export function renderGraphIdPressureReport(comparison) {
         "",
         `- P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
         `- P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
+        `- API graph-parameter P50 regression: **${(comparison.graphParameterP50Regression * 100).toFixed(1)}%**`,
+        `- API graph-parameter P95 regression: **${(comparison.graphParameterP95Regression * 100).toFixed(1)}%**`,
+        `- Candidate graphId/API-reference latency ratio: ` +
+            `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"

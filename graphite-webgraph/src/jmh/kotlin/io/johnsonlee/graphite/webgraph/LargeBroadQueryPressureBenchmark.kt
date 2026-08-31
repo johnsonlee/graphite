@@ -72,6 +72,7 @@ open class LargeBroadQueryPressureBenchmark {
     private lateinit var sampler: BroadQueryResourceSampler
     private lateinit var workload: List<BroadQueryCase>
     private lateinit var graphPaths: List<Path>
+    private lateinit var sourcesById: Map<String, CypherGraph>
     private lateinit var correctnessMode: BroadQueryCorrectnessMode
     private var correctnessOracle: List<QueryCorrectnessRecord>? = null
     private val graphs = mutableListOf<MappedWebGraphBackedGraph>()
@@ -87,13 +88,15 @@ open class LargeBroadQueryPressureBenchmark {
         require(graphCount in 1..MAX_GRAPH_COUNT)
         val graphSources = broadQueryGraphSources(graphCount)
         val fullCoverage = broadQueryCoverageWorkload(graphSources.map(BroadQueryGraphSource::id))
-        workload = if (coverageFamily == ALL_COVERAGE_FAMILIES) {
-            fullCoverage
-        } else {
-            require(coverageFamily in BroadQueryFamily.entries.map(BroadQueryFamily::id)) {
-                "Unknown broad-query coverage family: $coverageFamily"
+        workload = when (coverageFamily) {
+            ALL_COVERAGE_FAMILIES -> fullCoverage
+            GRAPH_ROUTING_COVERAGE_FAMILY -> fullCoverage.filter { case -> case.family.isGraphRouting() }
+            else -> {
+                require(coverageFamily in BroadQueryFamily.entries.map(BroadQueryFamily::id)) {
+                    "Unknown broad-query coverage family: $coverageFamily"
+                }
+                fullCoverage.filter { case -> case.family.id == coverageFamily }
             }
-            fullCoverage.filter { case -> case.family.id == coverageFamily }
         }
         check(workload.isNotEmpty())
         check(workload.map(BroadQueryCase::selectivity).toSet() == BroadQuerySelectivity.entries.toSet())
@@ -106,6 +109,7 @@ open class LargeBroadQueryPressureBenchmark {
             graphs += graph
             CypherGraph(source.id, graph)
         }
+        sourcesById = sources.associateBy(CypherGraph::id)
         queryExecutor = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "broad-query-pressure-worker").apply { isDaemon = true }
         }
@@ -195,7 +199,10 @@ open class LargeBroadQueryPressureBenchmark {
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(Long.MAX_VALUE), cancellation)
         val task = queryExecutor.submit(Callable {
-            CrossGraphCypherExecutor(sources, context).execute(case.query, case.parameters)
+            val executionSources = case.requestGraphId?.let { graphId ->
+                listOf(checkNotNull(sourcesById[graphId]) { "Requested graph is not loaded: $graphId" })
+            } ?: sources
+            CrossGraphCypherExecutor(executionSources, context).execute(case.query, case.parameters)
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)
@@ -293,7 +300,16 @@ open class LargeBroadQueryPressureBenchmark {
         counters.globalP95LatencyNanos = familyP95(samples, BroadQueryFamily.GLOBAL)
         counters.regexP95LatencyNanos = familyP95(samples, BroadQueryFamily.REGEX)
         counters.graphIdP95LatencyNanos = familyP95(samples, BroadQueryFamily.GRAPH_ID)
-        counters.graphIdTargetCount = samples.mapNotNull { sample -> sample.case.targetGraphId }
+        counters.graphParameterP95LatencyNanos = familyP95(samples, BroadQueryFamily.GRAPH_PARAMETER)
+        counters.graphIdTargetCount = samples.asSequence()
+            .filter { sample -> sample.case.family == BroadQueryFamily.GRAPH_ID }
+            .mapNotNull { sample -> sample.case.targetGraphId }
+            .toSet()
+            .size
+            .toLong()
+        counters.graphParameterTargetCount = samples.asSequence()
+            .filter { sample -> sample.case.family == BroadQueryFamily.GRAPH_PARAMETER }
+            .mapNotNull { sample -> sample.case.targetGraphId }
             .toSet()
             .size
             .toLong()
@@ -381,6 +397,7 @@ open class LargeBroadQueryPressureBenchmark {
             "outcome",
             "rowCount",
             "responseBytes",
+            "digest",
             "latencyNanos"
         ).joinToString("\t")
         val lines = samples.joinToString("\n", prefix = "$header\n", postfix = "\n") { sample ->
@@ -397,6 +414,7 @@ open class LargeBroadQueryPressureBenchmark {
                 sample.outcome.name.lowercase(),
                 sample.rowCount,
                 sample.responseBytes,
+                sample.digest,
                 sample.latencyNanos
             ).joinToString("\t")
         }
@@ -455,7 +473,9 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var globalP95LatencyNanos: Long = 0
     @JvmField var regexP95LatencyNanos: Long = 0
     @JvmField var graphIdP95LatencyNanos: Long = 0
+    @JvmField var graphParameterP95LatencyNanos: Long = 0
     @JvmField var graphIdTargetCount: Long = 0
+    @JvmField var graphParameterTargetCount: Long = 0
     @JvmField var coverageShapeCount: Long = 0
     @JvmField var coverageFamilyCount: Long = 0
     @JvmField var coverageSelectivityCount: Long = 0
@@ -494,6 +514,7 @@ private data class BroadQueryCase(
     val parameters: Map<String, Any?>,
     val expectZeroRows: Boolean,
     val targetGraphId: String? = null,
+    val requestGraphId: String? = null,
     val configuredTimeoutMillis: Long? = null
 ) {
     fun timeoutMillis(defaultMillis: Long): Long = configuredTimeoutMillis ?: defaultMillis
@@ -546,7 +567,10 @@ private enum class BroadQueryFamily(val id: String) {
     AGGREGATION("aggregation"),
     GLOBAL("global"),
     REGEX("regex"),
-    GRAPH_ID("graph-id")
+    GRAPH_ID("graph-id"),
+    GRAPH_PARAMETER("graph-parameter");
+
+    fun isGraphRouting(): Boolean = this == GRAPH_ID || this == GRAPH_PARAMETER
 }
 
 private enum class BroadQuerySelectivity(val id: String) {
@@ -748,19 +772,24 @@ private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource>
 private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryCase> = buildList {
     require(graphIds.isNotEmpty())
     BROAD_QUERY_COVERAGE.forEachIndexed { shapeIndex, spec ->
-        val targets = if (spec.family == BroadQueryFamily.GRAPH_ID) {
+        val targets = if (spec.family.isGraphRouting()) {
             graphIds.mapIndexed { graphIndex, graphId ->
-                graphId to BroadQuerySelectivity.entries[(graphIndex + shapeIndex) % BroadQuerySelectivity.entries.size]
+                graphId to BroadQuerySelectivity.entries[graphIndex % BroadQuerySelectivity.entries.size]
             }
         } else {
             BroadQuerySelectivity.entries.map { selectivity -> graphIds.last() to selectivity }
         }
         targets.forEachIndexed { targetIndex, (targetGraphId, selectivity) ->
-            val absent = "GraphitePressureAbsent${shapeIndex.toString().padStart(2, '0')}${selectivity.id}X"
+            val termIndex = if (spec.family.isGraphRouting()) targetIndex else shapeIndex
+            val absent = if (spec.family.isGraphRouting()) {
+                "GraphitePressureRouteAbsent${targetIndex.toString().padStart(2, '0')}${selectivity.id}X"
+            } else {
+                "GraphitePressureAbsent${shapeIndex.toString().padStart(2, '0')}${selectivity.id}X"
+            }
             val term = when (selectivity) {
                 BroadQuerySelectivity.ZERO -> absent
-                BroadQuerySelectivity.TARGETED -> TARGETED_TERMS[shapeIndex % TARGETED_TERMS.size]
-                BroadQuerySelectivity.DENSE -> DENSE_TERMS[shapeIndex % DENSE_TERMS.size]
+                BroadQuerySelectivity.TARGETED -> TARGETED_TERMS[termIndex % TARGETED_TERMS.size]
+                BroadQuerySelectivity.DENSE -> DENSE_TERMS[termIndex % DENSE_TERMS.size]
             }
             val exactClass = when (selectivity) {
                 BroadQuerySelectivity.ZERO -> "com.graphite.pressure.Absent${shapeIndex.toString().padStart(2, '0')}"
@@ -773,7 +802,7 @@ private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryC
                 BroadQuerySelectivity.DENSE -> DENSE_EXACT_NAMES[shapeIndex % DENSE_EXACT_NAMES.size]
             }
             val terms = BroadQueryTerms(term, exactClass, exactName, absent, targetGraphId)
-            val targetSuffix = if (spec.family == BroadQueryFamily.GRAPH_ID) {
+            val targetSuffix = if (spec.family.isGraphRouting()) {
                 "-target-${targetIndex.toString().padStart(2, '0')}"
             } else {
                 ""
@@ -791,7 +820,8 @@ private fun broadQueryCoverageWorkload(graphIds: List<String>): List<BroadQueryC
                     query = spec.build(terms),
                     parameters = spec.parameters(terms),
                     expectZeroRows = spec.zeroReturnsNoRows && selectivity == BroadQuerySelectivity.ZERO,
-                    targetGraphId = targetGraphId.takeIf { spec.family == BroadQueryFamily.GRAPH_ID }
+                    targetGraphId = targetGraphId.takeIf { spec.family.isGraphRouting() },
+                    requestGraphId = targetGraphId.takeIf { spec.family == BroadQueryFamily.GRAPH_PARAMETER }
                 )
             )
         }
@@ -906,6 +936,16 @@ private fun parameterizedGraphIdWrappedContains(): String = """
         OR toLower(coalesce(n.caller_name, '')) CONTAINS ${'$'}term
         OR toLower(coalesce(n.callee_class, '')) CONTAINS ${'$'}term
         OR toLower(coalesce(n.callee_name, '')) CONTAINS ${'$'}term)
+    RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name
+    LIMIT 200
+""".trimIndent()
+
+private fun requestGraphWrappedContains(term: String): String = """
+    MATCH (n)
+    WHERE toLower(coalesce(n.caller_class, '')) CONTAINS '${cypherString(term.lowercase())}'
+       OR toLower(coalesce(n.caller_name, '')) CONTAINS '${cypherString(term.lowercase())}'
+       OR toLower(coalesce(n.callee_class, '')) CONTAINS '${cypherString(term.lowercase())}'
+       OR toLower(coalesce(n.callee_name, '')) CONTAINS '${cypherString(term.lowercase())}'
     RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name
     LIMIT 200
 """.trimIndent()
@@ -1159,6 +1199,12 @@ private val BROAD_QUERY_COVERAGE = listOf(
         parameterizedGraphIdWrappedContains()
     },
     BroadQueryCoverageSpec(
+        "api-graph-parameter-wrapped-contains", BroadQueryFamily.GRAPH_PARAMETER, "properties", 200,
+        operator = "request-graph-selection-and-wrapped-contains", boundary = "api-graph-parameter"
+    ) {
+        requestGraphWrappedContains(it.term)
+    },
+    BroadQueryCoverageSpec(
         "contains-and", BroadQueryFamily.BOOLEAN, "distinct-properties", 100, boundary = "and"
     ) {
         containsAnd(it.term)
@@ -1267,6 +1313,7 @@ private const val MAX_GRAPH_COUNT = 64
 private const val COLD_INDEX_STATE = "cold"
 private const val WARM_INDEX_STATE = "warm"
 private const val ALL_COVERAGE_FAMILIES = "all"
+private const val GRAPH_ROUTING_COVERAGE_FAMILY = "graph-routing"
 private const val OUTPUT_PROPERTY = "graphite.broad.pressure.output"
 private const val OBSERVATIONS_OUTPUT_PROPERTY = "graphite.broad.pressure.observations.output"
 private const val GRAPH_MANIFEST_PROPERTY = "graphite.broad.pressure.graphs"

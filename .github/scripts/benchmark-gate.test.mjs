@@ -39,13 +39,14 @@ function graphIdPressureResult(overrides = {}) {
     const values = {
         graphCount: 64,
         distinctGraphPathCount: 64,
-        queryCount: 192,
-        successCount: 192,
+        queryCount: 256,
+        successCount: 256,
         timeoutCount: 0,
         failureCount: 0,
         graphIdTargetCount: 64,
-        coverageShapeCount: 3,
-        coverageFamilyCount: 1,
+        graphParameterTargetCount: 64,
+        coverageShapeCount: 4,
+        coverageFamilyCount: 2,
         coverageSelectivityCount: 3,
         ...overrides
     };
@@ -55,16 +56,16 @@ function graphIdPressureResult(overrides = {}) {
         score: 1,
         confidence: [1, 1],
         unit: "s/op",
-        params: { graphCount: "64", coverageFamily: "graph-id", indexState: "cold" },
+        params: { graphCount: "64", coverageFamily: "graph-routing", indexState: "cold" },
         secondaryMetrics: Object.fromEntries(
             Object.entries(values).map(([name, score]) => [name, { score, scoreUnit: "#" }])
         )
     });
 }
 
-function graphIdObservations(latencyNanos, outcome = "success") {
+function graphIdObservations(latencyNanos, outcome = "success", graphParameterLatencyNanos = 1_000_000_000) {
     const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
-        "targetGraphId\toutcome\trowCount\tresponseBytes\tlatencyNanos";
+        "targetGraphId\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
     const rows = [];
     const shapes = [
         "graph-id-property-wrapped-contains",
@@ -75,13 +76,27 @@ function graphIdObservations(latencyNanos, outcome = "success") {
     for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
         for (let shapeIndex = 0; shapeIndex < shapes.length; shapeIndex++) {
             const shape = shapes[shapeIndex];
-            const selectivity = selectivities[(targetIndex + shapeIndex) % selectivities.length];
+            const selectivity = selectivities[targetIndex % selectivities.length];
+            const rowCount = selectivity === "zero" ? "0" : "1";
+            const responseBytes = selectivity === "zero" ? "64" : "128";
+            const digest = `digest-${targetIndex}-${selectivity}`;
             rows.push([
                 `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
                 "graph-id", shape, selectivity, "contains", "graph-routing",
-                "properties", "200", `graph-${targetIndex}`, outcome, "1", "128", String(latencyNanos)
+                "properties", "200", `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
+                String(latencyNanos)
             ].join("\t"));
         }
+        const selectivity = selectivities[targetIndex % selectivities.length];
+        const rowCount = selectivity === "zero" ? "0" : "1";
+        const responseBytes = selectivity === "zero" ? "64" : "128";
+        rows.push([
+            `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+            "graph-parameter", "api-graph-parameter-wrapped-contains", selectivity,
+            "request-graph-selection-and-wrapped-contains", "api-graph-parameter", "properties", "200",
+            `graph-${targetIndex}`, outcome, rowCount, responseBytes, `digest-${targetIndex}-${selectivity}`,
+            String(graphParameterLatencyNanos)
+        ].join("\t"));
     }
     return `${header}\n${rows.join("\n")}\n`;
 }
@@ -111,7 +126,7 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 192 })],
+        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 256 })],
         graphIdObservations(20_000_000_000),
         graphIdObservations(1_000_000_000, "failed")
     );
@@ -119,6 +134,29 @@ test("graphId pressure rejects repeated graph paths and failed candidate queries
     assert.match(comparison.errors.join("\n"), /distinctGraphPathCount=4/);
     assert.match(comparison.errors.join("\n"), /candidate: successCount=0/);
     assert.match(comparison.errors.join("\n"), /successful positive latency samples/);
+});
+
+test("graphId pressure hard-gates API graph parameter parity and latency", () => {
+    const correct = graphIdObservations(1_000_000_000);
+    const wrongDigest = correct.replace("digest-1-targeted", "wrong-digest");
+    const incorrect = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000),
+        wrongDigest
+    );
+    assert.equal(incorrect.passed, false);
+    assert.match(incorrect.errors.join("\n"), /differs from the graph-parameter reference/);
+
+    const regressed = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 2_000_000_000)
+    );
+    assert.equal(regressed.passed, false);
+    assert.equal(regressed.graphParameterP50Regression, 1);
+    assert.equal(regressed.graphParameterP95Regression, 1);
 });
 
 test("graphId pressure requires every target graph and all three graphId spellings", () => {

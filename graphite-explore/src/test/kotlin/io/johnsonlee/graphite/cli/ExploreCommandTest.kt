@@ -847,6 +847,20 @@ class ExploreCommandTest {
                 assertEquals("service-b", subsetRows.single()[API_FIELD_GRAPH_ID])
                 assertEquals(202.0, subsetRows.single()["n.value"])
 
+                val (scopedCrossGraphCode, scopedCrossGraphBody) = post(
+                    targetPort,
+                    "/api/cypher/graphs",
+                    """{"query":"$query","graph":"service-b"}"""
+                )
+                assertEquals(200, scopedCrossGraphCode, "Expected 200, body: $scopedCrossGraphBody")
+                val scopedCrossGraph: Map<String, Any?> = parseJson(scopedCrossGraphBody)
+                assertEquals("cross-graph", scopedCrossGraph[API_PARAM_MODE])
+                assertEquals(listOf("service-b"), scopedCrossGraph[API_FIELD_GRAPHS])
+                assertEquals(1.0, scopedCrossGraph["graphCount"])
+                @Suppress("UNCHECKED_CAST")
+                val scopedCrossGraphRows = scopedCrossGraph[API_FIELD_ROWS] as List<Map<String, Any?>>
+                assertEquals(listOf(202.0), scopedCrossGraphRows.map { it["n.value"] })
+
                 val encodedQuery = java.net.URLEncoder.encode(query, Charsets.UTF_8)
                 val (getSubsetCode, getSubsetBody) = get(
                     targetPort,
