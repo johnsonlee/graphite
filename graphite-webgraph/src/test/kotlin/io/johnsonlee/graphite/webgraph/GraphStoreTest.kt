@@ -166,6 +166,25 @@ class GraphStoreTest {
                     "alpha"
                 )?.map { it.value }?.toList()
                 assertEquals(1, mapped.stringPropertyIndexCount())
+                assertTrue(
+                    loaded.nodesByStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringMatchMode.EQUALS,
+                        "definitely-missing"
+                    ).orEmpty().none()
+                )
+                assertEquals(
+                    listOf("feature-alpha"),
+                    loaded.nodesByTransformedStringProperty(
+                        StringConstant::class.java,
+                        "value",
+                        StringValueTransform.LOWERCASE,
+                        StringMatchMode.EQUALS,
+                        "feature-alpha",
+                        limit = Int.MAX_VALUE
+                    ).orEmpty().map { it.value }.toList()
+                )
                 loaded.nodesByStringProperty(
                     CallSiteNode::class.java,
                     "caller_name",

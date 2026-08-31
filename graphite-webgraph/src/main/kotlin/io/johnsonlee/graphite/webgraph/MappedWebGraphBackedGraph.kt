@@ -317,7 +317,7 @@ internal class MappedWebGraphBackedGraph(
         if (prefersSerialStringPropertyDisjunction(type, predicates)) return null
         return sequence {
             val accounting = BufferedGraphWorkConsumer(workConsumer)
-            val sharedStates = mutableMapOf<StringPredicateKey, ByteArray?>()
+            val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
             val matchStates = predicates.map { predicate ->
                 val predicateKey = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
                 sharedStates.getOrPut(predicateKey) {
@@ -338,25 +338,16 @@ internal class MappedWebGraphBackedGraph(
                     val predicate = predicates[index]
                     val stringId = rawStringPropertyIndex(nodeId, type, predicate.property) ?: return@any false
                     val states = matchStates[index]
-                    if (states == null) {
-                        stringMatches(
+                    when (states[stringId]) {
+                        RAW_STRING_MATCH -> true
+                        RAW_STRING_MISS -> false
+                        else -> stringMatches(
                             stringTable.get(stringId),
                             predicate.transform,
                             predicate.mode,
                             predicate.expected
-                        )
-                    } else {
-                        when (states[stringId]) {
-                            RAW_STRING_MATCH -> true
-                            RAW_STRING_MISS -> false
-                            else -> stringMatches(
-                                stringTable.get(stringId),
-                                predicate.transform,
-                                predicate.mode,
-                                predicate.expected
-                            ).also { matched ->
-                                states[stringId] = if (matched) RAW_STRING_MATCH else RAW_STRING_MISS
-                            }
+                        ).also { matched ->
+                            states[stringId] = if (matched) RAW_STRING_MATCH else RAW_STRING_MISS
                         }
                     }
                     }
@@ -425,18 +416,7 @@ internal class MappedWebGraphBackedGraph(
                 predicates.all { supportsRawStringProperty(type, it.property) }
             ) return index.prefersSerialScan
         }
-        if (estimatedStringPropertyIndexBytes(nodeTypeIndex.count(type)) >
-            MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES
-        ) return false
-        return predicates.indices.all { index ->
-            val predicate = predicates[index]
-            val duplicate = (0 until index).any { earlier ->
-                val previous = predicates[earlier]
-                previous.transform == predicate.transform && previous.mode == predicate.mode &&
-                    previous.expected == predicate.expected
-            }
-            duplicate || rawStringMatchStates.contains(type, predicate)
-        }
+        return false
     }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
