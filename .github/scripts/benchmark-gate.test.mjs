@@ -996,6 +996,98 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     fs.rmSync(root, { recursive: true });
 });
 
+test("fixture workload verifier permits only main's legacy graph-set fanout", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-fixture-routing-role-"));
+    const evidence = path.join(root, "evidence");
+    const recomputed = path.join(root, "recomputed");
+    fs.mkdirSync(evidence);
+    fs.mkdirSync(recomputed);
+    const graphIds = Array.from({ length: 64 }, (_, index) => `graph-${index}`);
+    const provenanceHeader = [
+        "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
+        "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
+        "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
+        "graphPath"
+    ].join("\t");
+    const provenance = `${provenanceHeader}\n${graphIds.map((graphId, index) => [
+        graphId, `jar-${Math.floor(index / 16)}`, String(index % 16), "fixture.jar",
+        "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
+        "c".repeat(64), "2", "d".repeat(64),
+        crypto.createHash("sha256").update(graphId).digest("hex"), `/tmp/${graphId}.graph`
+    ].join("\t")).join("\n")}\n`;
+    const manifest = `# fixture64\n${graphIds.map((graphId) => [
+        graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense",
+        crypto.createHash("sha256").update(graphId).digest("hex")
+    ].join("\t")).join("\n")}\n`;
+    for (const directory of [evidence, recomputed]) {
+        fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), provenance);
+        fs.writeFileSync(path.join(directory, "graphs.tsv"), manifest);
+    }
+
+    const strictObservations = graphIdObservations(1_000_000);
+    const [observationHeader, ...strictRows] = strictObservations.trimEnd().split("\n");
+    const fields = observationHeader.split("\t");
+    const familyIndex = fields.indexOf("family");
+    const selectivityIndex = fields.indexOf("selectivity");
+    const selectedCountIndex = fields.indexOf("selectedGraphCount");
+    const accessedCountIndex = fields.indexOf("accessedGraphCount");
+    const accessedIdsIndex = fields.indexOf("accessedGraphIds");
+    const targetAccessCountIndex = fields.indexOf("targetGraphAccessCount");
+    const nonTargetAccessCountIndex = fields.indexOf("nonTargetGraphAccessCount");
+    const legacyBaseRows = strictRows.map((row) => {
+        const values = row.split("\t");
+        if (values[familyIndex] === "graph-id-set") {
+            const width = Number(values[selectedCountIndex]);
+            const targetOrdinal = graphIds.indexOf(values[fields.indexOf("targetGraphId")]);
+            const dense = values[selectivityIndex] === "dense";
+            const accessedGraphIds = dense ? graphIds.slice(0, targetOrdinal + 1) : graphIds;
+            values[accessedCountIndex] = String(accessedGraphIds.length);
+            values[accessedIdsIndex] = accessedGraphIds.join(",");
+            values[targetAccessCountIndex] = dense ? "1" : String(width);
+            values[nonTargetAccessCountIndex] = dense ? String(targetOrdinal) : String(64 - width);
+        }
+        return values.join("\t");
+    });
+    const legacyBaseObservations = `${observationHeader}\n${legacyBaseRows.join("\n")}\n`;
+    const referenceRows = strictRows.filter((row) => {
+        const family = row.split("\t")[familyIndex];
+        return family === "graph-parameter" || family === "graph-set-reference";
+    });
+    const referenceObservationsContents = `${observationHeader}\n${referenceRows.join("\n")}\n`;
+
+    const files = Object.fromEntries([
+        "reference-observations", "reference-correctness", "semantic-oracle",
+        "base-cold-observations", "base-cold-correctness",
+        "candidate-cold-observations", "candidate-cold-correctness",
+        "base-warm-observations", "base-warm-correctness",
+        "candidate-warm-observations", "candidate-warm-correctness"
+    ].map((name) => [name, path.join(evidence, name)]));
+    fs.writeFileSync(files["reference-observations"], referenceObservationsContents);
+    fs.writeFileSync(files["reference-correctness"], correctnessFromObservations(referenceObservationsContents));
+    fs.writeFileSync(files["semantic-oracle"], correctnessFromObservations(strictObservations));
+    for (const state of ["cold", "warm"]) {
+        fs.writeFileSync(files[`base-${state}-observations`], legacyBaseObservations);
+        fs.writeFileSync(files[`base-${state}-correctness`], correctnessFromObservations(strictObservations));
+        fs.writeFileSync(files[`candidate-${state}-observations`], strictObservations);
+        fs.writeFileSync(files[`candidate-${state}-correctness`], correctnessFromObservations(strictObservations));
+    }
+    const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
+    const verify = () => spawnSync("bash", [
+        verifier.pathname, evidence, recomputed,
+        files["reference-observations"], files["reference-correctness"], files["semantic-oracle"],
+        files["base-cold-observations"], files["base-cold-correctness"],
+        files["candidate-cold-observations"], files["candidate-cold-correctness"],
+        files["base-warm-observations"], files["base-warm-correctness"],
+        files["candidate-warm-observations"], files["candidate-warm-correctness"]
+    ], { encoding: "utf8" });
+    const accepted = verify();
+    assert.equal(accepted.status, 0, `${accepted.stdout}\n${accepted.stderr}`);
+
+    fs.writeFileSync(files["candidate-cold-observations"], legacyBaseObservations);
+    assert.notEqual(verify().status, 0);
+    fs.rmSync(root, { recursive: true });
+});
+
 test("canonical JAR hash accepts overlapping duplicate fat-JAR entries", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-overlapping-jar-"));
     const archivePath = path.join(root, "overlapping.jar");
