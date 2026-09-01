@@ -20,6 +20,7 @@ TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 STATUS_CONTEXT=graphite/fixture64-graph-routing
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+CORRECTNESS_MANIFEST_PATH=graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
 FIXTURE_VERIFIER_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
@@ -76,6 +77,7 @@ git -C "${CANDIDATE_TREE}" checkout --detach "${CANDIDATE_SHA}" >/dev/null
 test "$(git -C "${BASE_TREE}" rev-parse HEAD)" = "${BASE_SHA}"
 test "$(git -C "${CANDIDATE_TREE}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
 test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"
+test -f "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}"
 test -f "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}"
 test -f "${CANDIDATE_TREE}/${COMPARATOR_PATH}"
 test -f "${CANDIDATE_TREE}/${SCRIPT_PATH}"
@@ -88,8 +90,11 @@ cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 
 # Build both production revisions with one byte-identical, candidate-reviewed pressure harness.
 cp "${CANDIDATE_TREE}/${HARNESS_PATH}" "${BASE_TREE}/${HARNESS_PATH}"
+cp "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}" "${BASE_TREE}/${CORRECTNESS_MANIFEST_PATH}"
 cmp -s "${BASE_TREE}/${HARNESS_PATH}" "${CANDIDATE_TREE}/${HARNESS_PATH}"
-test "$(git -C "${BASE_TREE}" diff --name-only)" = "${HARNESS_PATH}"
+cmp -s "${BASE_TREE}/${CORRECTNESS_MANIFEST_PATH}" "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}"
+EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' "${HARNESS_PATH}" "${CORRECTNESS_MANIFEST_PATH}" | sort)
+test "$(git -C "${BASE_TREE}" diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
 test -z "$(git -C "${CANDIDATE_TREE}" diff --name-only)"
 
 "${BASE_TREE}/gradlew" -p "${BASE_TREE}" :webgraph:jmhJar --no-daemon
@@ -135,6 +140,7 @@ REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
   "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
 
 HARNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${HARNESS_PATH}")
+CORRECTNESS_MANIFEST_SHA256=$(sha256_file "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}")
 FIXTURE_VERIFIER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}")
 COMPARATOR_SHA256=$(sha256_file "${CANDIDATE_TREE}/${COMPARATOR_PATH}")
 SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
@@ -221,6 +227,7 @@ jq -n \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \
   --arg harnessSha256 "${HARNESS_SHA256}" \
+  --arg correctnessManifestSha256 "${CORRECTNESS_MANIFEST_SHA256}" \
   --arg fixtureVerifierSha256 "${FIXTURE_VERIFIER_SHA256}" \
   --arg comparatorSha256 "${COMPARATOR_SHA256}" \
   --arg scriptSha256 "${SCRIPT_SHA256}" \
@@ -236,7 +243,8 @@ jq -n \
   --arg oracleSha256 "${ORACLE_SHA256}" \
   --arg oracleSource "base-single-source" \
   '{repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
-    harnessSha256: $harnessSha256, fixtureVerifierSha256: $fixtureVerifierSha256,
+    harnessSha256: $harnessSha256, correctnessManifestSha256: $correctnessManifestSha256,
+    fixtureVerifierSha256: $fixtureVerifierSha256,
     comparatorSha256: $comparatorSha256,
     scriptSha256: $scriptSha256, reproducibilityScriptSha256: $reproducibilityScriptSha256,
     zipHasherSha256: $zipHasherSha256, gistEvidenceSha256: $gistEvidenceSha256,

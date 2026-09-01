@@ -2141,6 +2141,8 @@ jobs:
         }
         assert_provenance_hash harnessSha256 \
           evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        assert_provenance_hash correctnessManifestSha256 \
+          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
         assert_provenance_hash fixtureVerifierSha256 \
           evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
         assert_provenance_hash comparatorSha256 evidence-candidate/.github/scripts/benchmark-gate.mjs
@@ -2167,8 +2169,13 @@ jobs:
         cp \
           evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
           evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
-        test "$(git -C evidence-base diff --name-only)" = \
-          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        cp \
+          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
+          evidence-base/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+        EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' \
+          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+          graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt | sort)
+        test "$(git -C evidence-base diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
         evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
         evidence-candidate/gradlew -p evidence-candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
