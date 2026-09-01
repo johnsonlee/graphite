@@ -41,7 +41,7 @@ test -d "${FIXTURE_JAR_DIR}"
 test "$(grep -cv '^#' "${MANIFEST}")" -eq 64
 test "$(tail -n +2 "${FIXTURE_PROVENANCE}" | wc -l | tr -d ' ')" -eq 64
 test "$(cut -f2 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 4
-test "$(cut -f13 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
+test "$(cut -f16 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
 command -v java >/dev/null
 command -v jq >/dev/null
 command -v gh >/dev/null

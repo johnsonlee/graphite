@@ -486,7 +486,8 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     const header = [
         "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
         "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
-        "querySemanticSha256", "graphPath"
+        "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
+        "graphPath"
     ].join("\t");
     const provenanceRows = [];
     const manifestRows = ["# fixture64"];
@@ -501,13 +502,13 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         provenanceRows.push([
             graphId, `jar-${Math.floor(graphIndex / 16)}`, String(graphIndex % 16), "fixture.jar",
             "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
-            workloadIdentity, `/tmp/${graphId}.graph`
+            "c".repeat(64), "2", "d".repeat(64), workloadIdentity, `/tmp/${graphId}.graph`
         ].join("\t"));
         manifestRows.push([
             graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense", workloadIdentity
         ].join("\t"));
         for (let queryIndex = 0; queryIndex < 12; queryIndex++) {
-            const id = `query-${graphIndex}-${queryIndex}`;
+            const id = `query-target-${String(graphIndex).padStart(2, "0")}-${queryIndex}`;
             observationRows.push([
                 id, "graph-id", "graph-id-property-wrapped-contains", "targeted", "contains",
                 "graph-routing", "properties", "200", graphId, workloadIdentity, "success", "1",
@@ -551,14 +552,26 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     fs.writeFileSync(path.join(evidence, "graphs.tsv"), manifest.replace("\ttarget\t", "\tmutated\t"));
     assert.notEqual(verify().status, 0);
     fs.writeFileSync(path.join(evidence, "graphs.tsv"), manifest);
+    const cyclicObservationRows = observationRows.map((row, rowIndex) => {
+        if (rowIndex === 0) return row;
+        const columns = row.split("\t");
+        const ordinal = Number(columns[0].split("-target-")[1].slice(0, 2));
+        const replacement = (ordinal + 1) % 64;
+        columns[8] = `fixture-jar-${String(replacement).padStart(2, "0")}`;
+        columns[9] = provenanceRows[replacement].split("\t")[15];
+        return columns.join("\t");
+    });
+    fs.writeFileSync(observations, `${cyclicObservationRows.join("\n")}\n`);
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
     fs.writeFileSync(observations, `${observationRows.join("\n")}\n`.replace(
-        `fixture-jar-00\t${provenanceRows[0].split("\t")[12]}`,
-        `fixture-jar-01\t${provenanceRows[0].split("\t")[12]}`
+        `fixture-jar-00\t${provenanceRows[0].split("\t")[15]}`,
+        `fixture-jar-01\t${provenanceRows[0].split("\t")[15]}`
     ));
     assert.notEqual(verify().status, 0);
     fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
     fs.writeFileSync(correctness, `${correctnessRows.join("\n")}\n`.replace(
-        provenanceRows[0].split("\t")[12],
+        provenanceRows[0].split("\t")[15],
         "f".repeat(64)
     ));
     assert.notEqual(verify().status, 0);
@@ -676,21 +689,27 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /SHARDS_PER_CORPUS = 16/);
     assert.match(source, /FIXTURE_GRAPH_COUNT = 64/);
     assert.match(source, /entry\.name\.endsWith\(CLASS_SUFFIX\)/);
-    assert.match(source, /verifyMappedGraph\(persistedPath/);
-    assert.match(source, /graphFingerprints\.add\(graphFingerprint\)/);
+    assert.match(source, /verifyMappedGraph\(\s*persistedPath/);
+    assert.match(source, /graphFingerprints\.add\(querySemanticSha256\)/);
     assert.match(source, /sourceJarSha256/);
     assert.match(source, /shardBytecodeSha256/);
     assert.match(source, /querySemanticSha256/);
+    assert.match(source, /resourceSemanticSha256/);
+    assert.match(source, /workloadIdentitySha256/);
+    assert.match(source, /resourceSemanticSummary\(graph\.resources\)/);
     assert.match(source, /verifyPreparedCorpus\(output\.resolve\(MANIFEST_FILE\)/);
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
     assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
-    assert.match(reproducibility, /cut -f1-13/);
+    assert.match(reproducibility, /cut -f1-16/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
     assert.match(reproducibility, /unexpectedly passed verification/);
     assert.match(reproducibility, /Substituted fixture JAR unexpectedly passed verification/);
+    assert.match(reproducibility, /Missing fixture64 graph\.resources unexpectedly passed verification/);
+    assert.match(reproducibility, /Corrupt fixture64 graph\.resources unexpectedly passed verification/);
+    assert.match(reproducibility, /Content-tampered fixture64 graph\.resources unexpectedly passed verification/);
 });
 
 function jmhResult({
@@ -1736,6 +1755,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /reproducibilityScriptSha256/);
     assert.match(workflow, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(workflow, /recomputed-fixture64/);
+    assert.match(workflow, /sys\.version_info >= \(3, 12\)/);
+    assert.match(workflow, /canonical-zip-sha256\.py "\$\{BASE_JAR\}"/);
+    assert.match(workflow, /canonical-zip-sha256\.py "\$\{CANDIDATE_JAR\}"/);
     assert.match(workflow, /materializeGistFiles/);
     assert.match(workflow, /https:\/\/api\.github\.com\/gists\/\$\{evidenceMatch\[1\]\}\/\$\{evidenceMatch\[2\]\}/);
     assert.match(workflow, /public Gist API returned HTTP/);

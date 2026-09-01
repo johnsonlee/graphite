@@ -2163,7 +2163,7 @@ jobs:
         assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
         assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
         assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
-        NORMALIZED_PROVENANCE_SHA=$(cut -f1-13 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
+        NORMALIZED_PROVENANCE_SHA=$(cut -f1-16 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
         NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
           benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
         RECEIPT=benchmark-results/evidence/fixture-reproducibility.json
@@ -2186,6 +2186,7 @@ jobs:
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
         BASE_JAR=$(find evidence-base/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
         CANDIDATE_JAR=$(find evidence-candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        python3 -c 'import sys; assert sys.version_info >= (3, 12), sys.version'
         test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${BASE_JAR}")" = \
           "$(jq -r .baseJarContentSha256 "${PROVENANCE}")"
         test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${CANDIDATE_JAR}")" = \

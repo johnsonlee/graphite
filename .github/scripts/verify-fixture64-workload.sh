@@ -11,8 +11,8 @@ EVIDENCE_DIR=$1
 RECOMPUTED_DIR=$2
 
 diff -u \
-  <(cut -f1-13 "${EVIDENCE_DIR}/fixture-provenance.tsv") \
-  <(cut -f1-13 "${RECOMPUTED_DIR}/fixture-provenance.tsv")
+  <(cut -f1-16 "${EVIDENCE_DIR}/fixture-provenance.tsv") \
+  <(cut -f1-16 "${RECOMPUTED_DIR}/fixture-provenance.tsv")
 diff -u \
   <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${EVIDENCE_DIR}/graphs.tsv") \
@@ -27,26 +27,38 @@ for RESULT in "$@"; do
   FIRST_LINE=$(head -n 1 "${RESULT}")
   if [[ "${FIRST_LINE}" == *$'\ttargetGraphId\tworkloadIdentity\t'* ]]; then
     awk -F '\t' '
-      NR == FNR { if (FNR > 1) expected[$1] = $13; next }
+      NR == FNR {
+        if (FNR > 1) {
+          ordinal = FNR - 2
+          expectedTarget[ordinal] = $1
+          expectedIdentity[$1] = $16
+        }
+        next
+      }
       FNR == 1 {
         for (column = 1; column <= NF; column++) {
+          if ($column == "id") idColumn = column
           if ($column == "targetGraphId") targetColumn = column
           if ($column == "workloadIdentity") identityColumn = column
         }
-        if (!targetColumn || !identityColumn) exit 1
+        if (!idColumn || !targetColumn || !identityColumn) exit 1
         next
       }
       {
+        split($idColumn, idParts, "-target-")
+        ordinalText = substr(idParts[2], 1, 2)
         target = $targetColumn
         identity = $identityColumn
-        if (!(target in expected) || identity != expected[target]) exit 1
+        if (length(idParts) != 2 || ordinalText !~ /^[0-9][0-9]$/) exit 1
+        ordinal = ordinalText + 0
+        if (target != expectedTarget[ordinal] || identity != expectedIdentity[target]) exit 1
         counts[target]++
         rows++
       }
       END {
         if (rows != 192 && rows != 768) exit 1
         expectedPerTarget = rows / 64
-        for (target in expected) if (counts[target] != expectedPerTarget) exit 1
+        for (target in expectedIdentity) if (counts[target] != expectedPerTarget) exit 1
       }
     ' "${RECOMPUTED_DIR}/fixture-provenance.tsv" "${RESULT}"
   else
@@ -54,21 +66,27 @@ for RESULT in "$@"; do
       NR == FNR {
         if (FNR > 1) {
           split($0, columns, "\t")
-          expected[columns[1]] = columns[13]
+          ordinal = FNR - 2
+          expectedTarget[ordinal] = columns[1]
+          expectedIdentity[columns[1]] = columns[16]
         }
         next
       }
       {
+        split($1, idParts, "-target-")
+        ordinalText = substr(idParts[2], 1, 2)
         target = $8
         identity = $9
-        if (!(target in expected) || identity != expected[target]) exit 1
+        if (length(idParts) != 2 || ordinalText !~ /^[0-9][0-9]$/) exit 1
+        ordinal = ordinalText + 0
+        if (target != expectedTarget[ordinal] || identity != expectedIdentity[target]) exit 1
         counts[target]++
         rows++
       }
       END {
         if (rows != 192 && rows != 768) exit 1
         expectedPerTarget = rows / 64
-        for (target in expected) if (counts[target] != expectedPerTarget) exit 1
+        for (target in expectedIdentity) if (counts[target] != expectedPerTarget) exit 1
       }
     ' "${RECOMPUTED_DIR}/fixture-provenance.tsv" "${RESULT}"
   fi

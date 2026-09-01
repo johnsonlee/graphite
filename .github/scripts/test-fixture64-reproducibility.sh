@@ -23,8 +23,8 @@ test ! -e "${SECOND_OUTPUT}"
 "${SCRIPT_DIR}/prepare-fixture64-graphs.sh" "${JMH_JAR}" "${FIXTURE_DIR}" "${SECOND_OUTPUT}"
 
 diff -u \
-  <(cut -f1-13 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
-  <(cut -f1-13 "${SECOND_OUTPUT}/fixture-provenance.tsv")
+  <(cut -f1-16 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
+  <(cut -f1-16 "${SECOND_OUTPUT}/fixture-provenance.tsv")
 diff -u \
   <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${FIRST_OUTPUT}/graphs.tsv") \
@@ -50,8 +50,10 @@ java -cp "${JMH_JAR}" \
   --self-test-order-fingerprint
 TAMPERED_PROVENANCE=$(mktemp)
 MODIFIED_FIXTURE_DIR=$(mktemp -d)
-trap 'rm -f "${TAMPERED_PROVENANCE}"; rm -rf "${MODIFIED_FIXTURE_DIR}"' EXIT
-awk -F '\t' 'BEGIN { OFS="\t" } NR == 2 { $13=sprintf("%064d", 0) } { print }' \
+RESOURCE_BACKUP=
+trap 'rm -f "${TAMPERED_PROVENANCE}"; rm -rf "${MODIFIED_FIXTURE_DIR}"; \
+  [[ -z "${RESOURCE_BACKUP}" ]] || rm -f "${RESOURCE_BACKUP}"' EXIT
+awk -F '\t' 'BEGIN { OFS="\t" } NR == 2 { $16=sprintf("%064d", 0) } { print }' \
   "${FIRST_OUTPUT}/fixture-provenance.tsv" > "${TAMPERED_PROVENANCE}"
 
 if java -Xmx4g \
@@ -65,6 +67,58 @@ if java -Xmx4g \
   echo "Tampered fixture64 provenance unexpectedly passed verification" >&2
   exit 1
 fi
+
+RESOURCE_STORE=$(awk -F '\t' 'NR == 2 { print $17 "/graph.resources" }' \
+  "${SECOND_OUTPUT}/fixture-provenance.tsv")
+RESOURCE_BACKUP=$(mktemp)
+cp "${RESOURCE_STORE}" "${RESOURCE_BACKUP}"
+rm "${RESOURCE_STORE}"
+if java -Xmx4g \
+  -Dandroid.jar.path="${ANDROID_JAR}" \
+  -Dtika.jar.path="${TIKA_JAR}" \
+  -Dhive.jar.path="${HIVE_JAR}" \
+  -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+  -cp "${JMH_JAR}" \
+  io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+  --verify "${SECOND_OUTPUT}/graphs.tsv" "${SECOND_OUTPUT}/fixture-provenance.tsv"; then
+  echo "Missing fixture64 graph.resources unexpectedly passed verification" >&2
+  exit 1
+fi
+cp "${RESOURCE_BACKUP}" "${RESOURCE_STORE}"
+truncate -s 3 "${RESOURCE_STORE}"
+if java -Xmx4g \
+  -Dandroid.jar.path="${ANDROID_JAR}" \
+  -Dtika.jar.path="${TIKA_JAR}" \
+  -Dhive.jar.path="${HIVE_JAR}" \
+  -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+  -cp "${JMH_JAR}" \
+  io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+  --verify "${SECOND_OUTPUT}/graphs.tsv" "${SECOND_OUTPUT}/fixture-provenance.tsv"; then
+  echo "Corrupt fixture64 graph.resources unexpectedly passed verification" >&2
+  exit 1
+fi
+cp "${RESOURCE_BACKUP}" "${RESOURCE_STORE}"
+RESOURCE_SIZE=$(wc -c < "${RESOURCE_STORE}" | tr -d ' ')
+LAST_RESOURCE_BYTE=$(tail -c 1 "${RESOURCE_STORE}" | od -An -tu1 | tr -d ' ')
+if [[ "${LAST_RESOURCE_BYTE}" == 88 ]]; then
+  REPLACEMENT_RESOURCE_BYTE=Y
+else
+  REPLACEMENT_RESOURCE_BYTE=X
+fi
+printf '%s' "${REPLACEMENT_RESOURCE_BYTE}" | \
+  dd of="${RESOURCE_STORE}" bs=1 seek="$((RESOURCE_SIZE - 1))" conv=notrunc 2>/dev/null
+if java -Xmx4g \
+  -Dandroid.jar.path="${ANDROID_JAR}" \
+  -Dtika.jar.path="${TIKA_JAR}" \
+  -Dhive.jar.path="${HIVE_JAR}" \
+  -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+  -cp "${JMH_JAR}" \
+  io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+  --verify "${SECOND_OUTPUT}/graphs.tsv" "${SECOND_OUTPUT}/fixture-provenance.tsv"; then
+  echo "Content-tampered fixture64 graph.resources unexpectedly passed verification" >&2
+  exit 1
+fi
+cp "${RESOURCE_BACKUP}" "${RESOURCE_STORE}"
 
 MODIFIED_ANDROID_JAR=${MODIFIED_FIXTURE_DIR}/$(basename "${ANDROID_JAR}")
 cp "${ANDROID_JAR}" "${MODIFIED_ANDROID_JAR}"
@@ -89,8 +143,8 @@ sha256_stream() {
   fi
 }
 
-FIRST_PROVENANCE_SHA=$(cut -f1-13 "${FIRST_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
-SECOND_PROVENANCE_SHA=$(cut -f1-13 "${SECOND_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
+FIRST_PROVENANCE_SHA=$(cut -f1-16 "${FIRST_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
+SECOND_PROVENANCE_SHA=$(cut -f1-16 "${SECOND_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
 FIRST_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
   "${FIRST_OUTPUT}/graphs.tsv" | sha256_stream)
 SECOND_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
@@ -109,4 +163,4 @@ if [[ -n "${RECEIPT}" ]]; then
       repeatedManifestSemanticSha256: $repeatedManifestSemanticSha256}' > "${RECEIPT}"
 fi
 
-echo "Fixture64 identities are reproducible and tampered provenance is rejected"
+echo "Fixture64 identities/resources are reproducible and provenance/resource tampering is rejected"
