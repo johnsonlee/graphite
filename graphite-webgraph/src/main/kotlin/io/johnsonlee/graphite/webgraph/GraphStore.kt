@@ -516,6 +516,7 @@ internal data class NodeIndexData(
  * - `forward.*`                -- BVGraph compressed forward adjacency
  * - `backward.*`               -- optional BVGraph compressed backward adjacency, created after first incoming query
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
+ * - `graph.strings.identity`   -- semantic SHA-256 identity of the ordered string table
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.labelprefix`        -- int[] cumulative outdegree values for label lookup
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -523,6 +524,7 @@ internal data class NodeIndexData(
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
  * - `graph.classoverview`      -- class-level call counts and dependency weights
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
+ * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
  */
 @Suppress("TooManyFunctions")

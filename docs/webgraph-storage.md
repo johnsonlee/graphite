@@ -7,6 +7,7 @@ graph-dir/
 ├── forward.*          BVGraph compressed forward adjacency
 ├── backward.*         Optional BVGraph compressed backward adjacency
 ├── graph.strings      FrontCodedStringList (deduplicated string dictionary)
+├── graph.strings.identity SHA-256 semantic identity of the ordered string dictionary
 ├── graph.labels       byte[] edge type labels (1 byte per arc)
 ├── graph.labelprefix  int[] cumulative outdegree values for label lookup
 ├── graph.nodedata     Sequential node records
@@ -17,13 +18,16 @@ graph-dir/
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
+├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
 The production `graphite build` command prepares `graph.callsite-string-index` while saving the
 graph. A mapped load restores its primitive arrays lazily under the shared CallSite-index heap
 budget, so unrelated Method queries retain no CallSite-index heap and the first broad CallSite
-string query does not rebuild it. Direct library callers can request the same build artifact with
+string query does not rebuild or rescan it. The two identity files are generated from the core
+graph while saving, so restoring the optional index compares its complete graph identity without
+moving that scan onto the first online query. Direct library callers can request the same build artifact with
 `GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
 optional query cache to preserve the existing save and storage contract.
 
