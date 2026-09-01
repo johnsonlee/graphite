@@ -197,11 +197,21 @@ ORACLE_SHA256=$(sha256_file "${ORACLE}")
 for INDEX_STATE in cold warm; do
   run_revision base "${INDEX_STATE}" "${BASE_JAR}" record ""
   run_revision candidate "${INDEX_STATE}" "${CANDIDATE_JAR}" verify "${ORACLE}"
+done
+
+for INDEX_STATE in cold warm; do
+  if [[ "${INDEX_STATE}" == cold ]]; then
+    BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-warm.correctness
+  else
+    BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-cold.correctness
+  fi
   node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-graph-id-pressure \
     --base "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.json" \
     --candidate "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.json" \
     --base-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv" \
     --candidate-observations "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.tsv" \
+    --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
+    --candidate-correctness "${ORACLE}" \
     --minimum-speedup 10 \
     --report "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-report.md" \
     --status "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json"

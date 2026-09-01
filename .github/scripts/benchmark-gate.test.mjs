@@ -26,7 +26,7 @@ import {
     compareLatencyBaseline,
     compareLatencyAnchor,
     compareLargeCorpus,
-    compareGraphIdPressure,
+    compareGraphIdPressure as compareGraphIdPressureRaw,
     deriveGraphRoutingOracle,
     parseLargeCorpusLog,
     makeJmhAdvisory,
@@ -104,7 +104,8 @@ function graphIdObservations(
             const rowCount = forceZeroRows || selectivity === "zero" ? "0" :
                 selectivity === "targeted" ? "10" : "200";
             const responseBytes = rowCount === "0" ? "64" : "128";
-            const digest = `digest-${targetIndex}-${selectivity}`;
+            const digest = crypto.createHash("sha256")
+                .update(`${targetIndex}-${selectivity}`).digest("hex");
             for (const shape of shapes) {
                 rows.push([
                     `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
@@ -124,6 +125,37 @@ function graphIdObservations(
         }
     }
     return `${header}\n${rows.join("\n")}\n`;
+}
+
+function correctnessFromObservations(contents) {
+    const [header, ...lines] = contents.trim().split("\n");
+    const columns = header.split("\t");
+    const field = (values, name) => values[columns.indexOf(name)];
+    return `${lines.map((line) => {
+        const values = line.split("\t");
+        return [
+            "id", "family", "shape", "selectivity", "operator", "boundary", "projection",
+            "targetGraphId", "workloadIdentity", "limit", "outcome", "rowCount", "responseBytes", "digest"
+        ].map((name) => field(values, name)).join("|");
+    }).join("\n")}\n`;
+}
+
+function compareGraphIdPressure(
+    baseResults,
+    candidateResults,
+    baseObservations,
+    candidateObservations,
+    minimumSpeedup = 10
+) {
+    return compareGraphIdPressureRaw(
+        baseResults,
+        candidateResults,
+        baseObservations,
+        candidateObservations,
+        correctnessFromObservations(baseObservations),
+        correctnessFromObservations(candidateObservations),
+        minimumSpeedup
+    );
 }
 
 function graphParameterReferenceManifest() {
@@ -196,6 +228,49 @@ test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(serialCandidate.passed, false);
     assert.match(serialCandidate.errors.join("\n"), /exactly one intra-graph parallel scan on each graph/);
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
+});
+
+test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
+    const base = graphIdObservations(20_000_000_000, "success", 20_000_000_000);
+    const candidate = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const baseCorrectness = correctnessFromObservations(base);
+    const semanticOracle = correctnessFromObservations(candidate);
+    const withoutEvidence = compareGraphIdPressureRaw(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, candidate
+    );
+    assert.equal(withoutEvidence.passed, false);
+    assert.match(withoutEvidence.errors.join("\n"), /independent correctness evidence is required/);
+
+    const spoofed = candidate.replace(
+        "graph-id-property-wrapped-contains-target-00-targeted",
+        "spoof-query-target-00-unbound"
+    ).replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t");
+    const detached = compareGraphIdPressureRaw(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, spoofed,
+        baseCorrectness, semanticOracle
+    );
+    assert.equal(detached.passed, false);
+    assert.match(detached.errors.join("\n"), /observation ID is not canonical/);
+
+    const rows = candidate.trim().split("\n");
+    const rotated = [rows[0], ...rows.slice(1).map((row) => {
+        const columns = row.split("\t");
+        const ordinal = Number(columns[0].match(/-target-(\d{2})-/)[1]);
+        const replacement = (ordinal + 1) % 64;
+        columns[0] = columns[0].replace(
+            `-target-${String(ordinal).padStart(2, "0")}-`,
+            `-target-${String(replacement).padStart(2, "0")}-`
+        );
+        columns[8] = `graph-${replacement}`;
+        columns[9] = crypto.createHash("sha256").update(`graph-${replacement}`).digest("hex");
+        return columns.join("\t");
+    })].join("\n") + "\n";
+    const correlatedRotation = compareGraphIdPressureRaw(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, rotated,
+        baseCorrectness, semanticOracle
+    );
+    assert.equal(correlatedRotation.passed, false);
+    assert.match(correlatedRotation.errors.join("\n"), /differs from independent correctness record/);
 });
 
 test("fixture64 warm pressure proves the trigram path instead of requiring a raw scan", () => {
@@ -311,7 +386,8 @@ test("graphId pressure rejects repeated graph paths and failed candidate queries
 
 test("graphId pressure hard-gates API graph parameter parity and latency", () => {
     const correct = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
-    const wrongDigest = correct.replace("digest-1-targeted", "wrong-digest");
+    const targetedDigest = crypto.createHash("sha256").update("1-targeted").digest("hex");
+    const wrongDigest = correct.replace(targetedDigest, "f".repeat(64));
     const incorrect = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
@@ -491,11 +567,21 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     ].join("\t");
     const provenanceRows = [];
     const manifestRows = ["# fixture64"];
-    const observationRows = [
+    const observationHeader =
         "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
-        "targetGraphId\tworkloadIdentity\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos"
-    ];
+        "targetGraphId\tworkloadIdentity\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
+    const observationRows = [observationHeader];
+    const referenceObservationRows = [observationHeader];
     const correctnessRows = [];
+    const referenceCorrectnessRows = [];
+    const queryShapes = [
+        ["graph-id", "graph-id-property-wrapped-contains", "graph-id-equals-and-wrapped-contains", "graph-routing"],
+        ["graph-id", "graph-id-function-wrapped-contains", "graph-id-function-equals-and-wrapped-contains", "graph-routing"],
+        ["graph-id", "graph-id-parameter-wrapped-contains", "graph-id-parameter-equals-and-wrapped-contains", "parameters"],
+        ["graph-parameter", "api-graph-parameter-wrapped-contains",
+            "request-graph-selection-and-wrapped-contains", "api-graph-parameter"]
+    ];
+    const selectivities = ["zero", "targeted", "dense"];
     for (let graphIndex = 0; graphIndex < 64; graphIndex++) {
         const graphId = `fixture-jar-${String(graphIndex).padStart(2, "0")}`;
         const workloadIdentity = crypto.createHash("sha256").update(graphId).digest("hex");
@@ -507,34 +593,67 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         manifestRows.push([
             graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense", workloadIdentity
         ].join("\t"));
-        for (let queryIndex = 0; queryIndex < 12; queryIndex++) {
-            const id = `query-target-${String(graphIndex).padStart(2, "0")}-${queryIndex}`;
-            observationRows.push([
-                id, "graph-id", "graph-id-property-wrapped-contains", "targeted", "contains",
-                "graph-routing", "properties", "200", graphId, workloadIdentity, "success", "1",
-                "64", `digest-${graphIndex}-${queryIndex}`, "1000000"
-            ].join("\t"));
-            correctnessRows.push([
-                id, "graph-id", "graph-id-property-wrapped-contains", "targeted", "contains",
-                "graph-routing", "properties", graphId, workloadIdentity, "200", "success", "1",
-                "64", crypto.createHash("sha256").update(id).digest("hex")
-            ].join("|"));
+        for (const [family, shape, operator, boundary] of queryShapes) {
+            for (const selectivity of selectivities) {
+                const id = `${shape}-target-${String(graphIndex).padStart(2, "0")}-${selectivity}`;
+                const rowCount = selectivity === "zero" ? "0" : selectivity === "targeted" ? "10" : "200";
+                const responseBytes = rowCount === "0" ? "64" : "128";
+                const digest = crypto.createHash("sha256")
+                    .update(`${graphIndex}-${selectivity}`).digest("hex");
+                const observation = [
+                    id, family, shape, selectivity, operator, boundary, "properties", "200",
+                    graphId, workloadIdentity, "success", rowCount, responseBytes, digest, "1000000"
+                ].join("\t");
+                const correctness = [
+                    id, family, shape, selectivity, operator, boundary, "properties", graphId,
+                    workloadIdentity, "200", "success", rowCount, responseBytes, digest
+                ].join("|");
+                observationRows.push(observation);
+                correctnessRows.push(correctness);
+                if (family === "graph-parameter") {
+                    referenceObservationRows.push(observation);
+                    referenceCorrectnessRows.push(correctness);
+                }
+            }
         }
     }
     const provenance = `${header}\n${provenanceRows.join("\n")}\n`;
     const manifest = `${manifestRows.join("\n")}\n`;
-    const observations = path.join(evidence, "observations.tsv");
-    const correctness = path.join(evidence, "correctness.manifest");
+    const referenceObservations = path.join(evidence, "base-single-source-reference.tsv");
+    const referenceCorrectness = path.join(evidence, "base-single-source-reference.manifest");
+    const semanticOracle = path.join(evidence, "base-single-source-oracle.manifest");
+    const baseColdObservations = path.join(evidence, "base-graph-routing-cold.tsv");
+    const baseColdCorrectness = path.join(evidence, "base-graph-routing-cold.correctness");
+    const candidateColdObservations = path.join(evidence, "candidate-graph-routing-cold.tsv");
+    const candidateColdCorrectness = path.join(evidence, "candidate-graph-routing-cold.correctness");
+    const baseWarmObservations = path.join(evidence, "base-graph-routing-warm.tsv");
+    const baseWarmCorrectness = path.join(evidence, "base-graph-routing-warm.correctness");
+    const candidateWarmObservations = path.join(evidence, "candidate-graph-routing-warm.tsv");
+    const candidateWarmCorrectness = path.join(evidence, "candidate-graph-routing-warm.correctness");
     for (const directory of [evidence, recomputed]) {
         fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), provenance);
         fs.writeFileSync(path.join(directory, "graphs.tsv"), manifest);
     }
-    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
-    fs.writeFileSync(correctness, `${correctnessRows.join("\n")}\n`);
+    fs.writeFileSync(referenceObservations, `${referenceObservationRows.join("\n")}\n`);
+    fs.writeFileSync(referenceCorrectness, `${referenceCorrectnessRows.join("\n")}\n`);
+    fs.writeFileSync(semanticOracle, `${correctnessRows.join("\n")}\n`);
+    for (const file of [baseColdObservations, candidateColdObservations,
+        baseWarmObservations, candidateWarmObservations]) {
+        fs.writeFileSync(file, `${observationRows.join("\n")}\n`);
+    }
+    for (const file of [baseColdCorrectness, candidateColdCorrectness,
+        baseWarmCorrectness, candidateWarmCorrectness]) {
+        fs.writeFileSync(file, `${correctnessRows.join("\n")}\n`);
+    }
     const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
     const verify = () => spawnSync(
         "bash",
-        [verifier.pathname, evidence, recomputed, observations, correctness],
+        [verifier.pathname, evidence, recomputed,
+            referenceObservations, referenceCorrectness, semanticOracle,
+            baseColdObservations, baseColdCorrectness,
+            candidateColdObservations, candidateColdCorrectness,
+            baseWarmObservations, baseWarmCorrectness,
+            candidateWarmObservations, candidateWarmCorrectness],
         { encoding: "utf8" }
     );
     const initialVerification = verify();
@@ -555,25 +674,47 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     const cyclicObservationRows = observationRows.map((row, rowIndex) => {
         if (rowIndex === 0) return row;
         const columns = row.split("\t");
-        const ordinal = Number(columns[0].split("-target-")[1].slice(0, 2));
+        const ordinal = Number(columns[0].match(/-target-(\d{2})-/)[1]);
         const replacement = (ordinal + 1) % 64;
+        columns[0] = columns[0].replace(
+            `-target-${String(ordinal).padStart(2, "0")}-`,
+            `-target-${String(replacement).padStart(2, "0")}-`
+        );
         columns[8] = `fixture-jar-${String(replacement).padStart(2, "0")}`;
         columns[9] = provenanceRows[replacement].split("\t")[15];
         return columns.join("\t");
     });
-    fs.writeFileSync(observations, `${cyclicObservationRows.join("\n")}\n`);
+    const cyclicCorrectnessRows = correctnessRows.map((row) => {
+        const columns = row.split("|");
+        const ordinal = Number(columns[0].match(/-target-(\d{2})-/)[1]);
+        const replacement = (ordinal + 1) % 64;
+        columns[0] = columns[0].replace(
+            `-target-${String(ordinal).padStart(2, "0")}-`,
+            `-target-${String(replacement).padStart(2, "0")}-`
+        );
+        columns[7] = `fixture-jar-${String(replacement).padStart(2, "0")}`;
+        columns[8] = provenanceRows[replacement].split("\t")[15];
+        return columns.join("|");
+    });
+    fs.writeFileSync(candidateColdObservations, `${cyclicObservationRows.join("\n")}\n`);
+    fs.writeFileSync(candidateColdCorrectness, `${cyclicCorrectnessRows.join("\n")}\n`);
     assert.notEqual(verify().status, 0);
-    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
-    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`.replace(
-        `fixture-jar-00\t${provenanceRows[0].split("\t")[15]}`,
-        `fixture-jar-01\t${provenanceRows[0].split("\t")[15]}`
-    ));
+    fs.writeFileSync(candidateColdObservations, `${observationRows.join("\n")}\n`);
+    fs.writeFileSync(candidateColdCorrectness, `${correctnessRows.join("\n")}\n`);
+    fs.writeFileSync(candidateColdObservations, `${observationRows.join("\n")}\n`.replace(
+        "graph-id-property-wrapped-contains-target-00-targeted",
+        "spoof-query-target-00-unbound"
+    ).replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t"));
     assert.notEqual(verify().status, 0);
-    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
-    fs.writeFileSync(correctness, `${correctnessRows.join("\n")}\n`.replace(
-        provenanceRows[0].split("\t")[15],
-        "f".repeat(64)
-    ));
+    fs.writeFileSync(candidateColdObservations, `${observationRows.join("\n")}\n`);
+    const mutatedObservationRows = observationRows.map((row, index) => index === 2
+        ? row.replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t")
+        : row);
+    const mutatedCorrectnessRows = correctnessRows.map((row, index) => index === 1
+        ? row.replace("|success|10|128|", "|success|42|999|")
+        : row);
+    fs.writeFileSync(candidateColdObservations, `${mutatedObservationRows.join("\n")}\n`);
+    fs.writeFileSync(candidateColdCorrectness, `${mutatedCorrectnessRows.join("\n")}\n`);
     assert.notEqual(verify().status, 0);
     fs.rmSync(root, { recursive: true });
 });

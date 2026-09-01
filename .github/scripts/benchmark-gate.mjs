@@ -741,6 +741,8 @@ export function compareGraphIdPressure(
     candidateResults,
     baseObservations,
     candidateObservations,
+    baseCorrectnessContents,
+    candidateCorrectnessContents,
     minimumSpeedup = 10
 ) {
     const errors = [];
@@ -844,6 +846,49 @@ export function compareGraphIdPressure(
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
     const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const bindObservationsToCorrectness = (observations, contents, revision) => {
+        if (typeof contents !== "string") {
+            errors.push(`${revision}: independent correctness evidence is required`);
+            return;
+        }
+        const correctness = parseCorrectnessRecords(contents, `${revision}-correctness`, errors);
+        const correctnessById = new Map(correctness.map((record) => [record.id, record]));
+        if (correctness.length !== 768 || correctnessById.size !== 768) {
+            errors.push(`${revision}: expected 768 independent correctness records, found ${correctness.length}`);
+        }
+        const observationIds = new Set(observations.map((row) => row.id));
+        for (const row of observations) {
+            const canonicalId = `${row.shape}-target-`;
+            const match = row.id.match(/-target-(\d{2})-(zero|targeted|dense)$/);
+            if (match === null || row.id !== `${canonicalId}${match[1]}-${row.selectivity}` ||
+                match[2] !== row.selectivity
+            ) {
+                errors.push(`${revision}/${row.id}: observation ID is not canonical`);
+                continue;
+            }
+            const expected = correctnessById.get(row.id);
+            if (expected === undefined) {
+                errors.push(`${revision}/${row.id}: missing independent correctness record`);
+                continue;
+            }
+            for (const field of [
+                "family", "shape", "selectivity", "operator", "boundary", "projection",
+                "targetGraphId", "workloadIdentity", "limit", "outcome", "rowCount",
+                "responseBytes", "digest"
+            ]) {
+                if (String(row[field]) !== String(expected[field])) {
+                    errors.push(`${revision}/${row.id}: ${field} differs from independent correctness record`);
+                }
+            }
+        }
+        for (const id of correctnessById.keys()) {
+            if (!observationIds.has(id)) {
+                errors.push(`${revision}/${id}: correctness record has no latency observation`);
+            }
+        }
+    };
+    bindObservationsToCorrectness(baseRows, baseCorrectnessContents, "base");
+    bindObservationsToCorrectness(candidateRows, candidateCorrectnessContents, "candidate");
     const baseGraphIdRows = baseRows.filter((row) => row.family === "graph-id");
     const candidateGraphIdRows = candidateRows.filter((row) => row.family === "graph-id");
     const baseGraphParameterRows = baseRows.filter((row) => row.family === "graph-parameter");
@@ -1891,6 +1936,8 @@ function compareGraphIdPressureCommand(args) {
         readJson(requireArg(args, "candidate")),
         fs.readFileSync(requireArg(args, "base-observations"), "utf8"),
         fs.readFileSync(requireArg(args, "candidate-observations"), "utf8"),
+        fs.readFileSync(requireArg(args, "base-correctness"), "utf8"),
+        fs.readFileSync(requireArg(args, "candidate-correctness"), "utf8"),
         Number(args["minimum-speedup"] ?? 10)
     );
     writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));

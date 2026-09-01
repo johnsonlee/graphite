@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
-  BENCHMARK_REPORT_TRANSITION_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  BENCHMARK_REPORT_TRANSITION_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -2221,11 +2221,18 @@ jobs:
         cmp benchmark-results/recomputed-base-single-source-oracle.manifest \
           benchmark-results/evidence/base-single-source-oracle.manifest
         for STATE in cold warm; do
+          if [ "${STATE}" = cold ]; then
+            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-warm.correctness
+          else
+            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-cold.correctness
+          fi
           node evidence-candidate/.github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
             --base "benchmark-results/evidence/base-graph-routing-${STATE}.json" \
             --candidate "benchmark-results/evidence/candidate-graph-routing-${STATE}.json" \
             --base-observations "benchmark-results/evidence/base-graph-routing-${STATE}.tsv" \
             --candidate-observations "benchmark-results/evidence/candidate-graph-routing-${STATE}.tsv" \
+            --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
+            --candidate-correctness benchmark-results/evidence/base-single-source-oracle.manifest \
             --minimum-speedup 10 \
             --report "benchmark-results/recomputed-${STATE}-report.md" \
             --status "benchmark-results/recomputed-${STATE}-status.json"
