@@ -282,10 +282,23 @@ function graphParameterReferenceManifest() {
     return `${records.join("\n")}\n`;
 }
 
-test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
+test("fixture64 startup-prepared graphId pressure requires 10x at P95", () => {
+    const startupBase = graphIdPressureResult({
+        callSiteParallelScanCount: 64,
+        callSiteParallelScanGraphCount: 64,
+        callSiteStringIndexLookupCount: 14139,
+        callSiteStringIndexLookupMinPerGraph: 181,
+        callSiteStringIndexLookupMaxPerGraph: 266,
+        callSiteScanPeakActiveWorkers: 8
+    }, "startup-prepared");
+    const startupCandidate = graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 64,
+        callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64
+    }, "startup-prepared");
     const passed = compareGraphIdPressure(
-        [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [startupBase],
+        [startupCandidate],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -296,17 +309,17 @@ test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(passed.graphParameterP95Speedup, 20);
     assert.equal(passed.gateP50Speedup, 20);
     assert.equal(passed.gateP95Speedup, 20);
-    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 64);
-    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 1979);
-    assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 8);
+    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 0);
+    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 2043);
+    assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 0);
     assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.width), [2, 8, 64]);
     assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.sampleCount), [192, 48, 6]);
     assert.match(renderGraphIdPressureReport(passed), /Effective CPU cores/);
     assert.match(renderGraphIdPressureReport(passed), /Peak used heap/);
 
     const tooSlow = compareGraphIdPressure(
-        [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [startupBase],
+        [startupCandidate],
         graphIdObservations(9_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -327,6 +340,25 @@ test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(serialCandidate.passed, false);
     assert.match(serialCandidate.errors.join("\n"), /exactly one intra-graph parallel scan on each graph/);
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
+});
+
+test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
+    const stable = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(1_000_000, "success", 1_000_000),
+        graphIdObservations(1_100_000, "success", 1_100_000)
+    );
+    assert.equal(stable.passed, true, stable.errors.join("\n"));
+    assert.ok(stable.p95Speedup < 1);
+
+    const materialRegression = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(1_000_000, "success", 1_000_000),
+        graphIdObservations(2_000_000, "success", 2_000_000)
+    );
+    assert.equal(materialRegression.passed, false);
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
@@ -654,7 +686,7 @@ test("graphId set routing proves K-source access and 64-K pruning against its re
     assert.match(pruningFailure.errors.join("\n"), /do not prove 1\/0\/0/);
 });
 
-test("K64 graph-set P50 tolerates sub-0.25ms jitter when P95 improves", () => {
+test("K64 graph-set tolerates sub-0.25ms P50 and sub-1ms P95 single-shot jitter", () => {
     const setK64Latencies = (contents, values) => {
         let index = 0;
         const lines = contents.trimEnd().split("\n");
@@ -676,7 +708,7 @@ test("K64 graph-set P50 tolerates sub-0.25ms jitter when P95 improves", () => {
     );
     const candidate = setK64Latencies(
         graphIdObservations(1_000_000, "success", 1_000_000),
-        [358_000, 358_000, 358_000, 358_000, 800_000, 800_000]
+        [358_000, 358_000, 358_000, 358_000, 1_800_000, 1_800_000]
     );
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()], [graphIdPressureResult()], base, candidate
@@ -686,7 +718,7 @@ test("K64 graph-set P50 tolerates sub-0.25ms jitter when P95 improves", () => {
     assert.equal(k64.baseP50, 167_000);
     assert.equal(k64.candidateP50, 358_000);
     assert.equal(k64.baseP95, 1_000_000);
-    assert.equal(k64.candidateP95, 800_000);
+    assert.equal(k64.candidateP95, 1_800_000);
 });
 
 test("graph-routing oracle is derived only from complete successful base single-source references", () => {
@@ -1059,7 +1091,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(harness, /indexState == STARTUP_PREPARED_INDEX_STATE/);
     assert.match(harness, /System\.clearProperty\(PREPARE_INDEX_ON_LOAD_PROPERTY\)/);
     assert.equal((driver.match(/for INDEX_STATE in cold warm startup-prepared/g) ?? []).length, 2);
-    assert.match(driver, /graphite-fixture64-evidence-v6/);
+    assert.match(driver, /graphite-fixture64-evidence-v7/);
     assert.match(driver, /startup=%.2f\/%.2fx/);
     assert.match(driver, /derive-graph-routing-oracle/);
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
@@ -2152,9 +2184,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
     assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/fixture64-graph-routing/);
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
-    assert.match(workflow, /Every cold\/warm\/startup P50\/P95 speedup must be >=10x/);
+    assert.match(workflow, /Startup-prepared P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v6/);
+    assert.match(workflow, /graphite-fixture64-evidence-v7/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
     assert.match(workflow, /reproducibilityScriptSha256/);

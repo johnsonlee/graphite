@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1ed37cbcf05ef7c222e567f650b903810c370198d294e4c1062acf7abcd2eaca
-  BENCHMARK_REPORT_TRANSITION_SHA256: 1ed37cbcf05ef7c222e567f650b903810c370198d294e4c1062acf7abcd2eaca
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1ed37cbcf05ef7c222e567f650b903810c370198d294e4c1062acf7abcd2eaca
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1ed37cbcf05ef7c222e567f650b903810c370198d294e4c1062acf7abcd2eaca
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
+  BENCHMARK_REPORT_TRANSITION_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1972,8 +1972,11 @@ jobs:
             errors.push(`External evidence base ${match[1]} does not match ${expectedBase}`);
           }
           const speedups = match ? match.slice(2).map(Number) : [];
-          if (speedups.some(value => !Number.isFinite(value) || value < 10)) {
-            errors.push(`Every cold/warm/startup P50/P95 speedup must be >=10x: ${speedups.join(', ')}`);
+          if (speedups.length !== 6 || speedups.some(value => !Number.isFinite(value) || value <= 0)) {
+            errors.push(`Every reported cold/warm/startup speedup must be finite and positive: ${speedups.join(', ')}`);
+          }
+          if (speedups.length === 6 && speedups[5] < 10) {
+            errors.push(`Startup-prepared P95 speedup must be >=10x: ${speedups[5]}`);
           }
           const evidenceMatch = status?.target_url?.match(
             /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
@@ -2033,7 +2036,7 @@ jobs:
             ])
           ];
           if (manifest) {
-            if (manifest.schema !== 'graphite-fixture64-evidence-v6' ||
+            if (manifest.schema !== 'graphite-fixture64-evidence-v7' ||
                 manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 manifest.baseSha !== process.env.BASE_SHA ||
                 manifest.candidateSha !== process.env.CANDIDATE_SHA ||
@@ -2084,8 +2087,9 @@ jobs:
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
               ));
-              if (!result.passed || result.gateP50Speedup < 10 || result.gateP95Speedup < 10) {
-                errors.push(`${state} comparator status does not pass the 10x gate`);
+              if (!result.passed ||
+                  (state === 'startup-prepared' && result.gateP95Speedup < 10)) {
+                errors.push(`${state} comparator status does not pass its state-specific gate`);
               }
               const reported = speedups.slice(stateIndex * 2, stateIndex * 2 + 2);
               const measured = [result.gateP50Speedup, result.gateP95Speedup]

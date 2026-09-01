@@ -331,7 +331,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v6" \
+  --arg schema "graphite-fixture64-evidence-v7" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \
