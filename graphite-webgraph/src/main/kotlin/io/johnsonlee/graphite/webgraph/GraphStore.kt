@@ -48,6 +48,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
@@ -365,8 +366,21 @@ private class NodeDataWriteContext(
     val typeIndexWriter: TypeIndexWriter,
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
-    val classOverviewEdges: ClassOverviewEdgeBuilder
+    val classOverviewEdges: ClassOverviewEdgeBuilder,
+    val callSiteIdentity: MessageDigest
 )
+
+private fun MessageDigest.updateContentInt(value: Int) {
+    for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
+
+private fun MessageDigest.updateContentLong(value: Long) {
+    for (byteIndex in Long.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
 
 private class ForwardDataScratch {
     private var targets = IntArray(INITIAL_TARGET_CAPACITY)
@@ -624,7 +638,16 @@ object GraphStore {
         }
 
         // 6. Write nodedata + nodeindex simultaneously
-        writeNodeDataAndIndex(graph, dir, nodeCount, maxNodeId, nodeTypeCounts, stringTable, classOverviewEdges)
+        writeNodeDataAndIndex(
+            graph,
+            dir,
+            nodeCount,
+            maxNodeId,
+            nodeTypeCounts,
+            classOverviewBuilder.callSiteCount().toInt(),
+            stringTable,
+            classOverviewEdges
+        )
 
         // 7. Save metadata
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
@@ -663,9 +686,14 @@ object GraphStore {
         nodeCount: Int,
         maxNodeId: Int,
         nodeTypeCounts: IntArray,
+        callSiteCount: Int,
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder
     ) {
+        val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
+            update(stringTable.contentIdentity())
+            updateContentInt(callSiteCount)
+        }
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
             val dataDos = DataOutputStream(cos)
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
@@ -675,6 +703,7 @@ object GraphStore {
                     nodeCount,
                     maxNodeId,
                     nodeTypeCounts,
+                    callSiteIdentity,
                     dataDos,
                     idxDos,
                     cos,
@@ -683,6 +712,7 @@ object GraphStore {
                 )
             }
         }
+        Files.write(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE), callSiteIdentity.digest())
     }
 
     @Suppress("LongParameterList")
@@ -692,6 +722,7 @@ object GraphStore {
         nodeCount: Int,
         maxNodeId: Int,
         nodeTypeCounts: IntArray,
+        callSiteIdentity: MessageDigest,
         dataDos: DataOutputStream,
         idxDos: DataOutputStream,
         cos: CountingOutputStream,
@@ -706,7 +737,16 @@ object GraphStore {
                 idxDos.writeInt(nodeCount)
                 writeNodes(
                     graph,
-                    NodeDataWriteContext(dataDos, idxDos, offsetWriter, typeIndexWriter, cos, stringTable, classOverviewEdges)
+                    NodeDataWriteContext(
+                        dataDos,
+                        idxDos,
+                        offsetWriter,
+                        typeIndexWriter,
+                        cos,
+                        stringTable,
+                        classOverviewEdges,
+                        callSiteIdentity
+                    )
                 )
             }
         }
@@ -723,6 +763,16 @@ object GraphStore {
             context.typeIndexWriter.write(tag, node.id.value)
             if (node is CallSiteNode) {
                 context.classOverviewEdges.add(node)
+                context.callSiteIdentity.updateContentInt(node.id.value)
+                context.callSiteIdentity.updateContentLong(offset)
+                context.callSiteIdentity.updateContentInt(
+                    context.stringTable.indexOf(node.caller.declaringClass.className)
+                )
+                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.caller.name))
+                context.callSiteIdentity.updateContentInt(
+                    context.stringTable.indexOf(node.callee.declaringClass.className)
+                )
+                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.callee.name))
             }
         }
     }

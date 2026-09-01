@@ -42,6 +42,8 @@ internal class MappedCallSiteStringIndex(
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
 
+    private val persistedContentIdentity: ByteArray by lazy(contentIdentity)
+
     init {
         require(properties.size == CALL_SITE_STRING_PROPERTY_COUNT)
         require(properties.map(PropertyCsr::postingCount).distinct().size <= 1)
@@ -507,7 +509,7 @@ internal class MappedCallSiteStringIndex(
         }
         val callSiteCount = properties.firstOrNull()?.postingCount ?: 0
         val persistentRetainedBytes = persistentRetainedBytes(callSiteCount, stringTable.size(), properties, postings)
-        val graphContentIdentity = contentIdentity()
+        val graphContentIdentity = persistedContentIdentity
         require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
         output.writeInt(CALL_SITE_STRING_INDEX_MAGIC)
         output.writeInt(CALL_SITE_STRING_INDEX_VERSION)
@@ -532,6 +534,8 @@ internal class MappedCallSiteStringIndex(
             )
         )
     }
+
+    internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
 
     fun distinctProjection(
         predicates: List<StringPropertyPredicate>,

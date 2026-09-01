@@ -87,6 +87,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -4231,6 +4232,11 @@ class GraphStoreTest {
             val loaded = StringTable.load(dir)
             assertEquals("alpha", loaded.get(0))
             assertEquals(-1, loaded.indexOf("alpha"))
+            assertContentEquals(built.contentIdentity(), loaded.contentIdentity())
+
+            Files.delete(dir.resolve(StringTable.CONTENT_IDENTITY_FILE_NAME))
+            val legacyLoaded = StringTable.load(dir)
+            assertContentEquals(built.contentIdentity(), legacyLoaded.contentIdentity())
         } finally {
             dir.toFile().deleteRecursively()
         }

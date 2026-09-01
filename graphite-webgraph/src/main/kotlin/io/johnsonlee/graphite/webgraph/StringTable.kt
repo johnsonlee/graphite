@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 
@@ -20,20 +21,12 @@ import java.security.MessageDigest
  */
 internal class StringTable private constructor(
     private val list: FrontCodedStringList,
-    private val indexMap: Map<String, Int>?
+    private val indexMap: Map<String, Int>?,
+    contentIdentity: ByteArray?
 ) {
 
     private val persistedContentIdentity: ByteArray by lazy {
-        val digest = MessageDigest.getInstance("SHA-256")
-        digest.updateInt(list.size)
-        val reusable = MutableString()
-        for (index in 0 until list.size) {
-            list.get(index, reusable)
-            val bytes = reusable.toString().toByteArray(StandardCharsets.UTF_8)
-            digest.updateInt(bytes.size)
-            digest.update(bytes)
-        }
-        digest.digest()
+        contentIdentity?.copyOf() ?: semanticContentIdentity(list)
     }
 
     /**
@@ -78,6 +71,8 @@ internal class StringTable private constructor(
     companion object {
 
         private const val FILE_NAME = "graph.strings"
+        internal const val CONTENT_IDENTITY_FILE_NAME = "graph.strings.identity"
+        private const val CONTENT_IDENTITY_BYTES = 32
 
         /**
          * Build a [StringTable] from a collection of strings and persist it to disk.
@@ -90,11 +85,13 @@ internal class StringTable private constructor(
             val sorted = strings.toSortedSet().toList()
             val fcl = FrontCodedStringList(sorted.iterator(), FRONT_CODED_STRING_RATIO, false)
             BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
+            val contentIdentity = semanticContentIdentity(sorted)
+            Files.write(dir.resolve(CONTENT_IDENTITY_FILE_NAME), contentIdentity)
             val indexMap = HashMap<String, Int>(sorted.size)
             for (i in sorted.indices) {
                 indexMap[sorted[i]] = i
             }
-            return StringTable(fcl, indexMap)
+            return StringTable(fcl, indexMap, contentIdentity)
         }
 
         /**
@@ -103,7 +100,34 @@ internal class StringTable private constructor(
         fun load(dir: Path): StringTable {
             @Suppress("UNCHECKED_CAST")
             val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
-            return StringTable(fcl, null)
+            val contentIdentity = dir.resolve(CONTENT_IDENTITY_FILE_NAME).takeIf(Files::isRegularFile)
+                ?.let(Files::readAllBytes)
+                ?.takeIf { identity -> identity.size == CONTENT_IDENTITY_BYTES }
+            return StringTable(fcl, null, contentIdentity)
+        }
+
+        private fun semanticContentIdentity(strings: List<String>): ByteArray {
+            val digest = MessageDigest.getInstance("SHA-256")
+            digest.updateInt(strings.size)
+            strings.forEach { value ->
+                val bytes = value.toByteArray(StandardCharsets.UTF_8)
+                digest.updateInt(bytes.size)
+                digest.update(bytes)
+            }
+            return digest.digest()
+        }
+
+        private fun semanticContentIdentity(strings: FrontCodedStringList): ByteArray {
+            val digest = MessageDigest.getInstance("SHA-256")
+            digest.updateInt(strings.size)
+            val reusable = MutableString()
+            for (index in 0 until strings.size) {
+                strings.get(index, reusable)
+                val bytes = reusable.toString().toByteArray(StandardCharsets.UTF_8)
+                digest.updateInt(bytes.size)
+                digest.update(bytes)
+            }
+            return digest.digest()
         }
     }
 }
