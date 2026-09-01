@@ -335,7 +335,7 @@ class QueryPipeline private constructor(
         val patternReferencesGraphId = pattern.elements.any { element ->
             element is PatternElement.NodePattern && GRAPH_ID_PROPERTY in element.properties
         }
-        if (!patternReferencesGraphId && (condition == null || !containsGraphIdReference(condition))) {
+        if (!patternReferencesGraphId && (condition == null || !containsGraphIdConstraintCandidate(condition))) {
             return null
         }
         val variables = pattern.elements.filterIsInstance<PatternElement.NodePattern>()
@@ -357,54 +357,27 @@ class QueryPipeline private constructor(
         )
     }
 
-    /** Cheaply rejects the overwhelmingly common source-unqualified query before set planning. */
-    @Suppress("CyclomaticComplexMethod")
-    private fun containsGraphIdReference(expression: CypherExpr): Boolean = when (expression) {
-        is CypherExpr.Property -> expression.propertyName == GRAPH_ID_PROPERTY ||
-            containsGraphIdReference(expression.expression)
-        is CypherExpr.FunctionCall -> expression.name.equals("graphId", ignoreCase = true) ||
-            expression.args.any(::containsGraphIdReference)
-        is CypherExpr.BinaryOp -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.UnaryOp -> containsGraphIdReference(expression.expression)
-        is CypherExpr.Comparison -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.StringOp -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.ListOp -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.RegexMatch -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.IsNull -> containsGraphIdReference(expression.expression)
-        is CypherExpr.IsNotNull -> containsGraphIdReference(expression.expression)
-        is CypherExpr.Not -> containsGraphIdReference(expression.expression)
-        is CypherExpr.And -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.Or -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.Xor -> containsGraphIdReference(expression.left) ||
-            containsGraphIdReference(expression.right)
-        is CypherExpr.CaseExpr -> expression.test?.let(::containsGraphIdReference) == true ||
-            expression.whenClauses.any { (condition, result) ->
-                containsGraphIdReference(condition) || containsGraphIdReference(result)
-            } || expression.elseExpr?.let(::containsGraphIdReference) == true
-        is CypherExpr.ListLiteral -> expression.elements.any(::containsGraphIdReference)
-        is CypherExpr.MapLiteral -> expression.entries.values.any(::containsGraphIdReference)
-        is CypherExpr.ListComprehension -> containsGraphIdReference(expression.listExpr) ||
-            expression.predicate?.let(::containsGraphIdReference) == true ||
-            expression.mapExpr?.let(::containsGraphIdReference) == true
-        is CypherExpr.PredicateFunction -> containsGraphIdReference(expression.listExpr) ||
-            expression.predicate?.let(::containsGraphIdReference) == true
-        is CypherExpr.Subscript -> containsGraphIdReference(expression.expression) ||
-            containsGraphIdReference(expression.index)
-        is CypherExpr.Slice -> containsGraphIdReference(expression.expression) ||
-            expression.from?.let(::containsGraphIdReference) == true ||
-            expression.to?.let(::containsGraphIdReference) == true
-        is CypherExpr.Distinct -> containsGraphIdReference(expression.expression)
-        is CypherExpr.Literal,
-        is CypherExpr.Variable,
-        is CypherExpr.Parameter,
-        is CypherExpr.CountStar -> false
+    /**
+     * Cheaply rejects the overwhelmingly common source-unqualified query before set planning.
+     * Only the expression shapes accepted by [graphIdConstraint] are candidates: walking through
+     * arbitrary arithmetic, CASE, string, or collection expressions cannot produce a safe route.
+     */
+    private fun containsGraphIdConstraintCandidate(expression: CypherExpr): Boolean = when (expression) {
+        is CypherExpr.And -> containsGraphIdConstraintCandidate(expression.left) ||
+            containsGraphIdConstraintCandidate(expression.right)
+        is CypherExpr.Or -> containsGraphIdConstraintCandidate(expression.left) ||
+            containsGraphIdConstraintCandidate(expression.right)
+        is CypherExpr.Comparison -> isPotentialGraphIdReference(expression.left) ||
+            isPotentialGraphIdReference(expression.right)
+        is CypherExpr.ListOp -> expression.op.equals("IN", ignoreCase = true) &&
+            isPotentialGraphIdReference(expression.left)
+        else -> false
+    }
+
+    private fun isPotentialGraphIdReference(expression: CypherExpr): Boolean = when (expression) {
+        is CypherExpr.Property -> expression.propertyName == GRAPH_ID_PROPERTY
+        is CypherExpr.FunctionCall -> expression.name.equals("graphId", ignoreCase = true)
+        else -> false
     }
 
     private fun recordGraphSourceScope(scope: GraphSourceScope) {

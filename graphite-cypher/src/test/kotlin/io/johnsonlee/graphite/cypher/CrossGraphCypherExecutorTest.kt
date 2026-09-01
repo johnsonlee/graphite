@@ -2058,6 +2058,16 @@ class CrossGraphCypherExecutorTest {
         assertEquals("graph-63", unknownOr.rows.last()["graph"])
         assertEquals(0, unknownOrDiagnostics.graphIdSourceSelections)
 
+        val (nonRoutingReference, nonRoutingDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE graphId(n) STARTS WITH 'graph-' " +
+                "RETURN n.graphId AS graph LIMIT 100"
+        )
+        assertEquals(64, nonRoutingReference.rows.size)
+        assertEquals("graph-0", nonRoutingReference.rows.first()["graph"])
+        assertEquals("graph-63", nonRoutingReference.rows.last()["graph"])
+        assertEquals(0, nonRoutingDiagnostics.graphIdSourceSelections)
+        assertTrue(nodeScans.all { it.get() > 0 })
+
         val (independent, independentDiagnostics) = execute(
             "MATCH (a:IntConstant), (b:IntConstant) " +
                 "WHERE graphId(a) IN ['graph-0'] AND b.graphId IN ['graph-3'] " +
