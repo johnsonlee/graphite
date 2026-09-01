@@ -210,10 +210,11 @@ open class LargeBroadQueryPressureBenchmark {
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)
+            val latencyNanos = System.nanoTime() - started
             val canonicalResult = canonicalResult(result)
             BroadQuerySample(
                 case = case,
-                latencyNanos = System.nanoTime() - started,
+                latencyNanos = latencyNanos,
                 outcome = BroadQueryOutcome.SUCCESS,
                 rowCount = result.rows.size.toLong(),
                 responseBytes = canonicalResult.size.toLong(),
