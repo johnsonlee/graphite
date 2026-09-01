@@ -565,6 +565,35 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     fs.rmSync(root, { recursive: true });
 });
 
+test("canonical JAR hash accepts overlapping duplicate fat-JAR entries", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-overlapping-jar-"));
+    const archivePath = path.join(root, "overlapping.jar");
+    const created = spawnSync("python3", [
+        "-c",
+        "import sys,zipfile; z=zipfile.ZipFile(sys.argv[1],'w'); " +
+            "z.writestr('META-INF/LICENSE.txt',b'same'); " +
+            "z.writestr('META-INF/LICENSE.txt',b'same'); z.close()",
+        archivePath
+    ], { encoding: "utf8" });
+    assert.equal(created.status, 0, created.stderr);
+    const bytes = fs.readFileSync(archivePath);
+    const centralSignature = Buffer.from([0x50, 0x4b, 0x01, 0x02]);
+    const centralOffsets = [];
+    for (let offset = bytes.indexOf(centralSignature); offset >= 0;
+        offset = bytes.indexOf(centralSignature, offset + 1)) {
+        centralOffsets.push(offset);
+    }
+    assert.equal(centralOffsets.length, 2);
+    bytes.writeUInt32LE(bytes.readUInt32LE(centralOffsets[0] + 42), centralOffsets[1] + 42);
+    fs.writeFileSync(archivePath, bytes);
+
+    const hasher = new URL("./canonical-zip-sha256.py", import.meta.url);
+    const result = spawnSync("python3", [hasher.pathname, archivePath], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout.trim(), /^[0-9a-f]{64}$/);
+    fs.rmSync(root, { recursive: true });
+});
+
 test("fixture64 driver builds commit-bound JARs and records fixture provenance", () => {
     const driver = fs.readFileSync(
         new URL("./run-real64-graph-routing.sh", import.meta.url),
