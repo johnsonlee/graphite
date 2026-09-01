@@ -1195,7 +1195,7 @@ class GraphStoreTest {
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 val serialWork = AtomicLong()
-                val serialIds = loaded.nodesByStringPropertyDisjunction(
+                val serialNodes = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
                         StringPropertyPredicate(
@@ -1207,9 +1207,11 @@ class GraphStoreTest {
                     ),
                     limit = 1,
                     workConsumer = SerialGraphWorkBatchConsumer(serialWork::addAndGet)
-                ).orEmpty().map { it.id.value }.toList()
+                ).orEmpty()
+                assertEquals(0L, serialWork.get())
+                val serialIds = serialNodes.map { it.id.value }.toList()
                 assertEquals(listOf(0), serialIds)
-                assertTrue(serialWork.get() > 0L)
+                assertEquals(1L, serialWork.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
 
                 val serialLateWork = AtomicLong()

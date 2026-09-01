@@ -541,49 +541,55 @@ internal class MappedWebGraphBackedGraph(
     ): Sequence<T>? {
         if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE) return null
         if (workConsumer !is SerialGraphWorkBatchConsumer) return null
-        val nodeCount = nodeTypeIndex.count(type)
-        if (nodeCount > Int.MAX_VALUE) return null
-        val propertyIndexes = predicates.map { predicate ->
-            requiredCallSiteStringPropertyIndex(predicate.property)
-        }
-        val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
-        val matchers = predicates.map { predicate ->
-            val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            sharedMatchers.getOrPut(key) { BoundedStringMatcher(stringTable, key) }
-        }
-        val matches = IntArrayList(minOf(limit, RAW_CALL_SITE_INITIAL_MATCH_CAPACITY))
-        val accounting = BufferedGraphWorkConsumer(workConsumer)
-        var inspected = 0
-        try {
-            nodeTypeIndex.forEachIdWhile(type, 0, nodeCount.toInt()) { nodeId ->
-                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                    Thread.currentThread().isInterrupted
-                ) {
-                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
-                }
-                accounting.consume()
-                var matched = false
-                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
-                    var predicateIndex = 0
-                    while (!matched && predicateIndex < predicates.size) {
-                        val stringId = when (propertyIndexes[predicateIndex]) {
-                            CALLER_CLASS_PROPERTY_INDEX -> callerClass
-                            CALLER_NAME_PROPERTY_INDEX -> callerName
-                            CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
-                            else -> calleeName
+        return sequence {
+            val propertyIndexes = predicates.map { predicate ->
+                requiredCallSiteStringPropertyIndex(predicate.property)
+            }
+            val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
+            val matchers = predicates.map { predicate ->
+                val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                sharedMatchers.getOrPut(key) { BoundedStringMatcher(stringTable, key) }
+            }
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            val nodeIds = nodeTypeIndex.idIterator(type)
+            var inspected = 0
+            var yielded = 0
+            try {
+                while (yielded < limit && nodeIds.hasNext()) {
+                    val nodeId = nodeIds.nextInt()
+                    if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                        Thread.currentThread().isInterrupted
+                    ) {
+                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                    }
+                    accounting.consume()
+                    var matched = false
+                    withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                        var predicateIndex = 0
+                        while (!matched && predicateIndex < predicates.size) {
+                            val stringId = when (propertyIndexes[predicateIndex]) {
+                                CALLER_CLASS_PROPERTY_INDEX -> callerClass
+                                CALLER_NAME_PROPERTY_INDEX -> callerName
+                                CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
+                                else -> calleeName
+                            }
+                            matched = matchers[predicateIndex].matches(stringId)
+                            predicateIndex++
                         }
-                        matched = matchers[predicateIndex].matches(stringId)
-                        predicateIndex++
+                    }
+                    if (matched) {
+                        val matchedNode = node(NodeId(nodeId)) as? T
+                        if (matchedNode != null) {
+                            yielded++
+                            accounting.flush()
+                            yield(matchedNode)
+                        }
                     }
                 }
-                if (matched) matches.add(nodeId)
-                matches.size < limit
+            } finally {
+                accounting.flush()
             }
-        } finally {
-            accounting.flush()
         }
-        return matches.toIntArray().asSequence()
-            .mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod", "ThrowsCount", "TooGenericExceptionCaught")
@@ -1586,7 +1592,6 @@ private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
 private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
-private const val RAW_CALL_SITE_INITIAL_MATCH_CAPACITY = 256
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 internal const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L

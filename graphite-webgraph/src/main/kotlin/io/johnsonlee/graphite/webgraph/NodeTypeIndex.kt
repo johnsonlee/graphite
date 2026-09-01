@@ -27,6 +27,13 @@ import java.util.function.IntPredicate
 
 internal interface NodeTypeIndex {
     fun ids(type: Class<out Node>): Sequence<Int>
+    fun idIterator(type: Class<out Node>): IntIterator = object : IntIterator() {
+        private val delegate = ids(type).iterator()
+
+        override fun hasNext(): Boolean = delegate.hasNext()
+
+        override fun nextInt(): Int = delegate.next()
+    }
     fun forEachIdWhile(
         type: Class<out Node>,
         startIndex: Int,
@@ -45,8 +52,9 @@ internal class MappedNodeTypeIndex private constructor(
     private val rangesByType: Map<Class<out Node>, NodeTypeRange>
 ) : NodeTypeIndex {
 
-    override fun ids(type: Class<out Node>): Sequence<Int> =
-        Sequence { MappedNodeIdIterator(buffer, ranges(type)) }
+    override fun ids(type: Class<out Node>): Sequence<Int> = Sequence { idIterator(type) }
+
+    override fun idIterator(type: Class<out Node>): IntIterator = MappedNodeIdIterator(buffer, ranges(type))
 
     override fun forEachIdWhile(
         type: Class<out Node>,
