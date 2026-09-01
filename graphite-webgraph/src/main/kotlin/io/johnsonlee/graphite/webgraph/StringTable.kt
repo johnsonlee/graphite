@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
@@ -25,9 +26,9 @@ internal class StringTable private constructor(
     contentIdentity: ByteArray?
 ) {
 
-    private val persistedContentIdentity: ByteArray by lazy {
-        contentIdentity?.copyOf() ?: semanticContentIdentity(list)
-    }
+    @Volatile
+    private var persistedContentIdentity: ByteArray? = contentIdentity?.copyOf()
+    private val contentIdentityLock = Any()
 
     /**
      * Returns the index of [s] in the string table, or -1 if not found.
@@ -66,7 +67,15 @@ internal class StringTable private constructor(
     fun size(): Int = list.size
 
     /** Stable semantic identity of every ordered string-table entry. */
-    internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
+    internal fun contentIdentity(workConsumer: GraphWorkConsumer? = null): ByteArray {
+        persistedContentIdentity?.let { return it.copyOf() }
+        return synchronized(contentIdentityLock) {
+            persistedContentIdentity?.let { return@synchronized it.copyOf() }
+            semanticContentIdentity(list, workConsumer).also { identity ->
+                persistedContentIdentity = identity
+            }.copyOf()
+        }
+    }
 
     companion object {
 
@@ -117,15 +126,24 @@ internal class StringTable private constructor(
             return digest.digest()
         }
 
-        private fun semanticContentIdentity(strings: FrontCodedStringList): ByteArray {
+        private fun semanticContentIdentity(
+            strings: FrontCodedStringList,
+            workConsumer: GraphWorkConsumer?
+        ): ByteArray {
             val digest = MessageDigest.getInstance("SHA-256")
             digest.updateInt(strings.size)
             val reusable = MutableString()
-            for (index in 0 until strings.size) {
-                strings.get(index, reusable)
-                val bytes = reusable.toString().toByteArray(StandardCharsets.UTF_8)
-                digest.updateInt(bytes.size)
-                digest.update(bytes)
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            try {
+                for (index in 0 until strings.size) {
+                    accounting.consume()
+                    strings.get(index, reusable)
+                    val bytes = reusable.toString().toByteArray(StandardCharsets.UTF_8)
+                    digest.updateInt(bytes.size)
+                    digest.update(bytes)
+                }
+            } finally {
+                accounting.flush()
             }
             return digest.digest()
         }

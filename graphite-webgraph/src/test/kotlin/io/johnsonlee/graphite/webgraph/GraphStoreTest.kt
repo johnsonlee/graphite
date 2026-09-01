@@ -578,19 +578,28 @@ class GraphStoreTest {
             System.clearProperty(property)
             GraphStore.save(graph, dir, compressionThreads = 2, prepareCallSiteStringIndex = true)
             assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+            Files.delete(dir.resolve(StringTable.CONTENT_IDENTITY_FILE_NAME))
+            Files.delete(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE))
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertFailsWith<IllegalStateException> {
-                    loaded.aggregateStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        distinctProperty = null,
-                        workConsumer = GraphWorkConsumer { error("query work denied") }
-                    )
+                val deniedIdentityBatches = AtomicLong()
+                repeat(2) {
+                    assertFailsWith<IllegalStateException> {
+                        loaded.aggregateStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            distinctProperty = null,
+                            workConsumer = GraphWorkConsumer {
+                                deniedIdentityBatches.incrementAndGet()
+                                error("query work denied")
+                            }
+                        )
+                    }
+                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
                 }
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(2L, deniedIdentityBatches.get())
 
                 assertEquals(
                     1L,
@@ -1736,7 +1745,7 @@ class GraphStoreTest {
     }
 
     @Test
-    @Suppress("LongMethod", "NestedBlockDepth")
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
     fun `bounded mapped CallSite scan uses ordered intra graph workers before index admission`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
@@ -2223,6 +2232,69 @@ class GraphStoreTest {
                 assertEquals("cancelled during optional cache handoff", handoffCancellation.message)
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+                if (Runtime.getRuntime().availableProcessors() > 1) {
+                    loaded.resetCallSiteScanMetrics()
+                    val expectedWorkers = callSiteScanParallelism
+                    val firstPreparationBatchReached = CountDownLatch(expectedWorkers)
+                    val preparationFailureClaimed = AtomicBoolean()
+                    val preparationFailure = assertFailsWith<IllegalStateException> {
+                        loaded.prepareCallSiteStringIndex(
+                            ParallelGraphWorkBatchConsumer {
+                                val failThisWorker = preparationFailureClaimed.compareAndSet(false, true)
+                                firstPreparationBatchReached.countDown()
+                                check(firstPreparationBatchReached.await(5, TimeUnit.SECONDS))
+                                if (failThisWorker) error("parallel preparation budget failure")
+                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
+                                    Thread.onSpinWait()
+                                }
+                            }
+                        )
+                    }
+                    assertEquals("parallel preparation budget failure", preparationFailure.message)
+                    assertEquals(0, loaded.callSiteScanActiveWorkers())
+                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+                    loaded.resetCallSiteScanMetrics()
+                    val interruptedPreparationBatchReached = CountDownLatch(expectedWorkers)
+                    val releaseInterruptedPreparation = CountDownLatch(1)
+                    val interruptedPreparationFailure = AtomicReference<Throwable>()
+                    val interruptedPreparationFlag = AtomicBoolean()
+                    val interruptedPreparation = Thread {
+                        try {
+                            loaded.prepareCallSiteStringIndex(
+                                ParallelGraphWorkBatchConsumer {
+                                    interruptedPreparationBatchReached.countDown()
+                                    check(releaseInterruptedPreparation.await(5, TimeUnit.SECONDS))
+                                }
+                            )
+                            interruptedPreparationFailure.set(
+                                AssertionError("Interrupted CallSite preparation completed normally")
+                            )
+                        } catch (error: Throwable) {
+                            interruptedPreparationFailure.set(error)
+                            interruptedPreparationFlag.set(Thread.currentThread().isInterrupted)
+                        }
+                    }
+                    interruptedPreparation.start()
+                    try {
+                        assertTrue(interruptedPreparationBatchReached.await(5, TimeUnit.SECONDS))
+                        interruptedPreparation.interrupt()
+                    } finally {
+                        releaseInterruptedPreparation.countDown()
+                    }
+                    interruptedPreparation.join(5_000)
+                    assertFalse(interruptedPreparation.isAlive)
+                    assertTrue(interruptedPreparationFailure.get() is CancellationException)
+                    assertTrue(interruptedPreparationFlag.get())
+                    assertEquals(0, loaded.callSiteScanActiveWorkers())
+
+                    assertTrue(loaded.prepareCallSiteStringIndex())
+                    assertTrue(loaded.isCallSiteStringIndexInitialized())
+                    assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                    loaded.clearStringPropertyIndexes()
+                }
 
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteParallelScanCount())
@@ -4238,6 +4310,53 @@ class GraphStoreTest {
             val legacyLoaded = StringTable.load(dir)
             assertContentEquals(built.contentIdentity(), legacyLoaded.contentIdentity())
         } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `production CallSite persistence declines missing identity and unavailable index memory`() {
+        val dir = Files.createTempDirectory("webgraph-callsite-persistence-failures")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        var blocker: Closeable? = null
+        try {
+            val stringTable = StringTable.build(
+                listOf("example.Caller", "call", "example.Dependency", "invoke"),
+                dir
+            )
+            assertFalse(persistCallSiteStringIndex(CallSiteIndexPersistenceInput(0), stringTable, dir))
+
+            val available = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(available)
+            assertNotNull(blocker)
+            assertNull(CallSiteIndexPersistenceInput(0).build(stringTable, ByteArray(32)))
+            blocker.close()
+            blocker = null
+
+            val input = CallSiteIndexPersistenceInput(1)
+            input.add(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), TypeDescriptor("void")),
+                    MethodDescriptor(
+                        TypeDescriptor("example.Dependency"),
+                        "invoke",
+                        emptyList(),
+                        TypeDescriptor("void")
+                    ),
+                    0,
+                    null,
+                    emptyList()
+                ),
+                stringTable
+            )
+            val countBytes = checkNotNull(estimatedMappedCallSiteStringIndexCountBytes(stringTable.size()))
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(available - countBytes)
+            assertNotNull(blocker)
+            assertNull(input.build(stringTable, ByteArray(32)))
+        } finally {
+            blocker?.close()
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
             dir.toFile().deleteRecursively()
         }
     }

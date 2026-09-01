@@ -367,7 +367,8 @@ private class NodeDataWriteContext(
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
     val classOverviewEdges: ClassOverviewEdgeBuilder,
-    val callSiteIdentity: MessageDigest
+    val callSiteIdentity: MessageDigest,
+    val callSiteIndexInput: CallSiteIndexPersistenceInput?
 )
 
 private fun MessageDigest.updateContentInt(value: Int) {
@@ -527,7 +528,7 @@ internal data class NodeIndexData(
  * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
  */
-@Suppress("TooManyFunctions")
+@Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {
 
     /**
@@ -599,6 +600,13 @@ object GraphStore {
         }
         val classOverviewCounts = classOverviewBuilder.topClassCounts(ClassOverviewStore.MAX_PERSISTED_CLASSES)
         val classOverviewEdges = ClassOverviewEdgeBuilder(classOverviewCounts.keys)
+        val prepareCallSiteIndex = classOverviewBuilder.callSiteCount() > 0L &&
+            (prepareCallSiteStringIndex || mappedCallSiteStringIndexPreparationEnabled())
+        val callSiteIndexInput = if (prepareCallSiteIndex) {
+            CallSiteIndexPersistenceInput(classOverviewBuilder.callSiteCount().toInt())
+        } else {
+            null
+        }
 
         // 2. Collect metadata
         val metadata = collectMetadata(graph)
@@ -648,7 +656,8 @@ object GraphStore {
             nodeTypeCounts,
             classOverviewBuilder.callSiteCount().toInt(),
             stringTable,
-            classOverviewEdges
+            classOverviewEdges,
+            callSiteIndexInput
         )
 
         // 7. Save metadata
@@ -671,14 +680,8 @@ object GraphStore {
         PersistedResourceStore.save(graph, dir)
 
         // 10. Build the query-only CallSite index once and persist it for mapped loads.
-        if (classOverviewBuilder.callSiteCount() > 0L &&
-            (prepareCallSiteStringIndex || mappedCallSiteStringIndexPreparationEnabled())
-        ) {
-            (loadMapped(
-                dir,
-                prepareCallSiteStringIndex = true,
-                persistentCallSiteStringIndex = true
-            ) as Closeable).use { }
+        if (prepareCallSiteIndex) {
+            persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
         }
     }
 
@@ -691,7 +694,8 @@ object GraphStore {
         nodeTypeCounts: IntArray,
         callSiteCount: Int,
         stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder
+        classOverviewEdges: ClassOverviewEdgeBuilder,
+        callSiteIndexInput: CallSiteIndexPersistenceInput?
     ) {
         val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
             update(stringTable.contentIdentity())
@@ -711,7 +715,8 @@ object GraphStore {
                     idxDos,
                     cos,
                     stringTable,
-                    classOverviewEdges
+                    classOverviewEdges,
+                    callSiteIndexInput
                 )
             }
         }
@@ -730,7 +735,8 @@ object GraphStore {
         idxDos: DataOutputStream,
         cos: CountingOutputStream,
         stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder
+        classOverviewEdges: ClassOverviewEdgeBuilder,
+        callSiteIndexInput: CallSiteIndexPersistenceInput?
     ) {
         NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
             TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
@@ -748,7 +754,8 @@ object GraphStore {
                         cos,
                         stringTable,
                         classOverviewEdges,
-                        callSiteIdentity
+                        callSiteIdentity,
+                        callSiteIndexInput
                     )
                 )
             }
@@ -776,6 +783,7 @@ object GraphStore {
                     context.stringTable.indexOf(node.callee.declaringClass.className)
                 )
                 context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.callee.name))
+                context.callSiteIndexInput?.add(node, context.stringTable)
             }
         }
     }

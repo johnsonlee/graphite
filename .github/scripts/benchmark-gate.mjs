@@ -673,6 +673,23 @@ function encodeCorrectnessRecord(record) {
     ].join("|");
 }
 
+export function canonicalCorrectnessManifest(contents, source) {
+    const records = contents.replaceAll("\r\n", "\n").split("\n");
+    if (records.at(-1) === "") records.pop();
+    if (records.length === 0 || records.some((record) => record.length === 0)) {
+        throw new Error(`${source} contains empty correctness records`);
+    }
+    const queryIds = records.map((record) => {
+        const separator = record.indexOf("|");
+        if (separator <= 0) throw new Error(`${source} contains a malformed correctness record`);
+        return record.slice(0, separator);
+    });
+    if (new Set(queryIds).size !== queryIds.length) {
+        throw new Error(`${source} contains duplicate query IDs`);
+    }
+    return records.toSorted().join("\n");
+}
+
 export function deriveGraphRoutingOracle(referenceContents) {
     const errors = [];
     const references = parseCorrectnessRecords(referenceContents, "base-single-source", errors);

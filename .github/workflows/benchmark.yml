@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
-  BENCHMARK_REPORT_TRANSITION_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  BENCHMARK_REPORT_TRANSITION_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1952,6 +1952,9 @@ jobs:
           const { materializeGistFiles } = await import(pathToFileURL(path.resolve(
             'evidence-candidate/.github/scripts/gist-evidence.mjs'
           )).href);
+          const { canonicalCorrectnessManifest } = await import(pathToFileURL(path.resolve(
+            'evidence-candidate/.github/scripts/benchmark-gate.mjs'
+          )).href);
           const errors = [];
           const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
             owner: context.repo.owner,
@@ -2084,22 +2087,6 @@ jobs:
                   reproducibility.repeatedManifestSemanticSha256) {
               errors.push('Repeated fixture-JAR preparation is not reproducible');
             }
-            const canonicalCorrectness = (content, label) => {
-              const records = content.replaceAll('\r\n', '\n').split('\n');
-              if (records.at(-1) === '') records.pop();
-              if (records.length === 0 || records.some(record => record.length === 0)) {
-                throw new Error(`${label} contains empty correctness records`);
-              }
-              const queryIds = records.map(record => {
-                const separator = record.indexOf('|');
-                if (separator <= 0) throw new Error(`${label} contains a malformed correctness record`);
-                return record.slice(0, separator);
-              });
-              if (new Set(queryIds).size !== queryIds.length) {
-                throw new Error(`${label} contains duplicate query IDs`);
-              }
-              return records.toSorted().join('\n');
-            };
             for (const [stateIndex, state] of ['cold', 'warm', 'startup-prepared'].entries()) {
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
@@ -2121,8 +2108,8 @@ jobs:
               const oracle = fs.readFileSync(
                 path.join(directory, 'base-single-source-oracle.manifest'), 'utf8'
               );
-              if (canonicalCorrectness(correctness, `${state} candidate`) !==
-                  canonicalCorrectness(oracle, 'single-source oracle')) {
+              if (canonicalCorrectnessManifest(correctness, `${state} candidate`) !==
+                  canonicalCorrectnessManifest(oracle, 'single-source oracle')) {
                 errors.push(`${state} candidate correctness differs from the oracle`);
               }
             }

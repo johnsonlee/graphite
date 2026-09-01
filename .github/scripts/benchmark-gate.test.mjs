@@ -12,6 +12,7 @@ import {
     BENCHMARK_COVERAGE_DOMAINS,
     COMMENT_MARKER,
     aggregateReports,
+    canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
     confirmLatencyResources,
@@ -38,6 +39,29 @@ import {
     selectJmhMetric,
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
+
+test("canonical correctness comparison is order-insensitive and rejects incomplete or ambiguous records", () => {
+    const first = "query-a|payload-a";
+    const second = "query-b|payload-b";
+    const expected = `${first}\n${second}\n`;
+
+    assert.equal(
+        canonicalCorrectnessManifest(`${second}\n${first}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.notEqual(
+        canonicalCorrectnessManifest(`${first}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.notEqual(
+        canonicalCorrectnessManifest(`${first}-mutated\n${second}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.throws(
+        () => canonicalCorrectnessManifest(`${first}\nquery-a|payload-b\n`, "candidate"),
+        /duplicate query IDs/
+    );
+});
 
 function graphIdPressureResult(overrides = {}, indexState = "cold") {
     const warm = indexState === "warm" || indexState === "startup-prepared";
@@ -2320,9 +2344,8 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.doesNotMatch(workflow, /github\.request\('GET \/gists\/\{gist_id\}\/\{sha\}'/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
-    assert.match(workflow, /const canonicalCorrectness = \(content, label\) =>/);
-    assert.match(workflow, /contains duplicate query IDs/);
-    assert.match(workflow, /return records\.toSorted\(\)\.join\('\\n'\)/);
+    assert.match(workflow, /const \{ canonicalCorrectnessManifest \} = await import/);
+    assert.match(workflow, /canonicalCorrectnessManifest\(correctness/);
     assert.doesNotMatch(workflow, /if \(correctness !== oracle\)/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);
     const webgraphBuild = fs.readFileSync(

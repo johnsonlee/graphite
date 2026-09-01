@@ -195,7 +195,7 @@ internal class MappedWebGraphBackedGraph(
     private var callSiteStringIndexPersistenceBudgetDenied = false
     private fun callSiteStringIndexContentIdentity(workConsumer: GraphWorkConsumer?): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
-        digest.update(stringTable.contentIdentity())
+        digest.update(stringTable.contentIdentity(workConsumer))
         digest.updateIdentityInt(nodeTypeIndex.count(CallSiteNode::class.java).toInt())
         forEachRawCallSiteStringIds(workConsumer) {
                 nodeId, callerClass, callerName, calleeClass, calleeName ->
@@ -997,20 +997,34 @@ internal class MappedWebGraphBackedGraph(
         callSiteParallelScanCount.incrementAndGet()
         tasks.forEach(completion::submit)
         val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
-        try {
-            repeat(tasks.size) {
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < tasks.size) {
+            try {
                 val result = completion.take().get()
                 results[result.workerIndex] = result
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
+                received++
             }
-        } catch (error: InterruptedException) {
-            abort.set(true)
+        }
+        interruption?.let { error ->
+            reservation.close()
             Thread.currentThread().interrupt()
-            reservation.close()
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
-        } catch (error: ExecutionException) {
-            abort.set(true)
+        }
+        failure?.let { error ->
             reservation.close()
-            throw error.cause ?: error
+            throw error
         }
         val completed = results.filterNotNull()
         if (completed.size != tasks.size || completed.any { !it.capturedCompleteIndex }) {
@@ -1435,15 +1449,17 @@ internal class MappedWebGraphBackedGraph(
      * Prepares the complete CallSite string search path before the graph is exposed to queries.
      * A denied shared-memory reservation is a normal fallback and leaves raw scans available.
      */
-    internal fun prepareCallSiteStringIndex(): Boolean {
+    internal fun prepareCallSiteStringIndex(
+        workConsumer: GraphWorkConsumer = CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER
+    ): Boolean {
         val index = if (!Files.isRegularFile(callSiteStringIndexFile) &&
-            prepareCallSiteStringIndexInParallel(CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER)
+            prepareCallSiteStringIndexInParallel(workConsumer)
         ) {
             callSiteStringIndex
         } else {
-            callSiteStringIndex(CallSiteNode::class.java, CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER)
+            callSiteStringIndex(CallSiteNode::class.java, workConsumer)
         } ?: return false
-        return index.prepareTrigramPostings(CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER)
+        return index.prepareTrigramPostings(workConsumer)
     }
 
     @Suppress("TooGenericExceptionCaught")
