@@ -2294,6 +2294,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.doesNotMatch(workflow, /github\.request\('GET \/gists\/\{gist_id\}\/\{sha\}'/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
+    assert.match(workflow, /const canonicalCorrectness = \(content, label\) =>/);
+    assert.match(workflow, /contains duplicate query IDs/);
+    assert.match(workflow, /return records\.toSorted\(\)\.join\('\\n'\)/);
+    assert.doesNotMatch(workflow, /if \(correctness !== oracle\)/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),

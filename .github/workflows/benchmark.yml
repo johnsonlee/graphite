@@ -2083,6 +2083,22 @@ jobs:
                   reproducibility.repeatedManifestSemanticSha256) {
               errors.push('Repeated fixture-JAR preparation is not reproducible');
             }
+            const canonicalCorrectness = (content, label) => {
+              const records = content.replaceAll('\r\n', '\n').split('\n');
+              if (records.at(-1) === '') records.pop();
+              if (records.length === 0 || records.some(record => record.length === 0)) {
+                throw new Error(`${label} contains empty correctness records`);
+              }
+              const queryIds = records.map(record => {
+                const separator = record.indexOf('|');
+                if (separator <= 0) throw new Error(`${label} contains a malformed correctness record`);
+                return record.slice(0, separator);
+              });
+              if (new Set(queryIds).size !== queryIds.length) {
+                throw new Error(`${label} contains duplicate query IDs`);
+              }
+              return records.toSorted().join('\n');
+            };
             for (const [stateIndex, state] of ['cold', 'warm', 'startup-prepared'].entries()) {
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
@@ -2104,7 +2120,10 @@ jobs:
               const oracle = fs.readFileSync(
                 path.join(directory, 'base-single-source-oracle.manifest'), 'utf8'
               );
-              if (correctness !== oracle) errors.push(`${state} candidate correctness differs from the oracle`);
+              if (canonicalCorrectness(correctness, `${state} candidate`) !==
+                  canonicalCorrectness(oracle, 'single-source oracle')) {
+                errors.push(`${state} candidate correctness differs from the oracle`);
+              }
             }
           } catch (error) {
             errors.push(`Evidence payload is invalid: ${error.message}`);
