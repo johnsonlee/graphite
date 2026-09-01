@@ -3,10 +3,8 @@
 `LargeBroadQueryPressureBenchmark` measures the full replay distribution of broad node-property
 searches across 64 mapped graph handles under an exact `-Xmx8g` cap. The number of queries is a
 result of the coverage matrix, not a target: 32 non-routing shapes are crossed with zero-hit,
-targeted, and dense selectivity, while three graphId spellings plus the `/api/cypher/graphs`
-`graph`-parameter reference path cover every graph and every selectivity in the manifest. This
-produces 864 queries
-today.
+targeted, and dense selectivity, while three graphId spellings plus a request-selected single-source
+reference path cover every graph and every selectivity in the manifest.
 
 The matrix borrows the useful taxonomy from the openCypher TCK, but not the TCK datasets or its
 pass criteria. The TCK is a correctness suite over small scenario graphs. This pressure benchmark
@@ -17,7 +15,8 @@ materialization cost:
 - `AND`, `OR`, `AND NOT`, and mixed exact/substring predicates;
 - raw and `toLower(coalesce(...))` property access;
 - literal, function, and parameterized `graphId` routing combined with wrapped broad search;
-- `/api/cypher/graphs` single-`graph` source selection with the same wrapped broad search;
+- request-selected single-source execution, equivalent to the source set produced by
+  `/api/cypher/graphs` with its `graph` parameter, with the same wrapped broad search;
 - node, property, `keys`, graph provenance, `DISTINCT`, and aggregate projection;
 - `ORDER BY`, `SKIP`, small and large `LIMIT`, and full-match aggregation;
 - zero-hit, targeted, and dense terms for every shape.
@@ -42,7 +41,7 @@ app-001	/graphs/app-001	GraphiteAbsentApp001	org.example.checkout	get
 Set it on the fork with
 `-Dgraphite.broad.pressure.graphs=/absolute/path/to/graphs.tsv`. The harness rejects a manifest
 whose entry count differs from `graphCount`, whose ids or paths are duplicated, or whose three terms
-are blank or equal. The API-selected reference query must prove `zero=0`, `targeted=1..199`, and
+are blank or equal. The request-selected reference query must prove `zero=0`, `targeted=1..199`, and
 `dense=200` rows under `LIMIT 200`; otherwise the fork fails before its timing can be accepted.
 
 Generate the repository baseline from the four pinned real-bytecode fixtures rather than from
@@ -106,19 +105,19 @@ java -jar trusted-webgraph-jmh.jar \
 overhead, not comparable performance evidence. Review and retain the oracle as an immutable test
 artifact; do not regenerate it from the candidate being measured.
 
-The fixture64 routing driver uses a stricter differential protocol tailored to this change: it
-records only the 192 already-correct single-source `graph-parameter` results from `main`, validates
-all 64 targets and three selectivity bands, and derives the three graphId identities for each
-signature. The resulting 768-record oracle is therefore independent of the candidate graphId path;
-candidate self-recording is explicitly not accepted as an oracle.
+The fixture64 routing driver uses a stricter differential protocol tailored to this change. It
+records 192 request-selected single-source results from `main`, plus 123 request-selected K-source
+results over deterministic disjoint K=2/8/64 groups. Those groups cover every one of the 64 real
+fixture graphs exactly once at each width and selectivity. The driver derives a 1,137-record oracle
+for the equality, `IN` literal, `IN` parameter, and reference identities. The oracle is independent
+of the candidate graphId path; candidate self-recording is explicitly not accepted.
 
 ## Comparable base/candidate run
 
 Copy the same benchmark source into the base and candidate checkouts before building either JMH
 jar. Run revisions sequentially on the same idle machine. Run each family as a separate shard. The
-example below is the candidate command; for main's `graph-routing` shard, replace the oracle option
-with `-Dgraphite.broad.pressure.correctness.mode=record` because main's graphId result is the known
-correctness defect being fixed:
+example below is the candidate command; the repository driver records main separately and verifies
+the candidate against the independently derived request-selected oracle:
 
 ```bash
 FAMILIES='contains boolean exact wrapped projection aggregation global regex graph-routing'
@@ -138,23 +137,35 @@ done
 Run cold and warm in independent forks. Do not run base and candidate families concurrently: their
 8 GiB heaps and mapped page-cache working sets would contaminate CPU and memory comparisons.
 
-## graphId and API graph-parameter routing gate
+## graphId and request-selected routing gate
 
-The `graph-routing` family contains 768 queries. Every one of the 64 graph ids is exercised through
-property, `graphId(n)`, parameterized graphId, and API `graph`-parameter routing at zero, targeted,
+The `graph-routing` family contains 1,137 queries. Every one of the 64 graph ids is exercised through
+property, `graphId(n)`, parameterized graphId, and request-selected single-source execution at zero, targeted,
 and dense selectivity. For a given target and selectivity, all four forms use the same reviewed term,
-so the API-selected single-graph result is a direct semantic reference for the three query-level
+so the request-selected single-graph result is a direct semantic reference for the three query-level
 graphId forms. The queries preserve the production non-`DISTINCT`, four-property wrapped
 `CONTAINS`, and `LIMIT 200` shape.
 
+The same real fixtures also cover selected-set widths 2, 8, and 64 through `n.graphId IN [...]`,
+`n.graphId IN $graphIds`, and a request-selected K-source reference. Together with the existing
+single-graph equality matrix, this covers widths 1/2/8/64. The candidate must receive 64 input
+sources for every Cypher graphId form, touch no source outside the selected set, and report `64-K`
+sources pruned. Zero and targeted queries must consume all K selected sources. Dense queries are
+expected to stop after the first selected graph fills the global `LIMIT 200`, so they must access
+exactly one selected source even though the planner selected K. K=64 therefore requires zero
+planner pruning and one dense execution access, not fabricated pruning or 64 forced lookups. The
+comparator reports P50/P95 separately by set width; these rows do not enter the single-graph 10x P95 gate.
+
 For this finite-limit shape, the query layer passes the remaining `LIMIT` into the selected mapped
-graph. If the combined CallSite index is not already resident, that graph partitions its mapped
-CallSite type index into ordered ordinal ranges and scans them on `graphite-callsite-scan-N`
-workers. The default worker count is `min(8, Runtime.availableProcessors())`; override it with
-`-Dgraphite.webgraph.callSiteScanParallelism=N`. Results are concatenated in persisted node order,
-all workers share the request work/cancellation budget, and a worker failure stops and joins the
-remaining tasks before the query returns. `graphite-cypher-scan-N` names the separate cross-graph source pool and is not evidence that
-a query already restricted to one graph used intra-graph parallelism.
+graph. Current graph files persist the combined CallSite CSR/trigram index, and `loadMapped`
+restores it before the graph is exposed to queries. Legacy or invalid graph files rebuild it once
+and atomically persist it when writable. If index admission is denied, the graph retains the
+correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
+`graphite-callsite-scan-N` workers. The default fallback worker count is
+`min(8, Runtime.availableProcessors())`, overridable with
+`-Dgraphite.webgraph.callSiteScanParallelism=N`. `graphite-cypher-scan-N` names the separate
+cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
+parallelism.
 
 During a real run, verify actual use in JFR/VisualVM by filtering for
 `graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
@@ -164,10 +175,20 @@ The harness also records the number of bounded intra-graph scans and the peak nu
 simultaneously inside one scan. The fixture64 comparator fails closed unless the candidate executes at
 exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
 creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
-The cold fork must report 64 scans followed by exactly 704 index lookups (11 remaining queries per
-graph). After warmup metrics are reset, the warm fork must report zero scans and exactly 768 index
-lookups (12 per graph), with all 64 graphs represented in both cases. The comparator requires the
-per-graph lookup minimum and maximum to both be 11 cold and both be 12 warm; aggregate totals alone
+Before loading graphs, the harness sets
+`graphite.webgraph.prepareCallSiteStringIndexOnLoad=false` for cold and warm forks. This prevents a
+persisted index from being restored behind `clearStringPropertyIndexes` and preserves the intended
+raw-build diagnostic. The property is restored after the trial. `startup-prepared` explicitly uses
+the default `true` load-time preparation path.
+
+The candidate cold fork must report 64 scans followed by exactly 1,979 index lookups, distributed
+29..38 per graph because dense queries stop at the global limit. After warmup metrics are reset, the
+warm fork must report zero scans and exactly 2,043 index lookups, distributed 30..39 per graph, with
+all 64 graphs represented in both cases. The `startup-prepared` fork
+performs no query warmup: main must retain its one lazy-build scan per graph, while the candidate
+must restore all 64 persisted indexes and execute 2,043 indexed lookups with zero scans. Main has no
+set routing in the comparison revision, so startup-prepared exposes 64 lazy-build scans plus 14,139
+lookups, distributed 181..266 per graph. Aggregate totals alone
 cannot hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens
 to meet the percentile target while routing only part of the workload or silently falling back to
 raw scans.
@@ -185,15 +206,14 @@ releasing a mapped string index cannot return stale rows. It retains at most 32 
 `-Dgraphite.cypher.directProjectionCacheBytes=N`. Storage lookup and work-budget accounting still
 run on every request before this result cache is consulted.
 
-For the API reference cases, the harness performs the same id-to-single-lease selection produced by
+For the request-selected reference cases, the harness performs the same id-to-single-lease selection produced by
 `POST /api/cypher/graphs` with `graph=<id>` before invoking the executor. Route tests separately
 verify singular JSON and query-string `graph` parsing; the pressure timing deliberately excludes
 fixed HTTP and JSON serialization overhead so it measures the multi-graph routing and search cost.
 
-Run `main` in record mode to capture its performance observations even if its graph-qualified
-result is known to be semantically wrong, and run the candidate in verify mode against the
+Run `main` in record mode to capture its performance observations, and run the candidate in verify mode against the
 base-single-source-derived correctness oracle. Candidate timing is invalid unless oracle
-verification passes. Then enforce the gate for cold and warm forks separately:
+verification passes. Then enforce the gate for cold, warm, and `startup-prepared` forks separately:
 
 ```bash
 node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
@@ -206,26 +226,31 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
   --status results/graph-id-cold-status.json
 ```
 
-The comparator fails unless both revisions report exactly 64 distinct graph paths, all 768 queries
+The comparator fails unless both revisions report exactly 64 distinct graph paths, all 1,137 queries
 complete without timeout/failure, every manifest graph id has all four routing forms at all three
-selectivities, query-level graphId P50/P95 are each at least 10x faster, and the already-correct API
-graph-parameter P50/P95 do not regress by more than 15%. A warm result is rejected unless all 64
+selectivities, and the already-correct request-selected P50/P95 do not regress by more than 15% for
+material latency; microsecond-scale request-selected and graph-set paths have a 0.25ms absolute
+jitter allowance. Set-width P95 must still avoid regression and is reported independently.
+Cold/warm compatibility gates require query-level graphId P50 and P95 to improve by 10x. The
+production-relevant `startup-prepared` gate requires graphId P95 to improve by 10x and P50 not to
+regress by more than 15%, because its P50 is already an indexed microsecond-scale request. A warm result is rejected unless all 64
 graphs retain the combined CallSite index and all
 64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
 coverage. It independently
-rejects any API reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
+rejects any request-selected reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
 workload cannot pass. This prevents accepting a graphId speedup when the already-selected
-single-graph API path regresses. The API path is the correctness reference and a non-regression
+single-graph request path regresses. The request-selected path is the correctness reference and a non-regression
 guardrail; the 10x target applies to query-level graphId routing.
 
-The candidate in-process hard gate checks all routing results against the base single-source oracle.
-The comparator additionally requires every candidate graphId result to match its API-selected
-single-graph reference in selectivity, row count, response size, and SHA-256 digest, and requires
-the API reference itself to match between main and candidate. Main's known-wrong graphId output is
+The candidate in-process hard gate checks all routing results against the base request-selected oracle.
+The comparator additionally requires every candidate graphId result to match its request-selected
+K-source reference in selectivity, row count, response size, and SHA-256 digest, and requires
+the request-selected reference itself to match between main and candidate. Main's graphId output is
 retained only as the latency baseline and is never accepted as a correctness oracle. The observation
 TSV contains one row per query with family, shape, selectivity, operator, clause boundary,
-projection, limit, target graph, outcome, row count, response bytes, digest, and latency nanoseconds.
-Repeat with warm forks; both cold and warm statuses are required evidence.
+projection, limit, target graph set, selected width, input/accessed source counts, planner pruning,
+outcome, row count, response bytes, digest, and latency nanoseconds.
+Repeat with warm and `startup-prepared` forks; all three statuses are required evidence.
 
 ## Required fixture64 evidence check
 
@@ -233,8 +258,9 @@ The full fixture64 replay is intentionally run on the benchmark host rather than
 small hosted-runner test. The normal `benchmark-regression-gate` depends on
 `graph-routing-pressure-evidence`, which fails closed until the exact candidate commit has a trusted
 `graphite/fixture64-graph-routing` commit status. The status is accepted only when it was published
-by `johnsonlee`, names the current base SHA, reports correctness pass, and records cold and warm
-P50/P95 speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the
+by `johnsonlee`, names the current base SHA, reports correctness pass, records cold/warm
+P50/P95 speedups of at least 10x, and records a `startup-prepared` P95 speedup of at least 10x.
+A status attached to an older candidate or base cannot satisfy the
 gate. An arbitrary HTTPS URL is neither required nor treated as proof.
 The driver itself uploads the exact JMH JSON, observations, correctness oracle/results, comparator
 reports, corpus provenance, and their SHA-256 manifest to an immutable public Gist revision. The
@@ -261,12 +287,12 @@ source corpora, and 64 distinct query-semantic graph fingerprints. The candidate
 re-hashes the four supplied fixture JARs and every bytecode shard, binds every manifest path and
 term to its provenance row, reloads all 64 actual graph directories, and recomputes counts, terms,
 and semantic identities before timing. It then runs base and candidate sequentially for independent
-cold and warm forks,
-verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for both
+cold, warm, and `startup-prepared` forks,
+verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for all
 states, publishes immutable downloadable evidence, and only then publishes the trusted commit
 status. Set
 `GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. Retain
-both comparator reports plus the JMH JSON, observation TSV, correctness manifests,
+all three comparator reports plus the JMH JSON, observation TSV, correctness manifests,
 `provenance.json`, `fixture-provenance.tsv`, JVM/host details, and raw CPU/heap/RSS/GC counters.
 
 ## Baseline metrics

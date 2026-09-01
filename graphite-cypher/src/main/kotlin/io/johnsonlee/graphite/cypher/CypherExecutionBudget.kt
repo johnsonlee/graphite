@@ -32,7 +32,28 @@ class CypherExecutionContext(
     constructor(executionBudget: CypherExecutionBudget) : this(executionBudget, CypherCancellationSignal())
 
     internal val workTracker = CypherWorkTracker(executionBudget, cancellationSignal)
+
+    /**
+     * Return cumulative planner and work counters for the executions sharing this context.
+     *
+     * A recognized graphId predicate is deliberately separate from an actual source prune:
+     * selecting the sole source of an API-scoped request does not count as a routing gain.
+     */
+    val diagnostics: CypherExecutionDiagnostics
+        get() = workTracker.diagnostics()
 }
+
+/** Cumulative, request-scoped Cypher planner and graph-work counters. */
+data class CypherExecutionDiagnostics(
+    val graphIdSourceSelections: Long,
+    val graphIdSourcePruningExecutions: Long,
+    val graphIdSourcesPruned: Long,
+    val graphIdSourceConflicts: Long,
+    val fastPathExecutions: Long,
+    val filteredNodeLimitFastPathExecutions: Long,
+    val generalFallbackExecutions: Long,
+    val workUnitsConsumed: Long
+)
 
 /** Request-scoped signal used to cooperatively stop Cypher execution. */
 class CypherCancellationSignal(
@@ -77,6 +98,13 @@ internal class CypherWorkTracker(
     private val cancellationSignal: CypherCancellationSignal = CypherCancellationSignal()
 ) : GraphWorkBatchConsumer {
     private val remaining = AtomicLong(budget.maxWorkUnits)
+    private val graphIdSourceSelections = AtomicLong()
+    private val graphIdSourcePruningExecutions = AtomicLong()
+    private val graphIdSourcesPruned = AtomicLong()
+    private val graphIdSourceConflicts = AtomicLong()
+    private val fastPathExecutions = AtomicLong()
+    private val filteredNodeLimitFastPathExecutions = AtomicLong()
+    private val generalFallbackExecutions = AtomicLong()
 
     override fun consume() = consume(1)
 
@@ -96,4 +124,38 @@ internal class CypherWorkTracker(
             if (remaining.compareAndSet(available, available - workUnits)) return
         }
     }
+
+    fun recordGraphIdSourceSelection(initialSourceCount: Int, selectedSourceCount: Int, conflicting: Boolean) {
+        require(initialSourceCount >= 0 && selectedSourceCount in 0..initialSourceCount)
+        graphIdSourceSelections.incrementAndGet()
+        if (selectedSourceCount < initialSourceCount) {
+            graphIdSourcePruningExecutions.incrementAndGet()
+            graphIdSourcesPruned.addAndGet((initialSourceCount - selectedSourceCount).toLong())
+        }
+        if (conflicting) graphIdSourceConflicts.incrementAndGet()
+    }
+
+    fun recordFastPath() {
+        fastPathExecutions.incrementAndGet()
+    }
+
+    fun recordFilteredNodeLimitFastPath() {
+        fastPathExecutions.incrementAndGet()
+        filteredNodeLimitFastPathExecutions.incrementAndGet()
+    }
+
+    fun recordGeneralFallback() {
+        generalFallbackExecutions.incrementAndGet()
+    }
+
+    fun diagnostics(): CypherExecutionDiagnostics = CypherExecutionDiagnostics(
+        graphIdSourceSelections = graphIdSourceSelections.get(),
+        graphIdSourcePruningExecutions = graphIdSourcePruningExecutions.get(),
+        graphIdSourcesPruned = graphIdSourcesPruned.get(),
+        graphIdSourceConflicts = graphIdSourceConflicts.get(),
+        fastPathExecutions = fastPathExecutions.get(),
+        filteredNodeLimitFastPathExecutions = filteredNodeLimitFastPathExecutions.get(),
+        generalFallbackExecutions = generalFallbackExecutions.get(),
+        workUnitsConsumed = budget.maxWorkUnits - remaining.get()
+    )
 }

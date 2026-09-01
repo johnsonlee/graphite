@@ -20,6 +20,8 @@ import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
+import java.io.DataInput
+import java.io.DataOutput
 import java.util.Arrays
 import java.util.Collections
 import java.util.concurrent.Callable
@@ -27,6 +29,7 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.zip.CRC32
 
 /** Compact CSR indexes for the four strings searched by broad CallSite queries. */
 internal class MappedCallSiteStringIndex(
@@ -492,6 +495,37 @@ internal class MappedCallSiteStringIndex(
 
     internal fun isTrigramPostingsInitialized(): Boolean = trigramPostingsInitialized && trigramPostings != null
 
+    /** Builds the optional lowercase trigram postings without running a query. */
+    internal fun prepareTrigramPostings(workConsumer: GraphWorkConsumer? = null): Boolean =
+        callSiteTrigramPostings(workConsumer) != null
+
+    @Synchronized
+    internal fun writePersistent(output: DataOutput) {
+        val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
+            "CallSite trigram postings must be prepared before persistence"
+        }
+        output.writeInt(CALL_SITE_STRING_INDEX_MAGIC)
+        output.writeInt(CALL_SITE_STRING_INDEX_VERSION)
+        output.writeInt(stringTable.size())
+        output.writeInt(properties.firstOrNull()?.postingCount ?: 0)
+        properties.forEach { property -> output.writeInt(property.uniqueStringCount) }
+        output.writeInt(postings.size)
+        output.writeLong(reservation.bytes)
+        properties.forEach { property -> property.writePersistent(output) }
+        trigramSignatures.forEach(output::writeLong)
+        postings.forEach(output::writeLong)
+        output.writeLong(
+            persistentChecksum(
+                stringTable.size(),
+                properties.firstOrNull()?.postingCount ?: 0,
+                reservation.bytes,
+                properties,
+                trigramSignatures,
+                postings
+            )
+        )
+    }
+
     fun distinctProjection(
         predicates: List<StringPropertyPredicate>,
         projectedProperties: List<String>,
@@ -634,6 +668,43 @@ internal class MappedCallSiteStringIndex(
 
         val postingCount: Int
             get() = postingNodeIds.size
+
+        val uniqueStringCount: Int
+            get() = usedStringIds.size
+
+        fun writePersistent(output: DataOutput) {
+            usedStringIds.forEach(output::writeInt)
+            postingEnds.forEach(output::writeInt)
+            postingNodeIds.forEach(output::writeInt)
+        }
+
+        fun updatePersistentChecksum(checksum: CRC32) {
+            usedStringIds.forEach(checksum::updateInt)
+            postingEnds.forEach(checksum::updateInt)
+            postingNodeIds.forEach(checksum::updateInt)
+        }
+
+        fun validatePersistent(
+            stringCount: Int,
+            nodeIdCapacity: Int,
+            nodeOrder: (Int) -> Long
+        ) {
+            require(usedStringIds.all { stringId -> stringId in 0 until stringCount })
+            var start = 0
+            postingEnds.forEach { end ->
+                require(end in (start + 1)..postingNodeIds.size)
+                var previousOrder = Long.MIN_VALUE
+                for (position in start until end) {
+                    val nodeId = postingNodeIds[position]
+                    require(nodeId in 0 until nodeIdCapacity)
+                    val order = nodeOrder(nodeId)
+                    require(order > previousOrder)
+                    previousOrder = order
+                }
+                start = end
+            }
+            require(start == postingNodeIds.size)
+        }
 
         fun collectMatchingRanges(
             propertyIndex: Int,
@@ -968,7 +1039,121 @@ internal class MappedCallSiteStringIndex(
             ends = ends.copyOf(capacity)
         }
     }
+
+    companion object {
+        @Suppress("LongParameterList", "TooGenericExceptionCaught")
+        internal fun readPersistent(
+            input: DataInput,
+            expectedStringCount: Int,
+            expectedCallSiteCount: Int,
+            nodeOrder: (Int) -> Long,
+            nodeIdCapacity: Int,
+            rawStringPropertyId: (Int, Int) -> Int,
+            stringTable: StringTable
+        ): MappedCallSiteStringIndex? {
+            require(input.readInt() == CALL_SITE_STRING_INDEX_MAGIC)
+            require(input.readInt() == CALL_SITE_STRING_INDEX_VERSION)
+            val stringCount = input.readInt()
+            val callSiteCount = input.readInt()
+            require(stringCount == expectedStringCount)
+            require(callSiteCount == expectedCallSiteCount)
+            val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { input.readInt() }
+            require(uniqueCounts.all { count -> count in 0..stringCount })
+            val trigramPostingCount = input.readInt()
+            require(trigramPostingCount > 0)
+            val persistedRetainedBytes = input.readLong()
+            val baseRetainedBytes = estimatedMappedCallSiteStringIndexRetainedBytes(
+                callSiteCount.toLong(),
+                stringCount,
+                uniqueCounts
+            ) ?: return null
+            val expectedRetainedBytes = runCatching {
+                Math.addExact(
+                    baseRetainedBytes,
+                    Math.addExact(
+                        PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                        Math.multiplyExact(trigramPostingCount.toLong(), Long.SIZE_BYTES.toLong())
+                    )
+                )
+            }.getOrNull() ?: return null
+            require(persistedRetainedBytes == expectedRetainedBytes)
+            val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(expectedRetainedBytes)
+                ?: throw MappedCallSiteStringIndexPersistenceBudgetDeniedException()
+            try {
+                val properties = Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                    val uniqueCount = uniqueCounts[propertyIndex]
+                    val usedStringIds = IntArray(uniqueCount) { input.readInt() }
+                    val postingEnds = IntArray(uniqueCount) { input.readInt() }
+                    val postingNodeIds = IntArray(callSiteCount) { input.readInt() }
+                    PropertyCsr(postingEnds, usedStringIds, postingNodeIds).also { property ->
+                        property.validatePersistent(stringCount, nodeIdCapacity, nodeOrder)
+                    }
+                }
+                val signatures = LongArray(stringCount) { input.readLong() }
+                val postings = LongArray(trigramPostingCount) { input.readLong() }
+                validatePersistentTrigramPostings(postings, stringCount)
+                require(
+                    input.readLong() == persistentChecksum(
+                        stringCount,
+                        callSiteCount,
+                        persistedRetainedBytes,
+                        properties,
+                        signatures,
+                        postings
+                    )
+                )
+                return MappedCallSiteStringIndex(
+                    properties,
+                    stringTable,
+                    nodeOrder,
+                    nodeIdCapacity,
+                    rawStringPropertyId,
+                    reservation
+                ).also { index ->
+                    signatures.copyInto(index.trigramSignatures)
+                    index.trigramMetadataInitialized = true
+                    index.trigramPostingCount = postings.size.toLong()
+                    index.trigramPostingsInitialized = true
+                    index.trigramPostings = postings
+                }
+            } catch (error: Throwable) {
+                reservation.close()
+                throw error
+            }
+        }
+
+        private fun validatePersistentTrigramPostings(postings: LongArray, stringCount: Int) {
+            var previous = Long.MIN_VALUE
+            postings.forEach { posting ->
+                require(posting >= previous)
+                require(posting.toInt() in 0 until stringCount)
+                previous = posting
+            }
+        }
+
+        private fun persistentChecksum(
+            stringCount: Int,
+            callSiteCount: Int,
+            retainedBytes: Long,
+            properties: Array<PropertyCsr>,
+            signatures: LongArray,
+            postings: LongArray
+        ): Long = CRC32().also { checksum ->
+            checksum.updateInt(CALL_SITE_STRING_INDEX_MAGIC)
+            checksum.updateInt(CALL_SITE_STRING_INDEX_VERSION)
+            checksum.updateInt(stringCount)
+            checksum.updateInt(callSiteCount)
+            properties.forEach { property -> checksum.updateInt(property.uniqueStringCount) }
+            checksum.updateInt(postings.size)
+            checksum.updateLong(retainedBytes)
+            properties.forEach { property -> property.updatePersistentChecksum(checksum) }
+            signatures.forEach(checksum::updateLong)
+            postings.forEach(checksum::updateLong)
+        }.value
+    }
 }
+
+internal class MappedCallSiteStringIndexPersistenceBudgetDeniedException : Exception()
 
 private data class CallSiteTrigramPostingRange(
     val trigram: Int,
@@ -1605,6 +1790,18 @@ private fun upperBound(values: LongArray, target: Long): Int {
     return low
 }
 
+private fun CRC32.updateInt(value: Int) {
+    repeat(Int.SIZE_BYTES) { byteIndex ->
+        update(value ushr (byteIndex * Byte.SIZE_BITS) and 0xff)
+    }
+}
+
+private fun CRC32.updateLong(value: Long) {
+    repeat(Long.SIZE_BYTES) { byteIndex ->
+        update(((value ushr (byteIndex * Byte.SIZE_BITS)) and 0xffL).toInt())
+    }
+}
+
 internal const val CALLER_CLASS_PROPERTY = "caller_class"
 internal const val CALLER_NAME_PROPERTY = "caller_name"
 internal const val CALLEE_CLASS_PROPERTY = "callee_class"
@@ -1617,6 +1814,8 @@ internal const val CALLEE_NAME_PROPERTY_INDEX = 3
 
 private const val MAPPED_CALL_SITE_STRING_INDEX_RETAINED_ARRAYS = 3L * CALL_SITE_STRING_PROPERTY_COUNT + 1L
 private const val MAPPED_CALL_SITE_STRING_INDEX_OBJECT_ESTIMATED_BYTES = 256L
+private const val CALL_SITE_STRING_INDEX_MAGIC = 0x47524353
+private const val CALL_SITE_STRING_INDEX_VERSION = 1
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
 private const val RADIX_BUCKET_COUNT = 1 shl Byte.SIZE_BITS

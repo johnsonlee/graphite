@@ -84,6 +84,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -95,6 +97,235 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
+
+    private var previousMappedCallSitePreparationProperty: String? = null
+
+    @BeforeTest
+    fun preserveLazyMappedLoadForExistingColdPathTests() {
+        previousMappedCallSitePreparationProperty =
+            System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+        System.setProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY, "false")
+    }
+
+    @AfterTest
+    fun restoreMappedCallSitePreparationProperty() {
+        previousMappedCallSitePreparationProperty?.let { previous ->
+            System.setProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY, previous)
+        } ?: System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+    }
+
+    @Test
+    fun `mapped load prepares CallSite CSR and trigram postings by default and can opt out`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor(if (index == 1) "example.TargetCaller" else "example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-eager-callsite-index")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            assertTrue(Files.isRegularFile(indexFile))
+            val persistedModificationTime = Files.getLastModifiedTime(indexFile)
+            val prepared = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(prepared.isCallSiteStringIndexInitialized())
+                assertTrue(prepared.isCallSiteTrigramIndexInitialized())
+                assertTrue(prepared.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(
+                    listOf(1),
+                    prepared.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                prepared.clearStringPropertyIndexes()
+                assertFalse(prepared.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    listOf(1),
+                    prepared.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(prepared.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                prepared.close()
+            }
+            assertEquals(persistedModificationTime, Files.getLastModifiedTime(indexFile))
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+            System.setProperty(property, "false")
+            val lazy = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(lazy.isCallSiteStringIndexInitialized())
+                assertFalse(lazy.isCallSiteTrigramIndexInitialized())
+                assertEquals(
+                    listOf(1),
+                    lazy.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(lazy.isCallSiteStringIndexInitialized())
+                assertTrue(lazy.isCallSiteTrigramIndexInitialized())
+                assertFalse(lazy.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                lazy.close()
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `corrupt and missing persisted CallSite indexes rebuild atomically then restore`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.TargetCaller"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            ).build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-persisted-callsite-index-rebuild")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val corrupted = Files.readAllBytes(indexFile)
+            corrupted[corrupted.size / 2] = (corrupted[corrupted.size / 2].toInt() xor 1).toByte()
+            Files.write(indexFile, corrupted)
+
+            val rebuilt = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(rebuilt.isCallSiteStringIndexLoadedFromPersistence())
+                assertTrue(rebuilt.isCallSiteTrigramIndexInitialized())
+                assertEquals(
+                    listOf(0),
+                    rebuilt.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(corrupted.size.toLong(), Files.size(indexFile))
+            } finally {
+                rebuilt.close()
+            }
+            val restoredAfterCorruption = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(restoredAfterCorruption.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                restoredAfterCorruption.close()
+            }
+
+            Files.delete(indexFile)
+            val migratedLegacyGraph = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(migratedLegacyGraph.isCallSiteStringIndexLoadedFromPersistence())
+                assertTrue(Files.isRegularFile(indexFile))
+            } finally {
+                migratedLegacyGraph.close()
+            }
+            val restoredAfterMigration = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(restoredAfterMigration.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                restoredAfterMigration.close()
+            }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped load preparation budget denial preserves CallSite query correctness`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder()
+            .addNode(
+                CallSiteNode(
+                    NodeId(0),
+                    MethodDescriptor(TypeDescriptor("example.TargetCaller"), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    1,
+                    null,
+                    emptyList()
+                )
+            ).build()
+        val dir = Files.createTempDirectory("webgraph-eager-callsite-index-budget")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        var blocker: Closeable? = null
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir)
+            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+                MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+            )
+            assertNotNull(blocker)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                StringValueTransform.LOWERCASE,
+                                StringMatchMode.CONTAINS,
+                                "target"
+                            )
+                        )
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+            } finally {
+                loaded.close()
+            }
+            assertEquals(MappedCallSiteStringIndexMemoryBudget.maxBytes, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            blocker?.close()
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            dir.toFile().deleteRecursively()
+        }
+    }
 
     @Test
     fun `node string collection accepts an iterable batch`() {

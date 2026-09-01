@@ -61,6 +61,10 @@ private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
 private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
 private const val BACKWARD_COMPRESSION_THREADS = 2
 
+private fun mappedCallSiteStringIndexPreparationEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+        ?.equals("false", ignoreCase = true) != true
+
 /** OutputStream wrapper that tracks total bytes written. */
 private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
     var bytesWritten: Long = 0L
@@ -501,7 +505,9 @@ internal data class NodeIndexData(
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
  * - `graph.classoverview`      -- class-level call counts and dependency weights
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
+ * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
  */
+@Suppress("TooManyFunctions")
 object GraphStore {
 
     /**
@@ -515,7 +521,10 @@ object GraphStore {
     private const val COMPARISONS_FILE = "graph.comparisons"
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val METADATA_FILE = "graph.metadata"
+    internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
+    internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
+        "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
 
     private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
 
@@ -542,6 +551,7 @@ object GraphStore {
      */
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
         Files.createDirectories(dir)
+        Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -621,6 +631,11 @@ object GraphStore {
 
         // 9. Save persisted text resources for loaded-graph access
         PersistedResourceStore.save(graph, dir)
+
+        // 10. Build the query-only CallSite index once and persist it for mapped loads.
+        if (classOverviewBuilder.callSiteCount() > 0L && mappedCallSiteStringIndexPreparationEnabled()) {
+            (loadMapped(dir, prepareCallSiteStringIndex = true) as Closeable).use { }
+        }
     }
 
     private fun writeNodeDataAndIndex(
@@ -785,8 +800,16 @@ object GraphStore {
      * The OS page cache manages which node pages are in physical RAM.
      * No JVM heap allocation for node data, and no system calls per node access
      * after the initial page fault.
+     *
+     * By default the bounded CallSite string and trigram indexes are also prepared before this
+     * method returns, so the first broad string query does not pay their construction cost. Set
+     * `graphite.webgraph.prepareCallSiteStringIndexOnLoad=false` to retain lazy preparation.
      */
-    fun loadMapped(dir: Path): Graph {
+    fun loadMapped(dir: Path): Graph =
+        loadMapped(dir, prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled())
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun loadMapped(dir: Path, prepareCallSiteStringIndex: Boolean): Graph {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
@@ -820,7 +843,7 @@ object GraphStore {
         }
         val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
-        return MappedWebGraphBackedGraph(
+        val graph = MappedWebGraphBackedGraph(
             forward = forward,
             backward = backward,
             mappedNodeData = mappedBuffer,
@@ -832,12 +855,23 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             edgeCount = labelBytes.size.toLong(),
             metadataFile = metadataFile.toFile(),
+            callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
+            persistentCallSiteStringIndexEnabled = prepareCallSiteStringIndex,
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
+        if (prepareCallSiteStringIndex) {
+            try {
+                if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
+            } catch (error: Exception) {
+                graph.close()
+                throw error
+            }
+        }
+        return graph
     }
 
     /**

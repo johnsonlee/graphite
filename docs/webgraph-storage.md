@@ -16,8 +16,16 @@ graph-dir/
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
+├── graph.callsite-string-index Optional CallSite CSR/trigram query index
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
+
+`GraphStore.save()` prepares `graph.callsite-string-index` by default. A mapped load restores its
+primitive arrays under the shared CallSite-index heap budget, so the first broad string query does
+not rebuild the index. A missing or invalid file is rebuilt and atomically replaced when the graph
+directory is writable; budget denial or an unwritable directory preserves the raw-scan correctness
+fallback. Set `-Dgraphite.webgraph.prepareCallSiteStringIndexOnLoad=false` to disable preparation
+and persistence.
 
 `GraphStore.save()` writes only `forward.*`. Backward adjacency is loaded from
 `backward.*` when those files already exist; otherwise the first `incoming()`
@@ -44,6 +52,7 @@ transpose construction during load.
 | graph.classoverview | `GRO` | `0x47524F03` |
 | graph.comparisons | `GRC` | `0x47524303` |
 | graph.resources | `GRR` | `0x47525201` |
+| graph.callsite-string-index | `GRCS` | `0x47524353` |
 
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current

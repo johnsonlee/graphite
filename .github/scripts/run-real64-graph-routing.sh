@@ -176,12 +176,13 @@ run_revision() {
       -Dgraphite.broad.pressure.observations.output=${RESULT_PREFIX}.tsv"
 }
 
-# Build the correctness oracle from main's already-correct single-source path. This never executes
-# main's known-wrong graphId routing. The candidate-owned comparator validates the complete 64x3
-# reference matrix and expands each signature to the three graphId query identities.
+# Build the correctness oracle from main's already-correct request-selected K-source paths.
+# This is an executor reference, not an HTTP/API measurement. Keeping it separate from the graphId
+# path makes correctness evidence independent of the optimization under test. The comparator validates
+# all 64 single-source slots plus disjoint K=2/8/64 groups and expands their signatures to graphId identities.
 BASE_REFERENCE_PREFIX=${OUTPUT_DIR}/base-single-source-reference
 java -jar "${BASE_JAR}" "${FILTER}" \
-  -p graphCount=64 -p coverageFamily=graph-parameter -p indexState=cold \
+  -p graphCount=64 -p coverageFamily=graph-routing-reference -p indexState=cold \
   -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -rf json \
   -rff "${BASE_REFERENCE_PREFIX}.json" \
   -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} \
@@ -191,20 +192,19 @@ java -jar "${BASE_JAR}" "${FILTER}" \
 node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" derive-graph-routing-oracle \
   --references "${BASE_REFERENCE_PREFIX}.manifest" \
   --oracle "${ORACLE}"
-test "$(wc -l < "${ORACLE}" | tr -d ' ')" -eq 768
+test "$(wc -l < "${ORACLE}" | tr -d ' ')" -eq 1137
 ORACLE_SHA256=$(sha256_file "${ORACLE}")
 
-for INDEX_STATE in cold warm; do
+for INDEX_STATE in cold warm startup-prepared; do
   run_revision base "${INDEX_STATE}" "${BASE_JAR}" record ""
   run_revision candidate "${INDEX_STATE}" "${CANDIDATE_JAR}" verify "${ORACLE}"
 done
 
-for INDEX_STATE in cold warm; do
-  if [[ "${INDEX_STATE}" == cold ]]; then
-    BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-warm.correctness
-  else
-    BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-cold.correctness
-  fi
+for INDEX_STATE in cold warm startup-prepared; do
+  case "${INDEX_STATE}" in
+    cold) BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-warm.correctness ;;
+    warm|startup-prepared) BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-cold.correctness ;;
+  esac
   node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-graph-id-pressure \
     --base "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.json" \
     --candidate "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.json" \
@@ -230,7 +230,11 @@ done
   "${OUTPUT_DIR}/base-graph-routing-warm.tsv" \
   "${OUTPUT_DIR}/base-graph-routing-warm.correctness" \
   "${OUTPUT_DIR}/candidate-graph-routing-warm.tsv" \
-  "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness"
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness" \
+  "${OUTPUT_DIR}/base-graph-routing-startup-prepared.tsv" \
+  "${OUTPUT_DIR}/base-graph-routing-startup-prepared.correctness" \
+  "${OUTPUT_DIR}/candidate-graph-routing-startup-prepared.tsv" \
+  "${OUTPUT_DIR}/candidate-graph-routing-startup-prepared.correctness"
 
 jq -n \
   --arg repository "${REPOSITORY}" \
@@ -269,8 +273,11 @@ COLD_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json
 COLD_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
 WARM_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
 WARM_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
-DESCRIPTION=$(printf 'fixture64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx correct=pass' \
-  "${BASE_SHA}" "${COLD_P50}" "${COLD_P95}" "${WARM_P50}" "${WARM_P95}")
+STARTUP_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-startup-prepared-status.json")
+STARTUP_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-startup-prepared-status.json")
+DESCRIPTION=$(printf 'fixture64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx startup=%.2f/%.2fx correct=pass' \
+  "${BASE_SHA}" "${COLD_P50}" "${COLD_P95}" "${WARM_P50}" "${WARM_P95}" \
+  "${STARTUP_P50}" "${STARTUP_P95}")
 test "${#DESCRIPTION}" -le 140
 
 cp "${MANIFEST}" "${OUTPUT_DIR}/graphs.tsv"
@@ -300,6 +307,14 @@ EVIDENCE_FILES=(
   "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness"
   "${OUTPUT_DIR}/graph-routing-warm-report.md"
   "${OUTPUT_DIR}/graph-routing-warm-status.json"
+  "${OUTPUT_DIR}/base-graph-routing-startup-prepared.json"
+  "${OUTPUT_DIR}/base-graph-routing-startup-prepared.tsv"
+  "${OUTPUT_DIR}/base-graph-routing-startup-prepared.correctness"
+  "${OUTPUT_DIR}/candidate-graph-routing-startup-prepared.json"
+  "${OUTPUT_DIR}/candidate-graph-routing-startup-prepared.tsv"
+  "${OUTPUT_DIR}/candidate-graph-routing-startup-prepared.correctness"
+  "${OUTPUT_DIR}/graph-routing-startup-prepared-report.md"
+  "${OUTPUT_DIR}/graph-routing-startup-prepared-status.json"
 )
 FILES_JSON=$(
   for FILE in "${EVIDENCE_FILES[@]}"; do
@@ -308,7 +323,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v4" \
+  --arg schema "graphite-fixture64-evidence-v6" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \

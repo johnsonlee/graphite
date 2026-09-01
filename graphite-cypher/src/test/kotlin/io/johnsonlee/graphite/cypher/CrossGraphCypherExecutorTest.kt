@@ -1856,6 +1856,228 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `execution diagnostics distinguish graph routing from an already selected source`() {
+        val returnType = TypeDescriptor("void")
+        fun callSite(id: Int, callerClass: String) = CallSiteNode(
+            NodeId(id),
+            MethodDescriptor(TypeDescriptor(callerClass), "createVoucher", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("com.example.Repository"), "save", emptyList(), returnType),
+            id,
+            null,
+            emptyList()
+        )
+        val sources = listOf(
+            CypherGraph("orders", graph(callSite(1, "com.example.OrderVoucherService"))),
+            CypherGraph("billing", graph(callSite(2, "com.example.BillingVoucherService")))
+        )
+        val predicate = listOf("caller_class", "caller_name", "callee_class", "callee_name")
+            .joinToString(" OR ", prefix = "(", postfix = ")") { property ->
+                "toLower(coalesce(n.$property, '')) CONTAINS 'voucher'"
+            }
+        val routedContext = CypherExecutionContext(CypherExecutionBudget(10_000))
+
+        val routed = CrossGraphCypherExecutor(sources, routedContext).execute(
+            "MATCH (n) WHERE \$graph = graphId(n) AND $predicate " +
+                "RETURN n.caller_class AS caller LIMIT 200",
+            mapOf("graph" to "orders")
+        )
+
+        assertEquals(listOf("com.example.OrderVoucherService"), routed.rows.map { it["caller"] })
+        assertEquals(
+            CypherExecutionDiagnostics(
+                graphIdSourceSelections = 1,
+                graphIdSourcePruningExecutions = 1,
+                graphIdSourcesPruned = 1,
+                graphIdSourceConflicts = 0,
+                fastPathExecutions = 1,
+                filteredNodeLimitFastPathExecutions = 1,
+                generalFallbackExecutions = 0,
+                workUnitsConsumed = routedContext.diagnostics.workUnitsConsumed
+            ),
+            routedContext.diagnostics
+        )
+        assertTrue(routedContext.diagnostics.workUnitsConsumed > 0)
+
+        val selectedContext = CypherExecutionContext(CypherExecutionBudget(10_000))
+        val selected = CrossGraphCypherExecutor(listOf(sources.first()), selectedContext).execute(
+            "MATCH (n) WHERE n.graphId = 'orders' AND $predicate " +
+                "RETURN n.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(listOf("com.example.OrderVoucherService"), selected.rows.map { it["caller"] })
+        assertEquals(1, selectedContext.diagnostics.graphIdSourceSelections)
+        assertEquals(0, selectedContext.diagnostics.graphIdSourcePruningExecutions)
+        assertEquals(0, selectedContext.diagnostics.graphIdSourcesPruned)
+        assertEquals(1, selectedContext.diagnostics.filteredNodeLimitFastPathExecutions)
+    }
+
+    @Test
+    fun `graph source planner covers node properties fallback and reports conflicts`() {
+        val nodeScans = List(2) { AtomicInteger() }
+        val sources = listOf("orders" to 10, "billing" to 20).mapIndexed { index, (graphId, value) ->
+            val backing = graph(IntConstant(NodeId(index + 1), value))
+            CypherGraph(graphId, object : Graph by backing {
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+                    nodeScans[index].incrementAndGet()
+                    return backing.nodes(type)
+                }
+            })
+        }
+        val fallbackContext = CypherExecutionContext(CypherExecutionBudget(10_000))
+
+        val fallback = CrossGraphCypherExecutor(sources, fallbackContext).execute(
+            "MATCH (n:IntConstant {graphId: \$graph}) WITH n RETURN n.value AS value",
+            mapOf("graph" to "billing")
+        )
+
+        assertEquals(listOf(20), fallback.rows.map { it["value"] })
+        assertEquals(0, nodeScans.first().get())
+        assertTrue(nodeScans.last().get() > 0)
+        assertEquals(1, fallbackContext.diagnostics.graphIdSourceSelections)
+        assertEquals(1, fallbackContext.diagnostics.graphIdSourcePruningExecutions)
+        assertEquals(1, fallbackContext.diagnostics.graphIdSourcesPruned)
+        assertEquals(0, fallbackContext.diagnostics.fastPathExecutions)
+        assertEquals(1, fallbackContext.diagnostics.generalFallbackExecutions)
+        assertEquals(0, fallbackContext.diagnostics.filteredNodeLimitFastPathExecutions)
+
+        val conflictContext = CypherExecutionContext(CypherExecutionBudget(10_000))
+        nodeScans.forEach { it.set(0) }
+        val conflict = CrossGraphCypherExecutor(sources, conflictContext).execute(
+            "MATCH (n:IntConstant) WHERE 'orders' = n.graphId AND graphId(n) = 'billing' " +
+                "RETURN n.value AS value LIMIT 1"
+        )
+
+        assertTrue(conflict.rows.isEmpty())
+        assertTrue(nodeScans.all { it.get() == 0 })
+        assertEquals(1, conflictContext.diagnostics.graphIdSourceSelections)
+        assertEquals(1, conflictContext.diagnostics.graphIdSourcePruningExecutions)
+        assertEquals(2, conflictContext.diagnostics.graphIdSourcesPruned)
+        assertEquals(1, conflictContext.diagnostics.graphIdSourceConflicts)
+        assertEquals(1, conflictContext.diagnostics.filteredNodeLimitFastPathExecutions)
+        assertEquals(0, conflictContext.diagnostics.workUnitsConsumed)
+    }
+
+    @Test
+    fun `graph source planner prunes finite graph id sets and preserves unsafe shapes`() {
+        val nodeScans = List(64) { AtomicInteger() }
+        val sources = List(64) { index ->
+            val backing = graph(IntConstant(NodeId(index + 1), index * 10))
+            CypherGraph("graph-$index", object : Graph by backing {
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+                    nodeScans[index].incrementAndGet()
+                    return backing.nodes(type)
+                }
+            })
+        }
+
+        fun execute(
+            query: String,
+            parameters: Map<String, Any?> = emptyMap()
+        ): Pair<CypherResult, CypherExecutionDiagnostics> {
+            nodeScans.forEach { it.set(0) }
+            val context = CypherExecutionContext(CypherExecutionBudget(100_000))
+            val result = CrossGraphCypherExecutor(sources, context).execute(query, parameters)
+            return result to context.diagnostics
+        }
+
+        val (parameterSet, parameterDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE graphId(n) IN \$graphIds " +
+                "RETURN n.graphId AS graph, n.value AS value LIMIT 10",
+            mapOf("graphIds" to listOf("graph-1", "missing", "graph-63", "graph-1"))
+        )
+        assertEquals(listOf("graph-1", "graph-63"), parameterSet.rows.map { it["graph"] })
+        assertEquals(listOf(10, 630), parameterSet.rows.map { it["value"] })
+        assertEquals(1, parameterDiagnostics.graphIdSourceSelections)
+        assertEquals(1, parameterDiagnostics.graphIdSourcePruningExecutions)
+        assertEquals(62, parameterDiagnostics.graphIdSourcesPruned)
+        assertEquals(1, parameterDiagnostics.filteredNodeLimitFastPathExecutions)
+        assertTrue(nodeScans.indices.filterNot { it == 1 || it == 63 }.all { nodeScans[it].get() == 0 })
+        assertTrue(nodeScans[1].get() > 0)
+        assertTrue(nodeScans[63].get() > 0)
+
+        val (literalSet, literalDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE n.graphId IN ['graph-0', 'graph-2'] " +
+                "RETURN n.graphId AS graph, n.value AS value LIMIT 10"
+        )
+        assertEquals(listOf("graph-0", "graph-2"), literalSet.rows.map { it["graph"] })
+        assertEquals(62, literalDiagnostics.graphIdSourcesPruned)
+        assertEquals(0, literalDiagnostics.graphIdSourceConflicts)
+
+        val (exactOr, exactOrDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE n.graphId = 'graph-3' OR graphId(n) = 'graph-1' " +
+                "RETURN n.graphId AS graph LIMIT 10"
+        )
+        assertEquals(listOf("graph-1", "graph-3"), exactOr.rows.map { it["graph"] })
+        assertEquals(1, exactOrDiagnostics.graphIdSourceSelections)
+        assertEquals(62, exactOrDiagnostics.graphIdSourcesPruned)
+
+        val (mixedExactOr, mixedExactOrDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE (n.graphId = 'graph-0' AND n.value = 999) " +
+                "OR graphId(n) = 'graph-1' RETURN n.graphId AS graph LIMIT 10"
+        )
+        assertEquals(listOf("graph-1"), mixedExactOr.rows.map { it["graph"] })
+        assertEquals(1, mixedExactOrDiagnostics.graphIdSourceSelections)
+        assertEquals(62, mixedExactOrDiagnostics.graphIdSourcesPruned)
+
+        val (intersection, intersectionDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE n.graphId IN ['graph-0', 'graph-2'] " +
+                "AND graphId(n) IN ['graph-2', 'graph-3'] " +
+                "RETURN n.graphId AS graph, n.value AS value LIMIT 10"
+        )
+        assertEquals(listOf("graph-2"), intersection.rows.map { it["graph"] })
+        assertEquals(listOf(20), intersection.rows.map { it["value"] })
+        assertEquals(63, intersectionDiagnostics.graphIdSourcesPruned)
+        assertEquals(0, intersectionDiagnostics.graphIdSourceConflicts)
+
+        val (conflict, conflictDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE n.graphId IN ['graph-0'] AND graphId(n) = 'graph-2' " +
+                "RETURN n.value AS value LIMIT 10"
+        )
+        assertTrue(conflict.rows.isEmpty())
+        assertTrue(nodeScans.all { it.get() == 0 })
+        assertEquals(64, conflictDiagnostics.graphIdSourcesPruned)
+        assertEquals(1, conflictDiagnostics.graphIdSourceConflicts)
+
+        val (unknownOr, unknownOrDiagnostics) = execute(
+            "MATCH (n:IntConstant) WHERE n.graphId IN ['graph-0'] OR n.value >= 20 " +
+                "RETURN n.graphId AS graph LIMIT 100"
+        )
+        assertEquals(63, unknownOr.rows.size)
+        assertEquals("graph-0", unknownOr.rows.first()["graph"])
+        assertEquals("graph-63", unknownOr.rows.last()["graph"])
+        assertEquals(0, unknownOrDiagnostics.graphIdSourceSelections)
+
+        val (independent, independentDiagnostics) = execute(
+            "MATCH (a:IntConstant), (b:IntConstant) " +
+                "WHERE graphId(a) IN ['graph-0'] AND b.graphId IN ['graph-3'] " +
+                "RETURN a.value AS leftValue, b.value AS rightValue LIMIT 10"
+        )
+        assertEquals(1, independent.rows.size)
+        assertEquals(0, independent.rows.single()["leftValue"])
+        assertEquals(30, independent.rows.single()["rightValue"])
+        assertEquals(0, independentDiagnostics.graphIdSourceSelections)
+    }
+
+    @Test
+    fun `disjunctive graph id predicate is observable as an unpruned fast path`() {
+        val sources = listOf(
+            CypherGraph("orders", graph(IntConstant(NodeId(1), 10))),
+            CypherGraph("billing", graph(IntConstant(NodeId(2), 20)))
+        )
+        val context = CypherExecutionContext(CypherExecutionBudget(10_000))
+
+        val result = CrossGraphCypherExecutor(sources, context).execute(
+            "MATCH (n:IntConstant) WHERE n.graphId = 'orders' OR n.value = 20 " +
+                "RETURN n.graphId AS graph, n.value AS value LIMIT 10"
+        )
+
+        assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })
+        assertEquals(0, context.diagnostics.graphIdSourceSelections)
+        assertEquals(0, context.diagnostics.graphIdSourcePruningExecutions)
+        assertEquals(1, context.diagnostics.filteredNodeLimitFastPathExecutions)
+    }
+
+    @Test
     fun `graph id source pruning preserves disjunctions and independent cross graph patterns`() {
         val returnType = TypeDescriptor("void")
         fun callSite(id: Int, callerClass: String) = CallSiteNode(

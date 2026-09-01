@@ -166,18 +166,19 @@ private val CALL_SITE_DIRECT_STRING_PROPERTIES = setOf(
 class QueryPipeline private constructor(
     private val sources: List<CypherGraph>,
     private val qualified: Boolean,
-    private val workTrackingEnabled: Boolean
+    private val workTrackingEnabled: Boolean,
+    private val graphSourceScopeApplied: Boolean
 ) {
 
-    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, false)
+    constructor(graph: Graph) : this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, false, false)
 
     internal constructor(graph: Graph, workTrackingEnabled: Boolean) :
-        this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, workTrackingEnabled)
+        this(listOf(CypherGraph(SINGLE_GRAPH_ID, graph)), false, workTrackingEnabled, false)
 
-    internal constructor(graphs: List<CypherGraph>) : this(graphs, true, false)
+    internal constructor(graphs: List<CypherGraph>) : this(graphs, true, false, false)
 
     internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean) :
-        this(graphs, true, workTrackingEnabled)
+        this(graphs, true, workTrackingEnabled, false)
 
     init {
         val graphIds = HashSet<String>(sources.size)
@@ -234,24 +235,33 @@ class QueryPipeline private constructor(
     @Suppress("CyclomaticComplexMethod", "ReturnCount")
     private fun executeWithActiveBudget(clauses: List<CypherClause>): CypherResult {
         checkCancelled()
-        if (hasUnknownNodeLabel(clauses)) return executeGeneralClauses(clauses)
+        if (hasUnknownNodeLabel(clauses)) {
+            activeWorkTracker.get()?.recordGeneralFallback()
+            return executeGeneralClauses(clauses)
+        }
+        val graphSourceScope = if (graphSourceScopeApplied) null else graphSourceScope(clauses)
+        graphSourceScope?.let(::recordGraphSourceScope)
         if (MethodQueryExecutor.referencesMethod(clauses)) {
             if (activeParameters.get().orEmpty().isEmpty()) {
                 val methodResult = MethodQueryExecutor.tryExecute(
                     clauses,
-                    sources,
+                    graphSourceScope?.selectedSources ?: sources,
                     qualified,
                     ::checkCancelled,
                     activeWorkTracker.get()
                 )
-                if (methodResult != null) return methodResult
+                if (methodResult != null) {
+                    activeWorkTracker.get()?.recordFastPath()
+                    return methodResult
+                }
             }
-            graphScopedSources(clauses)?.let { scopedSources ->
-                if (scopedSources != sources) {
+            graphSourceScope?.let { scope ->
+                if (scope.selectedSources != sources) {
                     return QueryPipeline(
-                        scopedSources,
+                        scope.selectedSources,
                         qualified = true,
-                        workTrackingEnabled = workTrackingEnabled
+                        workTrackingEnabled = workTrackingEnabled,
+                        graphSourceScopeApplied = true
                     ).execute(
                         clauses,
                         activeParameters.get().orEmpty(),
@@ -259,19 +269,23 @@ class QueryPipeline private constructor(
                     )
                 }
             }
+            activeWorkTracker.get()?.recordGeneralFallback()
             return executeGeneralClauses(clauses)
         }
-        // This fast path performs its own graphId source selection and residual-predicate
-        // validation. Trying it before generic source scoping avoids traversing the same AST
-        // twice and constructing a throwaway single-source pipeline for the common bounded
-        // wide-string query.
-        tryFastFilteredNodeLimit(clauses)?.let { return it }
-        graphScopedSources(clauses)?.let { scopedSources ->
-            if (scopedSources != sources) {
+        // This fast path consumes the root planner's source selection directly. That avoids a
+        // throwaway single-source pipeline for the common bounded wide-string query while keeping
+        // source-pruning diagnostics consistent with fallback execution.
+        tryFastFilteredNodeLimit(clauses, graphSourceScope?.selectedSources)?.let { result ->
+            activeWorkTracker.get()?.recordFilteredNodeLimitFastPath()
+            return result
+        }
+        graphSourceScope?.let { scope ->
+            if (scope.selectedSources != sources) {
                 return QueryPipeline(
-                    scopedSources,
+                    scope.selectedSources,
                     qualified = true,
-                    workTrackingEnabled = workTrackingEnabled
+                    workTrackingEnabled = workTrackingEnabled,
+                    graphSourceScopeApplied = true
                 ).execute(
                     clauses,
                     activeParameters.get().orEmpty(),
@@ -287,8 +301,12 @@ class QueryPipeline private constructor(
             ?: tryStreamingFilteredNodeMatch(clauses)
             ?: tryStreamingFilteredMatchLimit(clauses)
             ?: tryFastSingleHopRelationshipLimit(clauses)
-        if (fastResult != null) return fastResult
+        if (fastResult != null) {
+            activeWorkTracker.get()?.recordFastPath()
+            return fastResult
+        }
 
+        activeWorkTracker.get()?.recordGeneralFallback()
         return executeGeneralClauses(clauses)
     }
 
@@ -297,7 +315,12 @@ class QueryPipeline private constructor(
      * Multiple/disconnected MATCH patterns remain unscoped because their variables may
      * legally bind values from different graphs.
      */
-    private fun graphScopedSources(clauses: List<CypherClause>): List<CypherGraph>? {
+    private data class GraphSourceScope(
+        val selectedSources: List<CypherGraph>,
+        val conflicting: Boolean
+    )
+
+    private fun graphSourceScope(clauses: List<CypherClause>): GraphSourceScope? {
         val matchIndex = clauses.indices.filter { clauses[it] is CypherClause.Match }.singleOrNull()
             ?: return null
         val match = clauses[matchIndex] as CypherClause.Match
@@ -305,14 +328,30 @@ class QueryPipeline private constructor(
         val variables = pattern.elements.filterIsInstance<PatternElement.NodePattern>()
             .mapNotNullTo(linkedSetOf(), PatternElement.NodePattern::variable)
         if (variables.isEmpty()) return null
+        val patternGraphIds = pattern.elements.filterIsInstance<PatternElement.NodePattern>()
+            .mapNotNull { node ->
+                node.variable?.takeIf { it in variables }
+                    ?.let { node.properties[GRAPH_ID_PROPERTY] }
+                    ?.let(::graphIdValue)
+            }
+            .map(::setOf)
+            .reduceOrNull(Set<String>::intersect)
         val condition = match.where
             ?: (clauses.getOrNull(matchIndex + 1) as? CypherClause.Where)?.condition
-            ?: return null
-        val graphIds = graphIdEqualities(condition, variables)
-        if (graphIds.isEmpty()) return null
-        if (graphIds.size > 1) return emptyList()
-        val graphId = graphIds.single()
-        return sources.filter { source -> source.id == graphId }
+        val whereGraphIds = condition?.let { graphIdConstraint(it, variables) }
+        val graphIds = intersectGraphIdConstraints(patternGraphIds, whereGraphIds) ?: return null
+        return GraphSourceScope(
+            selectedSources = sources.filter { source -> source.id in graphIds },
+            conflicting = graphIds.isEmpty()
+        )
+    }
+
+    private fun recordGraphSourceScope(scope: GraphSourceScope) {
+        activeWorkTracker.get()?.recordGraphIdSourceSelection(
+            initialSourceCount = sources.size,
+            selectedSourceCount = scope.selectedSources.size,
+            conflicting = scope.conflicting
+        )
     }
 
     private fun hasUnknownNodeLabel(clauses: List<CypherClause>): Boolean = clauses.any { clause ->
@@ -1081,7 +1120,10 @@ class QueryPipeline private constructor(
      * materializing every node match before WHERE is evaluated.
      */
     @Suppress("CyclomaticComplexMethod", "ComplexCondition", "MagicNumber", "ReturnCount")
-    private fun tryFastFilteredNodeLimit(clauses: List<CypherClause>): CypherResult? {
+    private fun tryFastFilteredNodeLimit(
+        clauses: List<CypherClause>,
+        preselectedSources: List<CypherGraph>? = null
+    ): CypherResult? {
         if (clauses.size != FILTERED_LIMIT_QUERY_CLAUSES) return null
         val match = clauses[0] as? CypherClause.Match ?: return null
         val where = clauses[1] as? CypherClause.Where ?: return null
@@ -1103,11 +1145,11 @@ class QueryPipeline private constructor(
 
         val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
         val graphRoute = conjunctiveGraphIdRoute(where.condition, variable)
-        val routedGraphId = graphRoute.graphId
-        val candidateSources = routedGraphId
-            ?.let { graphId -> sources.filter { it.id == graphId } }
+        val routedGraphIds = graphRoute.graphIds
+        val candidateSources = preselectedSources ?: routedGraphIds
+            ?.let { graphIds -> sources.filter { it.id in graphIds } }
             ?: sources
-        val filterCondition = routedGraphId
+        val filterCondition = routedGraphIds
             ?.takeUnless { graphRoute.conflicting }
             ?.let { graphRoute.residual }
             ?: where.condition
@@ -2904,7 +2946,7 @@ class QueryPipeline private constructor(
     }
 
     private data class ConjunctiveGraphIdRoute(
-        val graphId: String?,
+        val graphIds: Set<String>?,
         val conflicting: Boolean,
         val residual: CypherExpr?
     )
@@ -2913,8 +2955,7 @@ class QueryPipeline private constructor(
         expression: CypherExpr,
         variable: String
     ): ConjunctiveGraphIdRoute {
-        var graphId: String? = null
-        var conflicting = false
+        var graphIds: Set<String>? = null
 
         fun visit(candidate: CypherExpr): CypherExpr? = when (candidate) {
             is CypherExpr.And -> {
@@ -2927,21 +2968,19 @@ class QueryPipeline private constructor(
                     else -> CypherExpr.And(left, right)
                 }
             }
-            is CypherExpr.Comparison -> {
-                val value = graphIdEqualityValue(candidate, variable)
-                if (value == null) {
+            else -> {
+                val values = pureGraphIdConstraint(candidate, setOf(variable))
+                if (values == null) {
                     candidate
                 } else {
-                    val selected = graphId
-                    if (selected == null) graphId = value else if (selected != value) conflicting = true
+                    graphIds = intersectGraphIdConstraints(graphIds, values)
                     null
                 }
             }
-            else -> candidate
         }
 
         val residual = visit(expression)
-        return ConjunctiveGraphIdRoute(graphId, conflicting, residual)
+        return ConjunctiveGraphIdRoute(graphIds, graphIds?.isEmpty() == true, residual)
     }
 
     private fun graphIdEquality(expression: CypherExpr, variable: String): String? = when (expression) {
@@ -2962,21 +3001,73 @@ class QueryPipeline private constructor(
             null
         }
 
-    private fun graphIdEqualities(expression: CypherExpr, variables: Set<String>): Set<String> = when (expression) {
-        is CypherExpr.And -> graphIdEqualities(expression.left, variables) +
-            graphIdEqualities(expression.right, variables)
-        is CypherExpr.Comparison -> if (expression.op == "=") {
-            variables.firstNotNullOfOrNull { variable ->
-                when {
-                    isGraphIdReference(expression.left, variable) -> graphIdValue(expression.right)
-                    isGraphIdReference(expression.right, variable) -> graphIdValue(expression.left)
-                    else -> null
-                }
-            }?.let(::setOf).orEmpty()
-        } else {
-            emptySet()
+    /**
+     * Returns the finite graph-id set proven by [expression]. Unknown conjuncts
+     * do not weaken an exact constraint, while every OR branch must be exact.
+     */
+    private fun graphIdConstraint(expression: CypherExpr, variables: Set<String>): Set<String>? = when (expression) {
+        is CypherExpr.And -> intersectGraphIdConstraints(
+            graphIdConstraint(expression.left, variables),
+            graphIdConstraint(expression.right, variables)
+        )
+        is CypherExpr.Or -> {
+            val left = graphIdConstraint(expression.left, variables)
+            val right = graphIdConstraint(expression.right, variables)
+            if (left == null || right == null) null else left + right
         }
-        else -> emptySet()
+        else -> graphIdAtomicConstraint(expression, variables)
+    }
+
+    /** Unlike [graphIdConstraint], this requires every sub-expression to constrain graph id. */
+    private fun pureGraphIdConstraint(expression: CypherExpr, variables: Set<String>): Set<String>? = when (expression) {
+        is CypherExpr.And -> {
+            val left = pureGraphIdConstraint(expression.left, variables)
+            val right = pureGraphIdConstraint(expression.right, variables)
+            if (left == null || right == null) null else left intersect right
+        }
+        is CypherExpr.Or -> {
+            val left = pureGraphIdConstraint(expression.left, variables)
+            val right = pureGraphIdConstraint(expression.right, variables)
+            if (left == null || right == null) null else left + right
+        }
+        else -> graphIdAtomicConstraint(expression, variables)
+    }
+
+    private fun graphIdAtomicConstraint(expression: CypherExpr, variables: Set<String>): Set<String>? = when (expression) {
+        is CypherExpr.Comparison -> variables.firstNotNullOfOrNull { variable ->
+            graphIdEqualityValue(expression, variable)
+        }?.let(::setOf)
+        is CypherExpr.ListOp -> if (expression.op.equals("IN", ignoreCase = true) &&
+            variables.any { variable -> isGraphIdReference(expression.left, variable) }
+        ) {
+            graphIdValues(expression.right)
+        } else {
+            null
+        }
+        else -> null
+    }
+
+    private fun intersectGraphIdConstraints(left: Set<String>?, right: Set<String>?): Set<String>? = when {
+        left == null -> right
+        right == null -> left
+        else -> left intersect right
+    }
+
+    private fun graphIdValues(expression: CypherExpr): Set<String>? = when (expression) {
+        is CypherExpr.ListLiteral -> expression.elements.map { graphIdValue(it) }
+            .takeIf { values -> values.all { it != null } }
+            ?.filterNotNull()
+            ?.toSet()
+        is CypherExpr.Parameter -> when (val value = activeParameters.get().orEmpty()[expression.name]) {
+            is Iterable<*> -> value.toList().takeIf { values -> values.all { it is String } }
+                ?.filterIsInstance<String>()
+                ?.toSet()
+            is Array<*> -> value.toList().takeIf { values -> values.all { it is String } }
+                ?.filterIsInstance<String>()
+                ?.toSet()
+            else -> null
+        }
+        else -> null
     }
 
     private fun graphIdValue(expression: CypherExpr): String? = when (expression) {
