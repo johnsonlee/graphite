@@ -890,7 +890,7 @@ internal class MappedWebGraphBackedGraph(
                 nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                 nodeIdCapacity = nodeOffsets.size,
                 rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                contentIdentity = { callSiteStringIndexContentIdentity.copyOf() },
+                contentIdentity = { callSiteStringIndexContentIdentity(workConsumer = null) },
                 reservation = reservation
             )
             val published = synchronized(callSiteStringIndexLock) {
