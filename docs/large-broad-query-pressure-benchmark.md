@@ -83,8 +83,8 @@ unique. During warmup and measurement the gate compares, per query:
 Missing, duplicate, or unexpected cases; timeout/failure results; and any signature difference
 fail the JMH fork. A faster run that fails this gate is not a performance improvement.
 
-Create the oracle in a separate run from a trusted semantic implementation, with a timeout high
-enough for every query to finish:
+For a general `coverageFamily=all` run, create the oracle in a separate run from a trusted semantic
+implementation, with a timeout high enough for every query to finish:
 
 ```bash
 java -jar trusted-webgraph-jmh.jar \
@@ -99,6 +99,12 @@ java -jar trusted-webgraph-jmh.jar \
 `record` mode also fails unless every selected query succeeds. Its timing is oracle-generation
 overhead, not comparable performance evidence. Review and retain the oracle as an immutable test
 artifact; do not regenerate it from the candidate being measured.
+
+The fixture64 routing driver uses a stricter differential protocol tailored to this change: it
+records only the 192 already-correct single-source `graph-parameter` results from `main`, validates
+all 64 targets and three selectivity bands, and derives the three graphId identities for each
+signature. The resulting 768-record oracle is therefore independent of the candidate graphId path;
+candidate self-recording is explicitly not accepted as an oracle.
 
 ## Comparable base/candidate run
 
@@ -179,9 +185,9 @@ verify singular JSON and query-string `graph` parsing; the pressure timing delib
 fixed HTTP and JSON serialization overhead so it measures the multi-graph routing and search cost.
 
 Run `main` in record mode to capture its performance observations even if its graph-qualified
-result is known to be semantically wrong, and run the candidate in verify mode against an
-independently reviewed correctness oracle. Candidate timing is invalid unless oracle verification
-passes. Then enforce the gate for cold and warm forks separately:
+result is known to be semantically wrong, and run the candidate in verify mode against the
+base-single-source-derived correctness oracle. Candidate timing is invalid unless oracle
+verification passes. Then enforce the gate for cold and warm forks separately:
 
 ```bash
 node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
@@ -206,7 +212,7 @@ workload cannot pass. This prevents accepting a graphId speedup when the already
 single-graph API path regresses. The API path is the correctness reference and a non-regression
 guardrail; the 10x target applies to query-level graphId routing.
 
-The candidate in-process hard gate checks all routing results against the trusted external oracle.
+The candidate in-process hard gate checks all routing results against the base single-source oracle.
 The comparator additionally requires every candidate graphId result to match its API-selected
 single-graph reference in selectivity, row count, response size, and SHA-256 digest, and requires
 the API reference itself to match between main and candidate. Main's known-wrong graphId output is
@@ -225,24 +231,24 @@ by `johnsonlee`, names the current base SHA, reports correctness pass, and recor
 P50/P95 speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the
 gate. An arbitrary HTTPS URL is neither required nor treated as proof.
 
-After building base and candidate JMH jars with the identical benchmark harness and preparing the
-reviewed oracle, run the repository-owned driver with the generated fixture64 manifest:
+Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
+derives the correctness oracle itself:
 
 ```bash
 .github/scripts/run-fixture64-graph-routing.sh \
   /absolute/path/to/fixture64/graphs.tsv \
-  /absolute/path/to/reviewed-oracle.manifest \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
 The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
 JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,
-both built JARs, graph manifest, fixture provenance, and correctness oracle in `provenance.json`;
+both built JARs, graph manifest, fixture provenance, the `base-single-source` oracle origin, and the
+derived correctness-oracle SHA-256 in `provenance.json`;
 caller-supplied JARs are not accepted. Before running, it requires exactly 64 provenance rows, four
 source corpora, and 64 distinct persisted graph fingerprints. It then runs base and candidate
 sequentially for independent cold and warm forks,
-verifies the candidate against the reviewed oracle, invokes `compare-graph-id-pressure` for both
+verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for both
 states, and publishes the trusted commit status only after both comparisons pass. Set
 `GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. Retain
 both comparator reports plus the JMH JSON, observation TSV, correctness manifests,

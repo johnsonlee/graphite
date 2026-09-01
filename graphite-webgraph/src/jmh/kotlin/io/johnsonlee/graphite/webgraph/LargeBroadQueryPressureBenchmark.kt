@@ -210,13 +210,14 @@ open class LargeBroadQueryPressureBenchmark {
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)
+            val canonicalResult = canonicalResult(result)
             BroadQuerySample(
                 case = case,
                 latencyNanos = System.nanoTime() - started,
                 outcome = BroadQueryOutcome.SUCCESS,
                 rowCount = result.rows.size.toLong(),
-                responseBytes = canonicalResult(result).length.toLong(),
-                digest = digest(result)
+                responseBytes = canonicalResult.size.toLong(),
+                digest = digest(canonicalResult)
             ).also { sample ->
                 if (validateResults && case.expectZeroRows) check(sample.rowCount == 0L) {
                     "${case.id} expected zero rows, got ${sample.rowCount}"
@@ -453,28 +454,43 @@ open class LargeBroadQueryPressureBenchmark {
         Files.writeString(Path.of(configured), lines)
     }
 
-    private fun digest(result: CypherResult): String = MessageDigest.getInstance("SHA-256")
-        .digest(canonicalResult(result).toByteArray())
+    private fun digest(canonicalResult: ByteArray): String = MessageDigest.getInstance("SHA-256")
+        .digest(canonicalResult)
         .joinToString("") { byte -> "%02x".format(byte) }
 
-    private fun canonicalResult(result: CypherResult): String = buildString {
-        append(result.columns.joinToString(","))
-        result.rows.forEach { row ->
-            append('\n')
-            append(row.entries.sortedBy(Map.Entry<String, Any?>::key).joinToString(",") { (key, value) ->
-                "$key=${canonical(value)}"
+    private fun canonicalResult(result: CypherResult): ByteArray {
+        val columns = framedSequence("columns", result.columns.map(::canonical))
+        val rows = framedSequence("rows", result.rows.map { row ->
+            framedSequence("row", row.entries.sortedBy(Map.Entry<String, Any?>::key).flatMap { (key, value) ->
+                listOf(canonical(key), canonical(value))
             })
-        }
+        })
+        return "$columns$rows".toByteArray(Charsets.UTF_8)
     }
 
     private fun canonical(value: Any?): String = when (value) {
         null -> "null"
-        is Map<*, *> -> value.entries.sortedBy { it.key.toString() }
-            .joinToString(prefix = "{", postfix = "}") { (key, nested) -> "$key:${canonical(nested)}" }
-        is Iterable<*> -> value.joinToString(prefix = "[", postfix = "]") { canonical(it) }
-        is Array<*> -> value.joinToString(prefix = "[", postfix = "]") { canonical(it) }
-        else -> value.toString()
+        is String -> frame("string", value)
+        is Number -> framedSequence("number", listOf(frame("type", value::class.java.name), frame("value", value.toString())))
+        is Boolean -> frame("boolean", value.toString())
+        is Map<*, *> -> framedSequence("map", value.entries
+            .map { entry -> canonical(entry.key) to canonical(entry.value) }
+            .sortedBy(Pair<String, String>::first)
+            .flatMap { (key, nested) -> listOf(key, nested) })
+        is Set<*> -> framedSequence("set", value.map(::canonical).sorted())
+        is Iterable<*> -> framedSequence("iterable", value.map(::canonical))
+        is Array<*> -> framedSequence("array", value.map(::canonical))
+        else -> framedSequence(
+            "object",
+            listOf(frame("type", value::class.java.name), frame("value", value.toString()))
+        )
     }
+
+    private fun framedSequence(tag: String, values: List<String>): String =
+        frame(tag, values.joinToString(separator = "", prefix = values.size.toString()) { frame("item", it) })
+
+    private fun frame(tag: String, value: String): String =
+        "$tag:${value.toByteArray(Charsets.UTF_8).size}:$value"
 }
 
 @State(Scope.Thread)

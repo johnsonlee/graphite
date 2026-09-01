@@ -578,6 +578,148 @@ function parsePressureObservations(contents, revision, errors) {
     return rows;
 }
 
+const GRAPH_ROUTING_SELECTIVITIES = ["zero", "targeted", "dense"];
+const GRAPH_ROUTING_ORACLE_SHAPES = [
+    {
+        shape: "graph-id-property-wrapped-contains",
+        operator: "graph-id-equals-and-wrapped-contains",
+        boundary: "graph-routing"
+    },
+    {
+        shape: "graph-id-function-wrapped-contains",
+        operator: "graph-id-function-equals-and-wrapped-contains",
+        boundary: "graph-routing"
+    },
+    {
+        shape: "graph-id-parameter-wrapped-contains",
+        operator: "graph-id-parameter-equals-and-wrapped-contains",
+        boundary: "parameters"
+    }
+];
+const GRAPH_PARAMETER_SHAPE = "api-graph-parameter-wrapped-contains";
+const GRAPH_PARAMETER_OPERATOR = "request-graph-selection-and-wrapped-contains";
+const GRAPH_PARAMETER_BOUNDARY = "api-graph-parameter";
+
+function parseCorrectnessRecords(contents, source, errors) {
+    const rows = [];
+    const seen = new Set();
+    for (const [index, rawLine] of contents.split(/\r?\n/).entries()) {
+        const line = rawLine.trim();
+        if (line.length === 0 || line.startsWith("#")) continue;
+        const fields = line.split("|");
+        if (fields.length !== 12) {
+            errors.push(`${source}:${index + 1}: expected 12 correctness fields`);
+            continue;
+        }
+        const [id, family, shape, selectivity, operator, boundary, projection,
+            limitText, outcome, rowCountText, responseBytesText, digest] = fields;
+        const limit = finiteNumber(limitText);
+        const rowCount = finiteNumber(rowCountText);
+        const responseBytes = finiteNumber(responseBytesText);
+        if (seen.has(id)) errors.push(`${source}: duplicate correctness id ${id}`);
+        seen.add(id);
+        if ([id, family, shape, selectivity, operator, boundary, projection].some(value => value === "")) {
+            errors.push(`${source}:${index + 1}: blank correctness identity field`);
+        }
+        if (limit === null || rowCount === null || responseBytes === null ||
+            !Number.isInteger(limit) || !Number.isInteger(rowCount) || !Number.isInteger(responseBytes) ||
+            limit < 0 || rowCount < 0 || responseBytes < 0
+        ) {
+            errors.push(`${source}:${index + 1}: invalid correctness numeric field`);
+        }
+        if (outcome !== "success") errors.push(`${source}:${id}: outcome=${outcome}; expected success`);
+        if (!/^[0-9a-f]{64}$/.test(digest)) errors.push(`${source}:${id}: invalid SHA-256 digest`);
+        rows.push({
+            id, family, shape, selectivity, operator, boundary, projection,
+            limit, outcome, rowCount, responseBytes, digest
+        });
+    }
+    if (rows.length === 0) errors.push(`${source}: correctness manifest is empty`);
+    return rows;
+}
+
+function encodeCorrectnessRecord(record) {
+    return [
+        record.id, record.family, record.shape, record.selectivity, record.operator,
+        record.boundary, record.projection, record.limit, record.outcome, record.rowCount,
+        record.responseBytes, record.digest
+    ].join("|");
+}
+
+export function deriveGraphRoutingOracle(referenceContents) {
+    const errors = [];
+    const references = parseCorrectnessRecords(referenceContents, "base-single-source", errors);
+    const bySlot = new Map();
+    for (const reference of references) {
+        const match = reference.id.match(
+            /^api-graph-parameter-wrapped-contains-target-(\d{2})-(zero|targeted|dense)$/
+        );
+        if (match === null) {
+            errors.push(`base-single-source: unexpected reference id ${reference.id}`);
+            continue;
+        }
+        const targetIndex = Number(match[1]);
+        const selectivity = match[2];
+        if (targetIndex < 0 || targetIndex >= 64 || reference.family !== "graph-parameter" ||
+            reference.shape !== GRAPH_PARAMETER_SHAPE || reference.selectivity !== selectivity ||
+            reference.operator !== GRAPH_PARAMETER_OPERATOR || reference.boundary !== GRAPH_PARAMETER_BOUNDARY ||
+            reference.projection !== "properties" || reference.limit !== 200
+        ) {
+            errors.push(`base-single-source: invalid identity for ${reference.id}`);
+        }
+        const validRows = selectivity === "zero" ? reference.rowCount === 0 :
+            selectivity === "targeted" ? reference.rowCount >= 1 && reference.rowCount < 200 :
+                reference.rowCount === 200;
+        if (!validRows) {
+            errors.push(`base-single-source: ${reference.id} rowCount=${reference.rowCount} ` +
+                "does not satisfy zero=0, targeted=1..199, dense=200");
+        }
+        const slot = `${targetIndex}\u0000${selectivity}`;
+        if (bySlot.has(slot)) errors.push(`base-single-source: duplicate target/selectivity ${slot}`);
+        bySlot.set(slot, reference);
+    }
+    if (references.length !== 192 || bySlot.size !== 192) {
+        errors.push(`base-single-source: expected 64 targets x 3 selectivities, found ` +
+            `${references.length} records and ${bySlot.size} slots`);
+    }
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+            if (!bySlot.has(`${targetIndex}\u0000${selectivity}`)) {
+                errors.push(`base-single-source: missing target-${String(targetIndex).padStart(2, "0")}-${selectivity}`);
+            }
+        }
+    }
+    if (errors.length > 0) return { passed: false, errors, records: [], oracle: "" };
+
+    const records = [];
+    for (const identity of GRAPH_ROUTING_ORACLE_SHAPES) {
+        for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+            for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+                const reference = bySlot.get(`${targetIndex}\u0000${selectivity}`);
+                records.push({
+                    ...reference,
+                    id: `${identity.shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                    family: "graph-id",
+                    shape: identity.shape,
+                    operator: identity.operator,
+                    boundary: identity.boundary
+                });
+            }
+        }
+    }
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+            records.push(bySlot.get(`${targetIndex}\u0000${selectivity}`));
+        }
+    }
+    return {
+        passed: true,
+        errors: [],
+        records,
+        oracle: `${records.map(encodeCorrectnessRecord).join("\n")}\n`
+    };
+}
+
 function pressureMetric(result, name) {
     return finiteNumber(result?.secondaryMetrics?.[name]?.score);
 }
@@ -1734,6 +1876,16 @@ function compareGraphIdPressureCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function deriveGraphRoutingOracleCommand(args) {
+    const result = deriveGraphRoutingOracle(
+        fs.readFileSync(requireArg(args, "references"), "utf8")
+    );
+    if (!result.passed) {
+        throw new Error(`Unable to derive graph-routing oracle:\n${result.errors.join("\n")}`);
+    }
+    writeFile(requireArg(args, "oracle"), result.oracle);
+}
+
 function compareLatencyAnchorCommand(args) {
     const comparison = compareLatencyAnchor(
         readJson(requireArg(args, "anchor")),
@@ -1857,6 +2009,7 @@ function main(argv) {
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
+    else if (command === "derive-graph-routing-oracle") deriveGraphRoutingOracleCommand(args);
     else if (command === "compare-graph-id-pressure") compareGraphIdPressureCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "compare-latency-anchor") compareLatencyAnchorCommand(args);

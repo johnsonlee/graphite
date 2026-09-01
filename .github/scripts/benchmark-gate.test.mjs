@@ -25,6 +25,7 @@ import {
     compareLatencyAnchor,
     compareLargeCorpus,
     compareGraphIdPressure,
+    deriveGraphRoutingOracle,
     parseLargeCorpusLog,
     makeJmhAdvisory,
     renderJmhReport,
@@ -119,6 +120,30 @@ function graphIdObservations(
         }
     }
     return `${header}\n${rows.join("\n")}\n`;
+}
+
+function graphParameterReferenceManifest() {
+    const records = [];
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (const selectivity of ["zero", "targeted", "dense"]) {
+            const rowCount = selectivity === "zero" ? 0 : selectivity === "targeted" ? 10 : 200;
+            records.push([
+                `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                "graph-parameter",
+                "api-graph-parameter-wrapped-contains",
+                selectivity,
+                "request-graph-selection-and-wrapped-contains",
+                "api-graph-parameter",
+                "properties",
+                200,
+                "success",
+                rowCount,
+                rowCount === 0 ? 64 : 128,
+                crypto.createHash("sha256").update(`${targetIndex}-${selectivity}`).digest("hex")
+            ].join("|"));
+        }
+    }
+    return `${records.join("\n")}\n`;
 }
 
 test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
@@ -347,6 +372,45 @@ test("graphId pressure requires every target graph and all three graphId spellin
     assert.match(comparison.errors.join("\n"), /zero\/targeted\/dense coverage is incomplete/);
 });
 
+test("graph-routing oracle is derived only from complete successful base single-source references", () => {
+    const references = graphParameterReferenceManifest();
+    const derived = deriveGraphRoutingOracle(references);
+    assert.equal(derived.passed, true);
+    assert.equal(derived.records.length, 768);
+    assert.equal(new Set(derived.records.map((record) => record.id)).size, 768);
+
+    const referenceBySlot = new Map(derived.records
+        .filter((record) => record.family === "graph-parameter")
+        .map((record) => [`${record.id.match(/target-(\d{2})-/)[1]}\0${record.selectivity}`, record]));
+    for (const record of derived.records.filter((item) => item.family === "graph-id")) {
+        const target = record.id.match(/target-(\d{2})-/)[1];
+        const reference = referenceBySlot.get(`${target}\0${record.selectivity}`);
+        for (const field of ["outcome", "rowCount", "responseBytes", "digest"]) {
+            assert.equal(record[field], reference[field], `${record.id} ${field}`);
+        }
+    }
+
+    const missing = deriveGraphRoutingOracle(references.split("\n").slice(1).join("\n"));
+    assert.equal(missing.passed, false);
+    assert.match(missing.errors.join("\n"), /expected 64 targets x 3 selectivities|missing target-00-zero/);
+
+    const duplicateLine = references.split("\n")[0];
+    const duplicate = deriveGraphRoutingOracle(`${references}${duplicateLine}\n`);
+    assert.equal(duplicate.passed, false);
+    assert.match(duplicate.errors.join("\n"), /duplicate correctness id|duplicate target\/selectivity/);
+
+    const failed = deriveGraphRoutingOracle(references.replace("|success|0|", "|failed|0|"));
+    assert.equal(failed.passed, false);
+    assert.match(failed.errors.join("\n"), /outcome=failed/);
+
+    const wrongBand = deriveGraphRoutingOracle(references.replace(
+        "|targeted|request-graph-selection-and-wrapped-contains|api-graph-parameter|properties|200|success|10|",
+        "|targeted|request-graph-selection-and-wrapped-contains|api-graph-parameter|properties|200|success|200|"
+    ));
+    assert.equal(wrongBand.passed, false);
+    assert.match(wrongBand.errors.join("\n"), /targeted=1\.\.199/);
+});
+
 test("fixture64 driver builds commit-bound JARs and records fixture provenance", () => {
     const driver = fs.readFileSync(
         new URL("./run-real64-graph-routing.sh", import.meta.url),
@@ -354,6 +418,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     );
 
     assert.doesNotMatch(driver, /<base-jmh\.jar>|<candidate-jmh\.jar>/);
+    assert.doesNotMatch(driver, /<reviewed-oracle>|ORACLE=\$2/);
     assert.equal((driver.match(/git clone --no-checkout/g) ?? []).length, 2);
     assert.match(driver, /checkout --detach "\$\{BASE_SHA\}"/);
     assert.match(driver, /checkout --detach "\$\{CANDIDATE_SHA\}"/);
@@ -363,7 +428,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{HARNESS_PATH\}"/
     );
     assert.equal((driver.match(/:webgraph:jmhJar --no-daemon/g) ?? []).length, 2);
-    assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 1);
+    assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
     assert.match(driver, /-jvmArgs "-Xmx8g /);
     assert.doesNotMatch(driver, /-jvmArgsAppend/);
     for (const field of [
@@ -377,10 +442,14 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         "manifestSha256",
         "fixtureProvenanceSha256",
         "oracleSha256",
+        "oracleSource",
     ]) {
         assert.match(driver, new RegExp(`--arg ${field} `));
     }
     assert.match(driver, /> "\$\{OUTPUT_DIR\}\/provenance\.json"/);
+    assert.match(driver, /coverageFamily=graph-parameter/);
+    assert.match(driver, /derive-graph-routing-oracle/);
+    assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.doesNotMatch(driver, /target_url|EVIDENCE_URL|https-evidence-url/);
 });
 

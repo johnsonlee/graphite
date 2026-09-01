@@ -2,19 +2,19 @@
 
 set -euo pipefail
 
-if [[ $# -lt 4 || $# -gt 6 ]]; then
-  echo "Usage: $0 <fixture64-graphs.tsv> <reviewed-oracle> <base-sha> <candidate-sha>" \
+if [[ $# -lt 3 || $# -gt 5 ]]; then
+  echo "Usage: $0 <fixture64-graphs.tsv> <base-sha> <candidate-sha>" \
     "[owner/repo] [output-dir]" >&2
   exit 2
 fi
 
 MANIFEST=$1
-ORACLE=$2
-BASE_SHA=$3
-CANDIDATE_SHA=$4
-REPOSITORY=${5:-johnsonlee/graphite}
-OUTPUT_DIR=${6:-graph-routing-results}
+BASE_SHA=$2
+CANDIDATE_SHA=$3
+REPOSITORY=${4:-johnsonlee/graphite}
+OUTPUT_DIR=${5:-graph-routing-results}
 FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
+ORACLE=${OUTPUT_DIR}/base-single-source-oracle.manifest
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 STATUS_CONTEXT=graphite/fixture64-graph-routing
@@ -24,7 +24,7 @@ SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 
-for INPUT in "${MANIFEST}" "${ORACLE}" "${FIXTURE_PROVENANCE}"; do
+for INPUT in "${MANIFEST}" "${FIXTURE_PROVENANCE}"; do
   test -f "${INPUT}"
 done
 [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]]
@@ -91,7 +91,6 @@ BASE_JAR_SHA256=$(sha256_file "${BASE_JAR}")
 CANDIDATE_JAR_SHA256=$(sha256_file "${CANDIDATE_JAR}")
 MANIFEST_SHA256=$(sha256_file "${MANIFEST}")
 FIXTURE_PROVENANCE_SHA256=$(sha256_file "${FIXTURE_PROVENANCE}")
-ORACLE_SHA256=$(sha256_file "${ORACLE}")
 
 run_revision() {
   local REVISION=$1
@@ -114,6 +113,24 @@ run_revision() {
       -Dgraphite.broad.pressure.output=${RESULT_PREFIX}.correctness \
       -Dgraphite.broad.pressure.observations.output=${RESULT_PREFIX}.tsv"
 }
+
+# Build the correctness oracle from main's already-correct single-source path. This never executes
+# main's known-wrong graphId routing. The candidate-owned comparator validates the complete 64x3
+# reference matrix and expands each signature to the three graphId query identities.
+BASE_REFERENCE_PREFIX=${OUTPUT_DIR}/base-single-source-reference
+java -jar "${BASE_JAR}" "${FILTER}" \
+  -p graphCount=64 -p coverageFamily=graph-parameter -p indexState=cold \
+  -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -foe true -rf json \
+  -rff "${BASE_REFERENCE_PREFIX}.json" \
+  -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} \
+    -Dgraphite.broad.pressure.correctness.mode=record \
+    -Dgraphite.broad.pressure.output=${BASE_REFERENCE_PREFIX}.manifest \
+    -Dgraphite.broad.pressure.observations.output=${BASE_REFERENCE_PREFIX}.tsv"
+node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" derive-graph-routing-oracle \
+  --references "${BASE_REFERENCE_PREFIX}.manifest" \
+  --oracle "${ORACLE}"
+test "$(wc -l < "${ORACLE}" | tr -d ' ')" -eq 768
+ORACLE_SHA256=$(sha256_file "${ORACLE}")
 
 for INDEX_STATE in cold warm; do
   run_revision base "${INDEX_STATE}" "${BASE_JAR}" record ""
@@ -141,12 +158,13 @@ jq -n \
   --arg manifestSha256 "${MANIFEST_SHA256}" \
   --arg fixtureProvenanceSha256 "${FIXTURE_PROVENANCE_SHA256}" \
   --arg oracleSha256 "${ORACLE_SHA256}" \
+  --arg oracleSource "base-single-source" \
   '{repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
     harnessSha256: $harnessSha256, comparatorSha256: $comparatorSha256,
     scriptSha256: $scriptSha256, baseJarSha256: $baseJarSha256,
     candidateJarSha256: $candidateJarSha256, manifestSha256: $manifestSha256,
     fixtureProvenanceSha256: $fixtureProvenanceSha256,
-    oracleSha256: $oracleSha256}' > "${OUTPUT_DIR}/provenance.json"
+    oracleSha256: $oracleSha256, oracleSource: $oracleSource}' > "${OUTPUT_DIR}/provenance.json"
 
 COLD_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
 COLD_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
