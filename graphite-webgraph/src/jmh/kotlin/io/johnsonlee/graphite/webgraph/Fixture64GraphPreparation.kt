@@ -102,7 +102,8 @@ internal object Fixture64GraphPreparation {
                         persistedPath,
                         terms.zero,
                         terms.targeted,
-                        terms.dense
+                        terms.dense,
+                        graphFingerprint
                     ).joinToString("\t")
                     provenance += listOf(
                         graphId,
@@ -298,7 +299,8 @@ internal object Fixture64GraphPreparation {
                     "$graphId graph path is mismatched or repeated"
                 }
                 require(manifest.zero == provenance.zero && manifest.targeted == provenance.targeted &&
-                    manifest.dense == provenance.dense
+                    manifest.dense == provenance.dense &&
+                    manifest.querySemanticSha256 == provenance.querySemanticSha256
                 ) {
                     "$graphId search-term provenance mismatch"
                 }
@@ -330,8 +332,8 @@ internal object Fixture64GraphPreparation {
         .filterNot { line -> line.isBlank() || line.startsWith("#") }
         .mapIndexed { index, line ->
             val fields = line.split('\t')
-            require(fields.size == MANIFEST_FIELD_COUNT) { "$path:${index + 1}: expected 5 fields" }
-            FixtureManifestRow(fields[0], Path.of(fields[1]), fields[2], fields[3], fields[4])
+            require(fields.size == MANIFEST_FIELD_COUNT) { "$path:${index + 1}: expected 6 fields" }
+            FixtureManifestRow(fields[0], Path.of(fields[1]), fields[2], fields[3], fields[4], fields[5])
         }
 
     private fun parseProvenance(path: Path): List<FixtureProvenanceRow> {
@@ -469,7 +471,8 @@ internal object Fixture64GraphPreparation {
         val graphPath: Path,
         val zero: String,
         val targeted: String,
-        val dense: String
+        val dense: String,
+        val querySemanticSha256: String
     )
     private data class FixtureProvenanceRow(
         val graphId: String,
@@ -501,7 +504,7 @@ internal object Fixture64GraphPreparation {
     private const val SHA_256 = "SHA-256"
     private const val MANIFEST_FILE = "graphs.tsv"
     private const val PROVENANCE_FILE = "fixture-provenance.tsv"
-    private const val MANIFEST_FIELD_COUNT = 5
+    private const val MANIFEST_FIELD_COUNT = 6
     private const val PROVENANCE_FIELD_COUNT = 14
     private const val VERIFY_COMMAND = "--verify"
     private const val ORDER_FINGERPRINT_SELF_TEST = "--self-test-order-fingerprint"

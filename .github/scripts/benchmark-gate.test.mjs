@@ -90,7 +90,7 @@ function graphIdObservations(
     forceZeroRows = false
 ) {
     const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
-        "targetGraphId\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
+        "targetGraphId\tworkloadIdentity\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
     const rows = [];
     const shapes = [
         "graph-id-property-wrapped-contains",
@@ -99,6 +99,7 @@ function graphIdObservations(
     ];
     const selectivities = ["zero", "targeted", "dense"];
     for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        const workloadIdentity = crypto.createHash("sha256").update(`graph-${targetIndex}`).digest("hex");
         for (const selectivity of selectivities) {
             const rowCount = forceZeroRows || selectivity === "zero" ? "0" :
                 selectivity === "targeted" ? "10" : "200";
@@ -108,7 +109,8 @@ function graphIdObservations(
                 rows.push([
                     `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
                     "graph-id", shape, selectivity, "contains", "graph-routing",
-                    "properties", "200", `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
+                    "properties", "200", `graph-${targetIndex}`, workloadIdentity,
+                    outcome, rowCount, responseBytes, digest,
                     String(latencyNanos)
                 ].join("\t"));
             }
@@ -116,7 +118,7 @@ function graphIdObservations(
                 `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
                 "graph-parameter", "api-graph-parameter-wrapped-contains", selectivity,
                 "request-graph-selection-and-wrapped-contains", "api-graph-parameter", "properties", "200",
-                `graph-${targetIndex}`, outcome, rowCount, responseBytes, digest,
+                `graph-${targetIndex}`, workloadIdentity, outcome, rowCount, responseBytes, digest,
                 String(graphParameterLatencyNanos)
             ].join("\t"));
         }
@@ -127,6 +129,7 @@ function graphIdObservations(
 function graphParameterReferenceManifest() {
     const records = [];
     for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        const workloadIdentity = crypto.createHash("sha256").update(`graph-${targetIndex}`).digest("hex");
         for (const selectivity of ["zero", "targeted", "dense"]) {
             const rowCount = selectivity === "zero" ? 0 : selectivity === "targeted" ? 10 : 200;
             records.push([
@@ -137,6 +140,8 @@ function graphParameterReferenceManifest() {
                 "request-graph-selection-and-wrapped-contains",
                 "api-graph-parameter",
                 "properties",
+                `graph-${targetIndex}`,
+                workloadIdentity,
                 200,
                 "success",
                 rowCount,
@@ -405,10 +410,12 @@ test("graph-routing oracle is derived only from complete successful base single-
     assert.equal(failed.passed, false);
     assert.match(failed.errors.join("\n"), /outcome=failed/);
 
-    const wrongBand = deriveGraphRoutingOracle(references.replace(
-        "|targeted|request-graph-selection-and-wrapped-contains|api-graph-parameter|properties|200|success|10|",
-        "|targeted|request-graph-selection-and-wrapped-contains|api-graph-parameter|properties|200|success|200|"
-    ));
+    const wrongBandRecords = references.trimEnd().split("\n");
+    const targetedIndex = wrongBandRecords.findIndex((line) => line.split("|")[3] === "targeted");
+    const targetedFields = wrongBandRecords[targetedIndex].split("|");
+    targetedFields[11] = "200";
+    wrongBandRecords[targetedIndex] = targetedFields.join("|");
+    const wrongBand = deriveGraphRoutingOracle(`${wrongBandRecords.join("\n")}\n`);
     assert.equal(wrongBand.passed, false);
     assert.match(wrongBand.errors.join("\n"), /targeted=1\.\.199/);
 });
@@ -470,7 +477,7 @@ test("immutable Gist materialization rejects an unbound truncated URL", async ()
     fs.rmSync(directory, { recursive: true });
 });
 
-test("fixture workload verifier rejects graph-shape and term mutations", () => {
+test("fixture workload verifier binds every result to all 64 regenerated JAR shards", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-fixture-workload-"));
     const evidence = path.join(root, "evidence");
     const recomputed = path.join(root, "recomputed");
@@ -481,22 +488,79 @@ test("fixture workload verifier rejects graph-shape and term mutations", () => {
         "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
         "querySemanticSha256", "graphPath"
     ].join("\t");
-    const row = [
-        "fixture-android-00", "android", "0", "android.jar", "a".repeat(64), "b".repeat(64),
-        "10", "100", "20", "absent", "target", "dense", "c".repeat(64), "/tmp/graph"
-    ].join("\t");
-    const manifest = "# fixture64\nfixture-android-00\t/tmp/graph\tabsent\ttarget\tdense\n";
+    const provenanceRows = [];
+    const manifestRows = ["# fixture64"];
+    const observationRows = [
+        "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
+        "targetGraphId\tworkloadIdentity\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos"
+    ];
+    const correctnessRows = [];
+    for (let graphIndex = 0; graphIndex < 64; graphIndex++) {
+        const graphId = `fixture-jar-${String(graphIndex).padStart(2, "0")}`;
+        const workloadIdentity = crypto.createHash("sha256").update(graphId).digest("hex");
+        provenanceRows.push([
+            graphId, `jar-${Math.floor(graphIndex / 16)}`, String(graphIndex % 16), "fixture.jar",
+            "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
+            workloadIdentity, `/tmp/${graphId}.graph`
+        ].join("\t"));
+        manifestRows.push([
+            graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense", workloadIdentity
+        ].join("\t"));
+        for (let queryIndex = 0; queryIndex < 12; queryIndex++) {
+            const id = `query-${graphIndex}-${queryIndex}`;
+            observationRows.push([
+                id, "graph-id", "graph-id-property-wrapped-contains", "targeted", "contains",
+                "graph-routing", "properties", "200", graphId, workloadIdentity, "success", "1",
+                "64", `digest-${graphIndex}-${queryIndex}`, "1000000"
+            ].join("\t"));
+            correctnessRows.push([
+                id, "graph-id", "graph-id-property-wrapped-contains", "targeted", "contains",
+                "graph-routing", "properties", graphId, workloadIdentity, "200", "success", "1",
+                "64", crypto.createHash("sha256").update(id).digest("hex")
+            ].join("|"));
+        }
+    }
+    const provenance = `${header}\n${provenanceRows.join("\n")}\n`;
+    const manifest = `${manifestRows.join("\n")}\n`;
+    const observations = path.join(evidence, "observations.tsv");
+    const correctness = path.join(evidence, "correctness.manifest");
     for (const directory of [evidence, recomputed]) {
-        fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), `${header}\n${row}\n`);
+        fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), provenance);
         fs.writeFileSync(path.join(directory, "graphs.tsv"), manifest);
     }
+    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
+    fs.writeFileSync(correctness, `${correctnessRows.join("\n")}\n`);
     const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
-    const verify = () => spawnSync("bash", [verifier.pathname, evidence, recomputed], { encoding: "utf8" });
-    assert.equal(verify().status, 0);
-    fs.writeFileSync(path.join(evidence, "fixture-provenance.tsv"), `${header}\n${row.replace("\t100\t", "\t1\t")}\n`);
+    const verify = () => spawnSync(
+        "bash",
+        [verifier.pathname, evidence, recomputed, observations, correctness],
+        { encoding: "utf8" }
+    );
+    const initialVerification = verify();
+    assert.equal(
+        initialVerification.status,
+        0,
+        `${root}\n${initialVerification.stdout}\n${initialVerification.stderr}`
+    );
+    fs.writeFileSync(
+        path.join(evidence, "fixture-provenance.tsv"),
+        provenance.replace("\t100\t20\t", "\t1\t20\t")
+    );
     assert.notEqual(verify().status, 0);
-    fs.writeFileSync(path.join(evidence, "fixture-provenance.tsv"), `${header}\n${row}\n`);
+    fs.writeFileSync(path.join(evidence, "fixture-provenance.tsv"), provenance);
     fs.writeFileSync(path.join(evidence, "graphs.tsv"), manifest.replace("\ttarget\t", "\tmutated\t"));
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(path.join(evidence, "graphs.tsv"), manifest);
+    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`.replace(
+        `fixture-jar-00\t${provenanceRows[0].split("\t")[12]}`,
+        `fixture-jar-01\t${provenanceRows[0].split("\t")[12]}`
+    ));
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(observations, `${observationRows.join("\n")}\n`);
+    fs.writeFileSync(correctness, `${correctnessRows.join("\n")}\n`.replace(
+        provenanceRows[0].split("\t")[12],
+        "f".repeat(64)
+    ));
     assert.notEqual(verify().status, 0);
     fs.rmSync(root, { recursive: true });
 });
@@ -1632,7 +1696,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v3/);
+    assert.match(workflow, /graphite-fixture64-evidence-v4/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
     assert.match(workflow, /reproducibilityScriptSha256/);

@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 39ca9000392f9f87c9c56ed7fbd9e4df248796ca193b515a70792f513a2ef653
-  BENCHMARK_REPORT_TRANSITION_SHA256: 39ca9000392f9f87c9c56ed7fbd9e4df248796ca193b515a70792f513a2ef653
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 39ca9000392f9f87c9c56ed7fbd9e4df248796ca193b515a70792f513a2ef653
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 39ca9000392f9f87c9c56ed7fbd9e4df248796ca193b515a70792f513a2ef653
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
+  BENCHMARK_REPORT_TRANSITION_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: f5d701df8f7a39001dd6c3168030ce369cadcbf909ec14cba72daf2e7168a0f7
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -2021,13 +2021,14 @@ jobs:
             'base-single-source-oracle.manifest',
             ...['cold', 'warm'].flatMap(state => [
               `base-graph-routing-${state}.json`, `base-graph-routing-${state}.tsv`,
+              `base-graph-routing-${state}.correctness`,
               `candidate-graph-routing-${state}.json`, `candidate-graph-routing-${state}.tsv`,
               `candidate-graph-routing-${state}.correctness`,
               `graph-routing-${state}-report.md`, `graph-routing-${state}-status.json`
             ])
           ];
           if (manifest) {
-            if (manifest.schema !== 'graphite-fixture64-evidence-v3' ||
+            if (manifest.schema !== 'graphite-fixture64-evidence-v4' ||
                 manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 manifest.baseSha !== process.env.BASE_SHA ||
                 manifest.candidateSha !== process.env.CANDIDATE_SHA ||
@@ -2074,12 +2075,19 @@ jobs:
                   reproducibility.repeatedManifestSemanticSha256) {
               errors.push('Repeated fixture-JAR preparation is not reproducible');
             }
-            for (const state of ['cold', 'warm']) {
+            for (const [stateIndex, state] of ['cold', 'warm'].entries()) {
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
               ));
               if (!result.passed || result.gateP50Speedup < 10 || result.gateP95Speedup < 10) {
                 errors.push(`${state} comparator status does not pass the 10x gate`);
+              }
+              const reported = speedups.slice(stateIndex * 2, stateIndex * 2 + 2);
+              const measured = [result.gateP50Speedup, result.gateP95Speedup]
+                .map(value => Number(Number(value).toFixed(2)));
+              if (reported.length !== 2 || reported.some((value, index) => value !== measured[index])) {
+                errors.push(`${state} commit-status speedups ${reported.join('/')} do not equal ` +
+                  `the recomputed evidence ${measured.join('/')}`);
               }
               const correctness = fs.readFileSync(
                 path.join(directory, `candidate-graph-routing-${state}.correctness`), 'utf8'
@@ -2149,7 +2157,7 @@ jobs:
         assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
         assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
         NORMALIZED_PROVENANCE_SHA=$(cut -f1-13 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
-        NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+        NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
           benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
         RECEIPT=benchmark-results/evidence/fixture-reproducibility.json
         test "$(jq -r .firstProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
@@ -2182,7 +2190,18 @@ jobs:
         evidence-candidate/.github/scripts/prepare-fixture64-graphs.sh \
           "${CANDIDATE_JAR}" "${FIXTURE_DIR}" "${RECOMPUTED_FIXTURE64}"
         evidence-candidate/.github/scripts/verify-fixture64-workload.sh \
-          benchmark-results/evidence "${RECOMPUTED_FIXTURE64}"
+          benchmark-results/evidence "${RECOMPUTED_FIXTURE64}" \
+          benchmark-results/evidence/base-single-source-reference.tsv \
+          benchmark-results/evidence/base-single-source-reference.manifest \
+          benchmark-results/evidence/base-single-source-oracle.manifest \
+          benchmark-results/evidence/base-graph-routing-cold.tsv \
+          benchmark-results/evidence/base-graph-routing-cold.correctness \
+          benchmark-results/evidence/candidate-graph-routing-cold.tsv \
+          benchmark-results/evidence/candidate-graph-routing-cold.correctness \
+          benchmark-results/evidence/base-graph-routing-warm.tsv \
+          benchmark-results/evidence/base-graph-routing-warm.correctness \
+          benchmark-results/evidence/candidate-graph-routing-warm.tsv \
+          benchmark-results/evidence/candidate-graph-routing-warm.correctness
         node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
           --references benchmark-results/evidence/base-single-source-reference.manifest \
           --oracle benchmark-results/recomputed-base-single-source-oracle.manifest

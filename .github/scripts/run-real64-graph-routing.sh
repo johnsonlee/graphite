@@ -202,6 +202,20 @@ for INDEX_STATE in cold warm; do
   jq -e '.passed == true' "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json" >/dev/null
 done
 
+"${CANDIDATE_TREE}/${WORKLOAD_VERIFIER_PATH}" \
+  "$(dirname "${MANIFEST}")" "$(dirname "${MANIFEST}")" \
+  "${BASE_REFERENCE_PREFIX}.tsv" \
+  "${BASE_REFERENCE_PREFIX}.manifest" \
+  "${ORACLE}" \
+  "${OUTPUT_DIR}/base-graph-routing-cold.tsv" \
+  "${OUTPUT_DIR}/base-graph-routing-cold.correctness" \
+  "${OUTPUT_DIR}/candidate-graph-routing-cold.tsv" \
+  "${OUTPUT_DIR}/candidate-graph-routing-cold.correctness" \
+  "${OUTPUT_DIR}/base-graph-routing-warm.tsv" \
+  "${OUTPUT_DIR}/base-graph-routing-warm.correctness" \
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.tsv" \
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness"
+
 jq -n \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
@@ -254,6 +268,7 @@ EVIDENCE_FILES=(
   "${OUTPUT_DIR}/base-single-source-oracle.manifest"
   "${OUTPUT_DIR}/base-graph-routing-cold.json"
   "${OUTPUT_DIR}/base-graph-routing-cold.tsv"
+  "${OUTPUT_DIR}/base-graph-routing-cold.correctness"
   "${OUTPUT_DIR}/candidate-graph-routing-cold.json"
   "${OUTPUT_DIR}/candidate-graph-routing-cold.tsv"
   "${OUTPUT_DIR}/candidate-graph-routing-cold.correctness"
@@ -261,6 +276,7 @@ EVIDENCE_FILES=(
   "${OUTPUT_DIR}/graph-routing-cold-status.json"
   "${OUTPUT_DIR}/base-graph-routing-warm.json"
   "${OUTPUT_DIR}/base-graph-routing-warm.tsv"
+  "${OUTPUT_DIR}/base-graph-routing-warm.correctness"
   "${OUTPUT_DIR}/candidate-graph-routing-warm.json"
   "${OUTPUT_DIR}/candidate-graph-routing-warm.tsv"
   "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness"
@@ -274,7 +290,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v3" \
+  --arg schema "graphite-fixture64-evidence-v4" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \

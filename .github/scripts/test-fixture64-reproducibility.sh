@@ -26,9 +26,9 @@ diff -u \
   <(cut -f1-13 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
   <(cut -f1-13 "${SECOND_OUTPUT}/fixture-provenance.tsv")
 diff -u \
-  <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+  <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${FIRST_OUTPUT}/graphs.tsv") \
-  <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+  <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${SECOND_OUTPUT}/graphs.tsv")
 
 find_one() {
@@ -91,9 +91,9 @@ sha256_stream() {
 
 FIRST_PROVENANCE_SHA=$(cut -f1-13 "${FIRST_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
 SECOND_PROVENANCE_SHA=$(cut -f1-13 "${SECOND_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
-FIRST_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+FIRST_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
   "${FIRST_OUTPUT}/graphs.tsv" | sha256_stream)
-SECOND_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+SECOND_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
   "${SECOND_OUTPUT}/graphs.tsv" | sha256_stream)
 
 if [[ -n "${RECEIPT}" ]]; then

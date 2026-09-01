@@ -12,6 +12,8 @@ data class QueryCorrectnessRecord(
     val operator: String,
     val boundary: String,
     val projection: String,
+    val targetGraphId: String,
+    val workloadIdentity: String,
     val limit: Long,
     val outcome: String,
     val rowCount: Long,
@@ -26,6 +28,8 @@ data class QueryCorrectnessRecord(
         operator,
         boundary,
         projection,
+        targetGraphId,
+        workloadIdentity,
         limit,
         outcome,
         rowCount,
@@ -54,6 +58,8 @@ data class QueryCorrectnessRecord(
                 operator = columns[4],
                 boundary = columns[5],
                 projection = columns[6],
+                targetGraphId = columns[TARGET_GRAPH_ID_COLUMN],
+                workloadIdentity = columns[WORKLOAD_IDENTITY_COLUMN],
                 limit = parseLong(columns[LIMIT_COLUMN], source, lineNumber, "limit"),
                 outcome = outcome,
                 rowCount = parseLong(columns[ROW_COUNT_COLUMN], source, lineNumber, "row count"),
@@ -169,13 +175,15 @@ object QueryCorrectnessManifest {
     }
 }
 
-private const val COLUMN_COUNT = 12
+private const val COLUMN_COUNT = 14
 private const val TEXT_COLUMN_COUNT = 7
-private const val LIMIT_COLUMN = 7
-private const val OUTCOME_COLUMN = 8
-private const val ROW_COUNT_COLUMN = 9
-private const val RESPONSE_BYTES_COLUMN = 10
-private const val DIGEST_COLUMN = 11
+private const val TARGET_GRAPH_ID_COLUMN = 7
+private const val WORKLOAD_IDENTITY_COLUMN = 8
+private const val LIMIT_COLUMN = 9
+private const val OUTCOME_COLUMN = 10
+private const val ROW_COUNT_COLUMN = 11
+private const val RESPONSE_BYTES_COLUMN = 12
+private const val DIGEST_COLUMN = 13
 private const val SUCCESS_OUTCOME = "success"
 private val VALID_OUTCOMES = setOf(SUCCESS_OUTCOME, "timeout", "failed")
 private val SHA_256 = Regex("[0-9a-f]{64}")

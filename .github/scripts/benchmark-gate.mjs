@@ -560,7 +560,7 @@ function parsePressureObservations(contents, revision, errors) {
     }
     const headers = lines[0].split("\t");
     const required = [
-        "id", "family", "shape", "selectivity", "targetGraphId", "outcome", "rowCount",
+        "id", "family", "shape", "selectivity", "targetGraphId", "workloadIdentity", "outcome", "rowCount",
         "responseBytes", "digest", "latencyNanos"
     ];
     for (const header of required) {
@@ -574,6 +574,9 @@ function parsePressureObservations(contents, revision, errors) {
     for (const row of rows) {
         if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-routing observation ${row.id}`);
         seen.add(row.id);
+        if (row.targetGraphId === "" || !/^[0-9a-f]{64}$/.test(row.workloadIdentity ?? "")) {
+            errors.push(`${revision}/${row.id}: target graph and workload identity are required`);
+        }
     }
     return rows;
 }
@@ -607,12 +610,12 @@ function parseCorrectnessRecords(contents, source, errors) {
         const line = rawLine.trim();
         if (line.length === 0 || line.startsWith("#")) continue;
         const fields = line.split("|");
-        if (fields.length !== 12) {
-            errors.push(`${source}:${index + 1}: expected 12 correctness fields`);
+        if (fields.length !== 14) {
+            errors.push(`${source}:${index + 1}: expected 14 correctness fields`);
             continue;
         }
         const [id, family, shape, selectivity, operator, boundary, projection,
-            limitText, outcome, rowCountText, responseBytesText, digest] = fields;
+            targetGraphId, workloadIdentity, limitText, outcome, rowCountText, responseBytesText, digest] = fields;
         const limit = finiteNumber(limitText);
         const rowCount = finiteNumber(rowCountText);
         const responseBytes = finiteNumber(responseBytesText);
@@ -629,9 +632,12 @@ function parseCorrectnessRecords(contents, source, errors) {
         }
         if (outcome !== "success") errors.push(`${source}:${id}: outcome=${outcome}; expected success`);
         if (!/^[0-9a-f]{64}$/.test(digest)) errors.push(`${source}:${id}: invalid SHA-256 digest`);
+        if (targetGraphId === "" || !/^[0-9a-f]{64}$/.test(workloadIdentity)) {
+            errors.push(`${source}:${id}: target graph and workload identity are required`);
+        }
         rows.push({
             id, family, shape, selectivity, operator, boundary, projection,
-            limit, outcome, rowCount, responseBytes, digest
+            targetGraphId, workloadIdentity, limit, outcome, rowCount, responseBytes, digest
         });
     }
     if (rows.length === 0) errors.push(`${source}: correctness manifest is empty`);
@@ -641,7 +647,8 @@ function parseCorrectnessRecords(contents, source, errors) {
 function encodeCorrectnessRecord(record) {
     return [
         record.id, record.family, record.shape, record.selectivity, record.operator,
-        record.boundary, record.projection, record.limit, record.outcome, record.rowCount,
+        record.boundary, record.projection, record.targetGraphId, record.workloadIdentity,
+        record.limit, record.outcome, record.rowCount,
         record.responseBytes, record.digest
     ].join("|");
 }
@@ -857,6 +864,10 @@ export function compareGraphIdPressure(
             errors.push(`${id}: target graph id differs between base and candidate`);
             continue;
         }
+        if (base.workloadIdentity !== candidate.workloadIdentity) {
+            errors.push(`${id}: workload identity differs between base and candidate`);
+            continue;
+        }
         const baseLatencyNanos = finiteNumber(base.latencyNanos);
         const candidateLatencyNanos = finiteNumber(candidate.latencyNanos);
         if (base.outcome !== "success" || candidate.outcome !== "success" ||
@@ -869,6 +880,7 @@ export function compareGraphIdPressure(
         rows.push({
             id,
             targetGraphId: candidate.targetGraphId,
+            workloadIdentity: candidate.workloadIdentity,
             baseLatencyNanos,
             candidateLatencyNanos,
             speedup: baseLatencyNanos / candidateLatencyNanos
@@ -897,6 +909,11 @@ export function compareGraphIdPressure(
         if (baseTargetRows.length !== 9 || candidateTargetRows.length !== 9) {
             errors.push(`${targetId}: expected three selectivities for all three graph-id spellings`);
             continue;
+        }
+        const workloadIdentities = new Set([...baseTargetRows, ...candidateTargetRows]
+            .map((row) => row.workloadIdentity));
+        if (workloadIdentities.size !== 1) {
+            errors.push(`${targetId}: expected one stable workload identity`);
         }
         for (const shape of expectedShapes) {
             const baseSelectivities = new Set(baseTargetRows.filter((row) => row.shape === shape)
@@ -943,6 +960,11 @@ export function compareGraphIdPressure(
             if (baseReference === undefined || candidateReference === undefined) {
                 errors.push(`${targetId}/${selectivity}: graph-parameter reference is missing from base or candidate`);
                 continue;
+            }
+            const expectedWorkloadIdentity = candidateTargetCounts.get(targetId)?.[0]?.workloadIdentity;
+            if (baseReference.workloadIdentity !== candidateReference.workloadIdentity ||
+                candidateReference.workloadIdentity !== expectedWorkloadIdentity) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter workload identity differs`);
             }
             const baseReferenceLatency = finiteNumber(baseReference.latencyNanos);
             const candidateReferenceLatency = finiteNumber(candidateReference.latencyNanos);

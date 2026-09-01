@@ -35,6 +35,8 @@ class QueryCorrectnessManifestTest {
         val expected = record("query-a")
         val variants = listOf(
             expected.copy(family = "other"),
+            expected.copy(targetGraphId = "other-graph"),
+            expected.copy(workloadIdentity = "b".repeat(64)),
             expected.copy(rowCount = 2),
             expected.copy(responseBytes = 20),
             expected.copy(digest = "b".repeat(64)),
@@ -112,6 +114,8 @@ class QueryCorrectnessManifestTest {
         operator = "contains",
         boundary = "single-query",
         projection = "property",
+        targetGraphId = "",
+        workloadIdentity = "",
         limit = 10,
         outcome = outcome,
         rowCount = 1,
