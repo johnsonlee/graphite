@@ -105,16 +105,21 @@ internal object Fixture64GraphPreparation {
                         sourceResources
                     )
                     GraphStore.save(graph, graphPath, prepareCallSiteStringIndex = true)
-                    require(Files.isRegularFile(graphPath.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))) {
+                    val callSiteIndex = graphPath.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+                    require(Files.isRegularFile(callSiteIndex)) {
                         "$graphId did not persist its CallSite query index during fixture construction"
                     }
+                    val callSiteIndexBytes = Files.size(callSiteIndex)
+                    val callSiteIndexSha256 = sha256(callSiteIndex)
                     val persistedPath = graphPath.toRealPath()
                     verifyMappedGraph(
                         persistedPath,
                         nodeCount,
                         callSites.size.toLong(),
                         querySemanticSha256,
-                        sourceResources
+                        sourceResources,
+                        callSiteIndexBytes,
+                        callSiteIndexSha256
                     )
                     check(graphFingerprints.add(querySemanticSha256)) {
                         "$graphId duplicates query-semantic graph content $querySemanticSha256"
@@ -144,6 +149,8 @@ internal object Fixture64GraphPreparation {
                         sourceResources.count,
                         sourceResources.sha256,
                         workloadIdentity,
+                        callSiteIndexBytes,
+                        callSiteIndexSha256,
                         persistedPath
                     ).joinToString("\t")
                 }
@@ -348,6 +355,13 @@ internal object Fixture64GraphPreparation {
                 require(manifestPathValue == provenancePathValue && graphPaths.add(manifestPathValue)) {
                     "$graphId graph path is mismatched or repeated"
                 }
+                val callSiteIndex = manifestPathValue.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+                require(Files.isRegularFile(callSiteIndex) &&
+                    Files.size(callSiteIndex) == provenance.callSiteIndexBytes &&
+                    sha256(callSiteIndex) == provenance.callSiteIndexSha256
+                ) {
+                    "$graphId production-built CallSite index content does not match provenance"
+                }
                 require(manifest.zero == provenance.zero && manifest.targeted == provenance.targeted &&
                     manifest.dense == provenance.dense &&
                     manifest.workloadIdentity == provenance.workloadIdentity
@@ -355,6 +369,13 @@ internal object Fixture64GraphPreparation {
                     "$graphId search-term provenance mismatch"
                 }
                 GraphStore.loadMapped(manifestPathValue).useGraph { graph ->
+                    val mapped = graph as? MappedWebGraphBackedGraph
+                        ?: error("$graphId did not load as a mapped graph")
+                    require(mapped.prepareCallSiteStringIndex() &&
+                        mapped.isCallSiteStringIndexLoadedFromPersistence()
+                    ) {
+                        "$graphId did not restore its production-built CallSite index"
+                    }
                     val callSites = graph.nodes(CallSiteNode::class.java).toList()
                     val nodeCount = graph.nodes(Node::class.java).count().toLong()
                     val terms = selectTerms(graphId, callSites)
@@ -408,7 +429,7 @@ internal object Fixture64GraphPreparation {
         require(lines.firstOrNull() == PROVENANCE_HEADER) { "$path has an unexpected provenance header" }
         return lines.drop(1).filter(String::isNotBlank).mapIndexed { index, line ->
             val fields = line.split('\t')
-            require(fields.size == PROVENANCE_FIELD_COUNT) { "$path:${index + 2}: expected 17 fields" }
+            require(fields.size == PROVENANCE_FIELD_COUNT) { "$path:${index + 2}: expected 19 fields" }
             FixtureProvenanceRow(
                 graphId = fields[0],
                 corpus = fields[1],
@@ -426,7 +447,9 @@ internal object Fixture64GraphPreparation {
                 resourceCount = fields[13].toInt(),
                 resourceSemanticSha256 = fields[14],
                 workloadIdentity = fields[15],
-                graphPath = Path.of(fields[16])
+                callSiteIndexBytes = fields[16].toLong(),
+                callSiteIndexSha256 = fields[17],
+                graphPath = Path.of(fields[18])
             )
         }
     }
@@ -475,9 +498,22 @@ internal object Fixture64GraphPreparation {
         expectedNodes: Long,
         expectedCallSites: Long,
         expectedSemanticSha256: String,
-        expectedResources: ResourceSemanticSummary
+        expectedResources: ResourceSemanticSummary,
+        expectedCallSiteIndexBytes: Long,
+        expectedCallSiteIndexSha256: String
     ) {
         GraphStore.loadMapped(path).useGraph { graph ->
+            val callSiteIndex = path.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            check(Files.size(callSiteIndex) == expectedCallSiteIndexBytes &&
+                sha256(callSiteIndex) == expectedCallSiteIndexSha256
+            ) {
+                "$path mapped CallSite index content differs from the production-built sidecar"
+            }
+            val mapped = graph as? MappedWebGraphBackedGraph
+                ?: error("$path did not load as a mapped graph")
+            check(mapped.prepareCallSiteStringIndex() && mapped.isCallSiteStringIndexLoadedFromPersistence()) {
+                "$path did not restore the production-built CallSite index"
+            }
             val callSites = graph.nodes(CallSiteNode::class.java).toList()
             val nodeCount = graph.nodes(Node::class.java).count().toLong()
             check(nodeCount == expectedNodes) {
@@ -643,6 +679,8 @@ internal object Fixture64GraphPreparation {
         val resourceCount: Int,
         val resourceSemanticSha256: String,
         val workloadIdentity: String,
+        val callSiteIndexBytes: Long,
+        val callSiteIndexSha256: String,
         val graphPath: Path
     )
     private data class FixtureSearchTerms(val zero: String, val targeted: String, val dense: String)
@@ -661,7 +699,7 @@ internal object Fixture64GraphPreparation {
     private const val MANIFEST_FILE = "graphs.tsv"
     private const val PROVENANCE_FILE = "fixture-provenance.tsv"
     private const val MANIFEST_FIELD_COUNT = 6
-    private const val PROVENANCE_FIELD_COUNT = 17
+    private const val PROVENANCE_FIELD_COUNT = 19
     private const val VERIFY_COMMAND = "--verify"
     private const val ORDER_FINGERPRINT_SELF_TEST = "--self-test-order-fingerprint"
     private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v2-ordered"
@@ -671,5 +709,5 @@ internal object Fixture64GraphPreparation {
     private const val PROVENANCE_HEADER =
         "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +
             "\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tresourceCount" +
-            "\tresourceSemanticSha256\tworkloadIdentity\tgraphPath"
+            "\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256\tgraphPath"
 }

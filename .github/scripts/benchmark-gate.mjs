@@ -2000,6 +2000,16 @@ export function compareLargeCorpus(baseLog, candidateLog) {
         }
 
         for (const [revision, measurement] of [["base", baseline], ["candidate", current]]) {
+            const callSiteIndexBytes = finiteNumber(measurement.callSiteIndexBytes);
+            const productionIndexPrepared = finiteNumber(measurement.productionIndexPrepared);
+            if (!Number.isSafeInteger(callSiteIndexBytes) || callSiteIndexBytes < 0 ||
+                !Number.isSafeInteger(productionIndexPrepared) ||
+                (productionIndexPrepared !== 0 && productionIndexPrepared !== 1) ||
+                (productionIndexPrepared === 0 && callSiteIndexBytes !== 0) ||
+                (productionIndexPrepared === 1 && callSiteIndexBytes <= 0)
+            ) {
+                errors.push(`${corpus}/${revision}: invalid production CallSite-index lifecycle measurement`);
+            }
             const sampleCount = finiteNumber(measurement.mappedLoadSamples);
             const minimumLoad = finiteNumber(measurement.mappedLoadMinMs);
             const medianLoad = finiteNumber(measurement.mappedLoadMs);

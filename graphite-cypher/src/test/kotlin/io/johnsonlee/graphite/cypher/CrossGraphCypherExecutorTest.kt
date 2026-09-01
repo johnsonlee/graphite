@@ -1995,6 +1995,17 @@ class CrossGraphCypherExecutorTest {
         assertTrue(nodeScans[1].get() > 0)
         assertTrue(nodeScans[63].get() > 0)
 
+        for (nonList in listOf(setOf("graph-1"), arrayOf("graph-1"))) {
+            val (invalidMembership, invalidMembershipDiagnostics) = execute(
+                "MATCH (n:IntConstant) WHERE n.graphId IN \$graphIds AND n.value >= 0 " +
+                    "RETURN n.graphId AS graph LIMIT 10",
+                mapOf("graphIds" to nonList)
+            )
+            assertTrue(invalidMembership.rows.isEmpty())
+            assertEquals(0, invalidMembershipDiagnostics.graphIdSourceSelections)
+            assertEquals(0, invalidMembershipDiagnostics.graphIdSourcesPruned)
+        }
+
         val (literalSet, literalDiagnostics) = execute(
             "MATCH (n:IntConstant) WHERE n.graphId IN ['graph-0', 'graph-2'] " +
                 "RETURN n.graphId AS graph, n.value AS value LIMIT 10"

@@ -191,11 +191,11 @@ internal class MappedWebGraphBackedGraph(
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
     private var callSiteStringIndexLoadedFromPersistence = false
     private var callSiteStringIndexPersistenceBudgetDenied = false
-    private val callSiteStringIndexContentIdentity: ByteArray by lazy {
+    private fun callSiteStringIndexContentIdentity(workConsumer: GraphWorkConsumer?): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
         digest.update(stringTable.contentIdentity())
         digest.updateIdentityInt(nodeTypeIndex.count(CallSiteNode::class.java).toInt())
-        forEachRawCallSiteStringIds(workConsumer = null) {
+        forEachRawCallSiteStringIds(workConsumer) {
                 nodeId, callerClass, callerName, calleeClass, calleeName ->
             digest.updateIdentityInt(nodeId)
             digest.updateIdentityLong(nodeOffsets.offset(nodeId))
@@ -204,7 +204,7 @@ internal class MappedWebGraphBackedGraph(
             digest.updateIdentityInt(calleeClass)
             digest.updateIdentityInt(calleeName)
         }
-        digest.digest()
+        return digest.digest()
     }
     private val callSiteParallelScanCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
@@ -1441,7 +1441,7 @@ internal class MappedWebGraphBackedGraph(
             val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
             if (nodeCount <= 0L || nodeCount > Int.MAX_VALUE) return@synchronized null
             if (persistentCallSiteStringIndexEnabled) {
-                loadPersistedCallSiteStringIndex(nodeCount.toInt())?.let { persisted ->
+                loadPersistedCallSiteStringIndex(nodeCount.toInt(), workConsumer)?.let { persisted ->
                     callSiteStringIndex = persisted
                     callSiteStringIndexLoadedFromPersistence = true
                     return@synchronized persisted
@@ -1532,7 +1532,7 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                    contentIdentity = { callSiteStringIndexContentIdentity.copyOf() },
+                    contentIdentity = { callSiteStringIndexContentIdentity(workConsumer = null) },
                     reservation = reservation
                 ).also { built ->
                     callSiteStringIndex = built
@@ -1546,16 +1546,22 @@ internal class MappedWebGraphBackedGraph(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun loadPersistedCallSiteStringIndex(callSiteCount: Int): MappedCallSiteStringIndex? {
+    private fun loadPersistedCallSiteStringIndex(
+        callSiteCount: Int,
+        workConsumer: GraphWorkConsumer?
+    ): MappedCallSiteStringIndex? {
         callSiteStringIndexPersistenceBudgetDenied = false
         if (!Files.isRegularFile(callSiteStringIndexFile)) return null
+        // Identity validation is part of the first relevant query and must obey the same
+        // cancellation/work budget as the index lookup it enables.
+        val contentIdentity = callSiteStringIndexContentIdentity(workConsumer)
         return try {
             DataInputStream(BufferedInputStream(Files.newInputStream(callSiteStringIndexFile))).use { input ->
                 val loaded = MappedCallSiteStringIndex.readPersistent(
                     input,
                     stringTable.size(),
                     callSiteCount,
-                    callSiteStringIndexContentIdentity,
+                    contentIdentity,
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,

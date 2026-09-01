@@ -3120,10 +3120,7 @@ class QueryPipeline private constructor(
             ?.filterNotNull()
             ?.toSet()
         is CypherExpr.Parameter -> when (val value = activeParameters.get().orEmpty()[expression.name]) {
-            is Iterable<*> -> value.toList().takeIf { values -> values.all { it is String } }
-                ?.filterIsInstance<String>()
-                ?.toSet()
-            is Array<*> -> value.toList().takeIf { values -> values.all { it is String } }
+            is List<*> -> value.takeIf { values -> values.all { it is String } }
                 ?.filterIsInstance<String>()
                 ?.toSet()
             else -> null

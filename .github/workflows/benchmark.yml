@@ -17,11 +17,11 @@ env:
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
-  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
-  BENCHMARK_REPORT_TRANSITION_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1fbf4bdd27b82d991069db689f09fa933562612eb173012848083887ee57c9b8
+  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
+  BENCHMARK_REPORT_TRANSITION_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 859cc30fe4e4aef9f3525187986e0ed71f7b4902cae9bf3a1f3ca47f7418e770
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1283,6 +1283,7 @@ jobs:
         HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
         COMPARATOR='.github/scripts/benchmark-gate.mjs'
         if grep -Fq 'mappedLoadSamples=' "base/${HARNESS}" && \
+          grep -Fq 'productionIndexPrepared=' "base/${HARNESS}" && \
           grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
           test ! -L "candidate/${HARNESS}"
           rm -f -- "candidate/${HARNESS}"
@@ -2188,7 +2189,7 @@ jobs:
         assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
         assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
         assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
-        NORMALIZED_PROVENANCE_SHA=$(cut -f1-16 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
+        NORMALIZED_PROVENANCE_SHA=$(cut -f1-18 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
         NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
           benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
         RECEIPT=benchmark-results/evidence/fixture-reproducibility.json

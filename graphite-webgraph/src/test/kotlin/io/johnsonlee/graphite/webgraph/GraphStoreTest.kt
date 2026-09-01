@@ -98,6 +98,24 @@ import kotlin.test.assertTrue
 
 class GraphStoreTest {
 
+    @Test
+    fun `save preserves its published three argument JVM descriptor`() {
+        val parameterTypes = arrayOf(Graph::class.java, Path::class.java, Integer.TYPE)
+
+        assertNotNull(GraphStore::class.java.getDeclaredMethod("save", *parameterTypes))
+        assertNotNull(
+            GraphStore::class.java.getDeclaredMethod(
+                "save\$default",
+                GraphStore::class.java,
+                Graph::class.java,
+                Path::class.java,
+                Integer.TYPE,
+                Integer.TYPE,
+                Any::class.java
+            )
+        )
+    }
+
     private var previousMappedCallSitePreparationProperty: String? = null
 
     @BeforeTest
@@ -526,6 +544,62 @@ class GraphStoreTest {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             graphADir.toFile().deleteRecursively()
             graphBDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `first lazy persisted CallSite restore charges graph identity validation to query work`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "caller1"
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-index-identity-budget")
+        try {
+            GraphStore.save(graph, dir, compressionThreads = 2, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFailsWith<IllegalStateException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = GraphWorkConsumer { error("query work denied") }
+                    )?.toList()
+                }
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+
+                assertNotNull(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1
+                    )?.single()
+                )
+                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
         }
     }
 

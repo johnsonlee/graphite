@@ -553,11 +553,15 @@ object GraphStore {
      * For large graphs (millions of nodes) this eliminates the OOM caused by
      * duplicating the entire adjacency list in memory.
      */
+    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
+        save(graph, dir, compressionThreads, prepareCallSiteStringIndex = false)
+    }
+
     fun save(
         graph: Graph,
         dir: Path,
         compressionThreads: Int = 2,
-        prepareCallSiteStringIndex: Boolean = false
+        prepareCallSiteStringIndex: Boolean
     ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))

@@ -840,7 +840,7 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
         "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
         "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
-        "graphPath"
+        "callSiteIndexBytes", "callSiteIndexSha256", "graphPath"
     ].join("\t");
     const provenanceRows = [];
     const manifestRows = ["# fixture64"];
@@ -865,7 +865,8 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         provenanceRows.push([
             graphId, `jar-${Math.floor(graphIndex / 16)}`, String(graphIndex % 16), "fixture.jar",
             "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
-            "c".repeat(64), "2", "d".repeat(64), workloadIdentity, `/tmp/${graphId}.graph`
+            "c".repeat(64), "2", "d".repeat(64), workloadIdentity,
+            "123", "e".repeat(64), `/tmp/${graphId}.graph`
         ].join("\t"));
         manifestRows.push([
             graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense", workloadIdentity
@@ -1007,13 +1008,14 @@ test("fixture workload verifier permits only main's legacy graph-set fanout", ()
         "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
         "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
         "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
-        "graphPath"
+        "callSiteIndexBytes", "callSiteIndexSha256", "graphPath"
     ].join("\t");
     const provenance = `${provenanceHeader}\n${graphIds.map((graphId, index) => [
         graphId, `jar-${Math.floor(index / 16)}`, String(index % 16), "fixture.jar",
         "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
         "c".repeat(64), "2", "d".repeat(64),
-        crypto.createHash("sha256").update(graphId).digest("hex"), `/tmp/${graphId}.graph`
+        crypto.createHash("sha256").update(graphId).digest("hex"),
+        "123", "e".repeat(64), `/tmp/${graphId}.graph`
     ].join("\t")).join("\n")}\n`;
     const manifest = `# fixture64\n${graphIds.map((graphId) => [
         graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense",
@@ -1231,7 +1233,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
     assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
-    assert.match(reproducibility, /cut -f1-16/);
+    assert.match(reproducibility, /cut -f1-18/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
@@ -1240,6 +1242,12 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(reproducibility, /Missing fixture64 graph\.resources unexpectedly passed verification/);
     assert.match(reproducibility, /Corrupt fixture64 graph\.resources unexpectedly passed verification/);
     assert.match(reproducibility, /Content-tampered fixture64 graph\.resources unexpectedly passed verification/);
+    assert.match(
+        reproducibility,
+        /Corrupt fixture64 graph\.callsite-string-index unexpectedly passed verification/
+    );
+    assert.match(source, /callSiteIndexSha256/);
+    assert.match(source, /isCallSiteStringIndexLoadedFromPersistence\(\)/);
 });
 
 function jmhResult({
@@ -1850,6 +1858,8 @@ function corpusLine(corpus, overrides = {}) {
         methods: 80,
         callSites: 60,
         persistedBytes: 100_000_000,
+        callSiteIndexBytes: 0,
+        productionIndexPrepared: 0,
         buildMs: 10_000,
         saveMs: 2_000,
         mappedLoadSamples: 5,
@@ -2027,6 +2037,22 @@ test("large-corpus comparison tolerates only small persisted-size noise", () => 
     const comparison = compareLargeCorpus(baseCorpusLog, outsideTolerance);
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /exceeding the 4096-byte tolerance/);
+});
+
+test("large-corpus comparison requires a self-consistent production index lifecycle", () => {
+    const missingIndex = corpusLog({
+        hive: { productionIndexPrepared: 1, callSiteIndexBytes: 0 }
+    });
+    const unexpectedIndex = corpusLog({
+        hive: { productionIndexPrepared: 0, callSiteIndexBytes: 1_024 }
+    });
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, missingIndex).passed, false);
+    assert.equal(compareLargeCorpus(baseCorpusLog, unexpectedIndex).passed, false);
+    assert.match(
+        compareLargeCorpus(baseCorpusLog, missingIndex).errors.join("\n"),
+        /invalid production CallSite-index lifecycle measurement/
+    );
 });
 
 test("coverage taxonomy assigns every blocking component exactly once", () => {
@@ -2318,7 +2344,8 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
             "../../graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "LargeCorpusPerformanceGateTest.kt",
             import.meta.url
-        )
+        ),
+        "utf8"
     );
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
     const realOnlyResourceHarness = fs.readFileSync(
@@ -2359,6 +2386,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
     );
+    assert.match(transitionHarness, /saveWithProductionCallSiteIndex/);
+    assert.match(transitionHarness, /productionIndexPrepared=/);
+    assert.match(transitionHarness, /callSiteIndexBytes=/);
+    assert.match(transitionHarness, /CALL_SITE_INDEX_QUERY/);
+    assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "base\/\$\{HARNESS\}"/);
     assert.match(
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
