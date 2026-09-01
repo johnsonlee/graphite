@@ -147,8 +147,8 @@ class GraphStoreTest {
         val previous = System.getProperty(property)
         val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
         try {
-            System.setProperty(property, "true")
-            GraphStore.save(graph, dir)
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
             val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             assertTrue(Files.isRegularFile(indexFile))
             val persistedModificationTime = Files.getLastModifiedTime(indexFile)
@@ -239,6 +239,76 @@ class GraphStoreTest {
             } finally {
                 loaded.close()
             }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `default lazy CallSite query persists a complete index for the next mapped process`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().addNode(
+            CallSiteNode(
+                NodeId(0),
+                MethodDescriptor(TypeDescriptor("example.TargetCaller"), "call", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+        ).build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-lazy-callsite-index-migration")
+        val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir)
+            assertFalse(Files.exists(indexFile))
+
+            val migrated = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(migrated.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    1L,
+                    migrated.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        null
+                    )?.count
+                )
+                assertTrue(migrated.isCallSiteTrigramIndexInitialized())
+                assertFalse(migrated.isCallSiteStringIndexLoadedFromPersistence())
+                assertFalse(Files.exists(indexFile))
+            } finally {
+                migrated.close()
+            }
+            assertTrue(Files.isRegularFile(indexFile))
+            val persistedModificationTime = Files.getLastModifiedTime(indexFile)
+
+            val restored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(restored.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    1L,
+                    restored.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        null
+                    )?.count
+                )
+                assertTrue(restored.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                restored.close()
+            }
+            assertEquals(persistedModificationTime, Files.getLastModifiedTime(indexFile))
         } finally {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()

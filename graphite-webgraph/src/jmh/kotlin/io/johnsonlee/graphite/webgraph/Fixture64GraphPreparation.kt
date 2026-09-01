@@ -104,7 +104,10 @@ internal object Fixture64GraphPreparation {
                         querySemanticSha256,
                         sourceResources
                     )
-                    GraphStore.save(graph, graphPath)
+                    GraphStore.save(graph, graphPath, prepareCallSiteStringIndex = true)
+                    require(Files.isRegularFile(graphPath.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))) {
+                        "$graphId did not persist its CallSite query index during fixture construction"
+                    }
                     val persistedPath = graphPath.toRealPath()
                     verifyMappedGraph(
                         persistedPath,

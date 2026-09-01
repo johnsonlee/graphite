@@ -224,6 +224,10 @@ class GraphiteCommandTest {
 
             val resourceStore = outputDir.resolve("graph.resources")
             assertTrue(Files.size(resourceStore) > 8L, "Published JAR must produce a non-empty resource store")
+            assertTrue(
+                Files.isRegularFile(outputDir.resolve("graph.callsite-string-index")),
+                "The production build command must persist the mapped CallSite query index"
+            )
 
             val loaded = GraphStore.load(outputDir)
             val entry = loaded.resources.list(resourcePath).single()

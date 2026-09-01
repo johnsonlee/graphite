@@ -20,12 +20,18 @@ graph-dir/
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
-`GraphStore.save()` prepares `graph.callsite-string-index` by default. A mapped load restores its
-primitive arrays under the shared CallSite-index heap budget, so the first broad string query does
-not rebuild the index. A missing or invalid file is rebuilt and atomically replaced when the graph
-directory is writable; budget denial or an unwritable directory preserves the raw-scan correctness
-fallback. Set `-Dgraphite.webgraph.prepareCallSiteStringIndexOnLoad=false` to disable preparation
-and persistence.
+The production `graphite build` command prepares `graph.callsite-string-index` while saving the
+graph. A mapped load restores its primitive arrays lazily under the shared CallSite-index heap
+budget, so unrelated Method queries retain no CallSite-index heap and the first broad CallSite
+string query does not rebuild it. Direct library callers can request the same build artifact with
+`GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
+optional query cache to preserve the existing save and storage contract.
+
+For legacy graphs, or when the sidecar is missing or invalid, a relevant query builds the index in
+memory and atomically persists it when that complete index is released or the mapped graph closes.
+Budget denial, cancellation, or an unwritable directory preserves the raw-scan correctness
+fallback. Set `-Dgraphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare a missing index
+before `loadMapped()` returns, or `false` to disable persisted restore and best-effort persistence.
 
 `GraphStore.save()` writes only `forward.*`. Backward adjacency is loaded from
 `backward.*` when those files already exist; otherwise the first `incoming()`

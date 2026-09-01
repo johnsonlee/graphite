@@ -553,7 +553,12 @@ object GraphStore {
      * For large graphs (millions of nodes) this eliminates the OOM caused by
      * duplicating the entire adjacency list in memory.
      */
-    fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
+    fun save(
+        graph: Graph,
+        dir: Path,
+        compressionThreads: Int = 2,
+        prepareCallSiteStringIndex: Boolean = false
+    ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
 
@@ -637,7 +642,9 @@ object GraphStore {
         PersistedResourceStore.save(graph, dir)
 
         // 10. Build the query-only CallSite index once and persist it for mapped loads.
-        if (classOverviewBuilder.callSiteCount() > 0L && mappedCallSiteStringIndexPreparationEnabled()) {
+        if (classOverviewBuilder.callSiteCount() > 0L &&
+            (prepareCallSiteStringIndex || mappedCallSiteStringIndexPreparationEnabled())
+        ) {
             (loadMapped(
                 dir,
                 prepareCallSiteStringIndex = true,

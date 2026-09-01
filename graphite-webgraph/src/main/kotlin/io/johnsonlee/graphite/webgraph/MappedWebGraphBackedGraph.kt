@@ -1292,6 +1292,13 @@ internal class MappedWebGraphBackedGraph(
 
     override fun releaseStringPropertyDisjunctionCache() {
         synchronized(callSiteStringIndexLock) {
+            val index = callSiteStringIndex
+            if (persistentCallSiteStringIndexEnabled &&
+                !callSiteStringIndexLoadedFromPersistence &&
+                index?.isTrigramPostingsInitialized() == true
+            ) {
+                persistPreparedCallSiteStringIndex()
+            }
             callSiteStringIndex?.close()
             callSiteStringIndex = null
             callSiteStringIndexLoadedFromPersistence = false
