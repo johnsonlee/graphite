@@ -680,6 +680,7 @@ object GraphStore {
         }
     }
 
+    @Suppress("LongParameterList")
     private fun writeNodeDataAndIndex(
         graph: Graph,
         dir: Path,
