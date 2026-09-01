@@ -29,6 +29,7 @@ internal object Fixture64GraphPreparation {
     @JvmStatic
     fun main(args: Array<String>) {
         when {
+            args.size == 1 && args[0] == ORDER_FINGERPRINT_SELF_TEST -> verifyOrderSensitiveFingerprint()
             args.size == 1 -> prepare(Path.of(args.single()))
             args.size == 3 && args[0] == VERIFY_COMMAND -> verifyPreparedCorpus(
                 Path.of(args[1]),
@@ -36,7 +37,8 @@ internal object Fixture64GraphPreparation {
             )
             else -> error(
                 "Usage: Fixture64GraphPreparation <output-directory> | " +
-                    "Fixture64GraphPreparation --verify <graphs.tsv> <fixture-provenance.tsv>"
+                    "Fixture64GraphPreparation --verify <graphs.tsv> <fixture-provenance.tsv> | " +
+                    "Fixture64GraphPreparation $ORDER_FINGERPRINT_SELF_TEST"
             )
         }
     }
@@ -400,22 +402,35 @@ internal object Fixture64GraphPreparation {
     }
 
     private fun querySemanticSha256(nodeCount: Long, callSites: List<CallSiteNode>): String {
-        val digest = MessageDigest.getInstance(SHA_256)
-        updateFrame(digest, QUERY_SEMANTIC_VERSION.toByteArray(Charsets.UTF_8))
-        updateFrame(digest, nodeCount.toString().toByteArray(Charsets.UTF_8))
-        updateFrame(digest, callSites.size.toString().toByteArray(Charsets.UTF_8))
-        callSites.map { callSite ->
+        val records = callSites.map { callSite ->
             listOf(
                 callSite.caller.declaringClass.className,
                 callSite.caller.name,
                 callSite.callee.declaringClass.className,
                 callSite.callee.name
-            ).joinToString(separator = "") { value ->
-                val bytes = value.toByteArray(Charsets.UTF_8)
-                "${bytes.size}:$value"
-            }
-        }.sorted().forEach { record -> updateFrame(digest, record.toByteArray(Charsets.UTF_8)) }
+            )
+        }
+        return queryRecordSha256(nodeCount, records)
+    }
+
+    private fun queryRecordSha256(nodeCount: Long, records: List<List<String>>): String {
+        val digest = MessageDigest.getInstance(SHA_256)
+        updateFrame(digest, QUERY_SEMANTIC_VERSION.toByteArray(Charsets.UTF_8))
+        updateFrame(digest, nodeCount.toString().toByteArray(Charsets.UTF_8))
+        updateFrame(digest, records.size.toString().toByteArray(Charsets.UTF_8))
+        records.forEach { record ->
+            record.forEach { value -> updateFrame(digest, value.toByteArray(Charsets.UTF_8)) }
+        }
         return digest.hexDigest()
+    }
+
+    private fun verifyOrderSensitiveFingerprint() {
+        val first = listOf("caller.A", "first", "callee.A", "target")
+        val second = listOf("caller.B", "second", "callee.B", "target")
+        check(queryRecordSha256(2, listOf(first, second)) != queryRecordSha256(2, listOf(second, first))) {
+            "Fixture workload identity must distinguish mapped CallSite traversal order"
+        }
+        println("Fixture64 workload identity is traversal-order-sensitive")
     }
 
     private fun newShardDigest(): MessageDigest = MessageDigest.getInstance(SHA_256).also { digest ->
@@ -489,7 +504,8 @@ internal object Fixture64GraphPreparation {
     private const val MANIFEST_FIELD_COUNT = 5
     private const val PROVENANCE_FIELD_COUNT = 14
     private const val VERIFY_COMMAND = "--verify"
-    private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v1"
+    private const val ORDER_FINGERPRINT_SELF_TEST = "--self-test-order-fingerprint"
+    private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v2-ordered"
     private const val SHARD_SEMANTIC_VERSION = "fixture64-shard-bytecode-v1"
     private const val PROVENANCE_HEADER =
         "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +

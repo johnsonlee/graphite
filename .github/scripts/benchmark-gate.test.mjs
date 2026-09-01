@@ -438,7 +438,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         driver,
         /cp "\$\{CANDIDATE_TREE\}\/\$\{HARNESS_PATH\}" "\$\{BASE_TREE\}\/\$\{HARNESS_PATH\}"/
     );
-    assert.equal((driver.match(/:webgraph:jmhJar --no-daemon/g) ?? []).length, 2);
+    assert.equal((driver.match(/:webgraph:jmhJar/g) ?? []).length, 2);
     assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
     assert.equal((driver.match(/-to 30m/g) ?? []).length, 2);
     assert.match(driver, /-jvmArgs "-Xmx8g /);
@@ -450,8 +450,10 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         "fixtureVerifierSha256",
         "comparatorSha256",
         "scriptSha256",
-        "baseJarSha256",
-        "candidateJarSha256",
+        "reproducibilityScriptSha256",
+        "zipHasherSha256",
+        "baseJarContentSha256",
+        "candidateJarContentSha256",
         "manifestSha256",
         "fixtureProvenanceSha256",
         "oracleSha256",
@@ -465,6 +467,9 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.match(driver, /Fixture64GraphPreparation/);
     assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
+    assert.match(driver, /:webgraph:prepareBenchmarkFixtures/);
+    assert.match(driver, /cmp -s "\$\{SUPPLIED_JAR\}" "\$\{PINNED_JAR\}"/);
+    assert.match(driver, /test-fixture64-reproducibility\.sh/);
     assert.match(driver, /gh gist create --public/);
     assert.match(driver, /\/revisions\/\$\{GIST_REVISION\}/);
     assert.match(driver, /-f target_url="\$\{EVIDENCE_URL\}"/);
@@ -499,10 +504,13 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /verifyPreparedCorpus\(output\.resolve\(MANIFEST_FILE\)/);
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
-    assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 2);
+    assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
     assert.match(reproducibility, /cut -f1-13/);
+    assert.match(reproducibility, /--self-test-order-fingerprint/);
+    assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
     assert.match(reproducibility, /unexpectedly passed verification/);
+    assert.match(reproducibility, /Substituted fixture JAR unexpectedly passed verification/);
 });
 
 function jmhResult({
@@ -1542,9 +1550,11 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v1/);
+    assert.match(workflow, /graphite-fixture64-evidence-v2/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
+    assert.match(workflow, /reproducibilityScriptSha256/);
+    assert.match(workflow, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);

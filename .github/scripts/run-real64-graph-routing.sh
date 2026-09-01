@@ -23,6 +23,8 @@ HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/La
 FIXTURE_VERIFIER_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
+REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
+ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 
@@ -40,6 +42,7 @@ command -v java >/dev/null
 command -v jq >/dev/null
 command -v gh >/dev/null
 command -v git >/dev/null
+command -v python3 >/dev/null
 mkdir -p "${OUTPUT_DIR}"
 
 sha256_file() {
@@ -73,6 +76,8 @@ test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"
 test -f "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}"
 test -f "${CANDIDATE_TREE}/${COMPARATOR_PATH}"
 test -f "${CANDIDATE_TREE}/${SCRIPT_PATH}"
+test -f "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}"
+test -f "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}"
 cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 
 # Build both production revisions with one byte-identical, candidate-reviewed pressure harness.
@@ -82,26 +87,33 @@ test "$(git -C "${BASE_TREE}" diff --name-only)" = "${HARNESS_PATH}"
 test -z "$(git -C "${CANDIDATE_TREE}" diff --name-only)"
 
 "${BASE_TREE}/gradlew" -p "${BASE_TREE}" :webgraph:jmhJar --no-daemon
-"${CANDIDATE_TREE}/gradlew" -p "${CANDIDATE_TREE}" :webgraph:jmhJar --no-daemon
+"${CANDIDATE_TREE}/gradlew" -p "${CANDIDATE_TREE}" \
+  :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 BASE_JAR=$(find "${BASE_TREE}/graphite-webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
 CANDIDATE_JAR=$(find "${CANDIDATE_TREE}/graphite-webgraph/build/libs" -maxdepth 1 -name '*-jmh.jar' -print -quit)
 test -f "${BASE_JAR}"
 test -f "${CANDIDATE_JAR}"
 
 find_fixture_jar() {
-  local pattern=$1
+  local directory=$1
+  local pattern=$2
   local matches=()
   while IFS= read -r match; do
     matches+=("${match}")
-  done < <(find "${FIXTURE_JAR_DIR}" -maxdepth 1 -type f -name "${pattern}" -print | sort)
+  done < <(find "${directory}" -maxdepth 1 -type f -name "${pattern}" -print | sort)
   test "${#matches[@]}" -eq 1
   printf '%s\n' "${matches[0]}"
 }
 
-ANDROID_JAR=$(find_fixture_jar 'android-all-*.jar')
-TIKA_JAR=$(find_fixture_jar 'tika-app-*.jar')
-HIVE_JAR=$(find_fixture_jar 'hive-exec-*.jar')
-KOTLIN_JAR=$(find_fixture_jar 'kotlin-compiler-embeddable-*.jar')
+PINNED_FIXTURE_DIR=${CANDIDATE_TREE}/graphite-webgraph/build/benchmark-fixtures
+ANDROID_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'android-all-*.jar')
+TIKA_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'tika-app-*.jar')
+HIVE_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'hive-exec-*.jar')
+KOTLIN_JAR=$(find_fixture_jar "${PINNED_FIXTURE_DIR}" 'kotlin-compiler-embeddable-*.jar')
+for PINNED_JAR in "${ANDROID_JAR}" "${TIKA_JAR}" "${HIVE_JAR}" "${KOTLIN_JAR}"; do
+  SUPPLIED_JAR=$(find_fixture_jar "${FIXTURE_JAR_DIR}" "$(basename "${PINNED_JAR}")")
+  cmp -s "${SUPPLIED_JAR}" "${PINNED_JAR}"
+done
 java -Xmx4g \
   -Dandroid.jar.path="${ANDROID_JAR}" \
   -Dtika.jar.path="${TIKA_JAR}" \
@@ -111,12 +123,19 @@ java -Xmx4g \
   io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
   --verify "${MANIFEST}" "${FIXTURE_PROVENANCE}"
 
+REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
+"${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}" \
+  "${CANDIDATE_JAR}" "${PINNED_FIXTURE_DIR}" "$(dirname "${MANIFEST}")" \
+  "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+
 HARNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${HARNESS_PATH}")
 FIXTURE_VERIFIER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}")
 COMPARATOR_SHA256=$(sha256_file "${CANDIDATE_TREE}/${COMPARATOR_PATH}")
 SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
-BASE_JAR_SHA256=$(sha256_file "${BASE_JAR}")
-CANDIDATE_JAR_SHA256=$(sha256_file "${CANDIDATE_JAR}")
+REPRODUCIBILITY_SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}")
+ZIP_HASHER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}")
+BASE_JAR_CONTENT_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${BASE_JAR}")
+CANDIDATE_JAR_CONTENT_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${CANDIDATE_JAR}")
 MANIFEST_SHA256=$(sha256_file "${MANIFEST}")
 FIXTURE_PROVENANCE_SHA256=$(sha256_file "${FIXTURE_PROVENANCE}")
 
@@ -182,8 +201,10 @@ jq -n \
   --arg fixtureVerifierSha256 "${FIXTURE_VERIFIER_SHA256}" \
   --arg comparatorSha256 "${COMPARATOR_SHA256}" \
   --arg scriptSha256 "${SCRIPT_SHA256}" \
-  --arg baseJarSha256 "${BASE_JAR_SHA256}" \
-  --arg candidateJarSha256 "${CANDIDATE_JAR_SHA256}" \
+  --arg reproducibilityScriptSha256 "${REPRODUCIBILITY_SCRIPT_SHA256}" \
+  --arg zipHasherSha256 "${ZIP_HASHER_SHA256}" \
+  --arg baseJarContentSha256 "${BASE_JAR_CONTENT_SHA256}" \
+  --arg candidateJarContentSha256 "${CANDIDATE_JAR_CONTENT_SHA256}" \
   --arg manifestSha256 "${MANIFEST_SHA256}" \
   --arg fixtureProvenanceSha256 "${FIXTURE_PROVENANCE_SHA256}" \
   --arg oracleSha256 "${ORACLE_SHA256}" \
@@ -191,8 +212,9 @@ jq -n \
   '{repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
     harnessSha256: $harnessSha256, fixtureVerifierSha256: $fixtureVerifierSha256,
     comparatorSha256: $comparatorSha256,
-    scriptSha256: $scriptSha256, baseJarSha256: $baseJarSha256,
-    candidateJarSha256: $candidateJarSha256, manifestSha256: $manifestSha256,
+    scriptSha256: $scriptSha256, reproducibilityScriptSha256: $reproducibilityScriptSha256,
+    zipHasherSha256: $zipHasherSha256, baseJarContentSha256: $baseJarContentSha256,
+    candidateJarContentSha256: $candidateJarContentSha256, manifestSha256: $manifestSha256,
     fixtureProvenanceSha256: $fixtureProvenanceSha256,
     oracleSha256: $oracleSha256, oracleSource: $oracleSource}' > "${OUTPUT_DIR}/provenance.json"
 
@@ -210,6 +232,7 @@ EVIDENCE_FILES=(
   "${OUTPUT_DIR}/provenance.json"
   "${OUTPUT_DIR}/graphs.tsv"
   "${OUTPUT_DIR}/fixture-provenance.tsv"
+  "${OUTPUT_DIR}/fixture-reproducibility.json"
   "${OUTPUT_DIR}/base-single-source-reference.json"
   "${OUTPUT_DIR}/base-single-source-reference.tsv"
   "${OUTPUT_DIR}/base-single-source-reference.manifest"
@@ -236,7 +259,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v1" \
+  --arg schema "graphite-fixture64-evidence-v2" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \

@@ -2005,6 +2005,7 @@ jobs:
           }
           const requiredFiles = [
             'provenance.json', 'graphs.tsv', 'fixture-provenance.tsv',
+            'fixture-reproducibility.json',
             'base-single-source-reference.json', 'base-single-source-reference.tsv',
             'base-single-source-reference.manifest',
             'base-single-source-oracle.manifest',
@@ -2016,7 +2017,7 @@ jobs:
             ])
           ];
           if (manifest) {
-            if (manifest.schema !== 'graphite-fixture64-evidence-v1' ||
+            if (manifest.schema !== 'graphite-fixture64-evidence-v2' ||
                 manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 manifest.baseSha !== process.env.BASE_SHA ||
                 manifest.candidateSha !== process.env.CANDIDATE_SHA ||
@@ -2039,8 +2040,29 @@ jobs:
             const provenance = JSON.parse(fs.readFileSync(path.join(directory, 'provenance.json'), 'utf8'));
             if (provenance.baseSha !== process.env.BASE_SHA ||
                 provenance.candidateSha !== process.env.CANDIDATE_SHA ||
+                provenance.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 provenance.oracleSource !== 'base-single-source') {
               errors.push('Evidence provenance identity is invalid');
+            }
+            const evidenceSha256 = name => crypto.createHash('sha256')
+              .update(fs.readFileSync(path.join(directory, name))).digest('hex');
+            for (const [field, name] of [
+              ['manifestSha256', 'graphs.tsv'],
+              ['fixtureProvenanceSha256', 'fixture-provenance.tsv'],
+              ['oracleSha256', 'base-single-source-oracle.manifest']
+            ]) {
+              if (provenance[field] !== evidenceSha256(name)) {
+                errors.push(`Evidence provenance ${field} does not match ${name}`);
+              }
+            }
+            const reproducibility = JSON.parse(fs.readFileSync(
+              path.join(directory, 'fixture-reproducibility.json'), 'utf8'
+            ));
+            if (!reproducibility.passed ||
+                reproducibility.firstProvenanceSha256 !== reproducibility.repeatedProvenanceSha256 ||
+                reproducibility.firstManifestSemanticSha256 !==
+                  reproducibility.repeatedManifestSemanticSha256) {
+              errors.push('Repeated fixture-JAR preparation is not reproducible');
             }
             for (const state of ['cold', 'warm']) {
               const result = JSON.parse(fs.readFileSync(
@@ -2091,12 +2113,63 @@ jobs:
         path: evidence-candidate
         persist-credentials: false
 
+    - name: Checkout exact base build inputs
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: evidence-base
+        persist-credentials: false
+
     - name: Independently recompute fixture64 comparisons
       run: |
         jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
         PROVENANCE=benchmark-results/evidence/provenance.json
-        test "$(sha256sum evidence-candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-          "$(jq -r .comparatorSha256 "${PROVENANCE}")"
+        sha256_file() { sha256sum "$1" | cut -d' ' -f1; }
+        assert_provenance_hash() {
+          test "$(sha256_file "$2")" = "$(jq -r ".$1" "${PROVENANCE}")"
+        }
+        assert_provenance_hash harnessSha256 \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        assert_provenance_hash fixtureVerifierSha256 \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
+        assert_provenance_hash comparatorSha256 evidence-candidate/.github/scripts/benchmark-gate.mjs
+        assert_provenance_hash scriptSha256 evidence-candidate/.github/scripts/run-real64-graph-routing.sh
+        assert_provenance_hash reproducibilityScriptSha256 \
+          evidence-candidate/.github/scripts/test-fixture64-reproducibility.sh
+        assert_provenance_hash zipHasherSha256 evidence-candidate/.github/scripts/canonical-zip-sha256.py
+        assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
+        assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
+        assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
+        NORMALIZED_PROVENANCE_SHA=$(cut -f1-13 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
+        NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5 }' \
+          benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
+        RECEIPT=benchmark-results/evidence/fixture-reproducibility.json
+        test "$(jq -r .firstProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
+        test "$(jq -r .repeatedProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
+        test "$(jq -r .firstManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        test "$(jq -r .repeatedManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        cp \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+          evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        test "$(git -C evidence-base diff --name-only)" = \
+          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
+        evidence-candidate/gradlew -p evidence-candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+        BASE_JAR=$(find evidence-base/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find evidence-candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${BASE_JAR}")" = \
+          "$(jq -r .baseJarContentSha256 "${PROVENANCE}")"
+        test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${CANDIDATE_JAR}")" = \
+          "$(jq -r .candidateJarContentSha256 "${PROVENANCE}")"
+        FIXTURE_DIR=evidence-candidate/graphite-webgraph/build/benchmark-fixtures
+        for FIXTURE_JAR in "${FIXTURE_DIR}"/*.jar; do
+          FIXTURE_NAME=$(basename "${FIXTURE_JAR}")
+          FIXTURE_SHA=$(sha256_file "${FIXTURE_JAR}")
+          test "$(awk -F '\t' -v name="${FIXTURE_NAME}" -v sha="${FIXTURE_SHA}" \
+            'NR > 1 && $4 == name && $5 == sha { count++ } END { print count + 0 }' \
+            benchmark-results/evidence/fixture-provenance.tsv)" -eq 16
+        done
         node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
           --references benchmark-results/evidence/base-single-source-reference.manifest \
           --oracle benchmark-results/recomputed-base-single-source-oracle.manifest
