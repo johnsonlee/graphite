@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { validatePairedEvidence } from "./benchmark-pages.mjs";
+import { materializeGistFiles } from "./gist-evidence.mjs";
 import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
@@ -422,6 +423,84 @@ test("comparator CLI runs when invoked through a symlinked path", () => {
     assert.match(result.stderr, /Unknown command: unknown-command/);
 });
 
+test("immutable Gist materialization fetches complete truncated evidence", async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-gist-evidence-"));
+    const gistId = "a".repeat(32);
+    const revision = "b".repeat(40);
+    const requested = [];
+    const contents = await materializeGistFiles({
+        gistId,
+        owner: "johnsonlee",
+        directory,
+        files: {
+            "inline.txt": { truncated: false, content: "inline\n" },
+            "large.tsv": {
+                truncated: true,
+                raw_url: `https://gist.githubusercontent.com/johnsonlee/${gistId}/raw/${revision}/large.tsv`
+            }
+        },
+        request: async options => {
+            requested.push(options);
+            return { data: "complete-large-content\n" };
+        }
+    });
+    assert.equal(contents["inline.txt"], "inline\n");
+    assert.equal(contents["large.tsv"], "complete-large-content\n");
+    assert.equal(fs.readFileSync(path.join(directory, "large.tsv"), "utf8"), "complete-large-content\n");
+    assert.equal(requested.length, 1);
+    assert.equal(requested[0].headers.accept, "application/vnd.github.raw");
+    assert.match(requested[0].url, new RegExp(`/raw/${revision}/large\\.tsv$`));
+    fs.rmSync(directory, { recursive: true });
+});
+
+test("immutable Gist materialization rejects an unbound truncated URL", async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-gist-evidence-invalid-"));
+    await assert.rejects(materializeGistFiles({
+        gistId: "a".repeat(32),
+        owner: "johnsonlee",
+        directory,
+        files: {
+            "large.tsv": {
+                truncated: true,
+                raw_url: "https://example.com/mutable/large.tsv"
+            }
+        },
+        request: async () => ({ data: "untrusted" })
+    }), /invalid immutable raw URL/);
+    fs.rmSync(directory, { recursive: true });
+});
+
+test("fixture workload verifier rejects graph-shape and term mutations", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-fixture-workload-"));
+    const evidence = path.join(root, "evidence");
+    const recomputed = path.join(root, "recomputed");
+    fs.mkdirSync(evidence);
+    fs.mkdirSync(recomputed);
+    const header = [
+        "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
+        "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
+        "querySemanticSha256", "graphPath"
+    ].join("\t");
+    const row = [
+        "fixture-android-00", "android", "0", "android.jar", "a".repeat(64), "b".repeat(64),
+        "10", "100", "20", "absent", "target", "dense", "c".repeat(64), "/tmp/graph"
+    ].join("\t");
+    const manifest = "# fixture64\nfixture-android-00\t/tmp/graph\tabsent\ttarget\tdense\n";
+    for (const directory of [evidence, recomputed]) {
+        fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), `${header}\n${row}\n`);
+        fs.writeFileSync(path.join(directory, "graphs.tsv"), manifest);
+    }
+    const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
+    const verify = () => spawnSync("bash", [verifier.pathname, evidence, recomputed], { encoding: "utf8" });
+    assert.equal(verify().status, 0);
+    fs.writeFileSync(path.join(evidence, "fixture-provenance.tsv"), `${header}\n${row.replace("\t100\t", "\t1\t")}\n`);
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(path.join(evidence, "fixture-provenance.tsv"), `${header}\n${row}\n`);
+    fs.writeFileSync(path.join(evidence, "graphs.tsv"), manifest.replace("\ttarget\t", "\tmutated\t"));
+    assert.notEqual(verify().status, 0);
+    fs.rmSync(root, { recursive: true });
+});
+
 test("fixture64 driver builds commit-bound JARs and records fixture provenance", () => {
     const driver = fs.readFileSync(
         new URL("./run-real64-graph-routing.sh", import.meta.url),
@@ -452,6 +531,9 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         "scriptSha256",
         "reproducibilityScriptSha256",
         "zipHasherSha256",
+        "gistEvidenceSha256",
+        "fixturePreparationScriptSha256",
+        "workloadVerifierSha256",
         "baseJarContentSha256",
         "candidateJarContentSha256",
         "manifestSha256",
@@ -1550,11 +1632,13 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v2/);
+    assert.match(workflow, /graphite-fixture64-evidence-v3/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
     assert.match(workflow, /reproducibilityScriptSha256/);
     assert.match(workflow, /:webgraph:prepareBenchmarkFixtures/);
+    assert.match(workflow, /recomputed-fixture64/);
+    assert.match(workflow, /materializeGistFiles/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);

@@ -1928,6 +1928,13 @@ jobs:
       statuses: read
 
     steps:
+    - name: Checkout exact candidate evidence verifier
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: evidence-candidate
+        persist-credentials: false
+
     - name: Verify trusted fixture64 graph evidence status
       uses: actions/github-script@v9
       env:
@@ -1940,6 +1947,10 @@ jobs:
           const crypto = require('crypto');
           const fs = require('fs');
           const path = require('path');
+          const { pathToFileURL } = require('url');
+          const { materializeGistFiles } = await import(pathToFileURL(path.resolve(
+            'evidence-candidate/.github/scripts/gist-evidence.mjs'
+          )).href);
           const errors = [];
           const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
             owner: context.repo.owner,
@@ -1984,18 +1995,17 @@ jobs:
             }
           }
           const directory = 'benchmark-results/evidence';
-          fs.mkdirSync(directory, { recursive: true });
-          const files = evidence?.files || {};
-          for (const [name, file] of Object.entries(files)) {
-            if (file.truncated || typeof file.content !== 'string') {
-              errors.push(`Evidence file ${name} is truncated or missing content`);
-              continue;
-            }
-            if (path.basename(name) !== name) {
-              errors.push(`Evidence file has an unsafe name: ${name}`);
-              continue;
-            }
-            fs.writeFileSync(path.join(directory, name), file.content);
+          let files = {};
+          try {
+            files = await materializeGistFiles({
+              files: evidence?.files || {},
+              gistId: evidenceMatch?.[1],
+              owner: process.env.TRUSTED_EVIDENCE_ACTOR,
+              directory,
+              request: options => github.request(options)
+            });
+          } catch (error) {
+            errors.push(`Unable to materialize immutable Gist evidence: ${error.message}`);
           }
           let manifest;
           try {
@@ -2017,7 +2027,7 @@ jobs:
             ])
           ];
           if (manifest) {
-            if (manifest.schema !== 'graphite-fixture64-evidence-v2' ||
+            if (manifest.schema !== 'graphite-fixture64-evidence-v3' ||
                 manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 manifest.baseSha !== process.env.BASE_SHA ||
                 manifest.candidateSha !== process.env.CANDIDATE_SHA ||
@@ -2026,7 +2036,7 @@ jobs:
               errors.push('Evidence manifest identity does not match the PR status');
             }
             for (const name of requiredFiles) {
-              const content = files[name]?.content;
+              const content = files[name];
               const expectedHash = manifest.files?.[name];
               const actualHash = typeof content === 'string'
                 ? crypto.createHash('sha256').update(content).digest('hex')
@@ -2106,13 +2116,6 @@ jobs:
             warmP95Speedup: speedups[3] ?? null
           }, null, 2) + '\n');
 
-    - name: Checkout exact candidate comparator
-      uses: actions/checkout@v7
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        path: evidence-candidate
-        persist-credentials: false
-
     - name: Checkout exact base build inputs
       uses: actions/checkout@v7
       with:
@@ -2137,6 +2140,11 @@ jobs:
         assert_provenance_hash reproducibilityScriptSha256 \
           evidence-candidate/.github/scripts/test-fixture64-reproducibility.sh
         assert_provenance_hash zipHasherSha256 evidence-candidate/.github/scripts/canonical-zip-sha256.py
+        assert_provenance_hash gistEvidenceSha256 evidence-candidate/.github/scripts/gist-evidence.mjs
+        assert_provenance_hash fixturePreparationScriptSha256 \
+          evidence-candidate/.github/scripts/prepare-fixture64-graphs.sh
+        assert_provenance_hash workloadVerifierSha256 \
+          evidence-candidate/.github/scripts/verify-fixture64-workload.sh
         assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
         assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
         assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
@@ -2170,6 +2178,11 @@ jobs:
             'NR > 1 && $4 == name && $5 == sha { count++ } END { print count + 0 }' \
             benchmark-results/evidence/fixture-provenance.tsv)" -eq 16
         done
+        RECOMPUTED_FIXTURE64=${RUNNER_TEMP}/recomputed-fixture64
+        evidence-candidate/.github/scripts/prepare-fixture64-graphs.sh \
+          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" "${RECOMPUTED_FIXTURE64}"
+        evidence-candidate/.github/scripts/verify-fixture64-workload.sh \
+          benchmark-results/evidence "${RECOMPUTED_FIXTURE64}"
         node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
           --references benchmark-results/evidence/base-single-source-reference.manifest \
           --oracle benchmark-results/recomputed-base-single-source-oracle.manifest

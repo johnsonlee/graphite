@@ -25,6 +25,9 @@ COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
 REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
 ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
+GIST_EVIDENCE_PATH=.github/scripts/gist-evidence.mjs
+FIXTURE_PREPARATION_SCRIPT_PATH=.github/scripts/prepare-fixture64-graphs.sh
+WORKLOAD_VERIFIER_PATH=.github/scripts/verify-fixture64-workload.sh
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 
@@ -78,6 +81,9 @@ test -f "${CANDIDATE_TREE}/${COMPARATOR_PATH}"
 test -f "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 test -f "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}"
 test -f "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}"
+test -f "${CANDIDATE_TREE}/${GIST_EVIDENCE_PATH}"
+test -f "${CANDIDATE_TREE}/${FIXTURE_PREPARATION_SCRIPT_PATH}"
+test -f "${CANDIDATE_TREE}/${WORKLOAD_VERIFIER_PATH}"
 cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 
 # Build both production revisions with one byte-identical, candidate-reviewed pressure harness.
@@ -134,6 +140,9 @@ COMPARATOR_SHA256=$(sha256_file "${CANDIDATE_TREE}/${COMPARATOR_PATH}")
 SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
 REPRODUCIBILITY_SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}")
 ZIP_HASHER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}")
+GIST_EVIDENCE_SHA256=$(sha256_file "${CANDIDATE_TREE}/${GIST_EVIDENCE_PATH}")
+FIXTURE_PREPARATION_SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${FIXTURE_PREPARATION_SCRIPT_PATH}")
+WORKLOAD_VERIFIER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${WORKLOAD_VERIFIER_PATH}")
 BASE_JAR_CONTENT_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${BASE_JAR}")
 CANDIDATE_JAR_CONTENT_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${CANDIDATE_JAR}")
 MANIFEST_SHA256=$(sha256_file "${MANIFEST}")
@@ -203,6 +212,9 @@ jq -n \
   --arg scriptSha256 "${SCRIPT_SHA256}" \
   --arg reproducibilityScriptSha256 "${REPRODUCIBILITY_SCRIPT_SHA256}" \
   --arg zipHasherSha256 "${ZIP_HASHER_SHA256}" \
+  --arg gistEvidenceSha256 "${GIST_EVIDENCE_SHA256}" \
+  --arg fixturePreparationScriptSha256 "${FIXTURE_PREPARATION_SCRIPT_SHA256}" \
+  --arg workloadVerifierSha256 "${WORKLOAD_VERIFIER_SHA256}" \
   --arg baseJarContentSha256 "${BASE_JAR_CONTENT_SHA256}" \
   --arg candidateJarContentSha256 "${CANDIDATE_JAR_CONTENT_SHA256}" \
   --arg manifestSha256 "${MANIFEST_SHA256}" \
@@ -213,7 +225,10 @@ jq -n \
     harnessSha256: $harnessSha256, fixtureVerifierSha256: $fixtureVerifierSha256,
     comparatorSha256: $comparatorSha256,
     scriptSha256: $scriptSha256, reproducibilityScriptSha256: $reproducibilityScriptSha256,
-    zipHasherSha256: $zipHasherSha256, baseJarContentSha256: $baseJarContentSha256,
+    zipHasherSha256: $zipHasherSha256, gistEvidenceSha256: $gistEvidenceSha256,
+    fixturePreparationScriptSha256: $fixturePreparationScriptSha256,
+    workloadVerifierSha256: $workloadVerifierSha256,
+    baseJarContentSha256: $baseJarContentSha256,
     candidateJarContentSha256: $candidateJarContentSha256, manifestSha256: $manifestSha256,
     fixtureProvenanceSha256: $fixtureProvenanceSha256,
     oracleSha256: $oracleSha256, oracleSource: $oracleSource}' > "${OUTPUT_DIR}/provenance.json"
@@ -259,7 +274,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v2" \
+  --arg schema "graphite-fixture64-evidence-v3" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \
