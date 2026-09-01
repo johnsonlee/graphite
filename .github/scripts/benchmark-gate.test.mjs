@@ -1189,6 +1189,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.match(driver, /Fixture64GraphPreparation/);
     assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
+    assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-string-index"/);
     assert.match(driver, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(driver, /cmp -s "\$\{SUPPLIED_JAR\}" "\$\{PINNED_JAR\}"/);
     assert.match(driver, /test-fixture64-reproducibility\.sh/);

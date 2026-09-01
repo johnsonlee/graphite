@@ -157,9 +157,10 @@ planner pruning and one dense execution access, not fabricated pruning or 64 for
 comparator reports P50/P95 separately by set width; these rows do not enter the single-graph 10x P95 gate.
 
 For this finite-limit shape, the query layer passes the remaining `LIMIT` into the selected mapped
-graph. Current graph files persist the combined CallSite CSR/trigram index, and `loadMapped`
-restores it before the graph is exposed to queries. Legacy or invalid graph files rebuild it once
-and atomically persist it when writable. If index admission is denied, the graph retains the
+graph. The production CLI and fixture64 builder persist the combined CallSite CSR/trigram index;
+`loadMapped` restores it lazily on the first relevant query, so unrelated Method queries retain no
+CallSite-index heap. Legacy or invalid graph files rebuild it once and atomically persist it when
+the complete index is released or the mapped graph closes. If index admission is denied, the graph retains the
 correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
 `graphite-callsite-scan-N` workers. The default fallback worker count is
 `min(8, Runtime.availableProcessors())`, overridable with
