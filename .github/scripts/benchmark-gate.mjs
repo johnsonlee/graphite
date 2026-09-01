@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
@@ -2025,7 +2025,9 @@ function main(argv) {
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] !== undefined &&
+    fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])
+) {
     try {
         main(process.argv.slice(2));
     } catch (error) {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -409,6 +410,16 @@ test("graph-routing oracle is derived only from complete successful base single-
     ));
     assert.equal(wrongBand.passed, false);
     assert.match(wrongBand.errors.join("\n"), /targeted=1\.\.199/);
+});
+
+test("comparator CLI runs when invoked through a symlinked path", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-gate-cli-"));
+    const alias = path.join(directory, "benchmark-gate.mjs");
+    fs.symlinkSync(new URL("./benchmark-gate.mjs", import.meta.url), alias);
+    const result = spawnSync(process.execPath, [alias, "unknown-command"], { encoding: "utf8" });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Unknown command: unknown-command/);
 });
 
 test("fixture64 driver builds commit-bound JARs and records fixture provenance", () => {
