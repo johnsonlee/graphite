@@ -1021,6 +1021,11 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         driver,
         /cp "\$\{CANDIDATE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}" "\$\{BASE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}"/
     );
+    assert.match(driver, /if ! cmp -s[\s\S]*BASE_TREE[\s\S]*CANDIDATE_TREE/);
+    assert.match(
+        driver,
+        /git -C "\$\{BASE_TREE\}" diff --name-only \| sort\)" = "\$\{EXPECTED_BASE_INSTRUMENTATION\}"/
+    );
     assert.equal((driver.match(/:webgraph:jmhJar/g) ?? []).length, 2);
     assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
     assert.equal((driver.match(/-to 30m/g) ?? []).length, 2);

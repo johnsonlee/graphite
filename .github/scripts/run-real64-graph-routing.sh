@@ -89,11 +89,19 @@ test -f "${CANDIDATE_TREE}/${WORKLOAD_VERIFIER_PATH}"
 cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 
 # Build both production revisions with one byte-identical, candidate-reviewed pressure harness.
+EXPECTED_BASE_INSTRUMENTATION=$(
+  for INSTRUMENTATION_PATH in "${HARNESS_PATH}" "${CORRECTNESS_MANIFEST_PATH}"; do
+    if ! cmp -s \
+      "${BASE_TREE}/${INSTRUMENTATION_PATH}" \
+      "${CANDIDATE_TREE}/${INSTRUMENTATION_PATH}"; then
+      printf '%s\n' "${INSTRUMENTATION_PATH}"
+    fi
+  done | sort
+)
 cp "${CANDIDATE_TREE}/${HARNESS_PATH}" "${BASE_TREE}/${HARNESS_PATH}"
 cp "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}" "${BASE_TREE}/${CORRECTNESS_MANIFEST_PATH}"
 cmp -s "${BASE_TREE}/${HARNESS_PATH}" "${CANDIDATE_TREE}/${HARNESS_PATH}"
 cmp -s "${BASE_TREE}/${CORRECTNESS_MANIFEST_PATH}" "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}"
-EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' "${HARNESS_PATH}" "${CORRECTNESS_MANIFEST_PATH}" | sort)
 test "$(git -C "${BASE_TREE}" diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
 test -z "$(git -C "${CANDIDATE_TREE}" diff --name-only)"
 

@@ -2173,15 +2173,23 @@ jobs:
         test "$(jq -r .repeatedProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
         test "$(jq -r .firstManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
         test "$(jq -r .repeatedManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        EXPECTED_BASE_INSTRUMENTATION=$(
+          for INSTRUMENTATION_PATH in \
+            graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+            graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt; do
+            if ! cmp -s \
+              "evidence-base/${INSTRUMENTATION_PATH}" \
+              "evidence-candidate/${INSTRUMENTATION_PATH}"; then
+              printf '%s\n' "${INSTRUMENTATION_PATH}"
+            fi
+          done | sort
+        )
         cp \
           evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
           evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
         cp \
           evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
           evidence-base/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
-        EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' \
-          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
-          graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt | sort)
         test "$(git -C evidence-base diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
         evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
         evidence-candidate/gradlew -p evidence-candidate \
