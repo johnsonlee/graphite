@@ -1707,7 +1707,7 @@ internal class MappedWebGraphBackedGraph(
             .getOrNull()
             ?.takeIf { identity -> identity.size == CALL_SITE_STRING_INDEX_IDENTITY_BYTES }
         if (persisted != null) {
-            workConsumer?.consume()
+            consumeGraphWork(workConsumer, 1L)
             return persisted
         }
         return callSiteStringIndexContentIdentity(workConsumer)
