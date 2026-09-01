@@ -1,15 +1,9 @@
 package io.johnsonlee.graphite.webgraph
 
-import io.johnsonlee.graphite.core.CallSiteNode
-import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.Node
-import io.johnsonlee.graphite.core.NodeId
-import io.johnsonlee.graphite.core.StringConstant
-import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.CypherResult
-import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import org.openjdk.jmh.annotations.AuxCounters
 import org.openjdk.jmh.annotations.Benchmark
@@ -27,7 +21,6 @@ import org.openjdk.jmh.annotations.Warmup
 import java.io.Closeable
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Method
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -97,54 +90,6 @@ abstract class WrappedDiscoveryBenchmarkResourceState {
         sampler.close()
         root?.toFile()?.deleteRecursively()
     }
-}
-
-@State(Scope.Benchmark)
-@BenchmarkMode(Mode.SingleShotTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 1)
-@Measurement(iterations = 3)
-@Fork(1, jvmArgs = ["-Xmx4g"])
-open class SingleGraphWrappedDiscoveryResourceBenchmark : WrappedDiscoveryBenchmarkResourceState() {
-    private lateinit var root: Path
-
-    @Setup(Level.Trial)
-    fun setupTrial() {
-        root = Files.createTempDirectory("graphite-single-resource")
-        val builder = DefaultGraph.Builder()
-        repeat(5_000) { index -> builder.addNode(StringConstant(NodeId(index), "symbol_$index")) }
-        repeat(2_000) { index ->
-            val caller = MethodDescriptor(
-                TypeDescriptor("com.example.${if (index % 1_000 == 0) "Voucher" else "Feature"}Service$index"),
-                "create$index",
-                emptyList(),
-                TypeDescriptor("void")
-            )
-            val callee = MethodDescriptor(
-                TypeDescriptor("com.example.Dependency${index % 20}"),
-                "invoke${index % 100}",
-                emptyList(),
-                TypeDescriptor("void")
-            )
-            builder.addNode(CallSiteNode(NodeId(5_000 + index), caller, callee, index, null, emptyList()))
-        }
-        val directory = root.resolve("graph")
-        GraphStore.save(builder.build(), directory)
-        val graph = GraphStore.loadMapped(directory)
-        loadedGraphs += graph
-        clearIndexMethods += clearMethod(graph)
-        finishSetup(listOf(CypherGraph("graph-0", graph)))
-    }
-
-    @TearDown(Level.Trial)
-    fun tearDownTrial() = closeResources(root)
-
-    @Benchmark
-    fun singleGraphFootprint(counters: WrappedDiscoveryBenchmarkResourceCounters): CypherResult =
-        executor.execute(WRAPPED_DISCOVERY_QUERY).also { result ->
-            check(result.rows.size == 2)
-            finishQuery(counters)
-        }
 }
 
 @State(Scope.Benchmark)

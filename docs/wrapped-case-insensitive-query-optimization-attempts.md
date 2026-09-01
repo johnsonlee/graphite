@@ -120,28 +120,24 @@ fixed baseline and the reported former 10-second behavior.
 
 ## Permanent regression gate
 
-`WrappedDiscoveryLatencyBenchmark` persists deterministic mixed-case data and
-runs warm and cold forms with `graphCount=1,17`. CI overlays that exact harness
-onto the fixed pre-PR-95 commit and the pull request base before compiling all
-three revisions. `compare-latency-baseline` fails closed for missing parameters
-and requires both the fixed-baseline speedup and the current-base regression
-limit. Suspected failures repeat in candidate/base/fixed reverse order. The
-fixed SHA is explicit in `.github/workflows/benchmark.yml`.
+Current policy excludes synthetic graphs from performance evidence. The former synthetic
+`WrappedDiscoveryLatencyBenchmark` and its 1/4/16/64 graph shards have been removed. CI now compares
+only the persisted real-fixture workloads in `AllFixtureWrappedDiscoveryLatencyBenchmark` and the
+real 36-graph workload. Synthetic fixtures remain valid only for correctness and deterministic path
+coverage.
 
 `AndroidWrappedDiscoveryBenchmark` is the manual real-corpus counterpart. It
 uses the exact production query and the existing validated Android corpus.
 
 ### 2026-08-29 - Attempt 005: Heterogeneous all-fixture baseline
 
-The repeated-Android benchmark isolates graph-count scaling but reuses one
-mapped graph and therefore does not represent heterogeneous string tables,
-hit distributions, or page-cache behavior. The permanent gate now adds
+The repeated-Android benchmark isolated graph-count scaling but reused one
+mapped graph and therefore is no longer accepted as performance evidence. The permanent gate uses
 `AllFixtureWrappedDiscoveryLatencyBenchmark`: Android, Tika, Hive, and Kotlin
 Compiler are built and persisted one at a time, then all four mapped graphs
 (`19,091,048` nodes total) are queried together. CI prepares the persisted
 graphs once and supplies the identical files to pre-PR-95, current-base, and
-candidate JMH forks. This is additive to, not a replacement for, the stable
-1/17-graph scaling benchmark.
+candidate JMH forks.
 
 The suite does not merely substitute constants. A preflight records and pins
 the exact per-corpus match counts, covering zero hits; dense matches in all
@@ -425,6 +421,9 @@ pool deadlock.
 
 ### 2026-08-29 - Attempt 015: Lookup-state-driven parallel admission
 
+The synthetic timings below are retained only as a historical diagnostic record. Under the current
+benchmark policy they cannot establish or gate performance.
+
 The first GitHub Actions run showed that executor overhead is material on tiny
 warm graphs: the four-graph synthetic cache-hit case moved from `0.194 ms/op`
 on `main` to `0.753 ms/op`, even though the cold path improved. Those fixtures
@@ -438,12 +437,9 @@ Cold, oversized, unknown, and unordered lookups remain eligible for fused
 storage scans and bounded two-worker parallelism. The decision follows actual
 lookup state instead of a graph-count or CPU-count heuristic.
 
-The synthetic gate now samples the geometric `1/4/16/64` curve with the normal
-50% fixed-baseline floor and a 15% moving-base guard. Because every warm result
-is sub-millisecond, changes below an independent 0.5 ms absolute floor are
-reported as noise; the original +0.559 ms four-graph regression would still
-fail. The 10x requirement remains on heterogeneous real fixtures and the
-independent 36-real-graph row.
+That synthetic gate previously sampled the geometric `1/4/16/64` curve. It has been retired; only
+heterogeneous persisted real-fixture measurements and independently supplied real production graph
+manifests may support latency, CPU, or memory conclusions.
 
 **Conclusion:** retained. Small cached queries avoid fused and fork-join setup,
 while real multi-graph searches keep bounded parallel scans.

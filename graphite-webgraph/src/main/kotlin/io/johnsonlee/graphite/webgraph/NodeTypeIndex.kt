@@ -23,9 +23,27 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.util.function.IntPredicate
 
 internal interface NodeTypeIndex {
     fun ids(type: Class<out Node>): Sequence<Int>
+    fun idIterator(type: Class<out Node>): IntIterator = object : IntIterator() {
+        private val delegate = ids(type).iterator()
+
+        override fun hasNext(): Boolean = delegate.hasNext()
+
+        override fun nextInt(): Int = delegate.next()
+    }
+    fun forEachIdWhile(
+        type: Class<out Node>,
+        startIndex: Int,
+        endIndex: Int,
+        action: IntPredicate
+    ) {
+        for (nodeId in ids(type).drop(startIndex).take(endIndex - startIndex)) {
+            if (!action.test(nodeId)) return
+        }
+    }
     fun count(type: Class<out Node>): Long
 }
 
@@ -34,16 +52,33 @@ internal class MappedNodeTypeIndex private constructor(
     private val rangesByType: Map<Class<out Node>, NodeTypeRange>
 ) : NodeTypeIndex {
 
-    override fun ids(type: Class<out Node>): Sequence<Int> =
-        ranges(type).asSequence().flatMap { range ->
-            sequence {
-                var offset = range.offset
-                repeat(range.count) {
-                    yield(buffer.getInt(offset))
+    override fun ids(type: Class<out Node>): Sequence<Int> = Sequence { idIterator(type) }
+
+    override fun idIterator(type: Class<out Node>): IntIterator = MappedNodeIdIterator(buffer, ranges(type))
+
+    override fun forEachIdWhile(
+        type: Class<out Node>,
+        startIndex: Int,
+        endIndex: Int,
+        action: IntPredicate
+    ) {
+        require(startIndex >= 0 && endIndex >= startIndex)
+        var ordinal = 0
+        for (range in ranges(type)) {
+            val rangeEnd = ordinal + range.count
+            if (startIndex < rangeEnd && endIndex > ordinal) {
+                val localStart = (startIndex - ordinal).coerceAtLeast(0)
+                val localEnd = (endIndex - ordinal).coerceAtMost(range.count)
+                var offset = range.offset + localStart * Int.SIZE_BYTES
+                repeat(localEnd - localStart) {
+                    if (!action.test(buffer.getInt(offset))) return
                     offset += Int.SIZE_BYTES
                 }
             }
+            ordinal = rangeEnd
+            if (ordinal >= endIndex) break
         }
+    }
 
     override fun count(type: Class<out Node>): Long =
         ranges(type).sumOf { it.count.toLong() }
@@ -89,6 +124,32 @@ internal data class NodeTypeRange(
     val count: Int,
     val offset: Int
 )
+
+private class MappedNodeIdIterator(
+    private val buffer: MappedByteBuffer,
+    private val ranges: List<NodeTypeRange>
+) : IntIterator() {
+    private var rangeIndex = -1
+    private var offset = 0
+    private var remaining = 0
+
+    override fun hasNext(): Boolean {
+        while (remaining == 0 && ++rangeIndex < ranges.size) {
+            val range = ranges[rangeIndex]
+            offset = range.offset
+            remaining = range.count
+        }
+        return remaining > 0
+    }
+
+    override fun nextInt(): Int {
+        if (!hasNext()) throw NoSuchElementException()
+        val nodeId = buffer.getInt(offset)
+        offset += Int.SIZE_BYTES
+        remaining--
+        return nodeId
+    }
+}
 
 internal fun nodeClassForTag(tag: Int): Class<out Node>? = NODE_CLASSES_BY_TAG.getOrNull(tag)
 

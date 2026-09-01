@@ -57,7 +57,6 @@ jobs:
       run: |
         for HARNESS in \
           BenchmarkCorpus.kt \
-          WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
@@ -192,26 +191,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - shard: synthetic-1
-          real: false
-          correctness: false
-          parameters: '-p graphCount=1 -wi 5 -i 6'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-4
-          real: false
-          correctness: false
-          parameters: '-p graphCount=4'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-16
-          real: false
-          correctness: false
-          parameters: '-p graphCount=16'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-64
-          real: false
-          correctness: false
-          parameters: '-p graphCount=64'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
         - shard: real-a
           real: true
           correctness: true

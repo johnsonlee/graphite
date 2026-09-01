@@ -69,6 +69,19 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
     override fun consume() = consume(1L)
 }
 
+/**
+ * A thread-safe batch consumer that explicitly permits one storage lookup to invoke it
+ * concurrently from multiple scan workers.
+ */
+fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
+
+/**
+ * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
+ * already parallelizes independent graph sources. This avoids nested scan pools while preserving
+ * the same shared work and cancellation accounting.
+ */
+fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()
@@ -157,6 +170,22 @@ interface WorkAwareStringPropertyDisjunctionLookup : StringPropertyDisjunctionLo
         limit: Int,
         workConsumer: GraphWorkConsumer
     ): Sequence<T>?
+}
+
+/** One duplicate-preserving storage projection row in canonical node encounter order. */
+data class StringPropertyProjectionRow(
+    val values: List<String?>
+)
+
+/** Optional capability for projecting bounded string matches without materializing full nodes. */
+interface StringPropertyDisjunctionProjection {
+    fun projectStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer? = null
+    ): List<StringPropertyProjectionRow>?
 }
 
 /** Storage-level result for a string-disjunction aggregate without node materialization. */

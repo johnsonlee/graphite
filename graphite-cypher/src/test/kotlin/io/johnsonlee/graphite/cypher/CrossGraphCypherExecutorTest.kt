@@ -20,16 +20,22 @@ import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
+import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
@@ -45,6 +51,59 @@ import kotlin.test.assertTrue
 
 @Suppress("LargeClass")
 class CrossGraphCypherExecutorTest {
+
+    @Test
+    fun `selected graph projects bounded CallSite strings without materializing nodes`() {
+        val projectedRows = listOf(
+            StringPropertyProjectionRow(listOf("example.FeatureCaller", "invoke"))
+        )
+        var projectedType: Class<out Node>? = null
+        var projectedPredicates = emptyList<StringPropertyPredicate>()
+        var capturedProjectedProperties = emptyList<String>()
+        var projectedLimit = -1
+        var projectedWorkConsumer: GraphWorkConsumer? = GraphWorkConsumer { }
+        val backing = graph()
+        val selected = object : Graph by backing, StringPropertyDisjunctionProjection {
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow> {
+                projectedType = type
+                projectedPredicates = predicates
+                capturedProjectedProperties = projectedProperties
+                projectedLimit = limit
+                projectedWorkConsumer = workConsumer
+                return projectedRows
+            }
+        }
+        val result = executor("selected" to selected, "other" to graph()).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId = 'selected' AND " +
+                "toLower(n.caller_class) CONTAINS 'feature' " +
+                "RETURN n.caller_class AS caller, n.callee_name AS callee LIMIT 200"
+        )
+
+        assertEquals(CallSiteNode::class.java, projectedType)
+        assertEquals(
+            listOf(
+                StringPropertyPredicate(
+                    "caller_class",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "feature"
+                )
+            ),
+            projectedPredicates
+        )
+        assertEquals(listOf("caller_class", "callee_name"), capturedProjectedProperties)
+        assertEquals(200, projectedLimit)
+        assertNull(projectedWorkConsumer)
+        assertEquals("example.FeatureCaller", result.rows.single()["caller"])
+        assertEquals("invoke", result.rows.single()["callee"])
+        assertEquals(listOf("selected"), graphIds(result.rows.single()))
+    }
 
     @Test
     fun `ordered distinct graph id limit reads the source catalog instead of scanning nodes`() {
@@ -184,8 +243,22 @@ class CrossGraphCypherExecutorTest {
             emptyList(),
             TypeDescriptor("void")
         )
-        fun methodGraph(): Graph = DefaultGraph.Builder().apply { addMethod(method) }.build()
-        val executor = executor("orders" to methodGraph(), "billing" to methodGraph())
+        val lookupCounts = mapOf("orders" to AtomicInteger(), "billing" to AtomicInteger())
+        fun methodGraph(graphId: String): Graph {
+            val backing = DefaultGraph.Builder().apply { addMethod(method) }.build()
+            return object : Graph by backing {
+                override fun methods(pattern: MethodPattern): Sequence<MethodDescriptor> {
+                    lookupCounts.getValue(graphId).incrementAndGet()
+                    return backing.methods(pattern)
+                }
+
+                override fun methodSlice(pattern: MethodPattern, limit: Int): List<MethodDescriptor>? {
+                    lookupCounts.getValue(graphId).incrementAndGet()
+                    return backing.methodSlice(pattern, limit)
+                }
+            }
+        }
+        val executor = executor("orders" to methodGraph("orders"), "billing" to methodGraph("billing"))
 
         val result = executor.execute(
             "MATCH (m:Method) WHERE m.signature = '${method.signature}' " +
@@ -195,6 +268,24 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("orders", "billing"), result.rows.map { it["graph"] })
         assertTrue(result.rows.all { it["signature"] == method.signature })
         assertEquals(listOf(listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
+
+        val graphPredicates = listOf(
+            "m.graphId = 'billing'" to emptyMap(),
+            "graphId(m) = 'billing'" to emptyMap(),
+            "m.graphId = \$graph" to mapOf("graph" to "billing")
+        )
+        for ((graphPredicate, parameters) in graphPredicates) {
+            lookupCounts.values.forEach { count -> count.set(0) }
+            val selected = executor.execute(
+                "MATCH (m:Method) WHERE $graphPredicate AND m.signature = '${method.signature}' " +
+                    "RETURN graphId(m) AS graph, m.signature AS signature LIMIT 10",
+                parameters
+            )
+            assertEquals(listOf("billing"), selected.rows.map { it["graph"] })
+            assertEquals(listOf(method.signature), selected.rows.map { it["signature"] })
+            assertEquals(0, lookupCounts.getValue("orders").get())
+            assertTrue(lookupCounts.getValue("billing").get() > 0)
+        }
     }
 
     @Test
@@ -1620,6 +1711,185 @@ class CrossGraphCypherExecutorTest {
         assertEquals("orders:7", row["elementId"])
         assertEquals("orders", (row["properties"] as Map<*, *>)["graphId"])
         assertEquals(listOf("orders"), graphIds(row))
+    }
+
+    @Test
+    fun `graph id equality prunes unselected sources from broad string limit scans`() {
+        val scanCounts = List(4) { AtomicInteger() }
+        val lookupLimits = List(4) { mutableListOf<Int>() }
+        val parallelPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
+        val serialPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
+        val returnType = TypeDescriptor("void")
+        val graphs = scanCounts.indices.map { graphIndex ->
+            val backing = DefaultGraph.Builder().apply {
+                addNode(
+                    CallSiteNode(
+                        NodeId(graphIndex),
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Voucher${graphIndex}Service"),
+                            "createVoucher",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("com.example.Repository"),
+                            "saveVoucher",
+                            emptyList(),
+                            returnType
+                        ),
+                        graphIndex,
+                        null,
+                        emptyList()
+                    )
+                )
+            }.build()
+            val measured = object : Graph by backing, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? {
+                    scanCounts[graphIndex].incrementAndGet()
+                    return if (type == CallSiteNode::class.java) 10_000L else backing.nodeCount(type)
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    scanCounts[graphIndex].incrementAndGet()
+                    lookupLimits[graphIndex] += limit
+                    return backing.nodes(type).take(limit)
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    parallelPermissions[graphIndex] += workConsumer is ParallelGraphWorkBatchConsumer
+                    serialPermissions[graphIndex] += workConsumer is SerialGraphWorkBatchConsumer
+                    workConsumer.consume()
+                    return nodesByStringPropertyDisjunction(type, predicates, limit)
+                }
+            }
+            CypherGraph("graph-$graphIndex", measured)
+        }
+        val executor = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        )
+        val broadPredicate = "(" + listOf("caller_class", "caller_name", "callee_class", "callee_name")
+            .joinToString(" OR ") { property ->
+                "toLower(coalesce(n.$property, '')) CONTAINS 'voucher'"
+            } + ")"
+
+        val graphPredicates = listOf(
+            "n.graphId = 'graph-3'" to emptyMap(),
+            "graphId(n) = 'graph-3'" to emptyMap(),
+            "n.graphId = \$graph" to mapOf("graph" to "graph-3")
+        )
+        for ((graphPredicate, parameters) in graphPredicates) {
+            scanCounts.forEach { it.set(0) }
+            lookupLimits.forEach(MutableList<Int>::clear)
+            val result = executor.execute(
+                "MATCH (n) WHERE $graphPredicate AND $broadPredicate " +
+                    "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250",
+                parameters
+            )
+
+            assertEquals(listOf("graph-3"), result.rows.map { it["graph"] })
+            assertEquals(listOf("com.example.Voucher3Service"), result.rows.map { it["caller"] })
+            assertEquals(listOf("graph-3"), graphIds(result.rows.single()))
+            assertTrue(scanCounts.take(3).all { it.get() == 0 })
+            assertTrue(scanCounts.last().get() > 0)
+            assertEquals(250, lookupLimits.last().first())
+            assertTrue(lookupLimits.last().all { limit -> limit in 0..250 })
+            assertTrue(parallelPermissions.last().all { it })
+            assertTrue(serialPermissions.last().none { it })
+        }
+
+        parallelPermissions.forEach { it.clear() }
+        serialPermissions.forEach { it.clear() }
+        val unqualified = executor.execute(
+            "MATCH (n) WHERE $broadPredicate " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
+        )
+        assertEquals(graphs.map { it.id }.toSet(), unqualified.rows.map { it["graph"] }.toSet())
+        assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.none { it } })
+        assertTrue(serialPermissions.all { permissions -> permissions.isNotEmpty() && permissions.all { it } })
+
+        scanCounts.forEach { it.set(0) }
+        lookupLimits.forEach(MutableList<Int>::clear)
+        val rightHandGraphId = executor.execute(
+            "MATCH (n) WHERE n.caller_name = 'createVoucher' AND $broadPredicate AND " +
+                "n.graphId = 'graph-3' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+        )
+        assertEquals(1, rightHandGraphId.rows.size)
+        assertEquals("graph-3", rightHandGraphId.rows.single()["graph"])
+        assertEquals("com.example.Voucher3Service", rightHandGraphId.rows.single()["caller"])
+        assertTrue(scanCounts.take(3).all { it.get() == 0 })
+        assertTrue(scanCounts.last().get() > 0)
+        assertTrue(lookupLimits.take(3).all(MutableList<Int>::isEmpty))
+        assertTrue(lookupLimits.last().isNotEmpty())
+
+        scanCounts.forEach { it.set(0) }
+        val missing = executor.execute(
+            "MATCH (n) WHERE n.graphId = 'missing' AND $broadPredicate " +
+                "RETURN n.graphId AS graph LIMIT 250"
+        )
+        assertTrue(missing.rows.isEmpty())
+        assertTrue(scanCounts.all { it.get() == 0 })
+
+        val contradictory = executor.execute(
+            "MATCH (n) WHERE n.graphId = 'graph-3' AND graphId(n) = 'graph-2' AND $broadPredicate " +
+                "RETURN n.graphId AS graph LIMIT 250"
+        )
+        assertTrue(contradictory.rows.isEmpty())
+
+        scanCounts.forEach { it.set(0) }
+        val count = executor.execute(
+            "MATCH (n) WHERE graphId(n) = 'graph-3' AND $broadPredicate RETURN count(*) AS total"
+        )
+        assertEquals(1L, count.rows.single()["total"])
+        assertTrue(scanCounts.take(3).all { it.get() == 0 })
+        assertTrue(scanCounts.last().get() > 0)
+    }
+
+    @Test
+    fun `graph id source pruning preserves disjunctions and independent cross graph patterns`() {
+        val returnType = TypeDescriptor("void")
+        fun callSite(id: Int, callerClass: String) = CallSiteNode(
+            NodeId(id),
+            MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("com.example.Repository"), "load", emptyList(), returnType),
+            id,
+            null,
+            emptyList()
+        )
+        val executor = executor(
+            "orders" to graph(callSite(1, "com.example.OrderService")),
+            "billing" to graph(callSite(2, "com.example.BillingOnlyService"))
+        )
+
+        val disjunction = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId = 'orders' OR " +
+                "n.caller_class CONTAINS 'BillingOnly' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 10"
+        )
+        assertEquals(listOf("orders", "billing"), disjunction.rows.map { it["graph"] })
+        assertEquals(
+            listOf("com.example.OrderService", "com.example.BillingOnlyService"),
+            disjunction.rows.map { it["caller"] }
+        )
+
+        val independent = executor.execute(
+            "MATCH (a:CallSiteNode), (b:CallSiteNode) " +
+                "WHERE a.graphId = 'orders' AND b.graphId = 'billing' " +
+                "RETURN a.graphId AS leftGraph, b.graphId AS rightGraph LIMIT 10"
+        )
+        assertEquals(1, independent.rows.size)
+        assertEquals("orders", independent.rows.single()["leftGraph"])
+        assertEquals("billing", independent.rows.single()["rightGraph"])
     }
 
     @Test

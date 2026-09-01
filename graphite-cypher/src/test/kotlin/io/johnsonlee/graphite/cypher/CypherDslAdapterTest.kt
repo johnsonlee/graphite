@@ -5,9 +5,65 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class CypherDslAdapterTest {
+
+    @Test
+    fun `parsed query cache reuses immutable AST and excludes parse failures`() {
+        CypherDslAdapter.clearParsedQueryCache()
+        try {
+            val query = "MATCH (n:CallSiteNode) WHERE n.caller_name = \$name RETURN n"
+            val first = CypherDslAdapter.parse(query)
+
+            assertEquals(1, CypherDslAdapter.parsedQueryCacheSize())
+            assertSame(first, CypherDslAdapter.parse(query))
+            assertFailsWith<UnsupportedOperationException> {
+                @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                (first as java.util.List<CypherClause>).clear()
+            }
+            val match = assertIs<CypherClause.Match>(first.first())
+            assertFailsWith<UnsupportedOperationException> {
+                @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                (match.patterns as java.util.List<CypherPattern>).clear()
+            }
+            assertEquals(first, CypherDslAdapter.parse(query))
+            assertFailsWith<CypherParseException> { CypherDslAdapter.parse("MATCH RETURN n") }
+            assertEquals(1, CypherDslAdapter.parsedQueryCacheSize())
+        } finally {
+            CypherDslAdapter.clearParsedQueryCache()
+        }
+    }
+
+    @Test
+    fun `immutable AST freezes nested collection literals`() {
+        val mutableValues = mutableListOf<Any?>("value")
+        val mutableLiteral = linkedMapOf<Any?, Any?>("key" to mutableValues)
+        val immutable = listOf(
+            CypherClause.Return(listOf(ReturnItem(CypherExpr.Literal(mutableLiteral), "literal")))
+        ).toImmutableCypherAst()
+        val literal = assertIs<CypherExpr.Literal>(
+            assertIs<CypherClause.Return>(immutable.single()).items.single().expression
+        ).value
+        @Suppress("UNCHECKED_CAST")
+        val frozenMap = literal as Map<Any?, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val frozenValues = frozenMap.getValue("key") as List<Any?>
+
+        mutableValues += "later"
+        mutableLiteral["later"] = true
+
+        assertEquals(mapOf<Any?, Any?>("key" to listOf("value")), frozenMap)
+        assertFailsWith<UnsupportedOperationException> {
+            @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+            (frozenMap as java.util.Map<Any?, Any?>).put("poisoned", true)
+        }
+        assertFailsWith<UnsupportedOperationException> {
+            @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+            (frozenValues as java.util.List<Any?>).add("poisoned")
+        }
+    }
 
     // ========================================================================
     // Clause parsing

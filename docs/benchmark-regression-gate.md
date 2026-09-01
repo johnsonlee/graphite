@@ -131,7 +131,8 @@ not provided by this workflow.
 
 The `wrapped-query-latency` job protects the production
 `toLower(coalesce(...)) CONTAINS` discovery shape on persisted mapped graphs.
-The same `WrappedDiscoveryLatencyBenchmark` source is compiled once at each of three revisions:
+The same real-fixture `AllFixtureWrappedDiscoveryLatencyBenchmark` sources are compiled once at each
+of three revisions:
 
 1. pinned known-good commit `0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6`;
 2. the pull request's current base SHA; and
@@ -154,9 +155,8 @@ candidate checkout only after both files match their pinned SHA-256 values. Once
 contains those controls, all comparable revisions automatically use the base-owned copies. The
 scheduled historical workflow always uses the controls from the current default-branch checkout.
 
-The 17 latency keys are split across nine parallel matrix shards: four for the
-synthetic 1/4/16/64-graph scales, four for pairs of real-fixture query cases,
-and one for the real 36-graph case. Within
+The nine latency keys are split across five parallel matrix shards: four for pairs of real-fixture
+query cases and one for the real 36-graph case. Within
 each shard, known-good anchor, current base, and candidate still run sequentially
 on the same runner, so parallelism does not turn cross-runner variance into a
 performance comparison. A prerequisite job restores or builds the persisted
@@ -164,12 +164,11 @@ fixture graphs once with a 4 GiB heap, using a content-addressed cache key over
 the graph-building/serialization sources, fixture harness, dependency catalog,
 and Gradle build files. Real shards restore that immutable cache instead of
 rebuilding 19 million nodes independently. The final `wrapped-query-latency`
-job fails closed unless all nine shard reports arrive and their union contains
+job fails closed unless all five shard reports arrive and their union contains
 every expected key exactly once.
 
-It measures warm and cold queries on a geometric `graphCount=1/4/16/64` scale on
-deterministic persisted graphs. It also builds every repository benchmark
-fixture (Android, Tika, Hive, and Kotlin Compiler) sequentially on a cache miss,
+It builds every repository benchmark fixture (Android, Tika, Hive, and Kotlin Compiler)
+sequentially on a cache miss,
 then each real shard opens the four
 persisted graphs together, and measures the same query over the heterogeneous
 19,091,048-node graph set. A separate 36-graph benchmark opens those four
@@ -188,8 +187,8 @@ cases. The queries vary caller/callee fields, class/method properties,
 Before timing, known-good, current-base, and candidate executors must produce the
 same SHA-256 digest over complete columns, ordered rows, values, and graph
 provenance for all eight distribution queries plus the 36-graph identity
-coverage query. The comparator separately requires the exact eight synthetic,
-eight four-fixture, and one 36-graph benchmark keys, so a variant cannot silently
+coverage query. The comparator separately requires the exact eight four-fixture
+and one 36-graph benchmark keys, so a variant cannot silently
 disappear from all three revisions.
 
 Each source JAR is built in its own JVM and private `java.io.tmpdir`. After the
@@ -200,26 +199,25 @@ positive exact-identity coverage query but no longer executes a redundant untime
 JMH warmup and measurement iterations remain unchanged.
 
 No row may regress more than 50% against the pinned known-good anchor or more than 15% against the
-current PR base. Synthetic changes below the 0.5 ms absolute noise floor remain informational.
-Missing graph-count or query variants, incompatible units, invalid scores, and missing artifacts
-fail closed. A suspected failure reruns candidate, base, and known-good anchor in reverse order
-before it blocks. The anchor prevents a gradual regression from being normalized across moving
-bases, while the current-base comparison remains sensitive to a new PR-local slowdown.
+current PR base. Synthetic graphs are excluded from all performance comparisons. Missing query
+variants, incompatible units, invalid scores, and missing artifacts fail closed. A suspected failure
+reruns candidate, base, and known-good anchor in reverse order before it blocks. The anchor prevents
+a gradual regression from being normalized across moving bases, while the current-base comparison
+remains sensitive to a new PR-local slowdown.
 
 The expensive proof against the known-bad pre-PR-95 commit
 `44b57562f2b3d0c88882a9002bdc488e05e5d7a7` runs in
 `.github/workflows/benchmark-historical-latency.yml` on a daily schedule and on manual dispatch.
 That workflow preserves the previous exact correctness digest and retained-speedup contract across
-all nine shards, including the 36-real-graph scan, but does not extend pull-request critical-path
+all five real-graph shards, including the 36-real-graph scan, but does not extend pull-request critical-path
 latency.
 
 ## Wrapped-query resource gate
 
-Resource probes run in separate SingleShot JMH classes, so their forced full-GC
-fixtures never enter the latency score. The single synthetic graph is required
-to run with exactly `-Xmx4g`; the 36-graph AllFixture probe runs with exactly
-`-Xmx8g`. The gate checks both the fork argument and the effective maximum heap
-reported from inside the fork.
+Resource probes run in a separate SingleShot JMH class, so their forced full-GC
+fixtures never enter the latency score. Only the real persisted 36-graph AllFixture probe is used,
+with exactly `-Xmx8g`. The gate checks both the fork argument and the effective maximum heap reported
+from inside the fork.
 
 Each resource result must contain finite `gc.alloc.rate.norm`, `gc.count`, and
 `gc.time` profiler metrics plus loaded, peak, post-GC retained, retained-delta,
@@ -346,7 +344,6 @@ Run the two benchmark sources directly:
 ```bash
 ./gradlew :cypher:jmhJar --no-daemon
 ./gradlew :webgraph:largeCorpusTest -Dlarge.corpus.record=true --no-daemon
-./gradlew :webgraph:jmh -Pjmh.filter='WrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='AllFixtureWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.*' --no-daemon
 ./gradlew :webgraph:jmh -Pjmh.filter='.*WrappedDiscoveryResourceBenchmark.*' --no-daemon

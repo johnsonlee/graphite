@@ -18,8 +18,11 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
-  BENCHMARK_REPORT_TRANSITION_SHA256: 0f2c528d45f83a22e1a130c18bd26249ae5ba46a2a82b3e76a4e72710f894529
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  BENCHMARK_REPORT_TRANSITION_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
@@ -129,6 +132,7 @@ jobs:
 
   build-wrapped-query-jmh:
     name: build-wrapped-query-jmh-${{ matrix.revision }}
+    needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -174,14 +178,22 @@ jobs:
         for HARNESS in \
           BenchmarkCorpus.kt \
           AllFixtureBenchmarkGraphPreparation.kt \
-          WrappedDiscoveryLatencyBenchmark.kt \
           AllFixtureWrappedDiscoveryLatencyBenchmark.kt \
           WrappedDiscoveryResourceBenchmark.kt; do
           SOURCE="graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/${HARNESS}"
+          HARNESS_SOURCE="gate/${SOURCE}"
+          if [ "${HARNESS}" = WrappedDiscoveryResourceBenchmark.kt ] && \
+            grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then
+            test "${{ needs.candidate-gate-tests.result }}" = success
+            HARNESS_SOURCE="controls/${SOURCE}"
+            test "$(sha256sum "${HARNESS_SOURCE}" | cut -d ' ' -f 1)" = \
+              "${REAL_ONLY_RESOURCE_HARNESS_SHA256}"
+            if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${HARNESS_SOURCE}"; then exit 1; fi
+          fi
           test ! -L "source/${SOURCE}"
           rm -f -- "source/${SOURCE}"
-          install -m 0644 "gate/${SOURCE}" "source/${SOURCE}"
-          cmp "gate/${SOURCE}" "source/${SOURCE}"
+          install -m 0644 "${HARNESS_SOURCE}" "source/${SOURCE}"
+          cmp "${HARNESS_SOURCE}" "source/${SOURCE}"
         done
 
     - name: Select trusted JMH isolation controls
@@ -1448,28 +1460,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - shard: synthetic-1
-          real: false
-          correctness: false
-          # The sub-millisecond warm path is still tier-compiling after the class-level
-          # two-iteration warmup. Stabilize it before applying the 15% relative gate.
-          parameters: '-p graphCount=1 -wi 5 -i 6'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-4
-          real: false
-          correctness: false
-          parameters: '-p graphCount=4'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-16
-          real: false
-          correctness: false
-          parameters: '-p graphCount=16'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
-        - shard: synthetic-64
-          real: false
-          correctness: false
-          parameters: '-p graphCount=64'
-          filter: 'io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.(coldWrappedCaseInsensitiveDiscovery|wrappedCaseInsensitiveDiscovery)'
         - shard: real-a
           real: true
           correctness: true
@@ -1622,13 +1612,19 @@ jobs:
         SHARD: ${{ matrix.shard }}
       run: |
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-latency-anchor' "${COMPARATOR}"; then
-          # Bootstrap is restricted to the reviewed pre-anchor comparator blob.
-          test "$(sha256sum "${COMPARATOR}" | cut -d ' ' -f 1)" = \
-            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+        POINT_ESTIMATE_POLICY='const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold, true);'
+        if ! grep -Fq "${POINT_ESTIMATE_POLICY}" "${COMPARATOR}"; then
+          # Transition only: the base comparator has the anchor command but still lets
+          # confidence overlap suppress a point-estimate regression. Use the reviewed,
+          # hash-pinned candidate policy only after its contract tests pass.
           test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+            "${LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256}"
           COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
-          grep -q 'compare-latency-anchor' "${COMPARATOR}"
+          grep -Fq "${POINT_ESTIMATE_POLICY}" "${COMPARATOR}"
+          grep -Fq \
+            'const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold, true);' \
+            "${COMPARATOR}"
         fi
         if node "${COMPARATOR}" compare-latency-anchor \
           --anchor "benchmark-results/reference-latency-${SHARD}.json" \
@@ -1707,34 +1703,6 @@ jobs:
         path: candidate-reporting
         persist-credentials: false
 
-    - name: Download synthetic-1 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-1-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-1
-
-    - name: Download synthetic-4 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-4-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-4
-
-    - name: Download synthetic-16 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-16-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-16
-
-    - name: Download synthetic-64 results
-      continue-on-error: true
-      uses: actions/download-artifact@v8
-      with:
-        name: latency-shard-synthetic-64-${{ github.event.pull_request.number }}
-        path: shard-results/synthetic-64
-
     - name: Download real-a results
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -1776,7 +1744,7 @@ jobs:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         mkdir -p benchmark-results
-        for SHARD in synthetic-1 synthetic-4 synthetic-16 synthetic-64 real-a real-b real-c real-d real-36; do
+        for SHARD in real-a real-b real-c real-d real-36; do
           for FILE in "latency-report-${SHARD}.md" "latency-status-${SHARD}.json"; do
             SOURCE="shard-results/${SHARD}/${FILE}"
             if [ -f "${SOURCE}" ] && [ ! -L "${SOURCE}" ]; then
@@ -1785,15 +1753,23 @@ jobs:
           done
         done
         COMBINER=.github/scripts/benchmark-gate.mjs
-        # Bootstrap only: a base predating the anchor command cannot render anchor rows.
+        # Bootstrap only: a base predating the anchor command cannot render anchor rows,
+        # and the first real-only policy revision must not require retired synthetic shards.
         # Candidate execution is allowed only after its comparator contract tests pass;
         # once this workflow is in the base, the base-owned combiner is always selected.
-        if ! grep -q 'compare-latency-anchor' "${COMBINER}"; then
-          test "$(sha256sum "${COMBINER}" | cut -d ' ' -f 1)" = \
-            "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+        if ! grep -q 'compare-latency-anchor' "${COMBINER}" || \
+          grep -q '"synthetic-1"' "${COMBINER}"; then
+          if grep -q '"synthetic-1"' "${COMBINER}"; then
+            test "$(sha256sum candidate-reporting/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+              "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+          else
+            test "$(sha256sum "${COMBINER}" | cut -d ' ' -f 1)" = \
+              "${ANCHOR_BOOTSTRAP_COMPARATOR_SHA256}"
+          fi
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           COMBINER=candidate-reporting/.github/scripts/benchmark-gate.mjs
           grep -q 'compare-latency-anchor' "${COMBINER}"
+          if grep -q '"synthetic-1"' "${COMBINER}"; then exit 1; fi
         fi
         node "${COMBINER}" combine-latency-shards \
           --directory benchmark-results \
@@ -1819,7 +1795,7 @@ jobs:
 
   wrapped-query-resources:
     name: wrapped-query-resources
-    needs: [prepare-latency-fixtures, build-wrapped-query-jmh]
+    needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -1884,7 +1860,7 @@ jobs:
         BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
         CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
         test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
-        FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+        FILTER='io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint'
         GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
           -Dtika.graph.path=${PWD}/fixture-graphs/tika \
           -Dhive.graph.path=${PWD}/fixture-graphs/hive \
@@ -1895,8 +1871,18 @@ jobs:
           -foe true -prof gc -rf json -rff "${PWD}/benchmark-results/candidate-latency-resources.json"
 
     - name: Enforce resource guardrails
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
-        if node base/.github/scripts/benchmark-gate.mjs compare-latency-resources \
+        COMPARATOR=base/.github/scripts/benchmark-gate.mjs
+        if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
+            "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+          if grep -q 'SingleGraphWrappedDiscoveryResourceBenchmark' "${COMPARATOR}"; then exit 1; fi
+        fi
+        if node "${COMPARATOR}" compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
           --candidate benchmark-results/candidate-latency-resources.json \
           --report benchmark-results/initial-latency-resource-report.md \
@@ -1906,7 +1892,7 @@ jobs:
         else
           BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
           CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-          FILTER='io.johnsonlee.graphite.webgraph.(SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint|AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint)'
+          FILTER='io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint'
           GRAPH_JVM_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
             -Dtika.graph.path=${PWD}/fixture-graphs/tika \
             -Dhive.graph.path=${PWD}/fixture-graphs/hive \
@@ -1917,7 +1903,7 @@ jobs:
           java -jar "${BASE_JAR}" "${FILTER}" -jvmArgsAppend "${GRAPH_JVM_ARGS}" \
             -foe true -prof gc -rf json \
             -rff "${PWD}/benchmark-results/base-latency-resources-confirmation.json"
-          node base/.github/scripts/benchmark-gate.mjs confirm-latency-resources \
+          node "${COMPARATOR}" confirm-latency-resources \
             --initial benchmark-results/initial-latency-resource-status.json \
             --base benchmark-results/base-latency-resources-confirmation.json \
             --candidate benchmark-results/candidate-latency-resources-confirmation.json \
@@ -1934,10 +1920,345 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  graph-routing-pressure-evidence:
+    name: graph-routing-pressure-evidence
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
+
+    steps:
+    - name: Checkout exact candidate evidence verifier
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: evidence-candidate
+        persist-credentials: false
+
+    - name: Verify trusted fixture64 graph evidence status
+      uses: actions/github-script@v9
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        TRUSTED_EVIDENCE_ACTOR: johnsonlee
+        EVIDENCE_CONTEXT: graphite/fixture64-graph-routing
+      with:
+        script: |
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const path = require('path');
+          const { pathToFileURL } = require('url');
+          const { materializeGistFiles } = await import(pathToFileURL(path.resolve(
+            'evidence-candidate/.github/scripts/gist-evidence.mjs'
+          )).href);
+          const errors = [];
+          const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: process.env.CANDIDATE_SHA,
+            per_page: 100
+          });
+          const status = statuses.find(item => item.context === process.env.EVIDENCE_CONTEXT);
+          if (!status) errors.push(`Missing ${process.env.EVIDENCE_CONTEXT} status for candidate SHA`);
+          if (status && status.state !== 'success') errors.push(`External evidence state is ${status.state}`);
+          if (status && status.creator?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+            errors.push(`External evidence actor is ${status.creator?.login || 'unknown'}`);
+          }
+          const pattern = /^fixture64 base=([0-9a-f]{12}) cold=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x warm=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x correct=pass$/;
+          const match = status?.description?.match(pattern);
+          if (!match) errors.push('External evidence description has an invalid contract');
+          const expectedBase = process.env.BASE_SHA.slice(0, 12);
+          if (match && match[1] !== expectedBase) {
+            errors.push(`External evidence base ${match[1]} does not match ${expectedBase}`);
+          }
+          const speedups = match ? match.slice(2).map(Number) : [];
+          if (speedups.some(value => !Number.isFinite(value) || value < 10)) {
+            errors.push(`Every cold/warm P50/P95 speedup must be >=10x: ${speedups.join(', ')}`);
+          }
+          const evidenceMatch = status?.target_url?.match(
+            /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
+          );
+          if (!evidenceMatch) errors.push('Status target_url is not an immutable johnsonlee Gist revision');
+          let evidence;
+          if (evidenceMatch) {
+            try {
+              const response = await fetch(
+                `https://api.github.com/gists/${evidenceMatch[1]}/${evidenceMatch[2]}`,
+                { headers: { accept: 'application/vnd.github+json' } }
+              );
+              if (!response.ok) throw new Error(`public Gist API returned HTTP ${response.status}`);
+              evidence = await response.json();
+              if (evidence.owner?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+                errors.push(`Evidence owner is ${evidence.owner?.login || 'unknown'}`);
+              }
+            } catch (error) {
+              errors.push(`Unable to load immutable Gist evidence: ${error.message}`);
+            }
+          }
+          const directory = 'benchmark-results/evidence';
+          let files = {};
+          try {
+            files = await materializeGistFiles({
+              files: evidence?.files || {},
+              gistId: evidenceMatch?.[1],
+              owner: process.env.TRUSTED_EVIDENCE_ACTOR,
+              directory,
+              request: async options => {
+                const response = await fetch(options.url, { headers: options.headers });
+                if (!response.ok) throw new Error(`public Gist raw URL returned HTTP ${response.status}`);
+                return { data: await response.text() };
+              }
+            });
+          } catch (error) {
+            errors.push(`Unable to materialize immutable Gist evidence: ${error.message}`);
+          }
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(path.join(directory, 'evidence-manifest.json'), 'utf8'));
+          } catch (error) {
+            errors.push(`Evidence manifest is invalid: ${error.message}`);
+          }
+          const requiredFiles = [
+            'provenance.json', 'graphs.tsv', 'fixture-provenance.tsv',
+            'fixture-reproducibility.json',
+            'base-single-source-reference.json', 'base-single-source-reference.tsv',
+            'base-single-source-reference.manifest',
+            'base-single-source-oracle.manifest',
+            ...['cold', 'warm'].flatMap(state => [
+              `base-graph-routing-${state}.json`, `base-graph-routing-${state}.tsv`,
+              `base-graph-routing-${state}.correctness`,
+              `candidate-graph-routing-${state}.json`, `candidate-graph-routing-${state}.tsv`,
+              `candidate-graph-routing-${state}.correctness`,
+              `graph-routing-${state}-report.md`, `graph-routing-${state}-status.json`
+            ])
+          ];
+          if (manifest) {
+            if (manifest.schema !== 'graphite-fixture64-evidence-v4' ||
+                manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
+                manifest.baseSha !== process.env.BASE_SHA ||
+                manifest.candidateSha !== process.env.CANDIDATE_SHA ||
+                manifest.statusContext !== process.env.EVIDENCE_CONTEXT ||
+                manifest.description !== status?.description) {
+              errors.push('Evidence manifest identity does not match the PR status');
+            }
+            for (const name of requiredFiles) {
+              const content = files[name];
+              const expectedHash = manifest.files?.[name];
+              const actualHash = typeof content === 'string'
+                ? crypto.createHash('sha256').update(content).digest('hex')
+                : null;
+              if (!/^[0-9a-f]{64}$/.test(expectedHash || '') || actualHash !== expectedHash) {
+                errors.push(`Evidence digest mismatch for ${name}`);
+              }
+            }
+          }
+          try {
+            const provenance = JSON.parse(fs.readFileSync(path.join(directory, 'provenance.json'), 'utf8'));
+            if (provenance.baseSha !== process.env.BASE_SHA ||
+                provenance.candidateSha !== process.env.CANDIDATE_SHA ||
+                provenance.repository !== `${context.repo.owner}/${context.repo.repo}` ||
+                provenance.oracleSource !== 'base-single-source') {
+              errors.push('Evidence provenance identity is invalid');
+            }
+            const evidenceSha256 = name => crypto.createHash('sha256')
+              .update(fs.readFileSync(path.join(directory, name))).digest('hex');
+            for (const [field, name] of [
+              ['manifestSha256', 'graphs.tsv'],
+              ['fixtureProvenanceSha256', 'fixture-provenance.tsv'],
+              ['oracleSha256', 'base-single-source-oracle.manifest']
+            ]) {
+              if (provenance[field] !== evidenceSha256(name)) {
+                errors.push(`Evidence provenance ${field} does not match ${name}`);
+              }
+            }
+            const reproducibility = JSON.parse(fs.readFileSync(
+              path.join(directory, 'fixture-reproducibility.json'), 'utf8'
+            ));
+            if (!reproducibility.passed ||
+                reproducibility.firstProvenanceSha256 !== reproducibility.repeatedProvenanceSha256 ||
+                reproducibility.firstManifestSemanticSha256 !==
+                  reproducibility.repeatedManifestSemanticSha256) {
+              errors.push('Repeated fixture-JAR preparation is not reproducible');
+            }
+            for (const [stateIndex, state] of ['cold', 'warm'].entries()) {
+              const result = JSON.parse(fs.readFileSync(
+                path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
+              ));
+              if (!result.passed || result.gateP50Speedup < 10 || result.gateP95Speedup < 10) {
+                errors.push(`${state} comparator status does not pass the 10x gate`);
+              }
+              const reported = speedups.slice(stateIndex * 2, stateIndex * 2 + 2);
+              const measured = [result.gateP50Speedup, result.gateP95Speedup]
+                .map(value => Number(Number(value).toFixed(2)));
+              if (reported.length !== 2 || reported.some((value, index) => value !== measured[index])) {
+                errors.push(`${state} commit-status speedups ${reported.join('/')} do not equal ` +
+                  `the recomputed evidence ${measured.join('/')}`);
+              }
+              const correctness = fs.readFileSync(
+                path.join(directory, `candidate-graph-routing-${state}.correctness`), 'utf8'
+              );
+              const oracle = fs.readFileSync(
+                path.join(directory, 'base-single-source-oracle.manifest'), 'utf8'
+              );
+              if (correctness !== oracle) errors.push(`${state} candidate correctness differs from the oracle`);
+            }
+          } catch (error) {
+            errors.push(`Evidence payload is invalid: ${error.message}`);
+          }
+          const passed = errors.length === 0;
+          const report = [
+            '##### 64 fixture-derived graph routing pressure',
+            '',
+            passed ? '**PASS**' : '**FAIL**',
+            '',
+            status?.description || 'No trusted external evidence status was found.',
+            '',
+            ...(errors.length ? ['', 'Errors:', ...errors.map(error => `- ${error}`)] : [])
+          ].join('\n') + '\n';
+          fs.mkdirSync('benchmark-results', { recursive: true });
+          fs.writeFileSync('benchmark-results/graph-routing-report.md', report);
+          fs.writeFileSync('benchmark-results/graph-routing-status.json', JSON.stringify({
+            passed,
+            errors,
+            baseSha: process.env.BASE_SHA,
+            candidateSha: process.env.CANDIDATE_SHA,
+            evidenceActor: status?.creator?.login || null,
+            coldP50Speedup: speedups[0] ?? null,
+            coldP95Speedup: speedups[1] ?? null,
+            warmP50Speedup: speedups[2] ?? null,
+            warmP95Speedup: speedups[3] ?? null
+          }, null, 2) + '\n');
+
+    - name: Checkout exact base build inputs
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: evidence-base
+        persist-credentials: false
+
+    - name: Independently recompute fixture64 comparisons
+      run: |
+        jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
+        PROVENANCE=benchmark-results/evidence/provenance.json
+        sha256_file() { sha256sum "$1" | cut -d' ' -f1; }
+        assert_provenance_hash() {
+          test "$(sha256_file "$2")" = "$(jq -r ".$1" "${PROVENANCE}")"
+        }
+        assert_provenance_hash harnessSha256 \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        assert_provenance_hash correctnessManifestSha256 \
+          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+        assert_provenance_hash fixtureVerifierSha256 \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
+        assert_provenance_hash comparatorSha256 evidence-candidate/.github/scripts/benchmark-gate.mjs
+        assert_provenance_hash scriptSha256 evidence-candidate/.github/scripts/run-real64-graph-routing.sh
+        assert_provenance_hash reproducibilityScriptSha256 \
+          evidence-candidate/.github/scripts/test-fixture64-reproducibility.sh
+        assert_provenance_hash zipHasherSha256 evidence-candidate/.github/scripts/canonical-zip-sha256.py
+        assert_provenance_hash gistEvidenceSha256 evidence-candidate/.github/scripts/gist-evidence.mjs
+        assert_provenance_hash fixturePreparationScriptSha256 \
+          evidence-candidate/.github/scripts/prepare-fixture64-graphs.sh
+        assert_provenance_hash workloadVerifierSha256 \
+          evidence-candidate/.github/scripts/verify-fixture64-workload.sh
+        assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
+        assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
+        assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
+        NORMALIZED_PROVENANCE_SHA=$(cut -f1-16 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
+        NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
+          benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
+        RECEIPT=benchmark-results/evidence/fixture-reproducibility.json
+        test "$(jq -r .firstProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
+        test "$(jq -r .repeatedProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
+        test "$(jq -r .firstManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        test "$(jq -r .repeatedManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        cp \
+          evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+          evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+        cp \
+          evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
+          evidence-base/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
+        EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' \
+          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+          graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt | sort)
+        test "$(git -C evidence-base diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
+        evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
+        evidence-candidate/gradlew -p evidence-candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+        BASE_JAR=$(find evidence-base/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        CANDIDATE_JAR=$(find evidence-candidate/graphite-webgraph/build/libs -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        python3 -c 'import sys; assert sys.version_info >= (3, 12), sys.version'
+        test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${BASE_JAR}")" = \
+          "$(jq -r .baseJarContentSha256 "${PROVENANCE}")"
+        test "$(python3 evidence-candidate/.github/scripts/canonical-zip-sha256.py "${CANDIDATE_JAR}")" = \
+          "$(jq -r .candidateJarContentSha256 "${PROVENANCE}")"
+        FIXTURE_DIR=evidence-candidate/graphite-webgraph/build/benchmark-fixtures
+        for FIXTURE_JAR in "${FIXTURE_DIR}"/*.jar; do
+          FIXTURE_NAME=$(basename "${FIXTURE_JAR}")
+          FIXTURE_SHA=$(sha256_file "${FIXTURE_JAR}")
+          test "$(awk -F '\t' -v name="${FIXTURE_NAME}" -v sha="${FIXTURE_SHA}" \
+            'NR > 1 && $4 == name && $5 == sha { count++ } END { print count + 0 }' \
+            benchmark-results/evidence/fixture-provenance.tsv)" -eq 16
+        done
+        RECOMPUTED_FIXTURE64=${RUNNER_TEMP}/recomputed-fixture64
+        evidence-candidate/.github/scripts/prepare-fixture64-graphs.sh \
+          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" "${RECOMPUTED_FIXTURE64}"
+        evidence-candidate/.github/scripts/verify-fixture64-workload.sh \
+          benchmark-results/evidence "${RECOMPUTED_FIXTURE64}" \
+          benchmark-results/evidence/base-single-source-reference.tsv \
+          benchmark-results/evidence/base-single-source-reference.manifest \
+          benchmark-results/evidence/base-single-source-oracle.manifest \
+          benchmark-results/evidence/base-graph-routing-cold.tsv \
+          benchmark-results/evidence/base-graph-routing-cold.correctness \
+          benchmark-results/evidence/candidate-graph-routing-cold.tsv \
+          benchmark-results/evidence/candidate-graph-routing-cold.correctness \
+          benchmark-results/evidence/base-graph-routing-warm.tsv \
+          benchmark-results/evidence/base-graph-routing-warm.correctness \
+          benchmark-results/evidence/candidate-graph-routing-warm.tsv \
+          benchmark-results/evidence/candidate-graph-routing-warm.correctness
+        node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
+          --references benchmark-results/evidence/base-single-source-reference.manifest \
+          --oracle benchmark-results/recomputed-base-single-source-oracle.manifest
+        cmp benchmark-results/recomputed-base-single-source-oracle.manifest \
+          benchmark-results/evidence/base-single-source-oracle.manifest
+        for STATE in cold warm; do
+          if [ "${STATE}" = cold ]; then
+            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-warm.correctness
+          else
+            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-cold.correctness
+          fi
+          node evidence-candidate/.github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
+            --base "benchmark-results/evidence/base-graph-routing-${STATE}.json" \
+            --candidate "benchmark-results/evidence/candidate-graph-routing-${STATE}.json" \
+            --base-observations "benchmark-results/evidence/base-graph-routing-${STATE}.tsv" \
+            --candidate-observations "benchmark-results/evidence/candidate-graph-routing-${STATE}.tsv" \
+            --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
+            --candidate-correctness benchmark-results/evidence/base-single-source-oracle.manifest \
+            --minimum-speedup 10 \
+            --report "benchmark-results/recomputed-${STATE}-report.md" \
+            --status "benchmark-results/recomputed-${STATE}-status.json"
+          cmp "benchmark-results/recomputed-${STATE}-report.md" \
+            "benchmark-results/evidence/graph-routing-${STATE}-report.md"
+          cmp "benchmark-results/recomputed-${STATE}-status.json" \
+            "benchmark-results/evidence/graph-routing-${STATE}-status.json"
+        done
+
+    - name: Upload graph-routing evidence result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-graph-routing-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce graph-routing evidence
+      if: always()
+      run: jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence]
     runs-on: ubuntu-latest
 
     steps:
@@ -1978,7 +2299,15 @@ jobs:
         BENCHMARK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         mkdir -p benchmark-results
-        node .github/scripts/benchmark-gate.mjs aggregate \
+        COMPARATOR=.github/scripts/benchmark-gate.mjs
+        if ! grep -q '"graph-routing-pressure"' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
+          grep -q '"graph-routing-pressure"' "${COMPARATOR}"
+        fi
+        node "${COMPARATOR}" aggregate \
           --directory benchmark-results \
           --base-sha "${BASE_SHA}" \
           --candidate-sha "${CANDIDATE_SHA}" \
@@ -2039,6 +2368,7 @@ jobs:
         LARGE_CORPUS_JOB: ${{ needs.large-corpus.result }}
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
+        GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
@@ -2047,7 +2377,8 @@ jobs:
           [ "${BUDGETED_COLLECTION_JOB}" != success ] || \
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ]; then
+          [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
+          [ "${GRAPH_ROUTING_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi

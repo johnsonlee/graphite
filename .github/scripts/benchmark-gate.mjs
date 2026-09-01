@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
@@ -19,7 +19,8 @@ export const BENCHMARK_COVERAGE_DOMAINS = [
             "method-level",
             "budgeted-collection",
             "budgeted-mapped-string",
-            "wrapped-query-latency"
+            "wrapped-query-latency",
+            "graph-routing-pressure"
         ],
         missing: ["cross-graph-dataflow-latency", "storage-load-stage-latency"]
     },
@@ -108,20 +109,18 @@ export const BENCHMARK_COMPONENTS = [
         status: "latency-resource-status.json",
         coverage: "partial",
         gap: "Exact point probes only; no long-duration leak or soak proof."
+    },
+    {
+        name: "graph-routing-pressure",
+        report: "graph-routing-report.md",
+        status: "graph-routing-status.json",
+        coverage: "complete",
+        gap: "No gate-specific gap identified."
     }
 ];
 
 const MIB = 1024 * 1024;
-const SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS = 0.5;
 export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=4]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=16]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.coldWrappedCaseInsensitiveDiscovery[graphCount=64]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=1]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=4]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=16]",
-    "io.johnsonlee.graphite.webgraph.WrappedDiscoveryLatencyBenchmark.wrappedCaseInsensitiveDiscovery[graphCount=64]",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.broadlyDistributedClassPrefixCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.denseDistributedMethodContainsCaseInsensitiveDiscovery",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryLatencyBenchmark.earlyGraphClassPrefixCaseInsensitiveDiscovery",
@@ -133,17 +132,14 @@ export const LATENCY_EXPECTED_BENCHMARK_KEYS = [
     "io.johnsonlee.graphite.webgraph.RealThirtySixGraphWrappedDiscoveryLatencyBenchmark.zeroHitBroadContainsAcrossThirtySixRealGraphs"
 ];
 export const LATENCY_EXPECTED_SHARDS = [
-    "synthetic-1", "synthetic-4", "synthetic-16", "synthetic-64",
     "real-a", "real-b", "real-c", "real-d", "real-36"
 ];
 export const LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS = [
-    "io.johnsonlee.graphite.webgraph.SingleGraphWrappedDiscoveryResourceBenchmark.singleGraphFootprint",
     "io.johnsonlee.graphite.webgraph.AllFixtureWrappedDiscoveryResourceBenchmark.allFixtureThirtySixGraphFootprint"
 ];
 const GIB = 1024 * MIB;
 const LATENCY_RESOURCE_PROFILES = new Map([
-    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 4 * GIB }],
-    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[1], { maxHeapBytes: 8 * GIB }]
+    [LATENCY_RESOURCE_EXPECTED_BENCHMARK_KEYS[0], { maxHeapBytes: 8 * GIB }]
 ]);
 const LATENCY_RESOURCE_METRICS = [
     { key: "gc.alloc.rate.norm", label: "allocation", threshold: 15, minimum: 4_096 },
@@ -537,11 +533,6 @@ export function compareLatencyBaseline(
         const improvementSeparated = fixedBounds !== null && candidateBounds !== null &&
             confidenceSeparates(candidateBounds, fixedBounds, true);
         const improvementBlocked = speedup < requiredSpeedup || !improvementSeparated;
-        const syntheticScale = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
-        const absoluteRegression = candidateScore - baseRow.baseScore;
-        const belowAbsoluteNoiseFloor = syntheticScale && baseRow.unit === "ms/op" &&
-            absoluteRegression < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
-        const regressionBlocked = baseRow.blocked && !belowAbsoluteNoiseFloor;
         rows.push({
             ...baseRow,
             fixedScore,
@@ -549,10 +540,7 @@ export function compareLatencyBaseline(
             minimumSpeedup: requiredSpeedup,
             improvementSeparated,
             improvementBlocked,
-            absoluteRegression,
-            absoluteNoiseFloor: syntheticScale ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
-            belowAbsoluteNoiseFloor,
-            blocked: regressionBlocked || improvementBlocked
+            blocked: baseRow.blocked || improvementBlocked
         });
     }
 
@@ -564,6 +552,626 @@ export function compareLatencyBaseline(
     };
 }
 
+function parsePressureObservations(contents, revision, errors) {
+    const lines = contents.trim().split(/\r?\n/);
+    if (lines.length < 2) {
+        errors.push(`${revision}: pressure observations are empty`);
+        return [];
+    }
+    const headers = lines[0].split("\t");
+    const required = [
+        "id", "family", "shape", "selectivity", "targetGraphId", "workloadIdentity", "outcome", "rowCount",
+        "responseBytes", "digest", "latencyNanos"
+    ];
+    for (const header of required) {
+        if (!headers.includes(header)) errors.push(`${revision}: pressure observations missing ${header}`);
+    }
+    const rows = lines.slice(1).map((line) => {
+        const values = line.split("\t");
+        return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+    }).filter((row) => row.family === "graph-id" || row.family === "graph-parameter");
+    const seen = new Set();
+    for (const row of rows) {
+        if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-routing observation ${row.id}`);
+        seen.add(row.id);
+        if (row.targetGraphId === "" || !/^[0-9a-f]{64}$/.test(row.workloadIdentity ?? "")) {
+            errors.push(`${revision}/${row.id}: target graph and workload identity are required`);
+        }
+    }
+    return rows;
+}
+
+const GRAPH_ROUTING_SELECTIVITIES = ["zero", "targeted", "dense"];
+const GRAPH_ROUTING_ORACLE_SHAPES = [
+    {
+        shape: "graph-id-property-wrapped-contains",
+        operator: "graph-id-equals-and-wrapped-contains",
+        boundary: "graph-routing"
+    },
+    {
+        shape: "graph-id-function-wrapped-contains",
+        operator: "graph-id-function-equals-and-wrapped-contains",
+        boundary: "graph-routing"
+    },
+    {
+        shape: "graph-id-parameter-wrapped-contains",
+        operator: "graph-id-parameter-equals-and-wrapped-contains",
+        boundary: "parameters"
+    }
+];
+const GRAPH_PARAMETER_SHAPE = "api-graph-parameter-wrapped-contains";
+const GRAPH_PARAMETER_OPERATOR = "request-graph-selection-and-wrapped-contains";
+const GRAPH_PARAMETER_BOUNDARY = "api-graph-parameter";
+
+function parseCorrectnessRecords(contents, source, errors) {
+    const rows = [];
+    const seen = new Set();
+    for (const [index, rawLine] of contents.split(/\r?\n/).entries()) {
+        const line = rawLine.trim();
+        if (line.length === 0 || line.startsWith("#")) continue;
+        const fields = line.split("|");
+        if (fields.length !== 14) {
+            errors.push(`${source}:${index + 1}: expected 14 correctness fields`);
+            continue;
+        }
+        const [id, family, shape, selectivity, operator, boundary, projection,
+            targetGraphId, workloadIdentity, limitText, outcome, rowCountText, responseBytesText, digest] = fields;
+        const limit = finiteNumber(limitText);
+        const rowCount = finiteNumber(rowCountText);
+        const responseBytes = finiteNumber(responseBytesText);
+        if (seen.has(id)) errors.push(`${source}: duplicate correctness id ${id}`);
+        seen.add(id);
+        if ([id, family, shape, selectivity, operator, boundary, projection].some(value => value === "")) {
+            errors.push(`${source}:${index + 1}: blank correctness identity field`);
+        }
+        if (limit === null || rowCount === null || responseBytes === null ||
+            !Number.isInteger(limit) || !Number.isInteger(rowCount) || !Number.isInteger(responseBytes) ||
+            limit < 0 || rowCount < 0 || responseBytes < 0
+        ) {
+            errors.push(`${source}:${index + 1}: invalid correctness numeric field`);
+        }
+        if (outcome !== "success") errors.push(`${source}:${id}: outcome=${outcome}; expected success`);
+        if (!/^[0-9a-f]{64}$/.test(digest)) errors.push(`${source}:${id}: invalid SHA-256 digest`);
+        if (targetGraphId === "" || !/^[0-9a-f]{64}$/.test(workloadIdentity)) {
+            errors.push(`${source}:${id}: target graph and workload identity are required`);
+        }
+        rows.push({
+            id, family, shape, selectivity, operator, boundary, projection,
+            targetGraphId, workloadIdentity, limit, outcome, rowCount, responseBytes, digest
+        });
+    }
+    if (rows.length === 0) errors.push(`${source}: correctness manifest is empty`);
+    return rows;
+}
+
+function encodeCorrectnessRecord(record) {
+    return [
+        record.id, record.family, record.shape, record.selectivity, record.operator,
+        record.boundary, record.projection, record.targetGraphId, record.workloadIdentity,
+        record.limit, record.outcome, record.rowCount,
+        record.responseBytes, record.digest
+    ].join("|");
+}
+
+export function deriveGraphRoutingOracle(referenceContents) {
+    const errors = [];
+    const references = parseCorrectnessRecords(referenceContents, "base-single-source", errors);
+    const bySlot = new Map();
+    for (const reference of references) {
+        const match = reference.id.match(
+            /^api-graph-parameter-wrapped-contains-target-(\d{2})-(zero|targeted|dense)$/
+        );
+        if (match === null) {
+            errors.push(`base-single-source: unexpected reference id ${reference.id}`);
+            continue;
+        }
+        const targetIndex = Number(match[1]);
+        const selectivity = match[2];
+        if (targetIndex < 0 || targetIndex >= 64 || reference.family !== "graph-parameter" ||
+            reference.shape !== GRAPH_PARAMETER_SHAPE || reference.selectivity !== selectivity ||
+            reference.operator !== GRAPH_PARAMETER_OPERATOR || reference.boundary !== GRAPH_PARAMETER_BOUNDARY ||
+            reference.projection !== "properties" || reference.limit !== 200
+        ) {
+            errors.push(`base-single-source: invalid identity for ${reference.id}`);
+        }
+        const validRows = selectivity === "zero" ? reference.rowCount === 0 :
+            selectivity === "targeted" ? reference.rowCount >= 1 && reference.rowCount < 200 :
+                reference.rowCount === 200;
+        if (!validRows) {
+            errors.push(`base-single-source: ${reference.id} rowCount=${reference.rowCount} ` +
+                "does not satisfy zero=0, targeted=1..199, dense=200");
+        }
+        const slot = `${targetIndex}\u0000${selectivity}`;
+        if (bySlot.has(slot)) errors.push(`base-single-source: duplicate target/selectivity ${slot}`);
+        bySlot.set(slot, reference);
+    }
+    if (references.length !== 192 || bySlot.size !== 192) {
+        errors.push(`base-single-source: expected 64 targets x 3 selectivities, found ` +
+            `${references.length} records and ${bySlot.size} slots`);
+    }
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+            if (!bySlot.has(`${targetIndex}\u0000${selectivity}`)) {
+                errors.push(`base-single-source: missing target-${String(targetIndex).padStart(2, "0")}-${selectivity}`);
+            }
+        }
+    }
+    if (errors.length > 0) return { passed: false, errors, records: [], oracle: "" };
+
+    const records = [];
+    for (const identity of GRAPH_ROUTING_ORACLE_SHAPES) {
+        for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+            for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+                const reference = bySlot.get(`${targetIndex}\u0000${selectivity}`);
+                records.push({
+                    ...reference,
+                    id: `${identity.shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                    family: "graph-id",
+                    shape: identity.shape,
+                    operator: identity.operator,
+                    boundary: identity.boundary
+                });
+            }
+        }
+    }
+    for (let targetIndex = 0; targetIndex < 64; targetIndex++) {
+        for (const selectivity of GRAPH_ROUTING_SELECTIVITIES) {
+            records.push(bySlot.get(`${targetIndex}\u0000${selectivity}`));
+        }
+    }
+    return {
+        passed: true,
+        errors: [],
+        records,
+        oracle: `${records.map(encodeCorrectnessRecord).join("\n")}\n`
+    };
+}
+
+function pressureMetric(result, name) {
+    return finiteNumber(result?.secondaryMetrics?.[name]?.score);
+}
+
+function pressurePercentile(values, fraction) {
+    const sorted = [...values].sort((left, right) => left - right);
+    return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)];
+}
+
+export function compareGraphIdPressure(
+    baseResults,
+    candidateResults,
+    baseObservations,
+    candidateObservations,
+    baseCorrectnessContents,
+    candidateCorrectnessContents,
+    minimumSpeedup = 10
+) {
+    const errors = [];
+    const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
+    const selectResult = (results, revision) => {
+        const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
+            result.params?.graphCount === "64" && result.params?.coverageFamily === "graph-routing");
+        if (matches.length !== 1) {
+            errors.push(`${revision}: expected exactly one 64-graph graph-routing pressure result`);
+            return null;
+        }
+        const result = matches[0];
+        for (const [metric, expected] of [
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 768],
+            ["successCount", 768], ["timeoutCount", 0], ["failureCount", 0],
+            ["graphIdTargetCount", 64], ["graphParameterTargetCount", 64],
+            ["coverageShapeCount", 4], ["coverageFamilyCount", 2], ["coverageSelectivityCount", 3]
+        ]) {
+            const actual = pressureMetric(result, metric);
+            if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
+        }
+        return result;
+    };
+    const baseResult = selectResult(baseResults, "base");
+    const candidateResult = selectResult(candidateResults, "candidate");
+    const baseIndexState = baseResult?.params?.indexState;
+    const candidateIndexState = candidateResult?.params?.indexState;
+    if (!new Set(["cold", "warm"]).has(baseIndexState)) {
+        errors.push(`base: invalid graph-routing indexState=${baseIndexState}`);
+    }
+    if (candidateIndexState !== baseIndexState) {
+        errors.push(`candidate: indexState=${candidateIndexState}; expected ${baseIndexState}`);
+    }
+    const resourceMetricNames = [
+        "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
+        "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
+        "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
+        "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
+        "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
+        "callSiteScanPeakActiveWorkers"
+    ];
+    const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
+        const value = pressureMetric(result, name);
+        if (value === null || value < 0) errors.push(`${revision}: ${name} requires a non-negative finite value`);
+        return [name, value ?? 0];
+    }));
+    const baseResources = resourceSnapshot(baseResult, "base");
+    const candidateResources = resourceSnapshot(candidateResult, "candidate");
+    if (candidateIndexState === "cold") {
+        if (candidateResources.callSiteParallelScanCount !== 64 ||
+            candidateResources.callSiteParallelScanGraphCount !== 64
+        ) {
+            errors.push("candidate: cold selected-graph workload must execute exactly one intra-graph " +
+                "parallel scan on each graph; " +
+                `scans=${candidateResources.callSiteParallelScanCount}, ` +
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
+        }
+        if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
+            errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
+        }
+        if (candidateResources.callSiteStringIndexLookupCount !== 704 ||
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== 11 ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 11
+        ) {
+            errors.push("candidate: cold selected-graph workload must reuse the retained index for the " +
+                "remaining 11 queries on each graph; " +
+                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
+                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
+                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
+        }
+    } else if (candidateIndexState === "warm") {
+        if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
+            candidateResources.callSiteTrigramIndexedGraphs !== 64
+        ) {
+            errors.push("candidate: warm selected-graph workload must execute the retained trigram index path " +
+                `for all 64 graphs; admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
+                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
+        }
+        if (candidateResources.callSiteParallelScanCount !== 0 ||
+            candidateResources.callSiteParallelScanGraphCount !== 0
+        ) {
+            errors.push("candidate: warm selected-graph workload must not fall back to raw scans; " +
+                `scans=${candidateResources.callSiteParallelScanCount}, ` +
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
+        }
+        if (candidateResources.callSiteStringIndexLookupCount !== 768 ||
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== 12 ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 12
+        ) {
+            errors.push("candidate: warm selected-graph workload must execute exactly one retained-index " +
+                "lookup per query across all 64 graphs; " +
+                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
+                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
+                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
+        }
+    }
+
+    const baseRows = parsePressureObservations(baseObservations, "base", errors);
+    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const bindObservationsToCorrectness = (observations, contents, revision) => {
+        if (typeof contents !== "string") {
+            errors.push(`${revision}: independent correctness evidence is required`);
+            return;
+        }
+        const correctness = parseCorrectnessRecords(contents, `${revision}-correctness`, errors);
+        const correctnessById = new Map(correctness.map((record) => [record.id, record]));
+        if (correctness.length !== 768 || correctnessById.size !== 768) {
+            errors.push(`${revision}: expected 768 independent correctness records, found ${correctness.length}`);
+        }
+        const observationIds = new Set(observations.map((row) => row.id));
+        for (const row of observations) {
+            const canonicalId = `${row.shape}-target-`;
+            const match = row.id.match(/-target-(\d{2})-(zero|targeted|dense)$/);
+            if (match === null || row.id !== `${canonicalId}${match[1]}-${row.selectivity}` ||
+                match[2] !== row.selectivity
+            ) {
+                errors.push(`${revision}/${row.id}: observation ID is not canonical`);
+                continue;
+            }
+            const expected = correctnessById.get(row.id);
+            if (expected === undefined) {
+                errors.push(`${revision}/${row.id}: missing independent correctness record`);
+                continue;
+            }
+            for (const field of [
+                "family", "shape", "selectivity", "operator", "boundary", "projection",
+                "targetGraphId", "workloadIdentity", "limit", "outcome", "rowCount",
+                "responseBytes", "digest"
+            ]) {
+                if (String(row[field]) !== String(expected[field])) {
+                    errors.push(`${revision}/${row.id}: ${field} differs from independent correctness record`);
+                }
+            }
+        }
+        for (const id of correctnessById.keys()) {
+            if (!observationIds.has(id)) {
+                errors.push(`${revision}/${id}: correctness record has no latency observation`);
+            }
+        }
+    };
+    bindObservationsToCorrectness(baseRows, baseCorrectnessContents, "base");
+    bindObservationsToCorrectness(candidateRows, candidateCorrectnessContents, "candidate");
+    const baseGraphIdRows = baseRows.filter((row) => row.family === "graph-id");
+    const candidateGraphIdRows = candidateRows.filter((row) => row.family === "graph-id");
+    const baseGraphParameterRows = baseRows.filter((row) => row.family === "graph-parameter");
+    const candidateGraphParameterRows = candidateRows.filter((row) => row.family === "graph-parameter");
+    const baseById = new Map(baseGraphIdRows.map((row) => [row.id, row]));
+    const candidateById = new Map(candidateGraphIdRows.map((row) => [row.id, row]));
+    const ids = [...new Set([...baseById.keys(), ...candidateById.keys()])].sort();
+    if (ids.length !== 576) errors.push(`expected 576 graph-id observations, found ${ids.length}`);
+    const rows = [];
+    for (const id of ids) {
+        const base = baseById.get(id);
+        const candidate = candidateById.get(id);
+        if (base === undefined || candidate === undefined) {
+            errors.push(`${id}: missing from base or candidate observations`);
+            continue;
+        }
+        if (base.targetGraphId !== candidate.targetGraphId) {
+            errors.push(`${id}: target graph id differs between base and candidate`);
+            continue;
+        }
+        if (base.workloadIdentity !== candidate.workloadIdentity) {
+            errors.push(`${id}: workload identity differs between base and candidate`);
+            continue;
+        }
+        const baseLatencyNanos = finiteNumber(base.latencyNanos);
+        const candidateLatencyNanos = finiteNumber(candidate.latencyNanos);
+        if (base.outcome !== "success" || candidate.outcome !== "success" ||
+            baseLatencyNanos === null || candidateLatencyNanos === null ||
+            baseLatencyNanos <= 0 || candidateLatencyNanos <= 0
+        ) {
+            errors.push(`${id}: both revisions require successful positive latency samples`);
+            continue;
+        }
+        rows.push({
+            id,
+            targetGraphId: candidate.targetGraphId,
+            workloadIdentity: candidate.workloadIdentity,
+            baseLatencyNanos,
+            candidateLatencyNanos,
+            speedup: baseLatencyNanos / candidateLatencyNanos
+        });
+    }
+    const groupByTarget = (observations) => observations.reduce((grouped, row) => {
+        const rowsForTarget = grouped.get(row.targetGraphId) ?? [];
+        rowsForTarget.push(row);
+        grouped.set(row.targetGraphId, rowsForTarget);
+        return grouped;
+    }, new Map());
+    const baseTargetCounts = groupByTarget(baseGraphIdRows);
+    const candidateTargetCounts = groupByTarget(candidateGraphIdRows);
+    const expectedShapes = new Set([
+        "graph-id-property-wrapped-contains",
+        "graph-id-function-wrapped-contains",
+        "graph-id-parameter-wrapped-contains"
+    ]);
+    const targetIds = [...new Set([...baseTargetCounts.keys(), ...candidateTargetCounts.keys()])];
+    if (targetIds.length !== 64 || targetIds.includes("")) {
+        errors.push(`expected 64 non-empty target graph ids, found ${targetIds.filter(Boolean).length}`);
+    }
+    for (const targetId of targetIds) {
+        const baseTargetRows = baseTargetCounts.get(targetId) ?? [];
+        const candidateTargetRows = candidateTargetCounts.get(targetId) ?? [];
+        if (baseTargetRows.length !== 9 || candidateTargetRows.length !== 9) {
+            errors.push(`${targetId}: expected three selectivities for all three graph-id spellings`);
+            continue;
+        }
+        const workloadIdentities = new Set([...baseTargetRows, ...candidateTargetRows]
+            .map((row) => row.workloadIdentity));
+        if (workloadIdentities.size !== 1) {
+            errors.push(`${targetId}: expected one stable workload identity`);
+        }
+        for (const shape of expectedShapes) {
+            const baseSelectivities = new Set(baseTargetRows.filter((row) => row.shape === shape)
+                .map((row) => row.selectivity));
+            const candidateSelectivities = new Set(candidateTargetRows.filter((row) => row.shape === shape)
+                .map((row) => row.selectivity));
+            if (baseSelectivities.size !== 3 || candidateSelectivities.size !== 3 ||
+                ["zero", "targeted", "dense"].some((selectivity) =>
+                    !baseSelectivities.has(selectivity) || !candidateSelectivities.has(selectivity))) {
+                errors.push(`${targetId}: ${shape} zero/targeted/dense coverage is incomplete`);
+            }
+        }
+    }
+    const graphParameterShape = "api-graph-parameter-wrapped-contains";
+    const graphParameterByTarget = (observations, revision) => {
+        const result = new Map();
+        for (const row of observations) {
+            if (row.shape !== graphParameterShape) {
+                errors.push(`${revision}/${row.id}: unexpected graph-parameter shape ${row.shape}`);
+            }
+            const key = `${row.targetGraphId}\u0000${row.selectivity}`;
+            if (result.has(key)) {
+                errors.push(`${revision}: duplicate graph-parameter target/selectivity ` +
+                    `${row.targetGraphId}/${row.selectivity}`);
+            }
+            result.set(key, row);
+        }
+        const targets = new Set(observations.map((row) => row.targetGraphId).filter(Boolean));
+        if (result.size !== 192 || targets.size !== 64) {
+            errors.push(`${revision}: expected 64 graph-parameter targets x 3 selectivities, found ` +
+                `${targets.size} targets and ${result.size} rows`);
+        }
+        return result;
+    };
+    const baseGraphParameterByTarget = graphParameterByTarget(baseGraphParameterRows, "base");
+    const candidateGraphParameterByTarget = graphParameterByTarget(candidateGraphParameterRows, "candidate");
+    const graphParameterLatencyRows = [];
+    const candidateRoutingOverheads = [];
+    for (const targetId of targetIds) {
+        for (const selectivity of ["zero", "targeted", "dense"]) {
+            const referenceKey = `${targetId}\u0000${selectivity}`;
+            const baseReference = baseGraphParameterByTarget.get(referenceKey);
+            const candidateReference = candidateGraphParameterByTarget.get(referenceKey);
+            if (baseReference === undefined || candidateReference === undefined) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter reference is missing from base or candidate`);
+                continue;
+            }
+            const expectedWorkloadIdentity = candidateTargetCounts.get(targetId)?.[0]?.workloadIdentity;
+            if (baseReference.workloadIdentity !== candidateReference.workloadIdentity ||
+                candidateReference.workloadIdentity !== expectedWorkloadIdentity) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter workload identity differs`);
+            }
+            const baseReferenceLatency = finiteNumber(baseReference.latencyNanos);
+            const candidateReferenceLatency = finiteNumber(candidateReference.latencyNanos);
+            const baseReferenceRows = finiteNumber(baseReference.rowCount);
+            const candidateReferenceRows = finiteNumber(candidateReference.rowCount);
+            if (baseReference.outcome !== "success" || candidateReference.outcome !== "success" ||
+                baseReferenceLatency === null || candidateReferenceLatency === null ||
+                baseReferenceLatency <= 0 || candidateReferenceLatency <= 0 ||
+                baseReferenceRows === null || candidateReferenceRows === null
+            ) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter references require successful samples`);
+                continue;
+            }
+            const validDistribution = selectivity === "zero" ? candidateReferenceRows === 0 :
+                selectivity === "targeted" ? candidateReferenceRows >= 1 && candidateReferenceRows < 200 :
+                    candidateReferenceRows === 200;
+            if (!validDistribution) {
+                errors.push(`${targetId}/${selectivity}: graph-parameter rowCount=${candidateReferenceRows} ` +
+                    "does not satisfy zero=0, targeted=1..199, dense=200");
+            }
+            for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
+                if (baseReference[field] !== candidateReference[field]) {
+                    errors.push(`${targetId}/${selectivity}: graph-parameter ${field} differs between base and candidate`);
+                }
+            }
+            graphParameterLatencyRows.push({
+                targetGraphId: targetId,
+                selectivity,
+                baseLatencyNanos: baseReferenceLatency,
+                candidateLatencyNanos: candidateReferenceLatency
+            });
+            const candidateRowsForReference = (candidateTargetCounts.get(targetId) ?? [])
+                .filter((row) => row.selectivity === selectivity);
+            if (candidateRowsForReference.length !== 3) {
+                errors.push(`${targetId}/${selectivity}: expected three candidate graphId reference matches`);
+            }
+            for (const candidateRow of candidateRowsForReference) {
+                for (const field of ["selectivity", "rowCount", "responseBytes", "digest"]) {
+                    if (candidateRow[field] !== candidateReference[field]) {
+                        errors.push(`${candidateRow.id}: candidate result ${field} differs from ` +
+                            "the graph-parameter reference");
+                    }
+                }
+                const latencyNanos = finiteNumber(candidateRow.latencyNanos);
+                if (latencyNanos !== null && latencyNanos > 0) {
+                    candidateRoutingOverheads.push(latencyNanos / candidateReferenceLatency);
+                }
+            }
+        }
+    }
+    const baseLatencies = rows.map((row) => row.baseLatencyNanos);
+    const candidateLatencies = rows.map((row) => row.candidateLatencyNanos);
+    const p50Speedup = rows.length === 0 ? 0 :
+        pressurePercentile(baseLatencies, 0.50) / pressurePercentile(candidateLatencies, 0.50);
+    const p95Speedup = rows.length === 0 ? 0 :
+        pressurePercentile(baseLatencies, 0.95) / pressurePercentile(candidateLatencies, 0.95);
+    const baseGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.baseLatencyNanos);
+    const candidateGraphParameterLatencies = graphParameterLatencyRows.map((row) => row.candidateLatencyNanos);
+    const graphParameterP50Speedup = graphParameterLatencyRows.length === 0 ? 0 :
+        pressurePercentile(baseGraphParameterLatencies, 0.50) /
+            pressurePercentile(candidateGraphParameterLatencies, 0.50);
+    const graphParameterP95Speedup = graphParameterLatencyRows.length === 0 ? 0 :
+        pressurePercentile(baseGraphParameterLatencies, 0.95) /
+            pressurePercentile(candidateGraphParameterLatencies, 0.95);
+    const graphParameterP50Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateGraphParameterLatencies, 0.50) /
+            pressurePercentile(baseGraphParameterLatencies, 0.50) - 1;
+    const graphParameterP95Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateGraphParameterLatencies, 0.95) /
+            pressurePercentile(baseGraphParameterLatencies, 0.95) - 1;
+    const maximumGraphParameterRegression = 0.15;
+    const routingOverheadP50 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateRoutingOverheads, 0.50);
+    const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+        pressurePercentile(candidateRoutingOverheads, 0.95);
+    const gateP50Speedup = p50Speedup;
+    const gateP95Speedup = p95Speedup;
+    const passed = errors.length === 0 && p50Speedup >= minimumSpeedup && p95Speedup >= minimumSpeedup &&
+        graphParameterP50Regression <= maximumGraphParameterRegression &&
+        graphParameterP95Regression <= maximumGraphParameterRegression;
+    return {
+        passed,
+        errors,
+        minimumSpeedup,
+        p50Speedup,
+        p95Speedup,
+        graphParameterP50Speedup,
+        graphParameterP95Speedup,
+        gateP50Speedup,
+        gateP95Speedup,
+        maximumGraphParameterRegression,
+        graphParameterP50Regression,
+        graphParameterP95Regression,
+        routingOverheadP50,
+        routingOverheadP95,
+        indexState: candidateIndexState,
+        resources: {
+            base: baseResources,
+            candidate: candidateResources
+        },
+        rows,
+        graphParameterLatencyRows
+    };
+}
+
+export function renderGraphIdPressureReport(comparison) {
+    const baseResources = comparison.resources.base;
+    const candidateResources = comparison.resources.candidate;
+    const gibibytes = (bytes) => `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
+    const lines = [
+        "### 64 fixture-derived graphId pressure gate",
+        "",
+        `Index state: **${comparison.indexState}**`,
+        "",
+        `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for query-level graphId P50 and P95; ` +
+            `API graph-parameter P50/P95 may regress by at most ` +
+            `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% against its correct main baseline.`,
+        "",
+        `- Query-level graphId P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
+        `- Query-level graphId P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
+        `- API graph-parameter P50 speedup: **${comparison.graphParameterP50Speedup.toFixed(2)}x**`,
+        `- API graph-parameter P95 speedup: **${comparison.graphParameterP95Speedup.toFixed(2)}x**`,
+        `- API graph-parameter regression: ` +
+            `**${(comparison.graphParameterP50Regression * 100).toFixed(2)}% P50 / ` +
+            `${(comparison.graphParameterP95Regression * 100).toFixed(2)}% P95**`,
+        `- Candidate graphId/API-reference latency ratio: ` +
+            `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
+        `- Candidate intra-graph scans: **${candidateResources.callSiteParallelScanCount.toFixed(0)}**; ` +
+            `graphs scanned: **${candidateResources.callSiteParallelScanGraphCount.toFixed(0)}**; ` +
+            `peak simultaneously active workers: **${candidateResources.callSiteScanPeakActiveWorkers.toFixed(0)}**`,
+        `- Candidate retained-index lookups: **${candidateResources.callSiteStringIndexLookupCount.toFixed(0)}**; ` +
+            `graphs covered: **${candidateResources.callSiteStringIndexLookupGraphCount.toFixed(0)}**; ` +
+            `per graph: **${candidateResources.callSiteStringIndexLookupMinPerGraph.toFixed(0)}..` +
+            `${candidateResources.callSiteStringIndexLookupMaxPerGraph.toFixed(0)}**`,
+        `- Effective CPU cores: **${(baseResources.cpuCoreUtilizationPermille / 1000).toFixed(2)} → ` +
+            `${(candidateResources.cpuCoreUtilizationPermille / 1000).toFixed(2)}**`,
+        `- Peak used heap: **${gibibytes(baseResources.peakUsedHeapBytes)} → ` +
+            `${gibibytes(candidateResources.peakUsedHeapBytes)}**`,
+        `- Peak RSS: **${gibibytes(baseResources.peakResidentSetBytes)} → ` +
+            `${gibibytes(candidateResources.peakResidentSetBytes)}**`,
+        `- Query GC: **${baseResources.gcCount.toFixed(0)} / ${baseResources.gcMillis.toFixed(0)}ms → ` +
+            `${candidateResources.gcCount.toFixed(0)} / ${candidateResources.gcMillis.toFixed(0)}ms**`,
+        `- Retained CallSite index: **${baseResources.callSiteIndexAdmittedGraphs.toFixed(0)} graphs / ` +
+            `${gibibytes(baseResources.callSiteIndexRetainedBytes)} → ` +
+            `${candidateResources.callSiteIndexAdmittedGraphs.toFixed(0)} graphs / ` +
+            `${gibibytes(candidateResources.callSiteIndexRetainedBytes)}**`,
+        `- Trigram-indexed graphs: **${baseResources.callSiteTrigramIndexedGraphs.toFixed(0)} → ` +
+            `${candidateResources.callSiteTrigramIndexedGraphs.toFixed(0)}**`,
+        "",
+        "| Query | Target graph | Base | PR | Speedup |",
+        "|---|---|---:|---:|---:|"
+    ];
+    for (const row of comparison.rows) {
+        lines.push(`| \`${row.id}\` | \`${row.targetGraphId}\` | ${(row.baseLatencyNanos / 1e9).toFixed(3)}s | ` +
+            `${(row.candidateLatencyNanos / 1e9).toFixed(3)}s | ${row.speedup.toFixed(2)}x |`);
+    }
+    if (comparison.errors.length > 0) {
+        lines.push("", "Errors:", ...comparison.errors.map((error) => `- ${error}`));
+    }
+    return `${lines.join("\n")}\n`;
+}
+
 export function compareLatencyAnchor(
     anchorResults,
     baseResults,
@@ -572,8 +1180,8 @@ export function compareLatencyAnchor(
     anchorThreshold = 50,
     expectedKeys = null
 ) {
-    const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold);
-    const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold);
+    const baseComparison = compareJmh(baseResults, candidateResults, regressionThreshold, true);
+    const anchorComparison = compareJmh(anchorResults, candidateResults, anchorThreshold, true);
     const errors = [
         ...baseComparison.errors,
         ...anchorComparison.errors.map((error) => `known-good anchor: ${error}`)
@@ -620,22 +1228,14 @@ export function compareLatencyAnchor(
             errors.push(`${key}: missing from anchor, PR base, or candidate results`);
             continue;
         }
-        const synthetic = /WrappedDiscoveryLatencyBenchmark.*graphCount=/.test(key);
-        const baseNoise = synthetic && baseRow.unit === "ms/op" &&
-            baseRow.candidateScore - baseRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
-        const anchorNoise = synthetic && anchorRow.unit === "ms/op" &&
-            anchorRow.candidateScore - anchorRow.baseScore < SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS;
         rows.push({
             ...baseRow,
             anchorScore: anchorRow.baseScore,
             anchorDelta: anchorRow.delta,
             anchorThreshold: anchorRow.threshold,
             anchorConfidenceSeparated: anchorRow.confidenceSeparated,
-            anchorBlocked: anchorRow.blocked && !anchorNoise,
-            baseBelowAbsoluteNoiseFloor: baseNoise,
-            anchorBelowAbsoluteNoiseFloor: anchorNoise,
-            absoluteNoiseFloor: synthetic ? SYNTHETIC_LATENCY_ABSOLUTE_NOISE_FLOOR_MS : null,
-            blocked: (baseRow.blocked && !baseNoise) || (anchorRow.blocked && !anchorNoise)
+            anchorBlocked: anchorRow.blocked,
+            blocked: baseRow.blocked || anchorRow.blocked
         });
     }
     if (rows.length === 0) errors.push("No comparable latency benchmarks were found");
@@ -844,8 +1444,9 @@ export function renderLatencyAnchorReport(comparison) {
         "### Wrapped case-insensitive query latency",
         "",
         "The candidate may not regress more than 50% against the pinned known-good anchor or 15%",
-        "against the current PR base. Suspected failures must repeat in reverse execution order.",
-        "Synthetic changes below the 0.5 ms absolute noise floor remain informational.",
+        "against the current PR base. Every point estimate beyond either threshold triggers a",
+        "reverse-order confirmation and blocks only when the same benchmark repeats the regression.",
+        "All measured rows use real persisted graph fixtures; synthetic graphs are excluded.",
         "",
         "| Benchmark | Known-good | PR base | PR | Regression vs anchor | Regression vs base | Confirmation | Gate |",
         "|---|---:|---:|---:|---:|---:|---:|:---:|"
@@ -1329,6 +1930,31 @@ function compareLatencyBaselineCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function compareGraphIdPressureCommand(args) {
+    const comparison = compareGraphIdPressure(
+        readJson(requireArg(args, "base")),
+        readJson(requireArg(args, "candidate")),
+        fs.readFileSync(requireArg(args, "base-observations"), "utf8"),
+        fs.readFileSync(requireArg(args, "candidate-observations"), "utf8"),
+        fs.readFileSync(requireArg(args, "base-correctness"), "utf8"),
+        fs.readFileSync(requireArg(args, "candidate-correctness"), "utf8"),
+        Number(args["minimum-speedup"] ?? 10)
+    );
+    writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
+function deriveGraphRoutingOracleCommand(args) {
+    const result = deriveGraphRoutingOracle(
+        fs.readFileSync(requireArg(args, "references"), "utf8")
+    );
+    if (!result.passed) {
+        throw new Error(`Unable to derive graph-routing oracle:\n${result.errors.join("\n")}`);
+    }
+    writeFile(requireArg(args, "oracle"), result.oracle);
+}
+
 function compareLatencyAnchorCommand(args) {
     const comparison = compareLatencyAnchor(
         readJson(requireArg(args, "anchor")),
@@ -1452,6 +2078,8 @@ function main(argv) {
     const command = args._[0];
     if (command === "compare-jmh") compareJmhCommand(args);
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
+    else if (command === "derive-graph-routing-oracle") deriveGraphRoutingOracleCommand(args);
+    else if (command === "compare-graph-id-pressure") compareGraphIdPressureCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "compare-latency-anchor") compareLatencyAnchorCommand(args);
     else if (command === "confirm-latency-anchor") confirmLatencyAnchorCommand(args);
@@ -1466,7 +2094,9 @@ function main(argv) {
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] !== undefined &&
+    fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])
+) {
     try {
         main(process.argv.slice(2));
     } catch (error) {
