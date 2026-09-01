@@ -505,25 +505,27 @@ internal class MappedCallSiteStringIndex(
         val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
             "CallSite trigram postings must be prepared before persistence"
         }
+        val callSiteCount = properties.firstOrNull()?.postingCount ?: 0
+        val persistentRetainedBytes = persistentRetainedBytes(callSiteCount, stringTable.size(), properties, postings)
         val graphContentIdentity = contentIdentity()
         require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
         output.writeInt(CALL_SITE_STRING_INDEX_MAGIC)
         output.writeInt(CALL_SITE_STRING_INDEX_VERSION)
         output.writeInt(stringTable.size())
-        output.writeInt(properties.firstOrNull()?.postingCount ?: 0)
+        output.writeInt(callSiteCount)
         output.write(graphContentIdentity)
         properties.forEach { property -> output.writeInt(property.uniqueStringCount) }
         output.writeInt(postings.size)
-        output.writeLong(reservation.bytes)
+        output.writeLong(persistentRetainedBytes)
         properties.forEach { property -> property.writePersistent(output) }
         trigramSignatures.forEach(output::writeLong)
         postings.forEach(output::writeLong)
         output.writeLong(
             persistentChecksum(
                 stringTable.size(),
-                properties.firstOrNull()?.postingCount ?: 0,
+                callSiteCount,
                 graphContentIdentity,
-                reservation.bytes,
+                persistentRetainedBytes,
                 properties,
                 trigramSignatures,
                 postings
@@ -1164,6 +1166,28 @@ internal class MappedCallSiteStringIndex(
             signatures.forEach(checksum::updateLong)
             postings.forEach(checksum::updateLong)
         }.value
+
+        private fun persistentRetainedBytes(
+            callSiteCount: Int,
+            stringCount: Int,
+            properties: Array<PropertyCsr>,
+            postings: LongArray
+        ): Long {
+            val baseRetainedBytes = checkNotNull(
+                estimatedMappedCallSiteStringIndexRetainedBytes(
+                    callSiteCount.toLong(),
+                    stringCount,
+                    IntArray(properties.size) { index -> properties[index].uniqueStringCount }
+                )
+            )
+            return Math.addExact(
+                baseRetainedBytes,
+                Math.addExact(
+                    PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                    Math.multiplyExact(postings.size.toLong(), Long.SIZE_BYTES.toLong())
+                )
+            )
+        }
     }
 }
 
