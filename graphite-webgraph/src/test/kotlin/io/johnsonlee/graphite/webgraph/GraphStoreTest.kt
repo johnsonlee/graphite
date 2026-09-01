@@ -567,38 +567,44 @@ class GraphStoreTest {
         val predicate = StringPropertyPredicate(
             "caller_class",
             StringValueTransform.LOWERCASE,
-            StringMatchMode.CONTAINS,
-            "caller1"
+            StringMatchMode.EQUALS,
+            "example.caller1"
         )
         val dir = Files.createTempDirectory("webgraph-callsite-index-identity-budget")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
         try {
+            System.clearProperty(property)
             GraphStore.save(graph, dir, compressionThreads = 2, prepareCallSiteStringIndex = true)
+            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
+                    loaded.aggregateStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
-                        limit = 1,
+                        distinctProperty = null,
                         workConsumer = GraphWorkConsumer { error("query work denied") }
-                    )?.toList()
+                    )
                 }
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
 
-                assertNotNull(
-                    loaded.nodesByStringPropertyDisjunction(
+                assertEquals(
+                    1L,
+                    loaded.aggregateStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
-                        limit = 1
-                    )?.single()
+                        distinctProperty = null
+                    )?.count
                 )
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
             } finally {
                 loaded.close()
             }
         } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
         }
     }
