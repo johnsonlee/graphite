@@ -1708,6 +1708,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(workflow, /recomputed-fixture64/);
     assert.match(workflow, /materializeGistFiles/);
+    assert.match(workflow, /https:\/\/api\.github\.com\/gists\/\$\{evidenceMatch\[1\]\}\/\$\{evidenceMatch\[2\]\}/);
+    assert.match(workflow, /public Gist API returned HTTP/);
+    assert.doesNotMatch(workflow, /github\.request\('GET \/gists\/\{gist_id\}\/\{sha\}'/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);

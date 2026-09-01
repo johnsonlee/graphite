@@ -1982,11 +1982,12 @@ jobs:
           let evidence;
           if (evidenceMatch) {
             try {
-              const response = await github.request('GET /gists/{gist_id}/{sha}', {
-                gist_id: evidenceMatch[1],
-                sha: evidenceMatch[2]
-              });
-              evidence = response.data;
+              const response = await fetch(
+                `https://api.github.com/gists/${evidenceMatch[1]}/${evidenceMatch[2]}`,
+                { headers: { accept: 'application/vnd.github+json' } }
+              );
+              if (!response.ok) throw new Error(`public Gist API returned HTTP ${response.status}`);
+              evidence = await response.json();
               if (evidence.owner?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
                 errors.push(`Evidence owner is ${evidence.owner?.login || 'unknown'}`);
               }
@@ -2002,7 +2003,11 @@ jobs:
               gistId: evidenceMatch?.[1],
               owner: process.env.TRUSTED_EVIDENCE_ACTOR,
               directory,
-              request: options => github.request(options)
+              request: async options => {
+                const response = await fetch(options.url, { headers: options.headers });
+                if (!response.ok) throw new Error(`public Gist raw URL returned HTTP ${response.status}`);
+                return { data: await response.text() };
+              }
             });
           } catch (error) {
             errors.push(`Unable to materialize immutable Gist evidence: ${error.message}`);
