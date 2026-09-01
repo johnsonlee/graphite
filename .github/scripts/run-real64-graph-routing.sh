@@ -107,7 +107,7 @@ run_revision() {
   fi
   java -jar "${JAR}" "${FILTER}" \
     -p graphCount=64 -p coverageFamily=graph-routing -p indexState="${INDEX_STATE}" \
-    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -foe true -prof gc -rf json \
+    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
     -rff "${RESULT_PREFIX}.json" \
     -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
       -Dgraphite.broad.pressure.output=${RESULT_PREFIX}.correctness \
@@ -120,7 +120,7 @@ run_revision() {
 BASE_REFERENCE_PREFIX=${OUTPUT_DIR}/base-single-source-reference
 java -jar "${BASE_JAR}" "${FILTER}" \
   -p graphCount=64 -p coverageFamily=graph-parameter -p indexState=cold \
-  -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -foe true -rf json \
+  -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -rf json \
   -rff "${BASE_REFERENCE_PREFIX}.json" \
   -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} \
     -Dgraphite.broad.pressure.correctness.mode=record \

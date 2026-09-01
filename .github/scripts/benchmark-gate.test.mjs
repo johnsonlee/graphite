@@ -440,6 +440,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     );
     assert.equal((driver.match(/:webgraph:jmhJar --no-daemon/g) ?? []).length, 2);
     assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
+    assert.equal((driver.match(/-to 30m/g) ?? []).length, 2);
     assert.match(driver, /-jvmArgs "-Xmx8g /);
     assert.doesNotMatch(driver, /-jvmArgsAppend/);
     for (const field of [
