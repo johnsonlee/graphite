@@ -233,9 +233,60 @@ class GraphStoreTest {
             System.clearProperty(property)
             GraphStore.save(graph, dir)
             assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(loaded.persistPreparedCallSiteStringIndex())
+            } finally {
+                loaded.close()
+            }
         } finally {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `best effort CallSite index persistence failure leaves the prepared query path usable`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().addNode(
+            CallSiteNode(
+                NodeId(0),
+                MethodDescriptor(TypeDescriptor("example.TargetCaller"), "call", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                1,
+                null,
+                emptyList()
+            )
+        ).build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-index-write-failure")
+        val movedDir = dir.resolveSibling("${dir.fileName}-moved")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        var loaded: MappedWebGraphBackedGraph? = null
+        try {
+            System.setProperty(property, "false")
+            GraphStore.save(graph, dir)
+            loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            assertTrue(loaded.prepareCallSiteStringIndex())
+            Files.move(dir, movedDir)
+
+            assertFalse(loaded.persistPreparedCallSiteStringIndex())
+            assertEquals(
+                listOf(0),
+                loaded.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                    .orEmpty().map { node -> node.id.value }.toList()
+            )
+        } finally {
+            loaded?.close()
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+            movedDir.toFile().deleteRecursively()
         }
     }
 
