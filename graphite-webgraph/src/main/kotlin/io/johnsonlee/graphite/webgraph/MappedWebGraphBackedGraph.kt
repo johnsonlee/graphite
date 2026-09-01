@@ -372,9 +372,7 @@ internal class MappedWebGraphBackedGraph(
     ): List<StringPropertyDistinctRow> {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val predicatePropertyIndexes = predicates.map { predicate ->
-            callSiteStringPropertyIndex(predicate.property).also { propertyIndex ->
-                check(propertyIndex >= 0) { "Unsupported CallSite string property: ${predicate.property}" }
-            }
+            requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
@@ -469,6 +467,7 @@ internal class MappedWebGraphBackedGraph(
                     .map(type::cast)
             }
             parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
+            serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
         }
         if (type == CallSiteNode::class.java && shouldPreflightCallSitePredicates(predicates) &&
             callSitePredicatesCannotMatch(predicates, workConsumer)
@@ -533,6 +532,60 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
+    @Suppress("UNCHECKED_CAST", "ReturnCount")
+    private fun <T : Node> serialRawCallSiteStringDisjunction(
+        type: Class<T>,
+        predicates: List<StringPropertyPredicate>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<T>? {
+        if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE) return null
+        if (workConsumer !is SerialGraphWorkBatchConsumer) return null
+        val nodeCount = nodeTypeIndex.count(type)
+        if (nodeCount > Int.MAX_VALUE) return null
+        val propertyIndexes = predicates.map { predicate ->
+            requiredCallSiteStringPropertyIndex(predicate.property)
+        }
+        val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
+        val matchers = predicates.map { predicate ->
+            val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            sharedMatchers.getOrPut(key) { BoundedStringMatcher(stringTable, key) }
+        }
+        val matches = IntArrayList(minOf(limit, RAW_CALL_SITE_INITIAL_MATCH_CAPACITY))
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var inspected = 0
+        try {
+            nodeTypeIndex.forEachIdWhile(type, 0, nodeCount.toInt()) { nodeId ->
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                accounting.consume()
+                var matched = false
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    var predicateIndex = 0
+                    while (!matched && predicateIndex < predicates.size) {
+                        val stringId = when (propertyIndexes[predicateIndex]) {
+                            CALLER_CLASS_PROPERTY_INDEX -> callerClass
+                            CALLER_NAME_PROPERTY_INDEX -> callerName
+                            CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
+                            else -> calleeName
+                        }
+                        matched = matchers[predicateIndex].matches(stringId)
+                        predicateIndex++
+                    }
+                }
+                if (matched) matches.add(nodeId)
+                matches.size < limit
+            }
+        } finally {
+            accounting.flush()
+        }
+        return matches.toIntArray().asSequence()
+            .mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
+    }
+
     @Suppress("CyclomaticComplexMethod", "LongMethod", "ThrowsCount", "TooGenericExceptionCaught")
     private fun <T : Node> parallelRawCallSiteStringDisjunction(
         type: Class<T>,
@@ -548,9 +601,7 @@ internal class MappedWebGraphBackedGraph(
         val workerCount = minOf(callSiteScanParallelism, nodeCount.toInt())
         val chunkSize = (nodeCount + workerCount - 1L) / workerCount
         val predicatePropertyIndexes = predicates.map { predicate ->
-            callSiteStringPropertyIndex(predicate.property).also { propertyIndex ->
-                check(propertyIndex >= 0) { "Unsupported CallSite string property: ${predicate.property}" }
-            }
+            requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
         val matchStates = predicates.map { predicate ->
@@ -1488,6 +1539,11 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
+    private fun requiredCallSiteStringPropertyIndex(property: String): Int =
+        callSiteStringPropertyIndex(property).also { propertyIndex ->
+            check(propertyIndex >= 0) { "Unsupported CallSite string property: $property" }
+        }
+
     private fun rawCallSiteStringPropertyId(nodeId: Int, propertyIndex: Int): Int {
         val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
         return when (propertyIndex) {
@@ -1528,6 +1584,9 @@ private const val STRING_PROPERTY_ADMISSION_ESTIMATED_BYTES = 96L
 private const val MAX_STRING_PROPERTY_INDEX_RETAINED_BYTES = 8L * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATES = 32
+private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
+private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
+private const val RAW_CALL_SITE_INITIAL_MATCH_CAPACITY = 256
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 internal const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
@@ -1577,6 +1636,56 @@ private data class StringPredicateKey(
     val mode: StringMatchMode,
     val expected: String
 )
+
+/**
+ * Serial, allocation-bounded predicate state for scans over a large global string table.
+ * A cache collision only repeats the deterministic comparison and cannot change its result.
+ */
+private class BoundedStringMatcher(
+    private val stringTable: StringTable,
+    private val predicate: StringPredicateKey
+) {
+    private val stringCount = stringTable.size()
+    private val dense = if (stringCount <= LOCAL_STRING_MATCH_CACHE_CAPACITY) ByteArray(stringCount) else null
+    private val keys = if (dense == null) IntArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
+    private val values = if (dense == null) ByteArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
+    private val actual = MutableString()
+
+    fun matches(stringId: Int): Boolean {
+        val state = state(stringId)
+        if (state == RAW_STRING_MATCH) return true
+        if (state == RAW_STRING_MISS) return false
+        stringTable.get(stringId, actual)
+        val matched = if (predicate.mode == StringMatchMode.CONTAINS) {
+            reusableContains(actual, predicate.transform, predicate.expected)
+        } else {
+            stringMatches(actual.toString(), predicate.transform, predicate.mode, predicate.expected)
+        }
+        put(stringId, if (matched) RAW_STRING_MATCH else RAW_STRING_MISS)
+        return matched
+    }
+
+    private fun state(stringId: Int): Byte {
+        dense?.let { return it[stringId] }
+        val slot = cacheSlot(stringId)
+        return if (keys!![slot] == stringId + 1) values!![slot] else 0
+    }
+
+    private fun put(stringId: Int, state: Byte) {
+        dense?.let {
+            it[stringId] = state
+            return
+        }
+        val slot = cacheSlot(stringId)
+        values!![slot] = state
+        keys!![slot] = stringId + 1
+    }
+
+    private fun cacheSlot(stringId: Int): Int {
+        val spread = stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)
+        return spread and (LOCAL_STRING_MATCH_CACHE_CAPACITY - 1)
+    }
+}
 
 /** Shares predicate state across iterators and enforces one aggregate retained-memory bound per graph. */
 internal class RawStringMatchStates(

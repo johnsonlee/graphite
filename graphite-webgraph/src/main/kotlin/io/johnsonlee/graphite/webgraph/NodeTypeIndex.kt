@@ -23,6 +23,7 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.util.function.IntPredicate
 
 internal interface NodeTypeIndex {
     fun ids(type: Class<out Node>): Sequence<Int>
@@ -30,10 +31,10 @@ internal interface NodeTypeIndex {
         type: Class<out Node>,
         startIndex: Int,
         endIndex: Int,
-        action: (Int) -> Boolean
+        action: IntPredicate
     ) {
         for (nodeId in ids(type).drop(startIndex).take(endIndex - startIndex)) {
-            if (!action(nodeId)) return
+            if (!action.test(nodeId)) return
         }
     }
     fun count(type: Class<out Node>): Long
@@ -51,7 +52,7 @@ internal class MappedNodeTypeIndex private constructor(
         type: Class<out Node>,
         startIndex: Int,
         endIndex: Int,
-        action: (Int) -> Boolean
+        action: IntPredicate
     ) {
         require(startIndex >= 0 && endIndex >= startIndex)
         var ordinal = 0
@@ -62,7 +63,7 @@ internal class MappedNodeTypeIndex private constructor(
                 val localEnd = (endIndex - ordinal).coerceAtMost(range.count)
                 var offset = range.offset + localStart * Int.SIZE_BYTES
                 repeat(localEnd - localStart) {
-                    if (!action(buffer.getInt(offset))) return
+                    if (!action.test(buffer.getInt(offset))) return
                     offset += Int.SIZE_BYTES
                 }
             }

@@ -1171,10 +1171,16 @@ class GraphStoreTest {
         val graph = DefaultGraph.Builder().apply {
             repeat(32_768) { index ->
                 val marker = if (index == 100 || index % 512 == 0) "Target" else "Feature"
+                val callerName = if (index == 32_767) "ÜnicodeCall" else "call$index"
                 addNode(
                     CallSiteNode(
                         NodeId(index),
-                        MethodDescriptor(TypeDescriptor("example.${marker}Caller$index"), "call$index", emptyList(), returnType),
+                        MethodDescriptor(
+                            TypeDescriptor("example.${marker}Caller$index"),
+                            callerName,
+                            emptyList(),
+                            returnType
+                        ),
                         MethodDescriptor(TypeDescriptor("example.Dependency$index"), "invoke$index", emptyList(), returnType),
                         index,
                         null,
@@ -1204,6 +1210,48 @@ class GraphStoreTest {
                 ).orEmpty().map { it.id.value }.toList()
                 assertEquals(listOf(0), serialIds)
                 assertTrue(serialWork.get() > 0L)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+
+                val serialLateWork = AtomicLong()
+                val serialLateIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-absent"
+                        ),
+                        StringPropertyPredicate(
+                            "caller_name",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "ünicodecall"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = SerialGraphWorkBatchConsumer(serialLateWork::addAndGet)
+                ).orEmpty().map { it.id.value }.toList()
+                assertEquals(listOf(32_767), serialLateIds)
+                assertTrue(serialLateWork.get() in 2L..32_768L)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+
+                val serialMissWork = AtomicLong()
+                val serialMissIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_name",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "definitely-missing-serial-value"
+                        )
+                    ),
+                    limit = 1,
+                    workConsumer = SerialGraphWorkBatchConsumer(serialMissWork::addAndGet)
+                ).orEmpty().map { it.id.value }.toList()
+                assertTrue(serialMissIds.isEmpty())
+                assertEquals(32_768L, serialMissWork.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
 
                 val rawProjectionWork = AtomicLong()
