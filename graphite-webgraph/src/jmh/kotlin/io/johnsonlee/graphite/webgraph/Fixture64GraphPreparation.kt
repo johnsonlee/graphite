@@ -50,7 +50,7 @@ internal object Fixture64GraphPreparation {
         output.createDirectories()
 
         val manifest = mutableListOf(
-            "# fixture64: 64 distinct class/resource shards from 4 pinned real fixture JARs"
+            "# fixture64: 64 distinct class shards from 4 pinned real fixture JARs"
         )
         val provenance = mutableListOf(
             PROVENANCE_HEADER
