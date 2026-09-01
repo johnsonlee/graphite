@@ -19,6 +19,7 @@ kover {
             excludes {
                 classes(
                     "*Benchmark*",
+                    "*Fixture64GraphPreparation*",
                     "*LargeBroadQueryPressureCounters",
                     "*GraphBuildPersist*",
                     "io.johnsonlee.graphite.webgraph.BroadQuery*",

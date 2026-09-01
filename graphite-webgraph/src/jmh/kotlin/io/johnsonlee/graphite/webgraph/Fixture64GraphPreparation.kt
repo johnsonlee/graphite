@@ -11,7 +11,6 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
-import java.util.Comparator
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
@@ -29,8 +28,21 @@ import kotlin.io.path.isRegularFile
 internal object Fixture64GraphPreparation {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 1) { "Usage: Fixture64GraphPreparation <output-directory>" }
-        val output = Path.of(args.single()).toAbsolutePath().normalize()
+        when {
+            args.size == 1 -> prepare(Path.of(args.single()))
+            args.size == 3 && args[0] == VERIFY_COMMAND -> verifyPreparedCorpus(
+                Path.of(args[1]),
+                Path.of(args[2])
+            )
+            else -> error(
+                "Usage: Fixture64GraphPreparation <output-directory> | " +
+                    "Fixture64GraphPreparation --verify <graphs.tsv> <fixture-provenance.tsv>"
+            )
+        }
+    }
+
+    private fun prepare(outputArgument: Path) {
+        val output = outputArgument.toAbsolutePath().normalize()
         require(Files.notExists(output)) { "Fixture64 output already exists: $output" }
         output.createDirectories()
 
@@ -38,8 +50,7 @@ internal object Fixture64GraphPreparation {
             "# fixture64: 64 distinct class shards from 4 pinned real fixture JARs"
         )
         val provenance = mutableListOf(
-            "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tclassCount\tnodeCount\tcallSiteCount" +
-                "\tzeroTerm\ttargetedTerm\tdenseTerm\tpersistedGraphSha256\tgraphPath"
+            PROVENANCE_HEADER
         )
         val graphFingerprints = mutableSetOf<String>()
         BenchmarkCorpusKind.entries.forEach { kind ->
@@ -48,10 +59,11 @@ internal object Fixture64GraphPreparation {
         check(manifest.size == FIXTURE_GRAPH_COUNT + 1)
         check(provenance.size == FIXTURE_GRAPH_COUNT + 1)
         check(graphFingerprints.size == FIXTURE_GRAPH_COUNT) {
-            "Fixture partitioning produced duplicate persisted graph content"
+            "Fixture partitioning produced duplicate query-semantic graph content"
         }
         Files.write(output.resolve(MANIFEST_FILE), manifest)
         Files.write(output.resolve(PROVENANCE_FILE), provenance)
+        verifyPreparedCorpus(output.resolve(MANIFEST_FILE), output.resolve(PROVENANCE_FILE))
     }
 
     private fun prepareCorpus(
@@ -78,10 +90,10 @@ internal object Fixture64GraphPreparation {
                     val nodeCount = graph.nodes(Node::class.java).count().toLong()
                     GraphStore.save(graph, graphPath)
                     val persistedPath = graphPath.toRealPath()
-                    verifyMappedGraph(persistedPath, nodeCount, callSites.size.toLong())
-                    val graphFingerprint = sha256Directory(persistedPath)
+                    val graphFingerprint = querySemanticSha256(nodeCount, callSites)
+                    verifyMappedGraph(persistedPath, nodeCount, callSites.size.toLong(), graphFingerprint)
                     check(graphFingerprints.add(graphFingerprint)) {
-                        "$graphId duplicates persisted graph content $graphFingerprint"
+                        "$graphId duplicates query-semantic graph content $graphFingerprint"
                     }
                     manifest += listOf(
                         graphId,
@@ -94,8 +106,9 @@ internal object Fixture64GraphPreparation {
                         graphId,
                         kind.id,
                         shardIndex,
-                        sourceJar,
+                        sourceJar.fileName,
                         sourceHash,
+                        shard.bytecodeSha256,
                         shard.classCount,
                         nodeCount,
                         callSites.size,
@@ -119,6 +132,7 @@ internal object Fixture64GraphPreparation {
         }
         val streams = shardPaths.map { path -> JarOutputStream(Files.newOutputStream(path)) }
         val counts = IntArray(SHARDS_PER_CORPUS)
+        val digests = Array(SHARDS_PER_CORPUS) { newShardDigest() }
         try {
             JarFile(source.toFile()).use { jar ->
                 jar.entries().asSequence()
@@ -126,9 +140,12 @@ internal object Fixture64GraphPreparation {
                     .sortedBy { entry -> entry.name }
                     .forEach { entry ->
                         val shard = stableShard(entry.name)
+                        val bytes = jar.getInputStream(entry).use { input -> input.readBytes() }
+                        updateFrame(digests[shard], entry.name.toByteArray(Charsets.UTF_8))
+                        updateFrame(digests[shard], bytes)
                         val target = JarEntry(entry.name).apply { time = DETERMINISTIC_ZIP_TIME_MILLIS }
                         streams[shard].putNextEntry(target)
-                        jar.getInputStream(entry).use { input -> input.copyTo(streams[shard]) }
+                        streams[shard].write(bytes)
                         streams[shard].closeEntry()
                         counts[shard]++
                     }
@@ -139,7 +156,9 @@ internal object Fixture64GraphPreparation {
         counts.forEachIndexed { index, count ->
             require(count > 0) { "$source produced an empty fixture shard $index" }
         }
-        return shardPaths.indices.map { index -> FixtureJarShard(shardPaths[index], counts[index]) }
+        return shardPaths.indices.map { index ->
+            FixtureJarShard(shardPaths[index], counts[index], digests[index].hexDigest())
+        }
     }
 
     private fun stableShard(entryName: String): Int {
@@ -224,37 +243,198 @@ internal object Fixture64GraphPreparation {
         return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
     }
 
-    private fun sha256Directory(path: Path): String {
-        val digest = MessageDigest.getInstance(SHA_256)
-        Files.walk(path).use { entries ->
-            entries.filter(Files::isRegularFile)
-                .sorted(Comparator.comparing { entry -> path.relativize(entry).toString() })
-                .forEach { entry ->
-                    digest.update(path.relativize(entry).toString().toByteArray(Charsets.UTF_8))
-                    digest.update(0.toByte())
-                    Files.newInputStream(entry).use { input ->
-                        val buffer = ByteArray(HASH_BUFFER_BYTES)
-                        while (true) {
-                            val count = input.read(buffer)
-                            if (count < 0) break
-                            digest.update(buffer, 0, count)
-                        }
+    private fun verifyPreparedCorpus(manifestPath: Path, provenancePath: Path) {
+        val manifestRows = parseManifest(manifestPath)
+        val provenanceRows = parseProvenance(provenancePath)
+        require(manifestRows.size == FIXTURE_GRAPH_COUNT) {
+            "Expected $FIXTURE_GRAPH_COUNT manifest rows, found ${manifestRows.size}"
+        }
+        require(provenanceRows.size == FIXTURE_GRAPH_COUNT) {
+            "Expected $FIXTURE_GRAPH_COUNT provenance rows, found ${provenanceRows.size}"
+        }
+        require(manifestRows.map(FixtureManifestRow::graphId).distinct().size == FIXTURE_GRAPH_COUNT) {
+            "Manifest graph ids must be unique"
+        }
+        require(provenanceRows.map(FixtureProvenanceRow::graphId).distinct().size == FIXTURE_GRAPH_COUNT) {
+            "Provenance graph ids must be unique"
+        }
+
+        val manifestById = manifestRows.associateBy(FixtureManifestRow::graphId)
+        val provenanceById = provenanceRows.associateBy(FixtureProvenanceRow::graphId)
+        require(manifestById.keys == provenanceById.keys) { "Manifest and provenance graph ids differ" }
+        val sources = BenchmarkCorpusKind.entries.associate { kind ->
+            val sourceJar = BenchmarkCorpus.resolveJar(kind).toRealPath()
+            kind.id to FixtureSourceIdentity(
+                fileName = sourceJar.fileName.toString(),
+                sha256 = sha256(sourceJar),
+                shards = summarizeClassShards(sourceJar)
+            )
+        }
+        val graphPaths = mutableSetOf<Path>()
+        val semanticFingerprints = mutableSetOf<String>()
+        BenchmarkCorpusKind.entries.forEach { kind ->
+            val source = checkNotNull(sources[kind.id])
+            repeat(SHARDS_PER_CORPUS) { shardIndex ->
+                val graphId = "fixture-${kind.id}-${shardIndex.toString().padStart(2, '0')}"
+                val manifest = checkNotNull(manifestById[graphId]) { "Missing manifest row $graphId" }
+                val provenance = checkNotNull(provenanceById[graphId]) { "Missing provenance row $graphId" }
+                val shard = source.shards[shardIndex]
+                require(provenance.corpus == kind.id && provenance.shard == shardIndex) {
+                    "$graphId corpus/shard provenance mismatch"
+                }
+                require(provenance.sourceJar == source.fileName && provenance.sourceJarSha256 == source.sha256) {
+                    "$graphId source JAR provenance mismatch"
+                }
+                require(provenance.shardBytecodeSha256 == shard.bytecodeSha256 &&
+                    provenance.classCount == shard.classCount
+                ) {
+                    "$graphId source bytecode shard provenance mismatch"
+                }
+                val manifestPathValue = manifest.graphPath.toRealPath()
+                val provenancePathValue = provenance.graphPath.toRealPath()
+                require(manifestPathValue == provenancePathValue && graphPaths.add(manifestPathValue)) {
+                    "$graphId graph path is mismatched or repeated"
+                }
+                require(manifest.zero == provenance.zero && manifest.targeted == provenance.targeted &&
+                    manifest.dense == provenance.dense
+                ) {
+                    "$graphId search-term provenance mismatch"
+                }
+                GraphStore.loadMapped(manifestPathValue).useGraph { graph ->
+                    val callSites = graph.nodes(CallSiteNode::class.java).toList()
+                    val nodeCount = graph.nodes(Node::class.java).count().toLong()
+                    val terms = selectTerms(graphId, callSites)
+                    val semanticSha256 = querySemanticSha256(nodeCount, callSites)
+                    require(nodeCount == provenance.nodeCount &&
+                        callSites.size.toLong() == provenance.callSiteCount
+                    ) {
+                        "$graphId persisted graph counts do not match provenance"
+                    }
+                    require(terms == FixtureSearchTerms(manifest.zero, manifest.targeted, manifest.dense)) {
+                        "$graphId persisted graph does not reproduce the manifest search terms"
+                    }
+                    require(semanticSha256 == provenance.querySemanticSha256) {
+                        "$graphId query-semantic fingerprint mismatch"
+                    }
+                    require(semanticFingerprints.add(semanticSha256)) {
+                        "$graphId duplicates query-semantic graph content $semanticSha256"
                     }
                 }
+            }
         }
-        return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
     }
 
-    private fun verifyMappedGraph(path: Path, expectedNodes: Long, expectedCallSites: Long) {
+    private fun parseManifest(path: Path): List<FixtureManifestRow> = Files.readAllLines(path)
+        .filterNot { line -> line.isBlank() || line.startsWith("#") }
+        .mapIndexed { index, line ->
+            val fields = line.split('\t')
+            require(fields.size == MANIFEST_FIELD_COUNT) { "$path:${index + 1}: expected 5 fields" }
+            FixtureManifestRow(fields[0], Path.of(fields[1]), fields[2], fields[3], fields[4])
+        }
+
+    private fun parseProvenance(path: Path): List<FixtureProvenanceRow> {
+        val lines = Files.readAllLines(path)
+        require(lines.firstOrNull() == PROVENANCE_HEADER) { "$path has an unexpected provenance header" }
+        return lines.drop(1).filter(String::isNotBlank).mapIndexed { index, line ->
+            val fields = line.split('\t')
+            require(fields.size == PROVENANCE_FIELD_COUNT) { "$path:${index + 2}: expected 14 fields" }
+            FixtureProvenanceRow(
+                graphId = fields[0],
+                corpus = fields[1],
+                shard = fields[2].toInt(),
+                sourceJar = fields[3],
+                sourceJarSha256 = fields[4],
+                shardBytecodeSha256 = fields[5],
+                classCount = fields[6].toInt(),
+                nodeCount = fields[7].toLong(),
+                callSiteCount = fields[8].toLong(),
+                zero = fields[9],
+                targeted = fields[10],
+                dense = fields[11],
+                querySemanticSha256 = fields[12],
+                graphPath = Path.of(fields[13])
+            )
+        }
+    }
+
+    private fun summarizeClassShards(source: Path): List<FixtureJarShardSummary> {
+        val counts = IntArray(SHARDS_PER_CORPUS)
+        val digests = Array(SHARDS_PER_CORPUS) { newShardDigest() }
+        JarFile(source.toFile()).use { jar ->
+            jar.entries().asSequence()
+                .filter { entry -> !entry.isDirectory && entry.name.endsWith(CLASS_SUFFIX) }
+                .sortedBy(JarEntry::getName)
+                .forEach { entry ->
+                    val shard = stableShard(entry.name)
+                    val bytes = jar.getInputStream(entry).use { input -> input.readBytes() }
+                    updateFrame(digests[shard], entry.name.toByteArray(Charsets.UTF_8))
+                    updateFrame(digests[shard], bytes)
+                    counts[shard]++
+                }
+        }
+        return counts.indices.map { index ->
+            require(counts[index] > 0) { "$source produced an empty fixture shard $index" }
+            FixtureJarShardSummary(counts[index], digests[index].hexDigest())
+        }
+    }
+
+    private fun verifyMappedGraph(
+        path: Path,
+        expectedNodes: Long,
+        expectedCallSites: Long,
+        expectedSemanticSha256: String
+    ) {
         GraphStore.loadMapped(path).useGraph { graph ->
-            check(graph.nodes(Node::class.java).count().toLong() == expectedNodes) {
+            val callSites = graph.nodes(CallSiteNode::class.java).toList()
+            val nodeCount = graph.nodes(Node::class.java).count().toLong()
+            check(nodeCount == expectedNodes) {
                 "$path mapped node count differs from the source graph"
             }
-            check(graph.nodes(CallSiteNode::class.java).count().toLong() == expectedCallSites) {
+            check(callSites.size.toLong() == expectedCallSites) {
                 "$path mapped CallSite count differs from the source graph"
+            }
+            check(querySemanticSha256(nodeCount, callSites) == expectedSemanticSha256) {
+                "$path mapped query semantics differ from the source graph"
             }
         }
     }
+
+    private fun querySemanticSha256(nodeCount: Long, callSites: List<CallSiteNode>): String {
+        val digest = MessageDigest.getInstance(SHA_256)
+        updateFrame(digest, QUERY_SEMANTIC_VERSION.toByteArray(Charsets.UTF_8))
+        updateFrame(digest, nodeCount.toString().toByteArray(Charsets.UTF_8))
+        updateFrame(digest, callSites.size.toString().toByteArray(Charsets.UTF_8))
+        callSites.map { callSite ->
+            listOf(
+                callSite.caller.declaringClass.className,
+                callSite.caller.name,
+                callSite.callee.declaringClass.className,
+                callSite.callee.name
+            ).joinToString(separator = "") { value ->
+                val bytes = value.toByteArray(Charsets.UTF_8)
+                "${bytes.size}:$value"
+            }
+        }.sorted().forEach { record -> updateFrame(digest, record.toByteArray(Charsets.UTF_8)) }
+        return digest.hexDigest()
+    }
+
+    private fun newShardDigest(): MessageDigest = MessageDigest.getInstance(SHA_256).also { digest ->
+        updateFrame(digest, SHARD_SEMANTIC_VERSION.toByteArray(Charsets.UTF_8))
+    }
+
+    private fun updateFrame(digest: MessageDigest, bytes: ByteArray) {
+        digest.update(
+            byteArrayOf(
+                (bytes.size ushr 24).toByte(),
+                (bytes.size ushr 16).toByte(),
+                (bytes.size ushr 8).toByte(),
+                bytes.size.toByte()
+            )
+        )
+        digest.update(bytes)
+    }
+
+    private fun MessageDigest.hexDigest(): String = digest().joinToString("") { byte -> "%02x".format(byte) }
 
     private inline fun <T> Graph.useGraph(block: (Graph) -> T): T = try {
         block(this)
@@ -262,7 +442,36 @@ internal object Fixture64GraphPreparation {
         (this as? Closeable)?.close()
     }
 
-    private data class FixtureJarShard(val path: Path, val classCount: Int)
+    private data class FixtureJarShard(val path: Path, val classCount: Int, val bytecodeSha256: String)
+    private data class FixtureJarShardSummary(val classCount: Int, val bytecodeSha256: String)
+    private data class FixtureSourceIdentity(
+        val fileName: String,
+        val sha256: String,
+        val shards: List<FixtureJarShardSummary>
+    )
+    private data class FixtureManifestRow(
+        val graphId: String,
+        val graphPath: Path,
+        val zero: String,
+        val targeted: String,
+        val dense: String
+    )
+    private data class FixtureProvenanceRow(
+        val graphId: String,
+        val corpus: String,
+        val shard: Int,
+        val sourceJar: String,
+        val sourceJarSha256: String,
+        val shardBytecodeSha256: String,
+        val classCount: Int,
+        val nodeCount: Long,
+        val callSiteCount: Long,
+        val zero: String,
+        val targeted: String,
+        val dense: String,
+        val querySemanticSha256: String,
+        val graphPath: Path
+    )
     private data class FixtureSearchTerms(val zero: String, val targeted: String, val dense: String)
 
     private val TARGETED_RESULT_RANGE = 1 until 200
@@ -277,4 +486,12 @@ internal object Fixture64GraphPreparation {
     private const val SHA_256 = "SHA-256"
     private const val MANIFEST_FILE = "graphs.tsv"
     private const val PROVENANCE_FILE = "fixture-provenance.tsv"
+    private const val MANIFEST_FIELD_COUNT = 5
+    private const val PROVENANCE_FIELD_COUNT = 14
+    private const val VERIFY_COMMAND = "--verify"
+    private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v1"
+    private const val SHARD_SEMANTIC_VERSION = "fixture64-shard-bytecode-v1"
+    private const val PROVENANCE_HEADER =
+        "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +
+            "\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tgraphPath"
 }

@@ -60,8 +60,14 @@ The preparation deterministically partitions Android, Tika, Hive, and Kotlin com
 non-overlapping class-entry shards each, then executes `JAR -> build -> save -> mapped load` for all
 64 shards. It calibrates and verifies the three selectivity terms per shard and writes
 `graphs.tsv` plus `fixture-provenance.tsv`. The provenance pins source-JAR and persisted-graph
-SHA-256 values, class/node/CallSite counts, corpus id, and shard id; all 64 persisted fingerprints
-must differ.
+identity: the whole-JAR SHA-256, an order-independent bytecode-shard SHA-256, and an
+order-independent query-semantic SHA-256 over node count plus the complete CallSite string tuple
+multiset. Generated timestamps and physical node order are intentionally excluded. Class/node/
+CallSite counts, corpus id, and shard id are also recorded, and all 64 semantic fingerprints must
+differ. Preparation immediately reloads and re-verifies all 64 graphs against the same identities.
+For a release-candidate audit, `.github/scripts/test-fixture64-reproducibility.sh` performs two
+independent real-JAR preparations, requires identical identity/term fields, and proves that a
+tampered semantic fingerprint is rejected.
 
 This is honestly a **64-shard routing and wide-search baseline over four real code corpora**, not
 64 independent production applications. It proves graph-count routing coverage and exercises real
@@ -230,6 +236,10 @@ small hosted-runner test. The normal `benchmark-regression-gate` depends on
 by `johnsonlee`, names the current base SHA, reports correctness pass, and records cold and warm
 P50/P95 speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the
 gate. An arbitrary HTTPS URL is neither required nor treated as proof.
+The driver itself uploads the exact JMH JSON, observations, correctness oracle/results, comparator
+reports, corpus provenance, and their SHA-256 manifest to an immutable public Gist revision. The
+commit status points to that revision; CI downloads it, verifies every digest and identity, and
+independently reruns the comparator. A caller-supplied URL is never accepted.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
@@ -237,6 +247,7 @@ derives the correctness oracle itself:
 ```bash
 .github/scripts/run-fixture64-graph-routing.sh \
   /absolute/path/to/fixture64/graphs.tsv \
+  graphite-webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
@@ -246,10 +257,14 @@ JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, co
 both built JARs, graph manifest, fixture provenance, the `base-single-source` oracle origin, and the
 derived correctness-oracle SHA-256 in `provenance.json`;
 caller-supplied JARs are not accepted. Before running, it requires exactly 64 provenance rows, four
-source corpora, and 64 distinct persisted graph fingerprints. It then runs base and candidate
-sequentially for independent cold and warm forks,
+source corpora, and 64 distinct query-semantic graph fingerprints. The candidate-built verifier
+re-hashes the four supplied fixture JARs and every bytecode shard, binds every manifest path and
+term to its provenance row, reloads all 64 actual graph directories, and recomputes counts, terms,
+and semantic identities before timing. It then runs base and candidate sequentially for independent
+cold and warm forks,
 verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for both
-states, and publishes the trusted commit status only after both comparisons pass. Set
+states, publishes immutable downloadable evidence, and only then publishes the trusted commit
+status. Set
 `GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. Retain
 both comparator reports plus the JMH JSON, observation TSV, correctness manifests,
 `provenance.json`, `fixture-provenance.tsv`, JVM/host details, and raw CPU/heap/RSS/GC counters.

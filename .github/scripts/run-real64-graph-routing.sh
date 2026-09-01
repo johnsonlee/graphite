@@ -2,23 +2,25 @@
 
 set -euo pipefail
 
-if [[ $# -lt 3 || $# -gt 5 ]]; then
-  echo "Usage: $0 <fixture64-graphs.tsv> <base-sha> <candidate-sha>" \
+if [[ $# -lt 4 || $# -gt 6 ]]; then
+  echo "Usage: $0 <fixture64-graphs.tsv> <fixture-jar-directory> <base-sha> <candidate-sha>" \
     "[owner/repo] [output-dir]" >&2
   exit 2
 fi
 
 MANIFEST=$1
-BASE_SHA=$2
-CANDIDATE_SHA=$3
-REPOSITORY=${4:-johnsonlee/graphite}
-OUTPUT_DIR=${5:-graph-routing-results}
+FIXTURE_JAR_DIR=$2
+BASE_SHA=$3
+CANDIDATE_SHA=$4
+REPOSITORY=${5:-johnsonlee/graphite}
+OUTPUT_DIR=${6:-graph-routing-results}
 FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 ORACLE=${OUTPUT_DIR}/base-single-source-oracle.manifest
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 STATUS_CONTEXT=graphite/fixture64-graph-routing
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
+FIXTURE_VERIFIER_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
@@ -27,12 +29,13 @@ REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 for INPUT in "${MANIFEST}" "${FIXTURE_PROVENANCE}"; do
   test -f "${INPUT}"
 done
+test -d "${FIXTURE_JAR_DIR}"
 [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]]
 [[ "${CANDIDATE_SHA}" =~ ^[0-9a-f]{40}$ ]]
 test "$(grep -cv '^#' "${MANIFEST}")" -eq 64
 test "$(tail -n +2 "${FIXTURE_PROVENANCE}" | wc -l | tr -d ' ')" -eq 64
 test "$(cut -f2 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 4
-test "$(cut -f12 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
+test "$(cut -f13 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
 command -v java >/dev/null
 command -v jq >/dev/null
 command -v gh >/dev/null
@@ -67,6 +70,7 @@ git -C "${CANDIDATE_TREE}" checkout --detach "${CANDIDATE_SHA}" >/dev/null
 test "$(git -C "${BASE_TREE}" rev-parse HEAD)" = "${BASE_SHA}"
 test "$(git -C "${CANDIDATE_TREE}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
 test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"
+test -f "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}"
 test -f "${CANDIDATE_TREE}/${COMPARATOR_PATH}"
 test -f "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 cmp -s "$0" "${CANDIDATE_TREE}/${SCRIPT_PATH}"
@@ -84,7 +88,31 @@ CANDIDATE_JAR=$(find "${CANDIDATE_TREE}/graphite-webgraph/build/libs" -maxdepth 
 test -f "${BASE_JAR}"
 test -f "${CANDIDATE_JAR}"
 
+find_fixture_jar() {
+  local pattern=$1
+  local matches=()
+  while IFS= read -r match; do
+    matches+=("${match}")
+  done < <(find "${FIXTURE_JAR_DIR}" -maxdepth 1 -type f -name "${pattern}" -print | sort)
+  test "${#matches[@]}" -eq 1
+  printf '%s\n' "${matches[0]}"
+}
+
+ANDROID_JAR=$(find_fixture_jar 'android-all-*.jar')
+TIKA_JAR=$(find_fixture_jar 'tika-app-*.jar')
+HIVE_JAR=$(find_fixture_jar 'hive-exec-*.jar')
+KOTLIN_JAR=$(find_fixture_jar 'kotlin-compiler-embeddable-*.jar')
+java -Xmx4g \
+  -Dandroid.jar.path="${ANDROID_JAR}" \
+  -Dtika.jar.path="${TIKA_JAR}" \
+  -Dhive.jar.path="${HIVE_JAR}" \
+  -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+  -cp "${CANDIDATE_JAR}" \
+  io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+  --verify "${MANIFEST}" "${FIXTURE_PROVENANCE}"
+
 HARNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${HARNESS_PATH}")
+FIXTURE_VERIFIER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}")
 COMPARATOR_SHA256=$(sha256_file "${CANDIDATE_TREE}/${COMPARATOR_PATH}")
 SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
 BASE_JAR_SHA256=$(sha256_file "${BASE_JAR}")
@@ -151,6 +179,7 @@ jq -n \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \
   --arg harnessSha256 "${HARNESS_SHA256}" \
+  --arg fixtureVerifierSha256 "${FIXTURE_VERIFIER_SHA256}" \
   --arg comparatorSha256 "${COMPARATOR_SHA256}" \
   --arg scriptSha256 "${SCRIPT_SHA256}" \
   --arg baseJarSha256 "${BASE_JAR_SHA256}" \
@@ -160,7 +189,8 @@ jq -n \
   --arg oracleSha256 "${ORACLE_SHA256}" \
   --arg oracleSource "base-single-source" \
   '{repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
-    harnessSha256: $harnessSha256, comparatorSha256: $comparatorSha256,
+    harnessSha256: $harnessSha256, fixtureVerifierSha256: $fixtureVerifierSha256,
+    comparatorSha256: $comparatorSha256,
     scriptSha256: $scriptSha256, baseJarSha256: $baseJarSha256,
     candidateJarSha256: $candidateJarSha256, manifestSha256: $manifestSha256,
     fixtureProvenanceSha256: $fixtureProvenanceSha256,
@@ -174,9 +204,62 @@ DESCRIPTION=$(printf 'fixture64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx corre
   "${BASE_SHA}" "${COLD_P50}" "${COLD_P95}" "${WARM_P50}" "${WARM_P95}")
 test "${#DESCRIPTION}" -le 140
 
+cp "${MANIFEST}" "${OUTPUT_DIR}/graphs.tsv"
+cp "${FIXTURE_PROVENANCE}" "${OUTPUT_DIR}/fixture-provenance.tsv"
+EVIDENCE_FILES=(
+  "${OUTPUT_DIR}/provenance.json"
+  "${OUTPUT_DIR}/graphs.tsv"
+  "${OUTPUT_DIR}/fixture-provenance.tsv"
+  "${OUTPUT_DIR}/base-single-source-reference.json"
+  "${OUTPUT_DIR}/base-single-source-reference.tsv"
+  "${OUTPUT_DIR}/base-single-source-reference.manifest"
+  "${OUTPUT_DIR}/base-single-source-oracle.manifest"
+  "${OUTPUT_DIR}/base-graph-routing-cold.json"
+  "${OUTPUT_DIR}/base-graph-routing-cold.tsv"
+  "${OUTPUT_DIR}/candidate-graph-routing-cold.json"
+  "${OUTPUT_DIR}/candidate-graph-routing-cold.tsv"
+  "${OUTPUT_DIR}/candidate-graph-routing-cold.correctness"
+  "${OUTPUT_DIR}/graph-routing-cold-report.md"
+  "${OUTPUT_DIR}/graph-routing-cold-status.json"
+  "${OUTPUT_DIR}/base-graph-routing-warm.json"
+  "${OUTPUT_DIR}/base-graph-routing-warm.tsv"
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.json"
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.tsv"
+  "${OUTPUT_DIR}/candidate-graph-routing-warm.correctness"
+  "${OUTPUT_DIR}/graph-routing-warm-report.md"
+  "${OUTPUT_DIR}/graph-routing-warm-status.json"
+)
+FILES_JSON=$(
+  for FILE in "${EVIDENCE_FILES[@]}"; do
+    jq -n --arg name "$(basename "${FILE}")" --arg sha256 "$(sha256_file "${FILE}")" \
+      '{key: $name, value: $sha256}'
+  done | jq -s 'from_entries'
+)
+jq -n \
+  --arg schema "graphite-fixture64-evidence-v1" \
+  --arg repository "${REPOSITORY}" \
+  --arg baseSha "${BASE_SHA}" \
+  --arg candidateSha "${CANDIDATE_SHA}" \
+  --arg statusContext "${STATUS_CONTEXT}" \
+  --arg description "${DESCRIPTION}" \
+  --argjson files "${FILES_JSON}" \
+  '{schema: $schema, repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
+    statusContext: $statusContext, description: $description, files: $files}' \
+  > "${OUTPUT_DIR}/evidence-manifest.json"
+EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
+GIST_URL=$(gh gist create --public "${EVIDENCE_FILES[@]}" \
+  --desc "Graphite fixture64 graph-routing evidence for ${CANDIDATE_SHA}")
+GIST_ID=${GIST_URL##*/}
+GIST_REVISION=$(gh api "gists/${GIST_ID}" --jq '.history[0].version')
+GIST_OWNER=$(gh api "gists/${GIST_ID}" --jq '.owner.login')
+test "${GIST_OWNER}" = "$(gh api user --jq .login)"
+[[ "${GIST_REVISION}" =~ ^[0-9a-f]{40}$ ]]
+EVIDENCE_URL="https://gist.github.com/${GIST_OWNER}/${GIST_ID}/revisions/${GIST_REVISION}"
+
 gh api "repos/${REPOSITORY}/statuses/${CANDIDATE_SHA}" --method POST \
   -f state=success \
   -f context="${STATUS_CONTEXT}" \
-  -f description="${DESCRIPTION}" >/dev/null
+  -f description="${DESCRIPTION}" \
+  -f target_url="${EVIDENCE_URL}" >/dev/null
 
-echo "Published ${STATUS_CONTEXT}: ${DESCRIPTION}"
+echo "Published ${STATUS_CONTEXT}: ${DESCRIPTION} evidence=${EVIDENCE_URL}"

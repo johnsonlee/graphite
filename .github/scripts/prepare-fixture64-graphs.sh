@@ -44,5 +44,6 @@ test -f "${OUTPUT_DIR}/fixture-provenance.tsv"
 test "$(grep -cv '^#' "${OUTPUT_DIR}/graphs.tsv")" -eq 64
 test "$(tail -n +2 "${OUTPUT_DIR}/fixture-provenance.tsv" | wc -l | tr -d ' ')" -eq 64
 test "$(cut -f2 "${OUTPUT_DIR}/fixture-provenance.tsv" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 4
+test "$(cut -f13 "${OUTPUT_DIR}/fixture-provenance.tsv" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
 
 echo "Prepared 64 distinct fixture-derived graphs in ${OUTPUT_DIR}"

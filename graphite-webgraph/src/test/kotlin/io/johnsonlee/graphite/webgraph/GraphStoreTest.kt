@@ -3730,12 +3730,16 @@ class GraphStoreTest {
             override fun count(type: Class<out Node>): Long = 4
         }
         val visited = mutableListOf<Int>()
+        val iterator = typeIndex.idIterator(IntConstant::class.java)
+        val iterated = mutableListOf<Int>()
+        while (iterator.hasNext()) iterated += iterator.nextInt()
 
         typeIndex.forEachIdWhile(IntConstant::class.java, 1, 4) { nodeId ->
             visited += nodeId
             nodeId != 8
         }
 
+        assertEquals(listOf(3, 5, 8, 13), iterated)
         assertEquals(listOf(5, 8), visited)
     }
 

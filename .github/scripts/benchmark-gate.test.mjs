@@ -447,6 +447,7 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         "baseSha",
         "candidateSha",
         "harnessSha256",
+        "fixtureVerifierSha256",
         "comparatorSha256",
         "scriptSha256",
         "baseJarSha256",
@@ -462,11 +463,19 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(driver, /coverageFamily=graph-parameter/);
     assert.match(driver, /derive-graph-routing-oracle/);
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
-    assert.doesNotMatch(driver, /target_url|EVIDENCE_URL|https-evidence-url/);
+    assert.match(driver, /Fixture64GraphPreparation/);
+    assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
+    assert.match(driver, /gh gist create --public/);
+    assert.match(driver, /\/revisions\/\$\{GIST_REVISION\}/);
+    assert.match(driver, /-f target_url="\$\{EVIDENCE_URL\}"/);
 });
 
 test("fixture64 preparation partitions pinned real JARs into 64 verified graph shards", () => {
     const script = fs.readFileSync(new URL("./prepare-fixture64-graphs.sh", import.meta.url), "utf8");
+    const reproducibility = fs.readFileSync(
+        new URL("./test-fixture64-reproducibility.sh", import.meta.url),
+        "utf8"
+    );
     const source = fs.readFileSync(
         new URL(
             "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
@@ -485,8 +494,15 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /verifyMappedGraph\(persistedPath/);
     assert.match(source, /graphFingerprints\.add\(graphFingerprint\)/);
     assert.match(source, /sourceJarSha256/);
-    assert.match(source, /persistedGraphSha256/);
+    assert.match(source, /shardBytecodeSha256/);
+    assert.match(source, /querySemanticSha256/);
+    assert.match(source, /verifyPreparedCorpus\(output\.resolve\(MANIFEST_FILE\)/);
+    assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
+    assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 2);
+    assert.match(reproducibility, /cut -f1-13/);
+    assert.match(reproducibility, /TAMPERED_PROVENANCE/);
+    assert.match(reproducibility, /unexpectedly passed verification/);
 });
 
 function jmhResult({
@@ -1525,6 +1541,12 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/fixture64-graph-routing/);
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
+    assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
+    assert.match(workflow, /graphite-fixture64-evidence-v1/);
+    assert.match(workflow, /Evidence digest mismatch/);
+    assert.match(workflow, /Independently recompute fixture64 comparisons/);
+    assert.match(workflow, /compare-graph-id-pressure/);
+    assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),

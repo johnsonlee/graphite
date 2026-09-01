@@ -1937,7 +1937,9 @@ jobs:
         EVIDENCE_CONTEXT: graphite/fixture64-graph-routing
       with:
         script: |
+          const crypto = require('crypto');
           const fs = require('fs');
+          const path = require('path');
           const errors = [];
           const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
             owner: context.repo.owner,
@@ -1962,6 +1964,102 @@ jobs:
           if (speedups.some(value => !Number.isFinite(value) || value < 10)) {
             errors.push(`Every cold/warm P50/P95 speedup must be >=10x: ${speedups.join(', ')}`);
           }
+          const evidenceMatch = status?.target_url?.match(
+            /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
+          );
+          if (!evidenceMatch) errors.push('Status target_url is not an immutable johnsonlee Gist revision');
+          let evidence;
+          if (evidenceMatch) {
+            try {
+              const response = await github.request('GET /gists/{gist_id}/{sha}', {
+                gist_id: evidenceMatch[1],
+                sha: evidenceMatch[2]
+              });
+              evidence = response.data;
+              if (evidence.owner?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+                errors.push(`Evidence owner is ${evidence.owner?.login || 'unknown'}`);
+              }
+            } catch (error) {
+              errors.push(`Unable to load immutable Gist evidence: ${error.message}`);
+            }
+          }
+          const directory = 'benchmark-results/evidence';
+          fs.mkdirSync(directory, { recursive: true });
+          const files = evidence?.files || {};
+          for (const [name, file] of Object.entries(files)) {
+            if (file.truncated || typeof file.content !== 'string') {
+              errors.push(`Evidence file ${name} is truncated or missing content`);
+              continue;
+            }
+            if (path.basename(name) !== name) {
+              errors.push(`Evidence file has an unsafe name: ${name}`);
+              continue;
+            }
+            fs.writeFileSync(path.join(directory, name), file.content);
+          }
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(path.join(directory, 'evidence-manifest.json'), 'utf8'));
+          } catch (error) {
+            errors.push(`Evidence manifest is invalid: ${error.message}`);
+          }
+          const requiredFiles = [
+            'provenance.json', 'graphs.tsv', 'fixture-provenance.tsv',
+            'base-single-source-reference.json', 'base-single-source-reference.tsv',
+            'base-single-source-reference.manifest',
+            'base-single-source-oracle.manifest',
+            ...['cold', 'warm'].flatMap(state => [
+              `base-graph-routing-${state}.json`, `base-graph-routing-${state}.tsv`,
+              `candidate-graph-routing-${state}.json`, `candidate-graph-routing-${state}.tsv`,
+              `candidate-graph-routing-${state}.correctness`,
+              `graph-routing-${state}-report.md`, `graph-routing-${state}-status.json`
+            ])
+          ];
+          if (manifest) {
+            if (manifest.schema !== 'graphite-fixture64-evidence-v1' ||
+                manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
+                manifest.baseSha !== process.env.BASE_SHA ||
+                manifest.candidateSha !== process.env.CANDIDATE_SHA ||
+                manifest.statusContext !== process.env.EVIDENCE_CONTEXT ||
+                manifest.description !== status?.description) {
+              errors.push('Evidence manifest identity does not match the PR status');
+            }
+            for (const name of requiredFiles) {
+              const content = files[name]?.content;
+              const expectedHash = manifest.files?.[name];
+              const actualHash = typeof content === 'string'
+                ? crypto.createHash('sha256').update(content).digest('hex')
+                : null;
+              if (!/^[0-9a-f]{64}$/.test(expectedHash || '') || actualHash !== expectedHash) {
+                errors.push(`Evidence digest mismatch for ${name}`);
+              }
+            }
+          }
+          try {
+            const provenance = JSON.parse(fs.readFileSync(path.join(directory, 'provenance.json'), 'utf8'));
+            if (provenance.baseSha !== process.env.BASE_SHA ||
+                provenance.candidateSha !== process.env.CANDIDATE_SHA ||
+                provenance.oracleSource !== 'base-single-source') {
+              errors.push('Evidence provenance identity is invalid');
+            }
+            for (const state of ['cold', 'warm']) {
+              const result = JSON.parse(fs.readFileSync(
+                path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
+              ));
+              if (!result.passed || result.gateP50Speedup < 10 || result.gateP95Speedup < 10) {
+                errors.push(`${state} comparator status does not pass the 10x gate`);
+              }
+              const correctness = fs.readFileSync(
+                path.join(directory, `candidate-graph-routing-${state}.correctness`), 'utf8'
+              );
+              const oracle = fs.readFileSync(
+                path.join(directory, 'base-single-source-oracle.manifest'), 'utf8'
+              );
+              if (correctness !== oracle) errors.push(`${state} candidate correctness differs from the oracle`);
+            }
+          } catch (error) {
+            errors.push(`Evidence payload is invalid: ${error.message}`);
+          }
           const passed = errors.length === 0;
           const report = [
             '##### 64 fixture-derived graph routing pressure',
@@ -1985,6 +2083,39 @@ jobs:
             warmP50Speedup: speedups[2] ?? null,
             warmP95Speedup: speedups[3] ?? null
           }, null, 2) + '\n');
+
+    - name: Checkout exact candidate comparator
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: evidence-candidate
+        persist-credentials: false
+
+    - name: Independently recompute fixture64 comparisons
+      run: |
+        jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
+        PROVENANCE=benchmark-results/evidence/provenance.json
+        test "$(sha256sum evidence-candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+          "$(jq -r .comparatorSha256 "${PROVENANCE}")"
+        node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
+          --references benchmark-results/evidence/base-single-source-reference.manifest \
+          --oracle benchmark-results/recomputed-base-single-source-oracle.manifest
+        cmp benchmark-results/recomputed-base-single-source-oracle.manifest \
+          benchmark-results/evidence/base-single-source-oracle.manifest
+        for STATE in cold warm; do
+          node evidence-candidate/.github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
+            --base "benchmark-results/evidence/base-graph-routing-${STATE}.json" \
+            --candidate "benchmark-results/evidence/candidate-graph-routing-${STATE}.json" \
+            --base-observations "benchmark-results/evidence/base-graph-routing-${STATE}.tsv" \
+            --candidate-observations "benchmark-results/evidence/candidate-graph-routing-${STATE}.tsv" \
+            --minimum-speedup 10 \
+            --report "benchmark-results/recomputed-${STATE}-report.md" \
+            --status "benchmark-results/recomputed-${STATE}-status.json"
+          cmp "benchmark-results/recomputed-${STATE}-report.md" \
+            "benchmark-results/evidence/graph-routing-${STATE}-report.md"
+          cmp "benchmark-results/recomputed-${STATE}-status.json" \
+            "benchmark-results/evidence/graph-routing-${STATE}-status.json"
+        done
 
     - name: Upload graph-routing evidence result
       if: always()
