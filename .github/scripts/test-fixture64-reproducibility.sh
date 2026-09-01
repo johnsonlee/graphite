@@ -23,8 +23,8 @@ test ! -e "${SECOND_OUTPUT}"
 "${SCRIPT_DIR}/prepare-fixture64-graphs.sh" "${JMH_JAR}" "${FIXTURE_DIR}" "${SECOND_OUTPUT}"
 
 diff -u \
-  <(cut -f1-16 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
-  <(cut -f1-16 "${SECOND_OUTPUT}/fixture-provenance.tsv")
+  <(cut -f1-18 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
+  <(cut -f1-18 "${SECOND_OUTPUT}/fixture-provenance.tsv")
 diff -u \
   <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${FIRST_OUTPUT}/graphs.tsv") \
@@ -51,8 +51,10 @@ java -cp "${JMH_JAR}" \
 TAMPERED_PROVENANCE=$(mktemp)
 MODIFIED_FIXTURE_DIR=$(mktemp -d)
 RESOURCE_BACKUP=
+CALL_SITE_INDEX_BACKUP=
 trap 'rm -f "${TAMPERED_PROVENANCE}"; rm -rf "${MODIFIED_FIXTURE_DIR}"; \
-  [[ -z "${RESOURCE_BACKUP}" ]] || rm -f "${RESOURCE_BACKUP}"' EXIT
+  [[ -z "${RESOURCE_BACKUP}" ]] || rm -f "${RESOURCE_BACKUP}"; \
+  [[ -z "${CALL_SITE_INDEX_BACKUP}" ]] || rm -f "${CALL_SITE_INDEX_BACKUP}"' EXIT
 awk -F '\t' 'BEGIN { OFS="\t" } NR == 2 { $16=sprintf("%064d", 0) } { print }' \
   "${FIRST_OUTPUT}/fixture-provenance.tsv" > "${TAMPERED_PROVENANCE}"
 
@@ -68,7 +70,7 @@ if java -Xmx4g \
   exit 1
 fi
 
-RESOURCE_STORE=$(awk -F '\t' 'NR == 2 { print $17 "/graph.resources" }' \
+RESOURCE_STORE=$(awk -F '\t' 'NR == 2 { print $19 "/graph.resources" }' \
   "${SECOND_OUTPUT}/fixture-provenance.tsv")
 RESOURCE_BACKUP=$(mktemp)
 cp "${RESOURCE_STORE}" "${RESOURCE_BACKUP}"
@@ -85,6 +87,24 @@ if java -Xmx4g \
   exit 1
 fi
 cp "${RESOURCE_BACKUP}" "${RESOURCE_STORE}"
+
+CALL_SITE_INDEX=$(awk -F '\t' 'NR == 2 { print $19 "/graph.callsite-string-index" }' \
+  "${SECOND_OUTPUT}/fixture-provenance.tsv")
+CALL_SITE_INDEX_BACKUP=$(mktemp)
+cp "${CALL_SITE_INDEX}" "${CALL_SITE_INDEX_BACKUP}"
+truncate -s 3 "${CALL_SITE_INDEX}"
+if java -Xmx4g \
+  -Dandroid.jar.path="${ANDROID_JAR}" \
+  -Dtika.jar.path="${TIKA_JAR}" \
+  -Dhive.jar.path="${HIVE_JAR}" \
+  -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+  -cp "${JMH_JAR}" \
+  io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+  --verify "${SECOND_OUTPUT}/graphs.tsv" "${SECOND_OUTPUT}/fixture-provenance.tsv"; then
+  echo "Corrupt fixture64 graph.callsite-string-index unexpectedly passed verification" >&2
+  exit 1
+fi
+cp "${CALL_SITE_INDEX_BACKUP}" "${CALL_SITE_INDEX}"
 truncate -s 3 "${RESOURCE_STORE}"
 if java -Xmx4g \
   -Dandroid.jar.path="${ANDROID_JAR}" \
@@ -143,8 +163,8 @@ sha256_stream() {
   fi
 }
 
-FIRST_PROVENANCE_SHA=$(cut -f1-16 "${FIRST_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
-SECOND_PROVENANCE_SHA=$(cut -f1-16 "${SECOND_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
+FIRST_PROVENANCE_SHA=$(cut -f1-18 "${FIRST_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
+SECOND_PROVENANCE_SHA=$(cut -f1-18 "${SECOND_OUTPUT}/fixture-provenance.tsv" | sha256_stream)
 FIRST_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
   "${FIRST_OUTPUT}/graphs.tsv" | sha256_stream)
 SECOND_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
@@ -163,4 +183,4 @@ if [[ -n "${RECEIPT}" ]]; then
       repeatedManifestSemanticSha256: $repeatedManifestSemanticSha256}' > "${RECEIPT}"
 fi
 
-echo "Fixture64 identities/resources are reproducible and provenance/resource tampering is rejected"
+echo "Fixture64 identities/resources/indexes are reproducible and all tampering is rejected"

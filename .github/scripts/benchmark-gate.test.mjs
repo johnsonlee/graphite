@@ -12,6 +12,7 @@ import {
     BENCHMARK_COVERAGE_DOMAINS,
     COMMENT_MARKER,
     aggregateReports,
+    canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
     confirmLatencyResources,
@@ -39,19 +40,42 @@ import {
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
 
+test("canonical correctness comparison is order-insensitive and rejects incomplete or ambiguous records", () => {
+    const first = "query-a|payload-a";
+    const second = "query-b|payload-b";
+    const expected = `${first}\n${second}\n`;
+
+    assert.equal(
+        canonicalCorrectnessManifest(`${second}\n${first}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.notEqual(
+        canonicalCorrectnessManifest(`${first}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.notEqual(
+        canonicalCorrectnessManifest(`${first}-mutated\n${second}\n`, "candidate"),
+        canonicalCorrectnessManifest(expected, "oracle")
+    );
+    assert.throws(
+        () => canonicalCorrectnessManifest(`${first}\nquery-a|payload-b\n`, "candidate"),
+        /duplicate query IDs/
+    );
+});
+
 function graphIdPressureResult(overrides = {}, indexState = "cold") {
-    const warm = indexState === "warm";
+    const warm = indexState === "warm" || indexState === "startup-prepared";
     const values = {
         graphCount: 64,
         distinctGraphPathCount: 64,
-        queryCount: 768,
-        successCount: 768,
+        queryCount: 1137,
+        successCount: 1137,
         timeoutCount: 0,
         failureCount: 0,
         graphIdTargetCount: 64,
         graphParameterTargetCount: 64,
-        coverageShapeCount: 4,
-        coverageFamilyCount: 2,
+        coverageShapeCount: 7,
+        coverageFamilyCount: 4,
         coverageSelectivityCount: 3,
         cpuCoreUtilizationPermille: 1_000,
         peakUsedHeapBytes: 3 * 1024 ** 3,
@@ -63,10 +87,10 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteTrigramIndexedGraphs: 0,
         callSiteParallelScanCount: warm ? 0 : 64,
         callSiteParallelScanGraphCount: warm ? 0 : 64,
-        callSiteStringIndexLookupCount: warm ? 768 : 704,
+        callSiteStringIndexLookupCount: warm ? 2043 : 1979,
         callSiteStringIndexLookupGraphCount: 64,
-        callSiteStringIndexLookupMinPerGraph: warm ? 12 : 11,
-        callSiteStringIndexLookupMaxPerGraph: warm ? 12 : 11,
+        callSiteStringIndexLookupMinPerGraph: warm ? 30 : 29,
+        callSiteStringIndexLookupMaxPerGraph: warm ? 39 : 38,
         callSiteScanPeakActiveWorkers: warm ? 0 : 8,
         ...overrides
     };
@@ -90,7 +114,12 @@ function graphIdObservations(
     forceZeroRows = false
 ) {
     const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
-        "targetGraphId\tworkloadIdentity\toutcome\trowCount\tresponseBytes\tdigest\tlatencyNanos";
+        "targetGraphId\ttargetGraphIds\tselectedGraphCount\tworkloadIdentity\toutcome\trowCount\t" +
+        "responseBytes\tdigest\tlatencyNanos\t" +
+        "executionPath\tinputSourceCount\taccessedGraphCount\taccessedGraphIds\t" +
+        "targetGraphAccessCount\tnonTargetGraphAccessCount\tparallelScanCount\tindexLookupCount\t" +
+        "peakActiveWorkers\tgraphWorkUnits\tgraphIdSourceSelections\tgraphIdSourcePruningExecutions\t" +
+        "graphIdSourcesPruned\tfilteredNodeLimitFastPathExecutions\tgeneralFallbackExecutions";
     const rows = [];
     const shapes = [
         "graph-id-property-wrapped-contains",
@@ -110,18 +139,75 @@ function graphIdObservations(
                 rows.push([
                     `${shape}-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
                     "graph-id", shape, selectivity, "contains", "graph-routing",
-                    "properties", "200", `graph-${targetIndex}`, workloadIdentity,
+                    "properties", "200", `graph-${targetIndex}`, `graph-${targetIndex}`, "1", workloadIdentity,
                     outcome, rowCount, responseBytes, digest,
-                    String(latencyNanos)
+                    String(latencyNanos), "cypher-graph-id-predicate", "64", "1", `graph-${targetIndex}`,
+                    "1", "0", "0", "1", "0", "1", "1", "1", "63", "1", "0"
                 ].join("\t"));
             }
             rows.push([
-                `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
-                "graph-parameter", "api-graph-parameter-wrapped-contains", selectivity,
-                "request-graph-selection-and-wrapped-contains", "api-graph-parameter", "properties", "200",
-                `graph-${targetIndex}`, workloadIdentity, outcome, rowCount, responseBytes, digest,
-                String(graphParameterLatencyNanos)
+                `request-selected-source-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                "graph-parameter", "request-selected-source-wrapped-contains", selectivity,
+                "request-graph-selection-and-wrapped-contains", "request-selected-source", "properties", "200",
+                `graph-${targetIndex}`, `graph-${targetIndex}`, "1", workloadIdentity,
+                outcome, rowCount, responseBytes, digest,
+                String(graphParameterLatencyNanos), "request-selected-source", "1", "1", `graph-${targetIndex}`,
+                "1", "0", "0", "1", "0", "1", "0", "0", "0", "1", "0"
             ].join("\t"));
+        }
+    }
+    for (const width of [2, 8, 64]) {
+        const groupCount = 64 / width;
+        for (let groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+            const targetGraphIds = Array.from(
+                { length: width }, (_, offset) => `graph-${groupIndex * width + offset}`
+            );
+            const targetGraphId = targetGraphIds[0];
+            const workloadIdentity = crypto.createHash("sha256")
+                .update(targetGraphIds.map((graphId) => {
+                    const index = Number(graphId.slice("graph-".length));
+                    const identity = crypto.createHash("sha256").update(`graph-${index}`).digest("hex");
+                    return `${graphId}\0${identity}`;
+                }).join("\0"))
+                .digest("hex");
+            for (const selectivity of selectivities) {
+                const rowCount = forceZeroRows || selectivity === "zero" ? "0" :
+                    selectivity === "targeted" ? "10" : "200";
+                const responseBytes = rowCount === "0" ? "64" : "128";
+                const digest = crypto.createHash("sha256")
+                    .update(`set-${width}-${groupIndex}-${selectivity}`).digest("hex");
+                const suffix = `k${String(width).padStart(2, "0")}-group-` +
+                    `${String(groupIndex).padStart(2, "0")}-${selectivity}`;
+                const accessedGraphIds = selectivity === "dense" ? targetGraphIds.slice(0, 1) : targetGraphIds;
+                const accessedGraphCount = accessedGraphIds.length;
+                for (const [shape, operator, boundary] of [
+                    ["graph-id-in-literal-wrapped-contains", "graph-id-in-literal-and-wrapped-contains",
+                        "graph-routing-set"],
+                    ["graph-id-in-parameter-wrapped-contains", "graph-id-in-parameter-and-wrapped-contains",
+                        "parameters"]
+                ]) {
+                    rows.push([
+                        `${shape}-${suffix}`, "graph-id-set", shape, selectivity, operator, boundary,
+                        "properties", "200", targetGraphId, targetGraphIds.join(","), String(width),
+                        workloadIdentity, outcome, rowCount, responseBytes, digest, String(latencyNanos),
+                        "cypher-graph-id-predicate", "64", String(accessedGraphCount),
+                        accessedGraphIds.join(","), String(accessedGraphCount), "0", "0",
+                        String(accessedGraphCount), "0", "1", "1",
+                        width < 64 ? "1" : "0", String(64 - width), "1", "0"
+                    ].join("\t"));
+                }
+                rows.push([
+                    `request-selected-set-wrapped-contains-${suffix}`, "graph-set-reference",
+                    "request-selected-set-wrapped-contains", selectivity,
+                    "request-graph-set-selection-and-wrapped-contains", "request-selected-source",
+                    "properties", "200", targetGraphId, targetGraphIds.join(","), String(width),
+                    workloadIdentity, outcome, rowCount, responseBytes, digest,
+                    String(graphParameterLatencyNanos), "request-selected-source", String(width),
+                    String(accessedGraphCount), accessedGraphIds.join(","), String(accessedGraphCount),
+                    "0", "0", String(accessedGraphCount), "0", "1",
+                    "0", "0", "0", "1", "0"
+                ].join("\t"));
+            }
         }
     }
     return `${header}\n${rows.join("\n")}\n`;
@@ -165,12 +251,12 @@ function graphParameterReferenceManifest() {
         for (const selectivity of ["zero", "targeted", "dense"]) {
             const rowCount = selectivity === "zero" ? 0 : selectivity === "targeted" ? 10 : 200;
             records.push([
-                `api-graph-parameter-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
+                `request-selected-source-wrapped-contains-target-${String(targetIndex).padStart(2, "0")}-${selectivity}`,
                 "graph-parameter",
-                "api-graph-parameter-wrapped-contains",
+                "request-selected-source-wrapped-contains",
                 selectivity,
                 "request-graph-selection-and-wrapped-contains",
-                "api-graph-parameter",
+                "request-selected-source",
                 "properties",
                 `graph-${targetIndex}`,
                 workloadIdentity,
@@ -182,13 +268,61 @@ function graphParameterReferenceManifest() {
             ].join("|"));
         }
     }
+    for (const width of [2, 8, 64]) {
+        for (let groupIndex = 0; groupIndex < 64 / width; groupIndex++) {
+            const targetGraphIds = Array.from(
+                { length: width }, (_, offset) => `graph-${groupIndex * width + offset}`
+            );
+            const workloadIdentity = crypto.createHash("sha256")
+                .update(targetGraphIds.map((graphId) => {
+                    const index = Number(graphId.slice("graph-".length));
+                    const identity = crypto.createHash("sha256").update(`graph-${index}`).digest("hex");
+                    return `${graphId}\0${identity}`;
+                }).join("\0"))
+                .digest("hex");
+            for (const selectivity of ["zero", "targeted", "dense"]) {
+                const rowCount = selectivity === "zero" ? 0 : selectivity === "targeted" ? 10 : 200;
+                records.push([
+                    `request-selected-set-wrapped-contains-k${String(width).padStart(2, "0")}-group-` +
+                        `${String(groupIndex).padStart(2, "0")}-${selectivity}`,
+                    "graph-set-reference",
+                    "request-selected-set-wrapped-contains",
+                    selectivity,
+                    "request-graph-set-selection-and-wrapped-contains",
+                    "request-selected-source",
+                    "properties",
+                    targetGraphIds[0],
+                    workloadIdentity,
+                    200,
+                    "success",
+                    rowCount,
+                    rowCount === 0 ? 64 : 128,
+                    crypto.createHash("sha256")
+                        .update(`set-${width}-${groupIndex}-${selectivity}`).digest("hex")
+                ].join("|"));
+            }
+        }
+    }
     return `${records.join("\n")}\n`;
 }
 
-test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
+test("fixture64 startup-prepared graphId pressure requires 10x at P95", () => {
+    const startupBase = graphIdPressureResult({
+        callSiteParallelScanCount: 64,
+        callSiteParallelScanGraphCount: 64,
+        callSiteStringIndexLookupCount: 14139,
+        callSiteStringIndexLookupMinPerGraph: 181,
+        callSiteStringIndexLookupMaxPerGraph: 266,
+        callSiteScanPeakActiveWorkers: 8
+    }, "startup-prepared");
+    const startupCandidate = graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 64,
+        callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64
+    }, "startup-prepared");
     const passed = compareGraphIdPressure(
-        [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [startupBase],
+        [startupCandidate],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -199,15 +333,17 @@ test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(passed.graphParameterP95Speedup, 20);
     assert.equal(passed.gateP50Speedup, 20);
     assert.equal(passed.gateP95Speedup, 20);
-    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 64);
-    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 704);
-    assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 8);
+    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 0);
+    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 2043);
+    assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 0);
+    assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.width), [2, 8, 64]);
+    assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.sampleCount), [192, 48, 6]);
     assert.match(renderGraphIdPressureReport(passed), /Effective CPU cores/);
     assert.match(renderGraphIdPressureReport(passed), /Peak used heap/);
 
     const tooSlow = compareGraphIdPressure(
-        [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [startupBase],
+        [startupCandidate],
         graphIdObservations(9_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -228,6 +364,25 @@ test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     assert.equal(serialCandidate.passed, false);
     assert.match(serialCandidate.errors.join("\n"), /exactly one intra-graph parallel scan on each graph/);
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
+});
+
+test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
+    const stable = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(1_000_000, "success", 1_000_000),
+        graphIdObservations(1_100_000, "success", 1_100_000)
+    );
+    assert.equal(stable.passed, true, stable.errors.join("\n"));
+    assert.ok(stable.p95Speedup < 1);
+
+    const materialRegression = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(1_000_000, "success", 1_000_000),
+        graphIdObservations(2_000_000, "success", 2_000_000)
+    );
+    assert.equal(materialRegression.passed, false);
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {
@@ -255,14 +410,17 @@ test("fixture64 scorer rejects detached and correlated-rotation latency rows", (
     const rows = candidate.trim().split("\n");
     const rotated = [rows[0], ...rows.slice(1).map((row) => {
         const columns = row.split("\t");
-        const ordinal = Number(columns[0].match(/-target-(\d{2})-/)[1]);
+        const targetMatch = columns[0].match(/-target-(\d{2})-/);
+        if (targetMatch === null) return row;
+        const ordinal = Number(targetMatch[1]);
         const replacement = (ordinal + 1) % 64;
         columns[0] = columns[0].replace(
             `-target-${String(ordinal).padStart(2, "0")}-`,
             `-target-${String(replacement).padStart(2, "0")}-`
         );
         columns[8] = `graph-${replacement}`;
-        columns[9] = crypto.createHash("sha256").update(`graph-${replacement}`).digest("hex");
+        columns[9] = `graph-${replacement}`;
+        columns[11] = crypto.createHash("sha256").update(`graph-${replacement}`).digest("hex");
         return columns.join("\t");
     })].join("\n") + "\n";
     const correlatedRotation = compareGraphIdPressureRaw(
@@ -335,14 +493,14 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
         [graphIdPressureResult({
             callSiteIndexAdmittedGraphs: 64,
             callSiteTrigramIndexedGraphs: 64,
-            callSiteStringIndexLookupCount: 767,
+            callSiteStringIndexLookupCount: 2042,
             callSiteStringIndexLookupGraphCount: 63
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(partialIndexUse.passed, false);
-    assert.match(partialIndexUse.errors.join("\n"), /exactly one retained-index lookup per query/);
+    assert.match(partialIndexUse.errors.join("\n"), /exactly 2,043 retained-index lookups/);
 
     const imbalancedColdIndexUse = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -362,19 +520,57 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
             callSiteIndexAdmittedGraphs: 64,
             callSiteTrigramIndexedGraphs: 64,
             callSiteStringIndexLookupMinPerGraph: 1,
-            callSiteStringIndexLookupMaxPerGraph: 705
+            callSiteStringIndexLookupMaxPerGraph: 2044
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(imbalancedWarmIndexUse.passed, false);
-    assert.match(imbalancedWarmIndexUse.errors.join("\n"), /perGraph=1\.\.705/);
+    assert.match(imbalancedWarmIndexUse.errors.join("\n"), /perGraph=1\.\.2044/);
+});
+
+test("fixture64 startup-prepared pressure measures load-time readiness without query warmup", () => {
+    const base = graphIdPressureResult({
+        callSiteParallelScanCount: 64,
+        callSiteParallelScanGraphCount: 64,
+        callSiteStringIndexLookupCount: 14139,
+        callSiteStringIndexLookupMinPerGraph: 181,
+        callSiteStringIndexLookupMaxPerGraph: 266,
+        callSiteScanPeakActiveWorkers: 8
+    }, "startup-prepared");
+    const candidate = graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 64,
+        callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64
+    }, "startup-prepared");
+    const comparison = compareGraphIdPressure(
+        [base],
+        [candidate],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(comparison.passed, true);
+    assert.equal(comparison.indexState, "startup-prepared");
+    assert.match(renderGraphIdPressureReport(comparison), /Index state: \*\*startup-prepared\*\*/);
+
+    const bothPrewarmed = compareGraphIdPressure(
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 64
+        }, "startup-prepared")],
+        [candidate],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(bothPrewarmed.passed, false);
+    assert.match(bothPrewarmed.errors.join("\n"), /must preserve one lazy-build scan per graph/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 768 })],
+        [graphIdPressureResult({ distinctGraphPathCount: 4, successCount: 0, failureCount: 1137 })],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "failed")
     );
@@ -384,7 +580,7 @@ test("graphId pressure rejects repeated graph paths and failed candidate queries
     assert.match(comparison.errors.join("\n"), /successful positive latency samples/);
 });
 
-test("graphId pressure hard-gates API graph parameter parity and latency", () => {
+test("graphId pressure hard-gates request-selected source parity and latency", () => {
     const correct = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
     const targetedDigest = crypto.createHash("sha256").update("1-targeted").digest("hex");
     const wrongDigest = correct.replace(targetedDigest, "f".repeat(64));
@@ -419,14 +615,34 @@ test("graphId pressure hard-gates API graph parameter parity and latency", () =>
     assert.equal(routingOnly.p50Speedup, 20);
     assert.equal(routingOnly.graphParameterP50Speedup, 1);
 
-    const acceptableApiRegression = compareGraphIdPressure(
+    const acceptableRequestSelectionRegression = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_100_000_000)
     );
-    assert.equal(acceptableApiRegression.passed, true);
-    assert.equal(acceptableApiRegression.graphParameterP50Regression, 0.10000000000000009);
+    assert.equal(acceptableRequestSelectionRegression.passed, true);
+    assert.equal(acceptableRequestSelectionRegression.graphParameterP50Regression, 0.10000000000000009);
+
+    const microsecondJitter = compareGraphIdPressure(
+        [graphIdPressureResult({
+            callSiteParallelScanCount: 64,
+            callSiteParallelScanGraphCount: 64,
+            callSiteStringIndexLookupCount: 14139,
+            callSiteStringIndexLookupMinPerGraph: 181,
+            callSiteStringIndexLookupMaxPerGraph: 266,
+            callSiteScanPeakActiveWorkers: 8
+        }, "startup-prepared")],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 64
+        }, "startup-prepared")],
+        graphIdObservations(20_000_000, "success", 30_000),
+        graphIdObservations(1_000_000, "success", 40_000)
+    );
+    assert.equal(microsecondJitter.passed, true);
+    assert.ok(microsecondJitter.graphParameterP50Regression > 0.15);
 
     const fakeDistribution = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -455,12 +671,86 @@ test("graphId pressure requires every target graph and all three graphId spellin
     assert.match(comparison.errors.join("\n"), /zero\/targeted\/dense coverage is incomplete/);
 });
 
+test("graphId set routing proves K-source access and 64-K pruning against its reference", () => {
+    const base = graphIdObservations(20_000_000_000, "success", 20_000_000_000);
+    const candidate = graphIdObservations(1_000_000_000, "success", 1_000_000_000);
+    const mutate = (contents, id, changes) => {
+        const lines = contents.trimEnd().split("\n");
+        const headers = lines[0].split("\t");
+        return `${lines.map((line, index) => {
+            if (index === 0) return line;
+            const values = line.split("\t");
+            if (values[headers.indexOf("id")] !== id) return line;
+            for (const [field, value] of Object.entries(changes)) values[headers.indexOf(field)] = value;
+            return values.join("\t");
+        }).join("\n")}\n`;
+    };
+    const k8Id = "graph-id-in-literal-wrapped-contains-k08-group-00-targeted";
+    const touchedExtraSource = mutate(candidate, k8Id, {
+        accessedGraphCount: "9",
+        accessedGraphIds: "graph-0,graph-1,graph-2,graph-3,graph-4,graph-5,graph-6,graph-7,graph-8",
+        targetGraphAccessCount: "8",
+        nonTargetGraphAccessCount: "1"
+    });
+    const accessFailure = compareGraphIdPressure(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, touchedExtraSource
+    );
+    assert.equal(accessFailure.passed, false);
+    assert.match(accessFailure.errors.join("\n"), /selected-graph isolation failed/);
+
+    const k64Id = "graph-id-in-parameter-wrapped-contains-k64-group-00-dense";
+    const fakeK64Pruning = mutate(candidate, k64Id, {
+        graphIdSourcePruningExecutions: "1",
+        graphIdSourcesPruned: "63"
+    });
+    const pruningFailure = compareGraphIdPressure(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, fakeK64Pruning
+    );
+    assert.equal(pruningFailure.passed, false);
+    assert.match(pruningFailure.errors.join("\n"), /do not prove 1\/0\/0/);
+});
+
+test("K64 graph-set tolerates sub-0.25ms P50 and sub-1ms P95 single-shot jitter", () => {
+    const setK64Latencies = (contents, values) => {
+        let index = 0;
+        const lines = contents.trimEnd().split("\n");
+        const headers = lines[0].split("\t");
+        const idColumn = headers.indexOf("id");
+        const latencyColumn = headers.indexOf("latencyNanos");
+        return `${lines.map((line, lineIndex) => {
+            if (lineIndex === 0) return line;
+            const fields = line.split("\t");
+            if (fields[idColumn].startsWith("graph-id-in-") && fields[idColumn].includes("-k64-")) {
+                fields[latencyColumn] = String(values[index++]);
+            }
+            return fields.join("\t");
+        }).join("\n")}\n`;
+    };
+    const base = setK64Latencies(
+        graphIdObservations(20_000_000, "success", 1_000_000),
+        [167_000, 167_000, 167_000, 167_000, 1_000_000, 1_000_000]
+    );
+    const candidate = setK64Latencies(
+        graphIdObservations(1_000_000, "success", 1_000_000),
+        [358_000, 358_000, 358_000, 358_000, 1_800_000, 1_800_000]
+    );
+    const comparison = compareGraphIdPressure(
+        [graphIdPressureResult()], [graphIdPressureResult()], base, candidate
+    );
+    assert.equal(comparison.passed, true, comparison.errors.join("\n"));
+    const k64 = comparison.graphSetLatencyByWidth.find((summary) => summary.width === 64);
+    assert.equal(k64.baseP50, 167_000);
+    assert.equal(k64.candidateP50, 358_000);
+    assert.equal(k64.baseP95, 1_000_000);
+    assert.equal(k64.candidateP95, 1_800_000);
+});
+
 test("graph-routing oracle is derived only from complete successful base single-source references", () => {
     const references = graphParameterReferenceManifest();
     const derived = deriveGraphRoutingOracle(references);
     assert.equal(derived.passed, true);
-    assert.equal(derived.records.length, 768);
-    assert.equal(new Set(derived.records.map((record) => record.id)).size, 768);
+    assert.equal(derived.records.length, 1137);
+    assert.equal(new Set(derived.records.map((record) => record.id)).size, 1137);
 
     const referenceBySlot = new Map(derived.records
         .filter((record) => record.family === "graph-parameter")
@@ -472,10 +762,21 @@ test("graph-routing oracle is derived only from complete successful base single-
             assert.equal(record[field], reference[field], `${record.id} ${field}`);
         }
     }
+    const graphSetReferences = new Map(derived.records
+        .filter((record) => record.family === "graph-set-reference")
+        .map((record) => [record.id.replace("request-selected-set-wrapped-contains-", ""), record]));
+    for (const record of derived.records.filter((item) => item.family === "graph-id-set")) {
+        const slot = record.id.replace(`${record.shape}-`, "");
+        const reference = graphSetReferences.get(slot);
+        assert.ok(reference, `${record.id} reference`);
+        for (const field of ["outcome", "rowCount", "responseBytes", "digest", "workloadIdentity"]) {
+            assert.equal(record[field], reference[field], `${record.id} ${field}`);
+        }
+    }
 
     const missing = deriveGraphRoutingOracle(references.split("\n").slice(1).join("\n"));
     assert.equal(missing.passed, false);
-    assert.match(missing.errors.join("\n"), /expected 64 targets x 3 selectivities|missing target-00-zero/);
+    assert.match(missing.errors.join("\n"), /expected 192 single-source|missing target-00-zero/);
 
     const duplicateLine = references.split("\n")[0];
     const duplicate = deriveGraphRoutingOracle(`${references}${duplicateLine}\n`);
@@ -563,7 +864,7 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
         "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
         "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
-        "graphPath"
+        "callSiteIndexBytes", "callSiteIndexSha256", "graphPath"
     ].join("\t");
     const provenanceRows = [];
     const manifestRows = ["# fixture64"];
@@ -578,8 +879,8 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         ["graph-id", "graph-id-property-wrapped-contains", "graph-id-equals-and-wrapped-contains", "graph-routing"],
         ["graph-id", "graph-id-function-wrapped-contains", "graph-id-function-equals-and-wrapped-contains", "graph-routing"],
         ["graph-id", "graph-id-parameter-wrapped-contains", "graph-id-parameter-equals-and-wrapped-contains", "parameters"],
-        ["graph-parameter", "api-graph-parameter-wrapped-contains",
-            "request-graph-selection-and-wrapped-contains", "api-graph-parameter"]
+        ["graph-parameter", "request-selected-source-wrapped-contains",
+            "request-graph-selection-and-wrapped-contains", "request-selected-source"]
     ];
     const selectivities = ["zero", "targeted", "dense"];
     for (let graphIndex = 0; graphIndex < 64; graphIndex++) {
@@ -588,7 +889,8 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         provenanceRows.push([
             graphId, `jar-${Math.floor(graphIndex / 16)}`, String(graphIndex % 16), "fixture.jar",
             "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
-            "c".repeat(64), "2", "d".repeat(64), workloadIdentity, `/tmp/${graphId}.graph`
+            "c".repeat(64), "2", "d".repeat(64), workloadIdentity,
+            "123", "e".repeat(64), `/tmp/${graphId}.graph`
         ].join("\t"));
         manifestRows.push([
             graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense", workloadIdentity
@@ -719,6 +1021,99 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
     fs.rmSync(root, { recursive: true });
 });
 
+test("fixture workload verifier permits only main's legacy graph-set fanout", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-fixture-routing-role-"));
+    const evidence = path.join(root, "evidence");
+    const recomputed = path.join(root, "recomputed");
+    fs.mkdirSync(evidence);
+    fs.mkdirSync(recomputed);
+    const graphIds = Array.from({ length: 64 }, (_, index) => `graph-${index}`);
+    const provenanceHeader = [
+        "graphId", "corpus", "shard", "sourceJar", "sourceJarSha256", "shardBytecodeSha256",
+        "classCount", "nodeCount", "callSiteCount", "zeroTerm", "targetedTerm", "denseTerm",
+        "querySemanticSha256", "resourceCount", "resourceSemanticSha256", "workloadIdentity",
+        "callSiteIndexBytes", "callSiteIndexSha256", "graphPath"
+    ].join("\t");
+    const provenance = `${provenanceHeader}\n${graphIds.map((graphId, index) => [
+        graphId, `jar-${Math.floor(index / 16)}`, String(index % 16), "fixture.jar",
+        "a".repeat(64), "b".repeat(64), "10", "100", "20", "absent", "target", "dense",
+        "c".repeat(64), "2", "d".repeat(64),
+        crypto.createHash("sha256").update(graphId).digest("hex"),
+        "123", "e".repeat(64), `/tmp/${graphId}.graph`
+    ].join("\t")).join("\n")}\n`;
+    const manifest = `# fixture64\n${graphIds.map((graphId) => [
+        graphId, `/tmp/${graphId}.graph`, "absent", "target", "dense",
+        crypto.createHash("sha256").update(graphId).digest("hex")
+    ].join("\t")).join("\n")}\n`;
+    for (const directory of [evidence, recomputed]) {
+        fs.writeFileSync(path.join(directory, "fixture-provenance.tsv"), provenance);
+        fs.writeFileSync(path.join(directory, "graphs.tsv"), manifest);
+    }
+
+    const strictObservations = graphIdObservations(1_000_000);
+    const [observationHeader, ...strictRows] = strictObservations.trimEnd().split("\n");
+    const fields = observationHeader.split("\t");
+    const familyIndex = fields.indexOf("family");
+    const selectivityIndex = fields.indexOf("selectivity");
+    const selectedCountIndex = fields.indexOf("selectedGraphCount");
+    const accessedCountIndex = fields.indexOf("accessedGraphCount");
+    const accessedIdsIndex = fields.indexOf("accessedGraphIds");
+    const targetAccessCountIndex = fields.indexOf("targetGraphAccessCount");
+    const nonTargetAccessCountIndex = fields.indexOf("nonTargetGraphAccessCount");
+    const legacyBaseRows = strictRows.map((row) => {
+        const values = row.split("\t");
+        if (values[familyIndex] === "graph-id-set") {
+            const width = Number(values[selectedCountIndex]);
+            const targetOrdinal = graphIds.indexOf(values[fields.indexOf("targetGraphId")]);
+            const dense = values[selectivityIndex] === "dense";
+            const accessedGraphIds = dense ? graphIds.slice(0, targetOrdinal + 1) : graphIds;
+            values[accessedCountIndex] = String(accessedGraphIds.length);
+            values[accessedIdsIndex] = accessedGraphIds.join(",");
+            values[targetAccessCountIndex] = dense ? "1" : String(width);
+            values[nonTargetAccessCountIndex] = dense ? String(targetOrdinal) : String(64 - width);
+        }
+        return values.join("\t");
+    });
+    const legacyBaseObservations = `${observationHeader}\n${legacyBaseRows.join("\n")}\n`;
+    const referenceRows = strictRows.filter((row) => {
+        const family = row.split("\t")[familyIndex];
+        return family === "graph-parameter" || family === "graph-set-reference";
+    });
+    const referenceObservationsContents = `${observationHeader}\n${referenceRows.join("\n")}\n`;
+
+    const files = Object.fromEntries([
+        "reference-observations", "reference-correctness", "semantic-oracle",
+        "base-cold-observations", "base-cold-correctness",
+        "candidate-cold-observations", "candidate-cold-correctness",
+        "base-warm-observations", "base-warm-correctness",
+        "candidate-warm-observations", "candidate-warm-correctness"
+    ].map((name) => [name, path.join(evidence, name)]));
+    fs.writeFileSync(files["reference-observations"], referenceObservationsContents);
+    fs.writeFileSync(files["reference-correctness"], correctnessFromObservations(referenceObservationsContents));
+    fs.writeFileSync(files["semantic-oracle"], correctnessFromObservations(strictObservations));
+    for (const state of ["cold", "warm"]) {
+        fs.writeFileSync(files[`base-${state}-observations`], legacyBaseObservations);
+        fs.writeFileSync(files[`base-${state}-correctness`], correctnessFromObservations(strictObservations));
+        fs.writeFileSync(files[`candidate-${state}-observations`], strictObservations);
+        fs.writeFileSync(files[`candidate-${state}-correctness`], correctnessFromObservations(strictObservations));
+    }
+    const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
+    const verify = () => spawnSync("bash", [
+        verifier.pathname, evidence, recomputed,
+        files["reference-observations"], files["reference-correctness"], files["semantic-oracle"],
+        files["base-cold-observations"], files["base-cold-correctness"],
+        files["candidate-cold-observations"], files["candidate-cold-correctness"],
+        files["base-warm-observations"], files["base-warm-correctness"],
+        files["candidate-warm-observations"], files["candidate-warm-correctness"]
+    ], { encoding: "utf8" });
+    const accepted = verify();
+    assert.equal(accepted.status, 0, `${accepted.stdout}\n${accepted.stderr}`);
+
+    fs.writeFileSync(files["candidate-cold-observations"], legacyBaseObservations);
+    assert.notEqual(verify().status, 0);
+    fs.rmSync(root, { recursive: true });
+});
+
 test("canonical JAR hash accepts overlapping duplicate fat-JAR entries", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphite-overlapping-jar-"));
     const archivePath = path.join(root, "overlapping.jar");
@@ -753,6 +1148,14 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         new URL("./run-real64-graph-routing.sh", import.meta.url),
         "utf8"
     );
+    const harness = fs.readFileSync(
+        new URL(
+            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+                "LargeBroadQueryPressureBenchmark.kt",
+            import.meta.url
+        ),
+        "utf8"
+    );
 
     assert.doesNotMatch(driver, /<base-jmh\.jar>|<candidate-jmh\.jar>/);
     assert.doesNotMatch(driver, /<reviewed-oracle>|ORACLE=\$2/);
@@ -767,6 +1170,11 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(
         driver,
         /cp "\$\{CANDIDATE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}" "\$\{BASE_TREE\}\/\$\{CORRECTNESS_MANIFEST_PATH\}"/
+    );
+    assert.match(driver, /if ! cmp -s[\s\S]*BASE_TREE[\s\S]*CANDIDATE_TREE/);
+    assert.match(
+        driver,
+        /git -C "\$\{BASE_TREE\}" diff --name-only \| sort\)" = "\$\{EXPECTED_BASE_INSTRUMENTATION\}"/
     );
     assert.equal((driver.match(/:webgraph:jmhJar/g) ?? []).length, 2);
     assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
@@ -796,11 +1204,18 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         assert.match(driver, new RegExp(`--arg ${field} `));
     }
     assert.match(driver, /> "\$\{OUTPUT_DIR\}\/provenance\.json"/);
-    assert.match(driver, /coverageFamily=graph-parameter/);
+    assert.match(driver, /coverageFamily=graph-routing-reference/);
+    assert.match(harness, /graphite\.webgraph\.prepareCallSiteStringIndexOnLoad/);
+    assert.match(harness, /indexState == STARTUP_PREPARED_INDEX_STATE/);
+    assert.match(harness, /System\.clearProperty\(PREPARE_INDEX_ON_LOAD_PROPERTY\)/);
+    assert.equal((driver.match(/for INDEX_STATE in cold warm startup-prepared/g) ?? []).length, 2);
+    assert.match(driver, /graphite-fixture64-evidence-v7/);
+    assert.match(driver, /startup=%.2f\/%.2fx/);
     assert.match(driver, /derive-graph-routing-oracle/);
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.match(driver, /Fixture64GraphPreparation/);
     assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
+    assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-string-index"/);
     assert.match(driver, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(driver, /cmp -s "\$\{SUPPLIED_JAR\}" "\$\{PINNED_JAR\}"/);
     assert.match(driver, /test-fixture64-reproducibility\.sh/);
@@ -842,7 +1257,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
     assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
-    assert.match(reproducibility, /cut -f1-16/);
+    assert.match(reproducibility, /cut -f1-18/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
@@ -851,6 +1266,12 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(reproducibility, /Missing fixture64 graph\.resources unexpectedly passed verification/);
     assert.match(reproducibility, /Corrupt fixture64 graph\.resources unexpectedly passed verification/);
     assert.match(reproducibility, /Content-tampered fixture64 graph\.resources unexpectedly passed verification/);
+    assert.match(
+        reproducibility,
+        /Corrupt fixture64 graph\.callsite-string-index unexpectedly passed verification/
+    );
+    assert.match(source, /callSiteIndexSha256/);
+    assert.match(source, /isCallSiteStringIndexLoadedFromPersistence\(\)/);
 });
 
 function jmhResult({
@@ -1461,6 +1882,8 @@ function corpusLine(corpus, overrides = {}) {
         methods: 80,
         callSites: 60,
         persistedBytes: 100_000_000,
+        callSiteIndexBytes: 0,
+        productionIndexPrepared: 0,
         buildMs: 10_000,
         saveMs: 2_000,
         mappedLoadSamples: 5,
@@ -1638,6 +2061,22 @@ test("large-corpus comparison tolerates only small persisted-size noise", () => 
     const comparison = compareLargeCorpus(baseCorpusLog, outsideTolerance);
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /exceeding the 4096-byte tolerance/);
+});
+
+test("large-corpus comparison requires a self-consistent production index lifecycle", () => {
+    const missingIndex = corpusLog({
+        hive: { productionIndexPrepared: 1, callSiteIndexBytes: 0 }
+    });
+    const unexpectedIndex = corpusLog({
+        hive: { productionIndexPrepared: 0, callSiteIndexBytes: 1_024 }
+    });
+
+    assert.equal(compareLargeCorpus(baseCorpusLog, missingIndex).passed, false);
+    assert.equal(compareLargeCorpus(baseCorpusLog, unexpectedIndex).passed, false);
+    assert.match(
+        compareLargeCorpus(baseCorpusLog, missingIndex).errors.join("\n"),
+        /invalid production CallSite-index lifecycle measurement/
+    );
 });
 
 test("coverage taxonomy assigns every blocking component exactly once", () => {
@@ -1888,9 +2327,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
     assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/fixture64-graph-routing/);
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
-    assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
+    assert.match(workflow, /Startup-prepared P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v4/);
+    assert.match(workflow, /graphite-fixture64-evidence-v7/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
     assert.match(workflow, /reproducibilityScriptSha256/);
@@ -1905,6 +2344,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.doesNotMatch(workflow, /github\.request\('GET \/gists\/\{gist_id\}\/\{sha\}'/);
     assert.match(workflow, /compare-graph-id-pressure/);
     assert.match(workflow, /candidate-graph-routing-\$\{state\}\.correctness/);
+    assert.match(workflow, /const \{ canonicalCorrectnessManifest \} = await import/);
+    assert.match(workflow, /canonicalCorrectnessManifest\(correctness/);
+    assert.doesNotMatch(workflow, /if \(correctness !== oracle\)/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),
@@ -1925,7 +2367,8 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
             "../../graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
                 "LargeCorpusPerformanceGateTest.kt",
             import.meta.url
-        )
+        ),
+        "utf8"
     );
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
     const realOnlyResourceHarness = fs.readFileSync(
@@ -1966,11 +2409,16 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
     );
+    assert.match(transitionHarness, /saveWithProductionCallSiteIndex/);
+    assert.match(transitionHarness, /productionIndexPrepared=/);
+    assert.match(transitionHarness, /callSiteIndexBytes=/);
+    assert.match(transitionHarness, /CALL_SITE_INDEX_QUERY/);
+    assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "base\/\$\{HARNESS\}"/);
     assert.match(
         workflow,
         new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
     );
-    assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b625442/);
+    assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087/);
     assert.match(
         workflow,
         new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(comparator)}`)

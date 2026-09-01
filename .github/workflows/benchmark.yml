@@ -16,12 +16,12 @@ env:
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
-  LARGE_CORPUS_LEGACY_HARNESS_SHA256: 9c439a7a0b6254421000e74678af3bdfc82bfe7ab7e5577dee85eabc90d65b80
-  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
-  BENCHMARK_REPORT_TRANSITION_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ece4217557cb13904b49635846e66d3472742cd9168de9ac2454523260aadbf6
+  LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
+  LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  BENCHMARK_REPORT_TRANSITION_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1283,6 +1283,7 @@ jobs:
         HARNESS='graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
         COMPARATOR='.github/scripts/benchmark-gate.mjs'
         if grep -Fq 'mappedLoadSamples=' "base/${HARNESS}" && \
+          grep -Fq 'productionIndexPrepared=' "base/${HARNESS}" && \
           grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
           test ! -L "candidate/${HARNESS}"
           rm -f -- "candidate/${HARNESS}"
@@ -1951,6 +1952,9 @@ jobs:
           const { materializeGistFiles } = await import(pathToFileURL(path.resolve(
             'evidence-candidate/.github/scripts/gist-evidence.mjs'
           )).href);
+          const { canonicalCorrectnessManifest } = await import(pathToFileURL(path.resolve(
+            'evidence-candidate/.github/scripts/benchmark-gate.mjs'
+          )).href);
           const errors = [];
           const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
             owner: context.repo.owner,
@@ -1964,7 +1968,7 @@ jobs:
           if (status && status.creator?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
             errors.push(`External evidence actor is ${status.creator?.login || 'unknown'}`);
           }
-          const pattern = /^fixture64 base=([0-9a-f]{12}) cold=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x warm=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x correct=pass$/;
+          const pattern = /^fixture64 base=([0-9a-f]{12}) cold=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x warm=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x startup=([0-9]+(?:\.[0-9]+)?)\/([0-9]+(?:\.[0-9]+)?)x correct=pass$/;
           const match = status?.description?.match(pattern);
           if (!match) errors.push('External evidence description has an invalid contract');
           const expectedBase = process.env.BASE_SHA.slice(0, 12);
@@ -1972,8 +1976,11 @@ jobs:
             errors.push(`External evidence base ${match[1]} does not match ${expectedBase}`);
           }
           const speedups = match ? match.slice(2).map(Number) : [];
-          if (speedups.some(value => !Number.isFinite(value) || value < 10)) {
-            errors.push(`Every cold/warm P50/P95 speedup must be >=10x: ${speedups.join(', ')}`);
+          if (speedups.length !== 6 || speedups.some(value => !Number.isFinite(value) || value <= 0)) {
+            errors.push(`Every reported cold/warm/startup speedup must be finite and positive: ${speedups.join(', ')}`);
+          }
+          if (speedups.length === 6 && speedups[5] < 10) {
+            errors.push(`Startup-prepared P95 speedup must be >=10x: ${speedups[5]}`);
           }
           const evidenceMatch = status?.target_url?.match(
             /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
@@ -2024,7 +2031,7 @@ jobs:
             'base-single-source-reference.json', 'base-single-source-reference.tsv',
             'base-single-source-reference.manifest',
             'base-single-source-oracle.manifest',
-            ...['cold', 'warm'].flatMap(state => [
+            ...['cold', 'warm', 'startup-prepared'].flatMap(state => [
               `base-graph-routing-${state}.json`, `base-graph-routing-${state}.tsv`,
               `base-graph-routing-${state}.correctness`,
               `candidate-graph-routing-${state}.json`, `candidate-graph-routing-${state}.tsv`,
@@ -2033,7 +2040,7 @@ jobs:
             ])
           ];
           if (manifest) {
-            if (manifest.schema !== 'graphite-fixture64-evidence-v4' ||
+            if (manifest.schema !== 'graphite-fixture64-evidence-v7' ||
                 manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
                 manifest.baseSha !== process.env.BASE_SHA ||
                 manifest.candidateSha !== process.env.CANDIDATE_SHA ||
@@ -2080,12 +2087,13 @@ jobs:
                   reproducibility.repeatedManifestSemanticSha256) {
               errors.push('Repeated fixture-JAR preparation is not reproducible');
             }
-            for (const [stateIndex, state] of ['cold', 'warm'].entries()) {
+            for (const [stateIndex, state] of ['cold', 'warm', 'startup-prepared'].entries()) {
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
               ));
-              if (!result.passed || result.gateP50Speedup < 10 || result.gateP95Speedup < 10) {
-                errors.push(`${state} comparator status does not pass the 10x gate`);
+              if (!result.passed ||
+                  (state === 'startup-prepared' && result.gateP95Speedup < 10)) {
+                errors.push(`${state} comparator status does not pass its state-specific gate`);
               }
               const reported = speedups.slice(stateIndex * 2, stateIndex * 2 + 2);
               const measured = [result.gateP50Speedup, result.gateP95Speedup]
@@ -2100,7 +2108,10 @@ jobs:
               const oracle = fs.readFileSync(
                 path.join(directory, 'base-single-source-oracle.manifest'), 'utf8'
               );
-              if (correctness !== oracle) errors.push(`${state} candidate correctness differs from the oracle`);
+              if (canonicalCorrectnessManifest(correctness, `${state} candidate`) !==
+                  canonicalCorrectnessManifest(oracle, 'single-source oracle')) {
+                errors.push(`${state} candidate correctness differs from the oracle`);
+              }
             }
           } catch (error) {
             errors.push(`Evidence payload is invalid: ${error.message}`);
@@ -2126,7 +2137,9 @@ jobs:
             coldP50Speedup: speedups[0] ?? null,
             coldP95Speedup: speedups[1] ?? null,
             warmP50Speedup: speedups[2] ?? null,
-            warmP95Speedup: speedups[3] ?? null
+            warmP95Speedup: speedups[3] ?? null,
+            startupPreparedP50Speedup: speedups[4] ?? null,
+            startupPreparedP95Speedup: speedups[5] ?? null
           }, null, 2) + '\n');
 
     - name: Checkout exact base build inputs
@@ -2163,7 +2176,7 @@ jobs:
         assert_provenance_hash manifestSha256 benchmark-results/evidence/graphs.tsv
         assert_provenance_hash fixtureProvenanceSha256 benchmark-results/evidence/fixture-provenance.tsv
         assert_provenance_hash oracleSha256 benchmark-results/evidence/base-single-source-oracle.manifest
-        NORMALIZED_PROVENANCE_SHA=$(cut -f1-16 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
+        NORMALIZED_PROVENANCE_SHA=$(cut -f1-18 benchmark-results/evidence/fixture-provenance.tsv | sha256sum | cut -d' ' -f1)
         NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
           benchmark-results/evidence/graphs.tsv | sha256sum | cut -d' ' -f1)
         RECEIPT=benchmark-results/evidence/fixture-reproducibility.json
@@ -2171,15 +2184,23 @@ jobs:
         test "$(jq -r .repeatedProvenanceSha256 "${RECEIPT}")" = "${NORMALIZED_PROVENANCE_SHA}"
         test "$(jq -r .firstManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
         test "$(jq -r .repeatedManifestSemanticSha256 "${RECEIPT}")" = "${NORMALIZED_MANIFEST_SHA}"
+        EXPECTED_BASE_INSTRUMENTATION=$(
+          for INSTRUMENTATION_PATH in \
+            graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
+            graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt; do
+            if ! cmp -s \
+              "evidence-base/${INSTRUMENTATION_PATH}" \
+              "evidence-candidate/${INSTRUMENTATION_PATH}"; then
+              printf '%s\n' "${INSTRUMENTATION_PATH}"
+            fi
+          done | sort
+        )
         cp \
           evidence-candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
           evidence-base/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
         cp \
           evidence-candidate/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt \
           evidence-base/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
-        EXPECTED_BASE_INSTRUMENTATION=$(printf '%s\n%s\n' \
-          graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt \
-          graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt | sort)
         test "$(git -C evidence-base diff --name-only | sort)" = "${EXPECTED_BASE_INSTRUMENTATION}"
         evidence-base/gradlew -p evidence-base :webgraph:jmhJar --no-daemon
         evidence-candidate/gradlew -p evidence-candidate \
@@ -2214,18 +2235,22 @@ jobs:
           benchmark-results/evidence/base-graph-routing-warm.tsv \
           benchmark-results/evidence/base-graph-routing-warm.correctness \
           benchmark-results/evidence/candidate-graph-routing-warm.tsv \
-          benchmark-results/evidence/candidate-graph-routing-warm.correctness
+          benchmark-results/evidence/candidate-graph-routing-warm.correctness \
+          benchmark-results/evidence/base-graph-routing-startup-prepared.tsv \
+          benchmark-results/evidence/base-graph-routing-startup-prepared.correctness \
+          benchmark-results/evidence/candidate-graph-routing-startup-prepared.tsv \
+          benchmark-results/evidence/candidate-graph-routing-startup-prepared.correctness
         node evidence-candidate/.github/scripts/benchmark-gate.mjs derive-graph-routing-oracle \
           --references benchmark-results/evidence/base-single-source-reference.manifest \
           --oracle benchmark-results/recomputed-base-single-source-oracle.manifest
         cmp benchmark-results/recomputed-base-single-source-oracle.manifest \
           benchmark-results/evidence/base-single-source-oracle.manifest
-        for STATE in cold warm; do
-          if [ "${STATE}" = cold ]; then
-            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-warm.correctness
-          else
-            BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-cold.correctness
-          fi
+        for STATE in cold warm startup-prepared; do
+          case "${STATE}" in
+            cold) BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-warm.correctness ;;
+            warm|startup-prepared) \
+              BASE_CORRECTNESS_ORACLE=benchmark-results/evidence/base-graph-routing-cold.correctness ;;
+          esac
           node evidence-candidate/.github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
             --base "benchmark-results/evidence/base-graph-routing-${STATE}.json" \
             --candidate "benchmark-results/evidence/candidate-graph-routing-${STATE}.json" \

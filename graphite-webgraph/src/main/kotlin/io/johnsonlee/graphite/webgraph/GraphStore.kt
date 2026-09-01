@@ -48,6 +48,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
@@ -60,6 +61,14 @@ private const val BACKWARD_GRAPH = "backward"
 private const val NODE_OFFSET_DATA_START = Int.SIZE_BYTES + Int.SIZE_BYTES
 private const val TYPE_INDEX_TABLE_ENTRY_BYTES = Byte.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
 private const val BACKWARD_COMPRESSION_THREADS = 2
+
+private fun mappedCallSiteStringIndexPreparationEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+        ?.equals("true", ignoreCase = true) == true
+
+private fun mappedCallSiteStringIndexPersistenceEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+        ?.equals("false", ignoreCase = true) != true
 
 /** OutputStream wrapper that tracks total bytes written. */
 private class CountingOutputStream(private val delegate: OutputStream) : OutputStream() {
@@ -357,8 +366,22 @@ private class NodeDataWriteContext(
     val typeIndexWriter: TypeIndexWriter,
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
-    val classOverviewEdges: ClassOverviewEdgeBuilder
+    val classOverviewEdges: ClassOverviewEdgeBuilder,
+    val callSiteIdentity: MessageDigest,
+    val callSiteIndexInput: CallSiteIndexPersistenceInput?
 )
+
+private fun MessageDigest.updateContentInt(value: Int) {
+    for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
+
+private fun MessageDigest.updateContentLong(value: Long) {
+    for (byteIndex in Long.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
 
 private class ForwardDataScratch {
     private var targets = IntArray(INITIAL_TARGET_CAPACITY)
@@ -494,6 +517,7 @@ internal data class NodeIndexData(
  * - `forward.*`                -- BVGraph compressed forward adjacency
  * - `backward.*`               -- optional BVGraph compressed backward adjacency, created after first incoming query
  * - `graph.strings`            -- [StringTable] (FrontCodedStringList via BinIO)
+ * - `graph.strings.identity`   -- semantic SHA-256 identity of the ordered string table
  * - `graph.labels`             -- byte[] via [BinIO.storeBytes], 1 byte per arc in BVGraph successor order
  * - `graph.labelprefix`        -- int[] cumulative outdegree values for label lookup
  * - `graph.comparisons`        -- [BranchComparison] data for [ControlFlowEdge]s that carry one
@@ -501,7 +525,10 @@ internal data class NodeIndexData(
  * - `graph.metadata`           -- methods, type hierarchy, enums, annotations, branch scopes (string table indices)
  * - `graph.classoverview`      -- class-level call counts and dependency weights
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
+ * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
+ * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
  */
+@Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {
 
     /**
@@ -515,7 +542,10 @@ object GraphStore {
     private const val COMPARISONS_FILE = "graph.comparisons"
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val METADATA_FILE = "graph.metadata"
+    internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
+    internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
+        "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
 
     private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
 
@@ -541,7 +571,17 @@ object GraphStore {
      * duplicating the entire adjacency list in memory.
      */
     fun save(graph: Graph, dir: Path, compressionThreads: Int = 2) {
+        save(graph, dir, compressionThreads, prepareCallSiteStringIndex = false)
+    }
+
+    fun save(
+        graph: Graph,
+        dir: Path,
+        compressionThreads: Int = 2,
+        prepareCallSiteStringIndex: Boolean
+    ) {
         Files.createDirectories(dir)
+        Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -560,6 +600,13 @@ object GraphStore {
         }
         val classOverviewCounts = classOverviewBuilder.topClassCounts(ClassOverviewStore.MAX_PERSISTED_CLASSES)
         val classOverviewEdges = ClassOverviewEdgeBuilder(classOverviewCounts.keys)
+        val prepareCallSiteIndex = classOverviewBuilder.callSiteCount() > 0L &&
+            (prepareCallSiteStringIndex || mappedCallSiteStringIndexPreparationEnabled())
+        val callSiteIndexInput = if (prepareCallSiteIndex) {
+            CallSiteIndexPersistenceInput(classOverviewBuilder.callSiteCount().toInt())
+        } else {
+            null
+        }
 
         // 2. Collect metadata
         val metadata = collectMetadata(graph)
@@ -601,7 +648,17 @@ object GraphStore {
         }
 
         // 6. Write nodedata + nodeindex simultaneously
-        writeNodeDataAndIndex(graph, dir, nodeCount, maxNodeId, nodeTypeCounts, stringTable, classOverviewEdges)
+        writeNodeDataAndIndex(
+            graph,
+            dir,
+            nodeCount,
+            maxNodeId,
+            nodeTypeCounts,
+            classOverviewBuilder.callSiteCount().toInt(),
+            stringTable,
+            classOverviewEdges,
+            callSiteIndexInput
+        )
 
         // 7. Save metadata
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
@@ -621,33 +678,10 @@ object GraphStore {
 
         // 9. Save persisted text resources for loaded-graph access
         PersistedResourceStore.save(graph, dir)
-    }
 
-    private fun writeNodeDataAndIndex(
-        graph: Graph,
-        dir: Path,
-        nodeCount: Int,
-        maxNodeId: Int,
-        nodeTypeCounts: IntArray,
-        stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder
-    ) {
-        CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
-            val dataDos = DataOutputStream(cos)
-            DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
-                writeNodeDataAndIndex(
-                    graph,
-                    dir,
-                    nodeCount,
-                    maxNodeId,
-                    nodeTypeCounts,
-                    dataDos,
-                    idxDos,
-                    cos,
-                    stringTable,
-                    classOverviewEdges
-                )
-            }
+        // 10. Build the query-only CallSite index once and persist it for mapped loads.
+        if (prepareCallSiteIndex) {
+            persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
         }
     }
 
@@ -658,11 +692,51 @@ object GraphStore {
         nodeCount: Int,
         maxNodeId: Int,
         nodeTypeCounts: IntArray,
+        callSiteCount: Int,
+        stringTable: StringTable,
+        classOverviewEdges: ClassOverviewEdgeBuilder,
+        callSiteIndexInput: CallSiteIndexPersistenceInput?
+    ) {
+        val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
+            update(stringTable.contentIdentity())
+            updateContentInt(callSiteCount)
+        }
+        CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
+            val dataDos = DataOutputStream(cos)
+            DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
+                writeNodeDataAndIndex(
+                    graph,
+                    dir,
+                    nodeCount,
+                    maxNodeId,
+                    nodeTypeCounts,
+                    callSiteIdentity,
+                    dataDos,
+                    idxDos,
+                    cos,
+                    stringTable,
+                    classOverviewEdges,
+                    callSiteIndexInput
+                )
+            }
+        }
+        Files.write(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE), callSiteIdentity.digest())
+    }
+
+    @Suppress("LongParameterList")
+    private fun writeNodeDataAndIndex(
+        graph: Graph,
+        dir: Path,
+        nodeCount: Int,
+        maxNodeId: Int,
+        nodeTypeCounts: IntArray,
+        callSiteIdentity: MessageDigest,
         dataDos: DataOutputStream,
         idxDos: DataOutputStream,
         cos: CountingOutputStream,
         stringTable: StringTable,
-        classOverviewEdges: ClassOverviewEdgeBuilder
+        classOverviewEdges: ClassOverviewEdgeBuilder,
+        callSiteIndexInput: CallSiteIndexPersistenceInput?
     ) {
         NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
             TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
@@ -672,7 +746,17 @@ object GraphStore {
                 idxDos.writeInt(nodeCount)
                 writeNodes(
                     graph,
-                    NodeDataWriteContext(dataDos, idxDos, offsetWriter, typeIndexWriter, cos, stringTable, classOverviewEdges)
+                    NodeDataWriteContext(
+                        dataDos,
+                        idxDos,
+                        offsetWriter,
+                        typeIndexWriter,
+                        cos,
+                        stringTable,
+                        classOverviewEdges,
+                        callSiteIdentity,
+                        callSiteIndexInput
+                    )
                 )
             }
         }
@@ -689,6 +773,17 @@ object GraphStore {
             context.typeIndexWriter.write(tag, node.id.value)
             if (node is CallSiteNode) {
                 context.classOverviewEdges.add(node)
+                context.callSiteIdentity.updateContentInt(node.id.value)
+                context.callSiteIdentity.updateContentLong(offset)
+                context.callSiteIdentity.updateContentInt(
+                    context.stringTable.indexOf(node.caller.declaringClass.className)
+                )
+                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.caller.name))
+                context.callSiteIdentity.updateContentInt(
+                    context.stringTable.indexOf(node.callee.declaringClass.className)
+                )
+                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.callee.name))
+                context.callSiteIndexInput?.add(node, context.stringTable)
             }
         }
     }
@@ -785,8 +880,24 @@ object GraphStore {
      * The OS page cache manages which node pages are in physical RAM.
      * No JVM heap allocation for node data, and no system calls per node access
      * after the initial page fault.
+     *
+     * Persisted CallSite string and trigram indexes are restored lazily on the first relevant query,
+     * so unrelated mapped-graph queries do not retain their memory. Set
+     * `graphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare before this method returns,
+     * or `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
      */
-    fun loadMapped(dir: Path): Graph {
+    fun loadMapped(dir: Path): Graph = loadMapped(
+        dir,
+        prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
+        persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled()
+    )
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun loadMapped(
+        dir: Path,
+        prepareCallSiteStringIndex: Boolean,
+        persistentCallSiteStringIndex: Boolean
+    ): Graph {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
@@ -820,7 +931,7 @@ object GraphStore {
         }
         val classOverview = PersistedClassOverviewProvider(dir, stringTable)::load
 
-        return MappedWebGraphBackedGraph(
+        val graph = MappedWebGraphBackedGraph(
             forward = forward,
             backward = backward,
             mappedNodeData = mappedBuffer,
@@ -832,12 +943,23 @@ object GraphStore {
             cumulativeOutdeg = cumulativeOutdeg,
             edgeCount = labelBytes.size.toLong(),
             metadataFile = metadataFile.toFile(),
+            callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
+            persistentCallSiteStringIndexEnabled = persistentCallSiteStringIndex,
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,
             metadata = metadata,
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
+        if (prepareCallSiteStringIndex) {
+            try {
+                if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
+            } catch (error: Exception) {
+                graph.close()
+                throw error
+            }
+        }
+        return graph
     }
 
     /**

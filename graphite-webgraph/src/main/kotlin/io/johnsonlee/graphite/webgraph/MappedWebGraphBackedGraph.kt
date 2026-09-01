@@ -45,15 +45,23 @@ import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.webgraph.ImmutableGraph
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.Closeable
 import java.io.DataInput
 import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.EOFException
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.LinkedHashMap
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
@@ -130,6 +138,8 @@ internal class MappedWebGraphBackedGraph(
     private val cumulativeOutdeg: IntArray,
     private val edgeCount: Long,
     private val metadataFile: File,
+    private val callSiteStringIndexFile: Path,
+    private val persistentCallSiteStringIndexEnabled: Boolean,
     private val methodCount: Long,
     private val comparisonLookup: BranchComparisonLookup,
     private val metadata: Lazy<GraphMetadata>,
@@ -177,8 +187,27 @@ internal class MappedWebGraphBackedGraph(
     private val stringPropertyAdmissions = StringPropertyAdmissions()
     private val rawStringMatchStates = RawStringMatchStates()
     private val callSiteStringIndexLock = Any()
+    private val callSiteStringIndexIdentityFile =
+        callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
+    private var callSiteStringIndexLoadedFromPersistence = false
+    private var callSiteStringIndexPersistenceBudgetDenied = false
+    private fun callSiteStringIndexContentIdentity(workConsumer: GraphWorkConsumer?): ByteArray {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update(stringTable.contentIdentity(workConsumer))
+        digest.updateIdentityInt(nodeTypeIndex.count(CallSiteNode::class.java).toInt())
+        forEachRawCallSiteStringIds(workConsumer) {
+                nodeId, callerClass, callerName, calleeClass, calleeName ->
+            digest.updateIdentityInt(nodeId)
+            digest.updateIdentityLong(nodeOffsets.offset(nodeId))
+            digest.updateIdentityInt(callerClass)
+            digest.updateIdentityInt(callerName)
+            digest.updateIdentityInt(calleeClass)
+            digest.updateIdentityInt(calleeName)
+        }
+        return digest.digest()
+    }
     private val callSiteParallelScanCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
@@ -851,6 +880,7 @@ internal class MappedWebGraphBackedGraph(
                 }
             }
             reservation.shrinkTo(retainedBytes)
+            val contentIdentity = callSiteStringIndexContentIdentity(scanResults, nodeCount.toInt())
             val built = MappedCallSiteStringIndex(
                 Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
                     MappedCallSiteStringIndex.PropertyCsr(
@@ -863,11 +893,13 @@ internal class MappedWebGraphBackedGraph(
                 nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                 nodeIdCapacity = nodeOffsets.size,
                 rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                contentIdentity = { contentIdentity.copyOf() },
                 reservation = reservation
             )
             val published = synchronized(callSiteStringIndexLock) {
                 if (callSiteStringIndex == null) {
                     callSiteStringIndex = built
+                    callSiteStringIndexLoadedFromPersistence = false
                     true
                 } else {
                     false
@@ -878,6 +910,129 @@ internal class MappedWebGraphBackedGraph(
             reservation.close()
             throw error
         }
+    }
+
+    private fun callSiteStringIndexContentIdentity(
+        scanResults: List<ParallelCallSiteScanResult>,
+        callSiteCount: Int
+    ): ByteArray {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update(stringTable.contentIdentity())
+        digest.updateIdentityInt(callSiteCount)
+        scanResults.forEach { result ->
+            val nodeIds = checkNotNull(result.nodeIds)
+            val stringIds = checkNotNull(result.propertyStringIds)
+            repeat(result.scannedCount) { index ->
+                val nodeId = nodeIds[index]
+                digest.updateIdentityInt(nodeId)
+                digest.updateIdentityLong(nodeOffsets.offset(nodeId))
+                repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                    digest.updateIdentityInt(stringIds[propertyIndex][index])
+                }
+            }
+        }
+        return digest.digest()
+    }
+
+    @Suppress("CyclomaticComplexMethod", "ThrowsCount", "TooGenericExceptionCaught")
+    private fun prepareCallSiteStringIndexInParallel(
+        workConsumer: GraphWorkConsumer?
+    ): Boolean {
+        if (callSiteScanParallelism <= 1 || workConsumer !is ParallelGraphWorkBatchConsumer) return false
+        val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
+        if (nodeCount < MIN_PARALLEL_CALL_SITE_SCAN_NODES || nodeCount > Int.MAX_VALUE) return false
+        val reservation = estimatedMappedCallSiteStringIndexCountBytes(stringTable.size())
+            ?.let(MappedCallSiteStringIndexMemoryBudget::tryReserve)
+            ?: return false
+        val workerCount = minOf(callSiteScanParallelism, nodeCount.toInt())
+        val chunkSize = (nodeCount + workerCount - 1L) / workerCount
+        val abort = AtomicBoolean()
+        val completion = ExecutorCompletionService<ParallelCallSiteScanResult>(callSiteScanExecutor)
+        val tasks = (0 until workerCount).mapNotNull { workerIndex ->
+            val start = (workerIndex * chunkSize).toInt()
+            val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
+            if (start >= end) return@mapNotNull null
+            Callable {
+                val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
+                callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
+                try {
+                    val expectedCount = end - start
+                    val nodeIds = IntArray(expectedCount)
+                    val propertyStringIds = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(expectedCount) }
+                    val accounting = BufferedGraphWorkConsumer(workConsumer)
+                    var inspected = 0
+                    try {
+                        nodeTypeIndex.forEachIdWhile(CallSiteNode::class.java, start, end) { nodeId ->
+                            checkCallSiteIndexBuildWorker(inspected, abort)
+                            accounting.consume()
+                            nodeIds[inspected] = nodeId
+                            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                                propertyStringIds[CALLER_CLASS_PROPERTY_INDEX][inspected] = callerClass
+                                propertyStringIds[CALLER_NAME_PROPERTY_INDEX][inspected] = callerName
+                                propertyStringIds[CALLEE_CLASS_PROPERTY_INDEX][inspected] = calleeClass
+                                propertyStringIds[CALLEE_NAME_PROPERTY_INDEX][inspected] = calleeName
+                            }
+                            inspected++
+                            true
+                        }
+                    } finally {
+                        accounting.flush()
+                    }
+                    ParallelCallSiteScanResult(
+                        workerIndex,
+                        IntArray(0),
+                        nodeIds,
+                        propertyStringIds,
+                        inspected,
+                        expectedCount
+                    )
+                } catch (error: Throwable) {
+                    abort.set(true)
+                    throw error
+                } finally {
+                    callSiteScanActiveWorkers.decrementAndGet()
+                }
+            }
+        }
+        callSiteParallelScanCount.incrementAndGet()
+        tasks.forEach(completion::submit)
+        val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < tasks.size) {
+            try {
+                val result = completion.take().get()
+                results[result.workerIndex] = result
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
+                received++
+            }
+        }
+        interruption?.let { error ->
+            reservation.close()
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        failure?.let { error ->
+            reservation.close()
+            throw error
+        }
+        val completed = results.filterNotNull()
+        if (completed.size != tasks.size || completed.any { !it.capturedCompleteIndex }) {
+            reservation.close()
+            return false
+        }
+        buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+        return callSiteStringIndex != null
     }
 
     @Suppress("CyclomaticComplexMethod", "InstanceOfCheckForException", "ThrowsCount", "TooGenericExceptionCaught")
@@ -1263,8 +1418,16 @@ internal class MappedWebGraphBackedGraph(
 
     override fun releaseStringPropertyDisjunctionCache() {
         synchronized(callSiteStringIndexLock) {
+            val index = callSiteStringIndex
+            if (persistentCallSiteStringIndexEnabled &&
+                !callSiteStringIndexLoadedFromPersistence &&
+                index?.isTrigramPostingsInitialized() == true
+            ) {
+                persistPreparedCallSiteStringIndex()
+            }
             callSiteStringIndex?.close()
             callSiteStringIndex = null
+            callSiteStringIndexLoadedFromPersistence = false
         }
     }
 
@@ -1278,6 +1441,60 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun isCallSiteTrigramIndexInitialized(): Boolean =
         callSiteStringIndex?.isTrigramPostingsInitialized() == true
+
+    internal fun isCallSiteStringIndexLoadedFromPersistence(): Boolean =
+        callSiteStringIndexLoadedFromPersistence
+
+    /**
+     * Prepares the complete CallSite string search path before the graph is exposed to queries.
+     * A denied shared-memory reservation is a normal fallback and leaves raw scans available.
+     */
+    internal fun prepareCallSiteStringIndex(
+        workConsumer: GraphWorkConsumer = CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER
+    ): Boolean {
+        val index = if (!Files.isRegularFile(callSiteStringIndexFile) &&
+            prepareCallSiteStringIndexInParallel(workConsumer)
+        ) {
+            callSiteStringIndex
+        } else {
+            callSiteStringIndex(CallSiteNode::class.java, workConsumer)
+        } ?: return false
+        return index.prepareTrigramPostings(workConsumer)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    internal fun persistPreparedCallSiteStringIndex(): Boolean = synchronized(callSiteStringIndexLock) {
+        val index = callSiteStringIndex ?: return@synchronized false
+        if (callSiteStringIndexLoadedFromPersistence && Files.isRegularFile(callSiteStringIndexFile)) {
+            return@synchronized true
+        }
+        var temporary: Path? = null
+        try {
+            temporary = Files.createTempFile(
+                callSiteStringIndexFile.parent,
+                callSiteStringIndexFile.fileName.toString(),
+                ".tmp"
+            )
+            DataOutputStream(
+                BufferedOutputStream(Files.newOutputStream(temporary), CALL_SITE_INDEX_IO_BUFFER_BYTES)
+            ).use(index::writePersistent)
+            replaceAtomically(temporary, callSiteStringIndexFile)
+            temporary = null
+            true
+        } catch (_: Exception) {
+            false
+        } finally {
+            temporary?.let { path -> runCatching { Files.deleteIfExists(path) } }
+        }
+    }
+
+    private fun replaceAtomically(source: Path, target: Path) {
+        try {
+            Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+        } catch (_: AtomicMoveNotSupportedException) {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
 
     internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
 
@@ -1357,6 +1574,14 @@ internal class MappedWebGraphBackedGraph(
             callSiteStringIndex?.let { return@synchronized it }
             val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
             if (nodeCount <= 0L || nodeCount > Int.MAX_VALUE) return@synchronized null
+            if (persistentCallSiteStringIndexEnabled) {
+                loadPersistedCallSiteStringIndex(nodeCount.toInt(), workConsumer)?.let { persisted ->
+                    callSiteStringIndex = persisted
+                    callSiteStringIndexLoadedFromPersistence = true
+                    return@synchronized persisted
+                }
+                if (callSiteStringIndexPersistenceBudgetDenied) return@synchronized null
+            }
             val stringCount = stringTable.size()
             val countBytes = estimatedMappedCallSiteStringIndexCountBytes(stringCount) ?: return@synchronized null
             val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(countBytes)
@@ -1441,15 +1666,67 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                    contentIdentity = { callSiteStringIndexContentIdentity(workConsumer = null) },
                     reservation = reservation
                 ).also { built ->
                     callSiteStringIndex = built
+                    callSiteStringIndexLoadedFromPersistence = false
                 }
             } catch (error: Throwable) {
                 reservation.close()
                 throw error
             }
         }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun loadPersistedCallSiteStringIndex(
+        callSiteCount: Int,
+        workConsumer: GraphWorkConsumer?
+    ): MappedCallSiteStringIndex? {
+        callSiteStringIndexPersistenceBudgetDenied = false
+        if (!Files.isRegularFile(callSiteStringIndexFile)) return null
+        // Identity validation is part of the first relevant query and must obey the same
+        // cancellation/work budget as the index lookup it enables. New stores persist the
+        // full build-time identity; legacy stores derive it from mapped graph content once.
+        val contentIdentity = persistedCallSiteStringIndexContentIdentity(workConsumer)
+        return try {
+            DataInputStream(
+                BufferedInputStream(Files.newInputStream(callSiteStringIndexFile), CALL_SITE_INDEX_IO_BUFFER_BYTES)
+            ).use { input ->
+                val loaded = MappedCallSiteStringIndex.readPersistent(
+                    input,
+                    stringTable.size(),
+                    callSiteCount,
+                    contentIdentity,
+                    nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
+                    nodeIdCapacity = nodeOffsets.size,
+                    rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                    stringTable = stringTable
+                )
+                if (loaded != null && input.read() != -1) {
+                    loaded.close()
+                    error("Trailing data in persisted CallSite string index")
+                }
+                loaded
+            }
+        } catch (_: MappedCallSiteStringIndexPersistenceBudgetDeniedException) {
+            callSiteStringIndexPersistenceBudgetDenied = true
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun persistedCallSiteStringIndexContentIdentity(workConsumer: GraphWorkConsumer?): ByteArray {
+        val persisted = runCatching { Files.readAllBytes(callSiteStringIndexIdentityFile) }
+            .getOrNull()
+            ?.takeIf { identity -> identity.size == CALL_SITE_STRING_INDEX_IDENTITY_BYTES }
+        if (persisted != null) {
+            consumeGraphWork(workConsumer, 1L)
+            return persisted
+        }
+        return callSiteStringIndexContentIdentity(workConsumer)
     }
 
     private inline fun forEachRawCallSiteStringIds(
@@ -1578,8 +1855,12 @@ private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
 private const val ASCII_MAX_CODE = 0x7f
 private const val MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED = "Mapped string-property scan interrupted"
 private const val CALL_SITE_SCAN_PARALLELISM_PROPERTY = "graphite.webgraph.callSiteScanParallelism"
+private val CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER = ParallelGraphWorkBatchConsumer { _ -> }
 private const val DEFAULT_CALL_SITE_SCAN_PARALLELISM = 8
 private const val MIN_PARALLEL_CALL_SITE_SCAN_NODES = 4_096L
+private const val CALL_SITE_INDEX_IO_BUFFER_BYTES = 1 shl 20
+internal const val CALL_SITE_STRING_CONTENT_IDENTITY_FILE = "graph.callsite-string-content.identity"
+private const val CALL_SITE_STRING_INDEX_IDENTITY_BYTES = 32
 private const val MAX_STRING_PROPERTY_INDEXES = 4
 private const val MIN_CALL_SITE_STRING_PREFLIGHT_NODES = 4_096L
 private const val MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH = 16
@@ -2214,5 +2495,17 @@ internal class ByteBufferDataInput(private val buf: ByteBuffer, private var posi
 
     private companion object {
         private const val USHORT_MASK = 0xFFFF
+    }
+}
+
+private fun MessageDigest.updateIdentityInt(value: Int) {
+    for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
+
+private fun MessageDigest.updateIdentityLong(value: Long) {
+    for (byteIndex in Long.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
     }
 }

@@ -80,7 +80,7 @@ class BuildCommand : Callable<Int> {
             System.err.println("Graph built: $nodeCount nodes")
 
             System.err.println("Saving to: $output")
-            GraphStore.save(graph, output)
+            GraphStore.save(graph, output, prepareCallSiteStringIndex = true)
             System.err.println("Done.")
 
             return 0

@@ -7,6 +7,7 @@ graph-dir/
 ├── forward.*          BVGraph compressed forward adjacency
 ├── backward.*         Optional BVGraph compressed backward adjacency
 ├── graph.strings      FrontCodedStringList (deduplicated string dictionary)
+├── graph.strings.identity SHA-256 semantic identity of the ordered string dictionary
 ├── graph.labels       byte[] edge type labels (1 byte per arc)
 ├── graph.labelprefix  int[] cumulative outdegree values for label lookup
 ├── graph.nodedata     Sequential node records
@@ -16,8 +17,25 @@ graph-dir/
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
+├── graph.callsite-string-index Optional CallSite CSR/trigram query index
+├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
+
+The production `graphite build` command prepares `graph.callsite-string-index` while saving the
+graph. A mapped load restores its primitive arrays lazily under the shared CallSite-index heap
+budget, so unrelated Method queries retain no CallSite-index heap and the first broad CallSite
+string query does not rebuild or rescan it. The two identity files are generated from the core
+graph while saving, so restoring the optional index compares its complete graph identity without
+moving that scan onto the first online query. Direct library callers can request the same build artifact with
+`GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
+optional query cache to preserve the existing save and storage contract.
+
+For legacy graphs, or when the sidecar is missing or invalid, a relevant query builds the index in
+memory and atomically persists it when that complete index is released or the mapped graph closes.
+Budget denial, cancellation, or an unwritable directory preserves the raw-scan correctness
+fallback. Set `-Dgraphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare a missing index
+before `loadMapped()` returns, or `false` to disable persisted restore and best-effort persistence.
 
 `GraphStore.save()` writes only `forward.*`. Backward adjacency is loaded from
 `backward.*` when those files already exist; otherwise the first `incoming()`
@@ -44,6 +62,7 @@ transpose construction during load.
 | graph.classoverview | `GRO` | `0x47524F03` |
 | graph.comparisons | `GRC` | `0x47524303` |
 | graph.resources | `GRR` | `0x47525201` |
+| graph.callsite-string-index | `GRCS` | `0x47524353` |
 
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current

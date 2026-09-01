@@ -22,6 +22,7 @@ import kotlin.test.assertTrue
 private const val FOUR_GIB_BYTES = 4L * 1024L * 1024L * 1024L
 private const val RECORD_PROPERTY = "large.corpus.record"
 private const val MAPPED_LOAD_SAMPLE_COUNT = 5
+private const val CALL_SITE_INDEX_FILE = "graph.callsite-string-index"
 
 data class CorpusBaseline(
     val id: String,
@@ -90,6 +91,8 @@ private data class GateMeasurement(
     val methods: Long,
     val callSites: Long,
     val persistedBytes: Long,
+    val callSiteIndexBytes: Long,
+    val productionIndexPrepared: Boolean,
     val buildMillis: Long,
     val saveMillis: Long,
     val mappedLoadSampleCount: Int,
@@ -157,8 +160,15 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             val buildMillis = elapsedMillis(buildStart)
 
             val saveStart = System.nanoTime()
-            GraphStore.save(sourceGraph, output)
+            val productionIndexPrepared = saveWithProductionCallSiteIndex(sourceGraph, output)
             val saveMillis = elapsedMillis(saveStart)
+            val callSiteIndex = output.resolve(CALL_SITE_INDEX_FILE)
+            val callSiteIndexBytes = if (Files.isRegularFile(callSiteIndex)) Files.size(callSiteIndex) else 0L
+            if (productionIndexPrepared) {
+                assertTrue(callSiteIndexBytes > 0L, "Production save must persist the CallSite index")
+            } else {
+                assertEquals(0L, callSiteIndexBytes, "Legacy base unexpectedly persisted a CallSite index")
+            }
 
             val nodes = sourceGraph.nodes(Node::class.java).count().toLong()
             val edgeCounts = sourceEdgeCounts(sourceGraph)
@@ -166,6 +176,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             val callSites = sourceGraph.nodes(CallSiteNode::class.java).count().toLong()
             val expectedPropertyRows = sourceGraph.query(PROPERTY_QUERY).rows
             val expectedRelationshipRows = sourceGraph.query(RELATIONSHIP_QUERY).rows
+            val expectedIndexedRows = sourceGraph.query(CALL_SITE_INDEX_QUERY).rows
             assertTrue(expectedPropertyRows.isNotEmpty(), "Property query must cover ${baseline.id}")
             assertTrue(expectedRelationshipRows.isNotEmpty(), "Relationship query must cover ${baseline.id}")
             closeQuietly(sourceGraph)
@@ -189,6 +200,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             val loadedCallSites = queryGraph.query(CALL_SITE_COUNT_QUERY)
             val loadedPropertyRows = queryGraph.query(PROPERTY_QUERY).rows
             val loadedRelationshipRows = queryGraph.query(RELATIONSHIP_QUERY).rows
+            val loadedIndexedRows = queryGraph.query(CALL_SITE_INDEX_QUERY).rows
             val queryMillis = elapsedMillis(queryStart)
             val mappedCallSites = (loadedCallSites.rows.single()["count"] as Number).toLong()
             val mappedNodes = queryGraph.nodeCount(Node::class.java)
@@ -201,6 +213,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             assertEquals(methods, mappedMethods, "Mapped graph must preserve method count for ${baseline.id}")
             assertEquals(expectedPropertyRows, loadedPropertyRows, "Mapped graph must preserve node properties")
             assertEquals(expectedRelationshipRows, loadedRelationshipRows, "Mapped graph must preserve relationships")
+            assertEquals(expectedIndexedRows, loadedIndexedRows, "Mapped graph must preserve indexed CallSite results")
             assertEquals(
                 edgeCounts.persisted,
                 mappedEdges,
@@ -208,7 +221,9 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             )
 
             val persistedBytes = Files.walk(output).use { entries ->
-                entries.filter(Files::isRegularFile).mapToLong(Files::size).sum()
+                entries.filter { path ->
+                    Files.isRegularFile(path) && path.fileName.toString() != CALL_SITE_INDEX_FILE
+                }.mapToLong(Files::size).sum()
             }
             sampler.sample()
             return GateMeasurement(
@@ -218,6 +233,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 methods = methods,
                 callSites = callSites,
                 persistedBytes = persistedBytes,
+                callSiteIndexBytes = callSiteIndexBytes,
+                productionIndexPrepared = productionIndexPrepared,
                 buildMillis = buildMillis,
                 saveMillis = saveMillis,
                 mappedLoadSampleCount = mappedLoadSamples.size,
@@ -235,6 +252,21 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         }
     }
 
+    /** Uses the shipped production overload when present while remaining source-compatible with main. */
+    private fun saveWithProductionCallSiteIndex(graph: Graph, output: Path): Boolean {
+        val productionSave = GraphStore::class.java.methods.singleOrNull { method ->
+            method.name == "save" && method.parameterTypes.contentEquals(
+                arrayOf(Graph::class.java, Path::class.java, Integer.TYPE, java.lang.Boolean.TYPE)
+            )
+        }
+        if (productionSave == null) {
+            GraphStore.save(graph, output)
+            return false
+        }
+        productionSave.invoke(GraphStore, graph, output, 2, true)
+        return true
+    }
+
     private fun GateMeasurement.baselineLine(baseline: CorpusBaseline): String = listOf(
         "LARGE_CORPUS_BASELINE",
         baseline.id,
@@ -244,6 +276,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "methods=$methods",
         "callSites=$callSites",
         "persistedBytes=$persistedBytes",
+        "callSiteIndexBytes=$callSiteIndexBytes",
+        "productionIndexPrepared=${if (productionIndexPrepared) 1 else 0}",
         "buildMs=$buildMillis",
         "saveMs=$saveMillis",
         "mappedLoadSamples=$mappedLoadSampleCount",
@@ -307,6 +341,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) " +
                 "RETURN DISTINCT c.value AS value, cs.callee_class AS className, cs.callee_name AS methodName " +
                 "ORDER BY value, className, methodName LIMIT 20"
+        const val CALL_SITE_INDEX_QUERY =
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'java' RETURN count(*) AS count"
     }
 }
 
