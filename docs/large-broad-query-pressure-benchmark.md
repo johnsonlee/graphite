@@ -29,8 +29,8 @@ in topology traversal look like a regression in broad search.
 ## Graph input
 
 Performance runs require a tab-separated manifest with exactly 64 unique graph ids and 64 distinct
-real persisted graph paths. Synthetic graphs and repeated fixture paths are rejected and may only
-be used outside this harness for correctness verification. Each graph also supplies reviewed terms
+fixture-derived persisted graph paths. Synthetic graphs and repeated paths are rejected and may
+only be used outside this harness for correctness verification. Each graph also supplies reviewed terms
 whose observed result counts define the three non-overlapping selectivity bands. Each line is
 `<graph-id><TAB><absolute-path><TAB><zero-term><TAB><targeted-term><TAB><dense-term>`:
 
@@ -44,6 +44,29 @@ Set it on the fork with
 whose entry count differs from `graphCount`, whose ids or paths are duplicated, or whose three terms
 are blank or equal. The API-selected reference query must prove `zero=0`, `targeted=1..199`, and
 `dense=200` rows under `LIMIT 200`; otherwise the fork fails before its timing can be accepted.
+
+Generate the repository baseline from the four pinned real-bytecode fixtures rather than from
+synthetic nodes:
+
+```bash
+./gradlew :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+.github/scripts/prepare-fixture64-graphs.sh \
+  graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar \
+  graphite-webgraph/build/benchmark-fixtures \
+  /absolute/path/to/fixture64
+```
+
+The preparation deterministically partitions Android, Tika, Hive, and Kotlin compiler into 16
+non-overlapping class-entry shards each, then executes `JAR -> build -> save -> mapped load` for all
+64 shards. It calibrates and verifies the three selectivity terms per shard and writes
+`graphs.tsv` plus `fixture-provenance.tsv`. The provenance pins source-JAR and persisted-graph
+SHA-256 values, class/node/CallSite counts, corpus id, and shard id; all 64 persisted fingerprints
+must differ.
+
+This is honestly a **64-shard routing and wide-search baseline over four real code corpora**, not
+64 independent production applications. It proves graph-count routing coverage and exercises real
+bytecode-derived graph layouts. Production-distribution claims still require the separately held
+production graph set; the fixture result must not be relabeled as that evidence.
 
 ## Correctness hard gate
 
@@ -126,7 +149,7 @@ During a real run, verify actual use in JFR/VisualVM by filtering for
 during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
 ratio is the numeric utilization baseline; thread count alone is not sufficient.
 The harness also records the number of bounded intra-graph scans and the peak number of workers
-simultaneously inside one scan. The real64 comparator fails closed unless the candidate executes at
+simultaneously inside one scan. The fixture64 comparator fails closed unless the candidate executes at
 exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
 creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
 The cold fork must report 64 scans followed by exactly 704 index lookups (11 remaining queries per
@@ -192,36 +215,38 @@ TSV contains one row per query with family, shape, selectivity, operator, clause
 projection, limit, target graph, outcome, row count, response bytes, digest, and latency nanoseconds.
 Repeat with warm forks; both cold and warm statuses are required evidence.
 
-## Required external evidence check
+## Required fixture64 evidence check
 
-The hosted GitHub runner does not contain the private 64-graph corpus. The normal
-`benchmark-regression-gate` therefore depends on `graph-routing-pressure-evidence`, which fails
-closed until the exact candidate commit has a trusted `graphite/real64-graph-routing` commit status.
-The status is accepted only when it was published by `johnsonlee`, names the current base SHA,
-links to an HTTPS evidence report, reports correctness pass, and records cold and warm P50/P95
-speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the gate.
+The full fixture64 replay is intentionally run on the benchmark host rather than synthesized in a
+small hosted-runner test. The normal `benchmark-regression-gate` depends on
+`graph-routing-pressure-evidence`, which fails closed until the exact candidate commit has a trusted
+`graphite/fixture64-graph-routing` commit status. The status is accepted only when it was published
+by `johnsonlee`, names the current base SHA, reports correctness pass, and records cold and warm
+P50/P95 speedups of at least 10x. A status attached to an older candidate or base cannot satisfy the
+gate. An arbitrary HTTPS URL is neither required nor treated as proof.
 
 After building base and candidate JMH jars with the identical benchmark harness and preparing the
-reviewed oracle, run the repository-owned driver on the machine that has the 64 real graphs:
+reviewed oracle, run the repository-owned driver with the generated fixture64 manifest:
 
 ```bash
-.github/scripts/run-real64-graph-routing.sh \
-  /absolute/path/to/graphs.tsv \
+.github/scripts/run-fixture64-graph-routing.sh \
+  /absolute/path/to/fixture64/graphs.tsv \
   /absolute/path/to/reviewed-oracle.manifest \
-  "$BASE_SHA" "$CANDIDATE_SHA" \
-  https://github.com/johnsonlee/graphite/pull/109#issuecomment-EXAMPLE
+  "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
 The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
 JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,
-both built JARs, graph manifest, and correctness oracle in `provenance.json`; caller-supplied JARs
-are not accepted. It then runs base and candidate sequentially for independent cold and warm forks,
+both built JARs, graph manifest, fixture provenance, and correctness oracle in `provenance.json`;
+caller-supplied JARs are not accepted. Before running, it requires exactly 64 provenance rows, four
+source corpora, and 64 distinct persisted graph fingerprints. It then runs base and candidate
+sequentially for independent cold and warm forks,
 verifies the candidate against the reviewed oracle, invokes `compare-graph-id-pressure` for both
 states, and publishes the trusted commit status only after both comparisons pass. Set
-`GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. The linked
-evidence report should retain both comparator reports plus the JMH JSON, observation TSV,
-correctness manifests, `provenance.json`, JVM/host details, and raw CPU/heap/RSS/GC counters.
+`GRAPHITE_PRESSURE_TIMEOUT_MILLIS` to override the default five-minute per-query timeout. Retain
+both comparator reports plus the JMH JSON, observation TSV, correctness manifests,
+`provenance.json`, `fixture-provenance.tsv`, JVM/host details, and raw CPU/heap/RSS/GC counters.
 
 ## Baseline metrics
 

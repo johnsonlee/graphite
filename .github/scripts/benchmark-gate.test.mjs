@@ -121,7 +121,7 @@ function graphIdObservations(
     return `${header}\n${rows.join("\n")}\n`;
 }
 
-test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
+test("fixture64 graphId pressure requires 10x at P50 and P95", () => {
     const passed = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult()],
@@ -166,7 +166,7 @@ test("64-real-graph graphId pressure requires 10x at P50 and P95", () => {
     assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
 });
 
-test("64-real-graph warm pressure proves the trigram path instead of requiring a raw scan", () => {
+test("fixture64 warm pressure proves the trigram path instead of requiring a raw scan", () => {
     const warmBase = graphIdPressureResult({}, "warm");
     const warmCandidate = graphIdPressureResult({
         callSiteIndexAdmittedGraphs: 64,
@@ -347,7 +347,7 @@ test("graphId pressure requires every target graph and all three graphId spellin
     assert.match(comparison.errors.join("\n"), /zero\/targeted\/dense coverage is incomplete/);
 });
 
-test("real64 driver builds commit-bound JARs and records cryptographic provenance", () => {
+test("fixture64 driver builds commit-bound JARs and records fixture provenance", () => {
     const driver = fs.readFileSync(
         new URL("./run-real64-graph-routing.sh", import.meta.url),
         "utf8"
@@ -375,11 +375,37 @@ test("real64 driver builds commit-bound JARs and records cryptographic provenanc
         "baseJarSha256",
         "candidateJarSha256",
         "manifestSha256",
+        "fixtureProvenanceSha256",
         "oracleSha256",
     ]) {
         assert.match(driver, new RegExp(`--arg ${field} `));
     }
     assert.match(driver, /> "\$\{OUTPUT_DIR\}\/provenance\.json"/);
+    assert.doesNotMatch(driver, /target_url|EVIDENCE_URL|https-evidence-url/);
+});
+
+test("fixture64 preparation partitions pinned real JARs into 64 verified graph shards", () => {
+    const script = fs.readFileSync(new URL("./prepare-fixture64-graphs.sh", import.meta.url), "utf8");
+    const source = fs.readFileSync(
+        new URL(
+            "../../graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
+                "Fixture64GraphPreparation.kt",
+            import.meta.url
+        ),
+        "utf8"
+    );
+
+    for (const fixture of ["android-all", "tika-app", "hive-exec", "kotlin-compiler-embeddable"]) {
+        assert.match(script, new RegExp(fixture));
+    }
+    assert.match(source, /SHARDS_PER_CORPUS = 16/);
+    assert.match(source, /FIXTURE_GRAPH_COUNT = 64/);
+    assert.match(source, /entry\.name\.endsWith\(CLASS_SUFFIX\)/);
+    assert.match(source, /verifyMappedGraph\(persistedPath/);
+    assert.match(source, /graphFingerprints\.add\(graphFingerprint\)/);
+    assert.match(source, /sourceJarSha256/);
+    assert.match(source, /persistedGraphSha256/);
+    assert.match(source, /Synthetic nodes are never used/);
 });
 
 function jmhResult({
@@ -1415,7 +1441,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
     assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
-    assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/real64-graph-routing/);
+    assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/fixture64-graph-routing/);
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.match(workflow, /Every cold\/warm P50\/P95 speedup must be >=10x/);
     assert.match(workflow, /GRAPH_ROUTING_JOB: \$\{\{ needs\.graph-routing-pressure-evidence\.result \}\}/);

@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-if [[ $# -lt 5 || $# -gt 7 ]]; then
-  echo "Usage: $0 <graphs.tsv> <reviewed-oracle> <base-sha> <candidate-sha>" \
-    "<https-evidence-url> [owner/repo] [output-dir]" >&2
+if [[ $# -lt 4 || $# -gt 6 ]]; then
+  echo "Usage: $0 <fixture64-graphs.tsv> <reviewed-oracle> <base-sha> <candidate-sha>" \
+    "[owner/repo] [output-dir]" >&2
   exit 2
 fi
 
@@ -12,24 +12,27 @@ MANIFEST=$1
 ORACLE=$2
 BASE_SHA=$3
 CANDIDATE_SHA=$4
-EVIDENCE_URL=$5
-REPOSITORY=${6:-johnsonlee/graphite}
-OUTPUT_DIR=${7:-graph-routing-results}
+REPOSITORY=${5:-johnsonlee/graphite}
+OUTPUT_DIR=${6:-graph-routing-results}
+FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
-STATUS_CONTEXT=graphite/real64-graph-routing
+STATUS_CONTEXT=graphite/fixture64-graph-routing
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
 SCRIPT_PATH=.github/scripts/run-real64-graph-routing.sh
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 
-for INPUT in "${MANIFEST}" "${ORACLE}"; do
+for INPUT in "${MANIFEST}" "${ORACLE}" "${FIXTURE_PROVENANCE}"; do
   test -f "${INPUT}"
 done
 [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]]
 [[ "${CANDIDATE_SHA}" =~ ^[0-9a-f]{40}$ ]]
-[[ "${EVIDENCE_URL}" == https://* ]]
+test "$(grep -cv '^#' "${MANIFEST}")" -eq 64
+test "$(tail -n +2 "${FIXTURE_PROVENANCE}" | wc -l | tr -d ' ')" -eq 64
+test "$(cut -f2 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 4
+test "$(cut -f12 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d ' ')" -eq 64
 command -v java >/dev/null
 command -v jq >/dev/null
 command -v gh >/dev/null
@@ -87,6 +90,7 @@ SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
 BASE_JAR_SHA256=$(sha256_file "${BASE_JAR}")
 CANDIDATE_JAR_SHA256=$(sha256_file "${CANDIDATE_JAR}")
 MANIFEST_SHA256=$(sha256_file "${MANIFEST}")
+FIXTURE_PROVENANCE_SHA256=$(sha256_file "${FIXTURE_PROVENANCE}")
 ORACLE_SHA256=$(sha256_file "${ORACLE}")
 
 run_revision() {
@@ -135,25 +139,26 @@ jq -n \
   --arg baseJarSha256 "${BASE_JAR_SHA256}" \
   --arg candidateJarSha256 "${CANDIDATE_JAR_SHA256}" \
   --arg manifestSha256 "${MANIFEST_SHA256}" \
+  --arg fixtureProvenanceSha256 "${FIXTURE_PROVENANCE_SHA256}" \
   --arg oracleSha256 "${ORACLE_SHA256}" \
   '{repository: $repository, baseSha: $baseSha, candidateSha: $candidateSha,
     harnessSha256: $harnessSha256, comparatorSha256: $comparatorSha256,
     scriptSha256: $scriptSha256, baseJarSha256: $baseJarSha256,
     candidateJarSha256: $candidateJarSha256, manifestSha256: $manifestSha256,
+    fixtureProvenanceSha256: $fixtureProvenanceSha256,
     oracleSha256: $oracleSha256}' > "${OUTPUT_DIR}/provenance.json"
 
 COLD_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
 COLD_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-cold-status.json")
 WARM_P50=$(jq -r '.gateP50Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
 WARM_P95=$(jq -r '.gateP95Speedup' "${OUTPUT_DIR}/graph-routing-warm-status.json")
-DESCRIPTION=$(printf 'real64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx correct=pass' \
+DESCRIPTION=$(printf 'fixture64 base=%.12s cold=%.2f/%.2fx warm=%.2f/%.2fx correct=pass' \
   "${BASE_SHA}" "${COLD_P50}" "${COLD_P95}" "${WARM_P50}" "${WARM_P95}")
 test "${#DESCRIPTION}" -le 140
 
 gh api "repos/${REPOSITORY}/statuses/${CANDIDATE_SHA}" --method POST \
   -f state=success \
   -f context="${STATUS_CONTEXT}" \
-  -f description="${DESCRIPTION}" \
-  -f target_url="${EVIDENCE_URL}" >/dev/null
+  -f description="${DESCRIPTION}" >/dev/null
 
 echo "Published ${STATUS_CONTEXT}: ${DESCRIPTION}"

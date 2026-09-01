@@ -911,7 +911,7 @@ export function renderGraphIdPressureReport(comparison) {
     const candidateResources = comparison.resources.candidate;
     const gibibytes = (bytes) => `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
     const lines = [
-        "### 64-real-graph graphId pressure gate",
+        "### 64 fixture-derived graphId pressure gate",
         "",
         `Index state: **${comparison.indexState}**`,
         "",
