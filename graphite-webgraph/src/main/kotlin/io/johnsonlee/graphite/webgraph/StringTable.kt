@@ -3,7 +3,9 @@ package io.johnsonlee.graphite.webgraph
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.security.MessageDigest
 
 /**
  * A string table backed by [FrontCodedStringList] (LAW/dsiutils).
@@ -20,6 +22,19 @@ internal class StringTable private constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>?
 ) {
+
+    private val persistedContentIdentity: ByteArray by lazy {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.updateInt(list.size)
+        val reusable = MutableString()
+        for (index in 0 until list.size) {
+            list.get(index, reusable)
+            val bytes = reusable.toString().toByteArray(StandardCharsets.UTF_8)
+            digest.updateInt(bytes.size)
+            digest.update(bytes)
+        }
+        digest.digest()
+    }
 
     /**
      * Returns the index of [s] in the string table, or -1 if not found.
@@ -57,6 +72,9 @@ internal class StringTable private constructor(
      */
     fun size(): Int = list.size
 
+    /** Stable semantic identity of every ordered string-table entry. */
+    internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
+
     companion object {
 
         private const val FILE_NAME = "graph.strings"
@@ -87,5 +105,11 @@ internal class StringTable private constructor(
             val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
             return StringTable(fcl, null)
         }
+    }
+}
+
+private fun MessageDigest.updateInt(value: Int) {
+    for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
     }
 }

@@ -61,6 +61,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.LinkedHashMap
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
@@ -190,6 +191,21 @@ internal class MappedWebGraphBackedGraph(
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
     private var callSiteStringIndexLoadedFromPersistence = false
     private var callSiteStringIndexPersistenceBudgetDenied = false
+    private val callSiteStringIndexContentIdentity: ByteArray by lazy {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update(stringTable.contentIdentity())
+        digest.updateIdentityInt(nodeTypeIndex.count(CallSiteNode::class.java).toInt())
+        forEachRawCallSiteStringIds(workConsumer = null) {
+                nodeId, callerClass, callerName, calleeClass, calleeName ->
+            digest.updateIdentityInt(nodeId)
+            digest.updateIdentityLong(nodeOffsets.offset(nodeId))
+            digest.updateIdentityInt(callerClass)
+            digest.updateIdentityInt(callerName)
+            digest.updateIdentityInt(calleeClass)
+            digest.updateIdentityInt(calleeName)
+        }
+        digest.digest()
+    }
     private val callSiteParallelScanCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
@@ -874,6 +890,7 @@ internal class MappedWebGraphBackedGraph(
                 nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                 nodeIdCapacity = nodeOffsets.size,
                 rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                contentIdentity = { callSiteStringIndexContentIdentity.copyOf() },
                 reservation = reservation
             )
             val published = synchronized(callSiteStringIndexLock) {
@@ -1508,6 +1525,7 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
+                    contentIdentity = { callSiteStringIndexContentIdentity.copyOf() },
                     reservation = reservation
                 ).also { built ->
                     callSiteStringIndex = built
@@ -1530,6 +1548,7 @@ internal class MappedWebGraphBackedGraph(
                     input,
                     stringTable.size(),
                     callSiteCount,
+                    callSiteStringIndexContentIdentity,
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
@@ -2312,5 +2331,17 @@ internal class ByteBufferDataInput(private val buf: ByteBuffer, private var posi
 
     private companion object {
         private const val USHORT_MASK = 0xFFFF
+    }
+}
+
+private fun MessageDigest.updateIdentityInt(value: Int) {
+    for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
+
+private fun MessageDigest.updateIdentityLong(value: Long) {
+    for (byteIndex in Long.SIZE_BYTES - 1 downTo 0) {
+        update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
     }
 }

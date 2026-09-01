@@ -38,6 +38,7 @@ internal class MappedCallSiteStringIndex(
     private val nodeOrder: (Int) -> Long,
     private val nodeIdCapacity: Int,
     private val rawStringPropertyId: (Int, Int) -> Int,
+    private val contentIdentity: () -> ByteArray,
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
 
@@ -504,10 +505,13 @@ internal class MappedCallSiteStringIndex(
         val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
             "CallSite trigram postings must be prepared before persistence"
         }
+        val graphContentIdentity = contentIdentity()
+        require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
         output.writeInt(CALL_SITE_STRING_INDEX_MAGIC)
         output.writeInt(CALL_SITE_STRING_INDEX_VERSION)
         output.writeInt(stringTable.size())
         output.writeInt(properties.firstOrNull()?.postingCount ?: 0)
+        output.write(graphContentIdentity)
         properties.forEach { property -> output.writeInt(property.uniqueStringCount) }
         output.writeInt(postings.size)
         output.writeLong(reservation.bytes)
@@ -518,6 +522,7 @@ internal class MappedCallSiteStringIndex(
             persistentChecksum(
                 stringTable.size(),
                 properties.firstOrNull()?.postingCount ?: 0,
+                graphContentIdentity,
                 reservation.bytes,
                 properties,
                 trigramSignatures,
@@ -1046,6 +1051,7 @@ internal class MappedCallSiteStringIndex(
             input: DataInput,
             expectedStringCount: Int,
             expectedCallSiteCount: Int,
+            expectedContentIdentity: ByteArray,
             nodeOrder: (Int) -> Long,
             nodeIdCapacity: Int,
             rawStringPropertyId: (Int, Int) -> Int,
@@ -1057,6 +1063,10 @@ internal class MappedCallSiteStringIndex(
             val callSiteCount = input.readInt()
             require(stringCount == expectedStringCount)
             require(callSiteCount == expectedCallSiteCount)
+            require(expectedContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+            val persistedContentIdentity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+            input.readFully(persistedContentIdentity)
+            require(persistedContentIdentity.contentEquals(expectedContentIdentity))
             val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { input.readInt() }
             require(uniqueCounts.all { count -> count in 0..stringCount })
             val trigramPostingCount = input.readInt()
@@ -1096,6 +1106,7 @@ internal class MappedCallSiteStringIndex(
                     input.readLong() == persistentChecksum(
                         stringCount,
                         callSiteCount,
+                        persistedContentIdentity,
                         persistedRetainedBytes,
                         properties,
                         signatures,
@@ -1108,7 +1119,8 @@ internal class MappedCallSiteStringIndex(
                     nodeOrder,
                     nodeIdCapacity,
                     rawStringPropertyId,
-                    reservation
+                    contentIdentity = { expectedContentIdentity.copyOf() },
+                    reservation = reservation
                 ).also { index ->
                     signatures.copyInto(index.trigramSignatures)
                     index.trigramMetadataInitialized = true
@@ -1134,6 +1146,7 @@ internal class MappedCallSiteStringIndex(
         private fun persistentChecksum(
             stringCount: Int,
             callSiteCount: Int,
+            contentIdentity: ByteArray,
             retainedBytes: Long,
             properties: Array<PropertyCsr>,
             signatures: LongArray,
@@ -1143,6 +1156,7 @@ internal class MappedCallSiteStringIndex(
             checksum.updateInt(CALL_SITE_STRING_INDEX_VERSION)
             checksum.updateInt(stringCount)
             checksum.updateInt(callSiteCount)
+            checksum.update(contentIdentity)
             properties.forEach { property -> checksum.updateInt(property.uniqueStringCount) }
             checksum.updateInt(postings.size)
             checksum.updateLong(retainedBytes)
@@ -1815,7 +1829,8 @@ internal const val CALLEE_NAME_PROPERTY_INDEX = 3
 private const val MAPPED_CALL_SITE_STRING_INDEX_RETAINED_ARRAYS = 3L * CALL_SITE_STRING_PROPERTY_COUNT + 1L
 private const val MAPPED_CALL_SITE_STRING_INDEX_OBJECT_ESTIMATED_BYTES = 256L
 private const val CALL_SITE_STRING_INDEX_MAGIC = 0x47524353
-private const val CALL_SITE_STRING_INDEX_VERSION = 1
+private const val CALL_SITE_STRING_INDEX_VERSION = 2
+private const val CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES = 32
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
 private const val RADIX_BUCKET_COUNT = 1 shl Byte.SIZE_BITS

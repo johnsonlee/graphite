@@ -63,6 +63,10 @@ private const val BACKWARD_COMPRESSION_THREADS = 2
 
 private fun mappedCallSiteStringIndexPreparationEnabled(): Boolean =
     System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+        ?.equals("true", ignoreCase = true) == true
+
+private fun mappedCallSiteStringIndexPersistenceEnabled(): Boolean =
+    System.getProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
         ?.equals("false", ignoreCase = true) != true
 
 /** OutputStream wrapper that tracks total bytes written. */
@@ -634,7 +638,11 @@ object GraphStore {
 
         // 10. Build the query-only CallSite index once and persist it for mapped loads.
         if (classOverviewBuilder.callSiteCount() > 0L && mappedCallSiteStringIndexPreparationEnabled()) {
-            (loadMapped(dir, prepareCallSiteStringIndex = true) as Closeable).use { }
+            (loadMapped(
+                dir,
+                prepareCallSiteStringIndex = true,
+                persistentCallSiteStringIndex = true
+            ) as Closeable).use { }
         }
     }
 
@@ -801,15 +809,23 @@ object GraphStore {
      * No JVM heap allocation for node data, and no system calls per node access
      * after the initial page fault.
      *
-     * By default the bounded CallSite string and trigram indexes are also prepared before this
-     * method returns, so the first broad string query does not pay their construction cost. Set
-     * `graphite.webgraph.prepareCallSiteStringIndexOnLoad=false` to retain lazy preparation.
+     * Persisted CallSite string and trigram indexes are restored lazily on the first relevant query,
+     * so unrelated mapped-graph queries do not retain their memory. Set
+     * `graphite.webgraph.prepareCallSiteStringIndexOnLoad=true` to prepare before this method returns,
+     * or `false` to disable persisted restore while retaining the in-memory lazy-build fallback.
      */
-    fun loadMapped(dir: Path): Graph =
-        loadMapped(dir, prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled())
+    fun loadMapped(dir: Path): Graph = loadMapped(
+        dir,
+        prepareCallSiteStringIndex = mappedCallSiteStringIndexPreparationEnabled(),
+        persistentCallSiteStringIndex = mappedCallSiteStringIndexPersistenceEnabled()
+    )
 
     @Suppress("TooGenericExceptionCaught")
-    private fun loadMapped(dir: Path, prepareCallSiteStringIndex: Boolean): Graph {
+    private fun loadMapped(
+        dir: Path,
+        prepareCallSiteStringIndex: Boolean,
+        persistentCallSiteStringIndex: Boolean
+    ): Graph {
         require(Files.isDirectory(dir)) { notDirectoryMessage(dir) }
 
         val (nodeDataVersion, _) = readNodeDataHeader(dir)
@@ -856,7 +872,7 @@ object GraphStore {
             edgeCount = labelBytes.size.toLong(),
             metadataFile = metadataFile.toFile(),
             callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
-            persistentCallSiteStringIndexEnabled = prepareCallSiteStringIndex,
+            persistentCallSiteStringIndexEnabled = persistentCallSiteStringIndex,
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,
             metadata = metadata,
