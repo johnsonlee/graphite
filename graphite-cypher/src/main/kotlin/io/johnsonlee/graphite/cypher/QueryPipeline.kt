@@ -30,6 +30,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
@@ -84,6 +85,8 @@ private data class RelationshipMatchState(
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
 private const val BALANCED_STRING_SCAN_MIN_SOURCE_COUNT = 40
 private const val LEGACY_DIRECT_STRING_GRAPH_PARALLELISM = 8
+private const val RAW_LEADING_MAX_TERM_LENGTH = 4
+private const val RAW_LEADING_MAX_LIMIT = 200
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
 private typealias DirectNodePredicateFactory = (CypherGraph) -> (Node) -> Boolean
 
@@ -175,13 +178,22 @@ private class SerialStringGraphWorkConsumer(
     override fun consume(workUnits: Long) = consumeBatch(workUnits)
 }
 
+private class PreferredRawStringGraphWorkConsumer(
+    private val consumeBatch: (Long) -> Unit
+) : PreferredRawGraphWorkBatchConsumer {
+    override fun consume(workUnits: Long) = consumeBatch(workUnits)
+}
+
 internal fun directStringStorageWorkConsumer(
     sourceCount: Int,
     processors: Int = Runtime.getRuntime().availableProcessors(),
     configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
     forceSerial: Boolean = false,
+    preferRaw: Boolean = false,
     consumeBatch: ((Long) -> Unit)? = null
-): GraphWorkConsumer = if (forceSerial) {
+): GraphWorkConsumer = if (preferRaw) {
+    PreferredRawStringGraphWorkConsumer(consumeBatch ?: { _ -> })
+} else if (forceSerial) {
     SerialStringGraphWorkConsumer(consumeBatch ?: { _ -> })
 } else if (sourceCount == 1) {
     consumeBatch?.let { consume -> ParallelGraphWorkBatchConsumer(consume) } ?: noOpParallelGraphWorkConsumer
@@ -1618,6 +1630,8 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
+        val rawLeadingStorage = balanced && !serialLeadingStorage &&
+            filter.prefersBoundedRawLeadingProbe(limit)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
                 source,
@@ -1629,7 +1643,8 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = serialLeadingStorage && balanced && sourceIndex == 0
+                serialStorage = (serialLeadingStorage || rawLeadingStorage) && balanced && sourceIndex == 0,
+                rawStorage = rawLeadingStorage && sourceIndex == 0
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
@@ -2284,7 +2299,8 @@ class QueryPipeline private constructor(
         private val tracker: CypherWorkTracker?,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
         private val storageSourceCount: Int = sources.size,
-        private val serialStorage: Boolean = false
+        private val serialStorage: Boolean = false,
+        private val rawStorage: Boolean = false
     ) {
         private val nodePredicate = nodePredicateFactory?.invoke(source)
         private val localRows = HashSet<Map<String, Any?>>()
@@ -2298,7 +2314,8 @@ class QueryPipeline private constructor(
                 tracker,
                 limit = limit,
                 storageSourceCount = storageSourceCount,
-                serialStorage = serialStorage
+                serialStorage = serialStorage,
+                rawStorage = rawStorage
             )
             .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             .iterator()
@@ -2436,7 +2453,8 @@ class QueryPipeline private constructor(
         excludedTypes: Set<Class<out Node>> = emptySet(),
         limit: Int = Int.MAX_VALUE,
         storageSourceCount: Int = sources.size,
-        serialStorage: Boolean = false
+        serialStorage: Boolean = false,
+        rawStorage: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
         val candidateSequences = mutableListOf<Sequence<Node>>()
@@ -2458,7 +2476,8 @@ class QueryPipeline private constructor(
                 completeScanLimit,
                 tracker,
                 storageSourceCount,
-                serialStorage
+                serialStorage,
+                rawStorage
             )
             if (fused != null) {
                 candidateSequences += fused
@@ -4219,6 +4238,7 @@ class QueryPipeline private constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     private fun <T : Node> stringPropertyDisjunctionCandidates(
         graph: Graph,
         type: Class<T>,
@@ -4226,12 +4246,13 @@ class QueryPipeline private constructor(
         limit: Int,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
         sourceCount: Int = sources.size,
-        serialStorage: Boolean = false
+        serialStorage: Boolean = false,
+        rawStorage: Boolean = false
     ): Sequence<T>? {
         val predicates = filters.map { filter ->
             StringPropertyPredicate(filter.property, filter.transform, filter.mode, filter.expected)
         }
-        val storageWorkConsumer = stringStorageWorkConsumer(sourceCount, tracker, serialStorage)
+        val storageWorkConsumer = stringStorageWorkConsumer(sourceCount, tracker, serialStorage, rawStorage)
         val workAware = graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
         return if (workAware != null || tracker != null) {
             workAware
@@ -4243,15 +4264,23 @@ class QueryPipeline private constructor(
     private fun stringStorageWorkConsumer(
         sourceCount: Int,
         tracker: CypherWorkTracker?,
-        forceSerial: Boolean = false
+        forceSerial: Boolean = false,
+        preferRaw: Boolean = false
     ): GraphWorkConsumer = directStringStorageWorkConsumer(
         sourceCount,
         configuredGraphWorkers = configuredDirectStringParallelism,
         forceSerial = forceSerial,
+        preferRaw = preferRaw,
         consumeBatch = tracker?.let { activeTracker ->
             { workUnits -> activeTracker.consume(workUnits) }
         }
     )
+
+    private fun DirectStringDisjunction.prefersBoundedRawLeadingProbe(limit: Int): Boolean =
+        limit in 1..RAW_LEADING_MAX_LIMIT && filters.isNotEmpty() && filters.all { filter ->
+            filter.mode == StringMatchMode.CONTAINS &&
+                filter.expected.length in 1..RAW_LEADING_MAX_TERM_LENGTH
+        }
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {
         is QualifiedNode -> NodeCursor(CypherGraph(value.graphId, value.graph), value.node, value)

@@ -319,6 +319,7 @@ open class LargeBroadQueryPressureBenchmark {
             val graph = graphs[index]
             BroadQueryGraphAccess(
                 graphId = sources[index].id,
+                stringLookupEntries = optionalInternalLong(graph, "callSiteStringLookupEntryCount"),
                 parallelScans = requiredInternalLong(graph, "callSiteParallelScanCount"),
                 indexLookups = requiredInternalLong(graph, "callSiteStringIndexLookupCount"),
                 preflightChecks = optionalInternalLong(graph, "callSiteStringPreflightCount"),
@@ -902,13 +903,15 @@ private data class BroadQueryPlannerDiagnostics(
 
 private data class BroadQueryGraphAccess(
     val graphId: String,
+    val stringLookupEntries: Long,
     val parallelScans: Long,
     val indexLookups: Long,
     val preflightChecks: Long,
     val projectionLookups: Long,
     val peakActiveWorkers: Long
 ) {
-    fun wasAccessed(): Boolean = parallelScans > 0L || indexLookups > 0L || preflightChecks > 0L ||
+    fun wasAccessed(): Boolean = stringLookupEntries > 0L || parallelScans > 0L || indexLookups > 0L ||
+        preflightChecks > 0L ||
         projectionLookups > 0L
 }
 

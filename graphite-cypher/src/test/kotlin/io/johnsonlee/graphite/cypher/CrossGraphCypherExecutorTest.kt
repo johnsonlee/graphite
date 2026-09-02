@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -97,6 +98,14 @@ class CrossGraphCypherExecutorTest {
         )
         assertTrue(forcedSerial is SerialGraphWorkBatchConsumer)
         forcedSerial.consume(3)
+
+        val preferredRaw = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            preferRaw = true
+        )
+        assertTrue(preferredRaw is PreferredRawGraphWorkBatchConsumer)
+        preferredRaw.consume(3)
     }
 
     @Test
@@ -317,6 +326,52 @@ class CrossGraphCypherExecutorTest {
         assertEquals(plan.graphWorkerCount, firstWaveSegments.size)
         assertEquals(plan.graphWorkerCount, firstWaveSegments.values.map { it.first }.toSet().size)
         assertTrue(firstWaveSegments.values.all { it.second == plan.segmentWorkerCount })
+    }
+
+    @Test
+    fun `bounded short global wide query prefers raw storage only for the leading graph`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val graphs = List(40) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' " +
+                "RETURN n.caller_name LIMIT 200"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(graphs.indices.toSet(), storageConsumers.keys)
+        assertTrue(storageConsumers.getValue(0) is PreferredRawGraphWorkBatchConsumer)
+        assertTrue(storageConsumers.filterKeys { it > 0 }.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount == plan.segmentWorkerCount
+        })
     }
 
     @Test

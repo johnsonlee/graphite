@@ -124,6 +124,9 @@ data class GraphScanParallelismPlan(
  */
 fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
+/** Requests a bounded serial lookup to prefer raw storage so it can stop as soon as LIMIT is full. */
+fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()

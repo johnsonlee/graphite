@@ -1145,3 +1145,45 @@ cold filter reads across 64 graphs and misses the 2x incremental latency criteri
 direction. This docs-only commit leaves production and test behavior unchanged. The next work
 focuses on making the already measured 5x milestone pass its aligned-shape and compatibility gates
 instead of adding another persisted summary.
+
+### 2026-09-03 - Attempt 038: Bounded raw leading probe for dense terms
+
+**Hypothesis:** the non-`DISTINCT` dense regressions come from using the retained CallSite index for
+the ordered leading graph even though a short `CONTAINS` term fills `LIMIT 200` after only a few
+hundred raw nodes. Mark only an unscoped, bounded, short-term leading probe as raw-preferred, while
+leaving graph-scoped queries, longer terms, later graph waves, and `DISTINCT` execution unchanged.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards regenerated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs. The fixture is under
+  `/tmp/pr113-exp037-fixture.nXn4fg/`; this attempt does not change its storage format.
+- Workload: three paired complete 34-case `global-wide` runs, cold indexes, `LIMIT 200`, `-Xmx8g`,
+  and alternating candidate/base order. Raw observations and JMH JSON are under
+  `/tmp/pr113-exp038-pairs/`.
+- Base revision: `15cf81b`, whose production path is byte-equivalent to `e54afc8`.
+- Candidate: the production, telemetry, and correctness-test snapshot initially created in this
+  commit, patch SHA-256 `46c16518e34ce6bcb590a0783de5f62d0435ada53de964f634a2119039feadbb`.
+- Correctness: every candidate pair completed all 34 cases with zero failures and zero timeouts and
+  matched the real-fixture oracle. Full core, Cypher, and WebGraph tests plus all three detekt tasks
+  passed with `--rerun-tasks`. Synthetic tests were used only to verify consumer selection,
+  persisted-sidecar bypass, bounded results, and access telemetry.
+- All ten non-`DISTINCT` dense rows reduced leading-graph work from 11,496-17,783 units to 665-681
+  units, except `four-properties`, which reduced 15,694 to 681. Every candidate observation
+  reported exactly one accessed graph and zero index lookups for those leading raw probes.
+- Wrapped case-insensitive dense latency improved from 2.184 to 1.033 ms, 2.028 to 0.959 ms, and
+  2.082 to 0.891 ms: 2.11x, 2.11x, and 2.34x. The other nine affected dense rows improved or were
+  effectively flat in every pair, ranging from 1.02x to 1.58x.
+- Aggregate P50 changed by +1.08x, -1.02x, and +1.13x. Aggregate P95 changed from
+  24.477-27.742 ms to 29.115-31.101 ms, a 12-19% regression, because the unchanged later
+  `DISTINCT` row no longer inherits the leading graph's short-term index cache. This attempt is not
+  an aggregate-P95 improvement and does not complete the 5x milestone by itself.
+- Total graph work fell deterministically from 58,014,194 to 57,897,636 units. Process CPU changed
+  by -4.1%, +0.8%, and +3.2%. Peak used heap changed by +0.6%, -0.9%, and -1.9%; peak RSS changed by
+  +0.9%, -1.0%, and -2.1%. No systematic CPU or memory regression was observed.
+
+**Conclusion:** kept as a narrow aligned-regression fix. It reaches an independently repeatable 2x
+goal for wrapped dense and removes the unnecessary indexed work behind the other dense blockers,
+while retaining the additive eight graph plus eight segment plan for later graphs. The remaining
+5x blocker is the cold zero-result query's 64-sidecar restore; the aggregate P95 tradeoff must be
+rechecked against `main` in the authoritative exact-head gate rather than claimed as a gain here.

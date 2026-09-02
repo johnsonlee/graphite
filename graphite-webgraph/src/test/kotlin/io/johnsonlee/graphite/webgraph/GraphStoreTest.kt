@@ -51,6 +51,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
@@ -440,6 +441,23 @@ class GraphStoreTest {
         assertTrue(graph.isCallSiteStringIndexInitialized())
         assertTrue(graph.isCallSiteStringIndexLoadedFromPersistence())
         graph.releaseStringPropertyDisjunctionCache()
+        assertFalse(graph.isCallSiteStringIndexInitialized())
+        graph.resetCallSiteScanMetrics()
+        val rawIds = graph.nodesByStringPropertyDisjunction(
+            CallSiteNode::class.java,
+            listOf(
+                StringPropertyPredicate(
+                    "caller_name",
+                    null,
+                    StringMatchMode.CONTAINS,
+                    "call"
+                )
+            ),
+            limit = 2,
+            workConsumer = PreferredRawGraphWorkBatchConsumer { }
+        ).orEmpty().map { node -> node.id.value }.toList()
+        assertEquals(listOf(0, 1), rawIds)
+        assertEquals(1L, graph.callSiteStringLookupEntryCount())
         assertFalse(graph.isCallSiteStringIndexInitialized())
     }
 

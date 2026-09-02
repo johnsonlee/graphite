@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
@@ -216,6 +217,7 @@ internal class MappedWebGraphBackedGraph(
         return digest.digest()
     }
     private val callSiteParallelScanCount = AtomicLong()
+    private val callSiteStringLookupEntryCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteStringPreflightCount = AtomicLong()
     private val callSiteStringProjectionLookupCount = AtomicLong()
@@ -698,6 +700,10 @@ internal class MappedWebGraphBackedGraph(
         if (predicates.isEmpty() || predicates.any { !supportsRawStringProperty(type, it.property) }) return null
         if (limit <= 0) return emptySequence()
         if (type == CallSiteNode::class.java) {
+            callSiteStringLookupEntryCount.incrementAndGet()
+            if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
+                serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
+            }
             retainPersistedCallSiteStringIndexForSplit(workConsumer)
             callSiteStringIndex?.let { index ->
                 callSiteStringIndexLookupCount.incrementAndGet()
@@ -1767,6 +1773,8 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
 
+    internal fun callSiteStringLookupEntryCount(): Long = callSiteStringLookupEntryCount.get()
+
     internal fun callSiteStringIndexLookupCount(): Long = callSiteStringIndexLookupCount.get()
 
     internal fun callSiteStringPreflightCount(): Long = callSiteStringPreflightCount.get()
@@ -1785,6 +1793,7 @@ internal class MappedWebGraphBackedGraph(
         check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
         resetSplitCallSiteWorkerMetrics()
         callSiteParallelScanCount.set(0L)
+        callSiteStringLookupEntryCount.set(0L)
         callSiteStringIndexLookupCount.set(0L)
         callSiteStringPreflightCount.set(0L)
         callSiteStringProjectionLookupCount.set(0L)
