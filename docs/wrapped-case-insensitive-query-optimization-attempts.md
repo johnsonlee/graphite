@@ -1228,3 +1228,45 @@ or resident-index semantics.
 1.00-1.33x P95 result is too small and inconsistent to retain as a 5x milestone step. This
 docs-only commit leaves the production version-2 reader unchanged. The next experiment must remove
 or lazily access cold sidecar data instead of only reducing checksum call overhead.
+
+### 2026-09-03 - Attempt 040: Persisted six-gram graph miss summary
+
+**Hypothesis:** persist a content-identity-bound 128 KiB bitset containing one fingerprint for each
+lowercased six-character CallSite property window. Before a split long-`CONTAINS` lookup restores
+the complete string index, a missing fingerprint can prove that the graph cannot match. Hash
+collisions, short terms, missing summaries, incompatible summaries, and corrupt summaries all fail
+open to the existing exact path, so the summary cannot introduce a false negative.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards regenerated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs. All 64 graph directories had a 131,128-byte summary; the
+  candidate fixture and provenance are under `/tmp/graphite-exp040.eHR3kO/repo/--help/`.
+- Workload: three paired complete 34-case `global-wide` runs, cold indexes, `LIMIT 200`, `-Xmx8g`,
+  and alternating candidate/base order. Base revision: `7198b28` production-equivalent
+  `0fdba6c`; candidate: the isolated Attempt 040 snapshot. Raw observations and JMH JSON are under
+  `/tmp/pr113-exp040-pairs/`.
+- Correctness: fixture verification passed and every candidate run matched all 34 records in the
+  base-generated real-fixture oracle. Focused tests also covered a definite miss without complete
+  index admission, a real hit, and corrupt-summary fallback; WebGraph compilation and detekt
+  passed.
+- The first four-property zero-result query improved from `371.695 -> 55.329 ms` (6.72x),
+  `369.243 -> 57.192 ms` (6.46x), and `311.770 -> 54.481 ms` (5.72x). Its charged work fell from
+  `57,642,320` to `1,048,576` units.
+- The optimization deferred rather than removed complete-index restoration. Subsequent targeted
+  rows became the tail while their possible-hit graphs loaded complete sidecars: aggregate P95
+  regressed `32.652 -> 106.739 ms`, `29.390 -> 97.803 ms`, and `32.085 -> 121.815 ms`. Aggregate
+  P50 also regressed in every pair.
+- Process CPU changed `3.916 -> 3.994 s`, `4.178 -> 3.662 s`, and `3.709 -> 3.843 s`, with no
+  repeatable material win. The third pair's peak RSS grew from 4.41 GiB to 5.09 GiB, exceeding the
+  15% resource guardrail.
+- The zero-result `DISTINCT` path's early proof also exposed that access telemetry counted only 29
+  graphs even though all 64 summaries were consulted. The strict gate correctly rejected this as
+  insufficient exact-coverage evidence; changing telemetry alone would not repair the measured
+  latency regressions.
+
+**Conclusion:** reverted. A six-gram summary can eliminate almost all cold miss work and clears the
+5x micro-goal for the initial zero-result row, but it moves sidecar loads into normal targeted
+queries and makes aggregate P95 3.27-3.80x slower than the paired base. This docs-only commit leaves
+production, storage, fixture, and test code unchanged. A retained follow-up must either amortize
+hit-sidecar loading across the complete workload or avoid materializing the full sidecar on hits.
