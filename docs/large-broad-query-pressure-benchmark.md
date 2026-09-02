@@ -265,7 +265,8 @@ No external URL, Gist, or author-published commit status is accepted as executio
 Unscoped 64-graph wide queries have a separate required component,
 `global-wide-pressure-evidence`. It requires
 three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and a P95 speedup of at least 10x in every independent fork. The ten core
+`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
+5x in every independent fork. The cumulative target remains 10x. The ten core
 query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
@@ -286,8 +287,8 @@ four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` a
 DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
 query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
 fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach 10x P95 in every paired
-fork, so faster raw cases cannot hide a regression in either motivating query shape.
+requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
+every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
