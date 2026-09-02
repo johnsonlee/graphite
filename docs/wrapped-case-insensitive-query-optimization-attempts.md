@@ -1316,3 +1316,26 @@ same bounded parallel path and avoid cold sidecar restoration.
 **Conclusion:** reverted. Forcing every DISTINCT query through raw segmentation reduces charged
 work but retains a large dense tail and increases memory/CPU. This docs-only commit records the
 failed hypothesis without retaining its production-code change.
+
+### 2026-09-03 - Attempt 043: Memory-map the persisted CallSite sidecar
+
+**Hypothesis:** the cold zero-result tail may be dominated by `DataInputStream` copies. Read the
+existing persisted index through a mapped `ByteBuffer` while preserving its format, checksum,
+structural validation, work accounting, cancellation, and fallback behavior.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards generated from the four pinned fixture JARs; no
+  synthetic performance data. Base revision: `7198b28`, production-equivalent `0fdba6c`;
+  candidate: an isolated Attempt 043 snapshot. The complete 34-case screening output is under
+  `/tmp/pr113-exp043-quick/`.
+- Correctness: all 34 cases matched the real-fixture oracle.
+- Aggregate P50/P95 were `1.660/97.777 ms`; the cold four-property zero row regressed to
+  `470.854 ms`. Current-production screening on the same machine had aggregate P95 around
+  `29-33 ms` and the zero row around `312-372 ms`.
+- Process CPU was `3.434 s`, peak used heap `4.26 GiB`, peak RSS `4.60 GiB`, and charged work
+  `57,897,636` units. Avoiding stream copies did not remove the validation work.
+
+**Conclusion:** reverted after screening. Memory mapping changes how bytes arrive but leaves the
+dominant per-value validation and checksum costs intact, and latency regressed. This commit records
+only the experiment; the mapped-reader prototype is not retained.
