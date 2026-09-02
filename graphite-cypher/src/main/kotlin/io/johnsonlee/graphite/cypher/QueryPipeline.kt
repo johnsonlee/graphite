@@ -1276,6 +1276,7 @@ class QueryPipeline private constructor(
             ?.takeUnless { graphRoute.conflicting }
             ?.let { graphRoute.residual }
             ?: where.condition
+        val graphScoped = preselectedSources != null || routedGraphIds != null
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1286,7 +1287,8 @@ class QueryPipeline private constructor(
                 ret.items,
                 columns,
                 limitCount,
-                candidateSources
+                candidateSources,
+                graphScoped
             )
         }
         if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
@@ -1327,7 +1329,8 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        candidateSources = candidateSources
+                        candidateSources = candidateSources,
+                        serialLeadingStorage = graphScoped
                     )
                 }
             }
@@ -1361,7 +1364,8 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         predicateFactory,
-                        candidateSources
+                        candidateSources,
+                        graphScoped
                     )
                 }
             }
@@ -1407,7 +1411,8 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         predicateFactory,
-                        candidateSources
+                        candidateSources,
+                        graphScoped
                     )
                 }
             }
@@ -1478,6 +1483,7 @@ class QueryPipeline private constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     private fun executeDirectStringFilter(
         nodeClass: Class<out Node>,
         variable: String,
@@ -1485,7 +1491,8 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        candidateSources: List<CypherGraph>
+        candidateSources: List<CypherGraph>,
+        serialLeadingStorage: Boolean
     ): CypherResult {
         val hasTypedCandidate = hasTypedDirectStringCandidate(nodeClass, filter)
         if (hasTypedCandidate) {
@@ -1496,7 +1503,8 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 limit,
-                candidateSources = candidateSources
+                candidateSources = candidateSources,
+                serialLeadingStorage = serialLeadingStorage
             )
         }
 
@@ -1570,7 +1578,8 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
-        candidateSources: List<CypherGraph> = sources
+        candidateSources: List<CypherGraph> = sources,
+        serialLeadingStorage: Boolean = false
     ): CypherResult {
         executeIndexedStringProjectionRows(
             nodeClass,
@@ -1609,7 +1618,7 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
-        val scanners = candidateSources.map { source ->
+        val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
                 source,
                 nodeClass,
@@ -1620,7 +1629,7 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = false
+                serialStorage = serialLeadingStorage && balanced && sourceIndex == 0
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()

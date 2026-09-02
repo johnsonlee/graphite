@@ -207,6 +207,56 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `full graph id set keeps the leading probe serial and splits later graphs`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+        val graphIds = graphs.map(CypherGraph::id)
+
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN \$graphIds AND (" +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent') " +
+                "RETURN n.caller_class LIMIT 1",
+            mapOf("graphIds" to graphIds)
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(graphIds.indices.toSet(), storageConsumers.keys)
+        assertTrue(storageConsumers.getValue(0) is SerialGraphWorkBatchConsumer)
+        assertTrue(storageConsumers.filterKeys { it > 0 }.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount == plan.segmentWorkerCount
+        })
+    }
+
+    @Test
     fun `work tracked global wide query probes the leading graph then executes the balanced plan`() {
         val plan = resolveDirectStringParallelismPlan()
         if (plan.graphWorkerCount < 2) return
