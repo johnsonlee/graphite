@@ -472,3 +472,43 @@ result digests, targeted hits distributed from the first through the sixty-fourt
 zero-hit proof that all 64 graphs were searched. Synthetic graphs remain correctness-only and
 cannot establish performance. The gate uses raw case-sensitive `CONTAINS` predicates matching the
 production query shape; wrapped lowercase predicates remain separate persisted-index coverage.
+
+### 2026-09-03 - Attempt 036: Persisted trigram miss summary
+
+**Hypothesis:** persist a small content-identity-bound Bloom summary of each graph's CallSite
+trigrams beside the complete string index. A split global-wide lookup could then prove that a long
+`CONTAINS` term is absent without restoring the complete sidecar, while every possible hit and
+every missing, incompatible, or corrupt summary would fail open to the existing exact path.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards regenerated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs; all 64 summaries were present and occupied 8.3 MiB in
+  total. The generated fixture is under `/tmp/pr113-exp020-fixture.saTJZd/`.
+- Workload: the complete 34-case `global-wide` run, cold indexes, `LIMIT 200`, and `-Xmx8g`.
+- Base revision: `e54afc8ce3eabd8bde44ffece5680a22727deef4`.
+- Candidate: the production-and-test snapshot initially created in this commit, based on `e54afc8`,
+  patch SHA-256 `f3949521ece3911af5fd862e3b6c62f5cb0795105e880031c3ddd60b4425f206`.
+- Correctness: all 34 candidate records matched the base-generated real-fixture oracle. Focused
+  tests also proved a definite miss leaves the complete index unloaded, a real hit is preserved,
+  and a truncated summary falls back to the complete persisted index; WebGraph detekt passed.
+- Aggregate P50 / P95 regressed from 1.656 / 61.724 ms to 1.977 / 88.945 ms. Wall time regressed
+  from 571.906 to 665.246 ms.
+- The first zero-result query improved from 341.870 to 62.106 ms (5.50x), but targeted P95
+  regressed from 19.744 to 199.195 ms (10.09x slower). The summary avoided the first complete-index
+  load, then paid those cold loads during later targeted cases instead.
+- Complete-index lookups fell from 1,266 to 858, but all 64 indexes were eventually admitted in
+  both runs. Work increased from 58,014,194 to 59,057,962 units and process CPU increased from
+  3.506 to 3.773 s.
+- Peak used heap changed from 4,412,662,064 to 4,462,808,560 bytes (+1.1%); peak RSS changed from
+  4,702,355,456 to 4,739,874,816 bytes (+0.8%). The candidate therefore did not produce a memory
+  benefit for this workload.
+- Raw measurements are under `/tmp/pr113-exp020-quick/`. One directional real-data pair was enough
+  to reject the candidate because the targeted regression was an order of magnitude and aggregate
+  latency, CPU, work, heap, and RSS all moved in the wrong direction; no claim is based on this
+  single pair.
+
+**Conclusion:** reverted. The summary creates a useful 5.50x zero-result micro-improvement, but it
+shifts rather than removes cold-index work across the representative query sequence and misses the
+incremental keep criterion. This commit leaves production and test behavior unchanged. A follow-up
+should reduce or amortize the cold hit cost, not merely defer it.
