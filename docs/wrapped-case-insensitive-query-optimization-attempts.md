@@ -1270,3 +1270,27 @@ open to the existing exact path, so the summary cannot introduce a false negativ
 queries and makes aggregate P95 3.27-3.80x slower than the paired base. This docs-only commit leaves
 production, storage, fixture, and test code unchanged. A retained follow-up must either amortize
 hit-sidecar loading across the complete workload or avoid materializing the full sidecar on hits.
+
+### 2026-09-03 - Attempt 041: Raw split scan after a positive miss-summary probe
+
+**Hypothesis:** keep Attempt 040's six-gram negative proof, but route summary-positive graphs to the
+existing segmented raw scan instead of restoring their complete persisted indexes. This should
+preserve the fast cold miss while preventing sidecar restoration from moving into later targeted
+queries.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted fixture-JAR graph shards used by Attempt 040; no synthetic
+  graph supplied performance evidence. Base revision: production-equivalent `0fdba6c`; candidate:
+  an isolated Attempt 041 snapshot. The complete 34-case screening output is under
+  `/tmp/pr113-exp041-quick/`.
+- Correctness: all 34 real-fixture cases matched the existing oracle.
+- The four-property zero row remained fast at `59.924 ms`, but aggregate P95 was `66.986 ms` and
+  process CPU was `6.848 s`, both worse than the prior current-production screening range.
+- The deferred cost moved again: `global-wide-wrapped-case-insensitive-distinct-dense` took
+  `399.996 ms`, and total charged work rose to `62,464,364` units. Peak used heap was `4.13 GiB`
+  and peak RSS was `4.79 GiB`.
+
+**Conclusion:** reverted after the complete screening run. Replacing a positive sidecar lookup with
+a full raw scan preserves the negative proof but makes dense `DISTINCT` and CPU materially worse.
+This docs-only commit leaves the Attempt 041 production-code prototype out of the branch.
