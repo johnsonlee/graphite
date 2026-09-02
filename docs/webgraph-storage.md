@@ -77,9 +77,11 @@ Current node and metadata writers emit version `3`. Their readers accept legacy 
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
 The separate `graph.callsite-trigram-prefilter` stream starts with magic `0x47525450` (`GRTP`),
-followed by a 32-bit version `2`, string/CallSite/posting counts, the exact-index byte size and
-posting offset, content identity, and sorted `(trigram, end offset, range CRC32)` entries. A final
-CRC covers the complete directory. Posting values remain solely in `graph.callsite-string-index`.
+followed by a 32-bit version `3`, string/CallSite/posting counts, the exact-index byte size and
+posting offset, content identity, checksums for the four property string-ID sections, and sorted
+`(trigram, end offset, range CRC32)` entries. A final CRC covers the complete directory. Posting
+values and property string IDs remain solely in `graph.callsite-string-index`; the checksums permit
+the mapped reader to validate and consult those property sections without copying them.
 
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),

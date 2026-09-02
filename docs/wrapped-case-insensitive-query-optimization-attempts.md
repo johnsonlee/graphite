@@ -1694,3 +1694,43 @@ cancellation.
 persisted data, bounds validation/cancellation work, and eliminates the exact remote cold outlier
 without changing results. The next attempt targets the separate dense-DISTINCT provenance scan;
 this attempt does not claim that the complete 5x gate has passed.
+
+### 2026-09-03 - Attempt 055: Prune DISTINCT provenance by exact property string membership
+
+**Hypothesis:** after the first graph supplies 200 DISTINCT tuples, the provenance pass scans every
+remaining graph even when one or more tuple strings do not occur in that graph's projected CallSite
+property. Convert selected values to each graph's local string IDs before starting a raw scan. Use
+the compact directory's checksums to validate and mmap the existing four sorted property-ID
+sections, then reject impossible tuples by exact property membership. Compare integer tuples during
+the remaining scans and decode strings only for actual selected hits.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs, under `/tmp/pr113-exp054-fixture64-screen/`. The compact
+  directories remain `5.85 MiB` total and contain only four additional checksums, not copied IDs.
+  Base revision: `b094c45`; candidate: the isolated Attempt 055 snapshot under
+  `/tmp/graphite-exp054.PcRFQe/repo`. The three complete four-CPU runs are under
+  `/tmp/pr113-exp055-property-run{1,2,3}/`.
+- Correctness: every run completed all 34 real-fixture cases and exactly matched the trusted oracle
+  on outcome, row count, response bytes, digest, and hit graph IDs. The focused test proves that a
+  selected value present elsewhere in the graph dictionary but absent from the requested CallSite
+  property returns no rows without starting a segment scan. Corrupt directory/range fallback,
+  work rejection, interruption, compilation, and detekt also pass.
+- Candidate P50/P95 across the three JVMs was `2.197/56.048`, `2.267/58.401`, and
+  `2.284/58.857 ms`. Against the three exact remote-main pairs, P95 speedup is `15.41x`, `12.84x`,
+  and `15.67x`; the wrapped DISTINCT speedup is `7.45x`, `7.13x`, and `9.18x`. This establishes the
+  5x latency milestone for the aggregate and both required wrapped shapes in every measured pair.
+- Dense DISTINCT fell from Attempt 054's `877.708 ms` to `149.546`, `148.633`, and `140.667 ms`.
+  Only three per-query raw scans remain, and complete-run scanned graph count fell from 64 in
+  Attempt 054 to 20. Charged work fell from `9,052,840` to `5,697,204` units.
+- Process CPU was `1.777-1.855 s`, peak used heap `3.67-3.67 GiB`, and peak RSS
+  `4.10-4.13 GiB`, all below Attempt 054's `3.172 s`, `4.09 GiB`, and `5.13 GiB`.
+- The complete comparison is not yet clean: the `localized-early` dense row repeats a >15% and
+  >1 ms aligned regression in two pairs. Its four equal-term predicates currently decode the same
+  property-independent trigram range four times.
+
+**Conclusion:** keep. Exact selected-tuple pruning delivers a stable greater-than-5x milestone,
+materially reduces CPU/work/heap, and preserves exact provenance. A separate follow-up attempt will
+deduplicate same-term prefilter lookup to remove the remaining aligned small-query regression; this
+record does not claim that every regression-gate condition passes.

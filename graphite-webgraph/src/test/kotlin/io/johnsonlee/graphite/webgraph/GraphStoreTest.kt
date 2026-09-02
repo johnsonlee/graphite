@@ -359,6 +359,20 @@ class GraphStoreTest {
                     )?.map { row -> row.values }
                 )
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
+                loaded.resetCallSiteScanMetrics()
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf("caller_class"),
+                        limit = 1,
+                        // This value exists in the graph dictionary, but not in caller_class.
+                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
+                        workConsumer = split
+                    )
+                )
+                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertTrue(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -457,7 +471,7 @@ class GraphStoreTest {
             val targetTrigram = (('t'.code * 31 + 'a'.code) * 31 + 'r'.code)
             var previousEnd = 0
             var targetStart = -1
-            for (offset in 72 until originalDirectory.size - Long.SIZE_BYTES step 3 * Int.SIZE_BYTES) {
+            for (offset in 88 until originalDirectory.size - Long.SIZE_BYTES step 3 * Int.SIZE_BYTES) {
                 val trigram = directory.getInt(offset)
                 val end = directory.getInt(offset + Int.SIZE_BYTES)
                 if (trigram == targetTrigram) {

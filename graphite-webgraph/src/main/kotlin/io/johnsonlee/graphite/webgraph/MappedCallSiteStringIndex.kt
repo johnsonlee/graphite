@@ -764,6 +764,7 @@ internal class MappedCallSiteStringIndex(
         output.writeLong(exactIndexBytes)
         output.writeLong(postingsOffset)
         output.write(graphContentIdentity)
+        properties.forEach { property -> output.writeInt(property.usedStringIdsChecksum().toInt()) }
 
         var start = 0
         while (start < postings.size) {
@@ -1054,6 +1055,10 @@ internal class MappedCallSiteStringIndex(
             postingEnds.forEach(checksum::updateInt)
             postingNodeIds.forEach(checksum::updateInt)
         }
+
+        fun usedStringIdsChecksum(): Long = CRC32().also { checksum ->
+            usedStringIds.forEach(checksum::updateDirectoryIntBigEndian)
+        }.value
 
         @Suppress("CyclomaticComplexMethod")
         fun collectMatchingRanges(
@@ -2676,6 +2681,12 @@ private fun CRC32.updateLong(value: Long) {
 private fun CRC32.updateDirectoryLongBigEndian(value: Long) {
     repeat(Long.SIZE_BYTES) { byteIndex ->
         update(((value ushr ((Long.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS)) and 0xffL).toInt())
+    }
+}
+
+private fun CRC32.updateDirectoryIntBigEndian(value: Int) {
+    repeat(Int.SIZE_BYTES) { byteIndex ->
+        update(value ushr ((Int.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS) and 0xff)
     }
 }
 

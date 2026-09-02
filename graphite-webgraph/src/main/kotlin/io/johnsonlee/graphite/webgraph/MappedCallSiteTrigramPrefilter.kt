@@ -37,9 +37,13 @@ import java.util.zip.CheckedOutputStream
 internal class MappedCallSiteTrigramPrefilter private constructor(
     private val ranges: IntBuffer,
     private val trigramPostings: LongBuffer,
+    private val propertyStringIds: Array<IntBuffer>,
     private val stringCount: Int,
     private val stringTable: StringTable
 ) {
+    fun containsPropertyStringId(propertyIndex: Int, stringId: Int): Boolean =
+        propertyIndex in propertyStringIds.indices && binarySearch(propertyStringIds[propertyIndex], stringId)
+
     fun exactMatchingStringIds(
         predicates: List<StringPropertyPredicate>,
         workConsumer: GraphWorkConsumer?
@@ -146,6 +150,9 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     val identity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
                     directory.get(identity)
                     require(identity.contentEquals(expectedContentIdentity))
+                    val propertyChecksums = LongArray(CALL_SITE_STRING_PROPERTY_COUNT) {
+                        directory.int.toLong() and PREFILTER_UNSIGNED_INT_MASK
+                    }
                     val expectedDirectoryBytes = DIRECTORY_HEADER_BYTES.toLong() +
                         rangeCount.toLong() * RANGE_ENTRY_BYTES + Long.SIZE_BYTES
                     require(directoryBytes == expectedDirectoryBytes)
@@ -159,7 +166,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
 
                     FileChannel.open(exactIndexPath, StandardOpenOption.READ).use { indexChannel ->
                         require(indexChannel.size() == exactIndexBytes)
-                        validateExactIndexHeader(
+                        val uniqueCounts = validateExactIndexHeader(
                             indexChannel,
                             exactIndexBytes,
                             postingsOffset,
@@ -167,6 +174,14 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                             callSiteCount,
                             postingCount,
                             expectedContentIdentity
+                        )
+                        val propertyStrings = mapPropertyStringIds(
+                            indexChannel,
+                            uniqueCounts,
+                            callSiteCount,
+                            stringCount,
+                            propertyChecksums,
+                            workConsumer
                         )
                         val postingBytes = postingCount.toLong() * Long.SIZE_BYTES
                         val postings = indexChannel.map(
@@ -177,6 +192,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                         MappedCallSiteTrigramPrefilter(
                             rangeValues.asReadOnlyBuffer(),
                             postings.asReadOnlyBuffer(),
+                            propertyStrings,
                             stringCount,
                             stringTable
                         )
@@ -242,7 +258,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
             callSiteCount: Int,
             postingCount: Int,
             expectedContentIdentity: ByteArray
-        ) {
+        ): IntArray {
             require(postingsOffset >= CALL_SITE_STRING_INDEX_HEADER_BYTES)
             require(exactIndexBytes == postingsOffset + postingCount.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES)
             val header = channel.map(
@@ -266,6 +282,55 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                 callSiteCount.toLong() * CALL_SITE_STRING_PROPERTY_COUNT * Int.SIZE_BYTES +
                 stringCount.toLong() * Long.SIZE_BYTES
             require(postingsOffset == expectedOffset)
+            return uniqueCounts
+        }
+
+        private fun mapPropertyStringIds(
+            channel: FileChannel,
+            uniqueCounts: IntArray,
+            callSiteCount: Int,
+            stringCount: Int,
+            expectedChecksums: LongArray,
+            workConsumer: GraphWorkConsumer?
+        ): Array<IntBuffer> {
+            var offset = CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong()
+            return Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                val count = uniqueCounts[propertyIndex]
+                val bytes = count.toLong() * Int.SIZE_BYTES
+                val values = if (count == 0) {
+                    IntBuffer.allocate(0)
+                } else {
+                    channel.map(FileChannel.MapMode.READ_ONLY, offset, bytes)
+                        .order(ByteOrder.BIG_ENDIAN).asIntBuffer()
+                }
+                validatePropertyStringIds(values, stringCount, expectedChecksums[propertyIndex], workConsumer)
+                offset += bytes * 2L + callSiteCount.toLong() * Int.SIZE_BYTES
+                values.asReadOnlyBuffer()
+            }
+        }
+
+        private fun validatePropertyStringIds(
+            values: IntBuffer,
+            stringCount: Int,
+            expectedChecksum: Long,
+            workConsumer: GraphWorkConsumer?
+        ) {
+            val checksum = CRC32()
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            var previous = -1
+            try {
+                for (index in 0 until values.limit()) {
+                    if ((index and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
+                    accounting.consume()
+                    val value = values.get(index)
+                    require(value in 0 until stringCount && value > previous)
+                    checksum.updatePrefilterIntBigEndian(value)
+                    previous = value
+                }
+                require(checksum.value == expectedChecksum)
+            } finally {
+                accounting.flush()
+            }
         }
     }
 }
@@ -308,6 +373,21 @@ private fun trigramHash(value: String, position: Int): Int {
     return hash
 }
 
+private fun binarySearch(values: IntBuffer, target: Int): Boolean {
+    var low = 0
+    var high = values.limit() - 1
+    while (low <= high) {
+        val middle = (low + high).ushr(1)
+        val value = values.get(middle)
+        when {
+            value < target -> low = middle + 1
+            value > target -> high = middle - 1
+            else -> return true
+        }
+    }
+    return false
+}
+
 private fun replaceCallSiteTrigramPrefilter(source: Path, target: Path) {
     try {
         Files.move(
@@ -333,6 +413,12 @@ private fun CRC32.updatePrefilterLongBigEndian(value: Long) {
     }
 }
 
+private fun CRC32.updatePrefilterIntBigEndian(value: Int) {
+    repeat(Int.SIZE_BYTES) { byteIndex ->
+        update(value ushr ((Int.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS) and 0xff)
+    }
+}
+
 private data class TrigramRange(
     val trigram: Int,
     val start: Int,
@@ -343,10 +429,11 @@ private data class TrigramRange(
 }
 
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
-internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 2
+internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 3
 private const val TRIGRAM_LENGTH = 3
 private const val DIRECTORY_HEADER_BYTES =
-    6 * Int.SIZE_BYTES + 2 * Long.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
+    (6 + CALL_SITE_STRING_PROPERTY_COUNT) * Int.SIZE_BYTES + 2 * Long.SIZE_BYTES +
+        CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
 private const val RANGE_ENTRY_INTS = 3
 private const val RANGE_ENTRY_BYTES = RANGE_ENTRY_INTS * Int.SIZE_BYTES
 private const val RANGE_END_INDEX = 1

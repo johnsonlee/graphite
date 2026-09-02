@@ -393,7 +393,8 @@ internal class MappedWebGraphBackedGraph(
                 limit,
                 selectedValues,
                 workConsumer,
-                exactMatches
+                exactMatches,
+                callSiteTrigramPrefilter
             )?.let { return it }
         }
         retainPersistedCallSiteStringIndexForSplit(workConsumer)
@@ -480,7 +481,8 @@ internal class MappedWebGraphBackedGraph(
         limit: Int,
         selectedValues: Set<List<String?>>?,
         workConsumer: SplitGraphWorkBatchConsumer,
-        exactMatchingStringIds: List<IntArray>? = null
+        exactMatchingStringIds: List<IntArray>? = null,
+        propertyStringFilter: MappedCallSiteTrigramPrefilter? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
@@ -498,6 +500,23 @@ internal class MappedWebGraphBackedGraph(
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
+        val selectedIdValues = selectedValues?.mapNotNullTo(hashSetOf()) { values ->
+            if (values.size != projectedPropertyIndexes.size) return@mapNotNullTo null
+            projectedPropertyIndexes.indices.map { index ->
+                val propertyIndex = projectedPropertyIndexes[index]
+                val value = values[index]
+                when {
+                    propertyIndex < 0 && value == null -> -1
+                    propertyIndex < 0 || value == null -> return@mapNotNullTo null
+                    else -> stringTable.findId(value).takeIf { stringId ->
+                        stringId >= 0 &&
+                            (propertyStringFilter == null ||
+                                propertyStringFilter.containsPropertyStringId(propertyIndex, stringId))
+                    } ?: return@mapNotNullTo null
+                }
+            }
+        }
+        if (selectedIdValues?.isEmpty() == true) return emptyList()
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
         val matchStates = if (exactMatchingStringIds == null) {
             predicates.map { predicate ->
@@ -562,10 +581,16 @@ internal class MappedWebGraphBackedGraph(
                                 }
                             }
                             if (matched) {
+                                if (selectedIdValues != null) {
+                                    val ids = projectedPropertyIndexes.map { propertyIndex ->
+                                        if (propertyIndex < 0) -1 else stringIds[propertyIndex]
+                                    }
+                                    if (ids !in selectedIdValues) return@forEachIdWhile true
+                                }
                                 val values = projectedPropertyIndexes.map { propertyIndex ->
                                     if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex]).toString()
                                 }
-                                if ((selectedValues == null || values in selectedValues) && seenValues.add(values)) {
+                                if (seenValues.add(values)) {
                                     rows += StringPropertyDistinctRow(nodeOffsets.offset(nodeId), values)
                                 }
                             }
