@@ -29,8 +29,10 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
@@ -1135,6 +1137,66 @@ class CrossGraphCypherExecutorTest {
         assertEquals("com.example.Repository", result.rows.single()["callee"])
         assertEquals("save", result.rows.single()["calleeMethod"])
         assertEquals(listOf("billing", "orders"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `balanced distinct projection probes only the leading graph before provenance`() {
+        val graphCount = 64
+        val initialCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val selectedCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val leadingSegments = AtomicInteger()
+        val empty = graph()
+        val value = listOf("example.Source", "call", "example.Target", "load")
+        val graphs = List(graphCount) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                StringPropertyDisjunctionDistinctProjection,
+                StringPropertyLookupOrder {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 1L else 0L
+
+                override fun distinctStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    selectedValues: Set<List<String?>>?,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyDistinctRow>? {
+                    if (selectedValues == null) {
+                        initialCalls += sourceIndex
+                        if (sourceIndex == 0 && workConsumer is SplitGraphWorkBatchConsumer) {
+                            leadingSegments.set(workConsumer.segmentWorkerCount)
+                        }
+                    } else {
+                        selectedCalls += sourceIndex
+                    }
+                    return when {
+                        selectedValues == null && sourceIndex == 0 -> listOf(StringPropertyDistinctRow(0, value))
+                        selectedValues != null && sourceIndex in setOf(0, graphCount - 1) ->
+                            listOf(StringPropertyDistinctRow(0, value))
+                        else -> emptyList()
+                    }
+                }
+
+                override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.caller_name, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.callee_name, '')) CONTAINS 'source' " +
+                "RETURN DISTINCT n.caller_class AS callerClass, n.caller_name AS callerName, " +
+                "n.callee_class AS calleeClass, n.callee_name AS calleeName LIMIT 1"
+        )
+
+        assertEquals(setOf(0), initialCalls)
+        assertEquals((0 until graphCount).toSet(), selectedCalls)
+        assertEquals(resolveDirectStringParallelismPlan().segmentWorkerCount, leadingSegments.get())
+        assertEquals(listOf("graph-0", "graph-63"), graphIds(result.rows.single()))
     }
 
     @Test

@@ -1884,62 +1884,83 @@ class QueryPipeline private constructor(
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         val zeroHitSources = BooleanArray(candidateSources.size)
+        fun projectSource(sourceIndex: Int): IndexedProjectedRows {
+            val source = candidateSources[sourceIndex]
+            val storageWorkConsumer = stringStorageWorkConsumer(
+                candidateSources.size,
+                tracker
+            )
+            val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues = null,
+                workConsumer = storageWorkConsumer
+            ) ?: error("Distinct projection capability became unavailable")
+            val sourceRows = projected.map { raw ->
+                OrderedProjectedRow(
+                    raw.encounterOrder,
+                    rawProjectionRow(raw.values, projectedProperties, columns, source.id)
+                )
+            }.toMutableList()
+
+            val seenGeneric = HashSet<Map<String, Any?>>()
+            for (node in directStringCandidates(
+                source.graph,
+                nodeClass,
+                filter,
+                tracker,
+                excludedTypes = setOf(CallSiteNode::class.java)
+            )) {
+                val row = projectedNodeRow(source, node, projectedProperties, columns)
+                val visible = visibleRow(row)
+                if (seenGeneric.add(visible)) {
+                    sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
+                    if (seenGeneric.size >= limit) break
+                }
+            }
+            val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
+            sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
+                addDistinctRow(distinct, ordered.row, limit)
+            }
+            return IndexedProjectedRows(
+                sourceIndex,
+                distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
+            )
+        }
+        fun mergeSource(projected: IndexedProjectedRows): Boolean {
+            if (projected.rows.isEmpty()) {
+                zeroHitSources[projected.sourceIndex] = true
+                (candidateSources[projected.sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
+                    ?.releaseStringPropertyDisjunctionCache()
+            }
+            projected.rows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
+            return rows.size >= limit
+        }
+
+        val balanced = usesBalancedStringSplit(candidateSources.size)
         var waveStart = 0
+        if (balanced) {
+            // Probe the leading graph with the storage half of the NCPU budget. If it fills LIMIT,
+            // avoid initializing an entire speculative graph wave; all graphs are still checked
+            // below for complete DISTINCT provenance of the selected tuples.
+            mergeSource(projectSource(0))
+            waveStart = 1
+            if (rows.size < limit) {
+                runDirectStringTasksInOrderUntil(candidateSources.indices.drop(waveStart).map { sourceIndex ->
+                    { projectSource(sourceIndex) }
+                }, directStringGraphParallelism(candidateSources.size), ::mergeSource)
+            }
+            waveStart = candidateSources.size
+        }
         while (waveStart < candidateSources.size && rows.size < limit) {
             val graphParallelism = directStringGraphParallelism(candidateSources.size)
             val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
             val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
-                {
-                    val source = candidateSources[sourceIndex]
-                    val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
-                    val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        predicates,
-                        projectedProperties,
-                        limit,
-                        selectedValues = null,
-                        workConsumer = storageWorkConsumer
-                    ) ?: error("Distinct projection capability became unavailable")
-                    val sourceRows = projected.map { raw ->
-                        OrderedProjectedRow(
-                            raw.encounterOrder,
-                            rawProjectionRow(raw.values, projectedProperties, columns, source.id)
-                        )
-                    }.toMutableList()
-
-                    val seenGeneric = HashSet<Map<String, Any?>>()
-                    for (node in directStringCandidates(
-                        source.graph,
-                        nodeClass,
-                        filter,
-                        tracker,
-                        excludedTypes = setOf(CallSiteNode::class.java)
-                    )) {
-                        val row = projectedNodeRow(source, node, projectedProperties, columns)
-                        val visible = visibleRow(row)
-                        if (seenGeneric.add(visible)) {
-                            sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
-                            if (seenGeneric.size >= limit) break
-                        }
-                    }
-                    val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-                    sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
-                        addDistinctRow(distinct, ordered.row, limit)
-                    }
-                    distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
-                }
+                { projectSource(sourceIndex) }
             }, graphParallelism)
-            localRows.forEachIndexed { localIndex, sourceRows ->
-                if (sourceRows.isEmpty()) {
-                    val sourceIndex = waveStart + localIndex
-                    zeroHitSources[sourceIndex] = true
-                    (candidateSources[sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
-                        ?.releaseStringPropertyDisjunctionCache()
-                }
-            }
-            localRows.forEach { sourceRows ->
-                sourceRows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
-            }
+            localRows.forEach(::mergeSource)
             waveStart = waveEnd
         }
         if (rows.size < limit) return CypherResult(columns, rows.values.toList())
@@ -2057,6 +2078,11 @@ class QueryPipeline private constructor(
     private data class OrderedProjectedRow(
         val encounterOrder: Long,
         val row: MutableMap<String, Any?>
+    )
+
+    private data class IndexedProjectedRows(
+        val sourceIndex: Int,
+        val rows: List<OrderedProjectedRow>
     )
 
     private fun mergeDirectStringBatch(
