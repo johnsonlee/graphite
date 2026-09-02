@@ -1797,3 +1797,27 @@ corruption detection.
 
 **Conclusion:** reject. Fixed posting chunks satisfy the storage bound but spend too much work
 proving sparse and absent terms. The production tree does not retain this layout.
+
+### 2026-09-03 - Attempt 058: Fixed trigram-hash buckets
+
+**Hypothesis:** use 496 fixed buckets over the complete three-character hash domain and persist
+only `(end offset, CRC32)` per bucket. The query computes its bucket in O(1), while the complete
+directory is a constant 4,064 bytes regardless of graph size.
+
+**Evidence:**
+
+- Dataset: the same 64 pinned-fixture-JAR shards under
+  `/tmp/pr113-exp054-fixture64-screen/`. Base revision: `789ea0e` with Attempt 056 production code;
+  candidate: the isolated prototype under `/tmp/graphite-exp057b.pY2dWb/repo`. Output is under
+  `/tmp/pr113-exp057b-run1/`.
+- Correctness: 34/34 real-fixture records matched the oracle exactly, and each sidecar was exactly
+  4,064 bytes.
+- Performance was substantially worse: P50/P95 was `307.878/367.759 ms`, process CPU was
+  `15.650 s`, peak used heap was `4.70 GiB`, peak RSS was `4.95 GiB`, and charged work was
+  `715,922,159` units.
+- Root cause: the theoretical UTF-16 trigram hash domain is about 65 million values, but real Java
+  class and method names occupy a narrow ASCII-heavy region. Equal-width hash buckets are therefore
+  extremely skewed and make common buckets almost equivalent to a whole-posting scan.
+
+**Conclusion:** reject. Constant-size equal-width buckets meet the footprint limit but do not
+balance real data. The production tree does not retain this layout.
