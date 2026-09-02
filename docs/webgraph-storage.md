@@ -18,6 +18,7 @@ graph-dir/
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
+├── graph.callsite-trigram-prefilter Optional mmap string dictionary for wide-query candidate lookup
 ├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
@@ -30,6 +31,12 @@ graph while saving, so restoring the optional index compares its complete graph 
 moving that scan onto the first online query. Direct library callers can request the same build artifact with
 `GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
 optional query cache to preserve the existing save and storage contract.
+
+Prepared graphs also contain `graph.callsite-trigram-prefilter`. Wide split queries mmap this
+CRC-protected dictionary, resolve exact matching string IDs, and compare those integer IDs while
+the shared segment pool scans raw CallSite records. This avoids restoring the much larger node
+posting index for each graph. A missing, incompatible, or corrupt dictionary fails open to the
+full-index path, so it changes performance only, not query results.
 
 For legacy graphs, or when the sidecar is missing or invalid, a relevant query builds the index in
 memory and atomically persists it when that complete index is released or the mapped graph closes.
@@ -67,6 +74,9 @@ transpose construction during load.
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
+The separate `graph.callsite-trigram-prefilter` stream starts with magic `0x47525450` (`GRTP`),
+followed by a 32-bit version `1`, content identity, bounded property/string tables, sorted trigram
+postings, and a whole-stream CRC trailer.
 
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),

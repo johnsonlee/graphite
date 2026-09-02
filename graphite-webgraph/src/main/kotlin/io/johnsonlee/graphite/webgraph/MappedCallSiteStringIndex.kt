@@ -730,6 +730,47 @@ internal class MappedCallSiteStringIndex(
         )
     }
 
+    @Synchronized
+    internal fun writePersistentTrigramPrefilter(output: DataOutput) {
+        val usedByCallSites = BooleanArray(stringTable.size())
+        properties.forEach { property -> property.markUsedStringIds(usedByCallSites) }
+        val postingCounts = IntArray(stringTable.size())
+        val seen = IntOpenHashSet()
+        var postingCount = 0
+        for (stringId in usedByCallSites.indices) {
+            if (!usedByCallSites[stringId]) continue
+            val value = stringTable.get(stringId).lowercase()
+            seen.clear()
+            for (position in 0..value.length - PERSISTED_PREFILTER_GRAM_LENGTH) {
+                if (seen.add(callSitePrefilterGramHash(value, position))) postingCounts[stringId]++
+            }
+            postingCount = Math.addExact(postingCount, postingCounts[stringId])
+        }
+        val postings = LongArray(postingCount)
+        var postingIndex = 0
+        for (stringId in usedByCallSites.indices) {
+            if (!usedByCallSites[stringId]) continue
+            val value = stringTable.get(stringId).lowercase()
+            seen.clear()
+            for (position in 0..value.length - PERSISTED_PREFILTER_GRAM_LENGTH) {
+                val hash = callSitePrefilterGramHash(value, position)
+                if (seen.add(hash)) postings[postingIndex++] = trigramKey(hash, stringId)
+            }
+        }
+        check(postingIndex == postings.size)
+        java.util.Arrays.sort(postings)
+        val graphContentIdentity = persistedContentIdentity
+        require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+        output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_MAGIC)
+        output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_VERSION)
+        output.writeInt(stringTable.size())
+        output.write(graphContentIdentity)
+        properties.forEach { property -> output.writeInt(property.uniqueStringCount) }
+        output.writeInt(postings.size)
+        properties.forEach { property -> property.writeUsedStringIds(output) }
+        postings.forEach(output::writeLong)
+    }
+
     internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
 
     fun distinctProjection(
@@ -985,6 +1026,14 @@ internal class MappedCallSiteStringIndex(
             usedStringIds.forEach(output::writeInt)
             postingEnds.forEach(output::writeInt)
             postingNodeIds.forEach(output::writeInt)
+        }
+
+        fun writeUsedStringIds(output: DataOutput) {
+            usedStringIds.forEach(output::writeInt)
+        }
+
+        fun markUsedStringIds(target: BooleanArray) {
+            usedStringIds.forEach { stringId -> target[stringId] = true }
         }
 
         fun updatePersistentChecksum(checksum: CRC32) {
@@ -1920,7 +1969,7 @@ internal fun splitCallSiteExecutor(backgroundParallelism: Int) =
         )
     }
 
-private fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Callable {
+internal fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Callable {
     val activeWorkers = splitCallSiteActiveWorkers.incrementAndGet()
     splitCallSitePeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
     try {
@@ -2576,6 +2625,14 @@ private fun callSiteTrigramHash(value: String, position: Int): Int =
     (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
         value[position + 2].code
 
+private fun callSitePrefilterGramHash(value: String, position: Int): Int {
+    var hash = 0
+    repeat(PERSISTED_PREFILTER_GRAM_LENGTH) { offset ->
+        hash = hash * STRING_HASH_FACTOR + value[position + offset].code
+    }
+    return hash
+}
+
 private fun trigramKey(trigram: Int, stringId: Int): Long =
     (trigram.toLong() shl Int.SIZE_BITS) or (stringId.toLong() and INT_UNSIGNED_MASK)
 
@@ -2653,6 +2710,7 @@ private const val BITSET_WORD_SHIFT = 6
 private const val BITSET_WORD_MASK = Long.SIZE_BITS - 1
 private const val SPARSE_DISTINCT_RANDOM_READ_FACTOR = 4L
 private const val MIN_CALL_SITE_TRIGRAM_LENGTH = 3
+private const val PERSISTED_PREFILTER_GRAM_LENGTH = 3
 private const val MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES = 4_096
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS = 4_096
 private const val MIN_EXACT_CALL_SITE_PROJECTION_TUPLES = 4_096

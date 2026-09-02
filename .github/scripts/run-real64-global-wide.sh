@@ -45,6 +45,7 @@ while IFS=$'\t' read -r GRAPH_ID GRAPH_PATH _; do
   [[ "${GRAPH_ID}" == \#* ]] && continue
   test -d "${GRAPH_PATH}"
   test -f "${GRAPH_PATH}/graph.callsite-string-index"
+  test -f "${GRAPH_PATH}/graph.callsite-trigram-prefilter"
 done < "${MANIFEST}"
 command -v java >/dev/null
 command -v jq >/dev/null
@@ -233,7 +234,7 @@ FILES_JSON=$(for FILE in "${EVIDENCE_FILES[@]}"; do
   jq -n --arg name "$(basename "${FILE}")" --arg sha256 "$(sha256_file "${FILE}")" \
     '{key:$name,value:$sha256}'
 done | jq -s from_entries)
-jq -n --arg schema graphite-fixture64-global-wide-evidence-v1 --arg repository "${REPOSITORY}" \
+jq -n --arg schema graphite-fixture64-global-wide-evidence-v2 --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" --arg candidateSha "${CANDIDATE_SHA}" \
   --arg statusContext "${STATUS_CONTEXT}" --arg description "${DESCRIPTION}" \
   --argjson files "${FILES_JSON}" \

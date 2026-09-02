@@ -47,6 +47,7 @@ test "$(cut -f16 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d 
 while IFS=$'\t' read -r GRAPH_ID GRAPH_PATH _; do
   [[ "${GRAPH_ID}" == \#* ]] && continue
   test -f "${GRAPH_PATH}/graph.callsite-string-index"
+  test -f "${GRAPH_PATH}/graph.callsite-trigram-prefilter"
 done < "${MANIFEST}"
 command -v java >/dev/null
 command -v jq >/dev/null
@@ -337,7 +338,7 @@ FILES_JSON=$(
   done | jq -s 'from_entries'
 )
 jq -n \
-  --arg schema "graphite-fixture64-evidence-v7" \
+  --arg schema "graphite-fixture64-evidence-v8" \
   --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" \
   --arg candidateSha "${CANDIDATE_SHA}" \

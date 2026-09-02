@@ -196,6 +196,13 @@ internal class MappedWebGraphBackedGraph(
     private val callSiteStringIndexLock = Any()
     private val callSiteStringIndexIdentityFile =
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
+    private val callSiteTrigramPrefilterFile =
+        callSiteStringIndexFile.resolveSibling(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+    private val callSiteTrigramPrefilterLock = Any()
+    @Volatile
+    private var callSiteTrigramPrefilter: MappedCallSiteTrigramPrefilter? = null
+    @Volatile
+    private var callSiteTrigramPrefilterUnavailable = false
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
     private var callSiteStringIndexLoadedFromPersistence = false
@@ -341,6 +348,12 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
+        if (persistedTrigramPrefilterCannotMatch(predicates, workConsumer)) {
+            return StringPropertyDisjunctionAggregate(
+                count = 0,
+                distinctValues = if (distinctProperty == null) null else emptySet()
+            )
+        }
         if (shouldPreflightCallSitePredicates(predicates) &&
             callSitePredicatesCannotMatch(predicates, workConsumer)
         ) {
@@ -353,6 +366,7 @@ internal class MappedWebGraphBackedGraph(
         return index.aggregate(predicates, distinctProperty, workConsumer)
     }
 
+    @Suppress("CyclomaticComplexMethod")
     override fun distinctStringPropertyDisjunction(
         type: Class<out Node>,
         predicates: List<StringPropertyPredicate>,
@@ -369,6 +383,18 @@ internal class MappedWebGraphBackedGraph(
             }
         ) {
             return null
+        }
+        val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
+        if (exactMatches?.all(IntArray::isEmpty) == true) return emptyList()
+        if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
+            parallelRawDistinctCallSiteStringProjection(
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues,
+                workConsumer,
+                exactMatches
+            )?.let { return it }
         }
         retainPersistedCallSiteStringIndexForSplit(workConsumer)
         callSiteStringIndex?.let { index ->
@@ -453,7 +479,8 @@ internal class MappedWebGraphBackedGraph(
         projectedProperties: List<String>,
         limit: Int,
         selectedValues: Set<List<String?>>?,
-        workConsumer: SplitGraphWorkBatchConsumer
+        workConsumer: SplitGraphWorkBatchConsumer,
+        exactMatchingStringIds: List<IntArray>? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
@@ -472,11 +499,14 @@ internal class MappedWebGraphBackedGraph(
         }
         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
-        val matchStates = predicates.map { predicate ->
-            sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
-                ByteArray(stringTable.size())
+        val matchStates = if (exactMatchingStringIds == null) {
+            predicates.map { predicate ->
+                sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
+                    ByteArray(stringTable.size())
+                }
             }
-        }
+        } else emptyList()
+        val exactMatchSets = exactMatchingStringIds?.map(::IntOpenHashSet)
         val targetSize = minOf(limit, selectedValues?.size ?: limit)
         val abort = AtomicBoolean()
         val scanExecutor = if (backgroundWorkerCount > 0) {
@@ -515,6 +545,7 @@ internal class MappedWebGraphBackedGraph(
                                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
                                 matched = predicates.indices.any { index ->
                                     val stringId = stringIds[predicatePropertyIndexes[index]]
+                                    exactMatchSets?.let { sets -> return@any stringId in sets[index] }
                                     val states = matchStates[index]
                                     when (states[stringId]) {
                                         RAW_STRING_MATCH -> true
@@ -554,7 +585,7 @@ internal class MappedWebGraphBackedGraph(
         }
         callSiteParallelScanCount.incrementAndGet()
         val inlineTask = tasks.first()
-        tasks.drop(1).forEach(completion::submit)
+        tasks.drop(1).map(::trackedSplitCallSiteTask).forEach(completion::submit)
         val results = arrayOfNulls<ParallelCallSiteProjectionResult>(tasks.size)
         var received = 0
         var failure: Throwable? = null
@@ -704,6 +735,17 @@ internal class MappedWebGraphBackedGraph(
             if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
                 serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
             }
+            val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
+            if (exactMatches?.all(IntArray::isEmpty) == true) return emptySequence()
+            if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
+                parallelRawCallSiteStringDisjunction<T>(
+                    type,
+                    predicates,
+                    limit,
+                    workConsumer,
+                    exactMatches
+                )?.let { return it }
+            }
             retainPersistedCallSiteStringIndexForSplit(workConsumer)
             callSiteStringIndex?.let { index ->
                 callSiteStringIndexLookupCount.incrementAndGet()
@@ -850,7 +892,8 @@ internal class MappedWebGraphBackedGraph(
         type: Class<T>,
         predicates: List<StringPropertyPredicate>,
         limit: Int,
-        workConsumer: GraphWorkConsumer?
+        workConsumer: GraphWorkConsumer?,
+        exactMatchingStringIds: List<IntArray>? = null
     ): Sequence<T>? {
         if (workConsumer !is ParallelGraphWorkBatchConsumer) return null
         val splitWork = workConsumer as? SplitGraphWorkBatchConsumer
@@ -874,11 +917,14 @@ internal class MappedWebGraphBackedGraph(
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
-        val matchStates = predicates.map { predicate ->
-            sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
-                ByteArray(stringTable.size())
+        val matchStates = if (exactMatchingStringIds == null) {
+            predicates.map { predicate ->
+                sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
+                    ByteArray(stringTable.size())
+                }
             }
-        }
+        } else emptyList()
+        val exactMatchSets = exactMatchingStringIds?.map(::IntOpenHashSet)
         val scanRanges = (0 until workerCount).mapNotNull { workerIndex ->
             val start = (workerIndex * chunkSize).toInt()
             val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
@@ -939,6 +985,7 @@ internal class MappedWebGraphBackedGraph(
                                         CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
                                         else -> calleeName
                                     }
+                                    exactMatchSets?.let { sets -> return@any stringId in sets[index] }
                                     val states = matchStates[index]
                                     when (states[stringId]) {
                                         RAW_STRING_MATCH -> true
@@ -983,7 +1030,9 @@ internal class MappedWebGraphBackedGraph(
         callSiteParallelScanCount.incrementAndGet()
         val inlineTask = tasks.firstOrNull().takeIf { splitWork != null }
         val backgroundTasks = if (inlineTask == null) tasks else tasks.drop(1)
-        backgroundTasks.forEach(completion::submit)
+        backgroundTasks.map { task ->
+            if (splitWork == null) task else trackedSplitCallSiteTask(task)
+        }.forEach(completion::submit)
         val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
         var received = 0
         var failure: Throwable? = null
@@ -1389,6 +1438,47 @@ internal class MappedWebGraphBackedGraph(
                     predicate.expected.length >= MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH
             }
 
+    private fun persistedTrigramPrefilterCannotMatch(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): Boolean = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
+        ?.all(IntArray::isEmpty) == true
+
+    private fun persistedTrigramPrefilterExactMatches(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): List<IntArray>? {
+        if (callSiteStringIndex != null || workConsumer !is SplitGraphWorkBatchConsumer || predicates.isEmpty()) {
+            return null
+        }
+        callSiteTrigramPrefilter?.let { prefilter ->
+            return prefilter.exactMatchingStringIds(predicates, workConsumer)
+        }
+        if (callSiteTrigramPrefilterUnavailable) return null
+        val prefilter = synchronized(callSiteTrigramPrefilterLock) {
+            callSiteTrigramPrefilter ?: run {
+                if (callSiteTrigramPrefilterUnavailable) return@synchronized null
+                val identity = runCatching { Files.readAllBytes(callSiteStringIndexIdentityFile) }.getOrNull()
+                val loaded = identity?.let { expected ->
+                    MappedCallSiteTrigramPrefilter.load(
+                        callSiteTrigramPrefilterFile,
+                        stringTable.size(),
+                        expected,
+                        stringTable,
+                        workConsumer
+                    )
+                }
+                if (loaded == null) {
+                    callSiteTrigramPrefilterUnavailable = true
+                } else {
+                    callSiteTrigramPrefilter = loaded
+                }
+                loaded
+            }
+        } ?: return null
+        return prefilter.exactMatchingStringIds(predicates, workConsumer)
+    }
+
     @Suppress("ReturnCount")
     override fun prefersSerialStringPropertyDisjunction(
         type: Class<out Node>,
@@ -1666,6 +1756,10 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun clearStringPropertyIndexes() {
         closeCallSiteStringIndex(force = true)
+        synchronized(callSiteTrigramPrefilterLock) {
+            callSiteTrigramPrefilter = null
+            callSiteTrigramPrefilterUnavailable = false
+        }
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
@@ -1720,6 +1814,8 @@ internal class MappedWebGraphBackedGraph(
     internal fun isCallSiteStringIndexLoadedFromPersistence(): Boolean =
         callSiteStringIndexLoadedFromPersistence
 
+    internal fun isCallSiteTrigramPrefilterInitialized(): Boolean = callSiteTrigramPrefilter != null
+
     /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.
      * A denied shared-memory reservation is a normal fallback and leaves raw scans available.
@@ -1740,9 +1836,7 @@ internal class MappedWebGraphBackedGraph(
     @Suppress("TooGenericExceptionCaught")
     internal fun persistPreparedCallSiteStringIndex(): Boolean = synchronized(callSiteStringIndexLock) {
         val index = callSiteStringIndex ?: return@synchronized false
-        if (callSiteStringIndexLoadedFromPersistence && Files.isRegularFile(callSiteStringIndexFile)) {
-            return@synchronized true
-        }
+        if (callSiteStringIndexLoadedFromPersistence && Files.isRegularFile(callSiteStringIndexFile)) return@synchronized true
         var temporary: Path? = null
         try {
             temporary = Files.createTempFile(
@@ -1755,7 +1849,7 @@ internal class MappedWebGraphBackedGraph(
             ).use(index::writePersistent)
             replaceAtomically(temporary, callSiteStringIndexFile)
             temporary = null
-            true
+            persistCallSiteTrigramPrefilter(index, callSiteTrigramPrefilterFile)
         } catch (_: Exception) {
             false
         } finally {

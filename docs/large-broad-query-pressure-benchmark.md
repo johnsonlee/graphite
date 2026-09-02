@@ -63,7 +63,8 @@ identity: the whole-JAR SHA-256, an order-independent bytecode-shard SHA-256, an
 order-independent query-semantic SHA-256 over node count plus the complete CallSite string tuple
 multiset. Generated timestamps and physical node order are intentionally excluded. Class/node/
 CallSite counts, corpus id, and shard id are also recorded, and all 64 semantic fingerprints must
-differ. Preparation immediately reloads and re-verifies all 64 graphs against the same identities.
+differ. The complete CallSite index and trigram-dictionary byte sizes and SHA-256 values are pinned
+as well. Preparation immediately reloads and re-verifies all 64 graphs against the same identities.
 For a release-candidate audit, `.github/scripts/test-fixture64-reproducibility.sh` performs two
 independent real-JAR preparations, requires identical identity/term fields, and proves that a
 tampered semantic fingerprint is rejected.
@@ -317,8 +318,9 @@ derived correctness-oracle SHA-256 in `provenance.json`;
 caller-supplied JARs are not accepted. Before running, it requires exactly 64 provenance rows, four
 source corpora, and 64 distinct query-semantic graph fingerprints. The candidate-built verifier
 re-hashes the four supplied fixture JARs and every bytecode shard, binds every manifest path and
-term to its provenance row, reloads all 64 actual graph directories, and recomputes counts, terms,
-and semantic identities before timing. It then runs base and candidate sequentially for independent
+term to its provenance row, verifies both query sidecars byte-for-byte, reloads all 64 actual graph
+directories, and recomputes counts, terms, and semantic identities before timing. It then runs base
+and candidate sequentially for independent
 cold, warm, and `startup-prepared` forks,
 verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for all
 states, publishes immutable downloadable evidence, and only then publishes the trusted commit

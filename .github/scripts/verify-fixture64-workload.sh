@@ -29,8 +29,8 @@ CANDIDATE_WARM_OBSERVATIONS=${12}
 CANDIDATE_WARM_CORRECTNESS=${13}
 
 diff -u \
-  <(cut -f1-18 "${EVIDENCE_DIR}/fixture-provenance.tsv") \
-  <(cut -f1-18 "${RECOMPUTED_DIR}/fixture-provenance.tsv")
+  <(cut -f1-20 "${EVIDENCE_DIR}/fixture-provenance.tsv") \
+  <(cut -f1-20 "${RECOMPUTED_DIR}/fixture-provenance.tsv")
 diff -u \
   <(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next } { print $1, $3, $4, $5, $6 }' \
     "${EVIDENCE_DIR}/graphs.tsv") \

@@ -113,6 +113,12 @@ internal object Fixture64GraphPreparation {
                     }
                     val callSiteIndexBytes = Files.size(callSiteIndex)
                     val callSiteIndexSha256 = sha256(callSiteIndex)
+                    val callSitePrefilter = graphPath.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+                    require(Files.isRegularFile(callSitePrefilter)) {
+                        "$graphId did not persist its CallSite trigram dictionary during fixture construction"
+                    }
+                    val callSitePrefilterBytes = Files.size(callSitePrefilter)
+                    val callSitePrefilterSha256 = sha256(callSitePrefilter)
                     val persistedPath = graphPath.toRealPath()
                     verifyMappedGraph(
                         persistedPath,
@@ -121,7 +127,9 @@ internal object Fixture64GraphPreparation {
                         querySemanticSha256,
                         sourceResources,
                         callSiteIndexBytes,
-                        callSiteIndexSha256
+                        callSiteIndexSha256,
+                        callSitePrefilterBytes,
+                        callSitePrefilterSha256
                     )
                     check(graphFingerprints.add(querySemanticSha256)) {
                         "$graphId duplicates query-semantic graph content $querySemanticSha256"
@@ -153,6 +161,8 @@ internal object Fixture64GraphPreparation {
                         workloadIdentity,
                         callSiteIndexBytes,
                         callSiteIndexSha256,
+                        callSitePrefilterBytes,
+                        callSitePrefilterSha256,
                         persistedPath
                     ).joinToString("\t")
                 }
@@ -445,6 +455,13 @@ internal object Fixture64GraphPreparation {
                 ) {
                     "$graphId production-built CallSite index content does not match provenance"
                 }
+                val callSitePrefilter = manifestPathValue.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+                require(Files.isRegularFile(callSitePrefilter) &&
+                    Files.size(callSitePrefilter) == provenance.callSitePrefilterBytes &&
+                    sha256(callSitePrefilter) == provenance.callSitePrefilterSha256
+                ) {
+                    "$graphId production-built CallSite trigram dictionary does not match provenance"
+                }
                 require(manifest.zero == provenance.zero && manifest.targeted == provenance.targeted &&
                     manifest.dense == provenance.dense &&
                     manifest.workloadIdentity == provenance.workloadIdentity
@@ -531,7 +548,7 @@ internal object Fixture64GraphPreparation {
         require(lines.firstOrNull() == PROVENANCE_HEADER) { "$path has an unexpected provenance header" }
         return lines.drop(1).filter(String::isNotBlank).mapIndexed { index, line ->
             val fields = line.split('\t')
-            require(fields.size == PROVENANCE_FIELD_COUNT) { "$path:${index + 2}: expected 19 fields" }
+            require(fields.size == PROVENANCE_FIELD_COUNT) { "$path:${index + 2}: expected 21 fields" }
             FixtureProvenanceRow(
                 graphId = fields[0],
                 corpus = fields[1],
@@ -551,7 +568,9 @@ internal object Fixture64GraphPreparation {
                 workloadIdentity = fields[15],
                 callSiteIndexBytes = fields[16].toLong(),
                 callSiteIndexSha256 = fields[17],
-                graphPath = Path.of(fields[18])
+                callSitePrefilterBytes = fields[18].toLong(),
+                callSitePrefilterSha256 = fields[19],
+                graphPath = Path.of(fields[20])
             )
         }
     }
@@ -602,7 +621,9 @@ internal object Fixture64GraphPreparation {
         expectedSemanticSha256: String,
         expectedResources: ResourceSemanticSummary,
         expectedCallSiteIndexBytes: Long,
-        expectedCallSiteIndexSha256: String
+        expectedCallSiteIndexSha256: String,
+        expectedCallSitePrefilterBytes: Long,
+        expectedCallSitePrefilterSha256: String
     ) {
         GraphStore.loadMapped(path).useGraph { graph ->
             val callSiteIndex = path.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
@@ -610,6 +631,12 @@ internal object Fixture64GraphPreparation {
                 sha256(callSiteIndex) == expectedCallSiteIndexSha256
             ) {
                 "$path mapped CallSite index content differs from the production-built sidecar"
+            }
+            val callSitePrefilter = path.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+            check(Files.size(callSitePrefilter) == expectedCallSitePrefilterBytes &&
+                sha256(callSitePrefilter) == expectedCallSitePrefilterSha256
+            ) {
+                "$path mapped CallSite trigram dictionary differs from the production-built sidecar"
             }
             val mapped = graph as? MappedWebGraphBackedGraph
                 ?: error("$path did not load as a mapped graph")
@@ -783,6 +810,8 @@ internal object Fixture64GraphPreparation {
         val workloadIdentity: String,
         val callSiteIndexBytes: Long,
         val callSiteIndexSha256: String,
+        val callSitePrefilterBytes: Long,
+        val callSitePrefilterSha256: String,
         val graphPath: Path
     )
     private data class FixtureSearchTerms(val zero: String, val targeted: String, val dense: String)
@@ -828,7 +857,7 @@ internal object Fixture64GraphPreparation {
     private const val LOCALIZED_MIDDLE_DISTRIBUTION = "localized-middle"
     private const val LOCALIZED_LATE_DISTRIBUTION = "localized-late"
     private const val BROAD_DISTRIBUTION = "broad-all-64"
-    private const val PROVENANCE_FIELD_COUNT = 19
+    private const val PROVENANCE_FIELD_COUNT = 21
     private const val VERIFY_COMMAND = "--verify"
     private const val ORDER_FINGERPRINT_SELF_TEST = "--self-test-order-fingerprint"
     private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v2-ordered"
@@ -838,5 +867,6 @@ internal object Fixture64GraphPreparation {
     private const val PROVENANCE_HEADER =
         "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +
             "\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tresourceCount" +
-            "\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256\tgraphPath"
+            "\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256" +
+            "\tcallSitePrefilterBytes\tcallSitePrefilterSha256\tgraphPath"
 }

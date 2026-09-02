@@ -1608,3 +1608,47 @@ footprint, checksum/read cost, property membership checks, and exact candidate d
 work than they remove for positive real-data queries. It also cannot prevent all 64 full indexes
 from being needed by this coverage workload. This docs-only commit retains neither the new file
 format nor the reader/writer prototype.
+
+### 2026-09-03 - Attempt 053: Scan raw CallSites by exact prefilter string IDs
+
+**Hypothesis:** retain Attempt 052's CRC-protected mapped trigram dictionary, but use its verified
+positive result instead of treating it only as a preflight. Resolve each predicate to exact
+property-specific string IDs, then let the existing shared segment pool compare those integer IDs
+while scanning raw CallSite records. This should eliminate complete node-posting sidecar restores
+for both misses and hits while preserving exact string verification, deterministic row order,
+content identity, corruption fallback, work accounting, cancellation, and the additive NCPU split.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards freshly regenerated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs at `/tmp/pr113-exp053-fixture64-v1/`; no synthetic
+  graph supplied performance evidence. The 64 CRC-protected dictionaries occupied `247 MiB`.
+  Fixture provenance now records each dictionary's byte size and SHA-256, and the candidate verifier
+  independently accepted all 64 21-field provenance records.
+- Base revision: remote `main` at `78ce46b`; candidate: this Attempt 053 snapshot based on
+  `db90513`. The four-CPU main reference is under `/tmp/pr113-exp048-cpu4/`; three candidate runs
+  are under `/tmp/pr113-exp053-paired-candidate-{1,2,3}/`.
+- Correctness: every candidate run completed all 34 real-fixture cases and matched the trusted CI
+  oracle on outcome, row count, response bytes, digest, and hit graph IDs, with zero failures and
+  zero timeouts. `GraphStoreTest` passed all 160 tests, including exact hit, exact DISTINCT,
+  property isolation, lifecycle reset, and corrupt-dictionary full-index fallback; WebGraph detekt
+  and all 86 benchmark-gate tests passed.
+- With `-XX:ActiveProcessorCount=4`, candidate P95 was `49.766`, `62.949`, and `53.119 ms` versus
+  main's `449.377 ms`: `9.03x`, `7.14x`, and `8.46x`, so every run clears the 5x milestone. Median
+  candidate P50 was `2.402 ms` versus `247.876 ms` (`103.18x`). Median maximum latency was
+  `384.112 ms` versus `481.268 ms`; the slowest individual query therefore also improved, although
+  it did not improve by 5x.
+- Median four-CPU process CPU was `2.842 s` versus main's `11.126 s`; peak used heap was
+  `4.03 GiB` versus `4.64 GiB`, peak RSS was `5.33 GiB` versus `5.73 GiB`, and charged work was
+  `40,259,720` versus `109,198,717` units. No complete CallSite index was admitted or queried.
+- A production-fixture run with 16 available CPUs observed exactly `8 graph + 8 segment` worker
+  peaks. It completed 34/34 cases with P50/P95 `1.918/49.448 ms`, maximum `242.776 ms`, process
+  CPU `5.624 s`, peak used heap `4.41 GiB`, peak RSS `5.74 GiB`, and zero failures/timeouts. The
+  graph caller can process one segment inline, so the logical CallSite scan peak is nine while the
+  two physical executor budgets remain eight plus eight.
+
+**Conclusion:** keep. Returning exact matching string IDs and consuming them in the segmented raw
+scan removes the positive-query sidecar restores that defeated Attempt 052. All three real-data
+four-CPU runs exceed the current 5x P95 milestone, CPU/work/heap improve, 16 CPUs realize the
+required additive `8 + 8` plan, and correctness remains a hard gate. Missing, incompatible, or
+corrupt dictionaries continue to fail open to the complete exact index path.

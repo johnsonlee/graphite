@@ -1711,13 +1711,14 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(harness, /else LAZY_INDEX_PREPARATION_MODE/);
     assert.match(harness, /System\.clearProperty\(PREPARE_INDEX_ON_LOAD_PROPERTY\)/);
     assert.equal((driver.match(/for INDEX_STATE in cold warm startup-prepared/g) ?? []).length, 2);
-    assert.match(driver, /graphite-fixture64-evidence-v7/);
+    assert.match(driver, /graphite-fixture64-evidence-v8/);
     assert.match(driver, /startup=%.2f\/%.2fx/);
     assert.match(driver, /derive-graph-routing-oracle/);
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.match(driver, /Fixture64GraphPreparation/);
     assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
     assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-string-index"/);
+    assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-trigram-prefilter"/);
     assert.match(driver, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(driver, /cmp -s "\$\{SUPPLIED_JAR\}" "\$\{PINNED_JAR\}"/);
     assert.match(driver, /test-fixture64-reproducibility\.sh/);
@@ -1759,7 +1760,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
     assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
-    assert.match(reproducibility, /cut -f1-18/);
+    assert.match(reproducibility, /cut -f1-20/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
@@ -1772,7 +1773,12 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
         reproducibility,
         /Corrupt fixture64 graph\.callsite-string-index unexpectedly passed verification/
     );
+    assert.match(
+        reproducibility,
+        /Corrupt fixture64 graph\.callsite-trigram-prefilter unexpectedly passed verification/
+    );
     assert.match(source, /callSiteIndexSha256/);
+    assert.match(source, /callSitePrefilterSha256/);
     assert.match(source, /isCallSiteStringIndexLoadedFromPersistence\(\)/);
     assert.match(source, /deriveGlobalWideDistributions\(manifestRows\)/);
     assert.match(source, /localized\(LOCALIZED_EARLY_DISTRIBUTION, 0\)/);
@@ -2841,7 +2847,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.doesNotMatch(workflow, /Startup-prepared P95 speedup must be >=10x/);
     assert.ok(workflow.includes("gist\\.github\\.com\\/johnsonlee"));
-    assert.match(workflow, /graphite-fixture64-evidence-v7/);
+    assert.match(workflow, /graphite-fixture64-evidence-v8/);
     assert.match(workflow, /Evidence digest mismatch/);
     assert.match(workflow, /Independently recompute fixture64 comparisons/);
     assert.match(workflow, /reproducibilityScriptSha256/);

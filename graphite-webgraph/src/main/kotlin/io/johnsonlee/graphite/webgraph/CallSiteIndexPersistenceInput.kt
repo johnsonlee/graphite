@@ -31,6 +31,8 @@ internal fun persistCallSiteStringIndex(
             ).use(index::writePersistent)
             replaceCallSiteIndex(checkNotNull(temporary), dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
             temporary = null
+            val prefilterPath = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+            if (!persistCallSiteTrigramPrefilter(index, prefilterPath)) return false
         }
         true
     } catch (_: Exception) {
