@@ -1894,3 +1894,25 @@ storage selection, graph/segment parallelism, source ordering, or results.
 
 **Conclusion:** reject. Avoiding 63 small scanner wrappers is not the source of the hosted dense
 latency regressions. The production tree retains the Attempt 059 path unchanged.
+
+### 2026-09-03 - Attempt 061: Reuse the legacy projection loop for the dense leading graph
+
+**Hypothesis:** the balanced path's `DirectStringSourceScanner` projection differs from the
+remote-main work-tracked serial loop even when both select the same bounded raw storage scan. Use
+the legacy binding/projection loop for the short-term leading probe, then retain balanced parallel
+continuation only when graph zero does not fill the limit.
+
+**Evidence:**
+
+- Dataset and oracle: the same 64 pinned-JAR persisted graphs and exact hosted remote-main oracle
+  used by Attempts 059 and 060. Three four-CPU runs are under
+  `/tmp/pr113-exp061-serial-leading.eby6Ow/`; all completed 34/34 cases with exact result parity and
+  unchanged `5,866,095` charged work units.
+- P50/P95 was `4.657/57.110`, `4.681/51.247`, and `4.834/57.030 ms`, no improvement over Attempt
+  059. Every targeted dense row became slower locally: class-pair `2.717-2.928 ms`, name-pair
+  `2.190-2.250 ms`, caller-class `1.641-1.902 ms`, callee-class `1.151-1.181 ms`, and wrapped
+  case-insensitive `1.428-1.500 ms`.
+- Process CPU remained `1.931-1.957 s`; heap and RSS remained inside the Attempt 059 ranges.
+
+**Conclusion:** reject. The specialized scanner projection is already cheaper than rebuilding the
+legacy binding map for each hit. The production tree retains the scanner projection.
