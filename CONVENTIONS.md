@@ -24,3 +24,11 @@
 - If a change touches persisted graph loading or large-corpus query behavior, also include the relevant load/query benchmark class, such as `AndroidQueryBenchmark`, `AndroidLoadBenchmark`, `LargeCorpusQueryBenchmark`, or `LargeCorpusLoadBenchmark`.
 - The PR body must explicitly state whether the benchmark comparison indicates a performance regression, including separate conclusions for method-level and end-to-end results.
 - If benchmark results cannot be produced, state the blocker in the PR description rather than leaving performance unaddressed.
+
+### Performance experiment history
+
+- Record every performance optimization attempt under `docs/performance-experiments/`, including attempts that are reverted.
+- Use one commit per optimization attempt. Do not combine independent hypotheses in one experiment commit.
+- Each record must identify the hypothesis, exact real-data fixture, base and candidate revisions, correctness result, latency, CPU/memory evidence, and the keep/revert decision.
+- A failed experiment commit keeps the record but must not leave the rejected production-code change in the tree.
+- Break large speedup goals into independently measurable milestones. A verified incremental improvement may be delivered before the cumulative target is reached.
