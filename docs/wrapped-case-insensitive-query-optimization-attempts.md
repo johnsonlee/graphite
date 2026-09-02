@@ -1469,3 +1469,31 @@ experiments.
 **Conclusion:** reverted. Exact access evidence is repaired and the summary is highly effective for
 zero misses, but deferring full sidecar loads makes cumulative P95 miss the 5x goal on both CPU
 plans. This docs-only commit does not retain the summary format or reader path.
+
+### 2026-09-03 - Attempt 049: Split persisted posting-order validation
+
+**Hypothesis:** JFR attributed the largest cold sidecar restore sample group to random `nodeOrder`
+checks. Preserve the version-2 checksum and every structural/order invariant, but read bounded node
+IDs first and validate their posting order in two pieces: one on each graph worker and one on the
+shared segment pool. With concurrent graph scans this continues to use the additive NCPU allocation,
+not graph-by-segment multiplication.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted graph shards generated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. Base revision: `9cf52fc`, production-equivalent
+  `0fdba6c`; candidate: an isolated Attempt 049 snapshot. The complete 34-case screening output is
+  under `/tmp/pr113-exp049-quick/`.
+- Correctness: all 34 cases matched the real-fixture oracle. Focused tests for corrupt-sidecar
+  fallback, lazy restore work accounting, and interruption without publication passed; compilation,
+  JMH compilation, and detekt passed.
+- The observed worker peaks remained the required additive `8 graph + 8 segment` on 16 CPUs.
+  Aggregate P50/P95 were `1.755/32.334 ms`, the cold four-property zero row was `389.198 ms`, and
+  process CPU was `4.105 s`. These are flat or worse than the current-production screening ranges
+  of about `1.6-1.9/29-44 ms`, `312-372 ms`, and `3.7-4.2 s` respectively.
+- Peak used heap was `4.37 GiB`, peak RSS `4.73 GiB`, and charged work remained `57,897,636` units.
+  Moving validation to the shared pool does not remove work and adds queue/join overhead.
+
+**Conclusion:** reverted after the complete screening run. Parallel posting-order validation does
+not provide a repeatable 2x step and makes the cold zero row slower. This docs-only commit leaves
+the serial version-2 validator unchanged.
