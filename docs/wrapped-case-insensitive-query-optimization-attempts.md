@@ -1385,3 +1385,30 @@ the next optimization target; it can never pass the correctness hard gate or be 
 **Conclusion:** reverted unconditionally because it cannot detect corrupted sidecars. The result
 justifies testing an authenticated/checksummed writer-trust format that validates the complete byte
 stream before publishing the index while avoiding redundant random `nodeOrder` checks.
+
+### 2026-09-03 - Attempt 046: SHA-256-authenticated writer-trust sidecar
+
+**Hypothesis:** version the persisted index with a SHA-256 trailer over every preceding byte. Once
+the complete stream and graph content identity match, trust writer-produced posting order and skip
+redundant random `nodeOrder` validation. Keep streaming reads, memory reservation, work accounting,
+cancellation, corrupt fallback, and version-2 compatibility.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted shards freshly regenerated from the four pinned fixture JARs at
+  `/tmp/pr113-exp046-fixture64/`. Base revision: `7198b28`, production-equivalent `0fdba6c`;
+  candidate: the isolated Attempt 046 snapshot. Complete 34-case output is under
+  `/tmp/pr113-exp046-quick/`.
+- Correctness: all 34 real-fixture cases matched the existing oracle. Focused tests passed for
+  SHA-corruption fallback, lazy-restore work accounting, cancellation without publication, and
+  legacy version-2 CRC restoration. Compilation and detekt also passed.
+- Aggregate P50/P95 were `1.702/66.947 ms`, and the cold four-property zero row took `392.370 ms`.
+  This is worse than the current-production screening ranges of about `1.6-1.9/29-44 ms` and
+  `312-372 ms`, respectively.
+- Process CPU was `4.345 s`, peak used heap `4.09 GiB`, peak RSS `4.23 GiB`, and charged work
+  `57,897,572` units. SHA-256 replaced enough of the removed validation cost to erase the expected
+  latency gain.
+
+**Conclusion:** reverted after the complete screening run. Strong stream authentication preserves
+the hard correctness gate but does not produce a net speedup on this workload. This docs-only
+commit leaves the production version-2 format and reader unchanged.
