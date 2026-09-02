@@ -1339,3 +1339,25 @@ structural validation, work accounting, cancellation, and fallback behavior.
 **Conclusion:** reverted after screening. Memory mapping changes how bytes arrive but leaves the
 dominant per-value validation and checksum costs intact, and latency regressed. This commit records
 only the experiment; the mapped-reader prototype is not retained.
+
+### 2026-09-03 - Attempt 044: Bulk-read the persisted sidecar before parsing
+
+**Hypothesis:** a single `Files.readAllBytes` followed by `ByteBuffer` parsing may reduce cold-read
+overhead while retaining the version-2 checksum, structural validation, exact results, and corrupt
+sidecar fallback.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted fixture-JAR graph shards. Base revision: `7198b28`,
+  production-equivalent `0fdba6c`; candidate: the isolated Attempt 044 snapshot. The complete
+  34-case screening output is under `/tmp/pr113-exp044-quick/`.
+- Correctness: all 34 cases matched the real-fixture oracle.
+- Aggregate P50/P95 were `1.839/31.140 ms`, and the cold four-property zero row was `353.135 ms`.
+  Both are within the observed current-production range rather than a repeatable 2x improvement.
+- Process CPU was `3.935 s`, peak used heap `4.16 GiB`, peak RSS `4.53 GiB`, and charged work
+  remained `57,897,636` units. The full byte arrays add transient memory without eliminating the
+  per-value validation pass.
+
+**Conclusion:** reverted. Bulk input alone is effectively flat and adds a large transient
+allocation path, so it is not a useful 2x/5x milestone step. The production reader remains
+streaming; this docs-only commit preserves the negative result.
