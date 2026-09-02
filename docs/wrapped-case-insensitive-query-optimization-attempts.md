@@ -1438,3 +1438,34 @@ removing the SHA cost and redundant writer-order validation.
 **Conclusion:** reverted. Bulk CRC is cheaper than SHA-256 but still does not deliver a stable 2x
 step or independently remove the exact-head aligned latency blocker. This docs-only commit retains
 neither the new persistence version nor the trusted-order reader.
+
+### 2026-09-03 - Attempt 048: Re-evaluate miss summary against main with exact coverage telemetry
+
+**Hypothesis:** Attempt 040 was rejected against the already-optimized candidate, but its very fast
+zero-result proof may still improve the cumulative `main` comparison and remove the exact-head zero
+regression. Reapply only the false-positive six-gram summary, count every summary consultation as a
+graph access, and compare it directly with remote `main` rather than retaining the positive raw-scan
+experiments.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted graph shards generated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. Base revision: remote `main` at `78ce46b`;
+  candidate: an isolated Attempt 048 snapshot based on `305a181`. The 16-CPU outputs are under
+  `/tmp/pr113-exp048-v-main/` and `/tmp/pr113-exp048-quick/`; the CI-shaped four-CPU pair is under
+  `/tmp/pr113-exp048-cpu4/`.
+- Correctness: both candidate runs completed all 34 cases and matched the real-fixture oracle.
+  The previously missing zero-query coverage now reports all 64 graph IDs. Focused tests passed for
+  a definite miss without full-index admission, a real hit, corrupt-summary fallback, and persisted
+  summary creation; compilation, JMH compilation, and detekt passed.
+- On 16 available CPUs, `main -> candidate` P50/P95 was `242.846/417.798 -> 2.424/119.601 ms`:
+  `100.17x` P50 but only `3.49x` P95. The first four-property zero row improved
+  `1660.332 -> 70.195 ms`, but later targeted and dense sidecar restores set the tail.
+- With `-XX:ActiveProcessorCount=4`, which produces the same additive two graph plus two segment
+  plan as the hosted runner, P50/P95 was `247.876/449.377 -> 2.689/194.371 ms`: `92.19x` P50 but
+  only `2.31x` P95. Candidate process CPU was `3.068 s` versus main's `11.126 s`; peak heap/RSS were
+  `4.71/4.98 GiB` versus `4.64/5.73 GiB`, so resources improved while the latency gate still failed.
+
+**Conclusion:** reverted. Exact access evidence is repaired and the summary is highly effective for
+zero misses, but deferring full sidecar loads makes cumulative P95 miss the 5x goal on both CPU
+plans. This docs-only commit does not retain the summary format or reader path.
