@@ -1916,3 +1916,23 @@ continuation only when graph zero does not fill the limit.
 
 **Conclusion:** reject. The specialized scanner projection is already cheaper than rebuilding the
 legacy binding map for each hit. The production tree retains the scanner projection.
+
+### 2026-09-03 - Attempt 062: Cache provenance and bypass qualified-node projection wrappers
+
+**Hypothesis:** dense graph-zero cases project 200 rows. Cache the graph's singleton provenance
+set per scanner and read ordinary node properties directly, avoiding a `QualifiedNode` plus a new
+singleton set for every returned row.
+
+**Evidence:**
+
+- Dataset and oracle: the same 64 pinned-JAR persisted graphs and hosted remote-main oracle. Three
+  four-CPU runs are under `/tmp/pr113-exp062-direct-projection.zOwWrC/`; all completed 34/34 cases
+  with exact result parity and unchanged `5,866,095` work units.
+- P50/P95 was `4.624/55.634`, `4.363/55.110`, and `4.430/55.394 ms`. Caller-class dense improved
+  from Attempt 059's `1.216-1.435 ms` to `0.972-1.191 ms`, but class-pair, name-pair, callee-class,
+  and wrapped dense overlapped their prior ranges and did not show a consistent reduction.
+- Process CPU was `1.803-1.983 s`; heap and RSS stayed inside the prior run-to-run range.
+
+**Conclusion:** reject. One dense shape improved, but the change did not address the repeated
+multi-shape hosted blocker and adds special qualified-property handling. The production tree keeps
+the simpler common projection path.
