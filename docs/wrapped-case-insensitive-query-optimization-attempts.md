@@ -1361,3 +1361,27 @@ sidecar fallback.
 **Conclusion:** reverted. Bulk input alone is effectively flat and adds a large transient
 allocation path, so it is not a useful 2x/5x milestone step. The production reader remains
 streaming; this docs-only commit preserves the negative result.
+
+### 2026-09-03 - Attempt 045: Profile writer-trust without integrity validation
+
+**Hypothesis:** temporarily remove sidecar integrity and posting-order validation in an isolated
+profiling build to measure their upper-bound cost. This is deliberately unsafe and can only locate
+the next optimization target; it can never pass the correctness hard gate or be retained.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted Android, Tika, Hive, and Kotlin compiler fixture-JAR
+  shards. Base revision: `7198b28`, production-equivalent `0fdba6c`; candidate: an isolated,
+  explicitly unsafe Attempt 045 profiling snapshot. Output is under `/tmp/pr113-exp045b-quick/`.
+- The uncorrupted workload happened to match all 34 oracle records, but corruption detection was
+  absent by construction. Therefore this is profiling evidence, not correctness evidence.
+- Aggregate P50/P95 were `1.859/31.671 ms`; the cold four-property zero row fell to `178.642 ms`,
+  compared with the current-production screening range of `312-372 ms`. Process CPU fell to
+  `2.742 s`; peak used heap was `4.51 GiB`, peak RSS `4.56 GiB`, and charged work `57,897,636`.
+- A query-phase JFR sample attributed 36 of 121 samples to posting `nodeOrder` validation, with
+  further samples in per-value checksum updates and stream reads. The unsafe upper bound therefore
+  identifies validation, rather than query matching or graph scheduling, as the cold-tail target.
+
+**Conclusion:** reverted unconditionally because it cannot detect corrupted sidecars. The result
+justifies testing an authenticated/checksummed writer-trust format that validates the complete byte
+stream before publishing the index while avoiding redundant random `nodeOrder` checks.
