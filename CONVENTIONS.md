@@ -27,7 +27,10 @@
 
 ### Performance experiment history
 
-- Record every performance optimization attempt under `docs/performance-experiments/`, including attempts that are reverted.
+- Append every performance optimization attempt to the relevant chronological
+  `docs/*-optimization-attempts.md` log, including attempts that are reverted. Continue that
+  log's date, attempt numbering, headings, and table style instead of creating a parallel record
+  hierarchy.
 - Use one commit per optimization attempt. Do not combine independent hypotheses in one experiment commit.
 - Each record must identify the hypothesis, exact real-data fixture, base and candidate revisions, correctness result, latency, CPU/memory evidence, and the keep/revert decision.
 - A failed experiment commit keeps the record but must not leave the rejected production-code change in the tree.

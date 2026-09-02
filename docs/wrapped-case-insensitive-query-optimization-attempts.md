@@ -473,6 +473,598 @@ zero-hit proof that all 64 graphs were searched. Synthetic graphs remain correct
 cannot establish performance. The gate uses raw case-sensitive `CONTAINS` predicates matching the
 production query shape; wrapped lowercase predicates remain separate persisted-index coverage.
 
+### 2026-09-02 - Attempt 017: Selected-tuple segment parallelism
+
+**Hypothesis:**
+
+Split the `RETURN DISTINCT` provenance tuple recheck inside each graph while the Cypher executor
+keeps eight graph workers. The shared storage executor preserves the additive 8 graph + 8 storage
+worker bound on the 16-CPU test host.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts.
+- Wrapped case-insensitive DISTINCT dense latency: 50.916 ms -> 48.788 ms (1.04x).
+- Graph work: 153,786 -> 155,010 units.
+- Observed workers: graph peak 8, storage peak 8.
+
+**Conclusion:**
+
+Reverted. The worker budget was correct, but the 4% wall-time change was noise-sized and total work
+increased. The next milestone must remove work from the provenance path rather than subdivide the
+same work further.
+
+### 2026-09-02 - Attempt 018: Batched front-coded string lookup
+
+**Hypothesis:**
+
+Resolve the selected projection strings in batches, sharing bounds while searching the persisted,
+sorted front-coded string table. Resolve properties progressively so a missing earlier property
+still eliminates a tuple before later lookups.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts.
+- Wrapped case-insensitive DISTINCT dense latency: 50.916 ms -> 46.522 ms (1.09x).
+- Graph work remained 153,786 units.
+
+**Conclusion:**
+
+Reverted. Shared binary-search bounds helped, but not enough to justify another lookup path. Later
+profiling confirmed that repeated tuple-to-string-ID resolution is important, but this batching
+strategy removes too little of its random front-coded decoding cost.
+
+### 2026-09-02 - Attempt 019: Persisted property fingerprint index
+
+**Hypothesis:**
+
+Persist a primitive `(stable hash, string ID)` index for each CallSite string property. Exact string
+comparison resolves hash collisions, while provenance avoids repeated binary searches and random
+decoding in `FrontCodedStringList`.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs; all 64 v3 sidecars
+  were rebuilt before measurement.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g` with a 6 GiB explicit index
+  budget for the admission check.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts; hash-collision, case,
+  missing-value, work-denial, and cancellation tests passed.
+- Admission: 64/64 graphs.
+- Wrapped case-insensitive DISTINCT dense latency: 50.916 ms -> 40.712 ms (1.25x).
+- Peak heap: 4.443 GiB -> 4.677 GiB (+5.3%).
+
+**Conclusion:**
+
+Reverted. This was a measurable incremental latency gain and stayed inside the memory envelope, but
+the retained index and sidecar-format complexity were disproportionate to 1.25x. The experiment
+also showed that lookup acceleration alone cannot remove the first-pass cost.
+
+### 2026-09-02 - Attempt 020: Allocation-free anchor probe
+
+**Hypothesis:**
+
+Remove the per-posting `IntArray` and key-object allocations from selected-tuple anchor scans. Use a
+primitive projection hash to select a bucket and the existing four-property equality check to
+resolve collisions.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts; deliberate projection
+  hash collisions and repeated anchors passed exact-result tests.
+- Wrapped case-insensitive DISTINCT dense latency: 50.916 ms -> 43.739 ms (1.16x).
+- Graph work remained 153,786 units.
+
+**Conclusion:**
+
+Reverted. The allocation reduction was real but did not address the dominant work. Follow-up phase
+profiling measured only about 1.15 ms in anchor posting scans, confirming that this loop was not the
+primary tail-latency source.
+
+### 2026-09-02 - Attempt 021: Predicate-range preflight before provenance
+
+**Hypothesis:**
+
+Before resolving selected DISTINCT tuples in a graph, compute the predicate matching ranges and
+skip tuple resolution when the predicate has no hits.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: instrumented selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: the oracle result remained exact.
+- Wrapped case-insensitive DISTINCT dense latency: 59.69 ms -> 83.31 ms (0.72x).
+- Graph work: 153,786 -> 1,025,390 units.
+- The preflight was non-empty in 64/64 graphs even though only two graphs contributed one of the
+  selected projection tuples.
+
+**Conclusion:**
+
+Reverted. Predicate presence is too weak a filter for selected-tuple provenance. The experiment
+increased work 6.7x and made latency 40% worse.
+
+### 2026-09-02 - Attempt 022: Persisted compact projection-tuple index
+
+**Hypothesis:**
+
+Persist one `(64-bit tuple hash, earliest node ID)` entry per unique four-property CallSite tuple.
+Binary-search selected DISTINCT tuples and use exact four-string comparison for collisions, avoiding
+front-coded string-ID resolution during provenance.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Corpus shape: 5,046,935 CallSites and 3,419,019 unique projection tuples.
+- Added retained arrays: about 39.13 MiB; total retained index estimate increased 11.09%.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts; collision, case,
+  missing-value, earliest-node, v2 fallback, v3 restore, budget, and cancellation tests passed.
+- Admission: 64/64 graphs.
+- Wrapped case-insensitive DISTINCT dense latency: 46.059 ms -> 44.711 ms (1.03x).
+- Graph work: 153,786 -> 350,214 units.
+
+**Conclusion:**
+
+Reverted. The primitive index removed string decoding, but binary probing charged about 13 steps per
+selected tuple and increased total work 2.3x for only a 3% latency change. Phase profiling showed the
+larger remaining target is the first pass that constructs the initial 200 DISTINCT rows.
+
+### 2026-09-02 - Attempt 023: Trigram-assisted exact string-ID lookup
+
+**Hypothesis:**
+
+For each selected projection value, probe its sparsest existing trigram posting range and verify the
+candidate string exactly, avoiding a full-table front-coded binary search without adding a new
+persisted structure.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold index state, `-Xmx8g`.
+- Reference implementation: selected-tuple anchor baseline based on PR head `882fb90`.
+- Correctness: 34/34 oracle records passed; zero failures and zero timeouts; ASCII collision, case,
+  missing-value, short-string/Unicode fallback, cancellation, and work-denial tests passed.
+- Wrapped case-insensitive DISTINCT dense latency: 50.916 ms -> 49.683 ms (1.02x).
+- Graph work: 153,786 -> 255,449 units (+66%).
+
+**Conclusion:**
+
+Reverted. Repeated trigram-range binary searches cost more work than the front-coded lookup they
+replaced and did not produce a reliable latency gain.
+
+### 2026-09-02 - Attempt 024: Ordered rolling graph window
+
+**Hypothesis:**
+
+Keep source-order semantics while replacing whole-wave barriers with a bounded rolling completion
+window. Probe the leading graph synchronously, schedule the next graph as soon as the ordered prefix
+advances, pass the pruned source count into storage planning, and stop/cancel once `LIMIT` is known.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: three alternating paired `global-wide` runs, 34 cases per run, cold indexes, `-Xmx8g`.
+- Base revision: `78ce46b` (`main` / `v2.4.7`).
+- Candidate lineage: PR head `882fb90` plus the rolling-window working-tree change.
+- Correctness: every candidate run passed all 34 oracle records with zero timeout/failure; graphId
+  K=64 separately passed all 1,137 records byte-for-byte against base.
+- Aggregate P50 speedup: 151x to 154x across the three pairs.
+- Aggregate P95 speedup: 7.76x to 8.77x across the three pairs.
+- K=64 graphId-set P50/P95: 10.511/24.888 ms -> 0.812/6.163 ms.
+- CPU, heap, and RSS stayed within the paired 15% regression limits; observed peak workers were the
+  planned 8 graph + 8 storage workers on the 16-CPU host.
+
+**Conclusion:**
+
+Kept as the first incremental milestone. It is materially faster and preserves correctness, source
+order, cancellation, and the additive CPU bound. It does not claim the cumulative 10x P95 goal:
+wrapped case-insensitive DISTINCT remains the next measured bottleneck.
+
+### 2026-09-02 - Attempt 025: Budgeted CallSite sidecar restore
+
+**Hypothesis:**
+
+Restoring a persisted CallSite string index must charge the request's graph-work budget while bytes
+are read, checksummed, and structurally validated. Validation should happen in the streamed read so
+it does not require a second traversal, and cancellation or a consumer failure must release the
+retained-memory reservation without publishing a partial index. Split-worker accounting must also
+reach zero before a completed future is observable so the worker bound can be measured reliably.
+
+**Evidence:**
+
+- Dataset: the 64 persisted graph shards regenerated from the pinned fixture JARs, containing
+  5,046,935 CallSites. All 64 v2 sidecars remained admissible after the change.
+- Base revision: `e48a532befc3cf83d20501b7459f400e22c53fc1`.
+- Candidate: this experiment commit.
+- Correctness: targeted tests verify that restore work is charged, consumer failure at the final EOF
+  check is propagated, interrupted restore preserves the interrupt/cancellation outcome, memory is
+  released, and no partial index is published. A repeated split-task test verifies that active-worker
+  accounting is zero as soon as execution returns.
+- Validation: targeted `GraphStoreTest` cases and `:webgraph:detekt` passed; `git diff --check` was
+  clean.
+- Latency: not separately benchmarked because this change closes hidden budget and cancellation work;
+  it does not claim a query-latency improvement.
+- CPU, heap, and RSS: no standalone delta was collected. Streamed validation replaces the former
+  post-read validation traversal and retains the same persisted arrays; the tests independently
+  verify reservation cleanup on failure.
+
+**Conclusion:**
+
+Kept as a correctness and observability prerequisite. Persisted restore can no longer perform
+unbudgeted validation work or swallow cancellation, and worker-peak diagnostics are deterministic.
+Selected-tuple anchor grouping and adaptive raw-prefix probing are independent experiments and are
+not part of this commit.
+
+### 2026-09-02 - Attempt 026: Selected-tuple anchor grouping
+
+**Hypothesis:**
+
+Resolve repeated selected values and posting ranges once per graph, group selected four-property
+tuples by their smallest exact posting, and scan each shared anchor only once. This should reduce
+duplicate string-table lookups and posting traversal during cross-graph `RETURN DISTINCT`
+provenance checks.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: `global-wide-wrapped-case-insensitive-distinct-dense`, cold indexes, `LIMIT 200`,
+  `-Xmx8g`; oracle `/tmp/pr113-quick-candidate/oracle.correctness`.
+- Base lineage: PR head `882fb90`; reference observation
+  `/tmp/pr113-quick-candidate/anchor.tsv`.
+- Candidate: the uncommitted anchor-grouping snapshot recorded in
+  `/tmp/pr113-quick-candidate/candidate-final1.tsv` through `candidate-final4.tsv`.
+- Correctness: candidate outputs matched the real-data oracle; focused null, encounter-order,
+  predicate, limit, failure, and shared-anchor tests passed.
+- Latency: the 50.916 ms reference became 39.012-50.893 ms across four quick observations. The
+  variance was too large to establish a repeatable material improvement, and the slow observation
+  was effectively unchanged.
+- Graph work: 153,786 -> 154,058 units.
+- CPU, heap, and RSS: no retained-memory change was expected, but no stable CPU or memory reduction
+  was observed in the real-data run.
+
+**Conclusion:**
+
+Reverted. Grouping preserved correctness but did not produce a dependable latency reduction and
+slightly increased measured work. The production change and its synthetic behavior tests are absent
+from this docs-only commit.
+
+### 2026-09-02 - Attempt 027: Adaptive raw prefix probe
+
+**Hypothesis:**
+
+For a serial CallSite query with a small `LIMIT` and a three-character lowercase `CONTAINS` term,
+probe at most four times the requested row count directly from storage. Commit the raw result only
+when the probe fills the limit; otherwise discard it and continue through the existing persisted
+index. Dense leading matches should avoid index startup while sparse and late matches retain the
+indexed path.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: the complete 34-case `global-wide` quick run with cold indexes, `LIMIT 200`, `-Xmx8g`;
+  the regression was clearest in `global-wide-four-properties-dense`.
+- Base lineage: PR head `882fb90`; observation
+  `/private/tmp/pr113-global-wide-raw-base/observations.tsv`.
+- Candidate: the uncommitted adaptive raw-prefix snapshot recorded in
+  `/private/tmp/pr113-global-wide-raw-candidate/observations.tsv`; later cold/startup variants were
+  recorded under `/private/tmp/pr113-global-wide-raw-cold-candidate-*` and
+  `/private/tmp/pr113-global-wide-raw-startup-candidate-6da49f1`.
+- Correctness: the candidate verified against the base oracle, and focused tests covered serial vs
+  parallel/split selection, property choice, case sensitivity, cache reuse, sparse fallback, bounded
+  work, and cancellation.
+- Four-properties dense latency/work: 9.250 ms and 31,044 units in the paired base observation vs
+  55.458 ms and 258,940 units in the candidate. Cold variants remained slower at 47-114 ms vs
+  4.10-4.34 ms for the cold base.
+- Aggregate single-shot runtime: 0.193 s -> 0.278 s in the paired base/candidate quick runs.
+- CPU, heap, and RSS: no compensating reduction was observed; no standalone retained-memory change
+  was expected because the probe only buffered at most `LIMIT` rows.
+
+**Conclusion:**
+
+Reverted. The bounded probe duplicated storage and index work on the measured workload, regressed
+the dense four-property shape, and did not meet the keep threshold. The production change and its
+synthetic path test are absent from this docs-only commit.
+
+### 2026-09-02 - Attempt 028: Ordered DISTINCT leading window
+
+**Hypothesis:**
+
+The indexed DISTINCT path should use the same ordered leading-window policy as the retained
+non-DISTINCT path. When the first graph already supplies `LIMIT 200`, launching and joining an
+entire eight-graph prefix wave performs seven unnecessary projection scans before the required
+all-graph provenance pass. Probe only the first graph with the storage half of the NCPU budget, then
+roll graph tasks forward in source order only when more distinct rows are required.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold indexes, `LIMIT 200`, `-Xmx8g`.
+- Base revision: `f87e90a`.
+- Candidate: this experiment commit.
+- Protocol: three local paired JVM forks in alternating candidate/base order. Files are under
+  `/tmp/pr113-exp012`; the first pair ran candidate then base, the second base then candidate, and
+  the third candidate then base.
+- Correctness: all 34 outcomes, row counts, response sizes, and result digests matched in every
+  pair; the new deterministic test proves only graph zero performs the initial dense projection,
+  all 64 graphs still perform selected-tuple provenance, and the leading lookup receives the
+  eight-worker storage half on a 16-CPU host.
+- Aggregate P95: `210.727 -> 187.808 ms` (1.12x), `212.588 -> 147.400 ms` (1.44x), and
+  `211.089 -> 183.831 ms` (1.15x).
+- Wrapped case-insensitive DISTINCT dense work: `5,201,615 -> 5,070,631` units in every pair.
+- Process CPU delta: `+5.1%`, `+3.2%`, and `-9.1%`.
+- Peak used heap delta: `+0.6%`, `-2.6%`, and `-0.2%`; peak RSS delta: `+0.4%`, `-2.3%`, and
+  `-0.4%`.
+- A serial-storage leading probe was separately rejected: it raised the DISTINCT-dense latency to
+  `434.704 ms`. The retained form keeps the planned eight segment workers.
+- Validation: full `:cypher:test`, focused execution-path test, `:cypher:detekt`, and
+  `git diff --check` passed in an isolated clone.
+
+**Conclusion:**
+
+Kept as an incremental optimization. It improves P95 in all three paired comparisons without
+changing correctness, retained memory, or the additive 8 graph + 8 segment worker contract. It does
+not by itself satisfy the cumulative 10x objective; the remaining cold selected-tuple index build
+is the next measured bottleneck.
+
+### 2026-09-02 - Attempt 029: Small selected-tuple anchor lookup
+
+**Hypothesis:**
+
+The DISTINCT provenance phase should not build a graph-wide exact projection-tuple hash table to
+answer at most 200 selected tuples. On a cold 64-graph query, that policy scans and hashes millions
+of CallSites before the first lookup. Reuse an already-built exact index, but for a cold index use
+the existing exact property-posting anchor until the selected set reaches 256 tuples; only larger
+sets amortize the graph-wide build.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: complete 34-case `global-wide`, cold indexes, `LIMIT 200`, `-Xmx8g`.
+- Base revision: `c64c3be` (ordered DISTINCT leading window).
+- Candidate: this experiment commit.
+- Protocol: three paired JVM forks in alternating candidate/base order under
+  `/tmp/pr113-exp013`.
+- Correctness: all 34 outcomes, row counts, response sizes, and result digests matched in every
+  pair. Tests cover the small-set anchor path, the >=256 tuple exact-index path, exact predicate
+  rechecks, encounter order, collision handling, and index budget/cancellation behavior.
+- Aggregate P95: `189.997 -> 73.104 ms` (2.60x), `183.585 -> 58.024 ms` (3.16x), and
+  `183.360 -> 70.556 ms` (2.60x).
+- Wrapped case-insensitive DISTINCT dense latency: `189.997 -> 27.766 ms` (6.84x),
+  `183.585 -> 26.073 ms` (7.04x), and `183.360 -> 26.508 ms` (6.92x).
+- Wrapped DISTINCT dense work: `5,070,631 -> 177,117` units in every pair (-96.5%).
+- Total process CPU delta: `-21.5%`, `-16.3%`, and `-24.5%`.
+- Peak used heap delta: `-10.4%`, `-6.6%`, and `-11.7%`; peak RSS delta: `-18.9%`,
+  `-15.5%`, and `-20.3%`.
+- Validation: focused exact-index tests, full `:webgraph:test`, and `:webgraph:detekt` passed in an
+  isolated clone; `git diff --check` was clean.
+
+**Conclusion:**
+
+Kept. This removes a cold-query index build whose cost cannot be amortized by the production
+`LIMIT 200` provenance set, while retaining the exact index for larger sets and for subsequent
+lookups once already built. The aggregate P95 bottleneck moves to the non-DISTINCT four-property
+targeted case, which remains the next independent experiment toward cumulative 10x.
+
+### 2026-09-03 - Attempt 030: Double graph lookahead
+
+**Hypothesis:**
+
+Keep the eight graph workers and eight storage workers selected from the 16 available processors,
+but allow the source-ordered rolling scheduler to submit two graph-worker windows ahead. A larger
+ready queue could hide a slow graph lookup without changing the active-worker budget or result
+order.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: one paired `global-wide` run, 34 cases, cold indexes, `LIMIT 200`, `-Xmx8g`.
+- Base revision: `3122931` with the retained one-window scheduler; observation
+  `/tmp/pr113-exp014/control.tsv`.
+- Candidate: the uncommitted two-window snapshot; observation
+  `/tmp/pr113-exp014/lookahead2.tsv`.
+- Correctness: both runs verified all 34 records against the same real-fixture oracle with zero
+  timeout or failure.
+- Aggregate P95: 75.130 ms -> 78.883 ms (5.0% slower).
+- Wrapped case-insensitive DISTINCT dense: 26.683 ms -> 78.883 ms (2.96x slower), with identical
+  177,117 work units. The extra queued provenance scans increased contention without reducing
+  storage work.
+- Four-property targeted: 75.130 ms -> 76.218 ms (1.4% slower), with identical 104,972 work units.
+- Process CPU time fell 4.7%, peak used heap fell 2.5%, and peak RSS fell 7.7%, but those reductions
+  do not compensate for the latency regression.
+
+**Conclusion:**
+
+Rejected. The production change is reverted. A larger speculative queue preserves the active
+8 + 8 worker bound but competes with the leading DISTINCT work and does not reduce the next P95
+bottleneck. The one-window scheduler remains in production.
+
+### 2026-09-03 - Attempt 031: Rare trigram direct verification
+
+**Hypothesis:**
+
+When the rarest trigram leaves at most 256 candidate strings, verify those complete strings
+directly instead of intersecting the candidate set against every remaining trigram. This could
+reduce binary searches for long targeted terms without changing the final predicate check.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: one paired `global-wide` run, 34 cases, cold indexes, `LIMIT 200`, `-Xmx8g`.
+- Base revision: `3122931`; observation `/tmp/pr113-exp014/control.tsv`.
+- Candidate: the uncommitted rare-anchor snapshot; observation
+  `/tmp/pr113-exp015/rare-anchor.tsv`.
+- Correctness: both runs verified all 34 records against the same real-fixture oracle with zero
+  timeout or failure. Focused Unicode/collision and match-cache tests also passed.
+- Aggregate P95: 75.130 ms -> 75.493 ms (0.5% slower).
+- Aggregate P50: 6.478 ms -> 7.213 ms (11.3% slower).
+- Total work: 59,720,551 -> 59,716,915 units, only 3,636 units saved.
+- Process CPU time fell 2.8%, peak heap fell 2.2%, and peak RSS fell 8.4%, but latency did not
+  improve.
+
+**Conclusion:**
+
+Rejected. The production change is reverted. Investigation showed that the current P95 query's
+104,972 units are dominated by a 100,606-unit raw scan of the serial leading graph; the remaining
+indexed graphs leave too little trigram-intersection work for this optimization to matter.
+
+### 2026-09-03 - Attempt 032: Split leading sidecar lookup
+
+**Hypothesis:**
+
+The leading graph should keep its synchronous, source-ordered `LIMIT` probe, but use the storage
+half of the NCPU budget instead of a serial storage consumer. On a persisted graph, the split
+consumer can restore and query the CallSite sidecar; the serial consumer cannot restore it and
+falls back to a full raw scan.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the pinned fixture JARs.
+- Workload: three alternating paired `global-wide` runs, 34 cases per run, cold indexes,
+  `LIMIT 200`, `-Xmx8g`.
+- Base revision: `3122931`, retaining the serial leading storage probe.
+- Candidate: the split leading-probe change in this commit.
+- Correctness: all six paired executions verified all 34 records against the same real-fixture
+  oracle, with zero timeout or failure. The focused cross-graph suite also passed all 66 tests and
+  verifies that the leading probe receives the planned segment-worker count.
+- Aggregate P50 speedup: 3.27x, 3.48x, and 3.94x.
+- Aggregate P95 speedup: 2.29x, 2.85x, and 3.09x.
+- Aggregate P95 ranges: 60.093-74.861 ms -> 21.924-26.253 ms.
+- Four-property targeted work: 104,972 -> 4,746 units. The result remains 11 rows with the same
+  digest, while access/index lookup returns from 63 to all 64 graphs. The eliminated 100,226-unit
+  delta is the leading graph's raw scan.
+- Process CPU time fell 28.6-40.7% in every pair.
+- Peak used heap ranged from -3.6% to +5.4%; peak RSS ranged from -9.2% to +4.1%. Both stay within
+  the paired 15% resource limits.
+- Against the three local `main` / `v2.4.7` real-64 observations (381.017-395.924 ms P95), the
+  candidate's 21.924-26.253 ms range is a cumulative 14.5x-18.1x improvement. Exact-head CI remains
+  authoritative for the 10x gate.
+- Raw observations and JMH JSON are under `/tmp/pr113-exp016/`; the candidate and control JMH JAR
+  SHA-256 values are `2934ce86234e287018b4653a208caa424c8f8b91cb546f577af5405ad71a7b33`
+  and `a0aa2564e3090a0687d3bfb4889a06dec9eccbf9121473e7e878db7fb4df39ad`.
+
+**Conclusion:**
+
+Kept. The query still probes graph zero before scheduling later graphs and retains deterministic
+source order and early `LIMIT` termination. Only the storage strategy inside that probe changes:
+on the 16-CPU host it uses the planned eight segment workers, while later work remains bounded by
+the separate eight graph workers.
+
+### 2026-09-03 - Attempt 033: Preflight before sidecar restore
+
+**Hypothesis:**
+
+Run the existing long-`CONTAINS` string-table preflight before restoring a persisted CallSite
+sidecar. An impossible term should be rejected from the much smaller string dictionary without
+loading and traversing every graph's complete CallSite index.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the four pinned fixture JARs.
+- Workload: the complete 34-case `global-wide` run, including the four-property zero-result case,
+  cold indexes, `LIMIT 200`, and `-Xmx8g`.
+- Base revision: `21feea1`, with the original sidecar-first ordering.
+- Candidate: the preflight-first snapshot initially created in this commit.
+- Correctness: all 34 candidate records matched the base-generated real-fixture oracle; the focused
+  persisted-index test and WebGraph detekt passed.
+- Base aggregate P50 / P95: 1.698 ms / 28.123 ms.
+- Candidate aggregate P50 / P95: 102.966 ms / 210.746 ms.
+- The zero-result P95 improved from 332.754 ms to 210.746 ms, but long targeted terms also paid a
+  string-table scan on every graph before their sidecars could be restored; targeted P95 regressed
+  from 22.220 ms to 216.395 ms.
+- Process CPU time regressed from 3.883 s to 11.963 s. Peak used heap was effectively unchanged
+  (4.11 GiB to 4.10 GiB), as was peak RSS (4.38 GiB to 4.38 GiB).
+- Raw measurements are under `/tmp/pr113-exp017-pair.igK5Ew/`; the regenerated fixture is under
+  `/tmp/pr113-exp017-fixture.t1A36b/`.
+
+**Conclusion:**
+
+Reverted. A dictionary preflight is useful only after a cheap signal establishes that the term is
+unlikely to exist. Applying it unconditionally before sidecar restoration trades one zero-result
+tail regression for a much larger regression across the normal targeted workload. This docs-only
+commit leaves the original production and test behavior intact.
+
+### 2026-09-03 - Attempt 034: Scoped leading serial probe
+
+**Hypothesis:**
+
+An explicit `graphId` set already supplies the graph-level routing decision. Keep its first graph's
+bounded `LIMIT` probe serial, while retaining the NCPU-balanced graph and segment workers for later
+graphs. This avoids paying segment dispatch and persisted-sidecar retention overhead before the
+ordered leading source has been tested, without changing unscoped global-wide execution.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the four pinned fixture JARs.
+- Workload: all `graphId(n)` and `/api/cypher/graphs` routing shapes, including the explicit K64
+  graph set, with cold, warm, and startup-prepared index states.
+- Base revision: `a2cf5a4`, retaining split storage for every K64 leading probe.
+- Candidate: this commit's scoped-leading serial probe.
+- Correctness: all 1,137 candidate records in each state matched the base-generated real-fixture
+  oracle; the focused Cypher test and detekt passed.
+- Explicit K64 P50 / P95:
+  - cold: 0.658 / 8.699 ms -> 0.691 / 1.853 ms (4.69x P95);
+  - warm: 0.436 / 0.497 ms -> 0.257 / 0.406 ms (1.22x P95);
+  - startup-prepared: 0.786 / 1.828 ms -> 0.758 / 1.696 ms (1.08x P95).
+- The nine K64 records consumed exactly 4,153, 1,011, and 4,153 work units in both revisions for
+  cold, warm, and startup-prepared respectively.
+- Whole-suite cold CPU changed from 9.969 s to 11.058 s (+10.9%); warm CPU changed from 2.181 s to
+  2.290 s (+5.0%); startup-prepared CPU fell from 5.029 s to 4.839 s (-3.8%).
+- Worst peak-heap change was +1.6% and worst peak-RSS change was +1.0%, within the paired 15%
+  resource limits. The whole-suite P95 changed by +2.0%, from 25.585 ms to 26.088 ms.
+- Raw observations and JMH JSON are under `/tmp/pr113-exp018-pair.kASeHc/`; the regenerated fixture
+  is under `/tmp/pr113-exp017-fixture.t1A36b/`.
+
+**Conclusion:**
+
+Kept. Explicit graph scoping now avoids nested work in the ordered leading probe and retains the
+balanced 8+8 plan for later K64 graphs. Unscoped global-wide queries continue to split the leading
+graph, so the retained global-wide speedup is unaffected.
+
+### 2026-09-03 - Attempt 035: Dense leading serial probe
+
+**Hypothesis:**
+
+For a bounded unscoped row query whose `CONTAINS` alternatives all use a term of at most three
+characters, the ordered leading graph is likely dense enough to satisfy `LIMIT` directly. Probe
+that graph serially and retain the balanced NCPU split for later graphs. Longer targeted and sparse
+terms continue to use the persisted sidecar on the leading graph.
+
+**Evidence:**
+
+- Dataset: 64 persisted graph shards regenerated from the four pinned fixture JARs.
+- Workload: the complete 34-case global-wide workload, cold indexes, `LIMIT 200`, and `-Xmx8g`.
+- Base revision: `b004f2c`, using split storage for every unscoped leading probe.
+- Candidate: the dense-leading serial snapshot initially created in this commit.
+- Correctness: all 34 candidate records matched the base-generated real-fixture oracle; the focused
+  Cypher test and detekt passed.
+- Aggregate P50 / P95: 1.698 / 28.123 ms -> 1.841 / 24.333 ms. The 1.16x P95 observation is below
+  the 2x milestone and is not large enough to separate from single-shot variance.
+- Total graph work was identical at 58,014,194 units. The first zero-result query had already
+  retained the persisted sidecars, so changing the later leading consumer to serial did not select
+  the raw path.
+- Process CPU changed from 3.883 s to 4.166 s (+7.3%). Peak used heap fell 4.9% and peak RSS fell
+  1.9%; there was no compensating work reduction.
+- Raw observations and JMH JSON are under `/tmp/pr113-exp019-run.zOr8ii/`; the paired base is under
+  `/tmp/pr113-exp017-pair.igK5Ew/`.
+
+**Conclusion:**
+
+Reverted. The consumer choice cannot recover the dense raw path after a sidecar is resident, and
+the observation did not meet the 2x incremental keep threshold. This docs-only commit leaves the
+production and test behavior unchanged.
+
 ### 2026-09-03 - Attempt 036: Persisted trigram miss summary
 
 **Hypothesis:** persist a small content-identity-bound Bloom summary of each graph's CallSite
