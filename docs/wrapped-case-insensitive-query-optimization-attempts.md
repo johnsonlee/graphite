@@ -1104,3 +1104,44 @@ every missing, incompatible, or corrupt summary would fail open to the existing 
 shifts rather than removes cold-index work across the representative query sequence and misses the
 incremental keep criterion. This commit leaves production and test behavior unchanged. A follow-up
 should reduce or amortize the cold hit cost, not merely defer it.
+
+### 2026-09-03 - Attempt 037: Persisted projection-tuple miss filter
+
+**Hypothesis:** persist a content-identity-bound Bloom filter for the exact four-property CallSite
+projection tuple. During cross-graph `DISTINCT` provenance rechecks, graphs that definitely contain
+none of the selected tuples could return empty without restoring or probing the complete string
+index. False positives, missing files, incompatible files, and corrupt files would fail open to the
+existing exact path.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted graph shards regenerated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. All 64 candidate tuple filters were present and
+  occupied 17 MiB in total. The fixture is under `/tmp/pr113-exp037-fixture.nXn4fg/`.
+- Workload: the complete 34-case `global-wide` run, cold indexes, `LIMIT 200`, and `-Xmx8g`.
+- Base production revision: `e54afc8ce3eabd8bde44ffece5680a22727deef4`; later revision
+  `b911b6a` only reorganizes experiment documentation and does not change the benchmark or product
+  code.
+- Candidate: the production-and-test snapshot based on `b911b6a`, patch SHA-256
+  `e3089b632cbd4cf582f8895fc1b8544472fabd141bb2794caade0ce7eca1bf97`.
+- Correctness: all 34 candidate observations matched the base-generated real-fixture oracle with
+  zero failures and zero timeouts. A focused synthetic correctness test additionally covered a
+  definite miss, an exact hit, and corrupt-filter fallback; WebGraph detekt passed.
+- Aggregate P50 changed from 1.730 to 1.754 ms (+1.4%), while aggregate P95 regressed from 41.375
+  to 116.799 ms (2.82x slower). Wall time changed from 607.311 to 669.003 ms (+10.2%).
+- The intended `global-wide-wrapped-case-insensitive-distinct-dense` case was itself the P95 in
+  both runs and regressed from 41.375 to 116.799 ms. The filter reduced its accessed graphs from
+  64 to 2, but reading and hashing every 256 KiB filter increased that case's charged work from
+  172,919 to 2,124,177 units.
+- Total graph work increased from 58,014,194 to 59,965,452 units (+3.4%). Process CPU changed from
+  4.168 to 4.099 s (-1.6%), which is not a material improvement relative to the latency regression.
+- Peak used heap fell from 4,727,621,240 to 4,411,202,272 bytes (-6.7%) and peak RSS fell from
+  5,144,788,992 to 4,543,152,128 bytes (-11.7%). Those memory reductions do not compensate for the
+  2.82x P95 regression.
+- Paired raw observations and JMH JSON are under `/tmp/pr113-exp037-quick/`.
+
+**Conclusion:** reverted. A 256 KiB per-graph filter replaces cheap exact rechecks with 16 MiB of
+cold filter reads across 64 graphs and misses the 2x incremental latency criterion in the wrong
+direction. This docs-only commit leaves production and test behavior unchanged. The next work
+focuses on making the already measured 5x milestone pass its aligned-shape and compatibility gates
+instead of adding another persisted summary.
