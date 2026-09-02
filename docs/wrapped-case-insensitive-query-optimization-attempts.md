@@ -1569,3 +1569,42 @@ but cannot remove the real sidecar loads required by the coverage workload, and 
 regresses by more than 4x. This docs-only commit leaves the production storage format unchanged;
 the remaining aligned blocker requires lazy access to positive sidecar data, not a larger miss
 filter.
+
+### 2026-09-03 - Attempt 052: Persist an exact string-level trigram prefilter
+
+**Hypothesis:** persist, in a separate raw-CRC memory-mapped file, the sorted string IDs used by
+each CallSite property and sorted trigram-to-string postings. A query can then prove an exact
+case-insensitive `CONTAINS` miss, or identify a possible matching string, before restoring the much
+larger node-posting sidecar. This should reduce cold positive and negative query cost while retaining
+exact fallback, content-identity checks, cancellation, work accounting, and the additive NCPU plan.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards freshly regenerated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs at `/tmp/pr113-exp052-fixture64/`; no synthetic graph
+  supplied performance evidence. The 64 prefilter files occupied `246.86 MiB` in total.
+- Base revision: `369ace4`, production-equivalent `0fdba6c`; candidate: an isolated Attempt 052
+  snapshot under `/tmp/graphite-exp052.HeDoN8/repo`. Complete final output is under
+  `/tmp/pr113-exp052-direct-verify/`.
+- Correctness: the final candidate completed all 34 cases and matched the trusted real-fixture CI
+  oracle on outcome, row count, response bytes, digest, and hit graph IDs. The focused mapped
+  persistence test, JMH compilation, and detekt passed.
+- Three reader variants all missed the keep threshold. Full posting-order validation produced
+  aggregate P50/P95 `1.719/119.310 ms`; trusting the versioned writer after raw-byte CRC produced
+  `1.583/122.367 ms`; decoding and exactly checking each rarest-trigram candidate directly produced
+  `1.580/126.126 ms`. The current-production screening reference was `1.755/32.334 ms`, so the final
+  candidate regressed P95 by `3.90x` instead of improving it by 2x.
+- In the final variant the four-property zero row was `45.729 ms`, but positive targeted and dense
+  rows replaced it in the tail: four-properties-targeted was `126.126 ms` and wrapped dense
+  DISTINCT was `208.743 ms`. All 64 complete indexes were still eventually admitted because real
+  coverage terms occur throughout the graph set.
+- The final run observed the required additive `8 graph + 8 segment` worker peaks on 16 available
+  CPUs and averaged about `6.00` CPU cores. Process CPU was `4.796 s`, peak used heap `3.75 GiB`,
+  peak RSS `4.98 GiB`, and charged work `90,443,307` units, versus `57,897,636` units in the
+  production screening reference.
+
+**Conclusion:** reverted. The exact prefilter makes isolated misses cheap, but its 247 MiB mapped
+footprint, checksum/read cost, property membership checks, and exact candidate decoding add more
+work than they remove for positive real-data queries. It also cannot prevent all 64 full indexes
+from being needed by this coverage workload. This docs-only commit retains neither the new file
+format nor the reader/writer prototype.
