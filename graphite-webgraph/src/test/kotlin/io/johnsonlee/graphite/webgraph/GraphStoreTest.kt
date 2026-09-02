@@ -105,6 +105,22 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
+    fun `split worker metrics can reset immediately after every completed execution`() {
+        repeat(100) {
+            resetSplitCallSiteWorkerMetrics()
+            assertContentEquals(
+                intArrayOf(1, 2),
+                executeSplitCallSiteCandidateTasks(
+                    listOf(Callable { intArrayOf(1) }, Callable { intArrayOf(2) }),
+                    backgroundParallelism = 1
+                )
+            )
+            assertEquals(1, splitCallSitePeakActiveWorkers())
+        }
+        resetSplitCallSiteWorkerMetrics()
+    }
+
+    @Test
     fun `split candidate failure joins an interrupted background worker before returning`() {
         val backgroundStarted = CountDownLatch(1)
         val interruptionObserved = CountDownLatch(1)
@@ -1013,6 +1029,181 @@ class GraphStoreTest {
                     )?.count
                 )
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `lazy persisted CallSite restore charges sidecar read validation and checksum work`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.EQUALS,
+            "example.caller1"
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-index-sidecar-budget")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        fun measuredLookup(eager: Boolean): Long {
+            if (eager) System.setProperty(property, "true") else System.clearProperty(property)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            return try {
+                val work = AtomicLong()
+                val aggregate = loaded.aggregateStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(predicate),
+                    distinctProperty = null,
+                    workConsumer = object : GraphWorkBatchConsumer {
+                        override fun consume(workUnits: Long) {
+                            work.addAndGet(workUnits)
+                        }
+                    }
+                )
+                assertEquals(1L, aggregate?.count)
+                work.get()
+            } finally {
+                loaded.close()
+            }
+        }
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, compressionThreads = 2, prepareCallSiteStringIndex = true)
+            val preparedWork = measuredLookup(eager = true)
+            val lazyWork = measuredLookup(eager = false)
+            assertTrue(lazyWork > preparedWork + 4_096L)
+
+            System.clearProperty(property)
+            val restoreBatches = mutableListOf<Long>()
+            val measuredRestore = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertTrue(
+                    measuredRestore.prepareCallSiteStringIndex(
+                        object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long) {
+                                restoreBatches += workUnits
+                            }
+                        }
+                    )
+                )
+                assertEquals(1L, restoreBatches.last(), "restore batches=$restoreBatches")
+            } finally {
+                measuredRestore.close()
+            }
+
+            val retainedBeforeRejectedRestore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+            val rejectedRestore = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                var batchIndex = 0
+                assertFailsWith<IllegalStateException> {
+                    rejectedRestore.prepareCallSiteStringIndex(
+                        object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long) {
+                                assertEquals(restoreBatches[batchIndex], workUnits)
+                                if (batchIndex++ == restoreBatches.lastIndex) error("EOF work denied")
+                            }
+                        }
+                    )
+                }
+                assertEquals(restoreBatches.size, batchIndex)
+                assertFalse(rejectedRestore.isCallSiteStringIndexInitialized())
+                assertFalse(rejectedRestore.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(
+                    retainedBeforeRejectedRestore,
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+            } finally {
+                rejectedRestore.close()
+            }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `interrupted lazy persisted CallSite restore escapes without publishing the sidecar`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "never-present"
+        )
+        val dir = Files.createTempDirectory("webgraph-callsite-index-sidecar-interruption")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, compressionThreads = 2, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val sidecarBatchReached = CountDownLatch(1)
+                val failure = AtomicReference<Throwable>()
+                val interruptedFlag = AtomicBoolean()
+                val request = Thread {
+                    try {
+                        loaded.aggregateStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            distinctProperty = null,
+                            workConsumer = object : GraphWorkBatchConsumer {
+                                override fun consume(workUnits: Long) {
+                                    if (workUnits >= 1_024L && sidecarBatchReached.count > 0L) {
+                                        sidecarBatchReached.countDown()
+                                        while (!Thread.currentThread().isInterrupted) Thread.onSpinWait()
+                                    }
+                                }
+                            }
+                        )
+                        failure.set(AssertionError("Interrupted sidecar restore completed normally"))
+                    } catch (error: Throwable) {
+                        failure.set(error)
+                        interruptedFlag.set(Thread.currentThread().isInterrupted)
+                    }
+                }
+                request.start()
+                assertTrue(sidecarBatchReached.await(5, TimeUnit.SECONDS))
+                request.interrupt()
+                request.join(5_000)
+                assertFalse(request.isAlive)
+                assertTrue(failure.get() is CancellationException)
+                assertTrue(interruptedFlag.get())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
             } finally {
                 loaded.close()
             }
@@ -2371,6 +2562,7 @@ class GraphStoreTest {
 
                 loaded.resetCallSiteScanMetrics()
                 val splitProjectionThreads = ConcurrentHashMap.newKeySet<String>()
+                val splitProjectionWorkersStarted = CountDownLatch(2)
                 val splitProjection = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -2388,6 +2580,8 @@ class GraphStoreTest {
 
                         override fun consume(workUnits: Long) {
                             splitProjectionThreads += Thread.currentThread().name
+                            splitProjectionWorkersStarted.countDown()
+                            check(splitProjectionWorkersStarted.await(5, TimeUnit.SECONDS))
                         }
                     }
                 )

@@ -1983,7 +1983,7 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    @Suppress("TooGenericExceptionCaught")
+    @Suppress("SwallowedException", "ThrowsCount", "TooGenericExceptionCaught")
     private fun loadPersistedCallSiteStringIndex(
         callSiteCount: Int,
         workConsumer: GraphWorkConsumer?
@@ -2006,17 +2006,29 @@ internal class MappedWebGraphBackedGraph(
                     nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                     nodeIdCapacity = nodeOffsets.size,
                     rawStringPropertyId = ::rawCallSiteStringPropertyId,
-                    stringTable = stringTable
+                    stringTable = stringTable,
+                    workConsumer = workConsumer
                 )
-                if (loaded != null && input.read() != -1) {
-                    loaded.close()
-                    error("Trailing data in persisted CallSite string index")
+                if (loaded != null) {
+                    try {
+                        val trailingDataWork = PersistentIndexReadWork(workConsumer)
+                        trailingDataWork.consume()
+                        require(input.read() == -1) { "Trailing data in persisted CallSite string index" }
+                        trailingDataWork.flush()
+                    } catch (error: Throwable) {
+                        loaded.close()
+                        throw error
+                    }
                 }
                 loaded
             }
         } catch (_: MappedCallSiteStringIndexPersistenceBudgetDeniedException) {
             callSiteStringIndexPersistenceBudgetDenied = true
             null
+        } catch (aborted: MappedCallSiteStringIndexReadAbortedException) {
+            throw checkNotNull(aborted.cause)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
             null
         }

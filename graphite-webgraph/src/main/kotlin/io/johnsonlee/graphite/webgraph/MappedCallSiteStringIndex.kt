@@ -959,13 +959,16 @@ internal class MappedCallSiteStringIndex(
     internal class PropertyCsr(
         private val postingEnds: IntArray,
         private val usedStringIds: IntArray,
-        private val postingNodeIds: IntArray
+        private val postingNodeIds: IntArray,
+        prevalidated: Boolean = false
     ) {
         init {
             require(postingEnds.size == usedStringIds.size)
-            require((1 until usedStringIds.size).all { index ->
-                usedStringIds[index - 1] < usedStringIds[index]
-            })
+            if (!prevalidated) {
+                require((1 until usedStringIds.size).all { index ->
+                    usedStringIds[index - 1] < usedStringIds[index]
+                })
+            }
             require(postingEnds.lastOrNull() ?: 0 == postingNodeIds.size)
         }
 
@@ -985,28 +988,6 @@ internal class MappedCallSiteStringIndex(
             usedStringIds.forEach(checksum::updateInt)
             postingEnds.forEach(checksum::updateInt)
             postingNodeIds.forEach(checksum::updateInt)
-        }
-
-        fun validatePersistent(
-            stringCount: Int,
-            nodeIdCapacity: Int,
-            nodeOrder: (Int) -> Long
-        ) {
-            require(usedStringIds.all { stringId -> stringId in 0 until stringCount })
-            var start = 0
-            postingEnds.forEach { end ->
-                require(end in (start + 1)..postingNodeIds.size)
-                var previousOrder = Long.MIN_VALUE
-                for (position in start until end) {
-                    val nodeId = postingNodeIds[position]
-                    require(nodeId in 0 until nodeIdCapacity)
-                    val order = nodeOrder(nodeId)
-                    require(order > previousOrder)
-                    previousOrder = order
-                }
-                start = end
-            }
-            require(start == postingNodeIds.size)
         }
 
         @Suppress("CyclomaticComplexMethod")
@@ -1419,7 +1400,7 @@ internal class MappedCallSiteStringIndex(
     }
 
     companion object {
-        @Suppress("LongParameterList", "TooGenericExceptionCaught")
+        @Suppress("CyclomaticComplexMethod", "LongMethod", "LongParameterList", "TooGenericExceptionCaught")
         internal fun readPersistent(
             input: DataInput,
             expectedStringCount: Int,
@@ -1428,72 +1409,121 @@ internal class MappedCallSiteStringIndex(
             nodeOrder: (Int) -> Long,
             nodeIdCapacity: Int,
             rawStringPropertyId: (Int, Int) -> Int,
-            stringTable: StringTable
+            stringTable: StringTable,
+            workConsumer: GraphWorkConsumer? = null
         ): MappedCallSiteStringIndex? {
-            require(input.readInt() == CALL_SITE_STRING_INDEX_MAGIC)
-            require(input.readInt() == CALL_SITE_STRING_INDEX_VERSION)
-            val stringCount = input.readInt()
-            val callSiteCount = input.readInt()
-            require(stringCount == expectedStringCount)
-            require(callSiteCount == expectedCallSiteCount)
-            require(expectedContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
-            val persistedContentIdentity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
-            input.readFully(persistedContentIdentity)
-            require(persistedContentIdentity.contentEquals(expectedContentIdentity))
-            val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { input.readInt() }
-            require(uniqueCounts.all { count -> count in 0..stringCount })
-            val trigramPostingCount = input.readInt()
-            require(trigramPostingCount > 0)
-            val persistedRetainedBytes = input.readLong()
-            val baseRetainedBytes = estimatedMappedCallSiteStringIndexRetainedBytes(
-                callSiteCount.toLong(),
-                stringCount,
-                uniqueCounts
-            ) ?: return null
-            val expectedRetainedBytes = runCatching {
-                Math.addExact(
-                    baseRetainedBytes,
-                    Math.addExact(
-                        PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
-                        Math.multiplyExact(trigramPostingCount.toLong(), Long.SIZE_BYTES.toLong())
-                    )
-                )
-            }.getOrNull() ?: return null
-            require(persistedRetainedBytes == expectedRetainedBytes)
-            val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(expectedRetainedBytes)
-                ?: throw MappedCallSiteStringIndexPersistenceBudgetDeniedException()
+            val work = PersistentIndexReadWork(workConsumer)
+            var reservation: MappedCallSiteStringIndexMemoryBudget.Reservation? = null
+            fun readInt(): Int {
+                work.consume()
+                return input.readInt()
+            }
+            fun readLong(): Long {
+                work.consume()
+                return input.readLong()
+            }
             try {
+                require(readInt() == CALL_SITE_STRING_INDEX_MAGIC)
+                require(readInt() == CALL_SITE_STRING_INDEX_VERSION)
+                val stringCount = readInt()
+                val callSiteCount = readInt()
+                require(stringCount == expectedStringCount)
+                require(callSiteCount == expectedCallSiteCount)
+                require(expectedContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+                val persistedContentIdentity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+                input.readFully(persistedContentIdentity)
+                repeat(persistedContentIdentity.size) { work.consume() }
+                require(persistedContentIdentity.contentEquals(expectedContentIdentity))
+                val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { readInt() }
+                require(uniqueCounts.all { count -> count in 0..stringCount })
+                val trigramPostingCount = readInt()
+                require(trigramPostingCount > 0)
+                val persistedRetainedBytes = readLong()
+                val baseRetainedBytes = estimatedMappedCallSiteStringIndexRetainedBytes(
+                    callSiteCount.toLong(),
+                    stringCount,
+                    uniqueCounts
+                ) ?: return null
+                val expectedRetainedBytes = runCatching {
+                    Math.addExact(
+                        baseRetainedBytes,
+                        Math.addExact(
+                            PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                            Math.multiplyExact(trigramPostingCount.toLong(), Long.SIZE_BYTES.toLong())
+                        )
+                    )
+                }.getOrNull() ?: return null
+                require(persistedRetainedBytes == expectedRetainedBytes)
+                reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(expectedRetainedBytes)
+                    ?: throw MappedCallSiteStringIndexPersistenceBudgetDeniedException()
+                val retainedReservation = reservation
+                val checksum = CRC32().apply {
+                    updateInt(CALL_SITE_STRING_INDEX_MAGIC)
+                    updateInt(CALL_SITE_STRING_INDEX_VERSION)
+                    updateInt(stringCount)
+                    updateInt(callSiteCount)
+                    update(persistedContentIdentity)
+                    uniqueCounts.forEach(::updateInt)
+                    updateInt(trigramPostingCount)
+                    updateLong(persistedRetainedBytes)
+                }
                 val properties = Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
                     val uniqueCount = uniqueCounts[propertyIndex]
-                    val usedStringIds = IntArray(uniqueCount) { input.readInt() }
-                    val postingEnds = IntArray(uniqueCount) { input.readInt() }
-                    val postingNodeIds = IntArray(callSiteCount) { input.readInt() }
-                    PropertyCsr(postingEnds, usedStringIds, postingNodeIds).also { property ->
-                        property.validatePersistent(stringCount, nodeIdCapacity, nodeOrder)
+                    var previousStringId = -1
+                    val usedStringIds = IntArray(uniqueCount) {
+                        readInt().also { stringId ->
+                            checksum.updateInt(stringId)
+                            require(stringId in 0 until stringCount && stringId > previousStringId)
+                            previousStringId = stringId
+                        }
+                    }
+                    var previousEnd = 0
+                    val postingEnds = IntArray(uniqueCount) {
+                        readInt().also { end ->
+                            checksum.updateInt(end)
+                            require(end in (previousEnd + 1)..callSiteCount)
+                            previousEnd = end
+                        }
+                    }
+                    require(previousEnd == callSiteCount)
+                    var row = 0
+                    var previousOrder = Long.MIN_VALUE
+                    val postingNodeIds = IntArray(callSiteCount) { position ->
+                        readInt().also { nodeId ->
+                            checksum.updateInt(nodeId)
+                            require(nodeId in 0 until nodeIdCapacity)
+                            val order = nodeOrder(nodeId)
+                            require(order > previousOrder)
+                            previousOrder = order
+                            if (position + 1 == postingEnds[row]) {
+                                row++
+                                previousOrder = Long.MIN_VALUE
+                            }
+                        }
+                    }
+                    require(row == uniqueCount)
+                    PropertyCsr(postingEnds, usedStringIds, postingNodeIds, prevalidated = true)
+                }
+                val signatures = LongArray(stringCount) { readLong().also(checksum::updateLong) }
+                var previousPosting = Long.MIN_VALUE
+                val postings = LongArray(trigramPostingCount) {
+                    readLong().also { posting ->
+                        checksum.updateLong(posting)
+                        require(posting >= previousPosting)
+                        require(posting.toInt() in 0 until stringCount)
+                        previousPosting = posting
                     }
                 }
-                val signatures = LongArray(stringCount) { input.readLong() }
-                val postings = LongArray(trigramPostingCount) { input.readLong() }
-                validatePersistentTrigramPostings(postings, stringCount)
-                require(
-                    input.readLong() == persistentChecksum(
-                        stringCount,
-                        callSiteCount,
-                        persistedContentIdentity,
-                        persistedRetainedBytes,
-                        properties,
-                        signatures,
-                        postings
-                    )
-                )
-                return MappedCallSiteStringIndex(
+                require(readLong() == checksum.value)
+                work.flush()
+                val loaded = MappedCallSiteStringIndex(
                     properties,
                     stringTable,
                     nodeOrder,
                     nodeIdCapacity,
                     rawStringPropertyId,
                     contentIdentity = { expectedContentIdentity.copyOf() },
-                    reservation = reservation,
+                    reservation = retainedReservation,
                     prepareExactProjectionTupleIndex = true
                 ).also { index ->
                     signatures.copyInto(index.trigramSignatures)
@@ -1502,18 +1532,13 @@ internal class MappedCallSiteStringIndex(
                     index.trigramPostingsInitialized = true
                     index.trigramPostings = postings
                 }
+                reservation = null
+                return loaded
             } catch (error: Throwable) {
-                reservation.close()
+                reservation?.close()
                 throw error
-            }
-        }
-
-        private fun validatePersistentTrigramPostings(postings: LongArray, stringCount: Int) {
-            var previous = Long.MIN_VALUE
-            postings.forEach { posting ->
-                require(posting >= previous)
-                require(posting.toInt() in 0 until stringCount)
-                previous = posting
+            } finally {
+                work.flush()
             }
         }
 
@@ -1564,6 +1589,33 @@ internal class MappedCallSiteStringIndex(
 }
 
 internal class MappedCallSiteStringIndexPersistenceBudgetDeniedException : Exception()
+
+@Suppress("TooGenericExceptionCaught")
+internal class PersistentIndexReadWork(workConsumer: GraphWorkConsumer?) {
+    private val accounting = BufferedGraphWorkConsumer(workConsumer)
+    private var inspected = 0
+
+    fun consume() {
+        if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+            checkCallSiteIndexInterrupted()
+        }
+        try {
+            accounting.consume()
+        } catch (error: Throwable) {
+            throw MappedCallSiteStringIndexReadAbortedException(error)
+        }
+    }
+
+    fun flush() {
+        try {
+            accounting.flush()
+        } catch (error: Throwable) {
+            throw MappedCallSiteStringIndexReadAbortedException(error)
+        }
+    }
+}
+
+internal class MappedCallSiteStringIndexReadAbortedException(cause: Throwable) : RuntimeException(cause)
 
 /** Exact four-property tuple lookup used by cross-graph DISTINCT provenance rechecks. */
 private class ExactCallSiteProjectionTupleIndex(
@@ -1850,7 +1902,7 @@ internal fun resetSplitCallSiteWorkerMetrics() {
 
 internal fun splitCallSiteExecutor(backgroundParallelism: Int) =
     splitCallSiteExecutors.computeIfAbsent(backgroundParallelism) { parallelism ->
-        object : ThreadPoolExecutor(
+        ThreadPoolExecutor(
             parallelism,
             parallelism,
             0L,
@@ -1862,22 +1914,20 @@ internal fun splitCallSiteExecutor(backgroundParallelism: Int) =
                     "graphite-callsite-segment-${splitCallSiteWorkerNumber.incrementAndGet()}"
                 ).apply { isDaemon = true }
             }
-        ) {
-            override fun beforeExecute(thread: Thread, runnable: Runnable) {
-                val activeWorkers = splitCallSiteActiveWorkers.incrementAndGet()
-                splitCallSitePeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                super.beforeExecute(thread, runnable)
-            }
-
-            override fun afterExecute(runnable: Runnable, throwable: Throwable?) {
-                try {
-                    super.afterExecute(runnable, throwable)
-                } finally {
-                    splitCallSiteActiveWorkers.decrementAndGet()
-                }
-            }
-        }
+        )
     }
+
+private fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Callable {
+    val activeWorkers = splitCallSiteActiveWorkers.incrementAndGet()
+    splitCallSitePeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
+    try {
+        task.call()
+    } finally {
+        // Keep teardown inside the Future's callable. Future.get() must not return while this
+        // worker is still counted active; ThreadPoolExecutor.afterExecute runs too late for that.
+        splitCallSiteActiveWorkers.decrementAndGet()
+    }
+}
 
 @Suppress("ThrowsCount", "TooGenericExceptionCaught")
 private fun <T> executeSplitCallSiteTasks(
@@ -1890,7 +1940,7 @@ private fun <T> executeSplitCallSiteTasks(
     if (tasks.size == 1) return listOf(tasks.single().call())
     val executor = splitCallSiteExecutor(backgroundParallelism)
     val backgroundTasks = tasks.drop(1).map { task -> SplitCallSiteTask(task) }
-    backgroundTasks.forEach { task -> task.future = executor.submit(task.callable) }
+    backgroundTasks.forEach { task -> task.future = executor.submit(trackedSplitCallSiteTask(task.callable)) }
     val results = arrayOfNulls<Any?>(tasks.size)
     try {
         results[0] = tasks.first().call()
