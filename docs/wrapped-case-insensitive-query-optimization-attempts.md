@@ -1860,3 +1860,37 @@ size of Attempt 057.
 corruption fallback, and pass the exact three-pair 5x comparator with substantial latency margin.
 The claim remains local screening until hosted pinned-JAR global-wide and large-corpus gates pass
 on this exact commit.
+
+### 2026-09-03 - Attempt 060: Lazily construct trailing graph scanners
+
+**Hypothesis:** the balanced row path constructs one `DirectStringSourceScanner` and its local
+state for every one of the 64 sources before probing graph zero. Dense `LIMIT 200` cases finish in
+that leading graph, so construct only its scanner first and allocate the remaining 63 scanners
+only when the query must continue. This should remove fixed orchestration cost without changing
+storage selection, graph/segment parallelism, source ordering, or results.
+
+**Evidence:**
+
+- The exact hosted Attempt 059 run `33689424481` established the scoped milestone before this
+  experiment: all three real-64 paired forks exceeded 5x overall P95 (`6.31x`, `6.25x`, `7.01x`),
+  P50 speedup was `27.49-30.76x`, and correctness matched. The gate remained red only because five
+  dense shapes repeated small absolute regressions. The same run passed the large-corpus gate;
+  Tika and Hive added exactly 4,092 persisted bytes and Kotlin compiler added 4,094 bytes against
+  a base result with two bytes of generation variation.
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs under `/tmp/pr113-exp054-fixture64-screen/`; no synthetic
+  graph supplied performance evidence. Three four-CPU candidate runs are under
+  `/tmp/pr113-exp060-lazy-scanners.ZBjRm2/`.
+- Correctness: all three runs completed all 34 cases and matched the exact hosted remote-main
+  oracle on outcome, row count, response bytes, digest, and hit graph IDs. Charged work remained
+  exactly `5,866,095` units in every run.
+- Candidate P50/P95 was `4.527/52.391`, `4.475/53.058`, and `4.904/51.126 ms`, overlapping Attempt
+  059's `4.504-4.732/51.432-55.713 ms` range. The five previously blocked dense shapes likewise
+  had no consistent improvement: class-pair `2.272-2.363 ms`, name-pair `1.681-2.169 ms`,
+  caller-class `1.184-1.274 ms`, callee-class `0.787-0.982 ms`, and wrapped case-insensitive
+  `0.961-1.143 ms`.
+- Process CPU was `1.918-1.974 s`, peak used heap `3.60-3.61 GiB`, and peak RSS `4.03-4.06 GiB`;
+  these also overlap Attempt 059.
+
+**Conclusion:** reject. Avoiding 63 small scanner wrappers is not the source of the hosted dense
+latency regressions. The production tree retains the Attempt 059 path unchanged.
