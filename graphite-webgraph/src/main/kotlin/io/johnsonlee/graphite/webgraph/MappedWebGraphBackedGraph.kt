@@ -384,6 +384,7 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
+        callSiteStringLookupEntryCount.incrementAndGet()
         val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
         if (exactMatches?.all(IntArray::isEmpty) == true) return emptyList()
         if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {

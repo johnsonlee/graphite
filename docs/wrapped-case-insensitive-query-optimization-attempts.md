@@ -1734,3 +1734,41 @@ the remaining scans and decode strings only for actual selected hits.
 materially reduces CPU/work/heap, and preserves exact provenance. A separate follow-up attempt will
 deduplicate same-term prefilter lookup to remove the remaining aligned small-query regression; this
 record does not claim that every regression-gate condition passes.
+
+### 2026-09-03 - Attempt 056: Reuse property-independent exact-term candidates
+
+**Hypothesis:** a four-property OR repeats the same transform, match mode, and term, while the
+compact prefilter's candidate string IDs are intentionally property-independent. Resolve that
+predicate key once per graph query and reuse the immutable result for all four properties. Keep
+property membership exact at the selected-tuple pruning boundary, and record each DISTINCT storage
+entry as a graph access even when the prefilter proves a miss without starting a segment scan.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs under `/tmp/pr113-exp054-fixture64-screen/`; no synthetic
+  graph supplied performance evidence. Base revision: `3ffe4d2`; candidate: the isolated
+  Attempt 056 snapshot under `/tmp/graphite-exp054.PcRFQe/repo`. Three complete candidate runs are
+  under `/tmp/pr113-exp056-final-run{1,2,3}/`; the exact comparator output is
+  `/tmp/pr113-exp056-final-status.json` and `/tmp/pr113-exp056-final-report.md`.
+- Correctness: all three runs completed 34/34 cases and exactly matched the trusted real-fixture
+  oracle on outcome, row count, response bytes, digest, and hit graph IDs. A focused work-accounting
+  assertion proves one predicate and four property variants of the same absent predicate consume
+  identical prefilter work. GraphStore tests, compilation, and detekt pass.
+- The unmodified repository comparator passed with zero errors when pairing the three exact remote
+  main results with the three candidate runs. Aggregate P95 speedup was `13.43x`, `11.77x`, and
+  `15.84x`; the worst required wrapped-shape speedup was `14.47x`, `11.61x`, and `21.18x`.
+- Candidate P50/P95 was `2.202/64.341`, `2.352/63.670`, and `2.669/58.227 ms`. Dense DISTINCT fell
+  again from Attempt 055's `140.667-149.546 ms` to `60.968-91.289 ms`. `localized-early` measured
+  `7.793`, `9.337`, and `9.511 ms`; only one pair crossed the aligned-regression threshold, so the
+  repeated-regression gate is clear.
+- Zero-result and dense DISTINCT rows both report all 64 exact graph accesses. The zero row consumes
+  only 99 units once directories are mapped, dense DISTINCT consumes `354,654`, and complete-run
+  work falls from `5,697,204` to `4,915,713` units.
+- Process CPU was `1.544-1.619 s`, peak used heap `3.46-3.57 GiB`, and peak RSS
+  `3.93-4.00 GiB`, improving again over Attempt 055 without increasing persisted size.
+
+**Conclusion:** keep. Same-term candidate reuse removes the remaining repeated aligned regression,
+preserves complete 64-graph access evidence, and passes the exact three-pair 5x comparator with no
+errors. This is local screening against the exact remote-main artifacts; hosted CI must still
+regenerate all 64 graphs from the pinned JARs and independently confirm the result.

@@ -49,7 +49,14 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         workConsumer: GraphWorkConsumer?
     ): List<IntArray>? {
         if (predicates.any { predicate -> !predicate.canUseMappedTrigramPrefilter() }) return null
-        return predicates.map { predicate -> exactMatchingStringIds(predicate, workConsumer) ?: return null }
+        val matchesByPredicate = mutableMapOf<PrefilterPredicateKey, IntArray>()
+        return predicates.map { predicate ->
+            if (callSiteStringPropertyIndex(predicate.property) < 0) return null
+            val key = PrefilterPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            matchesByPredicate[key] ?: exactMatchingStringIds(predicate, workConsumer)
+                ?.also { matches -> matchesByPredicate[key] = matches }
+                ?: return null
+        }
     }
 
     private fun exactMatchingStringIds(
@@ -427,6 +434,12 @@ private data class TrigramRange(
 ) {
     val size: Int get() = end - start
 }
+
+private data class PrefilterPredicateKey(
+    val transform: StringValueTransform?,
+    val mode: StringMatchMode,
+    val expected: String
+)
 
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
 internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 3

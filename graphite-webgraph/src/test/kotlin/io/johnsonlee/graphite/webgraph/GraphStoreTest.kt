@@ -373,6 +373,37 @@ class GraphStoreTest {
                     )
                 )
                 assertEquals(0L, loaded.callSiteParallelScanCount())
+                val absent = predicate.copy(expected = "definitely-not-present")
+                fun lookupWork(predicates: List<StringPropertyPredicate>): Long {
+                    val work = AtomicLong()
+                    assertTrue(
+                        loaded.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            predicates,
+                            limit = 1,
+                            workConsumer = object : SplitGraphWorkBatchConsumer {
+                                override val segmentWorkerCount: Int = 1
+                                override fun consume(workUnits: Long) {
+                                    work.addAndGet(workUnits)
+                                }
+                            }
+                        ).orEmpty().none()
+                    )
+                    return work.get()
+                }
+                val singlePredicateWork = lookupWork(listOf(absent))
+                assertEquals(
+                    singlePredicateWork,
+                    lookupWork(
+                        listOf(
+                            CALLER_CLASS_PROPERTY,
+                            CALLER_NAME_PROPERTY,
+                            CALLEE_CLASS_PROPERTY,
+                            CALLEE_NAME_PROPERTY
+                        )
+                            .map { property -> absent.copy(property = property) }
+                    )
+                )
                 assertTrue(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
