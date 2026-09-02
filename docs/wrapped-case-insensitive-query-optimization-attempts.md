@@ -1294,3 +1294,25 @@ queries.
 **Conclusion:** reverted after the complete screening run. Replacing a positive sidecar lookup with
 a full raw scan preserves the negative proof but makes dense `DISTINCT` and CPU materially worse.
 This docs-only commit leaves the Attempt 041 production-code prototype out of the branch.
+
+### 2026-09-03 - Attempt 042: Force split raw execution for every DISTINCT shape
+
+**Hypothesis:** the remaining Attempt 041 tail might come from mixing raw and indexed execution.
+Force every eligible `DISTINCT` projection through segmented raw execution so all shapes share the
+same bounded parallel path and avoid cold sidecar restoration.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted Android, Tika, Hive, and Kotlin compiler fixture-JAR
+  shards. Base revision: production-equivalent `0fdba6c`; candidate: an isolated Attempt 042
+  snapshot. The complete 34-case screening output is under `/tmp/pr113-exp042-quick/`.
+- Correctness: all 34 cases matched the real-fixture oracle.
+- Aggregate P50/P95 were `1.418/65.981 ms`; process CPU was `6.569 s`. Total charged work fell to
+  `10,197,727` units, but lower accounting did not translate into a latency or CPU win.
+- The four-property zero row took `62.966 ms`, while
+  `global-wide-wrapped-case-insensitive-distinct-dense` still took `270.360 ms`. Peak used heap was
+  `4.62 GiB` and peak RSS was `5.71 GiB`, materially above the current-production screening runs.
+
+**Conclusion:** reverted. Forcing every DISTINCT query through raw segmentation reduces charged
+work but retains a large dense tail and increases memory/CPU. This docs-only commit records the
+failed hypothesis without retaining its production-code change.
