@@ -1981,3 +1981,62 @@ request-selected K=64 dense row changed from one retained-index lookup and `0.80
 **Conclusion:** reject this first selection policy while retaining the fused storage primitive for
 the next bounded/cache-aware attempt. Term length is not a density signal, repeated projections
 must reuse the first bounded match set, and an already-loaded retained index must keep priority.
+
+### 2026-09-03 - Attempt 064: Bound and reuse the raw leading match set
+
+**Hypothesis:** Attempt 063 pays the same 665-681-node graph-zero scan for each projection shape
+and bypasses a retained index even when earlier graph-routing queries have already made that path
+hot. Limit the raw path to a density probe of at most `max(64, LIMIT * 4)` and 1,024 CallSites,
+cache at most 16 immutable node-id prefixes by exact predicate and limit, and keep an already-loaded
+CallSite index ahead of the raw probe. An inconclusive probe returns to the existing persisted-index
+and balanced graph/segment path instead of finishing an unbounded serial scan.
+
+**Evidence:**
+
+- Dataset and oracle: 64 distinct persisted shards regenerated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs under `/tmp/pr113-exp064-fixture64.7PSN8d/`; the exact
+  hosted remote-main base and oracle from run `33692920895` remain the comparison and correctness
+  sources. The candidate is this Attempt 064 experiment commit; three four-CPU candidate runs are
+  under `/tmp/pr113-exp064-bounded-cache-short/`. Synthetic tests cover only cache selection, the
+  800-node miss bound, and retained-index priority.
+- Correctness: all three global-wide runs completed 34/34 rows with exact outcome, row count,
+  response bytes, digest, and hit-graph parity. P50/P95 was `4.359/51.412`, `4.223/54.948`, and
+  `4.817/58.153 ms`; process CPU was `1.952-1.966 s`, peak heap `3.60-3.61 GiB`, and peak RSS
+  `4.04-4.05 GiB`. The runtime still reported four processors, `2` graph workers, and `2` segment
+  workers.
+- The repeated dense projections now reuse the exact first 200 matching node ids: class-pair was
+  `0.768-0.868 ms`, name-pair `0.660-0.711 ms`, caller-class `0.403-0.553 ms`, callee-class
+  `0.409-0.457 ms`, aliased `0.710-0.729 ms`, and parameterized `0.689-0.731 ms`. Their charged
+  work falls from 681 to 200 after the first projection. Wrapped non-distinct dense was
+  `1.323-1.537 ms`; broad-all-64 was `0.752-0.860 ms`. Every accessed graph is now recorded.
+- Total global-wide charged work fell from Attempt 063's `5,866,095` to `5,862,744`; the bounded
+  fallback therefore does not move cost into the long zero/targeted terms. An exploratory version
+  that probed every term raised work to `7,719,673` and P50 to roughly 10 ms, so it was rejected
+  before this commit and the existing four-character eligibility bound was retained around the
+  actual bounded density probe.
+- A separate real-64 cold graph-routing replay under `/tmp/pr113-exp064-routing/` completed all
+  1,137 rows correctly. The request-selected K=64 dense row restored the retained-index path:
+  one lookup, 200 work units, and `0.367 ms`, versus Attempt 063's zero lookups, 665 work units,
+  and hosted `2.398 ms`. Aggregate retained-index evidence returned to exactly 1,979 lookups over
+  all 64 graphs with the required `29..38` per-graph range.
+
+Hosted exact-candidate `c9c9efd49ac8` run `33696452403` confirmed 34/34 correct rows in every
+pair, complete source-access evidence, the configured/observed `2+2` split, and aggregate P95
+speedups of `6.15x`, `7.19x`, and `7.96x`; wrapped P95 was `5.43x`, `7.67x`, and `6.69x`.
+Candidate P50 was `9.712-12.541 ms`, process CPU fell from `19.84-20.66 s` to `3.12-3.43 s`,
+peak heap from `4.67-4.80 GiB` to `3.66-3.67 GiB`, and peak RSS from `5.97-6.08 GiB` to
+`4.35-4.38 GiB`. The exact 5x milestone therefore passes with lower resources.
+
+The full gate remains red. `global-wide-provenance/dense` repeatedly regresses from roughly
+`1.7-1.9 ms` to `6.4-8.4 ms`, and non-distinct wrapped dense repeats above the aligned gate in two
+pairs at `1.5-1.7 ms` to `3.3-4.0 ms`. Graph-routing restores all 1,979 retained-index lookups,
+the `29..38` per-graph range, and the K=64 dense row's one lookup/200 work contract, but K=64
+zero/targeted P50/P95 remains red because graph-scoped 64-source index work is still forced through
+the scan-oriented two-graph/two-segment split. Existing method compatibility also has confirmed
+runner-sensitive failures outside the changed >=40-source path.
+
+**Conclusion:** keep as an intermediate 5x win, not as a merge-ready result. The raw path is now
+bounded and its repeated dense projections are cheaper without displacing a loaded index. The next
+attempt must return the segment half to graph fanout for explicitly graph-scoped index work; the
+following projection-path attempt can remove the two remaining aligned dense regressions without
+changing the established all-graph scan split.

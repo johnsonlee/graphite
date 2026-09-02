@@ -193,6 +193,7 @@ internal class MappedWebGraphBackedGraph(
     private val stringPropertyIndexLock = Any()
     private val stringPropertyAdmissions = StringPropertyAdmissions()
     private val rawStringMatchStates = RawStringMatchStates()
+    private val rawProjectionMatches = RawProjectionMatches()
     private val callSiteStringIndexLock = Any()
     private val callSiteStringIndexIdentityFile =
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
@@ -742,8 +743,8 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
-            return rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)
+        if (workConsumer is PreferredRawGraphWorkBatchConsumer && callSiteStringIndex == null) {
+            rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)?.let { return it }
         }
         val index = callSiteStringIndex ?: return null
         callSiteStringIndexLookupCount.incrementAndGet()
@@ -756,30 +757,50 @@ internal class MappedWebGraphBackedGraph(
         projectedProperties: List<String>,
         limit: Int,
         workConsumer: GraphWorkConsumer
-    ): List<StringPropertyProjectionRow> {
+    ): List<StringPropertyProjectionRow>? {
         if (limit <= 0) return emptyList()
         callSiteStringLookupEntryCount.incrementAndGet()
+        val cacheKey = RawProjectionMatchKey(predicates.toList(), limit)
         val predicatePropertyIndexes = predicates.map { predicate ->
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val projectedPropertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
-        val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
+        rawProjectionMatches[cacheKey]?.let { cachedNodeIds ->
+            consumeGraphWork(workConsumer, cachedNodeIds.size.coerceAtLeast(1).toLong())
+            return projectRawCallSiteRows(cachedNodeIds, projectedPropertyIndexes)
+        }
+        val sharedStates = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
         val matchStates = predicates.map { predicate ->
             sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
-                ByteArray(stringTable.size())
+                BoundedStringMatcher(stringTable, StringPredicateKey(
+                    predicate.transform,
+                    predicate.mode,
+                    predicate.expected
+                ), RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY)
             }
         }
         val rows = ArrayList<StringPropertyProjectionRow>(limit)
+        val matchedNodeIds = IntArray(limit)
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val nodeIds = nodeTypeIndex.ids(CallSiteNode::class.java).iterator()
+        val scaledProbe = (limit.toLong() * RAW_PROJECTION_PROBE_FACTOR)
+            .coerceAtMost(RAW_PROJECTION_MAX_PROBE_NODES.toLong())
+            .toInt()
+        val maxInspected = minOf(
+            RAW_PROJECTION_MAX_PROBE_NODES,
+            maxOf(RAW_PROJECTION_MIN_PROBE_NODES, scaledProbe)
+        )
         var inspected = 0
         try {
-            for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
-                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+            while (nodeIds.hasNext() && inspected < maxInspected) {
+                val nodeId = nodeIds.next()
+                if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                     Thread.currentThread().isInterrupted
                 ) {
                     throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                 }
+                inspected++
                 accounting.consume()
                 var matched = false
                 withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
@@ -789,30 +810,39 @@ internal class MappedWebGraphBackedGraph(
                     stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
                     matched = predicates.indices.any { index ->
                         val stringId = stringIds[predicatePropertyIndexes[index]]
-                        val states = matchStates[index]
-                        when (states[stringId]) {
-                            RAW_STRING_MATCH -> true
-                            RAW_STRING_MISS -> false
-                            else -> stringMatches(
-                                stringTable.get(stringId),
-                                predicates[index].transform,
-                                predicates[index].mode,
-                                predicates[index].expected
-                            ).also { result ->
-                                states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
-                            }
-                        }
+                        matchStates[index].matches(stringId)
                     }
                 }
                 if (!matched) continue
+                matchedNodeIds[rows.size] = nodeId
                 rows += StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
                     stringTable.get(stringIds[propertyIndex]).toString()
                 })
                 if (rows.size >= limit) break
             }
+            if (rows.size < limit && nodeIds.hasNext()) return null
+            rawProjectionMatches.put(cacheKey, matchedNodeIds.copyOf(rows.size))
             return rows
         } finally {
             accounting.flush()
+        }
+    }
+
+    private fun projectRawCallSiteRows(
+        nodeIds: IntArray,
+        projectedPropertyIndexes: List<Int>
+    ): List<StringPropertyProjectionRow> {
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        return nodeIds.map { nodeId ->
+            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+            }
+            StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
+                stringTable.get(stringIds[propertyIndex]).toString()
+            })
         }
     }
 
@@ -1861,6 +1891,7 @@ internal class MappedWebGraphBackedGraph(
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
             rawStringMatchStates.clear()
+            rawProjectionMatches.clear()
         }
     }
 
@@ -1897,6 +1928,8 @@ internal class MappedWebGraphBackedGraph(
     internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()
 
     internal fun rawStringMatchStateCount(): Int = rawStringMatchStates.size()
+
+    internal fun rawProjectionMatchCount(): Int = rawProjectionMatches.size()
 
     internal fun callSiteStringIndexBytes(): Long = callSiteStringIndex?.retainedBytes ?: 0L
 
@@ -2389,6 +2422,11 @@ private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
 private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
+private const val RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY = 1 shl 12
+private const val RAW_PROJECTION_MIN_PROBE_NODES = 64
+private const val RAW_PROJECTION_MAX_PROBE_NODES = 1_024
+private const val RAW_PROJECTION_PROBE_FACTOR = 4
+private const val MAX_RAW_PROJECTION_MATCH_ENTRIES = 16
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 internal const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
@@ -2439,18 +2477,51 @@ private data class StringPredicateKey(
     val expected: String
 )
 
+private data class RawProjectionMatchKey(
+    val predicates: List<StringPropertyPredicate>,
+    val limit: Int
+)
+
+private class RawProjectionMatches {
+    private val matches = LinkedHashMap<RawProjectionMatchKey, IntArray>(
+        MAX_RAW_PROJECTION_MATCH_ENTRIES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
+
+    @Synchronized
+    operator fun get(key: RawProjectionMatchKey): IntArray? = matches[key]
+
+    @Synchronized
+    fun put(key: RawProjectionMatchKey, nodeIds: IntArray) {
+        if (matches.containsKey(key)) return
+        while (matches.size >= MAX_RAW_PROJECTION_MATCH_ENTRIES) {
+            matches.remove(matches.entries.iterator().next().key)
+        }
+        matches[key] = nodeIds
+    }
+
+    @Synchronized
+    fun clear() = matches.clear()
+
+    @Synchronized
+    fun size(): Int = matches.size
+}
+
 /**
  * Serial, allocation-bounded predicate state for scans over a large global string table.
  * A cache collision only repeats the deterministic comparison and cannot change its result.
  */
 private class BoundedStringMatcher(
     private val stringTable: StringTable,
-    private val predicate: StringPredicateKey
+    private val predicate: StringPredicateKey,
+    cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY
 ) {
     private val stringCount = stringTable.size()
-    private val dense = if (stringCount <= LOCAL_STRING_MATCH_CACHE_CAPACITY) ByteArray(stringCount) else null
-    private val keys = if (dense == null) IntArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
-    private val values = if (dense == null) ByteArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
+    private val capacity = cacheCapacity.coerceAtLeast(1).takeHighestOneBit()
+    private val dense = if (stringCount <= capacity) ByteArray(stringCount) else null
+    private val keys = if (dense == null) IntArray(capacity) else null
+    private val values = if (dense == null) ByteArray(capacity) else null
     private val actual = MutableString()
 
     fun matches(stringId: Int): Boolean {
@@ -2485,7 +2556,7 @@ private class BoundedStringMatcher(
 
     private fun cacheSlot(stringId: Int): Int {
         val spread = stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)
-        return spread and (LOCAL_STRING_MATCH_CACHE_CAPACITY - 1)
+        return spread and (capacity - 1)
     }
 }
 

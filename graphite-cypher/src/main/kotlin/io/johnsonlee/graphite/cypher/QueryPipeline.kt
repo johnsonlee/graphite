@@ -1643,8 +1643,7 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = (serialLeadingStorage || rawLeadingStorage) && balanced && sourceIndex == 0,
-                rawStorage = rawLeadingStorage && sourceIndex == 0
+                serialStorage = (serialLeadingStorage || rawLeadingStorage) && balanced && sourceIndex == 0
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()

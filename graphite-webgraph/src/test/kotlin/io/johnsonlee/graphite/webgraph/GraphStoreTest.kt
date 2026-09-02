@@ -717,6 +717,96 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `bounded raw projection reuses matches and yields to an already loaded index`() {
+        val dir = Files.createTempDirectory("graph-store-raw-projection-cache")
+        try {
+            val returnType = TypeDescriptor("void")
+            val source = DefaultGraph.Builder().apply {
+                repeat(2_048) { index ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(index),
+                            MethodDescriptor(
+                                TypeDescriptor("example.NeedleCaller$index"),
+                                "call$index",
+                                emptyList(),
+                                returnType
+                            ),
+                            MethodDescriptor(
+                                TypeDescriptor("example.Target$index"),
+                                "invoke",
+                                emptyList(),
+                                returnType
+                            ),
+                            index,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            GraphStore.save(source, dir)
+            val graph = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val predicates = listOf(
+                StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Needle")
+            )
+            val firstWork = AtomicLong()
+            val first = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class"),
+                2,
+                PreferredRawGraphWorkBatchConsumer(firstWork::addAndGet)
+            )
+            assertEquals(2, first?.size)
+            assertTrue(first.orEmpty().all { row -> row.values.single()?.startsWith("example.NeedleCaller") == true })
+            assertEquals(2L, firstWork.get())
+            assertEquals(1, graph.rawProjectionMatchCount())
+
+            val cachedWork = AtomicLong()
+            val cached = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("callee_class"),
+                2,
+                PreferredRawGraphWorkBatchConsumer(cachedWork::addAndGet)
+            )
+            assertEquals(2, cached?.size)
+            assertTrue(cached.orEmpty().all { row -> row.values.single()?.startsWith("example.Target") == true })
+            assertEquals(2L, cachedWork.get())
+            assertEquals(1, graph.rawProjectionMatchCount())
+            assertFalse(graph.isCallSiteStringIndexInitialized())
+
+            val missWork = AtomicLong()
+            val inconclusive = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                listOf(StringPropertyPredicate("caller_name", null, StringMatchMode.CONTAINS, "absent")),
+                listOf("caller_class"),
+                200,
+                PreferredRawGraphWorkBatchConsumer(missWork::addAndGet)
+            )
+            assertNull(inconclusive)
+            assertEquals(800L, missWork.get())
+            assertFalse(graph.isCallSiteStringIndexInitialized())
+
+            assertTrue(graph.prepareCallSiteStringIndex())
+            graph.resetCallSiteScanMetrics()
+            val indexed = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class"),
+                2,
+                PreferredRawGraphWorkBatchConsumer { }
+            )
+            assertEquals(first, indexed)
+            assertEquals(1L, graph.callSiteStringIndexLookupCount())
+            graph.close()
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `persisted raw disjunction scans properties through the shared segment pool`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {

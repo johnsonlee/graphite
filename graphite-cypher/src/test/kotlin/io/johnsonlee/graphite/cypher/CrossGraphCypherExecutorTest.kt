@@ -329,7 +329,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `bounded short global wide query prefers raw storage only for the leading graph`() {
+    fun `bounded short global wide query keeps the leading fallback serial`() {
         val plan = resolveDirectStringParallelismPlan()
         if (plan.graphWorkerCount < 2) return
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
@@ -368,7 +368,7 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(graphs.indices.toSet(), storageConsumers.keys)
-        assertTrue(storageConsumers.getValue(0) is PreferredRawGraphWorkBatchConsumer)
+        assertTrue(storageConsumers.getValue(0) is SerialGraphWorkBatchConsumer)
         assertTrue(storageConsumers.filterKeys { it > 0 }.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount == plan.segmentWorkerCount
         })
