@@ -29,10 +29,11 @@ internal fun persistCallSiteStringIndex(
                     CALL_SITE_INDEX_PERSISTENCE_BUFFER_BYTES
                 )
             ).use(index::writePersistent)
-            replaceCallSiteIndex(checkNotNull(temporary), dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE))
+            val indexPath = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            replaceCallSiteIndex(checkNotNull(temporary), indexPath)
             temporary = null
-            val prefilterPath = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
-            if (!persistCallSiteTrigramPrefilter(index, prefilterPath)) return false
+            val directoryPath = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+            if (!persistCallSiteTrigramPrefilter(index, indexPath, directoryPath)) return false
         }
         true
     } catch (_: Exception) {

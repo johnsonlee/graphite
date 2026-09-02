@@ -730,46 +730,67 @@ internal class MappedCallSiteStringIndex(
         )
     }
 
+    /**
+     * Writes a compact, checksummed directory over the trigram ranges already stored in the
+     * complete CallSite index. The directory deliberately contains no string or posting copy.
+     */
     @Synchronized
-    internal fun writePersistentTrigramPrefilter(output: DataOutput) {
-        val usedByCallSites = BooleanArray(stringTable.size())
-        properties.forEach { property -> property.markUsedStringIds(usedByCallSites) }
-        val postingCounts = IntArray(stringTable.size())
-        val seen = IntOpenHashSet()
-        var postingCount = 0
-        for (stringId in usedByCallSites.indices) {
-            if (!usedByCallSites[stringId]) continue
-            val value = stringTable.get(stringId).lowercase()
-            seen.clear()
-            for (position in 0..value.length - PERSISTED_PREFILTER_GRAM_LENGTH) {
-                if (seen.add(callSitePrefilterGramHash(value, position))) postingCounts[stringId]++
-            }
-            postingCount = Math.addExact(postingCount, postingCounts[stringId])
+    internal fun writePersistentTrigramDirectory(output: DataOutput, exactIndexBytes: Long) {
+        val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
+            "CallSite trigram postings must be prepared before persistence"
         }
-        val postings = LongArray(postingCount)
-        var postingIndex = 0
-        for (stringId in usedByCallSites.indices) {
-            if (!usedByCallSites[stringId]) continue
-            val value = stringTable.get(stringId).lowercase()
-            seen.clear()
-            for (position in 0..value.length - PERSISTED_PREFILTER_GRAM_LENGTH) {
-                val hash = callSitePrefilterGramHash(value, position)
-                if (seen.add(hash)) postings[postingIndex++] = trigramKey(hash, stringId)
-            }
-        }
-        check(postingIndex == postings.size)
-        java.util.Arrays.sort(postings)
+        val callSiteCount = properties.firstOrNull()?.postingCount ?: 0
+        val postingsOffset = persistentTrigramPostingsOffset(callSiteCount)
+        require(exactIndexBytes == postingsOffset + postings.size.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES)
         val graphContentIdentity = persistedContentIdentity
         require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+
+        var rangeCount = 0
+        var previousTrigram: Int? = null
+        postings.forEach { posting ->
+            val trigram = (posting ushr Int.SIZE_BITS).toInt()
+            if (trigram != previousTrigram) {
+                rangeCount++
+                previousTrigram = trigram
+            }
+        }
+
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_MAGIC)
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_VERSION)
         output.writeInt(stringTable.size())
-        output.write(graphContentIdentity)
-        properties.forEach { property -> output.writeInt(property.uniqueStringCount) }
+        output.writeInt(callSiteCount)
         output.writeInt(postings.size)
-        properties.forEach { property -> property.writeUsedStringIds(output) }
-        postings.forEach(output::writeLong)
+        output.writeInt(rangeCount)
+        output.writeLong(exactIndexBytes)
+        output.writeLong(postingsOffset)
+        output.write(graphContentIdentity)
+
+        var start = 0
+        while (start < postings.size) {
+            val trigram = (postings[start] ushr Int.SIZE_BITS).toInt()
+            var end = start + 1
+            val checksum = CRC32().apply { updateDirectoryLongBigEndian(postings[start]) }
+            while (end < postings.size && (postings[end] ushr Int.SIZE_BITS).toInt() == trigram) {
+                checksum.updateDirectoryLongBigEndian(postings[end])
+                end++
+            }
+            output.writeInt(trigram)
+            output.writeInt(end)
+            output.writeInt(checksum.value.toInt())
+            start = end
+        }
     }
+
+    private fun persistentTrigramPostingsOffset(callSiteCount: Int): Long = Math.addExact(
+        CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong(),
+        Math.addExact(
+            properties.sumOf { property ->
+                property.uniqueStringCount.toLong() * 2L * Int.SIZE_BYTES +
+                    callSiteCount.toLong() * Int.SIZE_BYTES
+            },
+            stringTable.size().toLong() * Long.SIZE_BYTES
+        )
+    )
 
     internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
 
@@ -1026,14 +1047,6 @@ internal class MappedCallSiteStringIndex(
             usedStringIds.forEach(output::writeInt)
             postingEnds.forEach(output::writeInt)
             postingNodeIds.forEach(output::writeInt)
-        }
-
-        fun writeUsedStringIds(output: DataOutput) {
-            usedStringIds.forEach(output::writeInt)
-        }
-
-        fun markUsedStringIds(target: BooleanArray) {
-            usedStringIds.forEach { stringId -> target[stringId] = true }
         }
 
         fun updatePersistentChecksum(checksum: CRC32) {
@@ -2625,14 +2638,6 @@ private fun callSiteTrigramHash(value: String, position: Int): Int =
     (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +
         value[position + 2].code
 
-private fun callSitePrefilterGramHash(value: String, position: Int): Int {
-    var hash = 0
-    repeat(PERSISTED_PREFILTER_GRAM_LENGTH) { offset ->
-        hash = hash * STRING_HASH_FACTOR + value[position + offset].code
-    }
-    return hash
-}
-
 private fun trigramKey(trigram: Int, stringId: Int): Long =
     (trigram.toLong() shl Int.SIZE_BITS) or (stringId.toLong() and INT_UNSIGNED_MASK)
 
@@ -2668,6 +2673,12 @@ private fun CRC32.updateLong(value: Long) {
     }
 }
 
+private fun CRC32.updateDirectoryLongBigEndian(value: Long) {
+    repeat(Long.SIZE_BYTES) { byteIndex ->
+        update(((value ushr ((Long.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS)) and 0xffL).toInt())
+    }
+}
+
 internal const val CALLER_CLASS_PROPERTY = "caller_class"
 internal const val CALLER_NAME_PROPERTY = "caller_name"
 internal const val CALLEE_CLASS_PROPERTY = "callee_class"
@@ -2680,9 +2691,12 @@ internal const val CALLEE_NAME_PROPERTY_INDEX = 3
 
 private const val MAPPED_CALL_SITE_STRING_INDEX_RETAINED_ARRAYS = 3L * CALL_SITE_STRING_PROPERTY_COUNT + 1L
 private const val MAPPED_CALL_SITE_STRING_INDEX_OBJECT_ESTIMATED_BYTES = 256L
-private const val CALL_SITE_STRING_INDEX_MAGIC = 0x47524353
-private const val CALL_SITE_STRING_INDEX_VERSION = 2
-private const val CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES = 32
+internal const val CALL_SITE_STRING_INDEX_MAGIC = 0x47524353
+internal const val CALL_SITE_STRING_INDEX_VERSION = 2
+internal const val CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES = 32
+internal const val CALL_SITE_STRING_INDEX_HEADER_BYTES =
+    4 * Int.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES +
+        CALL_SITE_STRING_PROPERTY_COUNT * Int.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
 private const val RADIX_BUCKET_COUNT = 1 shl Byte.SIZE_BITS
@@ -2710,7 +2724,6 @@ private const val BITSET_WORD_SHIFT = 6
 private const val BITSET_WORD_MASK = Long.SIZE_BITS - 1
 private const val SPARSE_DISTINCT_RANDOM_READ_FACTOR = 4L
 private const val MIN_CALL_SITE_TRIGRAM_LENGTH = 3
-private const val PERSISTED_PREFILTER_GRAM_LENGTH = 3
 private const val MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES = 4_096
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS = 4_096
 private const val MIN_EXACT_CALL_SITE_PROJECTION_TUPLES = 4_096

@@ -77,6 +77,7 @@ import java.io.DataOutputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Callable
@@ -294,7 +295,8 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `persisted trigram dictionary returns exact ids and corrupt data falls back to the full index`() {
+    @Suppress("LongMethod")
+    fun `compact trigram directory returns exact ids and corrupt data falls back to the full index`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { nodeId ->
@@ -322,12 +324,15 @@ class GraphStoreTest {
             override val segmentWorkerCount: Int = 1
             override fun consume(workUnits: Long) = Unit
         }
-        val dir = Files.createTempDirectory("webgraph-callsite-trigram-prefilter")
+        val dir = Files.createTempDirectory("webgraph-callsite-trigram-directory")
         try {
             System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
             GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             val prefilterFile = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+            assertTrue(Files.isRegularFile(indexFile))
             assertTrue(Files.isRegularFile(prefilterFile))
+            assertTrue(Files.size(prefilterFile) < Files.size(indexFile))
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
@@ -367,9 +372,71 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
             }
 
-            val corrupt = Files.readAllBytes(prefilterFile)
-            corrupt[corrupt.size / 2] = (corrupt[corrupt.size / 2].toInt() xor 1).toByte()
-            Files.write(prefilterFile, corrupt)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { rejected ->
+                var batches = 0
+                val rejection = IllegalStateException("prefilter work rejected")
+                val failure = assertFailsWith<IllegalStateException> {
+                    rejected.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = object : SplitGraphWorkBatchConsumer {
+                            override val segmentWorkerCount: Int = 1
+
+                            override fun consume(workUnits: Long) {
+                                batches++
+                                throw rejection
+                            }
+                        }
+                    )?.toList()
+                }
+                assertSame(rejection, failure)
+                assertEquals(1, batches)
+                assertFalse(rejected.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(rejected.isCallSiteStringIndexInitialized())
+            }
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { interrupted ->
+                val firstBatch = CountDownLatch(1)
+                val failure = AtomicReference<Throwable>()
+                val interruptedFlag = AtomicBoolean()
+                val request = Thread {
+                    try {
+                        interrupted.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            limit = 1,
+                            workConsumer = object : SplitGraphWorkBatchConsumer {
+                                override val segmentWorkerCount: Int = 1
+
+                                override fun consume(workUnits: Long) {
+                                    firstBatch.countDown()
+                                    while (!Thread.currentThread().isInterrupted) Thread.onSpinWait()
+                                }
+                            }
+                        )?.toList()
+                        failure.set(AssertionError("Interrupted prefilter validation completed normally"))
+                    } catch (error: Throwable) {
+                        failure.set(error)
+                        interruptedFlag.set(Thread.currentThread().isInterrupted)
+                    }
+                }
+                request.start()
+                assertTrue(firstBatch.await(5, TimeUnit.SECONDS))
+                request.interrupt()
+                request.join(5_000)
+                assertFalse(request.isAlive)
+                assertTrue(failure.get() is CancellationException)
+                assertTrue(interruptedFlag.get())
+                assertFalse(interrupted.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(interrupted.isCallSiteStringIndexInitialized())
+            }
+
+            val originalDirectory = Files.readAllBytes(prefilterFile)
+            val corruptDirectory = originalDirectory.copyOf()
+            corruptDirectory[corruptDirectory.size / 2] =
+                (corruptDirectory[corruptDirectory.size / 2].toInt() xor 1).toByte()
+            Files.write(prefilterFile, corruptDirectory)
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertEquals(
                     listOf(0),
@@ -382,6 +449,42 @@ class GraphStoreTest {
                 )
                 assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+            }
+
+            Files.write(prefilterFile, originalDirectory)
+            val directory = ByteBuffer.wrap(originalDirectory).order(ByteOrder.BIG_ENDIAN)
+            val postingsOffset = directory.getLong(32)
+            val targetTrigram = (('t'.code * 31 + 'a'.code) * 31 + 'r'.code)
+            var previousEnd = 0
+            var targetStart = -1
+            for (offset in 72 until originalDirectory.size - Long.SIZE_BYTES step 3 * Int.SIZE_BYTES) {
+                val trigram = directory.getInt(offset)
+                val end = directory.getInt(offset + Int.SIZE_BYTES)
+                if (trigram == targetTrigram) {
+                    targetStart = previousEnd
+                    break
+                }
+                previousEnd = end
+            }
+            assertTrue(targetStart >= 0)
+            val originalIndex = Files.readAllBytes(indexFile)
+            val corruptIndex = originalIndex.copyOf()
+            val postingByte = Math.toIntExact(postingsOffset + targetStart.toLong() * Long.SIZE_BYTES)
+            corruptIndex[postingByte] = (corruptIndex[postingByte].toInt() xor 1).toByte()
+            Files.write(indexFile, corruptIndex)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = split
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                // The verified directory remains mapped, but the corrupt queried range is rejected.
+                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
             }
         } finally {
             dir.toFile().deleteRecursively()

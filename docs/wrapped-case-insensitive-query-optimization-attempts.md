@@ -1652,3 +1652,45 @@ scan removes the positive-query sidecar restores that defeated Attempt 052. All 
 four-CPU runs exceed the current 5x P95 milestone, CPU/work/heap improve, 16 CPUs realize the
 required additive `8 + 8` plan, and correctness remains a hard gate. Missing, incompatible, or
 corrupt dictionaries continue to fail open to the complete exact index path.
+
+### 2026-09-03 - Attempt 054: Replace duplicated postings with an on-demand range directory
+
+**Hypothesis:** Attempt 053 pays a cold whole-file CRC over a 247 MiB duplicate of the trigram
+postings and fails the persisted-footprint gate. Keep the exact string-ID raw-scan path, but store
+only a compact checksummed `(trigram, end offset, range CRC32)` directory. Memory-map the postings
+already present in `graph.callsite-string-index`, validate the 5.85 MiB directory in bounded chunks,
+and validate only the posting range selected by each query. This should remove both the duplicate
+storage and the first-query full scan without weakening corruption fallback, work accounting, or
+cancellation.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs. For local screening, version-2 directories were
+  deterministically regenerated from the production exact indexes in
+  `/tmp/pr113-exp054-fixture64-screen/`; no synthetic graph supplied performance evidence. Base
+  revision: `00d9681`; candidate: the isolated Attempt 054 snapshot under
+  `/tmp/graphite-exp054.PcRFQe/repo`. Complete output is under
+  `/tmp/pr113-exp054-screen-run1/`.
+- Correctness: all 34 records exactly matched the trusted Attempt 053 real-fixture result on
+  outcome, row count, response bytes, digest, and hit graph IDs. Focused tests also passed for an
+  exact hit, property isolation, DISTINCT, whole-directory corruption fallback, queried-range
+  corruption fallback, deterministic work rejection, interruption, and no publication after a
+  rejected directory load.
+- The 64 directories occupy `5.85 MiB`, down from `247 MiB` (`42.2x` smaller); postings remain only
+  in the existing 352 MiB exact indexes. The first four-property zero row was `46.475 ms` with
+  `1,277,757` charged units, versus the exact remote Attempt 053 cold result of `619.492 ms` and
+  `32,356,657` units (`13.33x` latency and `25.32x` work improvement).
+- The complete four-CPU screening run produced P50/P95 `1.998/57.225 ms`, process CPU `3.172 s`,
+  peak used heap `4.09 GiB`, peak RSS `5.13 GiB`, and `9,052,840` charged units. The comparable
+  warm-cache Attempt 053 local run was `2.402/49.766 ms`, `2.794 s`, `3.97/5.26 GiB`, and
+  `40,259,720` units. Directory/range validation therefore removes the cold and footprint blockers,
+  while small-directory validation adds some CPU and does not improve the warm-cache P95.
+- Wrapped dense DISTINCT remains the aligned blocker at `877.708 ms`; it performs complete
+  selected-tuple provenance scans over the remaining graphs. Consequently the overall comparison
+  against main is above 5x, but the every-shape 5x gate is not yet established.
+
+**Conclusion:** keep as an independently useful step toward 5x. It removes 241 MiB of duplicated
+persisted data, bounds validation/cancellation work, and eliminates the exact remote cold outlier
+without changing results. The next attempt targets the separate dense-DISTINCT provenance scan;
+this attempt does not claim that the complete 5x gate has passed.

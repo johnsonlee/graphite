@@ -527,7 +527,7 @@ internal data class NodeIndexData(
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
  * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
- * - `graph.callsite-trigram-prefilter` -- optional mapped exact string-ID dictionary
+ * - `graph.callsite-trigram-prefilter` -- optional mapped trigram range/checksum directory
  */
 @Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {

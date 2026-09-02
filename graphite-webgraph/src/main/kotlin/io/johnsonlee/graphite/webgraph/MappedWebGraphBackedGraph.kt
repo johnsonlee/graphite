@@ -1462,7 +1462,9 @@ internal class MappedWebGraphBackedGraph(
                 val loaded = identity?.let { expected ->
                     MappedCallSiteTrigramPrefilter.load(
                         callSiteTrigramPrefilterFile,
+                        callSiteStringIndexFile,
                         stringTable.size(),
+                        nodeTypeIndex.count(CallSiteNode::class.java).toInt(),
                         expected,
                         stringTable,
                         workConsumer
@@ -1849,7 +1851,7 @@ internal class MappedWebGraphBackedGraph(
             ).use(index::writePersistent)
             replaceAtomically(temporary, callSiteStringIndexFile)
             temporary = null
-            persistCallSiteTrigramPrefilter(index, callSiteTrigramPrefilterFile)
+            persistCallSiteTrigramPrefilter(index, callSiteStringIndexFile, callSiteTrigramPrefilterFile)
         } catch (_: Exception) {
             false
         } finally {
