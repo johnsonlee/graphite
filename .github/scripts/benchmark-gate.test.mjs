@@ -118,20 +118,20 @@ function globalWidePressureResult(p95LatencyNanos, overrides = {}) {
         segmentScanPeakActiveWorkers: 8,
         graphCount: 64,
         distinctGraphPathCount: 64,
-        queryCount: 27,
-        successCount: 27,
+        queryCount: 34,
+        successCount: 34,
         timeoutCount: 0,
         failureCount: 0,
-        coverageShapeCount: 9,
+        coverageShapeCount: 14,
         coverageFamilyCount: 1,
         coverageSelectivityCount: 3,
-        coverageProjectionCount: 7,
+        coverageProjectionCount: 8,
         coverageOperatorCount: 2,
-        coverageBoundaryCount: 2,
+        coverageBoundaryCount: 3,
         maxHeapBytes: 8 * 1024 ** 3,
-        p50LatencyNanos: Math.floor(p95LatencyNanos / 4),
+        p50LatencyNanos: p95LatencyNanos,
         p95LatencyNanos,
-        maxLatencyNanos: p95LatencyNanos + 1,
+        maxLatencyNanos: p95LatencyNanos,
         processCpuNanos: 100_000_000,
         cpuCoreUtilizationPermille: 5_000,
         peakUsedHeapBytes: 4 * 1024 ** 3,
@@ -152,7 +152,7 @@ function globalWidePressureResult(p95LatencyNanos, overrides = {}) {
     });
 }
 
-function globalWideEvidence(latencyNanos = 20_000_000) {
+function globalWideEvidence(latencyNanos = 35_000_000) {
     const shapes = [
         "global-wide-four-properties",
         "global-wide-class-pair",
@@ -162,17 +162,27 @@ function globalWideEvidence(latencyNanos = 20_000_000) {
         "global-wide-provenance",
         "global-wide-aliased",
         "global-wide-parameterized",
-        "global-wide-wrapped-case-insensitive"
+        "global-wide-wrapped-case-insensitive",
+        "global-wide-wrapped-case-insensitive-distinct"
     ];
     const workloadIdentities = Array.from({ length: 64 }, (_, graphIndex) =>
         crypto.createHash("sha256").update(`graph-${graphIndex}`).digest("hex"));
+    const allGraphIds = Array.from({ length: 64 }, (_, graphIndex) => `graph-${graphIndex}`);
+    const distributions = [
+        ["localized-early", "graph-0", "local-early", "graph-0"],
+        ["localized-middle", "graph-31", "local-middle", "graph-31"],
+        ["localized-late", "graph-63", "local-late", "graph-63"],
+        ["broad-all-64", "graph-0", "broad", allGraphIds.join(",")]
+    ];
     const manifest = ["# fixture64", ...Array.from({ length: 64 }, (_, graphIndex) =>
         `graph-${graphIndex}\t/graphs/graph-${graphIndex}\tabsent-${graphIndex}\t` +
             `targeted-${graphIndex}\tdense-${graphIndex}\t${workloadIdentities[graphIndex]}`
-    )].join("\n") + "\n";
+    ), ...distributions.map((columns) =>
+        ["# global-wide-distribution-v1", ...columns].join("\t"))].join("\n") + "\n";
     const header = "id\tfamily\tshape\tselectivity\toperator\tboundary\tprojection\tlimit\t" +
         "targetGraphId\ttargetGraphIds\tselectedGraphCount\tworkloadIdentity\toutcome\trowCount\t" +
-        "responseBytes\tdigest\tlatencyNanos\texecutionPath\tinputSourceCount\taccessedGraphCount\t" +
+        "responseBytes\tdigest\tlatencyNanos\tfixtureDistributionId\thitGraphIds\texecutionPath\t" +
+        "inputSourceCount\taccessedGraphCount\t" +
         "accessedGraphIds\ttargetGraphAccessCount\tnonTargetGraphAccessCount\tparallelScanCount\t" +
         "indexLookupCount\tpeakActiveWorkers\tgraphWorkUnits\tgraphIdSourceSelections\t" +
         "graphIdSourcePruningExecutions\tgraphIdSourcesPruned\tfilteredNodeLimitFastPathExecutions\t" +
@@ -183,27 +193,32 @@ function globalWideEvidence(latencyNanos = 20_000_000) {
         for (const selectivity of ["zero", "targeted", "dense"]) {
             const id = `shape-${shapeIndex}-${selectivity}`;
             const shape = shapes[shapeIndex];
-            const operator = shapeIndex === 8 ? "wrapped-lowercase-contains" : "raw-contains";
+            const operator = shapeIndex >= 8 ? "wrapped-lowercase-contains" : "raw-contains";
             const boundary = shapeIndex === 7 ? "parameters" : "single-query";
             const projection = [
                 "properties", "class-properties", "name-properties", "caller-class", "callee-class",
-                "graph-id-properties", "aliased-properties", "properties", "properties"
+                "graph-id-properties", "aliased-properties", "properties", "properties", "distinct-properties"
             ][shapeIndex];
             const rowCount = selectivity === "zero" ? 0 : selectivity === "dense" ? 200 : 10;
             const digest = crypto.createHash("sha256").update(id).digest("hex");
             const placementOrdinal = Math.floor(shapeIndex * 63 / (shapes.length - 1));
             const expectedOrdinal = selectivity === "dense" ? 0 : placementOrdinal;
-            const accessedCount = selectivity === "zero" ? 64 : expectedOrdinal + 1;
+            const completeDistinctProvenance = shapeIndex === 9 && selectivity === "dense";
+            const accessedCount = selectivity === "zero" || completeDistinctProvenance ?
+                64 : expectedOrdinal + 1;
             const accessedGraphIds = Array.from(
                 { length: accessedCount },
                 (_, graphIndex) => `graph-${graphIndex}`
             ).join(",");
             const accessedGraphCount = String(accessedCount);
             const nonTargetGraphAccessCount = String(accessedCount);
+            const hitGraphIds = selectivity === "zero" ? "" :
+                completeDistinctProvenance ? "graph-0,graph-1" :
+                    selectivity === "dense" ? "graph-0" : `graph-${expectedOrdinal}`;
             rows.push([
                 id, "global-wide", shape, selectivity, operator, boundary, projection, "200",
                 "", "", "0", workloadIdentities[expectedOrdinal], "success", String(rowCount), "128", digest,
-                String(latencyNanos),
+                String(latencyNanos), "", hitGraphIds,
                 "cross-graph-query", "64", accessedGraphCount, accessedGraphIds, "0",
                 nonTargetGraphAccessCount, "0", "1", "0", "100",
                 "0", "0", "0", "1", "0"
@@ -213,6 +228,28 @@ function globalWideEvidence(latencyNanos = 20_000_000) {
                 "", workloadIdentities[expectedOrdinal], "200", "success", String(rowCount), "128", digest
             ].join("|"));
         }
+    }
+    for (const [distributionId, targetGraphId] of distributions) {
+        const targetOrdinal = Number(targetGraphId.slice("graph-".length));
+        const broad = distributionId === "broad-all-64";
+        const middle = distributionId === "localized-middle";
+        const late = distributionId === "localized-late";
+        const accessedCount = late ? 64 : middle ? 33 : 1;
+        const accessedGraphIds = allGraphIds.slice(0, accessedCount).join(",");
+        const hitGraphIds = broad ? "graph-0" : targetGraphId;
+        const id = `global-wide-distribution-${distributionId}`;
+        const digest = crypto.createHash("sha256").update(id).digest("hex");
+        rows.push([
+            id, "global-wide", id, "dense", "wrapped-lowercase-contains", "fixture-distribution",
+            "properties", "200", "", "", "0", workloadIdentities[targetOrdinal], "success", "200",
+            "128", digest, String(latencyNanos), distributionId, hitGraphIds, "cross-graph-query", "64",
+            String(accessedCount), accessedGraphIds, "0", String(accessedCount), "0", String(accessedCount),
+            "0", "100", "0", "0", "0", "1", "0"
+        ].join("\t"));
+        oracle.push([
+            id, "global-wide", id, "dense", "wrapped-lowercase-contains", "fixture-distribution",
+            "properties", "", workloadIdentities[targetOrdinal], "200", "success", "200", "128", digest
+        ].join("|"));
     }
     return { observations: `${header}\n${rows.join("\n")}\n`, oracle: `${oracle.join("\n")}\n`, manifest };
 }
@@ -443,7 +480,8 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
         baseRuns,
         [39_000_000, 38_000_000, 35_000_000].map((p95) => [globalWidePressureResult(p95)]),
         baseObservations,
-        [evidence.observations, evidence.observations, evidence.observations],
+        [39_000_000, 38_000_000, 35_000_000].map((latency) =>
+            globalWideEvidence(latency).observations),
         evidence.oracle,
         10,
         ["candidate-base", "base-candidate", "candidate-base"],
@@ -458,7 +496,8 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
         baseRuns,
         [39_000_000, 41_000_000, 35_000_000].map((p95) => [globalWidePressureResult(p95)]),
         baseObservations,
-        [evidence.observations, evidence.observations, evidence.observations],
+        [39_000_000, 41_000_000, 35_000_000].map((latency) =>
+            globalWideEvidence(latency).observations),
         evidence.oracle,
         10,
         ["candidate-base", "base-candidate", "candidate-base"],
@@ -543,6 +582,23 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
     );
     assert.equal(detachedComparison.passed, false);
     assert.match(detachedComparison.errors.join("\n"), /accessed graph IDs are not bound to graphs.tsv/);
+
+    const nonLocalizedManifest = evidence.manifest.replace(
+        "# global-wide-distribution-v1\tlocalized-early\tgraph-0\tlocal-early\tgraph-0",
+        "# global-wide-distribution-v1\tlocalized-early\tgraph-0\tlocal-early\tgraph-0,graph-1"
+    );
+    const nonLocalized = compareGlobalWidePressure(
+        baseRuns,
+        [35_000_000, 35_000_000, 35_000_000].map((p95) => [globalWidePressureResult(p95)]),
+        baseObservations,
+        [evidence.observations, evidence.observations, evidence.observations],
+        evidence.oracle,
+        10,
+        ["candidate-base", "base-candidate", "candidate-base"],
+        nonLocalizedManifest
+    );
+    assert.equal(nonLocalized.passed, false);
+    assert.match(nonLocalized.errors.join("\n"), /localized-early must be globally localized/);
 });
 
 test("fixture64 global wide-query pressure requires the wrapped case-insensitive shape and its 10x P95", () => {
@@ -567,7 +623,7 @@ test("fixture64 global wide-query pressure requires the wrapped case-insensitive
         Array.from({ length: 3 }, () => [
             globalWidePressureResult(400_000_000, { graphWorkerCount: 0, segmentWorkerCount: 0 })
         ]),
-        Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]),
+        Array.from({ length: 3 }, () => [globalWidePressureResult(80_000_000)]),
         Array.from({ length: 3 }, () => withoutGlobalWideAccessTelemetry(baseEvidence.observations)),
         Array.from({ length: 3 }, () => slowWrapped),
         evidence.oracle,
@@ -576,13 +632,16 @@ test("fixture64 global wide-query pressure requires the wrapped case-insensitive
         evidence.manifest
     );
     assert.equal(slowComparison.passed, false);
-    assert.match(slowComparison.errors.join("\n"), /wrapped case-insensitive P95 speedup 5\.00x/);
+    assert.match(
+        slowComparison.errors.join("\n"),
+        /global-wide-wrapped-case-insensitive P95 speedup 5\.00x/
+    );
 
     const rawOnlyObservations = evidence.observations.split("\n")
-        .filter((line) => !line.includes("global-wide-wrapped-case-insensitive"))
+        .filter((line) => !line.includes("\twrapped-lowercase-contains\t"))
         .join("\n");
     const rawOnlyOracle = evidence.oracle.split("\n")
-        .filter((line) => !line.includes("global-wide-wrapped-case-insensitive"))
+        .filter((line) => !line.includes("|wrapped-lowercase-contains|"))
         .join("\n");
     const rawOnlyMetrics = {
         queryCount: 24,
@@ -606,7 +665,98 @@ test("fixture64 global wide-query pressure requires the wrapped case-insensitive
         evidence.manifest
     );
     assert.equal(rawOnlyComparison.passed, false);
-    assert.match(rawOnlyComparison.errors.join("\n"), /expected 27 records|queryCount=24/);
+    assert.match(rawOnlyComparison.errors.join("\n"), /expected 30 records|queryCount=24/);
+
+    const replaceLatency = (contents, shape, selectivity, latencyNanos) => {
+        const lines = contents.trimEnd().split("\n");
+        const headers = lines[0].split("\t");
+        const shapeIndex = headers.indexOf("shape");
+        const selectivityIndex = headers.indexOf("selectivity");
+        const latencyIndex = headers.indexOf("latencyNanos");
+        return `${lines.map((line, index) => {
+            if (index === 0) return line;
+            const columns = line.split("\t");
+            if (columns[shapeIndex] === shape && columns[selectivityIndex] === selectivity) {
+                columns[latencyIndex] = String(latencyNanos);
+            }
+            return columns.join("\t");
+        }).join("\n")}\n`;
+    };
+    let shiftedBase = globalWideEvidence(400_000_000).observations;
+    let shiftedCandidate = globalWideEvidence(35_000_000).observations;
+    for (const [selectivity, baseLatency, candidateLatency] of [
+        ["zero", 1_000_000_000, 50_000_000],
+        ["targeted", 1_000_000, 10_000_000],
+        ["dense", 1_000_000, 1_000_000]
+    ]) {
+        shiftedBase = replaceLatency(
+            shiftedBase,
+            "global-wide-wrapped-case-insensitive",
+            selectivity,
+            baseLatency
+        );
+        shiftedCandidate = replaceLatency(
+            shiftedCandidate,
+            "global-wide-wrapped-case-insensitive",
+            selectivity,
+            candidateLatency
+        );
+    }
+    const shifted = compareGlobalWidePressure(
+        Array.from({ length: 3 }, () => [globalWidePressureResult(400_000_000, {
+            graphWorkerCount: 0,
+            segmentWorkerCount: 0,
+            maxLatencyNanos: 1_000_000_000
+        })]),
+        Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000, {
+            maxLatencyNanos: 50_000_000
+        })]),
+        Array.from({ length: 3 }, () => withoutGlobalWideAccessTelemetry(shiftedBase)),
+        Array.from({ length: 3 }, () => shiftedCandidate),
+        evidence.oracle,
+        10,
+        ["candidate-base", "base-candidate", "candidate-base"],
+        evidence.manifest
+    );
+    assert.equal(shifted.passed, false);
+    assert.match(
+        shifted.errors.join("\n"),
+        /global-wide-wrapped-case-insensitive\/targeted: aligned latency .* by >15% and >1 ms/
+    );
+});
+
+test("fixture64 global wide-query pressure rejects detached JSON latency summaries", () => {
+    const evidence = globalWideEvidence();
+    const baseEvidence = globalWideEvidence(400_000_000);
+    const lines = evidence.observations.trimEnd().split("\n");
+    const headers = lines[0].split("\t");
+    const shapeIndex = headers.indexOf("shape");
+    const latencyIndex = headers.indexOf("latencyNanos");
+    const detachedRows = `${lines.map((line, index) => {
+        if (index === 0) return line;
+        const columns = line.split("\t");
+        columns[latencyIndex] = columns[shapeIndex].includes("wrapped-case-insensitive") ?
+            "20000000" : "3500000000";
+        return columns.join("\t");
+    }).join("\n")}\n`;
+    const comparison = compareGlobalWidePressure(
+        Array.from({ length: 3 }, () => [globalWidePressureResult(400_000_000, {
+            graphWorkerCount: 0,
+            segmentWorkerCount: 0
+        })]),
+        Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]),
+        Array.from({ length: 3 }, () => withoutGlobalWideAccessTelemetry(baseEvidence.observations)),
+        Array.from({ length: 3 }, () => detachedRows),
+        evidence.oracle,
+        10,
+        ["candidate-base", "base-candidate", "candidate-base"],
+        evidence.manifest
+    );
+    assert.equal(comparison.passed, false);
+    assert.match(
+        comparison.errors.join("\n"),
+        /candidate-1: p95LatencyNanos=35000000; observation rows recompute to 3500000000/
+    );
 });
 
 test("fixture64 global wide-query pressure gates every fork and paired resources", () => {
@@ -621,13 +771,18 @@ test("fixture64 global wide-query pressure gates every fork and paired resources
         })
     ]);
     const candidates = [80_000_000, 32_000_000, 25_000_000].map((p95, index) => [
-        globalWidePressureResult(p95, index === 1 ? { processCpuNanos: 10_000_000_000 } : {})
+        globalWidePressureResult(p95, {
+            processCpuNanos: index === 1 ? 149_000_000 : 100_000_000,
+            peakUsedHeapBytes: index === 1 ? Math.floor(1.49 * 1024 ** 3) : 1024 ** 3,
+            peakResidentSetBytes: index === 1 ? Math.floor(1.49 * 1024 ** 3) : 1024 ** 3
+        })
     ]);
     const comparison = compareGlobalWidePressure(
         baseRuns,
         candidates,
         Array.from({ length: 3 }, () => globalWideEvidence(400_000_000).observations),
-        Array.from({ length: 3 }, () => evidence.observations),
+        [80_000_000, 32_000_000, 25_000_000].map((latency) =>
+            globalWideEvidence(latency).observations),
         evidence.oracle,
         10,
         ["candidate-base", "base-candidate", "candidate-base"],
@@ -635,7 +790,7 @@ test("fixture64 global wide-query pressure gates every fork and paired resources
     );
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /pair-1: P95 speedup 5\.00x/);
-    assert.match(comparison.errors.join("\n"), /pair-2: process CPU .* by >50%/);
+    assert.match(comparison.errors.join("\n"), /pair-2: process CPU .* by >15%/);
 });
 
 test("fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks", () => {
@@ -1618,6 +1773,12 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     );
     assert.match(source, /callSiteIndexSha256/);
     assert.match(source, /isCallSiteStringIndexLoadedFromPersistence\(\)/);
+    assert.match(source, /deriveGlobalWideDistributions\(manifestRows\)/);
+    assert.match(source, /localized\(LOCALIZED_EARLY_DISTRIBUTION, 0\)/);
+    assert.match(source, /localized\(LOCALIZED_MIDDLE_DISTRIBUTION/);
+    assert.match(source, /localized\(LOCALIZED_LATE_DISTRIBUTION/);
+    assert.match(source, /broadHits == rows\.map\(FixtureManifestRow::graphId\)/);
+    assert.match(source, /recordedDistributions == deriveGlobalWideDistributions\(manifestRows\)/);
 });
 
 function jmhResult({
@@ -2705,6 +2866,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(graphRoutingJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
     assert.match(graphRoutingJob, /prepare-fixture64-graphs\.sh/);
     assert.match(graphRoutingJob, /run-real64-graph-routing\.sh/);
+    assert.match(
+        graphRoutingJob,
+        /cd candidate\n\s*\.github\/scripts\/run-real64-graph-routing\.sh \\\n\s*\.\.\/benchmark-fixture64-routing\/graphs\.tsv/
+    );
     assert.match(graphRoutingJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(graphRoutingJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(graphRoutingJob, /github\.event\.pull_request\.head\.sha/);
@@ -2715,6 +2880,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(globalWideJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
     assert.match(globalWideJob, /prepare-fixture64-graphs\.sh/);
     assert.match(globalWideJob, /run-real64-global-wide\.sh/);
+    assert.match(
+        globalWideJob,
+        /cd candidate\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/benchmark-fixture64\/graphs\.tsv/
+    );
     assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(globalWideJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(globalWideJob, /github\.event\.pull_request\.head\.sha/);

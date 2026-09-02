@@ -1490,15 +1490,16 @@ export function compareGraphIdPressure(
 
 function parseGlobalWideObservations(contents, revision, errors) {
     const lines = contents.trim().split(/\r?\n/);
-    if (lines.length !== 28) {
-        errors.push(`${revision}: expected a header plus 27 pressure observations, found ${lines.length}`);
+    if (lines.length !== 35) {
+        errors.push(`${revision}: expected a header plus 34 pressure observations, found ${lines.length}`);
         return [];
     }
     const headers = lines[0].split("\t");
     const required = [
         "id", "family", "shape", "selectivity", "operator", "boundary", "projection", "limit",
         "targetGraphId", "workloadIdentity", "outcome", "rowCount", "responseBytes", "digest",
-        "latencyNanos", "executionPath", "inputSourceCount", "accessedGraphCount", "targetGraphIds",
+        "latencyNanos", "fixtureDistributionId", "hitGraphIds", "executionPath", "inputSourceCount",
+        "accessedGraphCount", "targetGraphIds",
         "selectedGraphCount", "accessedGraphIds", "targetGraphAccessCount", "nonTargetGraphAccessCount",
         "parallelScanCount", "indexLookupCount", "peakActiveWorkers", "graphWorkUnits",
         "graphIdSourceSelections", "graphIdSourcePruningExecutions", "graphIdSourcesPruned",
@@ -1520,8 +1521,8 @@ function parseGlobalWideObservations(contents, revision, errors) {
 function bindGlobalWideCorrectness(observations, oracleContents, revision, errors) {
     const oracle = parseCorrectnessRecords(oracleContents, "global-wide-oracle", errors, false);
     const oracleById = new Map(oracle.map((record) => [record.id, record]));
-    if (oracle.length !== 27 || oracleById.size !== 27) {
-        errors.push(`global-wide-oracle: expected 27 records, found ${oracle.length}`);
+    if (oracle.length !== 34 || oracleById.size !== 34) {
+        errors.push(`global-wide-oracle: expected 34 records, found ${oracle.length}`);
     }
     const observationIds = new Set(observations.map((row) => row.id));
     for (const row of observations) {
@@ -1545,7 +1546,8 @@ function bindGlobalWideCorrectness(observations, oracleContents, revision, error
 }
 
 function parseGlobalWideGraphManifest(contents, errors) {
-    const rows = String(contents ?? "").split(/\r?\n/)
+    const lines = String(contents ?? "").split(/\r?\n/).map((line) => line.trim());
+    const rows = lines
         .map((line) => line.trim())
         .filter((line) => line !== "" && !line.startsWith("#"))
         .map((line) => line.split("\t"));
@@ -1563,13 +1565,50 @@ function parseGlobalWideGraphManifest(contents, errors) {
     ) {
         errors.push("global-wide-manifest: workload identities must be unique SHA-256 values");
     }
+    const distributionRows = lines.filter((line) => line.startsWith("# global-wide-distribution-v1\t"))
+        .map((line) => line.split("\t"));
+    const distributions = new Map();
+    for (const columns of distributionRows) {
+        if (columns.length !== 5 || columns.some((column) => column === "")) {
+            errors.push("global-wide-manifest: malformed distribution record");
+            continue;
+        }
+        const [, id, targetGraphId, term, hitGraphIdsValue] = columns;
+        const hitGraphIds = hitGraphIdsValue.split(",");
+        if (distributions.has(id)) errors.push(`global-wide-manifest: duplicate distribution ${id}`);
+        if (!graphIds.includes(targetGraphId) || hitGraphIds.length === 0 ||
+            new Set(hitGraphIds).size !== hitGraphIds.length ||
+            hitGraphIds.some((graphId) => !graphIds.includes(graphId)) ||
+            hitGraphIds.join(",") !== graphIds.filter((graphId) => hitGraphIds.includes(graphId)).join(",")
+        ) {
+            errors.push(`global-wide-manifest: distribution ${id} is not bound in graph order`);
+        }
+        distributions.set(id, { id, targetGraphId, term, hitGraphIds });
+    }
+    const requiredDistributionIds = ["localized-early", "localized-middle", "localized-late", "broad-all-64"];
+    if (distributionRows.length !== requiredDistributionIds.length ||
+        requiredDistributionIds.some((id) => !distributions.has(id))
+    ) {
+        errors.push("global-wide-manifest: exact localized early/middle/late and broad-all-64 distributions required");
+    }
+    for (const id of requiredDistributionIds.filter((candidate) => candidate.startsWith("localized-"))) {
+        const distribution = distributions.get(id);
+        if (distribution && (distribution.hitGraphIds.length !== 1 ||
+            distribution.hitGraphIds[0] !== distribution.targetGraphId)
+        ) errors.push(`global-wide-manifest: ${id} must be globally localized to its target graph`);
+    }
+    const broad = distributions.get("broad-all-64");
+    if (broad && broad.hitGraphIds.join(",") !== graphIds.join(",")) {
+        errors.push("global-wide-manifest: broad-all-64 must hit all 64 real graphs in manifest order");
+    }
     return {
         graphIds,
         graphIdSet: new Set(graphIds),
         workloadIdentities,
         workloadIdentitySet: new Set(workloadIdentities),
         calibrationGraphId: graphIds[0] ?? "",
-        calibrationIdentity: rows[0]?.[5] ?? ""
+        calibrationIdentity: rows[0]?.[5] ?? "",
+        distributions
     };
 }
 
@@ -1582,10 +1621,20 @@ const GLOBAL_WIDE_SHAPE_CONTRACTS = [
     ["global-wide-provenance", "raw-contains", "single-query", "graph-id-properties"],
     ["global-wide-aliased", "raw-contains", "single-query", "aliased-properties"],
     ["global-wide-parameterized", "raw-contains", "parameters", "properties"],
-    ["global-wide-wrapped-case-insensitive", "wrapped-lowercase-contains", "single-query", "properties"]
+    ["global-wide-wrapped-case-insensitive", "wrapped-lowercase-contains", "single-query", "properties"],
+    ["global-wide-wrapped-case-insensitive-distinct", "wrapped-lowercase-contains", "single-query",
+        "distinct-properties"]
 ];
 const GLOBAL_WIDE_SHAPES = GLOBAL_WIDE_SHAPE_CONTRACTS.map(([shape]) => shape);
-const GLOBAL_WIDE_WRAPPED_SHAPE = "global-wide-wrapped-case-insensitive";
+const GLOBAL_WIDE_DISTRIBUTION_IDS = [
+    "localized-early", "localized-middle", "localized-late", "broad-all-64"
+];
+const GLOBAL_WIDE_DISTRIBUTION_SHAPES = GLOBAL_WIDE_DISTRIBUTION_IDS.map((id) =>
+    `global-wide-distribution-${id}`);
+const GLOBAL_WIDE_WRAPPED_SHAPES = [
+    "global-wide-wrapped-case-insensitive",
+    "global-wide-wrapped-case-insensitive-distinct"
+];
 
 export function compareGlobalWidePressure(
     baseResultSets,
@@ -1611,10 +1660,10 @@ export function compareGlobalWidePressure(
         }
         const result = matches[0];
         for (const [metric, expected] of [
-            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 27],
-            ["successCount", 27], ["timeoutCount", 0], ["failureCount", 0],
-            ["coverageShapeCount", 9], ["coverageFamilyCount", 1], ["coverageSelectivityCount", 3],
-            ["coverageProjectionCount", 7], ["coverageOperatorCount", 2], ["coverageBoundaryCount", 2],
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 34],
+            ["successCount", 34], ["timeoutCount", 0], ["failureCount", 0],
+            ["coverageShapeCount", 14], ["coverageFamilyCount", 1], ["coverageSelectivityCount", 3],
+            ["coverageProjectionCount", 8], ["coverageOperatorCount", 2], ["coverageBoundaryCount", 3],
             ["maxHeapBytes", 8 * GIB]
         ]) {
             const actual = pressureMetric(result, metric);
@@ -1695,19 +1744,38 @@ export function compareGlobalWidePressure(
             if (accessedGraphIds.some((graphId) => !manifest.graphIdSet.has(graphId))) {
                 errors.push(`${revision}/${row.id}: accessed graph IDs are not bound to graphs.tsv`);
             }
+            const hitGraphIds = row.hitGraphIds === "" ? [] : row.hitGraphIds.split(",");
+            if (new Set(hitGraphIds).size !== hitGraphIds.length ||
+                hitGraphIds.some((graphId) => !manifest.graphIdSet.has(graphId))
+            ) {
+                errors.push(`${revision}/${row.id}: result hit graph IDs must be unique graphs.tsv members`);
+            }
             const shapeIndex = GLOBAL_WIDE_SHAPES.indexOf(row.shape);
-            if (shapeIndex < 0) {
+            const distributionShapeIndex = GLOBAL_WIDE_DISTRIBUTION_SHAPES.indexOf(row.shape);
+            const isDistribution = distributionShapeIndex >= 0;
+            const distributionId = isDistribution ? GLOBAL_WIDE_DISTRIBUTION_IDS[distributionShapeIndex] : "";
+            const distribution = isDistribution ? manifest.distributions.get(distributionId) : null;
+            if (shapeIndex < 0 && !isDistribution) {
                 errors.push(`${revision}/${row.id}: unknown global-wide shape ${row.shape}`);
-            } else {
+            } else if (shapeIndex >= 0) {
                 const [, operator, boundary, projection] = GLOBAL_WIDE_SHAPE_CONTRACTS[shapeIndex];
                 if (row.operator !== operator || row.boundary !== boundary || row.projection !== projection) {
                     errors.push(`${revision}/${row.id}: shape contract must be ` +
                         `${operator}/${boundary}/${projection}`);
                 }
+                if (row.fixtureDistributionId !== "") {
+                    errors.push(`${revision}/${row.id}: ordinary shape must not claim a fixture distribution`);
+                }
+            } else if (row.operator !== "wrapped-lowercase-contains" ||
+                row.boundary !== "fixture-distribution" || row.projection !== "properties" ||
+                row.selectivity !== "dense" || row.fixtureDistributionId !== distributionId
+            ) {
+                errors.push(`${revision}/${row.id}: malformed fixture distribution shape contract`);
             }
             const placementOrdinal = shapeIndex < 0 ? 0 :
                 Math.floor(shapeIndex * (manifest.graphIds.length - 1) / (GLOBAL_WIDE_SHAPES.length - 1));
-            const expectedOrdinal = row.selectivity === "dense" ? 0 : placementOrdinal;
+            const expectedOrdinal = isDistribution ? manifest.graphIds.indexOf(distribution?.targetGraphId) :
+                row.selectivity === "dense" ? 0 : placementOrdinal;
             const expectedIdentity = manifest.workloadIdentities[expectedOrdinal] ?? "";
             const expectedGraphId = manifest.graphIds[expectedOrdinal] ?? "";
             if (row.workloadIdentity !== expectedIdentity || !manifest.workloadIdentitySet.has(row.workloadIdentity)) {
@@ -1715,8 +1783,33 @@ export function compareGlobalWidePressure(
             }
             const rowCount = finiteNumber(row.rowCount);
             const accessedSet = new Set(accessedGraphIds);
-            if (row.selectivity === "zero") {
+            const hitSet = new Set(hitGraphIds);
+            if (isDistribution) {
+                if (rowCount !== 200) {
+                    errors.push(`${revision}/${row.id}: distribution query must fill LIMIT 200`);
+                }
+                const expectedReturnedHits = distributionId === "broad-all-64" ?
+                    [manifest.calibrationGraphId] : [distribution?.targetGraphId];
+                if (hitGraphIds.length !== expectedReturnedHits.length ||
+                    expectedReturnedHits.some((graphId) => !hitSet.has(graphId))
+                ) {
+                    errors.push(`${revision}/${row.id}: returned hit graphs do not match ${distributionId}`);
+                }
+                if (requireAccessEvidence) {
+                    const targetReached = accessedSet.has(distribution?.targetGraphId);
+                    const accessValid = distributionId === "localized-middle" ?
+                        targetReached && accessedGraphCount > 1 && accessedGraphCount < 64 :
+                        distributionId === "localized-late" ? targetReached && accessedGraphCount === 64 :
+                            accessedGraphCount === 1 && accessedGraphIds[0] === manifest.calibrationGraphId;
+                    if (!accessValid) {
+                        errors.push(`${revision}/${row.id}: graph access does not exercise ${distributionId}`);
+                    }
+                }
+            } else if (row.selectivity === "zero") {
                 if (rowCount !== 0) errors.push(`${revision}/${row.id}: zero-hit query must return zero rows`);
+                if (hitGraphIds.length !== 0) {
+                    errors.push(`${revision}/${row.id}: zero-hit query reported hit graphs`);
+                }
                 if (requireAccessEvidence &&
                     (accessedGraphCount !== 64 ||
                         manifest.graphIds.some((graphId) => !accessedSet.has(graphId)) ||
@@ -1727,6 +1820,9 @@ export function compareGlobalWidePressure(
                 if (rowCount === null || rowCount < 1 || rowCount >= 200) {
                     errors.push(`${revision}/${row.id}: targeted query must return between 1 and 199 rows`);
                 }
+                if (!hitSet.has(expectedGraphId)) {
+                    errors.push(`${revision}/${row.id}: targeted result must identify its calibrated hit graph`);
+                }
                 if (requireAccessEvidence && !accessedSet.has(expectedGraphId)) {
                     errors.push(`${revision}/${row.id}: targeted query must reach its real-graph placement`);
                 }
@@ -1734,10 +1830,21 @@ export function compareGlobalWidePressure(
                 if (rowCount !== 200) {
                     errors.push(`${revision}/${row.id}: dense query must fill LIMIT 200`);
                 }
-                if (requireAccessEvidence &&
-                    (accessedGraphCount !== 1 || accessedGraphIds[0] !== manifest.calibrationGraphId)
+                const requiresCompleteProvenance =
+                    row.shape === "global-wide-wrapped-case-insensitive-distinct";
+                if (!hitSet.has(manifest.calibrationGraphId) ||
+                    !requiresCompleteProvenance && hitGraphIds.length !== 1
                 ) {
-                    errors.push(`${revision}/${row.id}: dense query must stop after the calibrated first graph`);
+                    errors.push(`${revision}/${row.id}: dense result must include its calibrated first graph`);
+                }
+                if (requireAccessEvidence) {
+                    const accessValid = requiresCompleteProvenance ?
+                        accessedGraphCount === 64 &&
+                            manifest.graphIds.every((graphId) => accessedSet.has(graphId)) :
+                        accessedGraphCount === 1 && accessedGraphIds[0] === manifest.calibrationGraphId;
+                    if (!accessValid) {
+                        errors.push(`${revision}/${row.id}: dense access does not match its provenance contract`);
+                    }
                 }
             }
             if (finiteNumber(row.graphIdSourceSelections) !== 0 ||
@@ -1757,6 +1864,10 @@ export function compareGlobalWidePressure(
                     errors.push(`${revision}: expected exactly one ${shape}/${selectivity} observation`);
                 }
             }
+        }
+        for (const shape of GLOBAL_WIDE_DISTRIBUTION_SHAPES) {
+            const count = rows.filter((row) => row.shape === shape && row.selectivity === "dense").length;
+            if (count !== 1) errors.push(`${revision}: expected exactly one ${shape}/dense observation`);
         }
         return rows;
     };
@@ -1778,21 +1889,57 @@ export function compareGlobalWidePressure(
         errors.push("base/candidate: every paired fork requires a valid run order");
     }
 
+    const observationLatencySummary = (rows, result, revision) => {
+        const latencies = rows.map((row) => finiteNumber(row.latencyNanos)).filter((value) => value !== null)
+            .sort((left, right) => left - right);
+        if (latencies.length !== GLOBAL_WIDE_SHAPES.length * 3 + GLOBAL_WIDE_DISTRIBUTION_SHAPES.length) {
+            return { p50: 0, p95: 0, max: 0 };
+        }
+        const percentile = (fraction) => latencies[Math.max(0, Math.ceil(fraction * latencies.length) - 1)];
+        const summary = { p50: percentile(0.50), p95: percentile(0.95), max: latencies.at(-1) };
+        for (const [metric, value] of [
+            ["p50LatencyNanos", summary.p50],
+            ["p95LatencyNanos", summary.p95],
+            ["maxLatencyNanos", summary.max]
+        ]) {
+            const recorded = pressureMetric(result, metric);
+            if (recorded !== value) {
+                errors.push(`${revision}: ${metric}=${recorded}; observation rows recompute to ${value}`);
+            }
+        }
+        return summary;
+    };
+
+    const alignedLatencyRegressions = new Map();
     const runs = candidateResults.map((result, index) => {
         const baseResult = baseResults[index];
         if (!baseResult || !result) return null;
-        const baseP50 = pressureMetric(baseResult, "p50LatencyNanos") ?? 0;
-        const baseP95 = pressureMetric(baseResult, "p95LatencyNanos") ?? 0;
-        const p50 = pressureMetric(result, "p50LatencyNanos") ?? 0;
-        const p95 = pressureMetric(result, "p95LatencyNanos") ?? 0;
+        const baseLatency = observationLatencySummary(baseRowsByRun[index] ?? [], baseResult, `base-${index + 1}`);
+        const candidateLatency = observationLatencySummary(
+            candidateRowsByRun[index] ?? [], result, `candidate-${index + 1}`);
+        const baseP50 = baseLatency.p50;
+        const baseP95 = baseLatency.p95;
+        const p50 = candidateLatency.p50;
+        const p95 = candidateLatency.p95;
         const p95Speedup = p95 > 0 ? baseP95 / p95 : 0;
-        const wrappedP95 = (rows) => Math.max(0, ...rows
-            .filter((row) => row.shape === GLOBAL_WIDE_WRAPPED_SHAPE)
+        const wrappedP95 = (rows, shape) => Math.max(0, ...rows
+            .filter((row) => row.shape === shape)
             .map((row) => finiteNumber(row.latencyNanos) ?? 0));
-        const baseWrappedP95LatencyNanos = wrappedP95(baseRowsByRun[index] ?? []);
-        const wrappedP95LatencyNanos = wrappedP95(candidateRowsByRun[index] ?? []);
-        const wrappedP95Speedup = wrappedP95LatencyNanos > 0 ?
-            baseWrappedP95LatencyNanos / wrappedP95LatencyNanos : 0;
+        const wrappedShapeRuns = GLOBAL_WIDE_WRAPPED_SHAPES.map((shape) => {
+            const baseLatencyNanos = wrappedP95(baseRowsByRun[index] ?? [], shape);
+            const latencyNanos = wrappedP95(candidateRowsByRun[index] ?? [], shape);
+            return {
+                shape,
+                baseLatencyNanos,
+                latencyNanos,
+                speedup: latencyNanos > 0 ? baseLatencyNanos / latencyNanos : 0
+            };
+        });
+        const worstWrapped = wrappedShapeRuns.reduce((left, right) =>
+            left.speedup < right.speedup ? left : right);
+        const baseWrappedP95LatencyNanos = worstWrapped.baseLatencyNanos;
+        const wrappedP95LatencyNanos = worstWrapped.latencyNanos;
+        const wrappedP95Speedup = worstWrapped.speedup;
         const baseProcessCpuNanos = pressureMetric(baseResult, "processCpuNanos") ?? 0;
         const processCpuNanos = pressureMetric(result, "processCpuNanos") ?? 0;
         const basePeakUsedHeapBytes = pressureMetric(baseResult, "peakUsedHeapBytes") ?? 0;
@@ -1803,17 +1950,41 @@ export function compareGlobalWidePressure(
             errors.push(`pair-${index + 1}: P95 speedup ${p95Speedup.toFixed(2)}x; ` +
                 `required ${minimumSpeedup.toFixed(2)}x in every independent fork`);
         }
-        if (wrappedP95Speedup < minimumSpeedup) {
-            errors.push(`pair-${index + 1}: wrapped case-insensitive P95 speedup ` +
-                `${wrappedP95Speedup.toFixed(2)}x; required ${minimumSpeedup.toFixed(2)}x`);
+        for (const wrapped of wrappedShapeRuns) {
+            if (wrapped.speedup < minimumSpeedup) {
+                errors.push(`pair-${index + 1}: ${wrapped.shape} P95 speedup ` +
+                    `${wrapped.speedup.toFixed(2)}x; required ${minimumSpeedup.toFixed(2)}x`);
+            }
+        }
+        const baseRows = new Map((baseRowsByRun[index] ?? []).map((row) => [row.id, row]));
+        for (const row of candidateRowsByRun[index] ?? []) {
+            const baseRow = baseRows.get(row.id);
+            const baseHitGraphIds = (baseRow?.hitGraphIds ?? "").split(",").filter(Boolean).sort();
+            const candidateHitGraphIds = (row.hitGraphIds ?? "").split(",").filter(Boolean).sort();
+            if (baseHitGraphIds.join(",") !== candidateHitGraphIds.join(",")) {
+                errors.push(`pair-${index + 1}/${row.shape}/${row.selectivity}: hit graph distribution ` +
+                    `differs from the base reference`);
+            }
+            const baseRowLatency = finiteNumber(baseRow?.latencyNanos);
+            const candidateRowLatency = finiteNumber(row.latencyNanos);
+            if (baseRowLatency === null || candidateRowLatency === null) continue;
+            if (candidateRowLatency > baseRowLatency * 1.15 &&
+                candidateRowLatency - baseRowLatency > 1_000_000
+            ) {
+                const key = `${row.shape}/${row.selectivity}`;
+                const samples = alignedLatencyRegressions.get(key) ?? [];
+                samples.push(`pair-${index + 1}/${key}: aligned latency ` +
+                    `${candidateRowLatency} exceeds base ${baseRowLatency} by >15% and >1 ms`);
+                alignedLatencyRegressions.set(key, samples);
+            }
         }
         for (const [label, baseValue, candidateValue] of [
             ["process CPU", baseProcessCpuNanos, processCpuNanos],
             ["peak used heap", basePeakUsedHeapBytes, peakUsedHeapBytes],
             ["peak RSS", basePeakResidentSetBytes, peakResidentSetBytes]
         ]) {
-            if (baseValue > 0 && candidateValue > baseValue * 1.5) {
-                errors.push(`pair-${index + 1}: ${label} ${candidateValue} exceeds paired base ${baseValue} by >50%`);
+            if (baseValue > 0 && candidateValue > baseValue * 1.15) {
+                errors.push(`pair-${index + 1}: ${label} ${candidateValue} exceeds paired base ${baseValue} by >15%`);
             }
         }
         return {
@@ -1827,6 +1998,7 @@ export function compareGlobalWidePressure(
             baseWrappedP95LatencyNanos,
             wrappedP95LatencyNanos,
             wrappedP95Speedup,
+            wrappedShapeRuns,
             baseProcessCpuNanos,
             processCpuNanos,
             cpuCoreUtilizationPermille: pressureMetric(result, "cpuCoreUtilizationPermille") ?? 0,
@@ -1836,6 +2008,9 @@ export function compareGlobalWidePressure(
             peakResidentSetBytes
         };
     }).filter(Boolean);
+    for (const samples of alignedLatencyRegressions.values()) {
+        if (samples.length >= 2) errors.push(`${samples[0]}; repeated in ${samples.length} independent pairs`);
+    }
     const median = (values) => {
         const sorted = [...values].sort((left, right) => left - right);
         if (sorted.length === 0) return 0;

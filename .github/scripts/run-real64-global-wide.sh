@@ -144,7 +144,7 @@ ORACLE_PREFIX=${OUTPUT_DIR}/base-global-wide-oracle-seed
 ORACLE=${ORACLE_PREFIX}.correctness
 run_pressure "${BASE_JAR}" "${ORACLE_PREFIX}" \
   "-Dgraphite.broad.pressure.correctness.mode=record -Dgraphite.broad.pressure.output=${ORACLE}"
-test "$(grep -cv '^#' "${ORACLE}")" -eq 27
+test "$(grep -cv '^#' "${ORACLE}")" -eq 34
 
 BASE_JSON_FILES=()
 BASE_OBSERVATION_FILES=()

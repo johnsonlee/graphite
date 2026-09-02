@@ -265,11 +265,16 @@ No external URL, Gist, or author-published commit status is accepted as executio
 Unscoped 64-graph wide queries have a separate required component,
 `global-wide-pressure-evidence`. It requires
 three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and a P95 speedup of at least 10x in every independent fork. The nine targeted
-query shapes are placed across graph ordinals 1, 8, 16, 24, 32, 40, 48, 56, and 64, and each result is
+`candidate/base`) and a P95 speedup of at least 10x in every independent fork. The ten core
+query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
 shortcuts, and a base-first page-cache bias from satisfying the gate.
+
+Four additional fixture-derived cases pin limit-filling behavior to a localized hit in the first,
+middle, or last graph and to a dense term that occurs in all 64 graphs. Their terms and exact hit
+sets are derived from the persisted graphs generated from the pinned JARs and are reverified before
+timing; they are not synthetic performance data.
 
 Each fork uses the `cold` index state: graph handles are loaded, but retained query indexes are
 cleared before the measured replay. This matches the unprepared/legacy graph state behind the
@@ -277,11 +282,12 @@ production multi-second first wide queries. The candidate may restore a verified
 inside the request; that I/O and validation remains part of the measured latency.
 
 The `global-wide` family uses the production-shaped unlabeled `MATCH (n)` with eight raw
-four-property `CONTAINS` projection/boundary variants plus the original case-insensitive
-non-`DISTINCT` `toLower(coalesce(...)) CONTAINS ... OR ...` form. All nine shapes run at zero, targeted, and dense
-selectivity for 27 correctness and latency rows. In addition to the aggregate P95 requirement, the
-wrapped case-insensitive subgroup must independently reach 10x P95 in every paired fork, so faster
-raw cases cannot hide a regression in the motivating query shape.
+four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` and `RETURN
+DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
+query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
+fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
+requirement, each wrapped case-insensitive form must independently reach 10x P95 in every paired
+fork, so faster raw cases cannot hide a regression in either motivating query shape.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
