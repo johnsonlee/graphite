@@ -1531,3 +1531,41 @@ sidecar fallback checks.
 **Conclusion:** reverted after the complete screening run. Bulk primitive decode plus parallel
 structural validation provides only a 1.26x cold-row micro-improvement and regresses aggregate P95.
 This docs-only commit leaves the streaming version-2 reader unchanged.
+
+### 2026-09-03 - Attempt 051: Larger persisted six-gram miss summary
+
+**Hypothesis:** Attempt 040's 128 KiB-per-graph miss summary may admit too many false positives and
+defer full sidecar restoration into later rows. Increase the false-positive-only summary to 2 MiB
+per graph, retaining the same six-character windows, content identity, checksum, fail-open
+semantics, and exact fallback. The 128 MiB fixture-wide footprint remains small relative to the
+required 8 GiB max heap and should trade available memory for lower cold latency.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted graph shards freshly regenerated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. All 64 summary files were present and occupied
+  129 MiB in total. The candidate fixture is under `/tmp/pr113-exp051-fixture64/`; no synthetic
+  graph supplied performance evidence.
+- Base revision: `d9cea9c`, production-equivalent `0fdba6c`; candidate: an isolated snapshot under
+  `/tmp/graphite-exp051.MPD8ia/repo`. The complete 34-case screening output is under
+  `/tmp/pr113-exp051-quick/`.
+- Correctness: the candidate's 34-record manifest exactly matched the latest trusted real-fixture
+  base oracle from CI run `33671076750`. Focused tests covered a definite miss without complete
+  index admission, a real hit, corrupt-summary fallback, and persisted summary creation;
+  compilation, JMH compilation, and detekt passed.
+- The first four-property zero row improved from `389.198` to `120.739 ms` (3.22x), but aggregate
+  P50/P95 regressed from `1.755/32.334` to `2.255/133.659 ms`. The intended blocker moved below the
+  tail while later targeted and dense rows became the new P95.
+- Complete-index lookups fell from `1,256` to `361`, proving that the larger summary reduced false
+  positives. Nevertheless, the representative workload's real terms are distributed across the
+  complete graph set, so all 64 full indexes were eventually admitted in both runs. Charged work
+  increased from `57,897,636` to `74,633,951` units (+28.9%).
+- Process CPU increased from `4.105` to `4.429 s`; peak used heap changed from `4.37` to `4.60 GiB`
+  and peak RSS from `4.73` to `5.17 GiB`. The additive `8 graph + 8 segment` worker peaks and all
+  result digests remained intact.
+
+**Conclusion:** reverted. Spending 128 MiB on a more selective summary fixes the isolated cold miss
+but cannot remove the real sidecar loads required by the coverage workload, and aggregate P95
+regresses by more than 4x. This docs-only commit leaves the production storage format unchanged;
+the remaining aligned blocker requires lazy access to positive sidecar data, not a larger miss
+filter.
