@@ -18,6 +18,7 @@ import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.NullConstant
 import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
@@ -554,6 +555,32 @@ class DataFlowAnalysisTest {
         assertTrue(result.propagationPaths.isNotEmpty())
         val allSteps = result.propagationPaths.flatMap { it.steps }
         assertTrue(allSteps.any { it.nodeType == PropagationNodeType.CALL_SITE })
+    }
+
+    @Test
+    fun `backwardSlice describes non-value nodes as unknown propagation steps`() {
+        val constant = StringConstant(NodeId.next(), "enabled")
+        val resource = ResourceFileNode(
+            id = NodeId.next(),
+            path = "application.properties",
+            source = "test.jar",
+            format = "properties"
+        )
+        val graph = DefaultGraph.Builder()
+            .addNode(constant)
+            .addNode(resource)
+            .addEdge(DataFlowEdge(constant.id, resource.id, DataFlowKind.ASSIGN))
+            .build()
+
+        val result = DataFlowAnalysis(graph).backwardSlice(resource.id)
+        val unknownStep = result.propagationPaths.single().steps.single {
+            it.nodeType == PropagationNodeType.UNKNOWN
+        }
+
+        assertEquals(resource.id, unknownStep.nodeId)
+        assertEquals("ResourceFileNode", unknownStep.description)
+        assertEquals(null, unknownStep.location)
+        assertEquals(0, unknownStep.depth)
     }
 
     // ========================================================================

@@ -15,6 +15,10 @@ class QueryCorrectnessManifestTest {
         QueryCorrectnessManifest.write(path, expected)
 
         assertEquals(expected, QueryCorrectnessManifest.read(path))
+        assertEquals(
+            listOf(expected[1]),
+            QueryCorrectnessManifest.selectCompleteOracle(expected, setOf("query-b"), "round-trip oracle")
+        )
     }
 
     @Test

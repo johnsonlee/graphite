@@ -25,6 +25,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
@@ -80,6 +81,7 @@ class CrossGraphCypherExecutorTest {
         assertEquals(4, resolveDirectStringExecutorParallelism(4, null))
         assertEquals(8, resolveDirectStringExecutorParallelism(16, null))
         assertEquals(16, resolveDirectStringExecutorParallelism(16, "16"))
+        assertEquals(4, resolveDirectStringExecutorParallelism(processors = 4))
 
         val overriddenStorage = directStringStorageWorkConsumer(
             sourceCount = 64,
@@ -87,6 +89,14 @@ class CrossGraphCypherExecutorTest {
             configuredGraphWorkers = "12"
         ) as SplitGraphWorkBatchConsumer
         assertEquals(4, overriddenStorage.segmentWorkerCount)
+
+        val forcedSerial = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            forceSerial = true
+        )
+        assertTrue(forcedSerial is SerialGraphWorkBatchConsumer)
+        forcedSerial.consume(3)
     }
 
     @Test
@@ -1842,6 +1852,53 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `untracked filtered counts use storage aggregation and expose worker metrics`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val aggregateCalls = AtomicInteger()
+
+        fun aggregatingGraph(vararg callerClasses: String): Graph {
+            val backing = graph()
+            return object : Graph by backing, StringPropertyDisjunctionAggregation {
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?
+                ): StringPropertyDisjunctionAggregate? {
+                    assertEquals(CallSiteNode::class.java, type)
+                    assertTrue(predicates.any { it.property == "caller_class" })
+                    aggregateCalls.incrementAndGet()
+                    barrier.await(2, TimeUnit.SECONDS)
+                    return StringPropertyDisjunctionAggregate(
+                        callerClasses.size.toLong(),
+                        distinctProperty?.let { callerClasses.toSet() }
+                    )
+                }
+            }
+        }
+
+        resetDirectStringGraphWorkerMetrics()
+        val executor = executor(
+            "orders" to aggregatingGraph("example.TargetA", "example.TargetB"),
+            "billing" to aggregatingGraph("example.TargetA", "example.TargetC")
+        )
+        val predicate = "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target'"
+        val count = executor.execute("MATCH (n:CallSiteNode) WHERE $predicate RETURN count(*) AS total")
+        val distinct = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE $predicate RETURN count(DISTINCT n.caller_class) AS total"
+        )
+
+        assertEquals(4L, count.rows.single()["total"])
+        assertEquals(3L, distinct.rows.single()["total"])
+        assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
+        assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
+        assertEquals(4, aggregateCalls.get())
+        assertEquals(2, directStringGraphPeakActiveWorkers())
+        resetDirectStringGraphWorkerMetrics()
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+    }
+
+    @Test
     fun `work tracked filtered counts use budget aware storage aggregation in parallel`() {
         if (Runtime.getRuntime().availableProcessors() < 2) return
         val barrier = CyclicBarrier(2)
@@ -2199,6 +2256,64 @@ class CrossGraphCypherExecutorTest {
         } finally {
             queryThread.shutdownNow()
         }
+    }
+
+    @Test
+    fun `balanced ordered scan wraps non runtime failure and joins interrupted peers`() {
+        val graphWorkers = resolveDirectStringGraphParallelism(40)
+        if (graphWorkers < 2) return
+        val peerStarted = CountDownLatch(1)
+        val peerInterrupted = CountDownLatch(1)
+        val failure = object : Throwable("checked storage failure") {}
+        val empty = graph()
+
+        fun lookupGraph(scan: () -> Unit): Graph = object : Graph by empty, StringPropertyDisjunctionLookup {
+            override fun nodeCount(type: Class<out Node>): Long? =
+                if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> = sequence {
+                scan()
+            }
+        }
+
+        val sources = List(40) { graphIndex ->
+            val sourceGraph = when (graphIndex) {
+                1 -> lookupGraph {
+                    check(peerStarted.await(2, TimeUnit.SECONDS))
+                    throw failure
+                }
+                2 -> lookupGraph {
+                    peerStarted.countDown()
+                    try {
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(5))
+                    } catch (interrupted: InterruptedException) {
+                        peerInterrupted.countDown()
+                        throw interrupted
+                    }
+                }
+                else -> lookupGraph { }
+            }
+            CypherGraph("graph-$graphIndex", sourceGraph)
+        }
+
+        resetDirectStringGraphWorkerMetrics()
+        val thrown = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(sources).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' OR " +
+                    "n.callee_class CONTAINS 'absent' RETURN n.caller_class LIMIT 1"
+            )
+        }
+
+        assertEquals("Parallel graph scan failed", thrown.message)
+        assertTrue(thrown.cause === failure)
+        assertTrue(peerInterrupted.await(2, TimeUnit.SECONDS), "peer task was not interrupted and joined")
+        assertTrue(directStringGraphPeakActiveWorkers() >= 2)
+        resetDirectStringGraphWorkerMetrics()
+        assertEquals(0, directStringGraphPeakActiveWorkers())
     }
 
     @Test
