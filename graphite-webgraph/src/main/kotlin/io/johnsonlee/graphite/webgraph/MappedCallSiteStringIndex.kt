@@ -783,7 +783,10 @@ internal class MappedCallSiteStringIndex(
         val runtimes = predicates.map { predicate ->
             PredicateRuntime(predicate, sharedStates, stringTable, trigramSignatures)
         }
-        exactProjectionTupleIndex(workConsumer)?.selectedProjectionHits(
+        val tupleIndex = exactProjectionTupleIndex ?: selectedValues
+            .takeIf { values -> values.size >= MIN_SELECTED_VALUES_FOR_EXACT_PROJECTION_INDEX }
+            ?.let { exactProjectionTupleIndex(workConsumer) }
+        tupleIndex?.selectedProjectionHits(
             propertyIndexes,
             selectedValues,
             limit,
@@ -2653,6 +2656,7 @@ private const val MIN_CALL_SITE_TRIGRAM_LENGTH = 3
 private const val MIN_PARALLEL_CALL_SITE_MATCH_CANDIDATES = 4_096
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_STRINGS = 4_096
 private const val MIN_EXACT_CALL_SITE_PROJECTION_TUPLES = 4_096
+private const val MIN_SELECTED_VALUES_FOR_EXACT_PROJECTION_INDEX = 256
 private const val EXACT_CALL_SITE_PROJECTION_TUPLE_INDEX_ESTIMATED_BYTES = 128L
 private const val CALL_SITE_PROJECTION_TUPLE_HASH_SEED = -3750763034362895579L
 private const val CALL_SITE_PROJECTION_TUPLE_HASH_FACTOR = 1099511628211L

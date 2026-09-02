@@ -544,7 +544,38 @@ class GraphStoreTest {
                         left.encounterOrder <= right.encounterOrder
                     }
                 )
-                assertTrue(work.get() in 50L..5_000L, "exact tuple lookup work=${work.get()}")
+                assertTrue(work.get() in 50L..10_000L, "selected tuple lookup work=${work.get()}")
+                assertFalse(loaded.hasExactCallSiteProjectionTupleIndex())
+
+                val largeSelection = (0 until 300).mapTo(linkedSetOf()) { index ->
+                    listOf(
+                        "example.TargetCaller${index % 256}",
+                        "call$index",
+                        "example.Dependency${index % 512}",
+                        "invoke$index"
+                    )
+                }
+                val indexed = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.CONTAINS,
+                            "TargetCaller"
+                        )
+                    ),
+                    projectedProperties = listOf(
+                        "caller_class",
+                        "caller_name",
+                        "callee_class",
+                        "callee_name"
+                    ),
+                    limit = 50,
+                    selectedValues = largeSelection,
+                    workConsumer = GraphWorkConsumer { }
+                )
+                assertEquals(50, indexed?.size)
                 assertTrue(loaded.hasExactCallSiteProjectionTupleIndex())
 
                 val nonMatchingTuple = setOf(selectedValues.first())
