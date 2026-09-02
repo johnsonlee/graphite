@@ -184,7 +184,7 @@ node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --run-orders candidate-base,base-candidate,candidate-base \
   --graph-manifest "${MANIFEST}" \
   --correctness-oracle "${ORACLE}" \
-  --minimum-speedup 5 \
+  --minimum-speedup 10 \
   --report "${OUTPUT_DIR}/global-wide-report.md" \
   --status "${OUTPUT_DIR}/global-wide-status.json"
 jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null

@@ -2557,7 +2557,7 @@ jobs:
           --run-orders candidate-base,base-candidate,candidate-base \
           --graph-manifest "${E}/graphs.tsv" \
           --correctness-oracle "${E}/base-global-wide-oracle-seed.correctness" \
-          --minimum-speedup 5 --report benchmark-results/global-wide-report.md \
+          --minimum-speedup 10 --report benchmark-results/global-wide-report.md \
           --status benchmark-results/global-wide-status.json
         cmp benchmark-results/global-wide-report.md "${E}/global-wide-report.md"
         cmp benchmark-results/global-wide-status.json "${E}/global-wide-status.json"

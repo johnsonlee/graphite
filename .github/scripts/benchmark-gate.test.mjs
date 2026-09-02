@@ -803,7 +803,7 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /test-fixture64-reproducibility\.sh|REPRODUCIBILITY_SCRIPT_PATH/);
     assert.match(driver, /if \(\( RUN % 2 == 1 \)\); then run_candidate; run_base;/);
     assert.match(driver, /--bases "\$\{BASE_JSON_LIST\}"/);
-    assert.match(driver, /--minimum-speedup 5/);
+    assert.match(driver, /--minimum-speedup 10/);
     assert.match(driver, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE/);
     assert.match(driver, /if \[\[ "\$\{PUBLISH_EVIDENCE\}" == false \]\]/);
     assert.match(driver, /graphite\/fixture64-global-wide/);
