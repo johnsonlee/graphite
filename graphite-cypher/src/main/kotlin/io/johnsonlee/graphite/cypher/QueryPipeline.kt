@@ -1653,7 +1653,16 @@ class QueryPipeline private constructor(
         // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
         if (balanced) {
-            rows += scanners.first().nextRows(limit)
+            val leadingProjection = if (rawLeadingStorage && nodePredicateFactory == null) {
+                projectRawLeadingRows(nodeClass, filter, items, columns, limit, candidateSources, tracker)
+            } else {
+                null
+            }
+            if (leadingProjection == null) {
+                rows += scanners.first().nextRows(limit)
+            } else {
+                rows += leadingProjection
+            }
             if (rows.size >= limit) return CypherResult(columns, rows.take(limit))
             waveStart = 1
 
@@ -1682,6 +1691,45 @@ class QueryPipeline private constructor(
             waveStart += wave.size
         }
         return CypherResult(columns, rows)
+    }
+
+    @Suppress("LongParameterList", "ReturnCount")
+    private fun projectRawLeadingRows(
+        nodeClass: Class<out Node>,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int,
+        candidateSources: List<CypherGraph>,
+        tracker: CypherWorkTracker?
+    ): List<Map<String, Any?>>? {
+        if (nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) return null
+        val source = candidateSources.first()
+        if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
+        val projectedProperties = items.map { item ->
+            val property = item.expression as? CypherExpr.Property ?: return null
+            if (property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
+            property.propertyName
+        }
+        val predicates = filter.filters.map { candidate ->
+            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
+            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
+        }
+        val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
+        val projectedRows = projection.projectStringPropertyDisjunction(
+            CallSiteNode::class.java,
+            predicates,
+            projectedProperties,
+            limit,
+            stringStorageWorkConsumer(candidateSources.size, tracker, preferRaw = true)
+        ) ?: return null
+        val provenance = setOf(source.id)
+        return projectedRows.map { raw ->
+            LinkedHashMap<String, Any?>(columns.size + 1).apply {
+                columns.indices.forEach { index -> this[columns[index]] = raw.values[index] }
+                put(INTERNAL_PROVENANCE_KEY, provenance)
+            }
+        }
     }
 
     @Suppress("LongParameterList", "ReturnCount")

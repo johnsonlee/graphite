@@ -695,6 +695,25 @@ class GraphStoreTest {
         assertEquals(listOf(0, 1), rawIds)
         assertEquals(1L, graph.callSiteStringLookupEntryCount())
         assertFalse(graph.isCallSiteStringIndexInitialized())
+        graph.resetCallSiteScanMetrics()
+        val rawProjection = graph.projectStringPropertyDisjunction(
+            CallSiteNode::class.java,
+            listOf(
+                StringPropertyPredicate(
+                    "caller_name",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "call"
+                )
+            ),
+            projectedProperties = listOf("callee_name"),
+            limit = 2,
+            workConsumer = PreferredRawGraphWorkBatchConsumer { }
+        )
+        assertEquals(listOf(listOf("invoke"), listOf("invoke")), rawProjection?.map { row -> row.values })
+        assertEquals(1L, graph.callSiteStringLookupEntryCount())
+        assertEquals(0L, graph.callSiteStringProjectionLookupCount())
+        assertFalse(graph.isCallSiteStringIndexInitialized())
     }
 
     @Test

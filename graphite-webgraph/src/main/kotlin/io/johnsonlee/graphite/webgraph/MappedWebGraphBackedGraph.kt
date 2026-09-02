@@ -742,9 +742,78 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
+        if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
+            return rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)
+        }
         val index = callSiteStringIndex ?: return null
         callSiteStringIndexLookupCount.incrementAndGet()
         return index.projectRows(predicates, projectedProperties, limit, workConsumer)
+    }
+
+    @Suppress("LoopWithTooManyJumpStatements")
+    private fun rawCallSiteStringProjection(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): List<StringPropertyProjectionRow> {
+        if (limit <= 0) return emptyList()
+        callSiteStringLookupEntryCount.incrementAndGet()
+        val predicatePropertyIndexes = predicates.map { predicate ->
+            requiredCallSiteStringPropertyIndex(predicate.property)
+        }
+        val projectedPropertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
+        val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
+        val matchStates = predicates.map { predicate ->
+            sharedStates.getOrPut(StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
+                ByteArray(stringTable.size())
+            }
+        }
+        val rows = ArrayList<StringPropertyProjectionRow>(limit)
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var inspected = 0
+        try {
+            for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                accounting.consume()
+                var matched = false
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                    stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                    stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                    stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+                    matched = predicates.indices.any { index ->
+                        val stringId = stringIds[predicatePropertyIndexes[index]]
+                        val states = matchStates[index]
+                        when (states[stringId]) {
+                            RAW_STRING_MATCH -> true
+                            RAW_STRING_MISS -> false
+                            else -> stringMatches(
+                                stringTable.get(stringId),
+                                predicates[index].transform,
+                                predicates[index].mode,
+                                predicates[index].expected
+                            ).also { result ->
+                                states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                            }
+                        }
+                    }
+                }
+                if (!matched) continue
+                rows += StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
+                    stringTable.get(stringIds[propertyIndex]).toString()
+                })
+                if (rows.size >= limit) break
+            }
+            return rows
+        } finally {
+            accounting.flush()
+        }
     }
 
     @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")

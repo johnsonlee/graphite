@@ -1936,3 +1936,48 @@ singleton set for every returned row.
 **Conclusion:** reject. One dense shape improved, but the change did not address the repeated
 multi-shape hosted blocker and adds special qualified-property handling. The production tree keeps
 the simpler common projection path.
+
+### 2026-09-03 - Attempt 063: Fuse the bounded leading raw scan with property projection
+
+**Hypothesis:** dense `LIMIT 200` cases inspect only 665-681 CallSites in graph zero, but the
+existing raw-leading path materializes each full `CallSiteNode` and then reads its projected fields
+again in the Cypher layer. Reuse the existing duplicate-preserving storage projection capability
+for this bounded leading probe so mmap decoding performs matching and selected-field projection in
+one pass. If graph zero produces fewer than the limit, continue with the unchanged balanced graph
+and segment path from graph one.
+
+**Evidence:**
+
+- Dataset and oracle: the same 64 distinct pinned-JAR persisted graphs and exact hosted remote-main
+  oracle used by Attempts 059-062. Three four-CPU runs are under
+  `/tmp/pr113-exp063-raw-projection.CJPTRf/`; synthetic tests are used only to verify path selection,
+  duplicate preservation, and fallback behavior.
+- Correctness: all three real-fixture runs completed 34/34 cases and matched outcome, row count,
+  response bytes, digest, and hit graph IDs. Charged work remained exactly `5,866,095` units, so
+  the improvement does not skip graph coverage or budget accounting.
+- Class-pair dense fell from Attempt 059's `2.148-2.304 ms` to `1.297-1.345 ms` (about 40%);
+  name-pair fell from `1.705-1.849 ms` to `1.178-1.202 ms` (about 32%); caller-class fell from
+  `1.216-1.435 ms` to `0.954-0.983 ms` (about 25%). Four-property projection was `2.527-2.694 ms`.
+  Callee-class and wrapped results overlap their earlier ranges, so the hosted aligned-shape gate
+  remains authoritative for whether the entire blocker is cleared.
+- Overall P50/P95 was `4.731/53.954`, `4.486/51.683`, and `4.577/52.692 ms`; process CPU was
+  `1.693-1.862 s`, versus Attempt 059's `1.820-1.954 s`. Peak heap was `3.60-3.61 GiB` and peak RSS
+  was `4.03-4.06 GiB`.
+- Focused `CrossGraphCypherExecutorTest` and `GraphStoreTest` suites plus cypher/webgraph detekt pass.
+  Tests require a bounded dense global query to use only graph zero's raw projection without node
+  materialization, and require mapped raw projection to preserve duplicate rows without loading
+  the persisted index.
+
+The exact hosted run `33692920895` confirmed the main milestone in all three paired orders: P95
+speedup was `7.60x`, `6.20x`, and `5.49x`, the worst required wrapped speedup was `5.01x`, P50
+speedup was `33.49-35.17x`, and all candidate runs retained exact result parity. CPU fell from
+`25.41-26.66 s` to `4.76-5.12 s`, with `3.53-3.60` effective cores, while peak heap and RSS also
+fell. It also exposed two flaws in this first fused version. The raw return path omitted the graph
+access counter, and repeated raw scans displaced reusable projection/index work: callee-class,
+provenance, wrapped, and broad-all dense rows repeated aligned regressions, while the existing
+request-selected K=64 dense row changed from one retained-index lookup and `0.802 ms` to no lookup,
+`665` raw work units, and `2.398 ms`.
+
+**Conclusion:** reject this first selection policy while retaining the fused storage primitive for
+the next bounded/cache-aware attempt. Term length is not a density signal, repeated projections
+must reuse the first bounded match set, and an already-loaded retained index must keep priority.
