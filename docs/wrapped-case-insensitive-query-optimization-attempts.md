@@ -1187,3 +1187,44 @@ goal for wrapped dense and removes the unnecessary indexed work behind the other
 while retaining the additive eight graph plus eight segment plan for later graphs. The remaining
 5x blocker is the cold zero-result query's 64-sidecar restore; the aggregate P95 tradeoff must be
 rechecked against `main` in the authoritative exact-head gate rather than claimed as a gain here.
+
+### 2026-09-03 - Attempt 039: Batched persisted-index checksum verification
+
+**Hypothesis:** restoring 64 persisted CallSite indexes spends avoidable CPU invoking `CRC32` once
+per primitive value. Preserve the version-2 file format and all structural validation, but feed the
+same little-endian checksum bytes to `CRC32` in 8 KiB blocks after each array has been read. This
+should reduce the cold first-query cost without changing query planning, graph/segment parallelism,
+or resident-index semantics.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted graph shards generated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. The fixture is under
+  `/tmp/pr113-exp037-fixture.nXn4fg/`; the experiment reads its existing version-2 sidecars rather
+  than regenerating or substituting data.
+- Workload: three paired complete 34-case `global-wide` runs, cold indexes, `LIMIT 200`, `-Xmx8g`,
+  and alternating candidate/base order. Raw observations and JMH JSON are under
+  `/tmp/pr113-exp039-pairs/`.
+- Base revision: `0fdba6cf796fc7a2e66ce2eaad454bee77eb2be9`.
+- Candidate: an isolated snapshot based on that revision, patch SHA-256
+  `38ae528435b0a66ceb652e692161db4b084847c918aa13eca9f88db083d8a69a`.
+- Correctness: every candidate pair completed all 34 cases successfully and matched the
+  base-generated real-fixture oracle. WebGraph tests, detekt, and JMH compilation passed with
+  `--rerun-tasks`.
+- Aggregate P95 improved `42.669 -> 32.078 ms` (1.33x), `44.155 -> 36.393 ms` (1.21x), and
+  `43.552 -> 43.464 ms` (1.00x). The effect therefore disappeared in the third independent pair
+  and did not reach the 2x incremental milestone.
+- The cold four-property zero row improved `337.725 -> 296.759 ms` (1.14x),
+  `319.257 -> 277.838 ms` (1.15x), and `319.937 -> 285.885 ms` (1.12x). The deterministic work
+  remained `57,897,636` units in both revisions because checksum batching does not eliminate any
+  sidecar data or validation.
+- Aggregate P50 changed `1.620 -> 1.863 ms`, `1.675 -> 1.923 ms`, and
+  `1.691 -> 1.668 ms`. Process CPU changed `4.057 -> 3.610 s`, `3.698 -> 3.729 s`, and
+  `3.760 -> 3.562 s`; neither metric shows a repeatable material win.
+- Peak used heap changed by +0.7%, +1.3%, and +6.0%; peak RSS changed by -1.6%, +4.4%, and +6.6%.
+  All remain inside the 15% resource guardrail, but there is no memory benefit.
+
+**Conclusion:** reverted. Batching CRC updates is semantically safe and sometimes faster, but its
+1.00-1.33x P95 result is too small and inconsistent to retain as a 5x milestone step. This
+docs-only commit leaves the production version-2 reader unchanged. The next experiment must remove
+or lazily access cold sidecar data instead of only reducing checksum call overhead.
