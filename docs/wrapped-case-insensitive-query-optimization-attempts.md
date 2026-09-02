@@ -1772,3 +1772,28 @@ entry as a graph access even when the prefilter proves a miss without starting a
 preserves complete 64-graph access evidence, and passes the exact three-pair 5x comparator with no
 errors. This is local screening against the exact remote-main artifacts; hosted CI must still
 regenerate all 64 graphs from the pinned JARs and independently confirm the result.
+
+### 2026-09-03 - Attempt 057: Fixed-size posting chunks
+
+**Hypothesis:** replace Attempt 056's per-trigram range directory with fixed 16,384-posting chunks.
+Each record stores the chunk's minimum/maximum trigram, end offset, and CRC32. The bounded record
+count should fit the large-corpus 4 KiB persisted-footprint tolerance while retaining selective
+corruption detection.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs under `/tmp/pr113-exp054-fixture64-screen/`; no synthetic
+  graph supplied performance evidence. Base revision: `06a4e5d`; candidate: the isolated prototype
+  under `/tmp/graphite-exp057.YxAwwD/repo`. Output is under `/tmp/pr113-exp057-run1/`.
+- Correctness: 34/34 real-fixture records matched the Attempt 056 oracle exactly. The focused
+  queried-chunk corruption fallback test also passed.
+- The 64 directories occupied 37,520 logical bytes total, with a 752-byte maximum shard, so the
+  layout solved the footprint bound.
+- Performance regressed: P50/P95 was `10.875/199.503 ms`, process CPU was `3.307 s`, peak used heap
+  was `4.19 GiB`, peak RSS was `4.64 GiB`, and charged work rose from Attempt 056's `4,915,713` to
+  `45,093,694` units. Absent trigrams that fall between a chunk's endpoints require reading and
+  checksumming the complete 16,384-posting chunk.
+
+**Conclusion:** reject. Fixed posting chunks satisfy the storage bound but spend too much work
+proving sparse and absent terms. The production tree does not retain this layout.
