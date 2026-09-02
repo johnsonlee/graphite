@@ -30,12 +30,12 @@ import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 
 /**
- * Compact mapped directory over the trigram postings in [MappedCallSiteStringIndex]. It validates
- * the small directory eagerly and only the exact posting range used by a query, so a cold lookup
- * never walks every posting or duplicates the posting data on disk.
+ * Compact mapped directory over balanced chunks of the trigram postings in
+ * [MappedCallSiteStringIndex]. It validates the small directory eagerly and only the chunks
+ * selected by a query, so a cold lookup never walks every posting or duplicates posting data.
  */
 internal class MappedCallSiteTrigramPrefilter private constructor(
-    private val ranges: IntBuffer,
+    private val chunks: IntBuffer,
     private val trigramPostings: LongBuffer,
     private val propertyStringIds: Array<IntBuffer>,
     private val stringCount: Int,
@@ -65,7 +65,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
     ): IntArray? {
         if (callSiteStringPropertyIndex(predicate.property) < 0) return null
         val expected = if (predicate.transform == null) predicate.expected.lowercase() else predicate.expected
-        val matchingRanges = mutableListOf<TrigramRange>()
+        val matchingSpans = mutableListOf<TrigramChunkSpan>()
         val seen = HashSet<Int>()
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
@@ -73,54 +73,71 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                 val trigram = trigramHash(expected, position)
                 if (!seen.add(trigram)) continue
                 accounting.consume()
-                val range = findRange(trigram) ?: return IntArray(0)
-                matchingRanges += range
+                val span = findChunkSpan(trigram) ?: return IntArray(0)
+                matchingSpans += span
             }
-            if (matchingRanges.isEmpty()) return null
-            val anchor = matchingRanges.minBy(TrigramRange::size)
-            val checksum = CRC32()
+            if (matchingSpans.isEmpty()) return null
+            val anchor = matchingSpans.minBy(TrigramChunkSpan::size)
             val actual = MutableString()
             val matches = IntArray(anchor.size)
             var matchCount = 0
+            var foundAnchorTrigram = false
+            var chunkIndex = anchor.firstChunk
+            val chunkChecksum = CRC32()
             for (postingIndex in anchor.start until anchor.end) {
                 if ((postingIndex and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
                 accounting.consume()
                 val posting = trigramPostings.get(postingIndex)
-                checksum.updatePrefilterLongBigEndian(posting)
-                if ((posting ushr Int.SIZE_BITS).toInt() != anchor.trigram) return null
+                chunkChecksum.updatePrefilterLongBigEndian(posting)
+                val trigram = (posting ushr Int.SIZE_BITS).toInt()
                 val stringId = posting.toInt()
                 if (stringId !in 0 until stringCount) return null
-                stringTable.get(stringId, actual)
-                val value = actual.toString()
-                val compared = if (predicate.transform == StringValueTransform.LOWERCASE) value.lowercase() else value
-                if (compared.contains(predicate.expected)) matches[matchCount++] = stringId
+                if (trigram == anchor.trigram) {
+                    foundAnchorTrigram = true
+                    stringTable.get(stringId, actual)
+                    val value = actual.toString()
+                    val compared = if (predicate.transform == StringValueTransform.LOWERCASE) value.lowercase() else value
+                    if (compared.contains(predicate.expected)) matches[matchCount++] = stringId
+                }
+                val chunkOffset = chunkIndex * CHUNK_ENTRY_INTS
+                if (postingIndex + 1 == chunks.get(chunkOffset + CHUNK_END_INDEX)) {
+                    val expectedChecksum = chunks.get(chunkOffset + CHUNK_CHECKSUM_INDEX).toLong() and
+                        PREFILTER_UNSIGNED_INT_MASK
+                    if (trigram != chunks.get(chunkOffset + CHUNK_MAX_TRIGRAM_INDEX) ||
+                        chunkChecksum.value != expectedChecksum
+                    ) return null
+                    chunkChecksum.reset()
+                    chunkIndex++
+                }
             }
-            if (checksum.value != anchor.checksum) return null
+            if (chunkIndex != anchor.lastChunk + 1) return null
+            if (!foundAnchorTrigram) return IntArray(0)
             return matches.copyOf(matchCount)
         } finally {
             accounting.flush()
         }
     }
 
-    private fun findRange(trigram: Int): TrigramRange? {
+    private fun findChunkSpan(trigram: Int): TrigramChunkSpan? {
+        val chunkCount = chunks.limit() / CHUNK_ENTRY_INTS
         var low = 0
-        var high = ranges.limit() / RANGE_ENTRY_INTS - 1
-        while (low <= high) {
+        var high = chunkCount
+        while (low < high) {
             val middle = (low + high).ushr(1)
-            val offset = middle * RANGE_ENTRY_INTS
-            val value = ranges.get(offset)
-            when {
-                value < trigram -> low = middle + 1
-                value > trigram -> high = middle - 1
-                else -> {
-                    val end = ranges.get(offset + RANGE_END_INDEX)
-                    val start = if (middle == 0) 0 else ranges.get(offset - RANGE_ENTRY_INTS + RANGE_END_INDEX)
-                    val checksum = ranges.get(offset + RANGE_CHECKSUM_INDEX).toLong() and PREFILTER_UNSIGNED_INT_MASK
-                    return TrigramRange(trigram, start, end, checksum)
-                }
-            }
+            val maximum = chunks.get(middle * CHUNK_ENTRY_INTS + CHUNK_MAX_TRIGRAM_INDEX)
+            if (maximum < trigram) low = middle + 1 else high = middle
         }
-        return null
+        if (low == chunkCount) return null
+        var lastChunk = low
+        while (lastChunk + 1 < chunkCount &&
+            chunks.get(lastChunk * CHUNK_ENTRY_INTS + CHUNK_MAX_TRIGRAM_INDEX) == trigram
+        ) {
+            lastChunk++
+        }
+        val firstOffset = low * CHUNK_ENTRY_INTS
+        val start = if (low == 0) 0 else chunks.get(firstOffset - CHUNK_ENTRY_INTS + CHUNK_END_INDEX)
+        val end = chunks.get(lastChunk * CHUNK_ENTRY_INTS + CHUNK_END_INDEX)
+        return TrigramChunkSpan(trigram, low, lastChunk, start, end)
     }
 
     companion object {
@@ -149,11 +166,12 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     val stringCount = directory.int
                     val callSiteCount = directory.int
                     val postingCount = directory.int
-                    val rangeCount = directory.int
+                    val chunkCount = directory.int
                     val exactIndexBytes = directory.long
                     val postingsOffset = directory.long
                     require(stringCount == expectedStringCount && callSiteCount == expectedCallSiteCount)
-                    require(postingCount > 0 && rangeCount in 1..postingCount)
+                    val expectedChunkCount = minOf(postingCount, CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS)
+                    require(postingCount > 0 && chunkCount == expectedChunkCount)
                     val identity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
                     directory.get(identity)
                     require(identity.contentEquals(expectedContentIdentity))
@@ -161,15 +179,15 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                         directory.int.toLong() and PREFILTER_UNSIGNED_INT_MASK
                     }
                     val expectedDirectoryBytes = DIRECTORY_HEADER_BYTES.toLong() +
-                        rangeCount.toLong() * RANGE_ENTRY_BYTES + Long.SIZE_BYTES
+                        chunkCount.toLong() * CHUNK_ENTRY_BYTES + Long.SIZE_BYTES
                     require(directoryBytes == expectedDirectoryBytes)
                     require(validateDirectoryChecksum(directory, directoryBytes.toInt(), workConsumer))
 
                     directory.position(DIRECTORY_HEADER_BYTES)
-                    val rangeValues = directory.slice().order(ByteOrder.BIG_ENDIAN).asIntBuffer().apply {
-                        limit(rangeCount * RANGE_ENTRY_INTS)
+                    val chunkValues = directory.slice().order(ByteOrder.BIG_ENDIAN).asIntBuffer().apply {
+                        limit(chunkCount * CHUNK_ENTRY_INTS)
                     }
-                    validateRanges(rangeValues, postingCount, workConsumer)
+                    validateChunks(chunkValues, postingCount, workConsumer)
 
                     FileChannel.open(exactIndexPath, StandardOpenOption.READ).use { indexChannel ->
                         require(indexChannel.size() == exactIndexBytes)
@@ -197,7 +215,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                             postingBytes
                         ).order(ByteOrder.BIG_ENDIAN).asLongBuffer()
                         MappedCallSiteTrigramPrefilter(
-                            rangeValues.asReadOnlyBuffer(),
+                            chunkValues.asReadOnlyBuffer(),
                             postings.asReadOnlyBuffer(),
                             propertyStrings,
                             stringCount,
@@ -234,22 +252,24 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
             return checksum.value == expected
         }
 
-        private fun validateRanges(ranges: IntBuffer, postingCount: Int, workConsumer: GraphWorkConsumer?) {
-            var previousTrigram: Int? = null
+        private fun validateChunks(chunks: IntBuffer, postingCount: Int, workConsumer: GraphWorkConsumer?) {
+            val chunkCount = chunks.limit() / CHUNK_ENTRY_INTS
+            val chunkSize = ((postingCount.toLong() + chunkCount - 1L) / chunkCount).toInt()
+            var previousMaximum = -1
             var previousEnd = 0
             val accounting = BufferedGraphWorkConsumer(workConsumer)
             try {
                 var offset = 0
-                while (offset < ranges.limit()) {
+                while (offset < chunks.limit()) {
                     if ((offset and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
                     accounting.consume()
-                    val trigram = ranges.get(offset)
-                    val end = ranges.get(offset + RANGE_END_INDEX)
-                    require(previousTrigram == null || trigram > checkNotNull(previousTrigram))
-                    require(end in (previousEnd + 1)..postingCount)
-                    previousTrigram = trigram
+                    val maximum = chunks.get(offset + CHUNK_MAX_TRIGRAM_INDEX)
+                    val end = chunks.get(offset + CHUNK_END_INDEX)
+                    require(maximum >= previousMaximum)
+                    require(end == minOf(postingCount.toLong(), previousEnd.toLong() + chunkSize).toInt())
+                    previousMaximum = maximum
                     previousEnd = end
-                    offset += RANGE_ENTRY_INTS
+                    offset += CHUNK_ENTRY_INTS
                 }
                 require(previousEnd == postingCount)
             } finally {
@@ -426,11 +446,12 @@ private fun CRC32.updatePrefilterIntBigEndian(value: Int) {
     }
 }
 
-private data class TrigramRange(
+private data class TrigramChunkSpan(
     val trigram: Int,
+    val firstChunk: Int,
+    val lastChunk: Int,
     val start: Int,
-    val end: Int,
-    val checksum: Long
+    val end: Int
 ) {
     val size: Int get() = end - start
 }
@@ -442,16 +463,18 @@ private data class PrefilterPredicateKey(
 )
 
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
-internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 3
+internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 4
+internal const val CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS = 333
 private const val TRIGRAM_LENGTH = 3
 private const val DIRECTORY_HEADER_BYTES =
     (6 + CALL_SITE_STRING_PROPERTY_COUNT) * Int.SIZE_BYTES + 2 * Long.SIZE_BYTES +
         CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
-private const val RANGE_ENTRY_INTS = 3
-private const val RANGE_ENTRY_BYTES = RANGE_ENTRY_INTS * Int.SIZE_BYTES
-private const val RANGE_END_INDEX = 1
-private const val RANGE_CHECKSUM_INDEX = 2
-private const val MIN_DIRECTORY_BYTES = DIRECTORY_HEADER_BYTES + RANGE_ENTRY_BYTES + Long.SIZE_BYTES
+private const val CHUNK_ENTRY_INTS = 3
+private const val CHUNK_ENTRY_BYTES = CHUNK_ENTRY_INTS * Int.SIZE_BYTES
+private const val CHUNK_MAX_TRIGRAM_INDEX = 0
+private const val CHUNK_END_INDEX = 1
+private const val CHUNK_CHECKSUM_INDEX = 2
+private const val MIN_DIRECTORY_BYTES = DIRECTORY_HEADER_BYTES + CHUNK_ENTRY_BYTES + Long.SIZE_BYTES
 private const val DIRECTORY_IO_BUFFER_BYTES = 1 shl 20
 private const val DIRECTORY_CHECKSUM_CHUNK_BYTES = 8 * 1024
 private const val PREFILTER_INTERRUPTION_POLL_MASK = 1_023

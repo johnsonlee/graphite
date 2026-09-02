@@ -1821,3 +1821,42 @@ directory is a constant 4,064 bytes regardless of graph size.
 
 **Conclusion:** reject. Constant-size equal-width buckets meet the footprint limit but do not
 balance real data. The production tree does not retain this layout.
+
+### 2026-09-03 - Attempt 059: Bounded balanced posting chunks
+
+**Hypothesis:** cap the directory at 333 records but divide each graph's sorted trigram postings
+into equal-count chunks. Persist `(maximum trigram, end offset, CRC32)` per chunk. Binary-search the
+maximum keys and validate only the one or adjacent chunks that may contain the selected trigram.
+This keeps the directory within 4 KiB without the skew of Attempt 058 or the coarse fixed chunk
+size of Attempt 057.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted shards generated from the four pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs under `/tmp/pr113-exp054-fixture64-screen/`; no synthetic
+  graph supplied performance evidence. Base revision: `c7579df` with Attempt 056 production code;
+  candidate: the isolated Attempt 059 snapshot under `/tmp/graphite-exp057c.zBNfP3/repo`. Three
+  complete four-CPU runs are under `/tmp/pr113-exp057c-run{1,2,3}/`; exact comparison output is
+  `/tmp/pr113-exp057c-status.json` and `/tmp/pr113-exp057c-report.md`.
+- Correctness: all three runs completed 34/34 real-fixture cases and matched the remote-main oracle
+  exactly on outcome, row count, response bytes, digest, and hit graph IDs. Focused tests cover
+  exact hits, property isolation, same-term OR reuse, directory corruption, selected-chunk
+  corruption, deterministic work rejection, and interruption.
+- Each 64-shard directory is 4,092 bytes and the binary format cannot exceed 4,092 bytes. Posting
+  values and property IDs remain solely in `graph.callsite-string-index`. Hosted large-corpus CI
+  must still confirm the complete persisted graph delta against the 4,096-byte gate.
+- Candidate P50/P95 was `4.504/51.432`, `4.581/55.199`, and `4.732/55.713 ms`. The unmodified
+  repository comparator passed with zero errors against the three exact remote-main pairs. Overall
+  P95 speedup was `17.77x`, `15.07x`, and `15.48x`; worst required wrapped-shape speedup was
+  `15.22x`, `12.86x`, and `20.67x`.
+- Dense wrapped DISTINCT was `78.721`, `86.770`, and `70.950 ms`. The prior remote Attempt 056
+  outlier was `246.557 ms`, so the bounded directory also removes enough cold metadata work to
+  leave margin above the 5x milestone rather than merely clearing it by rounding.
+- Process CPU was `1.820-1.954 s`, peak used heap `3.60-3.61 GiB`, peak RSS `4.03-4.10 GiB`, and
+  charged work was `5,866,095` units. The physical worker plan remained `2 graph + 2 segment` with
+  four active CPU cores on the four-CPU screening JVMs.
+
+**Conclusion:** keep. Balanced chunks cap persisted overhead at 4 KiB, preserve selective
+corruption fallback, and pass the exact three-pair 5x comparator with substantial latency margin.
+The claim remains local screening until hosted pinned-JAR global-wide and large-corpus gates pass
+on this exact commit.

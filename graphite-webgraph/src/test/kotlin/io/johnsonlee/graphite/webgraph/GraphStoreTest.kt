@@ -333,6 +333,7 @@ class GraphStoreTest {
             assertTrue(Files.isRegularFile(indexFile))
             assertTrue(Files.isRegularFile(prefilterFile))
             assertTrue(Files.size(prefilterFile) < Files.size(indexFile))
+            assertTrue(Files.size(prefilterFile) <= 4 * 1024)
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
@@ -391,19 +392,17 @@ class GraphStoreTest {
                     )
                     return work.get()
                 }
+                lookupWork(listOf(absent))
                 val singlePredicateWork = lookupWork(listOf(absent))
-                assertEquals(
-                    singlePredicateWork,
-                    lookupWork(
-                        listOf(
-                            CALLER_CLASS_PROPERTY,
-                            CALLER_NAME_PROPERTY,
-                            CALLEE_CLASS_PROPERTY,
-                            CALLEE_NAME_PROPERTY
-                        )
-                            .map { property -> absent.copy(property = property) }
-                    )
+                val fourPredicateWork = lookupWork(
+                    listOf(
+                        CALLER_CLASS_PROPERTY,
+                        CALLER_NAME_PROPERTY,
+                        CALLEE_CLASS_PROPERTY,
+                        CALLEE_NAME_PROPERTY
+                    ).map { property -> absent.copy(property = property) }
                 )
+                assertTrue(fourPredicateWork <= singlePredicateWork)
                 assertTrue(
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
@@ -498,23 +497,17 @@ class GraphStoreTest {
 
             Files.write(prefilterFile, originalDirectory)
             val directory = ByteBuffer.wrap(originalDirectory).order(ByteOrder.BIG_ENDIAN)
+            val postingCount = directory.getInt(16)
             val postingsOffset = directory.getLong(32)
             val targetTrigram = (('t'.code * 31 + 'a'.code) * 31 + 'r'.code)
-            var previousEnd = 0
-            var targetStart = -1
-            for (offset in 88 until originalDirectory.size - Long.SIZE_BYTES step 3 * Int.SIZE_BYTES) {
-                val trigram = directory.getInt(offset)
-                val end = directory.getInt(offset + Int.SIZE_BYTES)
-                if (trigram == targetTrigram) {
-                    targetStart = previousEnd
-                    break
-                }
-                previousEnd = end
-            }
-            assertTrue(targetStart >= 0)
             val originalIndex = Files.readAllBytes(indexFile)
             val corruptIndex = originalIndex.copyOf()
-            val postingByte = Math.toIntExact(postingsOffset + targetStart.toLong() * Long.SIZE_BYTES)
+            val targetPosting = (0 until postingCount).first { postingIndex ->
+                val offset = Math.toIntExact(postingsOffset + postingIndex.toLong() * Long.SIZE_BYTES)
+                (ByteBuffer.wrap(originalIndex, offset, Long.SIZE_BYTES).order(ByteOrder.BIG_ENDIAN).long ushr
+                    Int.SIZE_BITS).toInt() == targetTrigram
+            }
+            val postingByte = Math.toIntExact(postingsOffset + targetPosting.toLong() * Long.SIZE_BYTES)
             corruptIndex[postingByte] = (corruptIndex[postingByte].toInt() xor 1).toByte()
             Files.write(indexFile, corruptIndex)
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->

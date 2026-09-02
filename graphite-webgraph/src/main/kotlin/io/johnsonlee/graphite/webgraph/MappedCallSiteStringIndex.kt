@@ -731,8 +731,8 @@ internal class MappedCallSiteStringIndex(
     }
 
     /**
-     * Writes a compact, checksummed directory over the trigram ranges already stored in the
-     * complete CallSite index. The directory deliberately contains no string or posting copy.
+     * Writes a bounded, checksummed directory over balanced chunks of the trigram postings already
+     * stored in the complete CallSite index. The directory contains no string or posting copy.
      */
     @Synchronized
     internal fun writePersistentTrigramDirectory(output: DataOutput, exactIndexBytes: Long) {
@@ -744,23 +744,15 @@ internal class MappedCallSiteStringIndex(
         require(exactIndexBytes == postingsOffset + postings.size.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES)
         val graphContentIdentity = persistedContentIdentity
         require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
-
-        var rangeCount = 0
-        var previousTrigram: Int? = null
-        postings.forEach { posting ->
-            val trigram = (posting ushr Int.SIZE_BITS).toInt()
-            if (trigram != previousTrigram) {
-                rangeCount++
-                previousTrigram = trigram
-            }
-        }
+        val chunkCount = minOf(postings.size, CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS)
+        val chunkSize = ((postings.size.toLong() + chunkCount - 1L) / chunkCount).toInt()
 
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_MAGIC)
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_VERSION)
         output.writeInt(stringTable.size())
         output.writeInt(callSiteCount)
         output.writeInt(postings.size)
-        output.writeInt(rangeCount)
+        output.writeInt(chunkCount)
         output.writeLong(exactIndexBytes)
         output.writeLong(postingsOffset)
         output.write(graphContentIdentity)
@@ -768,14 +760,10 @@ internal class MappedCallSiteStringIndex(
 
         var start = 0
         while (start < postings.size) {
-            val trigram = (postings[start] ushr Int.SIZE_BITS).toInt()
-            var end = start + 1
-            val checksum = CRC32().apply { updateDirectoryLongBigEndian(postings[start]) }
-            while (end < postings.size && (postings[end] ushr Int.SIZE_BITS).toInt() == trigram) {
-                checksum.updateDirectoryLongBigEndian(postings[end])
-                end++
-            }
-            output.writeInt(trigram)
+            val end = minOf(postings.size, start + chunkSize)
+            val checksum = CRC32()
+            for (index in start until end) checksum.updateDirectoryLongBigEndian(postings[index])
+            output.writeInt((postings[end - 1] ushr Int.SIZE_BITS).toInt())
             output.writeInt(end)
             output.writeInt(checksum.value.toInt())
             start = end
