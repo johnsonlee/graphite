@@ -1609,7 +1609,7 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
-        val scanners = candidateSources.mapIndexed { sourceIndex, source ->
+        val scanners = candidateSources.map { source ->
             DirectStringSourceScanner(
                 source,
                 nodeClass,
@@ -1619,10 +1619,8 @@ class QueryPipeline private constructor(
                 columns,
                 tracker,
                 nodePredicateFactory,
-                // The leading graph is a bounded, synchronous LIMIT probe. Splitting its local
-                // storage scan multiplies work before we know whether any later graph is needed.
                 candidateSources.size,
-                serialStorage = balanced && sourceIndex == 0
+                serialStorage = false
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()

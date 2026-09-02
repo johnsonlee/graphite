@@ -203,7 +203,7 @@ class CrossGraphCypherExecutorTest {
         val graphCount = 40
         val firstWaveEntered = CountDownLatch(plan.graphWorkerCount)
         val firstWaveSegments = java.util.concurrent.ConcurrentHashMap<Int, Pair<String, Int>>()
-        val leadingSerial = AtomicInteger()
+        val leadingSegments = AtomicInteger(-1)
         val empty = graph()
         val graphs = List(graphCount) { graphIndex ->
             CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
@@ -223,7 +223,7 @@ class CrossGraphCypherExecutorTest {
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
                     if (graphIndex == 0) {
-                        if (workConsumer is SerialGraphWorkBatchConsumer) leadingSerial.incrementAndGet()
+                        leadingSegments.set((workConsumer as SplitGraphWorkBatchConsumer).segmentWorkerCount)
                         return emptySequence()
                     }
                     val split = workConsumer as SplitGraphWorkBatchConsumer
@@ -253,7 +253,7 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertTrue(result.rows.isEmpty())
-        assertEquals(1, leadingSerial.get())
+        assertEquals(plan.segmentWorkerCount, leadingSegments.get())
         assertEquals(plan.graphWorkerCount, firstWaveSegments.size)
         assertEquals(plan.graphWorkerCount, firstWaveSegments.values.map { it.first }.toSet().size)
         assertTrue(firstWaveSegments.values.all { it.second == plan.segmentWorkerCount })
