@@ -46,13 +46,6 @@ OBSERVATIONS=(
   "${BASE_WARM_OBSERVATIONS}"
   "${CANDIDATE_WARM_OBSERVATIONS}"
 )
-OBSERVATION_ROLES=(
-  strict
-  base
-  strict
-  base
-  strict
-)
 CORRECTNESS_RECORDS=(
   "${REFERENCE_CORRECTNESS}"
   "${SEMANTIC_ORACLE}"
@@ -63,15 +56,13 @@ CORRECTNESS_RECORDS=(
 )
 if [[ $# -eq 17 ]]; then
   OBSERVATIONS+=("${14}" "${16}")
-  OBSERVATION_ROLES+=(base strict)
   CORRECTNESS_RECORDS+=("${15}" "${17}")
 fi
 
 for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
   RESULT=${OBSERVATIONS[${RESULT_INDEX}]}
-  OBSERVATION_ROLE=${OBSERVATION_ROLES[${RESULT_INDEX}]}
   test -f "${RESULT}"
-  awk -F '\t' -v routingRole="${OBSERVATION_ROLE}" '
+  awk -F '\t' '
     NR == FNR {
       if (FNR > 1) {
         ordinal = FNR - 2
@@ -125,25 +116,16 @@ for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
           if (!(graphIds[i] in targetOrdinal) || targetOrdinal[graphIds[i]] != ordinal + i - 1) exit 1
           selected[graphIds[i]] = 1
         }
-        baselineUnpruned = routingRole == "base" && family == "graph-id-set"
-        baselineDense = baselineUnpruned && $columns["selectivity"] == "dense"
-        expectedAccesses = baselineDense ? ordinal + 1 : \
-          (baselineUnpruned ? 64 : ($columns["selectivity"] == "dense" ? 1 : width))
+        expectedAccesses = $columns["selectivity"] == "dense" ? 1 : width
         expectedTarget = $columns["selectivity"] == "dense" ? 1 : width
-        expectedNonTarget = baselineDense ? ordinal : \
-          (baselineUnpruned ? 64 - width : 0)
         accessCount = split($columns["accessedGraphIds"], accessedIds, ",")
         if ($columns["accessedGraphCount"] != expectedAccesses || accessCount != expectedAccesses ||
             $columns["targetGraphAccessCount"] != expectedTarget ||
-            $columns["nonTargetGraphAccessCount"] != expectedNonTarget) exit 1
+            $columns["nonTargetGraphAccessCount"] != 0) exit 1
         delete accessed
         for (i = 1; i <= accessCount; i++) {
           if (!(accessedIds[i] in targetOrdinal) || accessed[accessedIds[i]]++) exit 1
-          if (!baselineUnpruned && !(accessedIds[i] in selected)) exit 1
-          if (baselineUnpruned && targetOrdinal[accessedIds[i]] >= expectedAccesses) exit 1
-        }
-        if (baselineUnpruned && !baselineDense) {
-          for (selectedId in selected) if (!(selectedId in accessed)) exit 1
+          if (!(accessedIds[i] in selected)) exit 1
         }
         if ($columns["workloadIdentity"] !~ /^[0-9a-f]{64}$/) exit 1
         setRows++

@@ -18,10 +18,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
-  BENCHMARK_REPORT_TRANSITION_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 1c558e54c7b53c70d6a95e7af2d5d88d564c61225db351fc48c6a83821b442bf
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: daeb36324efba7bf2f282dc753af61668ee4f8cedd6b6ae5c754df32ab42288b
+  BENCHMARK_REPORT_TRANSITION_SHA256: daeb36324efba7bf2f282dc753af61668ee4f8cedd6b6ae5c754df32ab42288b
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: daeb36324efba7bf2f282dc753af61668ee4f8cedd6b6ae5c754df32ab42288b
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: daeb36324efba7bf2f282dc753af61668ee4f8cedd6b6ae5c754df32ab42288b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -1924,6 +1924,74 @@ jobs:
   graph-routing-pressure-evidence:
     name: graph-routing-pressure-evidence
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout exact candidate graph-routing implementation
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Set up Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Build candidate fixture generator and pinned fixture JARs
+      run: |
+        candidate/gradlew -p candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+
+    - name: Generate 64 persisted graphs from pinned real fixture JARs
+      run: |
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+          -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        test -f "${CANDIDATE_JAR}"
+        candidate/.github/scripts/prepare-fixture64-graphs.sh \
+          "${CANDIDATE_JAR}" \
+          candidate/graphite-webgraph/build/benchmark-fixtures \
+          benchmark-fixture64-routing
+
+    - name: Build and execute trusted graph-routing states
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
+      run: |
+        cd candidate
+        .github/scripts/run-real64-graph-routing.sh \
+          ../benchmark-fixture64-routing/graphs.tsv \
+          graphite-webgraph/build/benchmark-fixtures \
+          "${{ github.event.pull_request.base.sha }}" \
+          "${{ github.event.pull_request.head.sha }}" \
+          "${{ github.repository }}" \
+          ../benchmark-results
+
+    - name: Upload trusted graph-routing result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-graph-routing-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce trusted graph-routing result
+      if: always()
+      run: |
+        for STATE in cold warm startup-prepared; do
+          jq -e '.passed == true' \
+            "benchmark-results/graph-routing-${STATE}-status.json" >/dev/null
+        done
+
+  graph-routing-pressure-external-evidence-disabled:
+    name: legacy-graph-routing-external-evidence-disabled
+    if: ${{ github.repository == 'disabled/legacy-graph-routing-evidence' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       statuses: read
@@ -1978,9 +2046,6 @@ jobs:
           const speedups = match ? match.slice(2).map(Number) : [];
           if (speedups.length !== 6 || speedups.some(value => !Number.isFinite(value) || value <= 0)) {
             errors.push(`Every reported cold/warm/startup speedup must be finite and positive: ${speedups.join(', ')}`);
-          }
-          if (speedups.length === 6 && speedups[5] < 10) {
-            errors.push(`Startup-prepared P95 speedup must be >=10x: ${speedups[5]}`);
           }
           const evidenceMatch = status?.target_url?.match(
             /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
@@ -2091,8 +2156,7 @@ jobs:
               const result = JSON.parse(fs.readFileSync(
                 path.join(directory, `graph-routing-${state}-status.json`), 'utf8'
               ));
-              if (!result.passed ||
-                  (state === 'startup-prepared' && result.gateP95Speedup < 10)) {
+              if (!result.passed) {
                 errors.push(`${state} comparator status does not pass its state-specific gate`);
               }
               const reported = speedups.slice(stateIndex * 2, stateIndex * 2 + 2);
@@ -2280,10 +2344,241 @@ jobs:
       if: always()
       run: jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
 
+  global-wide-pressure-evidence:
+    name: global-wide-pressure-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout exact candidate benchmark implementation
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Set up Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Build candidate fixture generator and pinned fixture JARs
+      run: |
+        candidate/gradlew -p candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+
+    - name: Generate 64 persisted graphs from pinned real fixture JARs
+      run: |
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+          -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        test -f "${CANDIDATE_JAR}"
+        candidate/.github/scripts/prepare-fixture64-graphs.sh \
+          "${CANDIDATE_JAR}" \
+          candidate/graphite-webgraph/build/benchmark-fixtures \
+          benchmark-fixture64
+
+    - name: Build and execute three trusted paired global-wide forks
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
+      run: |
+        cd candidate
+        .github/scripts/run-real64-global-wide.sh \
+          ../benchmark-fixture64/graphs.tsv \
+          graphite-webgraph/build/benchmark-fixtures \
+          "${{ github.event.pull_request.base.sha }}" \
+          "${{ github.event.pull_request.head.sha }}" \
+          "${{ github.repository }}" \
+          ../benchmark-results
+
+    - name: Upload trusted global-wide result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce trusted global-wide result
+      if: always()
+      run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
+
+  global-wide-pressure-external-evidence-disabled:
+    name: legacy-global-wide-external-evidence-disabled
+    if: ${{ github.repository == 'disabled/legacy-global-wide-evidence' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
+
+    steps:
+    - name: Checkout exact candidate evidence verifier
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Materialize and authenticate immutable global-wide evidence
+      uses: actions/github-script@v9
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        EVIDENCE_CONTEXT: graphite/fixture64-global-wide
+        TRUSTED_EVIDENCE_ACTOR: johnsonlee
+      with:
+        script: |
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const path = require('path');
+          const { pathToFileURL } = require('url');
+          const { materializeGistFiles } = await import(pathToFileURL(path.resolve(
+            'candidate/.github/scripts/gist-evidence.mjs'
+          )).href);
+          const errors = [];
+          const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
+            owner: context.repo.owner, repo: context.repo.repo,
+            ref: process.env.CANDIDATE_SHA, per_page: 100
+          });
+          const status = statuses.find(item => item.context === process.env.EVIDENCE_CONTEXT);
+          if (!status || status.state !== 'success') errors.push('Missing successful global-wide evidence status');
+          if (status?.creator?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+            errors.push(`Untrusted evidence actor ${status?.creator?.login || 'missing'}`);
+          }
+          const descriptionPattern =
+            /^fixture64-wide base=([0-9a-f]{12}) p50=([0-9]+(?:\.[0-9]+)?)x p95=([0-9]+(?:\.[0-9]+)?)x pairs=3 correct=pass$/;
+          const descriptionMatch = status?.description?.match(descriptionPattern);
+          if (!descriptionMatch || descriptionMatch[1] !== process.env.BASE_SHA.slice(0, 12)) {
+            errors.push('Evidence description is not bound to the exact base SHA');
+          }
+          const evidenceMatch = status?.target_url?.match(
+            /^https:\/\/gist\.github\.com\/johnsonlee\/([0-9a-f]+)\/revisions\/([0-9a-f]{40})$/
+          );
+          if (!evidenceMatch) errors.push('Evidence URL is not an immutable trusted Gist revision');
+          let evidence;
+          if (evidenceMatch) {
+            const response = await fetch(`https://api.github.com/gists/${evidenceMatch[1]}/${evidenceMatch[2]}`,
+              { headers: { accept: 'application/vnd.github+json' } });
+            if (!response.ok) errors.push(`Unable to fetch Gist: HTTP ${response.status}`);
+            else evidence = await response.json();
+          }
+          if (evidence?.owner?.login !== process.env.TRUSTED_EVIDENCE_ACTOR) {
+            errors.push('Immutable evidence owner is not trusted');
+          }
+          const directory = 'benchmark-results/evidence-global-wide';
+          let files = {};
+          try {
+            files = await materializeGistFiles({
+              files: evidence?.files || {}, gistId: evidenceMatch?.[1],
+              owner: process.env.TRUSTED_EVIDENCE_ACTOR, directory,
+              request: async options => {
+                const response = await fetch(options.url, { headers: options.headers });
+                if (!response.ok) throw new Error(`raw evidence HTTP ${response.status}`);
+                return { data: await response.text() };
+              }
+            });
+          } catch (error) { errors.push(`Unable to materialize evidence: ${error.message}`); }
+          let manifest;
+          try { manifest = JSON.parse(files['evidence-manifest.json']); }
+          catch (error) { errors.push(`Invalid evidence manifest: ${error.message}`); }
+          const required = [
+            'provenance.json', 'graphs.tsv', 'fixture-provenance.tsv',
+            'fixture-reproducibility.json', 'base-global-wide-oracle-seed.correctness',
+            'global-wide-report.md', 'global-wide-status.json',
+            ...[1, 2, 3].flatMap(index => [
+              `base-global-wide-${index}.json`, `base-global-wide-${index}.tsv`,
+              `candidate-global-wide-${index}.json`, `candidate-global-wide-${index}.tsv`
+            ])
+          ];
+          if (!manifest || manifest.schema !== 'graphite-fixture64-global-wide-evidence-v1' ||
+              manifest.repository !== `${context.repo.owner}/${context.repo.repo}` ||
+              manifest.baseSha !== process.env.BASE_SHA || manifest.candidateSha !== process.env.CANDIDATE_SHA ||
+              manifest.statusContext !== process.env.EVIDENCE_CONTEXT ||
+              manifest.description !== status?.description) {
+            errors.push('Evidence manifest identity does not match the PR status');
+          }
+          for (const name of required) {
+            const actual = typeof files[name] === 'string'
+              ? crypto.createHash('sha256').update(files[name]).digest('hex') : null;
+            if (!/^[0-9a-f]{64}$/.test(manifest?.files?.[name] || '') ||
+                manifest.files[name] !== actual) errors.push(`Evidence digest mismatch for ${name}`);
+          }
+          try {
+            const provenance = JSON.parse(files['provenance.json']);
+            const digest = value => crypto.createHash('sha256').update(value).digest('hex');
+            if (provenance.repository !== `${context.repo.owner}/${context.repo.repo}` ||
+                provenance.baseSha !== process.env.BASE_SHA || provenance.candidateSha !== process.env.CANDIDATE_SHA ||
+                provenance.fixtureSource !== 'four-pinned-fixture-jars' ||
+                provenance.runOrder !== 'candidate-base,base-candidate,candidate-base' ||
+                provenance.manifestSha256 !== digest(files['graphs.tsv']) ||
+                provenance.fixtureProvenanceSha256 !== digest(files['fixture-provenance.tsv']) ||
+                provenance.oracleSha256 !== digest(files['base-global-wide-oracle-seed.correctness'])) {
+              errors.push('Evidence provenance is incomplete or inconsistent');
+            }
+            for (const [field, relative] of [
+              ['harnessSha256', 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt'],
+              ['correctnessSha256', 'graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt'],
+              ['fixtureVerifierSha256', 'graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt'],
+              ['comparatorSha256', '.github/scripts/benchmark-gate.mjs'],
+              ['scriptSha256', '.github/scripts/run-real64-global-wide.sh']
+            ]) {
+              if (provenance[field] !== digest(fs.readFileSync(path.join('candidate', relative)))) {
+                errors.push(`Candidate source digest mismatch for ${field}`);
+              }
+            }
+            const reproducibility = JSON.parse(files['fixture-reproducibility.json']);
+            if (!reproducibility.passed ||
+                reproducibility.firstProvenanceSha256 !== reproducibility.repeatedProvenanceSha256 ||
+                reproducibility.firstManifestSemanticSha256 !== reproducibility.repeatedManifestSemanticSha256) {
+              errors.push('Fixture-JAR graph preparation is not reproducible');
+            }
+            if (files['graphs.tsv'].trim().split(/\r?\n/).filter(line => !line.startsWith('#')).length !== 64 ||
+                files['fixture-provenance.tsv'].trim().split(/\r?\n/).length !== 65) {
+              errors.push('Fixture evidence does not describe exactly 64 real graph shards');
+            }
+          } catch (error) { errors.push(`Invalid evidence payload: ${error.message}`); }
+          if (errors.length) core.setFailed(errors.join('\n'));
+
+    - name: Recompute the three paired comparisons
+      run: |
+        E=benchmark-results/evidence-global-wide
+        BASES=$(printf '%s,' "${E}"/base-global-wide-{1,2,3}.json); BASES=${BASES%,}
+        CANDIDATES=$(printf '%s,' "${E}"/candidate-global-wide-{1,2,3}.json); CANDIDATES=${CANDIDATES%,}
+        BASE_OBSERVATIONS=$(printf '%s,' "${E}"/base-global-wide-{1,2,3}.tsv); BASE_OBSERVATIONS=${BASE_OBSERVATIONS%,}
+        CANDIDATE_OBSERVATIONS=$(printf '%s,' "${E}"/candidate-global-wide-{1,2,3}.tsv); CANDIDATE_OBSERVATIONS=${CANDIDATE_OBSERVATIONS%,}
+        node candidate/.github/scripts/benchmark-gate.mjs compare-global-wide-pressure \
+          --bases "${BASES}" --candidates "${CANDIDATES}" \
+          --base-observations "${BASE_OBSERVATIONS}" \
+          --candidate-observations "${CANDIDATE_OBSERVATIONS}" \
+          --run-orders candidate-base,base-candidate,candidate-base \
+          --graph-manifest "${E}/graphs.tsv" \
+          --correctness-oracle "${E}/base-global-wide-oracle-seed.correctness" \
+          --minimum-speedup 10 --report benchmark-results/global-wide-report.md \
+          --status benchmark-results/global-wide-status.json
+        cmp benchmark-results/global-wide-report.md "${E}/global-wide-report.md"
+        cmp benchmark-results/global-wide-status.json "${E}/global-wide-status.json"
+
+    - name: Upload global-wide evidence result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-global-wide-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Enforce global-wide evidence
+      if: always()
+      run: jq -e '.passed == true' benchmark-results/global-wide-status.json >/dev/null
+
   benchmark-regression-gate:
     name: benchmark-regression-gate
     if: always()
-    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence]
+    needs: [candidate-gate-tests, method-level, explorer, method-compatibility, cypher-capacity, budgeted-collection, budgeted-mapped-string, large-corpus, wrapped-query-latency, wrapped-query-resources, graph-routing-pressure-evidence, global-wide-pressure-evidence]
     runs-on: ubuntu-latest
 
     steps:
@@ -2325,12 +2620,12 @@ jobs:
       run: |
         mkdir -p benchmark-results
         COMPARATOR=.github/scripts/benchmark-gate.mjs
-        if ! grep -q '"graph-routing-pressure"' "${COMPARATOR}"; then
+        if ! grep -q '"global-wide-pressure"' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
           COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
-          grep -q '"graph-routing-pressure"' "${COMPARATOR}"
+          grep -q '"global-wide-pressure"' "${COMPARATOR}"
         fi
         node "${COMPARATOR}" aggregate \
           --directory benchmark-results \
@@ -2394,6 +2689,7 @@ jobs:
         LATENCY_JOB: ${{ needs.wrapped-query-latency.result }}
         LATENCY_RESOURCES_JOB: ${{ needs.wrapped-query-resources.result }}
         GRAPH_ROUTING_JOB: ${{ needs.graph-routing-pressure-evidence.result }}
+        GLOBAL_WIDE_JOB: ${{ needs.global-wide-pressure-evidence.result }}
       run: |
         if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
           [ "${METHOD_JOB}" != success ] || [ "${EXPLORER_JOB}" != success ] || \
@@ -2403,7 +2699,7 @@ jobs:
           [ "${BUDGETED_STRING_JOB}" != success ] || \
           [ "${LARGE_CORPUS_JOB}" != success ] || \
           [ "${LATENCY_JOB}" != success ] || [ "${LATENCY_RESOURCES_JOB}" != success ] || \
-          [ "${GRAPH_ROUTING_JOB}" != success ]; then
+          [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ]; then
           echo "::error::Benchmark execution or comparison failed"
           exit 1
         fi

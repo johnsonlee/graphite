@@ -17,6 +17,7 @@ OUTPUT_DIR=${6:-graph-routing-results}
 FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 ORACLE=${OUTPUT_DIR}/base-single-source-oracle.manifest
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
+PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 STATUS_CONTEXT=graphite/fixture64-graph-routing
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
@@ -36,6 +37,7 @@ for INPUT in "${MANIFEST}" "${FIXTURE_PROVENANCE}"; do
   test -f "${INPUT}"
 done
 test -d "${FIXTURE_JAR_DIR}"
+[[ "${PUBLISH_EVIDENCE}" == true || "${PUBLISH_EVIDENCE}" == false ]]
 [[ "${BASE_SHA}" =~ ^[0-9a-f]{40}$ ]]
 [[ "${CANDIDATE_SHA}" =~ ^[0-9a-f]{40}$ ]]
 test "$(grep -cv '^#' "${MANIFEST}")" -eq 64
@@ -346,6 +348,10 @@ jq -n \
     statusContext: $statusContext, description: $description, files: $files}' \
   > "${OUTPUT_DIR}/evidence-manifest.json"
 EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
+if [[ "${PUBLISH_EVIDENCE}" == false ]]; then
+  echo "Completed trusted local ${STATUS_CONTEXT}: ${DESCRIPTION}"
+  exit 0
+fi
 GIST_URL=$(gh gist create --public "${EVIDENCE_FILES[@]}" \
   --desc "Graphite fixture64 graph-routing evidence for ${CANDIDATE_SHA}")
 GIST_ID=${GIST_URL##*/}

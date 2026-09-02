@@ -20,7 +20,8 @@ export const BENCHMARK_COVERAGE_DOMAINS = [
             "budgeted-collection",
             "budgeted-mapped-string",
             "wrapped-query-latency",
-            "graph-routing-pressure"
+            "graph-routing-pressure",
+            "global-wide-pressure"
         ],
         missing: ["cross-graph-dataflow-latency", "storage-load-stage-latency"]
     },
@@ -114,6 +115,13 @@ export const BENCHMARK_COMPONENTS = [
         name: "graph-routing-pressure",
         report: "graph-routing-report.md",
         status: "graph-routing-status.json",
+        coverage: "complete",
+        gap: "No gate-specific gap identified."
+    },
+    {
+        name: "global-wide-pressure",
+        report: "global-wide-report.md",
+        status: "global-wide-status.json",
         coverage: "complete",
         gap: "No gate-specific gap identified."
     }
@@ -623,7 +631,7 @@ const GRAPH_SET_ORACLE_SHAPES = [
     }
 ];
 
-function parseCorrectnessRecords(contents, source, errors) {
+function parseCorrectnessRecords(contents, source, errors, requireRoutingIdentity = true) {
     const rows = [];
     const seen = new Set();
     for (const [index, rawLine] of contents.split(/\r?\n/).entries()) {
@@ -652,7 +660,7 @@ function parseCorrectnessRecords(contents, source, errors) {
         }
         if (outcome !== "success") errors.push(`${source}:${id}: outcome=${outcome}; expected success`);
         if (!/^[0-9a-f]{64}$/.test(digest)) errors.push(`${source}:${id}: invalid SHA-256 digest`);
-        if (targetGraphId === "" || !/^[0-9a-f]{64}$/.test(workloadIdentity)) {
+        if (requireRoutingIdentity && (targetGraphId === "" || !/^[0-9a-f]{64}$/.test(workloadIdentity))) {
             errors.push(`${source}:${id}: target graph and workload identity are required`);
         }
         rows.push({
@@ -887,22 +895,24 @@ export function compareGraphIdPressure(
     const baseResources = resourceSnapshot(baseResult, "base");
     const candidateResources = resourceSnapshot(candidateResult, "candidate");
     if (candidateIndexState === "startup-prepared") {
-        if (baseResources.callSiteParallelScanCount !== 64 ||
-            baseResources.callSiteParallelScanGraphCount !== 64 ||
-            baseResources.callSiteScanPeakActiveWorkers < 2
+        if (baseResources.callSiteIndexAdmittedGraphs !== 64 ||
+            baseResources.callSiteTrigramIndexedGraphs !== 64 ||
+            baseResources.callSiteParallelScanCount !== 0 ||
+            baseResources.callSiteParallelScanGraphCount !== 0
         ) {
-            errors.push("base: startup-prepared reference must preserve one lazy-build scan per graph; " +
+            errors.push("base: startup-prepared reference must use the retained index without raw scans; " +
+                `admitted=${baseResources.callSiteIndexAdmittedGraphs}, ` +
+                `trigram=${baseResources.callSiteTrigramIndexedGraphs}, ` +
                 `scans=${baseResources.callSiteParallelScanCount}, ` +
-                `graphs=${baseResources.callSiteParallelScanGraphCount}, ` +
-                `peakWorkers=${baseResources.callSiteScanPeakActiveWorkers}`);
+                `graphs=${baseResources.callSiteParallelScanGraphCount}`);
         }
-        if (baseResources.callSiteStringIndexLookupCount !== 14139 ||
+        if (baseResources.callSiteStringIndexLookupCount !== 2043 ||
             baseResources.callSiteStringIndexLookupGraphCount !== 64 ||
-            baseResources.callSiteStringIndexLookupMinPerGraph !== 181 ||
-            baseResources.callSiteStringIndexLookupMaxPerGraph !== 266
+            baseResources.callSiteStringIndexLookupMinPerGraph !== 30 ||
+            baseResources.callSiteStringIndexLookupMaxPerGraph !== 39
         ) {
-            errors.push("base: startup-prepared reference must expose unpruned IN routing: one lazy build then " +
-                "14,139 lookups distributed 181..266 per graph; " +
+            errors.push("base: startup-prepared reference must preserve the optimized 2,043 retained-index " +
+                "lookups distributed 30..39 per graph; " +
                 `lookups=${baseResources.callSiteStringIndexLookupCount}, ` +
                 `graphs=${baseResources.callSiteStringIndexLookupGraphCount}, ` +
                 `perGraph=${baseResources.callSiteStringIndexLookupMinPerGraph}..` +
@@ -1430,7 +1440,6 @@ export function compareGraphIdPressure(
             errors.push(`k${current.width}: candidate P95/source scales worse than 1.5x versus k${previous.width}`);
         }
     }
-    const startupPrepared = candidateIndexState === "startup-prepared";
     const maximumGraphIdP50Regression = 0.15;
     const maximumGraphIdAbsoluteRegressionNanos = 250_000;
     const graphIdP50Regression = p50Speedup > 0 ? (1 / p50Speedup) - 1 : Number.POSITIVE_INFINITY;
@@ -1443,9 +1452,7 @@ export function compareGraphIdPressure(
         baseGraphIdP95 + maximumGraphIdAbsoluteRegressionNanos
     );
     const p50Passed = candidateGraphIdP50 <= graphIdP50Limit;
-    const p95Passed = startupPrepared
-        ? p95Speedup >= minimumSpeedup
-        : candidateGraphIdP95 <= graphIdP95Limit;
+    const p95Passed = candidateGraphIdP95 <= graphIdP95Limit;
     const gateP50Speedup = p50Speedup;
     const gateP95Speedup = p95Speedup;
     const passed = errors.length === 0 && p50Passed && p95Passed &&
@@ -1481,6 +1488,425 @@ export function compareGraphIdPressure(
     };
 }
 
+function parseGlobalWideObservations(contents, revision, errors) {
+    const lines = contents.trim().split(/\r?\n/);
+    if (lines.length !== 28) {
+        errors.push(`${revision}: expected a header plus 27 pressure observations, found ${lines.length}`);
+        return [];
+    }
+    const headers = lines[0].split("\t");
+    const required = [
+        "id", "family", "shape", "selectivity", "operator", "boundary", "projection", "limit",
+        "targetGraphId", "workloadIdentity", "outcome", "rowCount", "responseBytes", "digest",
+        "latencyNanos", "executionPath", "inputSourceCount", "accessedGraphCount", "targetGraphIds",
+        "selectedGraphCount", "accessedGraphIds", "targetGraphAccessCount", "nonTargetGraphAccessCount",
+        "parallelScanCount", "indexLookupCount", "peakActiveWorkers", "graphWorkUnits",
+        "graphIdSourceSelections", "graphIdSourcePruningExecutions", "graphIdSourcesPruned",
+        "filteredNodeLimitFastPathExecutions", "generalFallbackExecutions"
+    ];
+    for (const header of required) {
+        if (!headers.includes(header)) errors.push(`${revision}: pressure observations missing ${header}`);
+    }
+    const seen = new Set();
+    return lines.slice(1).map((line) => {
+        const values = line.split("\t");
+        const row = Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+        if (seen.has(row.id)) errors.push(`${revision}: duplicate pressure observation ${row.id}`);
+        seen.add(row.id);
+        return row;
+    });
+}
+
+function bindGlobalWideCorrectness(observations, oracleContents, revision, errors) {
+    const oracle = parseCorrectnessRecords(oracleContents, "global-wide-oracle", errors, false);
+    const oracleById = new Map(oracle.map((record) => [record.id, record]));
+    if (oracle.length !== 27 || oracleById.size !== 27) {
+        errors.push(`global-wide-oracle: expected 27 records, found ${oracle.length}`);
+    }
+    const observationIds = new Set(observations.map((row) => row.id));
+    for (const row of observations) {
+        const expected = oracleById.get(row.id);
+        if (expected === undefined) {
+            errors.push(`${revision}/${row.id}: missing from correctness oracle`);
+            continue;
+        }
+        for (const field of [
+            "family", "shape", "selectivity", "operator", "boundary", "projection", "targetGraphId",
+            "workloadIdentity", "limit", "outcome", "rowCount", "responseBytes", "digest"
+        ]) {
+            if (String(row[field]) !== String(expected[field])) {
+                errors.push(`${revision}/${row.id}: ${field} differs from correctness oracle`);
+            }
+        }
+    }
+    for (const id of oracleById.keys()) {
+        if (!observationIds.has(id)) errors.push(`${revision}/${id}: oracle record has no latency observation`);
+    }
+}
+
+function parseGlobalWideGraphManifest(contents, errors) {
+    const rows = String(contents ?? "").split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line !== "" && !line.startsWith("#"))
+        .map((line) => line.split("\t"));
+    if (rows.length !== 64) errors.push(`global-wide-manifest: expected 64 graphs, found ${rows.length}`);
+    if (rows.some((columns) => columns.length !== 6 || columns.some((column) => column === ""))) {
+        errors.push("global-wide-manifest: every graph requires six non-empty columns");
+    }
+    const graphIds = rows.map((columns) => columns[0]);
+    const workloadIdentities = rows.map((columns) => columns[5]);
+    if (new Set(graphIds).size !== graphIds.length) {
+        errors.push("global-wide-manifest: graph IDs must be unique");
+    }
+    if (new Set(workloadIdentities).size !== workloadIdentities.length ||
+        workloadIdentities.some((identity) => !/^[0-9a-f]{64}$/.test(identity))
+    ) {
+        errors.push("global-wide-manifest: workload identities must be unique SHA-256 values");
+    }
+    return {
+        graphIds,
+        graphIdSet: new Set(graphIds),
+        workloadIdentities,
+        workloadIdentitySet: new Set(workloadIdentities),
+        calibrationGraphId: graphIds[0] ?? "",
+        calibrationIdentity: rows[0]?.[5] ?? ""
+    };
+}
+
+const GLOBAL_WIDE_SHAPE_CONTRACTS = [
+    ["global-wide-four-properties", "raw-contains", "single-query", "properties"],
+    ["global-wide-class-pair", "raw-contains", "single-query", "class-properties"],
+    ["global-wide-name-pair", "raw-contains", "single-query", "name-properties"],
+    ["global-wide-caller-class", "raw-contains", "single-query", "caller-class"],
+    ["global-wide-callee-class", "raw-contains", "single-query", "callee-class"],
+    ["global-wide-provenance", "raw-contains", "single-query", "graph-id-properties"],
+    ["global-wide-aliased", "raw-contains", "single-query", "aliased-properties"],
+    ["global-wide-parameterized", "raw-contains", "parameters", "properties"],
+    ["global-wide-wrapped-case-insensitive", "wrapped-lowercase-contains", "single-query", "properties"]
+];
+const GLOBAL_WIDE_SHAPES = GLOBAL_WIDE_SHAPE_CONTRACTS.map(([shape]) => shape);
+const GLOBAL_WIDE_WRAPPED_SHAPE = "global-wide-wrapped-case-insensitive";
+
+export function compareGlobalWidePressure(
+    baseResultSets,
+    candidateResultSets,
+    baseObservationContents,
+    candidateObservationContents,
+    correctnessOracle,
+    minimumSpeedup = 10,
+    runOrders = [],
+    graphManifestContents = ""
+) {
+    const errors = [];
+    const manifest = parseGlobalWideGraphManifest(graphManifestContents, errors);
+    const expectedBenchmark =
+        "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
+    const selectResult = (results, revision, requireNcpuSplit) => {
+        const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
+            result.params?.graphCount === "64" && result.params?.coverageFamily === "global-wide" &&
+            result.params?.indexState === "cold");
+        if (matches.length !== 1) {
+            errors.push(`${revision}: expected exactly one 64-graph cold global-wide result`);
+            return null;
+        }
+        const result = matches[0];
+        for (const [metric, expected] of [
+            ["graphCount", 64], ["distinctGraphPathCount", 64], ["queryCount", 27],
+            ["successCount", 27], ["timeoutCount", 0], ["failureCount", 0],
+            ["coverageShapeCount", 9], ["coverageFamilyCount", 1], ["coverageSelectivityCount", 3],
+            ["coverageProjectionCount", 7], ["coverageOperatorCount", 2], ["coverageBoundaryCount", 2],
+            ["maxHeapBytes", 8 * GIB]
+        ]) {
+            const actual = pressureMetric(result, metric);
+            if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
+        }
+        const processors = pressureMetric(result, "availableProcessors");
+        const graphWorkers = pressureMetric(result, "graphWorkerCount");
+        const segmentWorkers = pressureMetric(result, "segmentWorkerCount");
+        if (processors === null || processors < 1 || !Number.isInteger(processors)) {
+            errors.push(`${revision}: availableProcessors=${processors}; expected a positive integer`);
+        } else if (requireNcpuSplit) {
+            const expectedGraphWorkers = processors === 1 ? 1 : Math.floor(processors / 2);
+            const expectedSegmentWorkers = processors === 1 ? 0 : processors - expectedGraphWorkers;
+            if (graphWorkers !== expectedGraphWorkers || segmentWorkers !== expectedSegmentWorkers) {
+                errors.push(`${revision}: NCPU split ${processors} -> ${graphWorkers}+${segmentWorkers}; ` +
+                    `expected ${expectedGraphWorkers}+${expectedSegmentWorkers}`);
+            }
+            const graphPeak = pressureMetric(result, "graphScanPeakActiveWorkers");
+            const segmentPeak = pressureMetric(result, "segmentScanPeakActiveWorkers");
+            const expectedGraphPeak = processors === 1 ? 0 : expectedGraphWorkers;
+            if (graphPeak !== expectedGraphPeak || segmentPeak !== expectedSegmentWorkers) {
+                errors.push(`${revision}: observed graph/segment worker peaks ${graphPeak}+${segmentPeak}; ` +
+                    `expected ${expectedGraphPeak}+${expectedSegmentWorkers}`);
+            }
+        }
+        for (const metric of [
+            "p50LatencyNanos", "p95LatencyNanos", "maxLatencyNanos", "processCpuNanos",
+            "cpuCoreUtilizationPermille",
+            "peakUsedHeapBytes", "peakResidentSetBytes", "graphWorkUnits"
+        ]) {
+            const value = pressureMetric(result, metric);
+            if (value === null || value <= 0) errors.push(`${revision}: ${metric} requires a positive finite value`);
+        }
+        return result;
+    };
+    const baseResults = baseResultSets.map((results, index) =>
+        selectResult(results, `base-${index + 1}`, false));
+    const candidateResults = candidateResultSets.map((results, index) =>
+        selectResult(results, `candidate-${index + 1}`, true));
+    if (baseResults.length < 3) errors.push("base: at least three independent JVM forks are required");
+    if (candidateResults.length < 3) errors.push("candidate: at least three independent JVM forks are required");
+    if (baseResults.length !== candidateResults.length) {
+        errors.push("base/candidate: paired result run counts differ");
+    }
+
+    const validateRows = (contents, revision, requireAccessEvidence) => {
+        const rows = parseGlobalWideObservations(contents, revision, errors);
+        bindGlobalWideCorrectness(rows, correctnessOracle, revision, errors);
+        for (const row of rows) {
+            if (row.family !== "global-wide" || row.executionPath !== "cross-graph-query" ||
+                finiteNumber(row.inputSourceCount) !== 64 || finiteNumber(row.selectedGraphCount) !== 0 ||
+                row.targetGraphId !== "" || row.targetGraphIds !== ""
+            ) {
+                errors.push(`${revision}/${row.id}: expected an unscoped 64-source cross-graph query`);
+            }
+            if (row.outcome !== "success" || finiteNumber(row.latencyNanos) === null ||
+                finiteNumber(row.latencyNanos) <= 0
+            ) {
+                errors.push(`${revision}/${row.id}: expected a successful positive latency sample`);
+            }
+            for (const field of [
+                "accessedGraphCount", "targetGraphAccessCount", "nonTargetGraphAccessCount",
+                "parallelScanCount", "indexLookupCount", "peakActiveWorkers", "graphWorkUnits"
+            ]) {
+                const value = finiteNumber(row[field]);
+                if (value === null || value < 0 || !Number.isInteger(value)) {
+                    errors.push(`${revision}/${row.id}: ${field}=${row[field]} must be a non-negative integer`);
+                }
+            }
+            const accessedGraphIds = row.accessedGraphIds === "" ? [] : row.accessedGraphIds.split(",");
+            const accessedGraphCount = finiteNumber(row.accessedGraphCount);
+            if (accessedGraphIds.length !== accessedGraphCount ||
+                new Set(accessedGraphIds).size !== accessedGraphIds.length
+            ) {
+                errors.push(`${revision}/${row.id}: accessed graph IDs must be unique and match ` +
+                    `accessedGraphCount=${row.accessedGraphCount}`);
+            }
+            if (accessedGraphIds.some((graphId) => !manifest.graphIdSet.has(graphId))) {
+                errors.push(`${revision}/${row.id}: accessed graph IDs are not bound to graphs.tsv`);
+            }
+            const shapeIndex = GLOBAL_WIDE_SHAPES.indexOf(row.shape);
+            if (shapeIndex < 0) {
+                errors.push(`${revision}/${row.id}: unknown global-wide shape ${row.shape}`);
+            } else {
+                const [, operator, boundary, projection] = GLOBAL_WIDE_SHAPE_CONTRACTS[shapeIndex];
+                if (row.operator !== operator || row.boundary !== boundary || row.projection !== projection) {
+                    errors.push(`${revision}/${row.id}: shape contract must be ` +
+                        `${operator}/${boundary}/${projection}`);
+                }
+            }
+            const placementOrdinal = shapeIndex < 0 ? 0 :
+                Math.floor(shapeIndex * (manifest.graphIds.length - 1) / (GLOBAL_WIDE_SHAPES.length - 1));
+            const expectedOrdinal = row.selectivity === "dense" ? 0 : placementOrdinal;
+            const expectedIdentity = manifest.workloadIdentities[expectedOrdinal] ?? "";
+            const expectedGraphId = manifest.graphIds[expectedOrdinal] ?? "";
+            if (row.workloadIdentity !== expectedIdentity || !manifest.workloadIdentitySet.has(row.workloadIdentity)) {
+                errors.push(`${revision}/${row.id}: workload identity is not bound to its graphs.tsv placement`);
+            }
+            const rowCount = finiteNumber(row.rowCount);
+            const accessedSet = new Set(accessedGraphIds);
+            if (row.selectivity === "zero") {
+                if (rowCount !== 0) errors.push(`${revision}/${row.id}: zero-hit query must return zero rows`);
+                if (requireAccessEvidence &&
+                    (accessedGraphCount !== 64 ||
+                        manifest.graphIds.some((graphId) => !accessedSet.has(graphId)) ||
+                        finiteNumber(row.targetGraphAccessCount) !== 0 ||
+                        finiteNumber(row.nonTargetGraphAccessCount) !== 64)
+                ) errors.push(`${revision}/${row.id}: zero-hit query must prove the exact graphs.tsv set was searched`);
+            } else if (row.selectivity === "targeted") {
+                if (rowCount === null || rowCount < 1 || rowCount >= 200) {
+                    errors.push(`${revision}/${row.id}: targeted query must return between 1 and 199 rows`);
+                }
+                if (requireAccessEvidence && !accessedSet.has(expectedGraphId)) {
+                    errors.push(`${revision}/${row.id}: targeted query must reach its real-graph placement`);
+                }
+            } else if (row.selectivity === "dense") {
+                if (rowCount !== 200) {
+                    errors.push(`${revision}/${row.id}: dense query must fill LIMIT 200`);
+                }
+                if (requireAccessEvidence &&
+                    (accessedGraphCount !== 1 || accessedGraphIds[0] !== manifest.calibrationGraphId)
+                ) {
+                    errors.push(`${revision}/${row.id}: dense query must stop after the calibrated first graph`);
+                }
+            }
+            if (finiteNumber(row.graphIdSourceSelections) !== 0 ||
+                finiteNumber(row.graphIdSourcePruningExecutions) !== 0 ||
+                finiteNumber(row.graphIdSourcesPruned) !== 0 ||
+                finiteNumber(row.filteredNodeLimitFastPathExecutions) !== 1 ||
+                finiteNumber(row.generalFallbackExecutions) !== 0
+            ) {
+                errors.push(`${revision}/${row.id}: expected the non-routing filtered-limit execution path`);
+            }
+        }
+        for (const shape of GLOBAL_WIDE_SHAPES) {
+            for (const selectivity of ["zero", "targeted", "dense"]) {
+                const count = rows.filter((row) =>
+                    row.shape === shape && row.selectivity === selectivity).length;
+                if (count !== 1) {
+                    errors.push(`${revision}: expected exactly one ${shape}/${selectivity} observation`);
+                }
+            }
+        }
+        return rows;
+    };
+    // The tagged base predates per-graph access telemetry. Keep its result/correctness checks hard,
+    // but require exact real-graph access evidence only from the candidate that introduces it.
+    const baseRowsByRun = baseObservationContents.map((contents, index) =>
+        validateRows(contents, `base-${index + 1}`, false));
+    const candidateRowsByRun = candidateObservationContents.map((contents, index) =>
+        validateRows(contents, `candidate-${index + 1}`, true));
+    if (baseObservationContents.length !== baseResultSets.length) {
+        errors.push("base: result and observation run counts differ");
+    }
+    if (candidateObservationContents.length !== candidateResultSets.length) {
+        errors.push("candidate: result and observation run counts differ");
+    }
+    const allowedRunOrders = new Set(["candidate-base", "base-candidate"]);
+    if (runOrders.length !== candidateResultSets.length ||
+        runOrders.some((order) => !allowedRunOrders.has(order))) {
+        errors.push("base/candidate: every paired fork requires a valid run order");
+    }
+
+    const runs = candidateResults.map((result, index) => {
+        const baseResult = baseResults[index];
+        if (!baseResult || !result) return null;
+        const baseP50 = pressureMetric(baseResult, "p50LatencyNanos") ?? 0;
+        const baseP95 = pressureMetric(baseResult, "p95LatencyNanos") ?? 0;
+        const p50 = pressureMetric(result, "p50LatencyNanos") ?? 0;
+        const p95 = pressureMetric(result, "p95LatencyNanos") ?? 0;
+        const p95Speedup = p95 > 0 ? baseP95 / p95 : 0;
+        const wrappedP95 = (rows) => Math.max(0, ...rows
+            .filter((row) => row.shape === GLOBAL_WIDE_WRAPPED_SHAPE)
+            .map((row) => finiteNumber(row.latencyNanos) ?? 0));
+        const baseWrappedP95LatencyNanos = wrappedP95(baseRowsByRun[index] ?? []);
+        const wrappedP95LatencyNanos = wrappedP95(candidateRowsByRun[index] ?? []);
+        const wrappedP95Speedup = wrappedP95LatencyNanos > 0 ?
+            baseWrappedP95LatencyNanos / wrappedP95LatencyNanos : 0;
+        const baseProcessCpuNanos = pressureMetric(baseResult, "processCpuNanos") ?? 0;
+        const processCpuNanos = pressureMetric(result, "processCpuNanos") ?? 0;
+        const basePeakUsedHeapBytes = pressureMetric(baseResult, "peakUsedHeapBytes") ?? 0;
+        const peakUsedHeapBytes = pressureMetric(result, "peakUsedHeapBytes") ?? 0;
+        const basePeakResidentSetBytes = pressureMetric(baseResult, "peakResidentSetBytes") ?? 0;
+        const peakResidentSetBytes = pressureMetric(result, "peakResidentSetBytes") ?? 0;
+        if (p95Speedup < minimumSpeedup) {
+            errors.push(`pair-${index + 1}: P95 speedup ${p95Speedup.toFixed(2)}x; ` +
+                `required ${minimumSpeedup.toFixed(2)}x in every independent fork`);
+        }
+        if (wrappedP95Speedup < minimumSpeedup) {
+            errors.push(`pair-${index + 1}: wrapped case-insensitive P95 speedup ` +
+                `${wrappedP95Speedup.toFixed(2)}x; required ${minimumSpeedup.toFixed(2)}x`);
+        }
+        for (const [label, baseValue, candidateValue] of [
+            ["process CPU", baseProcessCpuNanos, processCpuNanos],
+            ["peak used heap", basePeakUsedHeapBytes, peakUsedHeapBytes],
+            ["peak RSS", basePeakResidentSetBytes, peakResidentSetBytes]
+        ]) {
+            if (baseValue > 0 && candidateValue > baseValue * 1.5) {
+                errors.push(`pair-${index + 1}: ${label} ${candidateValue} exceeds paired base ${baseValue} by >50%`);
+            }
+        }
+        return {
+            order: runOrders[index] ?? "unknown",
+            baseP50LatencyNanos: baseP50,
+            baseP95LatencyNanos: baseP95,
+            p50LatencyNanos: p50,
+            p95LatencyNanos: p95,
+            p50Speedup: p50 > 0 ? baseP50 / p50 : 0,
+            p95Speedup,
+            baseWrappedP95LatencyNanos,
+            wrappedP95LatencyNanos,
+            wrappedP95Speedup,
+            baseProcessCpuNanos,
+            processCpuNanos,
+            cpuCoreUtilizationPermille: pressureMetric(result, "cpuCoreUtilizationPermille") ?? 0,
+            basePeakUsedHeapBytes,
+            peakUsedHeapBytes,
+            basePeakResidentSetBytes,
+            peakResidentSetBytes
+        };
+    }).filter(Boolean);
+    const median = (values) => {
+        const sorted = [...values].sort((left, right) => left - right);
+        if (sorted.length === 0) return 0;
+        const middle = Math.floor(sorted.length / 2);
+        return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+    };
+    const orderSummaries = [...allowedRunOrders].map((order) => {
+        const orderedRuns = runs.filter((run) => run.order === order);
+        const medianP50Speedup = median(orderedRuns.map((run) => run.p50Speedup));
+        const medianP95Speedup = median(orderedRuns.map((run) => run.p95Speedup));
+        if (orderedRuns.length === 0) errors.push(`${order}: no paired fork was recorded`);
+        // Order medians remain diagnostic; every independent pair is gated above.
+        return { order, runCount: orderedRuns.length, medianP50Speedup, medianP95Speedup };
+    });
+    return {
+        passed: errors.length === 0,
+        errors,
+        minimumSpeedup,
+        runs,
+        orderSummaries
+    };
+}
+
+export function renderGlobalWidePressureReport(comparison) {
+    const ms = (nanos) => `${(nanos / 1e6).toFixed(3)} ms`;
+    const gib = (bytes) => `${(bytes / GIB).toFixed(2)} GiB`;
+    const worst = comparison.runs.length === 0 ? {
+        p50LatencyNanos: 0,
+        p95LatencyNanos: 0,
+        p50Speedup: 0,
+        p95Speedup: 0
+    } : comparison.runs.reduce((left, right) =>
+        left.p95Speedup < right.p95Speedup ? left : right);
+    const worstOrder = comparison.orderSummaries.reduce((left, right) =>
+        left.medianP95Speedup < right.medianP95Speedup ? left : right);
+    const worstWrapped = comparison.runs.length === 0 ? { wrappedP95Speedup: 0 } :
+        comparison.runs.reduce((left, right) =>
+            left.wrappedP95Speedup < right.wrappedP95Speedup ? left : right);
+    return [
+        "### 64 fixture-derived global wide-query pressure gate",
+        "",
+        `Required P95 speedup in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
+        "",
+        `- Worst paired base P50 / P95: **${ms(worst.baseP50LatencyNanos)} / ` +
+            `${ms(worst.baseP95LatencyNanos)}**`,
+        `- Worst paired candidate P50 / P95: **${ms(worst.p50LatencyNanos)} / ` +
+            `${ms(worst.p95LatencyNanos)}**`,
+        `- Worst individual P95 speedup (retained for audit): **${worst.p95Speedup.toFixed(2)}x**`,
+        `- Worst wrapped case-insensitive P95 speedup: **${worstWrapped.wrappedP95Speedup.toFixed(2)}x**`,
+        `- Worst order-median P95 speedup: **${worstOrder.medianP95Speedup.toFixed(2)}x**`,
+        ...comparison.orderSummaries.map(summary =>
+            `- ${summary.order}: **${summary.runCount} pair(s), ` +
+            `${summary.medianP50Speedup.toFixed(2)}x P50 / ${summary.medianP95Speedup.toFixed(2)}x P95**`),
+        "",
+        "| Pair | Order | Base P50 | Base P95 | Candidate P50 | Candidate P95 | P50 speedup | P95 speedup | CPU total | CPU cores | Heap | RSS |",
+        "| ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ...comparison.runs.map((run, index) =>
+            `| ${index + 1} | ${run.order} | ${ms(run.baseP50LatencyNanos)} | ${ms(run.baseP95LatencyNanos)} | ` +
+            `${ms(run.p50LatencyNanos)} | ${ms(run.p95LatencyNanos)} | ` +
+            `${run.p50Speedup.toFixed(2)}x | ${run.p95Speedup.toFixed(2)}x | ` +
+            `${ms(run.baseProcessCpuNanos)} → ${ms(run.processCpuNanos)} | ` +
+            `${(run.cpuCoreUtilizationPermille / 1000).toFixed(2)} | ` +
+            `${gib(run.basePeakUsedHeapBytes)} → ${gib(run.peakUsedHeapBytes)} | ` +
+            `${gib(run.basePeakResidentSetBytes)} → ${gib(run.peakResidentSetBytes)} |`
+        ),
+        "",
+        comparison.passed ? "**Result: PASS**" : `**Result: FAIL**\n\n${comparison.errors.join("\n")}`,
+        ""
+    ].join("\n");
+}
+
 export function renderGraphIdPressureReport(comparison) {
     const baseResources = comparison.resources.base;
     const candidateResources = comparison.resources.candidate;
@@ -1490,13 +1916,8 @@ export function renderGraphIdPressureReport(comparison) {
         "",
         `Index state: **${comparison.indexState}**`,
         "",
-        comparison.indexState === "startup-prepared"
-            ? `Required speedup: ${comparison.minimumSpeedup.toFixed(1)}x for query-level graphId P95; ` +
-                `graphId P50 and request-selected P50/P95 may regress by at most ` +
-                `${(comparison.maximumGraphIdP50Regression * 100).toFixed(0)}% or 0.25ms of absolute jitter.`
-            : `Cold/warm safety gate: query-level graphId and request-selected P50/P95 may regress by at most ` +
-                `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% or 0.25ms of absolute jitter; ` +
-                `the 10x target applies to the production startup-prepared P95.`,
+        `Post-optimization regression gate: query-level graphId and request-selected P50/P95 may regress by at most ` +
+            `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% or 0.25ms of absolute jitter.`,
         "",
         `- Query-level graphId P50 speedup: **${comparison.p50Speedup.toFixed(2)}x**`,
         `- Query-level graphId P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
@@ -2334,6 +2755,30 @@ function compareGraphIdPressureCommand(args) {
     if (!comparison.passed) process.exitCode = 1;
 }
 
+function commaSeparatedFiles(args, name) {
+    return requireArg(args, name).split(",").map((file) => file.trim()).filter(Boolean);
+}
+
+function compareGlobalWidePressureCommand(args) {
+    const baseFiles = commaSeparatedFiles(args, "bases");
+    const candidateFiles = commaSeparatedFiles(args, "candidates");
+    const baseObservationFiles = commaSeparatedFiles(args, "base-observations");
+    const candidateObservationFiles = commaSeparatedFiles(args, "candidate-observations");
+    const comparison = compareGlobalWidePressure(
+        baseFiles.map(readJson),
+        candidateFiles.map(readJson),
+        baseObservationFiles.map((file) => fs.readFileSync(file, "utf8")),
+        candidateObservationFiles.map((file) => fs.readFileSync(file, "utf8")),
+        fs.readFileSync(requireArg(args, "correctness-oracle"), "utf8"),
+        Number(args["minimum-speedup"] ?? 10),
+        requireArg(args, "run-orders").split(",").map((order) => order.trim()).filter(Boolean),
+        fs.readFileSync(requireArg(args, "graph-manifest"), "utf8")
+    );
+    writeFile(requireArg(args, "report"), renderGlobalWidePressureReport(comparison));
+    writeJson(requireArg(args, "status"), comparison);
+    if (!comparison.passed) process.exitCode = 1;
+}
+
 function deriveGraphRoutingOracleCommand(args) {
     const result = deriveGraphRoutingOracle(
         fs.readFileSync(requireArg(args, "references"), "utf8")
@@ -2469,6 +2914,7 @@ function main(argv) {
     else if (command === "compare-latency-baseline") compareLatencyBaselineCommand(args);
     else if (command === "derive-graph-routing-oracle") deriveGraphRoutingOracleCommand(args);
     else if (command === "compare-graph-id-pressure") compareGraphIdPressureCommand(args);
+    else if (command === "compare-global-wide-pressure") compareGlobalWidePressureCommand(args);
     else if (command === "confirm-latency-baseline") confirmLatencyBaselineCommand(args);
     else if (command === "compare-latency-anchor") compareLatencyAnchorCommand(args);
     else if (command === "confirm-latency-anchor") confirmLatencyAnchorCommand(args);

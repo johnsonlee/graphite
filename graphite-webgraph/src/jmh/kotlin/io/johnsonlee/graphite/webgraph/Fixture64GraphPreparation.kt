@@ -239,6 +239,9 @@ internal object Fixture64GraphPreparation {
 
     private fun selectTerms(graphId: String, callSites: List<CallSiteNode>): FixtureSearchTerms {
         val valuesByNode = callSites.map(::searchableValues)
+        val lowercaseValuesByNode = valuesByNode.map { values ->
+            values.mapTo(linkedSetOf(), String::lowercase)
+        }
         val frequencies = HashMap<String, Int>()
         valuesByNode.forEach { values ->
             values.forEach { value -> frequencies.compute(value) { _, count -> (count ?: 0) + 1 } }
@@ -250,18 +253,26 @@ internal object Fixture64GraphPreparation {
             }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.key.length }.thenBy { it.key })
             .map(Map.Entry<String, Int>::key)
-            .firstOrNull { term -> matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) in TARGETED_RESULT_RANGE }
+            .firstOrNull { term ->
+                matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) in TARGETED_RESULT_RANGE &&
+                    matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) in
+                    TARGETED_RESULT_RANGE
+            }
             ?: error("Unable to derive a 1..199-row targeted term for $graphId")
 
         val dense = DENSE_TERM_CANDIDATES.firstOrNull { term ->
-            term != targeted && matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
+            term != targeted && matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT &&
+                matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
         } ?: frequencies.entries.asSequence()
             .filter { (value, count) ->
                 value != targeted && count >= DENSE_RESULT_LIMIT && isManifestSafe(value)
             }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
             .map(Map.Entry<String, Int>::key)
-            .firstOrNull { term -> matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT }
+            .firstOrNull { term ->
+                matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT &&
+                    matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
+            }
             ?: error("Unable to derive a 200-row dense term for $graphId")
 
         val zero = "__graphite_fixture64_absent_${graphId}__"
@@ -274,7 +285,7 @@ internal object Fixture64GraphPreparation {
         node.caller.name,
         node.callee.declaringClass.className,
         node.callee.name
-    ).mapTo(linkedSetOf()) { value -> value.lowercase() }
+    )
 
     private fun matchingNodeCount(valuesByNode: List<Set<String>>, term: String, limit: Int): Int {
         var count = 0
@@ -705,7 +716,7 @@ internal object Fixture64GraphPreparation {
     private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v2-ordered"
     private const val SHARD_SEMANTIC_VERSION = "fixture64-shard-bytecode-v1"
     private const val RESOURCE_SEMANTIC_VERSION = "fixture64-resource-semantics-v1"
-    private const val WORKLOAD_IDENTITY_VERSION = "fixture64-workload-identity-v3"
+    private const val WORKLOAD_IDENTITY_VERSION = "fixture64-workload-identity-v4"
     private const val PROVENANCE_HEADER =
         "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +
             "\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tresourceCount" +

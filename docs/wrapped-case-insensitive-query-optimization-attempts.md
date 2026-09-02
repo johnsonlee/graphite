@@ -443,3 +443,32 @@ manifests may support latency, CPU, or memory conclusions.
 
 **Conclusion:** retained. Small cached queries avoid fused and fork-join setup,
 while real multi-graph searches keep bounded parallel scans.
+
+### 2026-09-02 - Attempt 016: Additive NCPU graph/segment plan
+
+The current wide-query plan reads `Runtime.availableProcessors()`; it does not hardcode 16. For
+`NCPU > 1`, the default divides that budget additively into
+`floor(NCPU / 2)` graph workers plus the remaining segment workers. Thus a 16-CPU process plans
+`8 + 8`, not `8 × 8`; a one-CPU process plans `1 + 0`. The number of graph workers is also capped
+by the number of selected sources.
+
+The intra-graph half is enabled by default for wide searches with at least 40 input graphs. Smaller
+existing real-fixture cases retain the legacy graph-level budget of `min(NCPU, 8, sourceCount)` and
+keep each storage lookup serial. This distinction fixed a regression where the 36-real-graph gate
+had accidentally been reduced from the main branch's available graph workers to half of NCPU: its
+cold zero-hit latency returned from about `1.26 s` to `0.583 s`, matching the `0.579 s` main result
+on the same host. A separate NCPU=4 reproduction reduced the candidate from `2.026 s` in CI to
+`0.919 s` after restoring all four graph workers.
+
+`graphite.cypher.directStringParallelism=N` means “allocate N graph workers from the process-wide
+NCPU budget”; the remaining `NCPU-N` workers are available for segment scans. For example, an
+override of 16 on a 16-CPU process produces `16 + 0`, never 24 runnable scan workers. This planner
+does not infer concurrency from unused heap. Heap governs persisted-index admission separately;
+the scan plan is CPU- and source-count-based.
+
+The 64-real-graph gate uses graph shards regenerated from four pinned fixture JARs, three
+alternating base/candidate fork pairs whose individual P95 speedups must each clear 10x, exact
+result digests, targeted hits distributed from the first through the sixty-fourth graph, and a
+zero-hit proof that all 64 graphs were searched. Synthetic graphs remain correctness-only and
+cannot establish performance. The gate uses raw case-sensitive `CONTAINS` predicates matching the
+production query shape; wrapped lowercase predicates remain separate persisted-index coverage.

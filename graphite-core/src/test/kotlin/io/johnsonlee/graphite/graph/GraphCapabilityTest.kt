@@ -9,6 +9,21 @@ import kotlin.test.assertNull
 class GraphCapabilityTest {
 
     @Test
+    fun `balanced graph scan parallelism divides NCPU additively`() {
+        assertEquals(GraphScanParallelismPlan(8, 8), GraphScanParallelismPlan.balanced(16))
+        assertEquals(GraphScanParallelismPlan(3, 4), GraphScanParallelismPlan.balanced(7))
+        assertEquals(GraphScanParallelismPlan(1, 0), GraphScanParallelismPlan.balanced(1))
+        assertEquals(GraphScanParallelismPlan(1, 0), GraphScanParallelismPlan.balanced(0))
+    }
+
+    @Test
+    fun `graph worker override preserves one additive NCPU budget`() {
+        assertEquals(GraphScanParallelismPlan(16, 0), GraphScanParallelismPlan.withGraphWorkers(16, 16))
+        assertEquals(GraphScanParallelismPlan(2, 14), GraphScanParallelismPlan.withGraphWorkers(16, 2))
+        assertEquals(GraphScanParallelismPlan(1, 0), GraphScanParallelismPlan.withGraphWorkers(1, 16))
+    }
+
+    @Test
     fun `string disjunction capability defaults and lifecycle are callable`() {
         var work = 0L
         val batch = object : GraphWorkBatchConsumer {

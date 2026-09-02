@@ -25,12 +25,14 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -68,7 +70,6 @@ private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
 private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relationshipMatchState"
 private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
-private val noOpSerialGraphWorkConsumer = SerialGraphWorkBatchConsumer { }
 private val noOpParallelGraphWorkConsumer = ParallelGraphWorkBatchConsumer { }
 
 private data class MatchedPathSegment(
@@ -81,7 +82,8 @@ private data class RelationshipMatchState(
     val used: Set<QualifiedEdge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
-private const val DEFAULT_DIRECT_STRING_PARALLELISM = 8
+private const val BALANCED_STRING_SCAN_MIN_SOURCE_COUNT = 40
+private const val LEGACY_DIRECT_STRING_GRAPH_PARALLELISM = 8
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
 private typealias DirectNodePredicateFactory = (CypherGraph) -> (Node) -> Boolean
 
@@ -91,20 +93,100 @@ private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
 
 private val directStringWorkerNumber = AtomicInteger()
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
+private val directStringActiveWorkers = AtomicInteger()
+private val directStringPeakActiveWorkers = AtomicInteger()
 
-private val directStringParallelism: Int by lazy {
-    val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-    System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+internal fun directStringGraphPeakActiveWorkers(): Int = directStringPeakActiveWorkers.get()
+
+internal fun resetDirectStringGraphWorkerMetrics() {
+    check(directStringActiveWorkers.get() == 0) { "Cannot reset active direct-string graph worker metrics" }
+    directStringPeakActiveWorkers.set(0)
+}
+
+internal fun resolveDirectStringParallelismPlan(
+    processors: Int = Runtime.getRuntime().availableProcessors(),
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+): GraphScanParallelismPlan {
+    val available = processors.coerceAtLeast(1)
+    val override = configuredGraphWorkers
         ?.toIntOrNull()
-        ?.coerceIn(1, processors)
-        ?: minOf(DEFAULT_DIRECT_STRING_PARALLELISM, processors)
+        ?.coerceIn(1, available)
+    return override?.let { GraphScanParallelismPlan.withGraphWorkers(available, it) }
+        ?: GraphScanParallelismPlan.balanced(available)
+}
+
+internal fun resolveDirectStringGraphParallelism(
+    sourceCount: Int,
+    processors: Int = Runtime.getRuntime().availableProcessors(),
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+): Int {
+    val available = processors.coerceAtLeast(1)
+    val candidates = sourceCount.coerceAtLeast(1)
+    if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
+        return minOf(candidates, available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM)
+    }
+    val plan = resolveDirectStringParallelismPlan(processors, configuredGraphWorkers)
+    return minOf(candidates, plan.graphWorkerCount)
+}
+
+internal fun resolveDirectStringExecutorParallelism(
+    processors: Int = Runtime.getRuntime().availableProcessors(),
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+): Int {
+    val available = processors.coerceAtLeast(1)
+    return maxOf(
+        minOf(available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM),
+        resolveDirectStringParallelismPlan(available, configuredGraphWorkers).graphWorkerCount
+    )
+}
+
+private val configuredDirectStringParallelism by lazy { System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY) }
+private val directStringParallelismPlan by lazy {
+    resolveDirectStringParallelismPlan(configuredGraphWorkers = configuredDirectStringParallelism)
+}
+private val directStringParallelism: Int by lazy { directStringParallelismPlan.graphWorkerCount }
+private val directStringExecutorParallelism: Int by lazy {
+    resolveDirectStringExecutorParallelism(configuredGraphWorkers = configuredDirectStringParallelism)
 }
 private val directStringExecutor by lazy {
-    Executors.newFixedThreadPool(directStringParallelism) { runnable ->
+    Executors.newFixedThreadPool(directStringExecutorParallelism) { runnable ->
         Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
             isDaemon = true
         }
     }
+}
+
+private fun directStringGraphParallelism(sourceCount: Int): Int =
+    resolveDirectStringGraphParallelism(sourceCount, configuredGraphWorkers = configuredDirectStringParallelism)
+
+private fun usesBalancedStringSplit(sourceCount: Int): Boolean =
+    configuredDirectStringParallelism != null || sourceCount >= BALANCED_STRING_SCAN_MIN_SOURCE_COUNT
+
+private class SplitStringGraphWorkConsumer(
+    override val segmentWorkerCount: Int,
+    private val consumeBatch: (Long) -> Unit
+) : SplitGraphWorkBatchConsumer {
+    override fun consume(workUnits: Long) = consumeBatch(workUnits)
+}
+
+internal fun directStringStorageWorkConsumer(
+    sourceCount: Int,
+    processors: Int = Runtime.getRuntime().availableProcessors(),
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
+    consumeBatch: ((Long) -> Unit)? = null
+): GraphWorkConsumer = if (sourceCount == 1) {
+    consumeBatch?.let { consume -> ParallelGraphWorkBatchConsumer(consume) } ?: noOpParallelGraphWorkConsumer
+} else if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
+    object : SerialGraphWorkBatchConsumer {
+        override fun consume(workUnits: Long) {
+            consumeBatch?.invoke(workUnits)
+        }
+    }
+} else {
+    SplitStringGraphWorkConsumer(
+        resolveDirectStringParallelismPlan(processors, configuredGraphWorkers).segmentWorkerCount,
+        consumeBatch ?: { _ -> }
+    )
 }
 
 private class WorkTrackingSequence<T>(
@@ -146,6 +228,7 @@ private val CALL_SITE_DIRECT_STRING_PROPERTIES = setOf(
     "callee_class",
     "callee_name"
 )
+private val CALL_SITE_NULL_STRING_PROPERTIES = setOf("class", "name")
 
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
@@ -960,7 +1043,8 @@ class QueryPipeline private constructor(
             countedExpression.propertyName !in QUALIFIED_NODE_PROPERTIES
         val useRawNodes = exactCandidatePredicate && rawCountExpression
         val sharedWorkTracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val parallel = qualified && candidateSources.size > 1 && directStringParallelism > 1 &&
+        val graphParallelism = directStringGraphParallelism(candidateSources.size)
+        val parallel = qualified && candidateSources.size > 1 && graphParallelism > 1 &&
             !directStringWorkerActive.get()
         val partials = if (parallel) {
             runDirectStringTasks(candidateSources.map { source ->
@@ -978,7 +1062,7 @@ class QueryPipeline private constructor(
                         sharedWorkTracker
                     )
                 }
-            })
+            }, graphParallelism)
         } else {
             candidateSources.map { source ->
                 filteredStringCountPartial(
@@ -1493,8 +1577,8 @@ class QueryPipeline private constructor(
             nodePredicateFactory,
             candidateSources
         )?.let { return it }
-        if (workTrackingEnabled ||
-            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)
+        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
+            workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in candidateSources) {
@@ -1532,12 +1616,21 @@ class QueryPipeline private constructor(
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
+        // Preserve source order without eagerly paying the fixed index/range cost for an entire
+        // graph wave when the leading graph alone satisfies LIMIT. Sparse and zero-hit queries
+        // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
+        if (usesBalancedStringSplit(candidateSources.size)) {
+            rows += scanners.first().nextRows(limit)
+            if (rows.size >= limit) return CypherResult(columns, rows.take(limit))
+            waveStart = 1
+        }
         while (waveStart < scanners.size && rows.size < limit) {
-            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + directStringParallelism))
+            val graphParallelism = directStringGraphParallelism(candidateSources.size)
+            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val batches = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextRows(limit) }
-            })
+            }, graphParallelism)
             batches.forEach { batch ->
                 val remaining = limit - rows.size
                 if (remaining > 0) rows += batch.take(remaining)
@@ -1628,7 +1721,8 @@ class QueryPipeline private constructor(
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         candidateSources: List<CypherGraph>
-    ): Boolean = qualified && candidateSources.size > 1 && directStringParallelism > 1 &&
+    ): Boolean = qualified && candidateSources.size > 1 &&
+        directStringGraphParallelism(candidateSources.size) > 1 &&
         !directStringWorkerActive.get() &&
         shouldParallelizeStringScan(nodeClass, filter, candidateSources) && items.all { item ->
         when (val expression = item.expression) {
@@ -1699,10 +1793,11 @@ class QueryPipeline private constructor(
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         var waveStart = 0
         while (waveStart < scanners.size && rows.size < limit) {
-            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + directStringParallelism))
+            val graphParallelism = directStringGraphParallelism(candidateSources.size)
+            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val initial = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextDistinctRows(limit) }
-            })
+            }, graphParallelism)
             for (index in wave.indices) {
                 var batch = initial[index]
                 mergeDirectStringBatch(rows, batch.rows, limit)
@@ -1719,7 +1814,7 @@ class QueryPipeline private constructor(
             val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
             val hits = runDirectStringTasks(scanners.map { scanner ->
                 { scanner.collectRemainingSelectedRows(selectedMatcher) }
-            })
+            }, directStringGraphParallelism(candidateSources.size))
             hits.forEachIndexed { index, visibleRows ->
                 val graphId = scanners[index].source.id
                 visibleRows.forEach { visible ->
@@ -1750,7 +1845,8 @@ class QueryPipeline private constructor(
             property.propertyName
         }
         if (projectedProperties.any { property ->
-                property != GRAPH_ID_PROPERTY && property !in CALL_SITE_DIRECT_STRING_PROPERTIES
+                property != GRAPH_ID_PROPERTY && property !in CALL_SITE_DIRECT_STRING_PROPERTIES &&
+                    property !in CALL_SITE_NULL_STRING_PROPERTIES
             }
         ) return null
         val callSiteFilters = filter.filters.filter { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
@@ -1763,16 +1859,16 @@ class QueryPipeline private constructor(
         }
         val orders = candidateSources.map { source -> source.graph as? StringPropertyLookupOrder ?: return null }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
-
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         val zeroHitSources = BooleanArray(candidateSources.size)
         var waveStart = 0
         while (waveStart < candidateSources.size && rows.size < limit) {
-            val waveEnd = minOf(candidateSources.size, waveStart + directStringParallelism)
+            val graphParallelism = directStringGraphParallelism(candidateSources.size)
+            val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
             val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
                 {
                     val source = candidateSources[sourceIndex]
+                    val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
                     val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         predicates,
@@ -1809,7 +1905,7 @@ class QueryPipeline private constructor(
                     }
                     distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
                 }
-            })
+            }, graphParallelism)
             localRows.forEachIndexed { localIndex, sourceRows ->
                 if (sourceRows.isEmpty()) {
                     val sourceIndex = waveStart + localIndex
@@ -1842,6 +1938,7 @@ class QueryPipeline private constructor(
         val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
             {
                 val source = candidateSources[sourceIndex]
+                val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
                 val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
                 val rawHits = mutableSetOf<Map<String, Any?>>()
                 if (sourceSelectedValues.isNotEmpty()) {
@@ -1869,7 +1966,7 @@ class QueryPipeline private constructor(
                 }
                 rawHits
             }
-        })
+        }, directStringGraphParallelism(candidateSources.size))
         hits.forEachIndexed { hitIndex, visibleRows ->
             val sourceIndex = provenanceSourceIndexes[hitIndex]
             val graphId = candidateSources[sourceIndex].id
@@ -1948,7 +2045,10 @@ class QueryPipeline private constructor(
     }
 
     @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-    private fun <T> runDirectStringTasks(tasks: List<() -> T>): List<T> {
+    private fun <T> runDirectStringTasks(
+        tasks: List<() -> T>,
+        parallelism: Int = directStringParallelism
+    ): List<T> {
         if (tasks.size == 1) return listOf(tasks.single().invoke())
         val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
         val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
@@ -1965,17 +2065,24 @@ class QueryPipeline private constructor(
                 }
                 val previouslyActive = directStringWorkerActive.get()
                 directStringWorkerActive.set(true)
+                val activeWorkers = directStringActiveWorkers.incrementAndGet()
+                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
                     IndexedValue(index, tasks[index]())
                 } finally {
-                    if (previouslyActive) directStringWorkerActive.set(true) else directStringWorkerActive.remove()
+                    directStringActiveWorkers.decrementAndGet()
+                    if (previouslyActive) {
+                        directStringWorkerActive.set(true)
+                    } else {
+                        directStringWorkerActive.remove()
+                    }
                     completion.countDown()
                 }
             })
         }
         return try {
             var nextTask = 0
-            repeat(minOf(tasks.size, directStringParallelism)) { submit(nextTask++) }
+            repeat(minOf(tasks.size, parallelism.coerceAtLeast(1))) { submit(nextTask++) }
             val results = arrayOfNulls<Any?>(tasks.size)
             repeat(tasks.size) {
                 val result = completionService.take().get()
@@ -2740,7 +2847,8 @@ class QueryPipeline private constructor(
         val nodeClass = resolveNodeClass(nodePattern.labels) ?: return CypherResult(columns, emptyList())
         val parameters = activeParameters.get().orEmpty()
         val plan = DirectStringCandidatePlan.compile(where.condition, variable, parameters) ?: return null
-        if (candidateSources.size <= 1 || directStringParallelism <= 1 ||
+        val graphParallelism = directStringGraphParallelism(candidateSources.size)
+        if (candidateSources.size <= 1 || graphParallelism <= 1 ||
             directStringWorkerActive.get() || !shouldParallelizeStringScan(nodeClass, plan.candidates)
         ) {
             return null
@@ -2751,7 +2859,7 @@ class QueryPipeline private constructor(
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         var waveStart = 0
         while (waveStart < candidateSources.size) {
-            val waveEnd = minOf(candidateSources.size, waveStart + directStringParallelism)
+            val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
             val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
                 {
                     val source = candidateSources[sourceIndex]
@@ -2792,7 +2900,7 @@ class QueryPipeline private constructor(
                     }
                     localTopRows.toList()
                 }
-            })
+            }, graphParallelism)
             localRows.forEach { rows ->
                 rows.forEach { ranked -> addOrderedTopRow(topRows, ranked, retainedCount, comparator) }
             }
@@ -3958,13 +4066,13 @@ class QueryPipeline private constructor(
     private fun stringStorageWorkConsumer(
         sourceCount: Int,
         tracker: CypherWorkTracker?
-    ): GraphWorkConsumer = if (sourceCount == 1) {
-        tracker?.let { activeTracker -> ParallelGraphWorkBatchConsumer(activeTracker::consume) }
-            ?: noOpParallelGraphWorkConsumer
-    } else {
-        tracker?.let { activeTracker -> SerialGraphWorkBatchConsumer(activeTracker::consume) }
-            ?: noOpSerialGraphWorkConsumer
-    }
+    ): GraphWorkConsumer = directStringStorageWorkConsumer(
+        sourceCount,
+        configuredGraphWorkers = configuredDirectStringParallelism,
+        consumeBatch = tracker?.let { activeTracker ->
+            { workUnits -> activeTracker.consume(workUnits) }
+        }
+    )
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {
         is QualifiedNode -> NodeCursor(CypherGraph(value.graphId, value.graph), value.node, value)

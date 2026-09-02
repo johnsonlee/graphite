@@ -76,6 +76,48 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
 fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
 /**
+ * A thread-safe batch consumer for a cross-graph lookup that splits one process-wide CPU budget
+ * between graph workers and a shared background segment pool. The calling graph worker participates
+ * in the scan; [segmentWorkerCount] is the maximum number of additional workers that this lookup may
+ * request from that shared pool. Concurrent graph lookups share the same pool, so this value is not
+ * multiplied by the number of graph workers.
+ */
+interface SplitGraphWorkBatchConsumer : ParallelGraphWorkBatchConsumer {
+    val segmentWorkerCount: Int
+}
+
+/** Additive graph/segment worker allocation used by broad cross-graph scans. */
+data class GraphScanParallelismPlan(
+    val graphWorkerCount: Int,
+    val segmentWorkerCount: Int
+) {
+    init {
+        require(graphWorkerCount > 0) { "graphWorkerCount must be positive" }
+        require(segmentWorkerCount >= 0) { "segmentWorkerCount must not be negative" }
+    }
+
+    companion object {
+        /** Splits NCPU evenly; the segment side receives the spare CPU when NCPU is odd. */
+        fun balanced(processors: Int = Runtime.getRuntime().availableProcessors()): GraphScanParallelismPlan {
+            val available = processors.coerceAtLeast(1)
+            if (available == 1) return GraphScanParallelismPlan(1, 0)
+            val graphWorkers = available / 2
+            return GraphScanParallelismPlan(graphWorkers, available - graphWorkers)
+        }
+
+        /** Applies a graph-worker override while keeping graph plus segment workers within NCPU. */
+        fun withGraphWorkers(
+            processors: Int = Runtime.getRuntime().availableProcessors(),
+            graphWorkers: Int
+        ): GraphScanParallelismPlan {
+            val available = processors.coerceAtLeast(1)
+            val boundedGraphWorkers = graphWorkers.coerceIn(1, available)
+            return GraphScanParallelismPlan(boundedGraphWorkers, available - boundedGraphWorkers)
+        }
+    }
+}
+
+/**
  * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
  * already parallelizes independent graph sources. This avoids nested scan pools while preserving
  * the same shared work and cancellation accounting.
