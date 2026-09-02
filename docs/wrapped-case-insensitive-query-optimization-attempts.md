@@ -1412,3 +1412,29 @@ cancellation, corrupt fallback, and version-2 compatibility.
 **Conclusion:** reverted after the complete screening run. Strong stream authentication preserves
 the hard correctness gate but does not produce a net speedup on this workload. This docs-only
 commit leaves the production version-2 format and reader unchanged.
+
+### 2026-09-03 - Attempt 047: Bulk stream CRC writer-trust sidecar
+
+**Hypothesis:** replace Attempt 046's SHA-256 trailer with a raw-byte CRC consumed below the buffered
+reader. Preserve complete-stream corruption detection, content identity, bounds checks, work and
+cancellation behavior, legacy version-2 support, and publication only after checksum success, while
+removing the SHA cost and redundant writer-order validation.
+
+**Evidence:**
+
+- Dataset: 64 distinct persisted shards freshly regenerated from the four pinned fixture JARs at
+  `/tmp/pr113-exp047-fixture64/`. Base revision: `7198b28`, production-equivalent `0fdba6c`;
+  candidate: the isolated Attempt 047 snapshot. The complete 34-case output is under
+  `/tmp/pr113-exp047-quick/`.
+- Correctness: all 34 real-fixture cases matched the oracle. Focused corrupt-sidecar, work-budget,
+  cancellation, and legacy version-2 tests passed, as did compilation and detekt.
+- Aggregate P50/P95 were `1.591/37.134 ms`; the cold four-property zero row took `283.645 ms`.
+  These do not establish a repeatable 2x improvement over current-production screening ranges of
+  about `1.6-1.9/29-44 ms` and `312-372 ms`.
+- Process CPU was `3.367 s`, peak used heap `4.08 GiB`, peak RSS `4.21 GiB`, and charged work
+  `57,897,572` units. The resource figures are acceptable but do not compensate for the missing
+  latency milestone.
+
+**Conclusion:** reverted. Bulk CRC is cheaper than SHA-256 but still does not deliver a stable 2x
+step or independently remove the exact-head aligned latency blocker. This docs-only commit retains
+neither the new persistence version nor the trusted-order reader.
