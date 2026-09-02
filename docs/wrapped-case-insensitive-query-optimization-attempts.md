@@ -1497,3 +1497,37 @@ not graph-by-segment multiplication.
 **Conclusion:** reverted after the complete screening run. Parallel posting-order validation does
 not provide a repeatable 2x step and makes the cold zero row slower. This docs-only commit leaves
 the serial version-2 validator unchanged.
+
+### 2026-09-03 - Attempt 050: Bulk sidecar decode with parallel property validation
+
+**Hypothesis:** remove `DataInputStream`'s per-primitive decode overhead by bulk-reading the existing
+version-2 sidecar, copying each primitive array through `IntBuffer` / `LongBuffer`, and validating
+the four property CSR sections concurrently with the shared segment half of the NCPU plan. Preserve
+the existing content identity, CRC, bounds, posting-order, work-budget, cancellation, and corrupt
+sidecar fallback checks.
+
+**Evidence:**
+
+- Dataset: the same 64 distinct persisted graph shards generated from the four pinned Android,
+  Tika, Hive, and Kotlin compiler fixture JARs. Base revision: `74f479d`, production-equivalent
+  `0fdba6c`; candidate: an isolated Attempt 050 snapshot under
+  `/tmp/graphite-exp050.X8t1Y0/repo`. The complete 34-case screening output is under
+  `/tmp/pr113-exp050-quick/`.
+- Correctness: all 34 result records matched the preceding real-fixture reference on outcome, row
+  count, response bytes, digest, and hit graph IDs. Focused tests passed for lazy persisted restore,
+  corrupt/trailing sidecar fallback and atomic rebuild, graph-identity rejection, exact work
+  charging, and interruption without publication. Compilation and detekt also passed.
+- The observed worker peaks remained the required additive `8 graph + 8 segment` on 16 CPUs.
+  Aggregate P50/P95 were `1.755/38.855 ms`, compared with the immediately preceding production
+  screening's `1.755/32.334 ms`. P95 therefore regressed by 20.2% instead of reaching the 2x keep
+  threshold.
+- The cold four-property zero row improved from `389.198` to `308.903 ms` (1.26x), while process
+  CPU was effectively flat at `4.093 s` versus `4.105 s`. Charged work remained exactly
+  `57,897,636` units.
+- Peak used heap was `4.56 GiB` and peak RSS was `4.86 GiB`, versus `4.37/4.73 GiB` in the preceding
+  production screening. Bulk byte arrays add transient allocation without producing a material
+  CPU or tail-latency benefit.
+
+**Conclusion:** reverted after the complete screening run. Bulk primitive decode plus parallel
+structural validation provides only a 1.26x cold-row micro-improvement and regresses aggregate P95.
+This docs-only commit leaves the streaming version-2 reader unchanged.
