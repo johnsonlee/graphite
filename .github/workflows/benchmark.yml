@@ -1947,20 +1947,42 @@ jobs:
         candidate/gradlew -p candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 
+    - name: Restore fixture64 graph cache
+      id: fixture64-cache
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          shared-fixture64/graphs
+          fixture64-repeat-cache
+        key: >-
+          ${{ runner.os }}-${{ runner.arch }}-fixture64-real-v1-temurin17-${{
+          hashFiles('candidate/graphite-webgraph/build/benchmark-fixtures/*.jar',
+          'candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties',
+          'candidate/settings.gradle.kts', 'candidate/build.gradle.kts',
+          'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**',
+          'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**',
+          'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt',
+          'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt',
+          'candidate/.github/scripts/prepare-fixture64-graphs.sh',
+          'candidate/.github/scripts/test-fixture64-reproducibility.sh') }}
+
     - name: Generate and authenticate one shared fixture64 artifact
       env:
         CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        FIXTURE64_CACHE_HIT: ${{ steps.fixture64-cache.outputs.cache-hit }}
       run: |
         CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         FIXTURE_DIR=candidate/graphite-webgraph/build/benchmark-fixtures
         test -f "${CANDIDATE_JAR}"
         mkdir -p shared-fixture64
-        candidate/.github/scripts/prepare-fixture64-graphs.sh \
-          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+        if [[ "${FIXTURE64_CACHE_HIT}" != true ]]; then
+          candidate/.github/scripts/prepare-fixture64-graphs.sh \
+            "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+        fi
         candidate/.github/scripts/test-fixture64-reproducibility.sh \
           "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
-          "${RUNNER_TEMP}/fixture64-repeat" shared-fixture64/fixture-reproducibility.json
+          fixture64-repeat-cache shared-fixture64/fixture-reproducibility.json
         mapfile -t FIXTURE_JARS < <(find "${FIXTURE_DIR}" -maxdepth 1 -type f -name '*.jar' -print | sort)
         test "${#FIXTURE_JARS[@]}" -eq 4
         FIXTURE_JAR_SET_SHA=$(
@@ -1982,6 +2004,15 @@ jobs:
             fixtureJarSetSha256: $fixtureJarSetSha256, manifestSha256: $manifestSha256,
             provenanceSha256: $provenanceSha256, receiptSha256: $receiptSha256}' \
           > shared-fixture64/fixture64.complete.json
+
+    - name: Save fixture64 graph cache
+      if: steps.fixture64-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          shared-fixture64/graphs
+          fixture64-repeat-cache
+        key: ${{ steps.fixture64-cache.outputs.cache-primary-key }}
 
     - name: Upload shared fixture64 corpus
       uses: actions/upload-artifact@v7

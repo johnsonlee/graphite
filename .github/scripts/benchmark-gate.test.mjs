@@ -1856,6 +1856,10 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(source, /duplicates query-semantic graph content/);
     assert.match(source, /Synthetic nodes are never used/);
     assert.equal((reproducibility.match(/prepare-fixture64-graphs\.sh/g) ?? []).length, 1);
+    assert.match(reproducibility, /if \[\[ ! -e "\$\{SECOND_OUTPUT\}" \]\]/);
+    assert.match(reproducibility, /relocate_output "\$\{FIRST_OUTPUT\}"/);
+    assert.match(reproducibility, /relocate_output "\$\{SECOND_OUTPUT\}"/);
+    assert.match(reproducibility, /for OUTPUT in "\$\{FIRST_OUTPUT\}" "\$\{SECOND_OUTPUT\}"/);
     assert.match(reproducibility, /cut -f1-20/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
@@ -2972,6 +2976,19 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     )?.[0] ?? "";
     assert.match(fixture64Job, /prepare-fixture64-graphs\.sh/);
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
+    assert.match(fixture64Job, /actions\/cache\/restore@v5/);
+    assert.match(fixture64Job, /actions\/cache\/save@v5/);
+    assert.match(fixture64Job, /fixture64-real-v1-temurin17/);
+    assert.match(fixture64Job, /graphite-webgraph\/build\/benchmark-fixtures\/\*\.jar/);
+    assert.match(fixture64Job, /graphite-core\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /graphite-sootup\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
+    assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
+    assert.match(
+        fixture64Job,
+        /path: \|\n\s+shared-fixture64\/graphs\n\s+fixture64-repeat-cache/
+    );
     assert.match(fixture64Job, /fixture64\.complete\.json/);
     assert.match(fixture64Job, /Upload shared fixture64 corpus/);
     assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
