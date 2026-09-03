@@ -2375,3 +2375,35 @@ and leave the existing atomic best-effort writer on the non-request graph-close 
 
 **Conclusion:** keep pending full verification. This restores legacy sidecar self-repair and
 repeat-query reuse without reintroducing request-thread persistence or unbounded cache retention.
+
+### 2026-09-03 - Attempt 076: Bypass raw projection for transformed leading rows
+
+**Hypothesis:** the remaining hosted `global-wide-wrapped-case-insensitive/dense` regression comes
+from converting 200 storage-projected rows into Cypher result maps. Bypass the raw projection for
+transformed predicates so the existing bounded serial node path handles the leading graph, while
+retaining the same source ordering, LIMIT, work accounting, and later-graph fanout.
+
+**Evidence:**
+
+- Base: exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate: an isolated
+  one-line routing snapshot based on that head; the rejected production change is not retained.
+  Dataset: the same 64 distinct persisted shards generated from the pinned Android, Tika, Hive,
+  and Kotlin compiler fixture JARs in `/tmp/pr113-exp074-real-a/graphs.tsv`. Synthetic timing data
+  was not used.
+- Three four-CPU, 8 GiB cold-index base runs are under
+  `/tmp/pr113-attempt076-control.YmW6XG/results/`; three candidate runs are under
+  `/tmp/pr113-attempt076-node-leading/`. All six runs completed 34/34 queries, and every candidate
+  row count, ordered digest, response size, and provenance matched the base-recorded oracle.
+- The targeted hosted blocker regressed in every local pair. Wrapped non-DISTINCT dense moved from
+  `1.416/1.342/1.334 ms` to `2.619/2.620/2.579 ms` while retaining exactly 665 charged work units.
+  Node materialization and property projection are therefore more expensive than the existing raw
+  storage projection; the proposed bypass does not remove the measured cost.
+- Overall P50 was `3.010/2.896/3.075 ms` on base and `3.010/3.180/2.914 ms` on candidate; P95 was
+  `48.603/48.377/45.782 ms` and `49.284/48.392/46.444 ms`. Process CPU was
+  `1.664-1.803 s` on base and `1.680-1.893 s` on candidate. Peak heap stayed near 3.82 GB and peak
+  RSS near 4.29-4.35 GB, providing no resource justification for the deterministic dense
+  regression.
+
+**Conclusion:** reject and revert. Keep the allocation-bounded raw projection for transformed
+leading rows. The next experiment must target work before or inside the storage scan rather than
+replacing the projection with full node materialization.
