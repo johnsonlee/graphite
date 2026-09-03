@@ -3357,3 +3357,24 @@ the unscoped global-wide graph-worker policy is unchanged.
 
 **Conclusion:** pending exact real-64 validation. Keep only if selected K=64 no longer regresses and
 the unscoped global-wide 5x measurements and correctness gates remain intact.
+
+### 2026-09-03 - Attempt 109: Skip unused DISTINCT prepared probes
+
+**Hypothesis:** the DISTINCT projection path checks prepared-storage capability once for the leading
+graph and again for every provenance graph, although that result only controls the single-source
+consumer. A 64-graph global-wide query therefore performs 65 irrelevant sidecar checks. Short-circuit
+the capability lookup unless the query has exactly one candidate source; retain the existing
+balanced graph and segment execution for all multi-graph DISTINCT work.
+
+**Evidence:**
+
+- Base revision is Attempt 108; candidate exact hosted evidence is pending. Both use the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- Exact hosted Attempt 106 misses the required DISTINCT P95 floor in one pair by a narrow margin:
+  `1,345.983 -> 285.674 ms`, or `4.71x`, while the other two pairs reach `6.62x` and `6.77x`.
+- The existing 64-source DISTINCT provenance test now equips every source with the prepared
+  capability and asserts zero capability probes. It still proves leading-only initial projection,
+  all-source provenance lookup, exact merged graph IDs, and the balanced segment allocation.
+
+**Conclusion:** pending exact real-64 validation. Keep only if the wrapped DISTINCT P95 floor clears
+5x in every pair without changing the correctness oracle or graph-scoped single-source policy.

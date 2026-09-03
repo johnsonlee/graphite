@@ -2055,12 +2055,13 @@ class QueryPipeline private constructor(
         val zeroHitSources = BooleanArray(candidateSources.size)
         fun projectSource(sourceIndex: Int): IndexedProjectedRows {
             val source = candidateSources[sourceIndex]
-            val preparedStorage = (source.graph as? PreparedStringPropertyDisjunctionLookup)
-                ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+            val forceSerialStorage = candidateSources.size == 1 &&
+                (source.graph as? PreparedStringPropertyDisjunctionLookup)
+                    ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
             val storageWorkConsumer = stringStorageWorkConsumer(
                 candidateSources.size,
                 tracker,
-                forceSerial = candidateSources.size == 1 && preparedStorage
+                forceSerial = forceSerialStorage
             )
             val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
                 CallSiteNode::class.java,
@@ -2156,12 +2157,13 @@ class QueryPipeline private constructor(
         val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
             {
                 val source = candidateSources[sourceIndex]
-                val preparedStorage = (source.graph as? PreparedStringPropertyDisjunctionLookup)
-                    ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+                val forceSerialStorage = candidateSources.size == 1 &&
+                    (source.graph as? PreparedStringPropertyDisjunctionLookup)
+                        ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
                 val storageWorkConsumer = stringStorageWorkConsumer(
                     candidateSources.size,
                     tracker,
-                    forceSerial = candidateSources.size == 1 && preparedStorage
+                    forceSerial = forceSerialStorage
                 )
                 val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
                 val rawHits = mutableSetOf<Map<String, Any?>>()

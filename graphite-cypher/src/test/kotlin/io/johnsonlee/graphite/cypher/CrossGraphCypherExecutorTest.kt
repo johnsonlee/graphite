@@ -1911,16 +1911,26 @@ class CrossGraphCypherExecutorTest {
         val graphCount = 64
         val initialCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
         val selectedCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val persistentCapabilityChecks = AtomicInteger()
         val leadingSegments = AtomicInteger()
         val empty = graph()
         val value = listOf("example.Source", "call", "example.Target", "load")
         val graphs = List(graphCount) { sourceIndex ->
             CypherGraph("graph-$sourceIndex", object :
                 Graph by empty,
+                PreparedStringPropertyDisjunctionLookup,
                 StringPropertyDisjunctionDistinctProjection,
                 StringPropertyLookupOrder {
                 override fun nodeCount(type: Class<out Node>): Long? =
                     if (type == CallSiteNode::class.java) 1L else 0L
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    persistentCapabilityChecks.incrementAndGet()
+                    return true
+                }
 
                 override fun distinctStringPropertyDisjunction(
                     type: Class<out Node>,
@@ -1962,6 +1972,7 @@ class CrossGraphCypherExecutorTest {
 
         assertEquals(setOf(0), initialCalls)
         assertEquals((0 until graphCount).toSet(), selectedCalls)
+        assertEquals(0, persistentCapabilityChecks.get())
         assertEquals(resolveDirectStringParallelismPlan().segmentWorkerCount, leadingSegments.get())
         assertEquals(listOf("graph-0", "graph-63"), graphIds(result.rows.single()))
     }
