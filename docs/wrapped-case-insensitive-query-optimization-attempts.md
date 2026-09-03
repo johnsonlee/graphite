@@ -3378,3 +3378,31 @@ balanced graph and segment execution for all multi-graph DISTINCT work.
 
 **Conclusion:** pending exact real-64 validation. Keep only if the wrapped DISTINCT P95 floor clears
 5x in every pair without changing the correctness oracle or graph-scoped single-source policy.
+
+### 2026-09-03 - Attempt 110: Use retained CallSite indexes before trigram prefiltering
+
+**Hypothesis:** selected K=64 queries already have a retained `graph.callsite-string-index` for every
+graph, but the candidate probes `graph.callsite-trigram-prefilter` before consulting that in-memory
+index. Restore the constant-time retained-index check ahead of prefilter loading; keep the prefilter
+and raw segmented paths unchanged when no index is retained.
+
+**Evidence:**
+
+- Base revision is Attempt 109; candidate exact hosted evidence is pending. Both use the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- A same-machine real-64 cold screen confirms the remaining selected-set overhead before this
+  change: candidate K=64 literal/parameter zero-hit rows take `5.064/0.950 ms` versus main's
+  `0.789/0.183 ms`; targeted rows take `3.284/1.241 ms` versus `2.200/0.220 ms`. Access counts,
+  index lookup counts, row digests, and the correctness oracle match, isolating per-lookup planner
+  overhead rather than extra graph scanning.
+- A persisted-graph test first restores the CallSite index, then queries it with a split consumer.
+  It requires the exact node ID, one retained-index lookup, and an uninitialized trigram prefilter,
+  proving the fast path does not touch the additional sidecar.
+- The same-machine real-64 cold rerun rejects the hypothesis. Selected K=64 zero-hit remains
+  `4.706/1.016 ms` for literal/parameter forms versus main's `0.789/0.183 ms`; targeted remains
+  `3.252/1.039 ms` versus `2.200/0.220 ms`. The change is within run noise relative to Attempt 109
+  and does not remove the blocker.
+
+**Conclusion:** reject and revert. The retained index was already reached cheaply enough after
+prefilter state was prepared; moving this check does not address the per-graph scheduling cost. No
+production or test code from this experiment is retained.
