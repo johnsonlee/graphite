@@ -2622,3 +2622,29 @@ This removes small-task coordination while preventing sparse targeted terms from
 existing equal-segment executor instead: cancel later segments once any completed contiguous
 source-order prefix, not only segment zero, has accumulated LIMIT matches. Sparse scans cannot
 trigger that cancellation and therefore retain their full parallelism.
+
+### 2026-09-03 - Attempt 084: Cancel fixed segments from any complete ordered prefix
+
+**Hypothesis:** as equal-segment results arrive, accumulate every contiguous source-order prefix
+and signal later workers once that prefix contains LIMIT rows. Unlike Attempt 077, segment zero
+need not satisfy LIMIT by itself; sparse scans never satisfy the condition and remain unchanged.
+
+**Evidence:**
+
+- Base, real64 data, oracle, and runtime protocol are unchanged. Three candidate runs under
+  `/tmp/pr113-attempt084-prefix-cancel/` complete 34/34 cases with exact correctness parity.
+- Localized middle consistently stops the third segment and falls from 112,089 to 73,670 work
+  units, measuring `8.656/8.192/3.734 ms` versus base `17.754/13.007/13.411 ms`. Wrapped targeted
+  remains exactly 221,480 work units and retains peak segment concurrency of three including the
+  inline graph worker.
+- Localized early does not receive the prefix result soon enough to save material work: it charges
+  `80,173/80,173/79,407` units versus 80,173 on base. Its latency is no longer worse at
+  `9.586/10.777/9.431 ms`, but this is not a deterministic work reduction for the hosted blocker.
+- Overall P50 is `3.163/2.945/2.927 ms` and P95 `49.521/50.054/41.504 ms`; the required same-head
+  comparator still fails two pairs and observes wrapped DISTINCT dense noise. Process CPU improves
+  only in the third run and regresses in the first two; heap and RSS remain unchanged.
+
+**Conclusion:** reject and revert. Correct prefix cancellation arrives after all three equal ranges
+are already running. The next experiment uses the mapped dense-count signal to divide only dense
+long terms into one extra queued range, preserving the two-worker budget while allowing an
+unneeded fourth range to remain unstarted.
