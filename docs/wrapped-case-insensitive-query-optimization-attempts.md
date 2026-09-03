@@ -2469,3 +2469,34 @@ scanning only for those long terms; keep short dense terms on the existing bound
 its checksum, structure, and posting load costs more than the raw scan it replaces. Retain the
 compact trigram prefilter and test a source-ordered raw scan over its exact string-id matches without
 loading the complete index.
+
+### 2026-09-03 - Attempt 079: Serial raw scan over prefiltered long-term string ids
+
+**Hypothesis:** after the compact trigram prefilter has produced exact matching string ids for a
+long transformed term, a source-ordered raw scan can compare integer ids and stop at LIMIT without
+the complete persisted-index load from Attempt 078. Restrict this route to terms of at least 32
+characters and leave short dense terms unchanged.
+
+**Evidence:**
+
+- Base: exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate: an isolated
+  selective-serial snapshot; the rejected production change is not retained. The paired three-run
+  real64 setup, 8 GiB heap, four-CPU limit, and exact correctness oracle are unchanged. Candidate
+  files are under `/tmp/pr113-attempt079-selective-serial/`.
+- All 34 cases pass exact row, order, digest, response-size, and provenance verification in every
+  run. `localized-early` falls from 80,173 to 46,639 work units and from base
+  `9.286/9.471/18.289 ms` to `6.497/3.541/4.414 ms`. `localized-middle` similarly falls to 59,334
+  work units and `3.973/3.647/4.023 ms`. This validates that segment over-scan is the hosted
+  localized-early regression's dominant mechanism.
+- Static term length does not distinguish dense from sparse. The ordinary wrapped targeted query
+  keeps the same 221,480 charged work but loses segment parallelism, regressing in every run from
+  `17.898/16.874/17.287 ms` to `34.619/36.665/35.348 ms`. The comparator rejects this aligned
+  regression even though the localized distributions improve.
+- Overall P50 remains near 3.02-3.06 ms and P95 `46.328-49.243 ms`; process CPU is
+  `1.747-1.787 s`, peak heap `3.71-3.81 GB`, and peak RSS `4.21-4.34 GB`. Resources are bounded,
+  but they cannot justify doubling a successful targeted shape.
+
+**Conclusion:** reject and revert. Prefiltered serial raw scanning is the right primitive for the
+dense localized case, but term length is not a sufficient planner signal. The next experiment uses
+a bounded source-prefix sample to select serial continuation only when observed match density can
+fill LIMIT, otherwise restoring the existing segment path.
