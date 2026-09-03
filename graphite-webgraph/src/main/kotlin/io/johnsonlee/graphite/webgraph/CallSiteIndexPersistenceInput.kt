@@ -7,6 +7,7 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.concurrent.CancellationException
 
 private const val CALL_SITE_INDEX_PERSISTENCE_BUFFER_BYTES = 1 shl 20
 
@@ -29,6 +30,7 @@ internal fun persistCallSiteStringIndex(
                     CALL_SITE_INDEX_PERSISTENCE_BUFFER_BYTES
                 )
             ).use(index::writePersistent)
+            checkCallSiteIndexPersistenceInterrupted()
             val indexPath = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             replaceCallSiteIndex(checkNotNull(temporary), indexPath)
             temporary = null
@@ -36,6 +38,8 @@ internal fun persistCallSiteStringIndex(
             if (!persistCallSiteTrigramPrefilter(index, indexPath, directoryPath)) return false
         }
         true
+    } catch (cancelled: CancellationException) {
+        throw cancelled
     } catch (_: Exception) {
         false
     } finally {

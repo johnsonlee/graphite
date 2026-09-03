@@ -699,6 +699,7 @@ internal class MappedCallSiteStringIndex(
 
     @Synchronized
     internal fun writePersistent(output: DataOutput) {
+        checkCallSiteIndexPersistenceInterrupted()
         val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
             "CallSite trigram postings must be prepared before persistence"
         }
@@ -715,8 +716,18 @@ internal class MappedCallSiteStringIndex(
         output.writeInt(postings.size)
         output.writeLong(persistentRetainedBytes)
         properties.forEach { property -> property.writePersistent(output) }
-        trigramSignatures.forEach(output::writeLong)
-        postings.forEach(output::writeLong)
+        trigramSignatures.forEachIndexed { index, value ->
+            if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                checkCallSiteIndexPersistenceInterrupted()
+            }
+            output.writeLong(value)
+        }
+        postings.forEachIndexed { index, value ->
+            if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                checkCallSiteIndexPersistenceInterrupted()
+            }
+            output.writeLong(value)
+        }
         output.writeLong(
             persistentChecksum(
                 stringTable.size(),
@@ -736,6 +747,7 @@ internal class MappedCallSiteStringIndex(
      */
     @Synchronized
     internal fun writePersistentTrigramDirectory(output: DataOutput, exactIndexBytes: Long) {
+        checkCallSiteIndexPersistenceInterrupted()
         val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
             "CallSite trigram postings must be prepared before persistence"
         }
@@ -762,7 +774,12 @@ internal class MappedCallSiteStringIndex(
         while (start < postings.size) {
             val end = minOf(postings.size, start + chunkSize)
             val checksum = CRC32()
-            for (index in start until end) checksum.updateDirectoryLongBigEndian(postings[index])
+            for (index in start until end) {
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                checksum.updateDirectoryLongBigEndian(postings[index])
+            }
             output.writeInt((postings[end - 1] ushr Int.SIZE_BITS).toInt())
             output.writeInt(end)
             output.writeInt(checksum.value.toInt())
@@ -1033,20 +1050,43 @@ internal class MappedCallSiteStringIndex(
             get() = usedStringIds.size
 
         fun writePersistent(output: DataOutput) {
-            usedStringIds.forEach(output::writeInt)
-            postingEnds.forEach(output::writeInt)
-            postingNodeIds.forEach(output::writeInt)
+            writePersistentInts(usedStringIds, output)
+            writePersistentInts(postingEnds, output)
+            writePersistentInts(postingNodeIds, output)
         }
 
         fun updatePersistentChecksum(checksum: CRC32) {
-            usedStringIds.forEach(checksum::updateInt)
-            postingEnds.forEach(checksum::updateInt)
-            postingNodeIds.forEach(checksum::updateInt)
+            updatePersistentIntChecksum(usedStringIds, checksum)
+            updatePersistentIntChecksum(postingEnds, checksum)
+            updatePersistentIntChecksum(postingNodeIds, checksum)
         }
 
         fun usedStringIdsChecksum(): Long = CRC32().also { checksum ->
-            usedStringIds.forEach(checksum::updateDirectoryIntBigEndian)
+            usedStringIds.forEachIndexed { index, value ->
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                checksum.updateDirectoryIntBigEndian(value)
+            }
         }.value
+
+        private fun writePersistentInts(values: IntArray, output: DataOutput) {
+            values.forEachIndexed { index, value ->
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                output.writeInt(value)
+            }
+        }
+
+        private fun updatePersistentIntChecksum(values: IntArray, checksum: CRC32) {
+            values.forEachIndexed { index, value ->
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                checksum.updateInt(value)
+            }
+        }
 
         @Suppress("CyclomaticComplexMethod")
         fun collectMatchingRanges(
@@ -1618,8 +1658,18 @@ internal class MappedCallSiteStringIndex(
             checksum.updateInt(postings.size)
             checksum.updateLong(retainedBytes)
             properties.forEach { property -> property.updatePersistentChecksum(checksum) }
-            signatures.forEach(checksum::updateLong)
-            postings.forEach(checksum::updateLong)
+            signatures.forEachIndexed { index, value ->
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                checksum.updateLong(value)
+            }
+            postings.forEachIndexed { index, value ->
+                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
+                    checkCallSiteIndexPersistenceInterrupted()
+                }
+                checksum.updateLong(value)
+            }
         }.value
 
         private fun persistentRetainedBytes(

@@ -1897,6 +1897,7 @@ internal class MappedWebGraphBackedGraph(
 
     override fun releaseStringPropertyDisjunctionCache() {
         closeCallSiteStringIndex(force = false)
+        checkCallSiteIndexPersistenceInterrupted()
     }
 
     private fun closeCallSiteStringIndex(force: Boolean) {
@@ -1908,11 +1909,19 @@ internal class MappedWebGraphBackedGraph(
                 retainPersistedCallSiteStringIndex.get()
             ) return
             val index = callSiteStringIndex
-            if (persistentCallSiteStringIndexEnabled &&
+            if (force && persistentCallSiteStringIndexEnabled &&
                 !callSiteStringIndexLoadedFromPersistence &&
                 index?.isTrigramPostingsInitialized() == true
             ) {
-                persistPreparedCallSiteStringIndex()
+                try {
+                    persistPreparedCallSiteStringIndex()
+                } finally {
+                    index.close()
+                    callSiteStringIndex = null
+                    callSiteStringIndexLoadedFromPersistence = false
+                    retainPersistedCallSiteStringIndex.set(false)
+                }
+                return
             }
             callSiteStringIndex?.close()
             callSiteStringIndex = null
@@ -1977,9 +1986,12 @@ internal class MappedWebGraphBackedGraph(
             DataOutputStream(
                 BufferedOutputStream(Files.newOutputStream(temporary), CALL_SITE_INDEX_IO_BUFFER_BYTES)
             ).use(index::writePersistent)
+            checkCallSiteIndexPersistenceInterrupted()
             replaceAtomically(temporary, callSiteStringIndexFile)
             temporary = null
             persistCallSiteTrigramPrefilter(index, callSiteStringIndexFile, callSiteTrigramPrefilterFile)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
             false
         } finally {

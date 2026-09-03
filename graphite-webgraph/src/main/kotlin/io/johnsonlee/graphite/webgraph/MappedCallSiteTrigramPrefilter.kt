@@ -376,6 +376,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
     }
 }
 
+@Suppress("TooGenericExceptionCaught")
 internal fun persistCallSiteTrigramPrefilter(
     index: MappedCallSiteStringIndex,
     exactIndexPath: Path,
@@ -394,9 +395,12 @@ internal fun persistCallSiteTrigramPrefilter(
                 output.write(it.array())
             }
         }
+        checkCallSiteIndexPersistenceInterrupted()
         replaceCallSiteTrigramPrefilter(checkNotNull(temporary), directoryPath)
         temporary = null
         true
+    } catch (cancelled: CancellationException) {
+        throw cancelled
     } catch (_: Exception) {
         false
     } finally {
@@ -473,6 +477,13 @@ private data class PrefilterPredicateKey(
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
 internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 4
 internal const val CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS = 333
+internal const val CALL_SITE_INDEX_PERSISTENCE_POLL_MASK = 1_023
+
+internal fun checkCallSiteIndexPersistenceInterrupted() {
+    if (Thread.currentThread().isInterrupted) {
+        throw CancellationException("Mapped CallSite index persistence interrupted")
+    }
+}
 
 internal fun callSiteTrigramDirectoryChunkSize(postingCount: Int): Int {
     require(postingCount > 0)

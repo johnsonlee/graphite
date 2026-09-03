@@ -2260,3 +2260,31 @@ prefilter boundary instead of maintaining a second allocating comparison path.
 **Conclusion:** keep pending exact hosted paired confirmation. One shared exact matcher removes a
 duplicate allocation-heavy path and improves CPU plus both previously aligned dense blockers while
 preserving Unicode semantics, checksums, work accounting, and exact result digests.
+
+### 2026-09-03 - Attempt 072: Keep sidecar persistence out of request cache release
+
+**Hypothesis:** a zero-hit source calls `releaseStringPropertyDisjunctionCache()` on the request
+thread. When that query built a missing CallSite index, release synchronously wrote the complete
+exact index and trigram directory before freeing the reservation. Request cleanup should only
+release request-owned memory; the existing graph-close and explicit preparation lifecycles can
+retain responsibility for best-effort sidecar migration.
+
+**Evidence:**
+
+- The release path now closes a query-built index without persisting it. An exact 4,096-CallSite
+  regression test interrupts the request thread before release and verifies prompt
+  `CancellationException` propagation, preservation of the interrupt flag, removal of the retained
+  reservation, and absence of both sidecar targets. This synthetic graph establishes lifecycle and
+  cancellation correctness only; it is not performance evidence.
+- Explicit writer loops poll interruption every 1,024 integers/longs, both persistence wrappers
+  rethrow cancellation instead of converting it to a best-effort `false`, and target replacement
+  is preceded by an interruption check.
+- The normal graph-close migration test still persists and restores a query-built index in the
+  next mapped process. The persistence-failure fallback and the 4,097-posting directory boundary
+  tests also pass.
+- The complete WebGraph test suite and WebGraph detekt pass in the isolated verification checkout.
+
+**Conclusion:** keep. This removes unbounded sidecar I/O from request cleanup without disabling
+startup/graph-close persistence, and makes the remaining non-request writer lifecycle explicitly
+cancellable. Exact hosted real64 evidence remains responsible for any latency claim on the full
+query pipeline.

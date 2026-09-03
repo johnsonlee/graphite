@@ -1303,6 +1303,50 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `interrupted request cache release does not persist a query-built CallSite index`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { nodeId ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor("example.Caller$nodeId"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-interrupted-callsite-release")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertTrue(loaded.prepareCallSiteStringIndex())
+                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+                Thread.currentThread().interrupt()
+                try {
+                    assertFailsWith<CancellationException> {
+                        loaded.releaseStringPropertyDisjunctionCache()
+                    }
+                    assertTrue(Thread.currentThread().isInterrupted)
+                } finally {
+                    Thread.interrupted()
+                }
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            Thread.interrupted()
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `best effort CallSite index persistence failure leaves the prepared query path usable`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().addNode(
