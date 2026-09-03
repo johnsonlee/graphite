@@ -3293,8 +3293,43 @@ parallel index restoration.
   `1.071/4.664 ms` versus `0.843/3.047 ms`; the single `4.664 ms` literal-zero observation exceeds
   the existing absolute jitter guard. This result is recorded as a blocker, not hidden by the
   global-wide gain.
+- Exact hosted head `64f2caf07901e4bf2ea40dfe6f6597783f87047b` confirms the aggregate gain on
+  the same 64 persisted fixture-JAR graphs: global-wide P50 improves by `40.55x`, `40.34x`, and
+  `52.99x`, while P95 improves by `6.92x`, `5.43x`, and `7.22x`. Correctness, bounded access, the
+  additive `2 graph + 2 segment` worker split on four active CPUs, and all resource ceilings pass.
+- The exact hosted result still rejects the attempt as a merge candidate. One DISTINCT shape has
+  only `4.71x` P95 in the first pair, and the dense/localized one-source rows repeatedly regress
+  because the candidate probes all 64 prepared-sidecar capabilities before discovering that the
+  leading graph already satisfies `LIMIT`. The graph-routing companion also rejects selected
+  K=64 in cold, warm, and startup-prepared states; instrumentation shows candidate segment scans
+  fell from 64 to zero because the selected-set serial route incorrectly forced storage itself to
+  stay serial.
 
-**Conclusion:** keep only for exact hosted confirmation. The 5x global-wide goal has substantial
-local margin, but this attempt must not merge or resolve the routing review until the same-head
-hosted graph-routing gate is green; if it reproduces the cold K=64 regression, revise or revert the
-production change before proceeding.
+**Conclusion:** keep the fixed-worker primitive as the measured global-wide foundation, but reject
+this head as mergeable. Follow with isolated guardrail attempts for deferred capability probing,
+selected K=64 segment execution, and the remaining DISTINCT provenance overhead. Do not resolve
+either benchmark review until one exact head passes both hosted gates.
+
+### 2026-09-03 - Attempt 107: Defer prepared capability probes past the leading LIMIT
+
+**Hypothesis:** dense and distribution-localized global-wide queries pay an avoidable fixed cost by
+checking whether all 64 graphs have prepared string sidecars before reading the leading graph. Treat
+prepared batching as a possibility initially; probe the leading source first, return immediately if
+it fills `LIMIT`, and perform the all-source capability check only when later graphs are required.
+This changes neither the NCPU-balanced worker allocation nor graph-scoped execution.
+
+**Evidence:**
+
+- Base revision is exact hosted head `64f2caf07901e4bf2ea40dfe6f6597783f87047b`; candidate exact
+  hosted evidence is pending. Both revisions use the same 64 persisted graphs generated from the
+  four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- A deterministic execution test supplies 64 prepared-capable graphs with a leading match and
+  `LIMIT 1`. It verifies the returned value and source access, and additionally proves that the
+  leading fast path performs zero prepared-capability checks instead of probing all 64 sidecars.
+- The complete `CrossGraphCypherExecutorTest` class passes locally after the change. Full module
+  correctness, coverage, real-data latency, CPU, and memory evidence remain pending before this
+  attempt can be kept.
+
+**Conclusion:** pending exact real-64 validation. Keep only if the repeated dense/localized
+regressions disappear without weakening correctness, resource, worker-budget, or graph-routing
+guards.

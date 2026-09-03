@@ -513,6 +513,72 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     @Suppress("UNCHECKED_CAST")
+    fun `prepared global wide leading limit avoids probing every sidecar`() {
+        val persistentCapabilityChecks = AtomicInteger()
+        val accessedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val returnType = TypeDescriptor("void")
+        val hit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("example.Target"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionLookupStrategy {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun prefersSerialStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = false
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    persistentCapabilityChecks.incrementAndGet()
+                    return true
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    accessedGraphs += graphIndex
+                    workConsumer.consume()
+                    return if (graphIndex == 0) sequenceOf(hit as T) else emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals("example.Target", result.rows.single()["caller"])
+        assertEquals(setOf(0), accessedGraphs)
+        assertEquals(0, persistentCapabilityChecks.get())
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
     fun `prepared global wide limit stops the fixed workers in source order`() {
         val distantLookups = AtomicInteger()
         val empty = graph()

@@ -1635,7 +1635,8 @@ class QueryPipeline private constructor(
             nodePredicateFactory,
             candidateSources
         )?.let { return it }
-        val rawLeadingStorage = usesBalancedStringSplit(candidateSources.size) && !preferPersistedStorage &&
+        val balanced = usesBalancedStringSplit(candidateSources.size)
+        val rawLeadingStorage = balanced && !preferPersistedStorage &&
             nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
         val parallelStringScan = canExecuteDirectStringDisjunctionInParallel(
             nodeClass,
@@ -1644,14 +1645,13 @@ class QueryPipeline private constructor(
             items,
             candidateSources
         )
-        val batchedPreparedStorage = nodePredicateFactory == null &&
-            (!preferPersistedStorage || parallelStringScan) &&
-            hasPreparedWideStringDisjunction(nodeClass, filter, candidateSources)
+        val mayBatchPreparedStorage = balanced && nodePredicateFactory == null &&
+            (!preferPersistedStorage || parallelStringScan)
         // A retained graph-scoped index lookup is too small to amortize outer graph scheduling.
         // Cold graph-scoped storage still fans out for independent index loads, while global-wide
         // prepared storage reuses fixed graph workers to avoid serial accumulation across 64 graphs.
-        if (!rawLeadingStorage && !batchedPreparedStorage && !parallelStringScan ||
-            workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
+        if (!rawLeadingStorage && !mayBatchPreparedStorage && !parallelStringScan ||
+            workTrackingEnabled && !balanced
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in candidateSources) {
@@ -1677,7 +1677,6 @@ class QueryPipeline private constructor(
         }
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val balanced = usesBalancedStringSplit(candidateSources.size)
         val graphParallelism = directStringGraphParallelism(candidateSources.size)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
@@ -1712,6 +1711,18 @@ class QueryPipeline private constructor(
             }
             if (rows.size >= limit) return CypherResult(columns, rows.take(limit))
             waveStart = 1
+
+            // Do not probe every prepared sidecar until the leading source proves the query must
+            // continue. Dense/localized LIMIT queries should retain the single-source fast path.
+            val batchedPreparedStorage = mayBatchPreparedStorage &&
+                hasPreparedWideStringDisjunction(nodeClass, filter, candidateSources)
+            if (!rawLeadingStorage && !batchedPreparedStorage && !parallelStringScan) {
+                for (scanner in scanners.drop(waveStart)) {
+                    rows += scanner.nextRows(limit - rows.size)
+                    if (rows.size >= limit) break
+                }
+                return CypherResult(columns, rows)
+            }
 
             // Keep a bounded rolling window of graph scans. Advancing it as soon as the next
             // source-ordered result is merged removes the synchronization barrier between tiny
