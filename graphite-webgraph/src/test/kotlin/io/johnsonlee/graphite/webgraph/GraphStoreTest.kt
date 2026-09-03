@@ -302,7 +302,7 @@ class GraphStoreTest {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { nodeId ->
-                val callerClass = if (nodeId == 0) {
+                val callerClass = if (nodeId == 0 || nodeId == 2) {
                     "example.TargetCaller"
                 } else {
                     "example.OtherCaller$nodeId"
@@ -355,7 +355,7 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
-                    listOf(0, 1),
+                    listOf(0, 2),
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate, predicate.copy(property = CALLER_NAME_PROPERTY)),
@@ -364,6 +364,29 @@ class GraphStoreTest {
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertEquals(0L, loaded.callSiteParallelScanCount())
+                val mixedPredicates = listOf(
+                    predicate,
+                    predicate.copy(property = CALLER_NAME_PROPERTY, expected = "targetonly")
+                )
+                assertEquals(
+                    listOf(0, 2),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        mixedPredicates,
+                        limit = 2,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(
+                    listOf(0, 2, 1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        mixedPredicates,
+                        limit = 4,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(2L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(listOf("example.TargetCaller")),
                     loaded.distinctStringPropertyDisjunction(

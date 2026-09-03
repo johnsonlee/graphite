@@ -286,7 +286,6 @@ internal class MappedCallSiteStringIndexView private constructor(
                             nodeIdCapacity,
                             postingCount,
                             expectedContentIdentity,
-                            nodeOrder,
                             workConsumer
                         )
                     )
@@ -325,7 +324,6 @@ internal class MappedCallSiteStringIndexView private constructor(
             nodeIdCapacity: Int,
             postingCount: Int,
             contentIdentity: ByteArray,
-            nodeOrder: (Int) -> Long,
             workConsumer: GraphWorkConsumer?
         ): Boolean {
             val validator = PersistentIndexViewValidator(mapped, workConsumer)
@@ -350,21 +348,12 @@ internal class MappedCallSiteStringIndexView private constructor(
                     previousEnd = end
                 }
                 require(previousEnd == callSiteCount)
-                var row = 0
-                var position = 0
-                var previousOrder = Long.MIN_VALUE
+                // Keep cold view validation sequential. The writer stores each range in encounter
+                // order and the file checksum authenticates those bytes; resolving nodeOrder for
+                // every posting here would fault unrelated node-offset pages before any match.
                 validator.updateInts(propertyPostings[propertyIndex]) { nodeId ->
                     require(nodeId in 0 until nodeIdCapacity)
-                    val order = nodeOrder(nodeId)
-                    require(order >= 0L && order > previousOrder)
-                    previousOrder = order
-                    position++
-                    if (position == propertyEnds[propertyIndex].get(row)) {
-                        row++
-                        previousOrder = Long.MIN_VALUE
-                    }
                 }
-                require(row == uniqueCounts[propertyIndex])
             }
             validator.updateLongs(signaturesOffset, stringCount)
             var previousPosting = Long.MIN_VALUE

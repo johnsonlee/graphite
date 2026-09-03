@@ -3843,3 +3843,45 @@ three genuinely paired forks while preserving correctness, NCPU planning, resour
 graph-routing lifecycle. This changes no persisted filename, magic, version, or writer. Exact-head
 full CI and hosted review gates remain required, and this commit is not authorization to merge or
 tag.
+
+### 2026-09-04 - Attempt 123: Keep mapped posting validation sequential
+
+**Hypothesis:** Attempt 122 validates encounter order by resolving `nodeOffsets.offset(nodeId)` for
+every posting while each view is opened. The checksum pass over the sidecar is sequential, but those
+extra random reads fault unrelated node-offset pages for every graph before a query consumes any
+posting. Keep the eager integrity pass sequential: validate the existing header, content identity,
+dimensions, checksum, directories, posting ends, node-id bounds, and trigram ordering. The existing
+writer is still the authority for encounter-ordered posting ranges, and matching cursors continue to
+resolve `nodeOrder` lazily while query-selected posting ranges are merged.
+
+**Evidence:**
+
+- Exact Attempt 122 head `985c4ae` passes 31 hosted benchmark components, including wrapped-query
+  latency/resources, capacity, large corpora, Explorer, and the 4/17 graph plus three of four 36
+  graph Method shards. Its 36-graph aggregate shard isolates a repeated RSS-after regression in the
+  `order` case: `3.943 -> 4.631 GB` (`+17.4%`) and reverse confirmation
+  `3.909 -> 4.709 GB` (`+20.5%`). Wall, CPU, RSS delta, response bytes, request success, and the
+  sibling `count` case pass. This is consistent with eagerly faulting node-offset pages rather than
+  retained heap or query-result growth.
+- After removing only that eager random node-order walk, three fresh-JVM candidate confirmations use
+  the same four active CPUs, 8 GiB heap, 64 persisted graphs generated from the four pinned fixture
+  JARs, and Attempt 122's independent main-derived oracle. All 102 observations (34 per fork) pass
+  exact correctness verification with no failed query. No synthetic performance evidence is used.
+- Candidate P50 is `2.014/1.715/1.986 ms` and P95 is `52.506/59.707/49.540 ms`. Against the frozen
+  paired main samples from Attempt 122 this is `116.12x/141.12x/120.50x` at P50 and
+  `7.41x/6.68x/8.30x` at P95, preserving the 5x milestone in every fork. Charged work remains
+  exactly `58,067,854` in all three forks and failures remain zero.
+- Peak RSS falls to `5.257/5.259/5.003 GB` from Attempt 122's
+  `5.715/5.766/5.726 GB`; process CPU is `1.582/1.644/1.527 s`. Peak used heap is
+  `4.705/4.703/4.470 GB`, so the change removes page residency rather than trading it for heap.
+- Focused tests now cover multi-element mapped posting cursors, cross-property source-order merge
+  and de-duplication, and both the `exactMatchesCanFillLimit` true and false segmented fallback.
+  Cypher also executes the split consumer's work-forwarding branch. Full measured coverage returns
+  to WebGraph `98.1081%` and Cypher `98.0006%` without changing thresholds or exclusions.
+
+**Conclusion:** keep. Eager validation remains integrity-checked but sequential and no longer walks
+the entire node-offset mapping merely to open a CallSite sidecar. The 64-real correctness/latency
+milestone remains green while RSS falls materially. Exact-head hosted 36-graph RSS, global-wide,
+graph-routing, unit coverage, and aggregate gates must still pass before either open review thread is
+resolved. This changes no persisted filename, magic, version, or writer, and it is not authorization
+to merge or tag.

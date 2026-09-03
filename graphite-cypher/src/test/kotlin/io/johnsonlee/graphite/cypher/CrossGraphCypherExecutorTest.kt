@@ -98,6 +98,7 @@ class CrossGraphCypherExecutorTest {
             configuredGraphWorkers = "12"
         ) as SplitGraphWorkBatchConsumer
         assertEquals(4, overriddenStorage.segmentWorkerCount)
+        overriddenStorage.consume(3)
 
         val forcedSerial = directStringStorageWorkConsumer(
             sourceCount = 64,
