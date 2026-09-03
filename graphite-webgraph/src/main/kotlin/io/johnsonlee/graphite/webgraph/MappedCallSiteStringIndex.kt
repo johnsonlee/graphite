@@ -744,8 +744,8 @@ internal class MappedCallSiteStringIndex(
         require(exactIndexBytes == postingsOffset + postings.size.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES)
         val graphContentIdentity = persistedContentIdentity
         require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
-        val chunkCount = minOf(postings.size, CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS)
-        val chunkSize = ((postings.size.toLong() + chunkCount - 1L) / chunkCount).toInt()
+        val chunkCount = callSiteTrigramDirectoryChunkCount(postings.size)
+        val chunkSize = callSiteTrigramDirectoryChunkSize(postings.size)
 
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_MAGIC)
         output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_VERSION)

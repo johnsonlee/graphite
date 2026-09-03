@@ -530,6 +530,71 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `compact trigram directory persists the actual chunk count for 4097 postings`() {
+        val returnType = TypeDescriptor("v")
+        val alphabet = "abcdefghijklmnop"
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { nodeId ->
+                val callerClass = buildString(3) {
+                    append(alphabet[(nodeId ushr 8) and 0xf])
+                    append(alphabet[(nodeId ushr 4) and 0xf])
+                    append(alphabet[nodeId and 0xf])
+                }
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor(callerClass), "c", emptyList(), returnType),
+                        MethodDescriptor(
+                            TypeDescriptor(if (nodeId == 0) "001" else "d"),
+                            "i",
+                            emptyList(),
+                            returnType
+                        ),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-4097-trigram-postings")
+        try {
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val directory = ByteBuffer.wrap(
+                Files.readAllBytes(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE))
+            ).order(ByteOrder.BIG_ENDIAN)
+            assertEquals(4_097, directory.getInt(16))
+            assertEquals(callSiteTrigramDirectoryChunkCount(4_097), directory.getInt(20))
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "callee_class",
+                                StringValueTransform.LOWERCASE,
+                                StringMatchMode.CONTAINS,
+                                "001"
+                            )
+                        ),
+                        limit = 1,
+                        workConsumer = object : SplitGraphWorkBatchConsumer {
+                            override val segmentWorkerCount: Int = 1
+                            override fun consume(workUnits: Long) = Unit
+                        }
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped load restores persisted CallSite index lazily and can opt in to eager preparation`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {

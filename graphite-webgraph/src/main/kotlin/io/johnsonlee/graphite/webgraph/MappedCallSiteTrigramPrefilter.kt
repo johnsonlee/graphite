@@ -182,7 +182,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     val exactIndexBytes = directory.long
                     val postingsOffset = directory.long
                     require(stringCount == expectedStringCount && callSiteCount == expectedCallSiteCount)
-                    val expectedChunkCount = minOf(postingCount, CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS)
+                    val expectedChunkCount = callSiteTrigramDirectoryChunkCount(postingCount)
                     require(postingCount > 0 && chunkCount == expectedChunkCount)
                     val identity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
                     directory.get(identity)
@@ -268,7 +268,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
 
         private fun validateChunks(chunks: IntBuffer, postingCount: Int, workConsumer: GraphWorkConsumer?) {
             val chunkCount = chunks.limit() / CHUNK_ENTRY_INTS
-            val chunkSize = ((postingCount.toLong() + chunkCount - 1L) / chunkCount).toInt()
+            val chunkSize = callSiteTrigramDirectoryChunkSize(postingCount)
             var previousMaximum = -1
             var previousEnd = 0
             val accounting = BufferedGraphWorkConsumer(workConsumer)
@@ -473,6 +473,18 @@ private data class PrefilterPredicateKey(
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
 internal const val CALL_SITE_TRIGRAM_PREFILTER_VERSION = 4
 internal const val CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS = 333
+
+internal fun callSiteTrigramDirectoryChunkSize(postingCount: Int): Int {
+    require(postingCount > 0)
+    val targetChunkCount = minOf(postingCount, CALL_SITE_TRIGRAM_DIRECTORY_MAX_CHUNKS)
+    return ((postingCount.toLong() + targetChunkCount - 1L) / targetChunkCount).toInt()
+}
+
+internal fun callSiteTrigramDirectoryChunkCount(postingCount: Int): Int {
+    val chunkSize = callSiteTrigramDirectoryChunkSize(postingCount)
+    return ((postingCount.toLong() + chunkSize - 1L) / chunkSize).toInt()
+}
+
 private const val TRIGRAM_LENGTH = 3
 private const val DIRECTORY_HEADER_BYTES =
     (6 + CALL_SITE_STRING_PROPERTY_COUNT) * Int.SIZE_BYTES + 2 * Long.SIZE_BYTES +
