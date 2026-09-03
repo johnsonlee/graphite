@@ -513,7 +513,11 @@ internal class MappedWebGraphBackedGraph(
                     else -> stringTable.findId(value).takeIf { stringId ->
                         stringId >= 0 &&
                             (propertyStringFilter == null ||
-                                propertyStringFilter.containsPropertyStringId(propertyIndex, stringId))
+                                propertyStringFilter.containsPropertyStringId(
+                                    propertyIndex,
+                                    stringId,
+                                    workConsumer
+                                ))
                     } ?: return@mapNotNullTo null
                 }
             }

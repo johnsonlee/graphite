@@ -2311,3 +2311,38 @@ slices; poll interruption and synchronously charge each slice before touching it
 
 **Conclusion:** keep pending exact hosted confirmation. This closes the cancellation/work-accounting
 hole without reverting the allocation-free bulk checksum implementation.
+
+### 2026-09-03 - Attempt 074: Validate property membership only when queried
+
+**Hypothesis:** loading the compact trigram prefilter eagerly scans and checksums every property's
+sorted string-id membership array, even when a zero-hit term is absent from the small trigram
+directory and no membership lookup can occur. Preserve eager validation of the directory, exact
+index header, and every selected posting chunk, but defer each optional property-membership
+checksum until `selectedValues` actually asks whether that property contains a string id.
+
+**Evidence:**
+
+- Base: exact head `3596c58d49b34296cc0260271a3f6e44e5bac49f`; candidate: this isolated
+  experiment plus the checksum-test proof from `0a30a34`. Dataset: the same authenticated
+  64 distinct pinned-JAR graph artifact from hosted run `33707092760`, downloaded under
+  `/tmp/pr113-shared-fixture64-3596c58/`; no synthetic timing evidence.
+- Three four-CPU, 8 GiB cold-index pairs under `/tmp/pr113-exp074-real-a/` alternated order as
+  base/candidate, candidate/base, and base/candidate. All six runs completed 34/34 queries, and all
+  three candidate runs verified every result against the base-recorded correctness oracle.
+- Zero-query P95 fell in every pair: `64.867 -> 35.784 ms`, `54.346 -> 39.934 ms`, and
+  `51.582 -> 31.110 ms`. Overall P95 also fell in every pair: `89.624 -> 42.882 ms`,
+  `54.346 -> 50.468 ms`, and `54.559 -> 52.942 ms`. Overall P50 was mixed at
+  `2.960 -> 3.249 ms`, `3.150 -> 2.990 ms`, and `3.276 -> 3.514 ms`.
+- The first four-property zero-hit case drops from `1,686,453` to `151,595` charged work units.
+  Complete-run charged work is deterministic at `5,865,407 -> 4,449,703` (-24.1%). Process CPU
+  is `1.971 -> 1.750 s`, `1.740 -> 1.838 s`, and `1.914 -> 1.744 s`; two pairs improve and the
+  reverse-order pair is +5.6%. Peak heap is effectively unchanged; peak RSS ranges overlap.
+- A corrupt deferred membership array cannot create a false negative. The new regression corrupts
+  its persisted checksum, performs an exact selected-value DISTINCT projection, and still returns
+  the authoritative raw-projection row without loading the full index. Work rejection and
+  interruption still propagate while the first actual membership validation remains charged.
+  The focused regression, complete WebGraph test suite, and WebGraph detekt pass.
+
+**Conclusion:** keep pending exact hosted paired confirmation. Deferring unused optional membership
+validation removes 1.42 million cold zero-hit work units and improves all observed real64 zero-hit
+tails without changing the persisted format or trusting unchecked data to exclude a result.

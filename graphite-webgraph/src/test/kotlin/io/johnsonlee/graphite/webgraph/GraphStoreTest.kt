@@ -550,6 +550,30 @@ class GraphStoreTest {
                 assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
                 assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
             }
+
+            Files.write(indexFile, originalIndex)
+            val corruptPropertyIds = originalIndex.copyOf()
+            val firstPropertyIdByte = CALL_SITE_STRING_INDEX_HEADER_BYTES + Int.SIZE_BYTES - 1
+            corruptPropertyIds[firstPropertyIdByte] =
+                (corruptPropertyIds[firstPropertyIdByte].toInt() xor 1).toByte()
+            Files.write(indexFile, corruptPropertyIds)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf("caller_class"),
+                        limit = 1,
+                        selectedValues = setOf(listOf("example.TargetCaller")),
+                        workConsumer = split
+                    )?.map { row -> row.values }
+                )
+                // Invalid optional membership data is ignored conservatively; exact raw
+                // projection remains authoritative and the full sidecar stays unloaded.
+                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+            }
         } finally {
             dir.toFile().deleteRecursively()
         }

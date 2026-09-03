@@ -26,6 +26,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.CancellationException
+import java.util.concurrent.atomic.AtomicIntegerArray
 import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 
@@ -39,11 +40,50 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
     private val trigramPostingBytes: ByteBuffer,
     private val trigramPostings: LongBuffer,
     private val propertyStringIds: Array<IntBuffer>,
+    private val propertyStringChecksums: LongArray,
     private val stringCount: Int,
     private val stringTable: StringTable
 ) {
-    fun containsPropertyStringId(propertyIndex: Int, stringId: Int): Boolean =
-        propertyIndex in propertyStringIds.indices && binarySearch(propertyStringIds[propertyIndex], stringId)
+    private val propertyStringValidationStates = AtomicIntegerArray(propertyStringIds.size)
+
+    fun containsPropertyStringId(
+        propertyIndex: Int,
+        stringId: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Boolean {
+        if (propertyIndex !in propertyStringIds.indices) return false
+        if (!validatePropertyStringIds(propertyIndex, workConsumer)) {
+            // A corrupt optional membership summary must not prune a real row. The authoritative
+            // raw projection will perform the full property/value comparison instead.
+            return true
+        }
+        return binarySearch(propertyStringIds[propertyIndex], stringId)
+    }
+
+    private fun validatePropertyStringIds(propertyIndex: Int, workConsumer: GraphWorkConsumer?): Boolean {
+        when (propertyStringValidationStates.get(propertyIndex)) {
+            PROPERTY_STRING_IDS_VALID -> return true
+            PROPERTY_STRING_IDS_INVALID -> return false
+        }
+        return synchronized(propertyStringIds[propertyIndex]) {
+            when (propertyStringValidationStates.get(propertyIndex)) {
+                PROPERTY_STRING_IDS_VALID -> true
+                PROPERTY_STRING_IDS_INVALID -> false
+                PROPERTY_STRING_IDS_UNVALIDATED -> validatePropertyStringIds(
+                        propertyStringIds[propertyIndex],
+                        stringCount,
+                        propertyStringChecksums[propertyIndex],
+                        workConsumer
+                    ).also { valid ->
+                        propertyStringValidationStates.set(
+                            propertyIndex,
+                            if (valid) PROPERTY_STRING_IDS_VALID else PROPERTY_STRING_IDS_INVALID
+                        )
+                    }
+                else -> error("Unexpected property string validation state")
+            }
+        }
+    }
 
     fun exactMatchingStringIds(
         predicates: List<StringPropertyPredicate>,
@@ -233,10 +273,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                         val propertyStrings = mapPropertyStringIds(
                             indexChannel,
                             uniqueCounts,
-                            callSiteCount,
-                            stringCount,
-                            propertyChecksums,
-                            workConsumer
+                            callSiteCount
                         )
                         val postingByteCount = postingCount.toLong() * Long.SIZE_BYTES
                         val postingBuffer = indexChannel.map(
@@ -250,6 +287,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                             postingBuffer.asReadOnlyBuffer(),
                             postings.asReadOnlyBuffer(),
                             propertyStrings,
+                            propertyChecksums,
                             stringCount,
                             stringTable
                         )
@@ -347,10 +385,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         private fun mapPropertyStringIds(
             channel: FileChannel,
             uniqueCounts: IntArray,
-            callSiteCount: Int,
-            stringCount: Int,
-            expectedChecksums: LongArray,
-            workConsumer: GraphWorkConsumer?
+            callSiteCount: Int
         ): Array<IntBuffer> {
             var offset = CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong()
             return Array(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
@@ -362,7 +397,6 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     channel.map(FileChannel.MapMode.READ_ONLY, offset, bytes)
                         .order(ByteOrder.BIG_ENDIAN).asIntBuffer()
                 }
-                validatePropertyStringIds(values, stringCount, expectedChecksums[propertyIndex], workConsumer)
                 offset += bytes * 2L + callSiteCount.toLong() * Int.SIZE_BYTES
                 values.asReadOnlyBuffer()
             }
@@ -373,7 +407,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
             stringCount: Int,
             expectedChecksum: Long,
             workConsumer: GraphWorkConsumer?
-        ) {
+        ): Boolean {
             val checksum = CRC32()
             val accounting = BufferedGraphWorkConsumer(workConsumer)
             var previous = -1
@@ -382,11 +416,11 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     if ((index and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
                     accounting.consume()
                     val value = values.get(index)
-                    require(value in 0 until stringCount && value > previous)
+                    if (value !in 0 until stringCount || value <= previous) return false
                     checksum.updatePrefilterIntBigEndian(value)
                     previous = value
                 }
-                require(checksum.value == expectedChecksum)
+                return checksum.value == expectedChecksum
             } finally {
                 accounting.flush()
             }
@@ -531,3 +565,6 @@ private const val PREFILTER_INTERRUPTION_POLL_MASK = 1_023
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
 private const val PREFILTER_UNSIGNED_INT_MASK = 0xffff_ffffL
+private const val PROPERTY_STRING_IDS_UNVALIDATED = 0
+private const val PROPERTY_STRING_IDS_VALID = 1
+private const val PROPERTY_STRING_IDS_INVALID = 2
