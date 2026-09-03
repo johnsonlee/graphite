@@ -902,6 +902,13 @@ internal class MappedWebGraphBackedGraph(
             }
             if (exactMatches?.all(IntArray::isEmpty) == true) return emptySequence()
             if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
+                if (mappedView != null && predicates.shareStringMatcher()) {
+                    mappedView.matchingNodeIds(predicates, exactMatches, workConsumer)?.let { nodeIds ->
+                        return nodeIds.take(limit).mapNotNull { nodeId ->
+                            node(NodeId(nodeId))?.let(type::cast)
+                        }
+                    }
+                }
                 parallelRawCallSiteStringDisjunction<T>(
                     type,
                     predicates,
@@ -1635,7 +1642,9 @@ internal class MappedWebGraphBackedGraph(
                 callSiteCount.toInt(),
                 persistedCallSiteStringIndexContentIdentity(workConsumer),
                 stringTable,
-                workConsumer
+                nodeOffsets.size,
+                nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
+                workConsumer = workConsumer
             )
             if (loaded == null) {
                 mappedCallSiteStringIndexViewUnavailable = true
@@ -2539,6 +2548,14 @@ internal const val RAW_STRING_MISS: Byte = 1
 internal const val RAW_STRING_MATCH: Byte = 2
 private const val RAW_SCAN_INTERRUPTION_POLL_MASK = 1_023
 private const val GRAPH_WORK_ACCOUNTING_BATCH_SIZE = 1_024L
+
+private fun List<StringPropertyPredicate>.shareStringMatcher(): Boolean =
+    firstOrNull()?.let { first ->
+        drop(1).all { predicate ->
+            predicate.transform == first.transform && predicate.mode == first.mode &&
+                predicate.expected == first.expected
+        }
+    } == true
 
 private fun estimatedStringPropertyIndexBytes(nodeCount: Long): Long =
     STRING_PROPERTY_INDEX_ARRAYS * PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES +

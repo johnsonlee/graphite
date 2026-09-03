@@ -17,6 +17,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
 
@@ -32,16 +33,18 @@ internal interface CallSiteStringIdMembership {
  * Integrity-checked, read-only view over the existing `graph.callsite-string-index` format.
  *
  * The complete retained index materializes every posting into heap arrays. Broad cold scans only
- * need the already-persisted property directories and trigram postings, so this view validates the
- * existing file checksum once and maps those regions without defining another storage format.
+ * need the already-persisted property directories, node postings, and trigram postings, so this
+ * view validates the existing file once and maps those regions without defining another format.
  */
 internal class MappedCallSiteStringIndexView private constructor(
     private val propertyStringIds: Array<IntBuffer>,
     private val propertyPostingEnds: Array<IntBuffer>,
+    private val propertyPostingNodeIds: Array<IntBuffer>,
     private val trigramPostings: LongBuffer,
     private val callSiteCount: Int,
     private val stringCount: Int,
-    private val stringTable: StringTable
+    private val stringTable: StringTable,
+    private val nodeOrder: (Int) -> Long
 ) : CallSiteStringIdMembership {
 
     override fun containsPropertyStringId(
@@ -93,6 +96,62 @@ internal class MappedCallSiteStringIndexView private constructor(
             }
         }
         return false
+    }
+
+    fun matchingNodeIds(
+        predicates: List<StringPropertyPredicate>,
+        exactMatchingStringIds: List<IntArray>,
+        workConsumer: GraphWorkConsumer?
+    ): Sequence<Int>? {
+        if (predicates.size != exactMatchingStringIds.size) return null
+        val ranges = mutableListOf<MappedPostingCursor>()
+        predicates.indices.forEach { predicateIndex ->
+            val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
+            if (propertyIndex < 0) return null
+            exactMatchingStringIds[predicateIndex].forEach { stringId ->
+                postingRange(propertyIndex, stringId, workConsumer)?.let { range ->
+                    ranges += MappedPostingCursor(propertyPostingNodeIds[propertyIndex], range, nodeOrder)
+                }
+            }
+        }
+        return sequence {
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            val pending = PriorityQueue<MappedPostingCursor>(
+                compareBy<MappedPostingCursor> { cursor -> cursor.order }
+                    .thenBy { cursor -> cursor.nodeId }
+            )
+            ranges.filterTo(pending, MappedPostingCursor::hasCurrent)
+            var previousNodeId = -1
+            var visited = 0
+            try {
+                while (pending.isNotEmpty()) {
+                    if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                    val cursor = pending.remove()
+                    accounting.consume()
+                    val nodeId = cursor.nodeId
+                    if (nodeId != previousNodeId) {
+                        accounting.flush()
+                        yield(nodeId)
+                        previousNodeId = nodeId
+                    }
+                    if (cursor.advance()) pending.add(cursor)
+                }
+            } finally {
+                accounting.flush()
+            }
+        }
+    }
+
+    private fun postingRange(
+        propertyIndex: Int,
+        stringId: Int,
+        workConsumer: GraphWorkConsumer?
+    ): IntRange? {
+        val row = binarySearch(propertyStringIds[propertyIndex], stringId, workConsumer)
+        if (row < 0) return null
+        val end = propertyPostingEnds[propertyIndex].get(row)
+        val start = if (row == 0) 0 else propertyPostingEnds[propertyIndex].get(row - 1)
+        return start until end
     }
 
     private fun exactMatchingStringIds(
@@ -152,12 +211,15 @@ internal class MappedCallSiteStringIndexView private constructor(
     private fun postingTrigram(index: Int): Int = (trigramPostings.get(index) ushr Int.SIZE_BITS).toInt()
 
     companion object {
+        @Suppress("LongParameterList")
         fun load(
             path: Path,
             expectedStringCount: Int,
             expectedCallSiteCount: Int,
             expectedContentIdentity: ByteArray,
             stringTable: StringTable,
+            nodeIdCapacity: Int,
+            nodeOrder: (Int) -> Long,
             workConsumer: GraphWorkConsumer?
         ): MappedCallSiteStringIndexView? {
             if (!Files.isRegularFile(path) ||
@@ -192,7 +254,9 @@ internal class MappedCallSiteStringIndexView private constructor(
                     val propertyEnds = Array(CALL_SITE_STRING_PROPERTY_COUNT) {
                         IntBuffer.allocate(0).asReadOnlyBuffer()
                     }
-                    val propertyPostingOffsets = LongArray(CALL_SITE_STRING_PROPERTY_COUNT)
+                    val propertyPostings = Array(CALL_SITE_STRING_PROPERTY_COUNT) {
+                        IntBuffer.allocate(0).asReadOnlyBuffer()
+                    }
                     repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
                         val count = uniqueCounts[propertyIndex]
                         val directoryBytes = count.toLong() * Int.SIZE_BYTES
@@ -200,7 +264,7 @@ internal class MappedCallSiteStringIndexView private constructor(
                         offset += directoryBytes
                         propertyEnds[propertyIndex] = mappedInts(mapped, offset, count)
                         offset += directoryBytes
-                        propertyPostingOffsets[propertyIndex] = offset
+                        propertyPostings[propertyIndex] = mappedInts(mapped, offset, callSiteCount)
                         offset += callSiteCount.toLong() * Int.SIZE_BYTES
                     }
                     val signaturesOffset = offset
@@ -213,24 +277,28 @@ internal class MappedCallSiteStringIndexView private constructor(
                             mapped,
                             propertyStrings,
                             propertyEnds,
-                            propertyPostingOffsets,
+                            propertyPostings,
                             signaturesOffset,
                             offset,
                             uniqueCounts,
                             stringCount,
                             callSiteCount,
+                            nodeIdCapacity,
                             postingCount,
                             expectedContentIdentity,
+                            nodeOrder,
                             workConsumer
                         )
                     )
                     MappedCallSiteStringIndexView(
                         propertyStrings,
                         propertyEnds,
+                        propertyPostings,
                         postings,
                         callSiteCount,
                         stringCount,
-                        stringTable
+                        stringTable,
+                        nodeOrder
                     )
                 }
             } catch (error: Exception) {
@@ -248,14 +316,16 @@ internal class MappedCallSiteStringIndexView private constructor(
             mapped: ByteBuffer,
             propertyStrings: Array<IntBuffer>,
             propertyEnds: Array<IntBuffer>,
-            propertyPostingOffsets: LongArray,
+            propertyPostings: Array<IntBuffer>,
             signaturesOffset: Long,
             postingsOffset: Long,
             uniqueCounts: IntArray,
             stringCount: Int,
             callSiteCount: Int,
+            nodeIdCapacity: Int,
             postingCount: Int,
             contentIdentity: ByteArray,
+            nodeOrder: (Int) -> Long,
             workConsumer: GraphWorkConsumer?
         ): Boolean {
             val validator = PersistentIndexViewValidator(mapped, workConsumer)
@@ -280,7 +350,21 @@ internal class MappedCallSiteStringIndexView private constructor(
                     previousEnd = end
                 }
                 require(previousEnd == callSiteCount)
-                validator.updateInts(propertyPostingOffsets[propertyIndex], callSiteCount)
+                var row = 0
+                var position = 0
+                var previousOrder = Long.MIN_VALUE
+                validator.updateInts(propertyPostings[propertyIndex]) { nodeId ->
+                    require(nodeId in 0 until nodeIdCapacity)
+                    val order = nodeOrder(nodeId)
+                    require(order >= 0L && order > previousOrder)
+                    previousOrder = order
+                    position++
+                    if (position == propertyEnds[propertyIndex].get(row)) {
+                        row++
+                        previousOrder = Long.MIN_VALUE
+                    }
+                }
+                require(row == uniqueCounts[propertyIndex])
             }
             validator.updateLongs(signaturesOffset, stringCount)
             var previousPosting = Long.MIN_VALUE
@@ -439,6 +523,29 @@ private data class MappedPredicateKey(
     val mode: StringMatchMode,
     val expected: String
 )
+
+private class MappedPostingCursor(
+    private val postings: IntBuffer,
+    range: IntRange,
+    private val nodeOrder: (Int) -> Long
+) {
+    private var position = range.first
+    private val lastPosition = range.last
+
+    var nodeId: Int = postings.get(position)
+        private set
+    var order: Long = nodeOrder(nodeId)
+        private set
+
+    fun hasCurrent(): Boolean = position <= lastPosition
+
+    fun advance(): Boolean {
+        if (++position > lastPosition) return false
+        nodeId = postings.get(position)
+        order = nodeOrder(nodeId)
+        return true
+    }
+}
 
 private const val TRIGRAM_LENGTH = 3
 private const val STRING_HASH_FACTOR = 31

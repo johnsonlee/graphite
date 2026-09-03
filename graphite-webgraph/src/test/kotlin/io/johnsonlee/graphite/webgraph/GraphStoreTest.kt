@@ -353,7 +353,17 @@ class GraphStoreTest {
                 )
                 assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(
+                    listOf(0, 1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate, predicate.copy(property = CALLER_NAME_PROPERTY)),
+                        limit = 2,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(listOf("example.TargetCaller")),
                     loaded.distinctStringPropertyDisjunction(

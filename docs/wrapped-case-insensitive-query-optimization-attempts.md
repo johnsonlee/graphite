@@ -3792,3 +3792,54 @@ not remove the cost that distinguishes candidate from main; the redundant work i
 strings and then scanning raw nodes again. No production or test change from this experiment is
 retained. The next attempt should consume the already-persisted property node postings directly,
 with integrity validation and raw fallback, instead of tuning the second scan.
+
+### 2026-09-04 - Attempt 122: Merge existing mapped property postings directly
+
+**Hypothesis:** `graph.callsite-string-index` already stores each property's matching node ids in
+encounter order. After the mmap view resolves exact string ids, merge those existing posting ranges
+and de-duplicate node ids instead of scanning every raw CallSite again. Restrict the direct route to
+disjunctions sharing one transform/mode/expected matcher. Keep selected-value DISTINCT provenance
+on the prior segmented raw path because most suffix graphs reject those tuples before scanning.
+
+**Evidence:**
+
+- Base PR revision is exact Attempt 121 head `ede2432`; production comparison is exact
+  `origin/main` revision `78ce46b`. Candidate is this Attempt 122 commit. Three fresh-JVM pairs ran
+  in the actual order candidate/base, base/candidate, candidate/base on the same 64 persisted graphs
+  generated from the four pinned fixture JARs, the same independent oracle, an 8 GiB heap, and four
+  active CPUs. No synthetic performance evidence was used.
+- The unmodified `compare-global-wide-pressure --minimum-speedup 5` gate passes with no errors.
+  Main P50/P95 is `233.827/389.235`, `242.054/399.137`, and `239.299/411.352 ms`; candidate is
+  `1.916/62.536`, `2.080/44.484`, and `1.926/52.608 ms`. P50 improves
+  `122.06x/116.38x/124.26x`; P95 improves `6.22x/8.97x/7.82x`, so every independent fork clears
+  the 5x milestone.
+- All 204 paired observations and all three candidate runs match the 34-case oracle exactly for
+  outcome, row count, order, digest, response size, and graph provenance. The formerly aligned
+  `localized-early` row improves from main's `4.031/3.968/5.678 ms` and `44,824` work units to
+  `2.690/2.646/2.580 ms` and `330` units. Wrapped case-insensitive DISTINCT dense remains on its
+  selected-value segmented path and measures `62.536/44.484/52.608 ms`, with the unchanged
+  deterministic `283,544` units.
+- Candidate process CPU is `1.891/1.772/1.787 s` versus main's
+  `10.246/10.950/10.606 s`. Candidate peak used heap is `5.012/5.034/5.003 GB` versus
+  `4.992/4.998/4.996 GB`, within the comparator's resource tolerance; peak RSS falls to
+  `5.715/5.766/5.726 GB` from `6.164/6.169/6.166 GB`. Total charged work falls from
+  `109,198,717` to `58,067,854`. Full retained CallSite-index bytes remain zero.
+- Every candidate fork reads `availableProcessors=4`, plans `2 graph + 2 segment`, and observes
+  peaks of two graph and two segment workers. Direct posting lookup avoids segmentation only when
+  it is cheaper; the remaining DISTINCT/raw paths still exercise the additive segment budget.
+- The current 1,137-case cold, warm, and startup-prepared graph-routing replays all pass their
+  comparators and match the independent main-derived oracle. Candidate P50/P95 is
+  `0.074/13.783`, `0.031/0.226`, and `0.077/1.072 ms`; retained-index lookup counts remain exactly
+  `1,979/2,043/2,043`, preserving the required cold and prepared lifecycle.
+- The view now validates property posting node-id bounds and strict encounter order in addition to
+  the existing header, identity, dimensions, checksum, directories, ends, and trigram checks.
+  Missing or invalid files still fall back to authoritative raw scanning. The deterministic test
+  proves source-order merge and de-duplication across two properties, no heap-retained index, and
+  corrupt-file raw fallback. The complete mapped `GraphStoreTest` and WebGraph detekt pass.
+
+**Conclusion:** keep. Directly consuming the existing mmap postings removes the repeated exact-id
+plus raw-node scan, closes the localized aligned regression, and clears the 5x P95 milestone in all
+three genuinely paired forks while preserving correctness, NCPU planning, resource bounds, and
+graph-routing lifecycle. This changes no persisted filename, magic, version, or writer. Exact-head
+full CI and hosted review gates remain required, and this commit is not authorization to merge or
+tag.
