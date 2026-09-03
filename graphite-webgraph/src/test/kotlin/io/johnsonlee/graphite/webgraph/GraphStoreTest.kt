@@ -93,6 +93,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import java.util.zip.CRC32
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -547,6 +548,70 @@ class GraphStoreTest {
                 )
                 assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
                 assertEquals(1L, loaded.callSiteParallelScanCount())
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `mapped posting merge falls back before limit when a checksum-valid range is out of order`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { nodeId ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor("example.TargetCaller"), "call$nodeId", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            CALLER_CLASS_PROPERTY,
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
+            override val segmentWorkerCount: Int = 1
+            override fun consume(workUnits: Long) = Unit
+        }
+        val dir = Files.createTempDirectory("webgraph-out-of-order-mapped-posting")
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val bytes = Files.readAllBytes(indexFile)
+            val mapped = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN)
+            val callerUniqueCount = mapped.getInt(
+                4 * Int.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
+            )
+            assertEquals(1, callerUniqueCount)
+            val callerPostingsOffset = CALL_SITE_STRING_INDEX_HEADER_BYTES +
+                callerUniqueCount * Int.SIZE_BYTES * 2
+            assertEquals(0, mapped.getInt(callerPostingsOffset))
+            assertEquals(1, mapped.getInt(callerPostingsOffset + Int.SIZE_BYTES))
+            mapped.putInt(callerPostingsOffset, 1)
+            mapped.putInt(callerPostingsOffset + Int.SIZE_BYTES, 0)
+            rewriteCallSiteStringIndexChecksum(bytes)
+            Files.write(indexFile, bytes)
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -8518,4 +8583,39 @@ class GraphStoreTest {
         method.parameterTypes.forEach { dos.writeInt(strings.indexOf(it.className)) }
         dos.writeInt(strings.indexOf(method.returnType.className))
     }
+}
+
+private fun rewriteCallSiteStringIndexChecksum(bytes: ByteArray) {
+    val input = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN)
+    val checksum = CRC32()
+
+    fun updateInt(value: Int) {
+        repeat(Int.SIZE_BYTES) { byteIndex ->
+            checksum.update(value ushr (byteIndex * Byte.SIZE_BITS) and 0xff)
+        }
+    }
+
+    fun updateLong(value: Long) {
+        repeat(Long.SIZE_BYTES) { byteIndex ->
+            checksum.update(((value ushr (byteIndex * Byte.SIZE_BITS)) and 0xffL).toInt())
+        }
+    }
+
+    repeat(4) { updateInt(input.int) }
+    val identity = ByteArray(CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+    input.get(identity)
+    checksum.update(identity)
+    val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) {
+        input.int.also(::updateInt)
+    }
+    val postingCount = input.int.also(::updateInt)
+    updateLong(input.long)
+    val callSiteCount = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getInt(3 * Int.SIZE_BYTES)
+    uniqueCounts.forEach { uniqueCount ->
+        repeat(uniqueCount * 2 + callSiteCount) { updateInt(input.int) }
+    }
+    val stringCount = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getInt(2 * Int.SIZE_BYTES)
+    repeat(stringCount + postingCount) { updateLong(input.long) }
+    check(input.position() == bytes.size - Long.SIZE_BYTES)
+    input.putLong(checksum.value)
 }

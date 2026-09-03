@@ -109,9 +109,10 @@ internal class MappedCallSiteStringIndexView private constructor(
             val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
             if (propertyIndex < 0) return null
             exactMatchingStringIds[predicateIndex].forEach { stringId ->
-                postingRange(propertyIndex, stringId, workConsumer)?.let { range ->
-                    ranges += MappedPostingCursor(propertyPostingNodeIds[propertyIndex], range, nodeOrder)
-                }
+                val range = postingRange(propertyIndex, stringId, workConsumer) ?: return@forEach
+                val cursor = validatedPostingCursor(propertyPostingNodeIds[propertyIndex], range, workConsumer)
+                    ?: return null
+                ranges += cursor
             }
         }
         return sequence {
@@ -140,6 +141,27 @@ internal class MappedCallSiteStringIndexView private constructor(
                 accounting.flush()
             }
         }
+    }
+
+    private fun validatedPostingCursor(
+        postings: IntBuffer,
+        range: IntRange,
+        workConsumer: GraphWorkConsumer?
+    ): MappedPostingCursor? {
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var previousOrder = Long.MIN_VALUE
+        try {
+            for (position in range) {
+                if ((position and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+                accounting.consume()
+                val order = nodeOrder(postings.get(position))
+                if (order < 0L || order <= previousOrder) return null
+                previousOrder = order
+            }
+        } finally {
+            accounting.flush()
+        }
+        return MappedPostingCursor(postings, range, nodeOrder)
     }
 
     private fun postingRange(

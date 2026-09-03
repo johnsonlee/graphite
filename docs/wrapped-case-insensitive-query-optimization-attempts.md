@@ -3886,3 +3886,39 @@ milestone remains green while RSS falls materially. Exact-head hosted 36-graph R
 graph-routing, unit coverage, and aggregate gates must still pass before either open review thread is
 resolved. This changes no persisted filename, magic, version, or writer, and it is not authorization
 to merge or tag.
+
+### 2026-09-04 - Attempt 124: Validate only selected posting ranges before merge
+
+**Hypothesis:** Attempt 123 correctly avoids faulting every node-offset page when a mapped view is
+opened, but its merge still assumes that each checksum-authenticated posting range is in encounter
+order. A checksum proves byte integrity, not that semantic invariant: a reordered range with a
+recomputed checksum can make an early `LIMIT` return the wrong node. Validate encounter order for
+only the posting ranges selected by the current query, and do so before yielding any result. If a
+selected range is invalid, decline the mapped merge so the authoritative raw path supplies the
+result. This retains Attempt 123's avoidance of an eager four-property node-offset walk.
+
+**Evidence:**
+
+- A focused regression persists three matching CallSites, changes the caller-class posting range
+  from `[0, 1, 2]` to `[1, 0, 2]`, recomputes the sidecar CRC, and issues `LIMIT 1`. The mapped view
+  initializes, rejects the selected out-of-order range before emitting a node, and the fallback
+  returns the correct encounter-order result `[0]`; the test and WebGraph detekt pass.
+- Three fresh-JVM candidate confirmations under `/tmp/pr113-attempt124-paired` use the same four
+  active CPUs, 8 GiB heap, 64 persisted graphs generated from the four pinned fixture JARs, and the
+  same independent main-derived oracle as Attempts 122-123. All 102 observations pass exact
+  correctness verification for outcome, row count, order, digest, response size, and graph
+  provenance. No synthetic performance evidence is used.
+- Candidate P50 is `1.921/1.925/1.933 ms` and P95 is `47.861/41.936/46.428 ms`. Against the frozen
+  paired main samples this is `121.72x/125.72x/123.82x` at P50 and
+  `8.13x/9.52x/8.86x` at P95. The unmodified `compare-global-wide-pressure --minimum-speedup 5`
+  gate passes with no errors; worst wrapped-query P95 speedup is `8.28x`.
+- Candidate process CPU is `1.521/1.488/1.496 s`; peak used heap is
+  `4.325/4.686/4.241 GB`, and peak RSS is `4.882/5.237/4.781 GB`. Charged work is
+  `58,071,626` in every fork, only `3,772` (`0.0065%`) above Attempt 123 because the selected-range
+  semantic check is budgeted. Each fork reads four available processors, plans `2 graph + 2
+  segment`, and observes both peaks at two.
+
+**Conclusion:** keep. Query-selected semantic validation closes the checksum-valid corruption hole
+without restoring the eager all-property page faults, changing the persisted format, or sacrificing
+the 5x P95 milestone. Exact-head full CI and hosted review gates remain required before the review
+thread is resolved. This commit is not authorization to merge or tag.
