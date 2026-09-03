@@ -121,11 +121,12 @@ internal fun resolveDirectStringParallelismPlan(
 internal fun resolveDirectStringGraphParallelism(
     sourceCount: Int,
     processors: Int = Runtime.getRuntime().availableProcessors(),
-    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
+    graphScoped: Boolean = false
 ): Int {
     val available = processors.coerceAtLeast(1)
     val candidates = sourceCount.coerceAtLeast(1)
-    if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
+    if (configuredGraphWorkers == null && (graphScoped || sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT)) {
         return minOf(candidates, available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM)
     }
     val plan = resolveDirectStringParallelismPlan(processors, configuredGraphWorkers)
@@ -159,8 +160,12 @@ private val directStringExecutor by lazy {
     }
 }
 
-private fun directStringGraphParallelism(sourceCount: Int): Int =
-    resolveDirectStringGraphParallelism(sourceCount, configuredGraphWorkers = configuredDirectStringParallelism)
+private fun directStringGraphParallelism(sourceCount: Int, graphScoped: Boolean = false): Int =
+    resolveDirectStringGraphParallelism(
+        sourceCount,
+        configuredGraphWorkers = configuredDirectStringParallelism,
+        graphScoped = graphScoped
+    )
 
 private fun usesBalancedStringSplit(sourceCount: Int): Boolean =
     configuredDirectStringParallelism != null || sourceCount >= BALANCED_STRING_SCAN_MIN_SOURCE_COUNT
@@ -1632,6 +1637,7 @@ class QueryPipeline private constructor(
         val balanced = usesBalancedStringSplit(candidateSources.size)
         val rawLeadingStorage = balanced && !serialLeadingStorage &&
             filter.prefersBoundedRawLeadingProbe(limit)
+        val graphParallelism = directStringGraphParallelism(candidateSources.size, graphScoped = serialLeadingStorage)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
                 source,
@@ -1643,7 +1649,7 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = (serialLeadingStorage || rawLeadingStorage) && balanced && sourceIndex == 0
+                serialStorage = serialLeadingStorage || (rawLeadingStorage && balanced && sourceIndex == 0)
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
@@ -1670,7 +1676,7 @@ class QueryPipeline private constructor(
             // retained-index waves without initializing every later graph speculatively.
             runDirectStringTasksInOrderUntil(scanners.drop(waveStart).map { scanner ->
                 { scanner.nextRows(limit) }
-            }, directStringGraphParallelism(candidateSources.size)) { batch ->
+            }, graphParallelism) { batch ->
                 val remaining = limit - rows.size
                 if (remaining > 0) rows += batch.take(remaining)
                 rows.size >= limit
@@ -1678,7 +1684,6 @@ class QueryPipeline private constructor(
             return CypherResult(columns, rows)
         }
         while (waveStart < scanners.size && rows.size < limit) {
-            val graphParallelism = directStringGraphParallelism(candidateSources.size)
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val batches = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextRows(limit) }

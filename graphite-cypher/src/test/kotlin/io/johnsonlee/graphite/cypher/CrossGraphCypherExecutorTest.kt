@@ -78,6 +78,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(2, resolveDirectStringGraphParallelism(42, 4, null))
         assertEquals(8, resolveDirectStringGraphParallelism(64, 16, null))
         assertEquals(16, resolveDirectStringGraphParallelism(64, 16, "16"))
+        assertEquals(4, resolveDirectStringGraphParallelism(64, 4, null, graphScoped = true))
+        assertEquals(8, resolveDirectStringGraphParallelism(64, 16, null, graphScoped = true))
 
         assertEquals(4, resolveDirectStringExecutorParallelism(4, null))
         assertEquals(8, resolveDirectStringExecutorParallelism(16, null))
@@ -216,10 +218,12 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `full graph id set keeps the leading probe serial and splits later graphs`() {
-        val plan = resolveDirectStringParallelismPlan()
-        if (plan.graphWorkerCount < 2) return
+    fun `full graph id set keeps the leading probe then returns the segment half to graph fanout`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64, graphScoped = true)
+        if (plannedWorkers < 2) return
+        val firstWaveEntered = CountDownLatch(plannedWorkers)
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val workerThreads = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
         val empty = graph()
         val graphs = List(64) { graphIndex ->
             CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
@@ -239,6 +243,11 @@ class CrossGraphCypherExecutorTest {
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
                     storageConsumers[graphIndex] = workConsumer
+                    if (graphIndex in 1..plannedWorkers) {
+                        workerThreads += Thread.currentThread().name
+                        firstWaveEntered.countDown()
+                        check(firstWaveEntered.await(5, TimeUnit.SECONDS))
+                    }
                     workConsumer.consume()
                     return emptySequence()
                 }
@@ -259,10 +268,8 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(graphIds.indices.toSet(), storageConsumers.keys)
-        assertTrue(storageConsumers.getValue(0) is SerialGraphWorkBatchConsumer)
-        assertTrue(storageConsumers.filterKeys { it > 0 }.values.all { consumer ->
-            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount == plan.segmentWorkerCount
-        })
+        assertEquals(plannedWorkers, workerThreads.size)
+        assertTrue(storageConsumers.values.all { consumer -> consumer is SerialGraphWorkBatchConsumer })
     }
 
     @Test

@@ -2040,3 +2040,36 @@ bounded and its repeated dense projections are cheaper without displacing a load
 attempt must return the segment half to graph fanout for explicitly graph-scoped index work; the
 following projection-path attempt can remove the two remaining aligned dense regressions without
 changing the established all-graph scan split.
+
+### 2026-09-03 - Attempt 065: Return segment capacity to graph-scoped index fanout
+
+**Hypothesis:** the additive `2+2` plan is appropriate for an unscoped 64-graph storage scan, but a
+request already scoped by `graphId`, a graph-id set, or the `/api/cypher/graphs` graph parameter has
+no segment work when its retained indexes are ready. Attempt 064 nevertheless limits those K=64
+lookups to two graph workers. Keep the source-ordered leading probe, then use up to NCPU graph
+workers with serial per-graph storage for the remaining explicitly selected sources. This stays
+additive and cannot create graph-worker x segment-worker oversubscription.
+
+**Evidence:**
+
+- Base: Attempt 064 exact production head `c9c9efd49ac8`. Candidate: this experiment commit. Dataset:
+  the same 64 persisted shards regenerated from the pinned Android, Tika, Hive, and Kotlin compiler
+  fixture JARs in `/tmp/pr113-exp064-fixture64.7PSN8d/graphs/`; no synthetic timing evidence.
+- The hosted base run `33696452403` had K=64 cold P50/P95 `2.513/13.951 ms` and failed the graph-set
+  latency gate despite 1,979 correct retained-index lookups. The same-machine local Attempt 064
+  control under `/tmp/pr113-exp064-routing/` measured `0.744/5.535 ms` and a two-worker graph peak.
+- Three four-CPU candidate runs under `/tmp/pr113-exp065-leading-routing.04Ev71/` and
+  `/tmp/pr113-exp065-leading-routing-more.kXCdsr/` measured K=64 P50 `0.969`, `0.974`, and
+  `0.742 ms`; P95 was `3.060`, `3.143`, and `2.374 ms`. All runs completed 1,137/1,137 rows with
+  exact oracle parity, exactly 1,979 index lookups, and unchanged `18,550,794` charged work.
+- The source-ordered dense contract remains intact in every run: each of the literal, parameterized,
+  and request-selected K=64 dense rows accesses one graph, performs one index lookup and 200 work
+  units, and returns the same digest. Runtime graph concurrency rises from two to four while
+  segment concurrency is zero for the scoped path.
+- Candidate process CPU was `8.96-9.15 s` versus the local Attempt 064 control's `9.81 s`; wall time
+  was `5.077-5.087 s` versus `5.252 s`. Peak heap was `5.28-5.31 GiB` versus `5.50 GiB`, and peak
+  RSS `6.72-6.96 GiB` versus `6.62 GiB`; the upper RSS observation is +5.1%, below the 15% gate.
+
+**Conclusion:** keep pending exact hosted graph-routing confirmation. This is a graph-scoped
+dispatch correction only; unscoped >=40-source scans retain the NCPU-half graph/segment split and
+therefore retain the independently established 5x global-wide path.
