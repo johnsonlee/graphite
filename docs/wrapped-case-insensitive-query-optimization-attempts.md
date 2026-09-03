@@ -2648,3 +2648,28 @@ need not satisfy LIMIT by itself; sparse scans never satisfy the condition and r
 are already running. The next experiment uses the mapped dense-count signal to divide only dense
 long terms into one extra queued range, preserving the two-worker budget while allowing an
 unneeded fourth range to remain unstarted.
+
+### 2026-09-03 - Attempt 085: Queue one extra dense ordered range
+
+**Hypothesis:** for long terms whose mapped posting count can fill LIMIT, divide the graph into four
+ranges but retain the existing two background segment workers plus the inline graph worker. The
+fourth range should remain queued until the first two ordered ranges fill LIMIT, avoiding both the
+three-range boundary miss and Attempt 081's many-task overhead.
+
+**Evidence:**
+
+- Base, real64 fixture, oracle, and runtime protocol are unchanged. Three candidate runs under
+  `/tmp/pr113-attempt085-queued-range/` complete all 34 cases with exact correctness parity.
+- The executor does not leave the fourth range reliably queued. A segment worker immediately takes
+  it when an earlier range completes, before the coordinator records the contiguous prefix.
+  Localized-early work becomes `83,556/96,994/77,988` versus 80,173 on base, so the proposed bound
+  is neither lower nor deterministic. Latency is `8.548/11.515/8.876 ms`.
+- Wrapped targeted correctly remains on three equal ranges and charges 221,567 units including the
+  bounded posting-count lookup, versus 221,480 on base. Its latency range overlaps base, but the
+  comparator still finds a separate wrapped DISTINCT targeted regression in two pairs.
+- Overall P50 is `2.664/3.122/2.921 ms`, P95 `49.254/48.474/51.308 ms`, and the same-head gate fails
+  all three pairs. CPU, heap, and RSS provide no compensating resource improvement.
+
+**Conclusion:** reject and revert. Executor dequeue races make a queued range an ineffective work
+bound. Stop tuning partition counts; the next attempt must be based on measured call-stack or
+allocation evidence for the two exact hosted blockers.
