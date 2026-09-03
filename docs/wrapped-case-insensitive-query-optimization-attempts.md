@@ -3536,3 +3536,31 @@ capability probe still does not reduce K64 median latency and adds one leading i
 graph over the replay. No production or test code from this experiment is retained. The next
 attempt must bypass the balanced scanner machinery for the synchronous leading result itself,
 matching main's direct source loop before any suffix fanout is considered.
+
+### 2026-09-04 - Attempt 115: Execute the leading selected source directly
+
+**Hypothesis:** main's graph-scoped fast path projects a synchronous source directly, whereas the
+balanced candidate routes even a graph-zero dense hit through `DirectStringSourceScanner` and its
+iterator/batch machinery. Keep the existing fanout decision and suffix workers, but execute the
+leading graph with the original direct candidate/projection loop. This should remove the remaining
+sub-millisecond K64 median regression without affecting unscoped `2 + 2` execution or storage.
+
+**Evidence:**
+
+- Base revision is `37439a1`; the candidate was tested in an isolated worktree with the same 64
+  persisted fixture-JAR graphs, an 8 GiB heap, and four active CPUs. Cypher detekt and all 80
+  `CrossGraphCypherExecutorTest` cases pass.
+- All 1,137 real-64 routing cases match the independent oracle with zero failures and zero timeouts.
+  The direct loop materially reduces leading dense K64 latency: literal/parameter rows fall from
+  Attempt 111's `0.681/0.506 ms` to `0.382/0.335 ms`. K64 P50 falls to `0.507 ms`, only about
+  `2 us` beyond the comparator's allowed `0.25 ms` absolute delta over main's `0.255 ms`.
+- The attempt does not repair the cold lifecycle contract. Because the existing planner still
+  treats a persisted sidecar as equivalent to an already-retained index, the first cold K64 lookup
+  restores all 64 indexes. The replay records `2,043` index lookups distributed `30..39` per graph,
+  rather than the required `1,979` post-build lookups distributed `29..38`; K64 targeted tail also
+  remains noisy at `1.837/0.725 ms` for literal/parameter forms.
+
+**Conclusion:** reject as an independently mergeable attempt and revert. The direct leading loop
+does remove a measured median cost, but retaining it alone leaves the cold lifecycle gate red. The
+next attempt must combine this direct path with an in-memory retained-index hint: a disk sidecar's
+existence must not force cold selected sources away from the balanced raw/prefilter path.
