@@ -2593,3 +2593,32 @@ isolate chunk scheduling to dense localized terms without changing the persisted
 **Conclusion:** reject the ordered-chunk route. Keep the occurrence count as a planner signal for
 the next isolated experiment, but pair it with Attempt 079's already faster source-ordered serial
 integer-id scan. Sparse terms must continue using equal segments.
+
+### 2026-09-03 - Attempt 083: Gate serial integer-id scanning with mapped posting counts
+
+**Hypothesis:** when the mapped posting counts prove that the exact matching string ids can fill
+LIMIT, use Attempt 079's source-ordered serial integer-id scan; otherwise retain equal segments.
+This removes small-task coordination while preventing sparse targeted terms from losing parallelism.
+
+**Evidence:**
+
+- Base, real64 fixture, oracle, and runtime protocol remain unchanged. Three candidate runs are
+  under `/tmp/pr113-attempt083-occurrence-serial/`; all 34 cases pass exact row, order, digest,
+  response-size, and provenance verification in every run.
+- The gate routes as intended. Localized early uses no segment worker and deterministically falls
+  from 80,173 to 46,692 work units; localized middle falls from 112,089 to 59,383. Wrapped targeted
+  remains parallel and stays at 221,567 work units including the bounded count lookup, versus
+  221,480 on base.
+- Work reduction is still insufficient under the required latency gate. Localized early measures
+  `13.641/13.672/13.355 ms` versus base `9.286/9.471/18.289 ms`, producing an aligned regression in
+  two pairs. Overall P50 is `2.949/2.902/2.895 ms`, but P95 is
+  `48.830/49.861/48.867 ms` versus base `48.603/48.377/45.782 ms`; wrapped DISTINCT dense also
+  regresses in two noisy aligned pairs.
+- Process CPU is `1.745/1.773/1.700 s` versus `1.718/1.664/1.803 s`; peak heap and RSS remain
+  unchanged. The dense serial route saves work but gives up enough segment concurrency to miss the
+  latency gate.
+
+**Conclusion:** reject and revert the occurrence-count planner and serial route. Extend the
+existing equal-segment executor instead: cancel later segments once any completed contiguous
+source-order prefix, not only segment zero, has accumulated LIMIT matches. Sparse scans cannot
+trigger that cancellation and therefore retain their full parallelism.
