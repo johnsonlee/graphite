@@ -3174,3 +3174,19 @@ the existing additive graph-plus-segment parallel continuation when the leading 
 **Conclusion:** keep pending exact hosted confirmation. The change restores the already bounded
 raw-leading fast path for non-DISTINCT queries without broadening eligible query shapes, changing
 results, or multiplying graph and segment worker budgets.
+
+### 2026-09-03 - Attempt 103: Broaden raw-leading probes to larger disjunctions
+
+**Hypothesis:** increasing the bounded raw-leading term ceiling from four to 128 may let more wide
+queries avoid retained-index setup while still satisfying `LIMIT` from the leading graph.
+
+**Evidence:**
+
+- A paired screen used the same fixture-JAR-derived 64 persisted graphs and complete correctness
+  comparison. Aggregate P95 speedup ranged from `5.81x` to `7.54x`, but the worst wrapped-query
+  speedup fell to `4.65x` and the localized early row remained unstable at `6.25..6.92 ms`.
+- The broader rule therefore does not establish the requested 5x floor and risks shifting sparse
+  large-disjunction queries away from their reusable index without a compensating stable gain.
+
+**Conclusion:** reject and revert. Keep the existing four-term eligibility bound; no production or
+test code from this experiment is retained.
