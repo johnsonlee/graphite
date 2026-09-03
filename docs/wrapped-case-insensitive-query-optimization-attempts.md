@@ -3564,3 +3564,40 @@ sub-millisecond K64 median regression without affecting unscoped `2 + 2` executi
 does remove a measured median cost, but retaining it alone leaves the cold lifecycle gate red. The
 next attempt must combine this direct path with an in-memory retained-index hint: a disk sidecar's
 existence must not force cold selected sources away from the balanced raw/prefilter path.
+
+### 2026-09-04 - Attempt 116: Separate retained lookup cost from cold split work
+
+**Hypothesis:** a persisted CallSite index file is not proof that its index is already retained in
+memory. Expose that distinction as an in-process graph capability: a cold selected set keeps the
+balanced graph/segment path, while a retained selected set uses the cheaper source-ordered serial
+lookup loop. Preserve Attempt 115's direct leading projection, reuse stateless no-op work consumers,
+and precompute each query's storage predicates once instead of allocating them for every graph.
+This changes no persisted format and leaves unscoped global-wide fanout on the NCPU split.
+
+**Evidence:**
+
+- Base revision is `8fb0a2a`; candidate is this Attempt 116 commit, validated from the matching
+  clean snapshot at `/tmp/pr113-attempt116b-test.XDfCRZ/repo`. All measurements use the same 64
+  persisted graphs generated from the four pinned Android, Tika, Hive, and Kotlin compiler fixture
+  JARs at `/tmp/pr113-attempt095-fixture64/`, an 8 GiB heap, and four active CPUs. No synthetic graph
+  supplies performance evidence.
+- All 80 `CrossGraphCypherExecutorTest` cases, the mapped `GraphStoreTest`, and core, Cypher, and
+  WebGraph detekt pass. The selected-set test now proves retained lookups visit all 64 graphs in
+  source order with one active caller and the persisted-storage consumer; the adjacent cold test
+  continues to require concurrent graph work and the balanced split consumer.
+- Two independent 1,137-case cold routing replays both match the trusted oracle with zero failures
+  and zero timeouts. Both record exactly `1,979` retained-index lookups distributed `29..38` per
+  graph, rather than the rejected `2,043` eager-load lifecycle. K=64 candidate P50/P95 are
+  `0.300/1.584 ms` and `0.422/1.405 ms`, both below the comparator limits derived from main's
+  `0.255/2.200 ms`; the complete routing gate passes in both runs.
+- The separate 34-case unscoped real-64 replay matches every result digest with zero failures and
+  zero timeouts. Candidate P50/P95 are `3.354/47.361 ms` versus main's `238.520/408.163 ms`, or
+  `71.10x/8.62x`. Wrapped case-insensitive DISTINCT P95 is `75.542 ms` versus `393.313 ms`
+  (`5.21x`). The runtime reports four available CPUs, exactly `2 graph + 2 segment` workers, and
+  observed peaks of two on each side. Process CPU is `1.770 s`, peak used heap is `3.56 GiB`, and
+  peak RSS is `4.01 GiB`.
+
+**Conclusion:** keep. The in-memory hint preserves the cold split lifecycle, the retained serial
+path removes the sub-millisecond scheduling regression with repeatable gate margin, and the actual
+unscoped target remains above 5x P95 with the required additive NCPU allocation. Exact hosted
+three-pair validation remains required before merge.

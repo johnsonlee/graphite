@@ -25,6 +25,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -360,14 +361,11 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `startup prepared wide selected graph set reuses fixed graph workers`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64, graphScoped = true)
-        val batchWorkers = minOf(plannedWorkers, 63)
-        val firstParallelBatch = CountDownLatch(batchWorkers)
-        val batchStarts = (1..batchWorkers).toSet()
+    fun `startup prepared wide selected graph set uses the retained serial fast path`() {
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val persistentCapabilityChecks = AtomicInteger()
+        val accessedGraphs = mutableListOf<Int>()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
         val empty = graph()
         val selectedGraphs = List(64) { graphIndex ->
@@ -375,6 +373,7 @@ class CrossGraphCypherExecutorTest {
                 Graph by empty,
                 WorkAwareStringPropertyDisjunctionLookup,
                 PreparedStringPropertyDisjunctionLookup,
+                RetainedStringPropertyDisjunctionLookup,
                 StringPropertyDisjunctionLookupStrategy {
                 override fun nodeCount(type: Class<out Node>): Long? =
                     if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
@@ -392,6 +391,11 @@ class CrossGraphCypherExecutorTest {
                     return type == CallSiteNode::class.java && predicates.isNotEmpty()
                 }
 
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
                 override fun <T : Node> nodesByStringPropertyDisjunction(
                     type: Class<T>,
                     predicates: List<StringPropertyPredicate>,
@@ -404,17 +408,11 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
+                    accessedGraphs += graphIndex
                     storageConsumers[graphIndex] = workConsumer
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     return try {
-                        if (graphIndex in batchStarts) {
-                            firstParallelBatch.countDown()
-                            check(firstParallelBatch.await(5, TimeUnit.SECONDS)) {
-                                "planned $batchWorkers graph batches but only " +
-                                    "${batchWorkers - firstParallelBatch.count} entered"
-                            }
-                        }
                         workConsumer.consume()
                         emptySequence()
                     } finally {
@@ -436,10 +434,11 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphs.indices.toList(), accessedGraphs)
         assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
-        assertEquals(batchWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
-        assertEquals(1, persistentCapabilityChecks.get())
+        assertEquals(0, persistentCapabilityChecks.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
         })

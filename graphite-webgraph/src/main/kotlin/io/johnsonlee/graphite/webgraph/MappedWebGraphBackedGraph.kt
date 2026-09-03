@@ -26,6 +26,7 @@ import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchC
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
@@ -164,6 +165,7 @@ internal class MappedWebGraphBackedGraph(
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
     PreparedStringPropertyDisjunctionLookup,
+    RetainedStringPropertyDisjunctionLookup,
     StringPropertyDisjunctionLookupStrategy,
     StringPropertyLookupOrder,
     Closeable {
@@ -868,9 +870,10 @@ internal class MappedWebGraphBackedGraph(
                 serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
             }
             if (workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer) {
-                retainPersistedCallSiteStringIndex.set(true)
-                val preferredIndex = callSiteStringIndex ?:
+                val preferredIndex = callSiteStringIndex ?: run {
+                    retainPersistedCallSiteStringIndex.set(true)
                     loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
+                }
                 preferredIndex?.let { index ->
                     callSiteStringIndexLookupCount.incrementAndGet()
                     return index.matchingNodeIds(predicates, workConsumer, limit)
@@ -1663,6 +1666,12 @@ internal class MappedWebGraphBackedGraph(
     ): Boolean = type == CallSiteNode::class.java &&
         predicates.all { supportsRawStringProperty(type, it.property) } &&
         persistentCallSiteStringIndexEnabled && Files.isRegularFile(callSiteStringIndexFile)
+
+    override fun hasRetainedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean = type == CallSiteNode::class.java && callSiteStringIndex != null &&
+        predicates.all { supportsRawStringProperty(type, it.property) }
 
     @Suppress("UNCHECKED_CAST", "ReturnCount")
     private fun <T : Node> lookupStringProperty(

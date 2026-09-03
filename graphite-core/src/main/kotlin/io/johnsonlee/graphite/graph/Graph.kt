@@ -309,6 +309,14 @@ interface PreparedStringPropertyDisjunctionLookup {
     ): Boolean
 }
 
+/** Optional planning hint that a complete disjunction index is already retained in process memory. */
+interface RetainedStringPropertyDisjunctionLookup {
+    fun hasRetainedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
+}
+
 /**
  * Ordering capability for storage lookups that are emitted in canonical node traversal order.
  * Implementations must return a stable key and must emit all string-property lookup sequences
