@@ -3472,3 +3472,37 @@ proves more graphs are required. Non-balanced execution and source-order merging
 **Conclusion:** reject and revert. Scanner allocation is not the material leading-hit overhead. No
 production code from this experiment is retained; the next attempt must defer the scoped fanout
 decision itself until after the leading result, removing its capability check from dense queries.
+
+### 2026-09-03 - Attempt 113: Defer scoped fanout planning past the leading LIMIT
+
+**Hypothesis:** prepared K=64 selected-set queries call the prepared-capability probe before reading
+graph zero. Move both that probe and suffix scanner construction after the leading lookup, so a
+dense `LIMIT 200` result can return without planning the remaining 63 graphs. A leading miss still
+selects the fixed all-CPU graph-worker queue from Attempt 111; cold and unscoped paths retain their
+additive graph/segment split. This attempt introduces no storage format or sidecar change.
+
+**Evidence:**
+
+- Base revision is Attempt 112; the candidate was validated from an isolated worktree over
+  `efcb078`. Both use the same 64 persisted graphs generated from the four pinned fixture JARs, an
+  8 GiB heap, and four active CPUs.
+- The complete 80-test `CrossGraphCypherExecutorTest` class passes. It covers the selected and
+  unscoped leading-return paths, cold `2 + 2` allocation, prepared fixed-worker fanout, source-order
+  LIMIT behavior, cancellation, and exact result/provenance semantics.
+- The 1,137-case real-64 routing replay matches its independent correctness oracle with zero
+  failures and zero timeouts. The change does not improve the K=64 median: candidate P50/P95 are
+  `0.771/1.657 ms` versus main's `0.255/2.200 ms`. Dense literal/parameter rows remain
+  `0.761/0.612 ms`, effectively unchanged from Attempt 112's `0.757/0.622 ms`. The leading split
+  lookup also increases retained-index lookups from the expected `1,979` to `2,042`.
+- The separate 34-case unscoped real-64 replay remains healthy but does not justify this scoped
+  change: all results match the oracle, P50/P95 are `3.215/52.010 ms` versus main's
+  `238.520/408.163 ms` (`74.20x/7.85x`), wrapped-case-insensitive P95 is `7.39x`, and the runtime
+  records exactly `2 graph + 2 segment` workers. Candidate process CPU is `1.704 s` versus
+  `10.567 s`, peak used heap is `3.55 GiB` versus `4.65 GiB`, and peak RSS is `3.97 GiB` versus
+  `5.73 GiB`.
+
+**Conclusion:** reject and revert. The capability probe and eager scanner construction are not the
+material K=64 median overhead, and changing the leading consumer adds index work. No production or
+test code from this experiment is retained. The unscoped 5x result and NCPU split remain established
+by the earlier kept attempts; the next isolated change must target the selected-set planner or
+fixed-worker overhead measured before graph-zero lookup.
