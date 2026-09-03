@@ -1628,6 +1628,7 @@ class QueryPipeline private constructor(
         candidateSources: List<CypherGraph> = sources,
         preferPersistedStorage: Boolean = false
     ): CypherResult {
+        if (candidateSources.isEmpty()) return CypherResult(columns, emptyList())
         executeIndexedStringProjectionRows(
             nodeClass,
             variable,
@@ -1650,7 +1651,7 @@ class QueryPipeline private constructor(
         )
         val scopedRetainedStorage = balanced && preferPersistedStorage &&
             nodePredicateFactory == null &&
-            hasRetainedStringDisjunction(nodeClass, filter, candidateSources.first())
+            hasRetainedStringDisjunction(nodeClass, filter, candidateSources)
         val mayBatchPreparedStorage = balanced && nodePredicateFactory == null &&
             (!preferPersistedStorage || parallelStringScan)
         // Retained graph-scoped lookups are cheaper than dispatching graph tasks, so keep their
@@ -1970,16 +1971,22 @@ class QueryPipeline private constructor(
     private fun hasRetainedStringDisjunction(
         nodeClass: Class<out Node>,
         filter: DirectStringDisjunction,
-        source: CypherGraph
+        candidateSources: List<CypherGraph>
     ): Boolean {
-        val retained = source.graph as? RetainedStringPropertyDisjunctionLookup ?: return false
-        return DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
-            if (!nodeClass.isAssignableFrom(candidateType)) return@any false
+        val candidates = DIRECT_STRING_NODE_PROPERTIES.mapNotNull { (candidateType, properties) ->
+            if (!nodeClass.isAssignableFrom(candidateType)) return@mapNotNull null
             val predicates = filter.filters
                 .filter { it.property in properties }
                 .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
-            predicates.isNotEmpty() &&
-                retained.hasRetainedStringPropertyDisjunction(candidateType, predicates)
+            (candidateType to predicates).takeIf { predicates.isNotEmpty() }
+        }
+        if (candidates.isEmpty()) return false
+        return candidateSources.all { source ->
+            val retained = source.graph as? RetainedStringPropertyDisjunctionLookup ?: return@all false
+            candidates.all { (candidateType, predicates) ->
+                source.graph.nodeCount(candidateType) == 0L ||
+                    retained.hasRetainedStringPropertyDisjunction(candidateType, predicates)
+            }
         }
     }
 
