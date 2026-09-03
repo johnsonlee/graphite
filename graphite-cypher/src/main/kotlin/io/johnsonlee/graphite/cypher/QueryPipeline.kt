@@ -1652,9 +1652,8 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
-        val rawLeadingStorage = balanced && !serialLeadingStorage &&
-            filter.prefersBoundedRawLeadingProbe(limit)
-        val graphParallelism = directStringGraphParallelism(candidateSources.size, graphScoped = serialLeadingStorage)
+        val rawLeadingStorage = balanced && filter.prefersBoundedRawLeadingProbe(limit)
+        val graphParallelism = directStringGraphParallelism(candidateSources.size)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
                 source,
@@ -1666,7 +1665,7 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = serialLeadingStorage || (rawLeadingStorage && balanced && sourceIndex == 0)
+                serialStorage = rawLeadingStorage && balanced && sourceIndex == 0
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
@@ -1692,14 +1691,7 @@ class QueryPipeline private constructor(
             // source-ordered result is merged removes the synchronization barrier between tiny
             // retained-index waves without initializing every later graph speculatively.
             val remainingScanners = scanners.drop(waveStart)
-            val graphTasks = if (serialLeadingStorage && remainingScanners.isNotEmpty()) {
-                val batchSize = (remainingScanners.size + graphParallelism - 1) / graphParallelism
-                remainingScanners.chunked(batchSize).map { scannerBatch ->
-                    { scanDirectStringRows(scannerBatch, limit) }
-                }
-            } else {
-                remainingScanners.map { scanner -> { scanner.nextRows(limit) } }
-            }
+            val graphTasks = remainingScanners.map { scanner -> { scanner.nextRows(limit) } }
             runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { batch ->
                 val remaining = limit - rows.size
                 if (remaining > 0) rows += batch.take(remaining)
@@ -1719,19 +1711,6 @@ class QueryPipeline private constructor(
             waveStart += wave.size
         }
         return CypherResult(columns, rows)
-    }
-
-    private fun scanDirectStringRows(
-        scanners: List<DirectStringSourceScanner>,
-        limit: Int
-    ): List<Map<String, Any?>> {
-        val rows = mutableListOf<Map<String, Any?>>()
-        for (scanner in scanners) {
-            val remaining = limit - rows.size
-            if (remaining <= 0) break
-            rows += scanner.nextRows(remaining)
-        }
-        return rows
     }
 
     @Suppress("LongParameterList", "ReturnCount")
