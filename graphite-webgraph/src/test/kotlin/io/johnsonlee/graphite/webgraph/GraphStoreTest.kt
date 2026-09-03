@@ -51,6 +51,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
@@ -329,12 +330,57 @@ class GraphStoreTest {
             override val segmentWorkerCount: Int = 1
             override fun consume(workUnits: Long) = Unit
         }
+        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
+            override val segmentWorkerCount: Int = 1
+            override fun consume(workUnits: Long) = Unit
+        }
         val dir = Files.createTempDirectory("webgraph-existing-callsite-index-split")
         try {
             System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
             GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
             val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             assertTrue(Files.isRegularFile(indexFile))
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        selectedValues = setOf(listOf("example.TargetCaller")),
+                        workConsumer = mappedSplit
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
+                        workConsumer = mappedSplit
+                    )
+                )
+                loaded.releaseStringPropertyDisjunctionCache()
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                loaded.clearStringPropertyIndexes()
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+            }
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
@@ -442,6 +488,20 @@ class GraphStoreTest {
             val corruptIndex = originalIndex.copyOf()
             corruptIndex[corruptIndex.size / 2] = (corruptIndex[corruptIndex.size / 2].toInt() xor 1).toByte()
             Files.write(indexFile, corruptIndex)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = mappedSplit
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+            }
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertEquals(
                     listOf(0),

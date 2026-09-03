@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
@@ -204,6 +205,11 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
+    private val mappedCallSiteStringIndexViewLock = Any()
+    @Volatile
+    private var mappedCallSiteStringIndexView: MappedCallSiteStringIndexView? = null
+    @Volatile
+    private var mappedCallSiteStringIndexViewUnavailable = false
     private var callSiteStringIndexLoadedFromPersistence = false
     private val retainPersistedCallSiteStringIndex = AtomicBoolean()
     private var callSiteStringIndexPersistenceBudgetDenied = false
@@ -380,14 +386,18 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringLookupEntryCount.incrementAndGet()
         retainPersistedCallSiteStringIndexForSplit(workConsumer)
         val retainedIndex = callSiteStringIndex ?: if (
-            workConsumer is SerialGraphWorkBatchConsumer || workConsumer is SplitGraphWorkBatchConsumer
+            workConsumer is SerialGraphWorkBatchConsumer ||
+            workConsumer is SplitGraphWorkBatchConsumer &&
+                workConsumer !is PreferredMappedStringIndexViewGraphWorkBatchConsumer
         ) {
             loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
         } else {
             null
         }
+        val mappedView = if (retainedIndex == null) mappedCallSiteStringIndexView(workConsumer) else null
         val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
             retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
+                ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)
         } else {
             null
         }
@@ -400,7 +410,7 @@ internal class MappedWebGraphBackedGraph(
                 selectedValues,
                 workConsumer,
                 exactMatches,
-                retainedIndex
+                retainedIndex ?: mappedView
             )?.let { return it }
         }
         retainedIndex?.let { index ->
@@ -475,7 +485,7 @@ internal class MappedWebGraphBackedGraph(
         selectedValues: Set<List<String?>>?,
         workConsumer: SplitGraphWorkBatchConsumer,
         exactMatchingStringIds: List<IntArray>? = null,
-        propertyStringFilter: MappedCallSiteStringIndex? = null
+        propertyStringFilter: CallSiteStringIdMembership? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
@@ -493,6 +503,8 @@ internal class MappedWebGraphBackedGraph(
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
+        val selectedStringIds = HashMap<String, Int>()
+        val selectedPropertyMembership = HashMap<Long, Boolean>()
         val selectedIdValues = selectedValues?.mapNotNullTo(hashSetOf()) { values ->
             if (values.size != projectedPropertyIndexes.size) return@mapNotNullTo null
             projectedPropertyIndexes.indices.map { index ->
@@ -501,14 +513,19 @@ internal class MappedWebGraphBackedGraph(
                 when {
                     propertyIndex < 0 && value == null -> -1
                     propertyIndex < 0 || value == null -> return@mapNotNullTo null
-                    else -> stringTable.findId(value).takeIf { stringId ->
+                    else -> selectedStringIds.getOrPut(value) { stringTable.findId(value) }.takeIf { stringId ->
                         stringId >= 0 &&
                             (propertyStringFilter == null ||
-                                propertyStringFilter.containsPropertyStringId(
-                                    propertyIndex,
-                                    stringId,
-                                    workConsumer
-                                ))
+                                selectedPropertyMembership.getOrPut(
+                                    propertyIndex.toLong() shl Int.SIZE_BITS or
+                                        (stringId.toLong() and UNSIGNED_INT_MASK)
+                                ) {
+                                    propertyStringFilter.containsPropertyStringId(
+                                        propertyIndex,
+                                        stringId,
+                                        workConsumer
+                                    )
+                                })
                     } ?: return@mapNotNullTo null
                 }
             }
@@ -841,7 +858,7 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")
+    @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "LongMethod", "ReturnCount")
     private fun <T : Node> lookupStringPropertyDisjunction(
         type: Class<T>,
         predicates: List<StringPropertyPredicate>,
@@ -868,13 +885,18 @@ internal class MappedWebGraphBackedGraph(
                 }
             }
             retainPersistedCallSiteStringIndexForSplit(workConsumer)
-            val retainedIndex = callSiteStringIndex ?: if (workConsumer is SplitGraphWorkBatchConsumer) {
+            val retainedIndex = callSiteStringIndex ?: if (
+                workConsumer is SplitGraphWorkBatchConsumer &&
+                workConsumer !is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+            ) {
                 loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
             } else {
                 null
             }
+            val mappedView = if (retainedIndex == null) mappedCallSiteStringIndexView(workConsumer) else null
             val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
                 retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
+                    ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)
             } else {
                 null
             }
@@ -886,7 +908,12 @@ internal class MappedWebGraphBackedGraph(
                     limit,
                     workConsumer,
                     exactMatches,
-                    false
+                    mappedView?.exactMatchesCanFillLimit(
+                        predicates,
+                        exactMatches,
+                        limit,
+                        workConsumer
+                    ) == true
                 )?.let { return it }
             }
             retainedIndex?.let { index ->
@@ -1586,6 +1613,39 @@ internal class MappedWebGraphBackedGraph(
                     predicate.expected.length >= MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH
             }
 
+    private fun mappedCallSiteStringIndexView(
+        workConsumer: GraphWorkConsumer?
+    ): MappedCallSiteStringIndexView? {
+        if (workConsumer !is PreferredMappedStringIndexViewGraphWorkBatchConsumer ||
+            !persistentCallSiteStringIndexEnabled || !Files.isRegularFile(callSiteStringIndexFile)
+        ) return null
+        mappedCallSiteStringIndexView?.let { return it }
+        if (mappedCallSiteStringIndexViewUnavailable) return null
+        return synchronized(mappedCallSiteStringIndexViewLock) {
+            mappedCallSiteStringIndexView?.let { return@synchronized it }
+            if (mappedCallSiteStringIndexViewUnavailable) return@synchronized null
+            val callSiteCount = nodeTypeIndex.count(CallSiteNode::class.java)
+            if (callSiteCount <= 0L || callSiteCount > Int.MAX_VALUE) {
+                mappedCallSiteStringIndexViewUnavailable = true
+                return@synchronized null
+            }
+            val loaded = MappedCallSiteStringIndexView.load(
+                callSiteStringIndexFile,
+                stringTable.size(),
+                callSiteCount.toInt(),
+                persistedCallSiteStringIndexContentIdentity(workConsumer),
+                stringTable,
+                workConsumer
+            )
+            if (loaded == null) {
+                mappedCallSiteStringIndexViewUnavailable = true
+            } else {
+                mappedCallSiteStringIndexView = loaded
+            }
+            loaded
+        }
+    }
+
     @Suppress("ReturnCount")
     override fun prefersSerialStringPropertyDisjunction(
         type: Class<out Node>,
@@ -1903,6 +1963,10 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private fun closeCallSiteStringIndex(force: Boolean) {
+        if (force) synchronized(mappedCallSiteStringIndexViewLock) {
+            mappedCallSiteStringIndexView = null
+            mappedCallSiteStringIndexViewUnavailable = false
+        }
         synchronized(callSiteStringIndexLock) {
             // Split cross-graph waves reuse the sidecar across queries; serial callers preserve the
             // prior release behavior so a warmup cannot turn a cheap zero-hit preflight into an
@@ -1945,7 +2009,9 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private fun retainPersistedCallSiteStringIndexForSplit(workConsumer: GraphWorkConsumer?) {
-        if (workConsumer is SplitGraphWorkBatchConsumer) retainPersistedCallSiteStringIndex.set(true)
+        if (workConsumer is SplitGraphWorkBatchConsumer &&
+            workConsumer !is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        ) retainPersistedCallSiteStringIndex.set(true)
     }
 
     internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()
@@ -1960,6 +2026,8 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringIndex?.hasExactProjectionTupleIndex() == true
 
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
+
+    internal fun isMappedCallSiteStringIndexViewInitialized(): Boolean = mappedCallSiteStringIndexView != null
 
     internal fun isCallSiteTrigramIndexInitialized(): Boolean =
         callSiteStringIndex?.isTrigramPostingsInitialized() == true

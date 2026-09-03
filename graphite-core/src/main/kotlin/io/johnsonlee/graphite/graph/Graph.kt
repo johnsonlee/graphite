@@ -86,6 +86,13 @@ interface SplitGraphWorkBatchConsumer : ParallelGraphWorkBatchConsumer {
     val segmentWorkerCount: Int
 }
 
+/**
+ * Requests the existing persisted string index through a read-only mapped view while preserving
+ * the additive graph/segment worker split. This is intended for unscoped broad scans: explicitly
+ * selected graph sets keep their retained-index lifecycle and telemetry.
+ */
+interface PreferredMappedStringIndexViewGraphWorkBatchConsumer : SplitGraphWorkBatchConsumer
+
 /** Additive graph/segment worker allocation used by broad cross-graph scans. */
 data class GraphScanParallelismPlan(
     val graphWorkerCount: Int,

@@ -50,7 +50,7 @@ internal class MappedCallSiteStringIndex(
     private val contentIdentity: () -> ByteArray,
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation,
     prepareExactProjectionTupleIndex: Boolean = false
-) : Closeable {
+) : Closeable, CallSiteStringIdMembership {
 
     private val persistedContentIdentity: ByteArray by lazy(contentIdentity)
 
@@ -376,7 +376,7 @@ internal class MappedCallSiteStringIndex(
         return predicates.map { predicate -> matchingStringIds(predicate, workConsumer) ?: return null }
     }
 
-    internal fun containsPropertyStringId(
+    override fun containsPropertyStringId(
         propertyIndex: Int,
         stringId: Int,
         workConsumer: GraphWorkConsumer?

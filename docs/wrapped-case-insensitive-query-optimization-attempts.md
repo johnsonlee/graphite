@@ -3706,3 +3706,55 @@ zero row, but repeating it for each long shape destroys the 5x workload objectiv
 or test code from this experiment remains. The next attempt must obtain a reusable, integrity-
 checked view from the existing `graph.callsite-string-index` rather than add another persisted
 format or rescan every graph dictionary per query.
+
+### 2026-09-04 - Attempt 120: Map the existing persisted string index for cold broad scans
+
+**Hypothesis:** a cold broad query needs the property directories, posting ends, and trigram
+postings already stored in `graph.callsite-string-index`, but does not need to materialize the
+complete CSR index into heap arrays. Validate that existing file once, retain a read-only mmap view,
+and feed its exact string ids into the additive graph/segment raw scan. This should remove repeated
+dictionary preflight and full-index restoration without adding another persisted format. Already-
+retained and single-graph scoped queries keep their existing index path.
+
+**Evidence:**
+
+- Base PR revision is `155fd20`; the production baseline is exact `origin/main` revision
+  `78ce46b`. Candidate is this Attempt 120 commit. All performance measurements use the same 64
+  persisted graphs generated from the four pinned Android, Tika, Hive, and Kotlin compiler fixture
+  JARs at `/tmp/pr113-attempt119-real64/`, an 8 GiB heap, and four active CPUs. The 34 workload
+  identities match main case-for-case. Synthetic graphs are used only for deterministic path,
+  corruption-fallback, cache-lifecycle, and result-correctness tests.
+- The view reads only `graph.callsite-string-index`: it checks the existing magic, version, content
+  identity, dimensions, CRC32, sorted property directories, posting ends, and trigram postings.
+  Missing, stale, truncated, malformed, or checksum-invalid files fall back to the authoritative raw
+  scan. No new file, magic, version, writer, or persistence setting is introduced. A forced cache
+  release drops the view; an ordinary between-query release retains it.
+- Three final candidate fresh-JVM global-wide screens complete 34/34 cases with exact oracle row,
+  order, digest, response-size, and provenance parity. Main P50/P95 is
+  `239.001/412.240`, `236.533/423.533`, and `255.016/428.226 ms`; candidate is
+  `1.730/39.968`, `2.036/43.341`, and `1.882/98.395 ms`. P50 improves
+  `138.13x/116.17x/135.49x`; P95 improves `10.31x/9.77x/4.35x`. The third DISTINCT-tail outlier
+  means the required 5x floor is not yet stable and is recorded rather than discarded.
+- Candidate process CPU is `1.720/1.771/2.060 s` versus main's
+  `10.378/10.518/11.136 s`. Candidate peak used heap is `4.397/4.711/4.713 GB` versus
+  `4.984/5.003/5.005 GB`; peak RSS is `5.313/5.535/5.698 GB` versus
+  `6.143/6.164/6.130 GB`. Full retained CallSite-index bytes remain zero. Every run reports four
+  available CPUs, the required `2 graph + 2 segment` plan, and observed peaks of two graph and two
+  segment workers.
+- The cold graph-routing replay exposed and then closed a K=64 lifecycle regression. Applying the
+  same mapped view only to cold balanced selected sets reduced the first explicit 64-graph request
+  from repeat candidate failures of `805/940 ms` to `256 ms` against main's `449 ms` and preserved
+  the expected `1,979` retained-index lookups. The current cold, warm, and startup-prepared
+  comparators all pass, and all 1,137 cases match the independent main-derived oracle. Single
+  `graphId` queries remain below the balanced threshold and retain their original path.
+- The complete core tests, `CrossGraphCypherExecutorTest`, mapped `GraphStoreTest`, core/Cypher/
+  WebGraph detekt, and JMH compilation pass in the isolated candidate checkout. Tests assert the
+  mapped consumer selection for unscoped and balanced selected sets, retained selection for a
+  single graph, positive/zero exact matches, selected-tuple membership, non-force reuse, force
+  release, corrupt-index rejection, and raw correctness fallback.
+
+**Conclusion:** keep as the measured cold-broad-scan foundation, but do not claim the 5x PR target
+yet. It removes full heap-index restoration, materially lowers CPU and memory, and makes cold K=64
+selected queries pass without a second persisted format. The remaining work is isolated: replace
+the scheduler overhead for exact dense ordered prefixes and remove the wrapped DISTINCT tail
+variance in a separate attempt. This commit is not authorization to merge or tag.

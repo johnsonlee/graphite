@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
@@ -113,6 +114,14 @@ class CrossGraphCypherExecutorTest {
         )
         assertTrue(preferredRaw is PreferredRawGraphWorkBatchConsumer)
         preferredRaw.consume(3)
+
+        val preferredMappedView = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            preferMappedView = true
+        )
+        assertTrue(preferredMappedView is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+        assertEquals(8, preferredMappedView.segmentWorkerCount)
     }
 
     @Test
@@ -289,7 +298,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
-                resolveDirectStringParallelismPlan().segmentWorkerCount
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
         })
     }
 
@@ -356,7 +366,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
-                resolveDirectStringParallelismPlan().segmentWorkerCount
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
         })
     }
 
@@ -647,7 +658,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
-                resolveDirectStringParallelismPlan().segmentWorkerCount
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
         })
     }
 
