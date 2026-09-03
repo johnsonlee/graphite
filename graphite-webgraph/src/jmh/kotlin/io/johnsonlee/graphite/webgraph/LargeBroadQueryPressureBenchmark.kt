@@ -241,10 +241,10 @@ open class LargeBroadQueryPressureBenchmark {
             checkNotNull(sourcesById[graphId]) { "Requested graph is not loaded: $graphId" }
         } ?: sources
         val task = queryExecutor.submit(Callable {
-            CrossGraphCypherExecutor(
+            pressureQueryExecutor(
                 executionSources,
                 context,
-                graphSourceScopeApplied = case.requestGraphIds != null
+                case.requestGraphIds != null
             ).execute(case.query, case.parameters)
         })
         try {
@@ -2094,6 +2094,27 @@ private val BROAD_QUERY_COVERAGE = listOf(
 )
 
 private const val MAX_GRAPH_COUNT = 64
+
+private val pressureQueryExecutor:
+    (List<CypherGraph>, CypherExecutionContext, Boolean) -> CrossGraphCypherExecutor = run {
+    val scopedConstructor = runCatching {
+        CrossGraphCypherExecutor::class.java.getConstructor(
+            List::class.java,
+            CypherExecutionContext::class.java,
+            Boolean::class.javaPrimitiveType
+        )
+    }.getOrNull()
+    val factory: (List<CypherGraph>, CypherExecutionContext, Boolean) -> CrossGraphCypherExecutor =
+        { graphs, context, graphSourceScopeApplied ->
+        if (graphSourceScopeApplied && scopedConstructor != null) {
+            scopedConstructor.newInstance(graphs, context, true)
+        } else {
+            CrossGraphCypherExecutor(graphs, context)
+        }
+    }
+    factory
+}
+
 private const val COLD_INDEX_STATE = "cold"
 private const val WARM_INDEX_STATE = "warm"
 private const val STARTUP_PREPARED_INDEX_STATE = "startup-prepared"
