@@ -2813,3 +2813,26 @@ unscoped global path keeps the existing additive graph/segment plan.
 **Conclusion:** keep. This removes the graph-routing regression without changing the unscoped
 global-wide execution path. Exact pushed-head graph-routing, method-compatibility, and global-wide
 CI remain mandatory before resolving their review threads or merging.
+
+### 2026-09-03 - Attempt 090: Match the first Method slice while building its compact index
+
+**Hypothesis:** the first exact Method query builds the complete compact metadata index and then
+scans its primitive arrays for the requested slice. Evaluate the slice predicate while decoding
+the metadata so the first query does not repeat the prefix scan, while still publishing the full
+index for later queries.
+
+**Evidence:**
+
+- The experiment used the four real persisted graphs generated from the pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs, 8 GiB heap, and four active CPUs. It ran the complete
+  `4-position/middle` compatibility operation, including scoped and root requests, in three fresh
+  forks. Response schemas, ordered digests, graph ids, and byte counts remained exact.
+- The old candidate's three observations were `162.102/129.127/129.688 ms`; the fused build-and-
+  slice observations were `194.653/193.726/194.625 ms`. Median latency therefore regressed from
+  `129.688` to `194.625 ms` (`+50.1%`), and summed process CPU rose from `1.155` to `1.828 s`.
+- Matching inside the ByteBuffer decode loop makes index construction branchier and performs
+  string-pattern work before the compact primitive arrays are available. Avoiding one later array
+  scan does not recover that cost.
+
+**Conclusion:** reject and revert. The method-index construction loop remains unchanged; cold-path
+specialization must stay outside it.
