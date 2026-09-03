@@ -2530,3 +2530,36 @@ dense win without serializing a sparse targeted graph.
 **Conclusion:** reject and revert. Prefix density is not representative for class-clustered call
 sites. Replace prediction with a distribution-independent ordered small-block scheduler that keeps
 only the bounded in-flight lookahead allowed by the segment-worker budget.
+
+### 2026-09-03 - Attempt 081: Scan long transformed terms with ordered small chunks
+
+**Hypothesis:** replace the unrepresentative prefix sample with fixed 16,384-node chunks claimed by
+the caller and the existing segment-worker budget. Merge completed chunks in source order and stop
+all later chunks once that ordered prefix contains LIMIT rows. This should reach a match cluster
+regardless of its position while bounding speculative work to the additive segment concurrency.
+
+**Evidence:**
+
+- Base, dataset, correctness oracle, four-CPU/8 GiB JVM, and three paired cold runs are unchanged
+  from Attempts 076-080. The final candidate evidence is under
+  `/tmp/pr113-attempt081-ordered-chunks-16k/`; earlier 4,096-node variants are retained under
+  `/tmp/pr113-attempt081-ordered-chunks/` and
+  `/tmp/pr113-attempt081-ordered-chunks-fair/`. No synthetic timing evidence was used.
+- All three final runs completed 34/34 real64 cases with exact row count, order, digest, response
+  size, and provenance parity. `localized-early` fell from 80,173 charged work units to
+  `49,711-51,759` and from base `9.286/9.471/18.289 ms` to `4.504/4.611/4.297 ms`.
+  `localized-middle` also fell to `73,000-76,000` work units and `6.99-10.00 ms`, versus base
+  112,089 work units and `13.007-17.754 ms`.
+- Distribution-independent early stopping is not sufficient planner selectivity. Wrapped targeted
+  queries retain exactly 221,480 charged work units but regress in all three runs from base
+  `17.898/16.874/17.287 ms` to `33.385/35.203/26.833 ms`; scheduling several small tasks per graph
+  roughly doubles latency when the sparse scan must still reach the end.
+- Overall P50 is `2.956/2.948/2.788 ms` versus base `3.010/2.896/3.075 ms`, while P95 is
+  `48.844/43.753/49.395 ms` versus `48.603/48.377/45.782 ms`. Process CPU increases in two pairs,
+  including `1.718 -> 1.917 s`; heap and RSS remain bounded but provide no justification for the
+  deterministic sparse-query regression.
+
+**Conclusion:** reject and revert. Ordered chunks solve the localized cluster but must not be
+scheduled solely from term length. The persisted exact index already stores each string id's
+posting end; the next experiment will map and validate those compact arrays and enable ordered
+chunks only when the exact matching ids can supply at least LIMIT occurrences.
