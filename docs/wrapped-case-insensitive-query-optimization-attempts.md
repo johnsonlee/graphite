@@ -2893,3 +2893,29 @@ and segment plan as an equivalent `graphId IN` query.
 
 **Conclusion:** keep pending exact hosted confirmation. This addresses the cold-first K64 blocker
 without changing one-graph graphId latency or exceeding the additive CPU plan.
+
+### 2026-09-03 - Attempt 093: Replace canonical Method contains regexes with literal matching
+
+**Hypothesis:** Cypher `m.name CONTAINS <literal>` is pushed into the mapped Method index as the
+canonical regex `.*Pattern.quote(literal).*`. Recognize that exact shape and evaluate it with
+`String.contains`, while retaining Java-regex line-terminator behavior and the general regex path.
+This should remove regex-engine CPU from the hosted `17-scan/contains` regression.
+
+**Evidence:**
+
+- The experiment used the four complete persisted graphs generated from the pinned Android, Tika,
+  Hive, and Kotlin compiler fixture JARs, 8 GiB heap, and four active CPUs. Exact head `4d3732f`
+  and the candidate each ran `17-scan/contains` in three fresh JVM forks.
+- Exact head latency was `973.660/960.765/975.624 ms`; the candidate measured
+  `973.079/978.752/994.907 ms`. Mean wall time therefore regressed from `970.016` to `982.246 ms`
+  (`+1.3%`). Summed process CPU changed only from `4.483` to `4.463 s` (`-0.4%`), well below a
+  useful or repeatable improvement. RSS-after changed by `-0.7%`.
+- All three old and new forks produced the same complete normalized manifest. It covers each of
+  the 17 scoped graph responses plus the four root grouped responses with identical schemas,
+  ordered digests, graph ids, and response sizes.
+- A deterministic persisted-graph test covered quoted literal metacharacters and preserved the
+  original regex behavior around line terminators; the focused WebGraph test and detekt passed.
+
+**Conclusion:** reject and revert. Java's compiled regex path is not the material CPU cost in this
+workload. The next Method experiment must reduce metadata records visited or descriptors
+materialized instead of replacing the per-distinct-string matcher.
