@@ -1869,6 +1869,7 @@ internal class MappedWebGraphBackedGraph(
         scanConsumer: MethodMetadataScanConsumer?
     ): List<MethodDescriptor> {
         if (limit <= 0) return emptyList()
+        if (MappedMethodIndex.cannotMatch(pattern, stringTable)) return emptyList()
         if (methodIndex == null) {
             MappedMethodIndex.sliceExact(
                 mappedMethodMetadata.duplicate(),
@@ -1885,8 +1886,10 @@ internal class MappedWebGraphBackedGraph(
     private fun streamMethods(
         pattern: MethodPattern,
         scanConsumer: MethodMetadataScanConsumer? = null
-    ): Sequence<MethodDescriptor> = sequence {
-        yieldAll(methodIndex().methods(pattern, scanConsumer))
+    ): Sequence<MethodDescriptor> = if (MappedMethodIndex.cannotMatch(pattern, stringTable)) {
+        emptySequence()
+    } else {
+        methodIndex().methods(pattern, scanConsumer)
     }
 
     private fun methodIndex(): MappedMethodIndex {

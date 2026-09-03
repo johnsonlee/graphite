@@ -3022,3 +3022,32 @@ denied sidecar still returns `null` and preserves the existing parallel raw-buil
 **Conclusion:** keep pending exact hosted confirmation. Startup readiness and storage execution now
 agree: an existing valid sidecar is restored on the first preferred lookup, while cold graphs with
 no usable sidecar still enter the additive parallel raw-scan and index-build path.
+
+### 2026-09-03 - Attempt 097: Reject impossible exact Method patterns before index construction
+
+**Hypothesis:** a Method predicate containing an exact string that is absent from the persisted
+string table cannot match any metadata record. Detect that condition before constructing or
+scanning the compact Method index. Prefix and general regex patterns remain on the existing path;
+the shortcut applies only when the current `MethodPattern` semantics prove the value is exact.
+
+**Evidence:**
+
+- This directly targets the exact-head hosted failure. Run `33737451433` passed wall time and both
+  RSS checks for `17-position`, but its zero-result CPU row repeated `1.42 -> 2.20 CPU-s` and
+  `1.49 -> 2.09 CPU-s`, exceeding the 15% gate in both run orders.
+- Three locally paired fresh JVM forks compared remote main with the candidate on 17 mapped graphs
+  backed by the complete Android, Tika, Hive, and Kotlin compiler fixture-JAR outputs, an 8 GiB heap,
+  and four active CPUs. Zero-result wall time is `319.302 -> 190.551`,
+  `331.224 -> 191.377`, and `324.766 -> 208.863 ms`; mean wall time improves `39.4%`.
+  Process CPU is `674.856 -> 444.620`, `803.325 -> 435.031`, and
+  `721.501 -> 541.225 ms`; mean CPU improves `35.4%`. RSS-after improves on average.
+- All six complete compatibility manifests have the same SHA-256
+  `8dceefad34b7ab32d99c5895c0ae4d354c278c49488a8e79b255514ffccaf9dc`, covering the 17
+  scoped HTTP responses and four root grouped responses. A deterministic persisted-graph test
+  additionally proves both cold and retained-index calls return the correct empty result with zero
+  metadata inspections, and that the cold call does not initialize the index. The focused test and
+  WebGraph detekt pass.
+
+**Conclusion:** keep pending exact hosted confirmation. This removes provably useless Method-index
+work from the failing zero-result shape without changing fuzzy-pattern behavior, ordering, limits,
+materialization, or cancellation for patterns that may match.
