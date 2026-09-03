@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -1636,11 +1637,20 @@ class QueryPipeline private constructor(
         )?.let { return it }
         val rawLeadingStorage = usesBalancedStringSplit(candidateSources.size) && !preferPersistedStorage &&
             nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
-        // A retained-index lookup is too small to amortize outer graph scheduling. The mapped
-        // strategy selects this branch for loaded and startup-prepared indexes, while a cold
-        // graph-scoped set still fans out across graphs with one persisted-index build per graph.
-        if (!rawLeadingStorage &&
-            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
+        val parallelStringScan = canExecuteDirectStringDisjunctionInParallel(
+            nodeClass,
+            variable,
+            filter,
+            items,
+            candidateSources
+        )
+        val batchedPreparedStorage = nodePredicateFactory == null &&
+            (!preferPersistedStorage || parallelStringScan) &&
+            hasPreparedWideStringDisjunction(nodeClass, filter, candidateSources)
+        // A retained graph-scoped index lookup is too small to amortize outer graph scheduling.
+        // Cold graph-scoped storage still fans out for independent index loads, while global-wide
+        // prepared storage reuses fixed graph workers to avoid serial accumulation across 64 graphs.
+        if (!rawLeadingStorage && !batchedPreparedStorage && !parallelStringScan ||
             workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
@@ -1708,10 +1718,19 @@ class QueryPipeline private constructor(
             // retained-index waves without initializing every later graph speculatively.
             val remainingScanners = scanners.drop(waveStart)
             val graphTasks = remainingScanners.map { scanner -> { scanner.nextRows(limit) } }
-            runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { batch ->
+            val mergeBatch: (List<Map<String, Any?>>) -> Boolean = { sourceRows ->
                 val remaining = limit - rows.size
-                if (remaining > 0) rows += batch.take(remaining)
+                if (remaining > 0) rows += sourceRows.take(remaining)
                 rows.size >= limit
+            }
+            if (batchedPreparedStorage) {
+                runDirectStringTasksWithFixedWorkersInOrderUntil(graphTasks, graphParallelism, mergeBatch)
+            } else {
+                runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { sourceRows ->
+                    val remaining = limit - rows.size
+                    if (remaining > 0) rows += sourceRows.take(remaining)
+                    rows.size >= limit
+                }
             }
             return CypherResult(columns, rows)
         }
@@ -1884,13 +1903,39 @@ class QueryPipeline private constructor(
         predicates.isNotEmpty() && candidateSources.any { source ->
             if (source.graph.nodeCount(candidateType) == 0L) return@any false
             val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
-            val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup
-            if (prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) == true &&
-                strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != false
-            ) {
-                return@any false
+            when (strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates)) {
+                true -> false
+                false -> true
+                null -> {
+                    val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup
+                    prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) != true
+                }
             }
-            strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
+        }
+    }
+
+    private fun hasPreparedWideStringDisjunction(
+        nodeClass: Class<out Node>,
+        filter: DirectStringDisjunction,
+        candidateSources: List<CypherGraph>
+    ): Boolean {
+        if (!usesBalancedStringSplit(candidateSources.size)) return false
+        val candidates = DIRECT_STRING_NODE_PROPERTIES.mapNotNull { (candidateType, properties) ->
+            if (!nodeClass.isAssignableFrom(candidateType)) return@mapNotNull null
+            val predicates = filter.filters
+                .filter { it.property in properties }
+                .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
+            (candidateType to predicates).takeIf { predicates.isNotEmpty() }
+        }
+        if (candidates.isEmpty()) return false
+        return candidateSources.all { source ->
+            val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup ?: return@all false
+            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
+            candidates.all { (candidateType, predicates) ->
+                source.graph.nodeCount(candidateType) == 0L ||
+                    strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) == true ||
+                    prepared.hasPreparedStringPropertyDisjunction(candidateType, predicates)
+            }
         }
     }
 
@@ -2366,6 +2411,99 @@ class QueryPipeline private constructor(
             }
         } catch (error: Throwable) {
             cancelAndJoin()
+            val cause = (error as? ExecutionException)?.cause ?: error
+            when (cause) {
+                is RuntimeException -> throw cause
+                is Error -> throw cause
+                else -> throw IllegalStateException("Parallel graph scan failed", cause)
+            }
+        }
+    }
+
+    /**
+     * Reuses a fixed set of graph workers for a source-ordered rolling window. Prepared index
+     * lookups are too small to justify one Future per graph, but still benefit from independent
+     * graph progress. Only the fixed worker count may be ahead of the merged source prefix.
+     */
+    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
+    private fun <T> runDirectStringTasksWithFixedWorkersInOrderUntil(
+        tasks: List<() -> T>,
+        parallelism: Int,
+        stopAfter: (T) -> Boolean
+    ) {
+        if (tasks.isEmpty()) return
+        data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
+
+        val workerCount = minOf(tasks.size, parallelism.coerceAtLeast(1))
+        val taskIndexes = LinkedBlockingQueue<Int>()
+        val outcomes = LinkedBlockingQueue<Outcome<T>>()
+        val completions = List(workerCount) { CountDownLatch(1) }
+        val started = List(workerCount) { AtomicBoolean() }
+        val futures = completions.mapIndexed { index, completion ->
+            val taskStarted = started[index]
+            directStringExecutor.submit {
+                if (!taskStarted.compareAndSet(false, true)) return@submit
+                val previouslyActive = directStringWorkerActive.get()
+                directStringWorkerActive.set(true)
+                val activeWorkers = directStringActiveWorkers.incrementAndGet()
+                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
+                try {
+                    while (true) {
+                        val taskIndex = taskIndexes.take()
+                        if (taskIndex < 0) break
+                        outcomes.put(try {
+                            Outcome(taskIndex, value = tasks[taskIndex]())
+                        } catch (error: Throwable) {
+                            Outcome(taskIndex, error = error)
+                        })
+                    }
+                } finally {
+                    directStringActiveWorkers.decrementAndGet()
+                    if (previouslyActive) {
+                        directStringWorkerActive.set(true)
+                    } else {
+                        directStringWorkerActive.remove()
+                    }
+                    completion.countDown()
+                }
+            }
+        }
+        fun stopWorkers(cancel: Boolean) {
+            if (cancel) {
+                futures.forEachIndexed { index, future ->
+                    if (future.cancel(true) && started[index].compareAndSet(false, true)) {
+                        completions[index].countDown()
+                    }
+                }
+            } else {
+                repeat(workerCount) { taskIndexes.add(-1) }
+            }
+            awaitDirectStringTasks(completions)
+        }
+
+        var nextTask = 0
+        repeat(workerCount) { taskIndexes.add(nextTask++) }
+        try {
+            val completed = arrayOfNulls<Outcome<T>>(tasks.size)
+            var nextResult = 0
+            while (nextResult < tasks.size) {
+                val outcome = outcomes.take()
+                completed[outcome.index] = outcome
+                while (nextResult < tasks.size) {
+                    val ordered = completed[nextResult] ?: break
+                    ordered.error?.let { throw it }
+                    @Suppress("UNCHECKED_CAST")
+                    if (stopAfter(ordered.value as T)) {
+                        stopWorkers(cancel = true)
+                        return
+                    }
+                    nextResult++
+                    if (nextTask < tasks.size) taskIndexes.add(nextTask++)
+                }
+            }
+            stopWorkers(cancel = false)
+        } catch (error: Throwable) {
+            stopWorkers(cancel = true)
             val cause = (error as? ExecutionException)?.cause ?: error
             when (cause) {
                 is RuntimeException -> throw cause

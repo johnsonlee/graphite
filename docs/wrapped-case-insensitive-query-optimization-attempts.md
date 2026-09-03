@@ -3263,3 +3263,38 @@ regress their micro lookups.
 **Conclusion:** reject and revert. Per-graph fanout is the wrong granularity for prepared indexes;
 the next attempt must batch contiguous graphs per worker instead of submitting one future per graph.
 No production or test code from this experiment is retained.
+
+### 2026-09-03 - Attempt 106: Reuse fixed workers for prepared global-wide lookups
+
+**Hypothesis:** prepared global-wide lookups still need graph-level concurrency, but one submitted
+future per graph costs more than the retained index lookup itself. Keep the NCPU-balanced graph and
+segment budgets, but submit only the fixed graph-worker count and feed those workers from a bounded
+source-ordered queue. Retained graph-scoped queries stay serial; cold graph-scoped queries retain
+parallel index restoration.
+
+**Evidence:**
+
+- Three fresh-JVM screens compare remote main `78ce46b57b2d` with this attempt over the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active
+  CPUs. All 204 candidate queries complete successfully and match the complete correctness oracle.
+  Source-order and bounded-access checks pass; the candidate accesses the expected 1,452 graphs.
+- Aggregate global-wide P50 improves by `153.96x`, `168.21x`, and `147.86x`; P95 improves by
+  `20.71x`, `21.15x`, and `20.43x`. The wrapped-shape P95 floor improves by `16.71x`, `15.82x`,
+  and `15.63x`, clearing the 5x target in every pair. Candidate process CPU is `1.65..1.87 s`,
+  peak used heap is `3.71 GB`, and peak RSS is `4.23..4.35 GB`; each is below the paired main
+  observation.
+- Instrumentation on four active CPUs reports the intended additive split: configured and observed
+  graph workers are `2`, while configured and observed segment workers are `2`. Deterministic tests
+  prove that the fixed workers execute concurrently, merge in graph order, stop at a bounded
+  speculative suffix, propagate failures, and leave graph-scoped retained micro-lookups serial.
+- The local routing screen keeps the first cold selected K=64 query at `40.208 ms` versus main's
+  `991.347 ms`, restores exactly 1,979 post-build retained-index lookups across all 64 graphs, and
+  preserves all 1,137 oracle-valid results. Its six-sample cold K=64 P50/P95 is nevertheless
+  `1.071/4.664 ms` versus `0.843/3.047 ms`; the single `4.664 ms` literal-zero observation exceeds
+  the existing absolute jitter guard. This result is recorded as a blocker, not hidden by the
+  global-wide gain.
+
+**Conclusion:** keep only for exact hosted confirmation. The 5x global-wide goal has substantial
+local margin, but this attempt must not merge or resolve the routing review until the same-head
+hosted graph-routing gate is green; if it reproduces the cold K=64 regression, revise or revert the
+production change before proceeding.
