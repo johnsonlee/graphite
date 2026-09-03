@@ -1712,8 +1712,13 @@ class QueryPipeline private constructor(
         if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
-            if (property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
+            if (property.propertyName != GRAPH_ID_PROPERTY &&
+                property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES
+            ) return null
             property.propertyName
+        }
+        val storageProjectedProperties = projectedProperties.filter { property ->
+            property != GRAPH_ID_PROPERTY
         }
         val predicates = filter.filters.map { candidate ->
             if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
@@ -1723,14 +1728,21 @@ class QueryPipeline private constructor(
         val projectedRows = projection.projectStringPropertyDisjunction(
             CallSiteNode::class.java,
             predicates,
-            projectedProperties,
+            storageProjectedProperties,
             limit,
             stringStorageWorkConsumer(candidateSources.size, tracker, preferRaw = true)
         ) ?: return null
         val provenance = setOf(source.id)
         return projectedRows.map { raw ->
             LinkedHashMap<String, Any?>(columns.size + 1).apply {
-                columns.indices.forEach { index -> this[columns[index]] = raw.values[index] }
+                var storageIndex = 0
+                columns.indices.forEach { index ->
+                    this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
+                        source.id
+                    } else {
+                        raw.values[storageIndex++]
+                    }
+                }
                 put(INTERNAL_PROVENANCE_KEY, provenance)
             }
         }

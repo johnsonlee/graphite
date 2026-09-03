@@ -2073,3 +2073,31 @@ additive and cannot create graph-worker x segment-worker oversubscription.
 **Conclusion:** keep pending exact hosted graph-routing confirmation. This is a graph-scoped
 dispatch correction only; unscoped >=40-source scans retain the NCPU-half graph/segment split and
 therefore retain the independently established 5x global-wide path.
+
+### 2026-09-03 - Attempt 066: Synthesize graphId around the raw projection
+
+**Hypothesis:** `global-wide-provenance/dense` has the same predicate and matching CallSite ids as
+the leading four-property shape, but requesting `n.graphId` makes `projectRawLeadingRows` reject
+the storage projection and repeat a 681-node object-materializing scan. `graphId` is source metadata,
+not a stored CallSite string. Remove it from the storage projection, reuse the bounded cached match
+ids for the remaining properties, and synthesize the selected source id into the result row.
+
+**Evidence:**
+
+- Base: Attempt 065 parent, whose raw projection behavior is the exact hosted Attempt 064 head
+  `c9c9efd49ac8`. Candidate: this experiment commit. Dataset: the same 64 persisted JAR-derived
+  shards in `/tmp/pr113-exp064-fixture64.7PSN8d/graphs/`; synthetic coverage verifies only the
+  storage/request projection mapping and returned graph id.
+- Hosted Attempt 064 measured provenance dense at `6.357`, `7.012`, and `8.381 ms`, versus base
+  `1.696`, `1.907`, and `1.777 ms`, failing the aligned latency gate in all three pairs. It charged
+  681 work units because the unsupported storage projection forced a second leading scan.
+- Three four-CPU candidate real64 runs in `/tmp/pr113-exp066-global.EeKOvG/` completed 34/34 rows
+  with exact oracle parity. Provenance dense fell to `0.825`, `0.825`, and `0.791 ms`, and reused
+  exactly 200 cached matches/work units. Total work fell from `5,862,744` to `5,862,263`.
+- Aggregate candidate P50 was `4.730`, `4.678`, and `4.776 ms`; P95 was `52.912`, `52.326`, and
+  `45.505 ms`. Process CPU was `1.78-1.85 s`, peak heap `3.60-3.61 GiB`, and peak RSS
+  `4.04-4.07 GiB`. The observed execution plan remains two graph plus two segment workers.
+
+**Conclusion:** keep pending exact hosted paired confirmation. This removes one of Attempt 064's
+two deterministic aligned-shape regressions without changing predicate matching, source order,
+the 5x graph/segment plan, or the explicitly graph-scoped dispatch corrected by Attempt 065.

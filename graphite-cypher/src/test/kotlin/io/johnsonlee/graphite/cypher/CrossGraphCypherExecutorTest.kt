@@ -80,6 +80,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(16, resolveDirectStringGraphParallelism(64, 16, "16"))
         assertEquals(4, resolveDirectStringGraphParallelism(64, 4, null, graphScoped = true))
         assertEquals(8, resolveDirectStringGraphParallelism(64, 16, null, graphScoped = true))
+        assertEquals(2, resolveDirectStringGraphParallelism(64, 16, "2", graphScoped = true))
+        assertEquals(1, resolveDirectStringGraphParallelism(0, 0, null, graphScoped = true))
 
         assertEquals(4, resolveDirectStringExecutorParallelism(4, null))
         assertEquals(8, resolveDirectStringExecutorParallelism(16, null))
@@ -416,6 +418,7 @@ class CrossGraphCypherExecutorTest {
                     projectedSources += sourceIndex
                     assertTrue(workConsumer is PreferredRawGraphWorkBatchConsumer)
                     check(sourceIndex == 0)
+                    assertEquals(listOf("caller_class"), projectedProperties)
                     return List(limit) { row -> StringPropertyProjectionRow(listOf("Caller$row")) }
                 }
             })
@@ -423,10 +426,11 @@ class CrossGraphCypherExecutorTest {
 
         val result = CrossGraphCypherExecutor(graphs).execute(
             "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'get' " +
-                "RETURN n.caller_class AS caller LIMIT 200"
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 200"
         )
 
         assertEquals(200, result.rows.size)
+        assertEquals("graph-0", result.rows.first()["graph"])
         assertEquals("Caller0", result.rows.first()["caller"])
         assertEquals("Caller199", result.rows.last()["caller"])
         assertEquals(setOf(0), projectedSources)
@@ -492,6 +496,15 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("example.Caller"), result.rows.map { row -> row["caller"] })
         assertEquals(1, projectionCalls.get())
         assertEquals(1, nodeScanCalls.get())
+
+        val unsupportedProjection = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'all' " +
+                "RETURN n.id AS id, n.caller_class AS caller LIMIT 1"
+        )
+        assertEquals(7, unsupportedProjection.rows.single()["id"])
+        assertEquals("example.Caller", unsupportedProjection.rows.single()["caller"])
+        assertEquals(1, projectionCalls.get())
+        assertEquals(2, nodeScanCalls.get())
     }
 
     @Test
