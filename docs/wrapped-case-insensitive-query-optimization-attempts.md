@@ -2741,3 +2741,33 @@ It preserves the additive `2 graph + 2 segment` plan and does not create queued-
 the existing two background segment tasks plus the inline graph worker run at once. The remaining
 global wrapped-dense and graph-routing blockers stay open and must pass on the same pushed head
 before this optimization is mergeable.
+
+### 2026-09-03 - Attempt 088: Split graph-scoped work into two batches per worker
+
+**Hypothesis:** the 64-graph scoped path assigns one contiguous batch to each graph worker. The
+four fixture families differ enough in lookup cost that these large batches can leave a straggler
+at the ordered merge boundary. Split the remaining graphs into eight rolling batches while keeping
+the same four physical graph workers. This should improve load balance without restoring the
+63-task scheduling overhead rejected in Attempt 065.
+
+**Evidence:**
+
+- Base is exact PR head `e53a747a833a5930e761293577be530c61e7fb3f`. Candidate evidence is under
+  `/tmp/pr113-attempt088-routing/`. Both revisions use the same fixture-JAR-derived 64 persisted
+  graphs, 1,137-row routing oracle, 8 GiB heap, and four active CPUs. Five paired runs cover cold
+  and startup-prepared states with alternating candidate/base and base/candidate order.
+- Every base and candidate fork completes 1,137/1,137 queries successfully with exact oracle
+  parity. Candidate index and access evidence is unchanged: all 64 graphs are admitted and
+  observed, retained-index lookup counts remain complete, and peak graph concurrency remains four.
+- Cold K=64 median P50 across the five pairs is `0.738 -> 0.728 ms` (`1.014x`) and median P95 is
+  `2.448 -> 2.444 ms` (`1.002x`). Individual P50 speedups range from `0.844x` to `1.091x`, so the
+  apparent improvement does not repeat independently.
+- Startup-prepared median P50 is `0.882 -> 0.763 ms` (`1.156x`), but median P95 regresses from
+  `2.941` to `3.025 ms` (`0.972x`). One pair regresses both P50 and P95 to `0.708x/0.752x`.
+  CPU, heap, and RSS stay within the existing graph-routing limits but do not compensate for the
+  unstable latency direction.
+
+**Conclusion:** reject and revert. Finer graph batches do not provide a stable cold-path benefit
+and move startup tail latency in the wrong direction. The K=64 regression is fixed execution-path
+overhead rather than fixture-family load imbalance; the next attempt must avoid imposing graph and
+segment scheduling on retained-index micro-workloads.
