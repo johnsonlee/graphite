@@ -220,7 +220,7 @@ for INDEX_STATE in cold warm startup-prepared; do
     cold) BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-warm.correctness ;;
     warm|startup-prepared) BASE_CORRECTNESS_ORACLE=${OUTPUT_DIR}/base-graph-routing-cold.correctness ;;
   esac
-  node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-graph-id-pressure \
+  if ! node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-graph-id-pressure \
     --base "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.json" \
     --candidate "${OUTPUT_DIR}/candidate-graph-routing-${INDEX_STATE}.json" \
     --base-observations "${OUTPUT_DIR}/base-graph-routing-${INDEX_STATE}.tsv" \
@@ -229,9 +229,17 @@ for INDEX_STATE in cold warm startup-prepared; do
     --candidate-correctness "${ORACLE}" \
     --minimum-speedup 10 \
     --report "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-report.md" \
-    --status "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json"
-  jq -e '.passed == true' "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json" >/dev/null
+    --status "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json"; then
+    echo "${INDEX_STATE} graph-routing comparison failed; retaining evidence for aggregation" >&2
+  fi
 done
+
+if ! node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" aggregate-graph-routing-states \
+  --directory "${OUTPUT_DIR}" \
+  --report "${OUTPUT_DIR}/graph-routing-report.md" \
+  --status "${OUTPUT_DIR}/graph-routing-status.json"; then
+  echo "Aggregate graph-routing comparison failed; retaining all state evidence" >&2
+fi
 
 "${CANDIDATE_TREE}/${WORKLOAD_VERIFIER_PATH}" \
   "$(dirname "${MANIFEST}")" "$(dirname "${MANIFEST}")" \
@@ -351,8 +359,10 @@ jq -n \
 EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
 if [[ "${PUBLISH_EVIDENCE}" == false ]]; then
   echo "Completed trusted local ${STATUS_CONTEXT}: ${DESCRIPTION}"
-  exit 0
+  jq -e '.passed == true' "${OUTPUT_DIR}/graph-routing-status.json" >/dev/null
+  exit $?
 fi
+jq -e '.passed == true' "${OUTPUT_DIR}/graph-routing-status.json" >/dev/null
 GIST_URL=$(gh gist create --public "${EVIDENCE_FILES[@]}" \
   --desc "Graphite fixture64 graph-routing evidence for ${CANDIDATE_SHA}")
 GIST_ID=${GIST_URL##*/}

@@ -2847,6 +2847,50 @@ export function aggregateReports(directory, metadata) {
     };
 }
 
+const GRAPH_ROUTING_STATES = ["cold", "warm", "startup-prepared"];
+
+export function aggregateGraphRoutingStates(directory) {
+    const errors = [];
+    const states = {};
+    const sections = [];
+    for (const state of GRAPH_ROUTING_STATES) {
+        const statusFile = path.join(directory, `graph-routing-${state}-status.json`);
+        const reportFile = path.join(directory, `graph-routing-${state}-report.md`);
+        if (!fs.existsSync(statusFile) || !fs.existsSync(reportFile)) {
+            errors.push(`${state}: state result artifact is missing`);
+            states[state] = { passed: false, errors: ["State result artifact is missing"] };
+            continue;
+        }
+        let status;
+        try {
+            status = readJson(statusFile);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            errors.push(`${state}: invalid status: ${message}`);
+            states[state] = { passed: false, errors: [message] };
+            continue;
+        }
+        states[state] = status;
+        sections.push(fs.readFileSync(reportFile, "utf8").trim());
+        if (status.passed !== true) {
+            const stateErrors = Array.isArray(status.errors) && status.errors.length > 0
+                ? status.errors
+                : ["State comparator failed"];
+            errors.push(...stateErrors.map((error) => `${state}: ${error}`));
+        }
+    }
+    const passed = errors.length === 0 && GRAPH_ROUTING_STATES.every((state) => states[state]?.passed === true);
+    const body = [
+        "### 64 fixture-derived graph routing pressure",
+        "",
+        passed ? "**PASS**" : "**FAIL**",
+        "",
+        ...sections,
+        ...(errors.length > 0 ? ["", "Aggregate errors:", ...errors.map((error) => `- ${error}`)] : [])
+    ].join("\n") + "\n";
+    return { passed, errors, states, body };
+}
+
 export function stageLatestArtifacts(directory, output) {
     const artifacts = fs.readdirSync(directory, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
@@ -3082,6 +3126,17 @@ function aggregateCommand(args) {
     writeJson(requireArg(args, "status"), aggregated);
 }
 
+function aggregateGraphRoutingStatesCommand(args) {
+    const aggregated = aggregateGraphRoutingStates(requireArg(args, "directory"));
+    writeFile(requireArg(args, "report"), aggregated.body);
+    writeJson(requireArg(args, "status"), {
+        passed: aggregated.passed,
+        errors: aggregated.errors,
+        states: aggregated.states
+    });
+    if (!aggregated.passed) process.exitCode = 1;
+}
+
 function main(argv) {
     const args = parseArgs(argv);
     const command = args._[0];
@@ -3100,6 +3155,7 @@ function main(argv) {
     else if (command === "compare-large-corpus") compareLargeCorpusCommand(args);
     else if (command === "confirm-large-corpus") confirmLargeCorpusCommand(args);
     else if (command === "stage-artifacts") stageLatestArtifactsCommand(args);
+    else if (command === "aggregate-graph-routing-states") aggregateGraphRoutingStatesCommand(args);
     else if (command === "aggregate") aggregateCommand(args);
     else throw new Error(`Unknown command: ${command ?? "<missing>"}`);
 }

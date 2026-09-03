@@ -11,6 +11,7 @@ import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
     COMMENT_MARKER,
+    aggregateGraphRoutingStates,
     aggregateReports,
     canonicalCorrectnessManifest,
     combineLatencyShards,
@@ -41,6 +42,29 @@ import {
     selectJmhMetric,
     stageLatestArtifacts
 } from "./benchmark-gate.mjs";
+
+test("graph-routing aggregation retains every state and fails on a red state", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "graph-routing-aggregate-"));
+    try {
+        for (const state of ["cold", "warm", "startup-prepared"]) {
+            const passed = state !== "warm";
+            fs.writeFileSync(
+                path.join(directory, `graph-routing-${state}-status.json`),
+                JSON.stringify({ passed, errors: passed ? [] : ["warm P95 regressed"], gateP95Speedup: 9 })
+            );
+            fs.writeFileSync(path.join(directory, `graph-routing-${state}-report.md`), `### ${state}\n`);
+        }
+        const aggregate = aggregateGraphRoutingStates(directory);
+        assert.equal(aggregate.passed, false);
+        assert.deepEqual(Object.keys(aggregate.states), ["cold", "warm", "startup-prepared"]);
+        assert.match(aggregate.body, /### cold/);
+        assert.match(aggregate.body, /### warm/);
+        assert.match(aggregate.body, /### startup-prepared/);
+        assert.deepEqual(aggregate.errors, ["warm: warm P95 regressed"]);
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
 
 test("canonical correctness comparison is order-insensitive and rejects incomplete or ambiguous records", () => {
     const first = "query-a|payload-a";
