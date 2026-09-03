@@ -2126,3 +2126,27 @@ trigram/index path and its segment workers.
 index path: its fixed lookup/range overhead exceeds the bounded 665-node raw scan on this fixture.
 Keep Attempt 066's raw behavior and optimize the transformed raw comparison itself, or admit a
 measured hot representation that does not add this 9,102-work penalty.
+
+### 2026-09-03 - Attempt 068: Compare lowercase ASCII without mutating the decode buffer
+
+**Hypothesis:** the transformed raw path first scans the complete decoded string for non-ASCII,
+then lowercases the mutable buffer, then searches it. The dense one-character term should be able
+to stop at its first ASCII case-insensitive match. Replace those three passes with one bounded
+comparison loop while preserving the exact Kotlin lowercase fallback for any non-ASCII input.
+
+**Evidence:**
+
+- Base: Attempt 066. Candidate: an isolated comparator snapshot based on Attempt 066; the rejected
+  production change is not retained. Dataset: the same 64 persisted JAR-derived shards in
+  `/tmp/pr113-exp064-fixture64.7PSN8d/graphs/`. Three four-CPU runs are under
+  `/tmp/pr113-exp068-global.oNF3h5/`; all complete 34/34 rows with exact oracle parity.
+- Non-distinct wrapped dense measured `1.619`, `1.595`, and `1.829 ms`, versus Attempt 066's
+  `1.609`, `1.609`, and `1.498 ms`. Work stayed at 665, so the alternative comparator provides no
+  latency reduction and adds downside in the third fork.
+- Aggregate P50/P95 was `4.630-4.715/50.818-55.462 ms`, total work remained `5,862,263`, process
+  CPU was `1.92-1.93 s`, peak heap `3.58-3.60 GiB`, and peak RSS `4.04-4.08 GiB`. None is a
+  material improvement over Attempt 066.
+
+**Conclusion:** reject and revert. The existing mutable-buffer lowercase scan is not the measured
+bottleneck on the local real64 JVM. Keep the smaller Attempt 066 production tree and use exact
+hosted paired evidence before investing further in this millisecond-scale cold-path variance.
