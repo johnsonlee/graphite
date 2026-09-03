@@ -360,6 +360,27 @@ class GraphStoreTest {
                     )?.map { row -> row.values }
                 )
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
+                var checksumSlices = 0
+                val checksumRejection = IllegalStateException("posting checksum slice rejected")
+                val checksumFailure = assertFailsWith<IllegalStateException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(expected = "othercaller")),
+                        limit = 1,
+                        workConsumer = object : SplitGraphWorkBatchConsumer {
+                            override val segmentWorkerCount: Int = 1
+
+                            override fun consume(workUnits: Long) {
+                                checksumSlices++
+                                throw checksumRejection
+                            }
+                        }
+                    )?.toList()
+                }
+                assertSame(checksumRejection, checksumFailure)
+                assertEquals(1, checksumSlices)
+                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(
                     emptyList(),

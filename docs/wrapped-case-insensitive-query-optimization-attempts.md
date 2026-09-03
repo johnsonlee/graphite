@@ -2288,3 +2288,26 @@ retain responsibility for best-effort sidecar migration.
 startup/graph-close persistence, and makes the remaining non-request writer lifecycle explicitly
 cancellable. Exact hosted real64 evidence remains responsible for any latency claim on the full
 query pipeline.
+
+### 2026-09-03 - Attempt 073: Bound and charge mapped posting checksum reads
+
+**Hypothesis:** Attempt 070's bulk `CRC32.update(ByteBuffer)` lowered CPU, but validating an entire
+selected posting chunk before the first work callback made cancellation and rejection proportional
+to the full index. Preserve the JDK bulk checksum path while dividing each chunk into fixed 8 KiB
+slices; poll interruption and synchronously charge each slice before touching its mapped bytes.
+
+**Evidence:**
+
+- The prefilter now flushes one work charge before each checksum slice. A regression test first
+  initializes the mapped directory, then rejects the first selected-posting checksum charge and
+  verifies the exact exception escapes after one callback without loading the full CallSite index.
+  Existing directory/selected-chunk corruption and interruption tests remain authoritative for
+  fallback and cancellation semantics.
+- The slice size is independent of graph/index size, so the uncharged interval is capped at one
+  fixed bulk CRC call rather than one complete posting chunk. Posting iteration remains separately
+  charged exactly as before.
+- This synthetic test is correctness and resource-contract evidence only. The exact hosted real64
+  rerun must establish whether the extra bounded callback affects the retained 5x latency gate.
+
+**Conclusion:** keep pending exact hosted confirmation. This closes the cancellation/work-accounting
+hole without reverting the allocation-free bulk checksum implementation.

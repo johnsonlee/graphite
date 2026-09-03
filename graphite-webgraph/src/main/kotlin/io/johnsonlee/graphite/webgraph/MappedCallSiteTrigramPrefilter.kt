@@ -89,7 +89,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     chunks.get(chunkOffset - CHUNK_ENTRY_INTS + CHUNK_END_INDEX)
                 }
                 val chunkEnd = chunks.get(chunkOffset + CHUNK_END_INDEX)
-                if (!validatePostingChunk(chunkStart, chunkEnd, chunkOffset)) return null
+                if (!validatePostingChunk(chunkStart, chunkEnd, chunkOffset, accounting)) return null
                 for (postingIndex in chunkStart until chunkEnd) {
                     if ((postingIndex and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
                     accounting.consume()
@@ -113,15 +113,28 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         }
     }
 
-    private fun validatePostingChunk(start: Int, end: Int, chunkOffset: Int): Boolean {
-        checkInterrupted()
+    private fun validatePostingChunk(
+        start: Int,
+        end: Int,
+        chunkOffset: Int,
+        accounting: BufferedGraphWorkConsumer
+    ): Boolean {
         val byteStart = Math.multiplyExact(start, Long.SIZE_BYTES)
         val byteEnd = Math.multiplyExact(end, Long.SIZE_BYTES)
-        val bytes = trigramPostingBytes.duplicate().apply {
-            position(byteStart)
-            limit(byteEnd)
-        }.slice()
-        val checksum = CRC32().apply { update(bytes) }
+        val checksum = CRC32()
+        var position = byteStart
+        while (position < byteEnd) {
+            checkInterrupted()
+            accounting.consume()
+            accounting.flush()
+            val limit = minOf(byteEnd, position + POSTING_CHECKSUM_SLICE_BYTES)
+            val bytes = trigramPostingBytes.duplicate().apply {
+                position(position)
+                limit(limit)
+            }.slice()
+            checksum.update(bytes)
+            position = limit
+        }
         checkInterrupted()
         val lastTrigram = (trigramPostings.get(end - 1) ushr Int.SIZE_BITS).toInt()
         val expectedChecksum = chunks.get(chunkOffset + CHUNK_CHECKSUM_INDEX).toLong() and
@@ -508,6 +521,7 @@ private const val CHUNK_CHECKSUM_INDEX = 2
 private const val MIN_DIRECTORY_BYTES = DIRECTORY_HEADER_BYTES + CHUNK_ENTRY_BYTES + Long.SIZE_BYTES
 private const val DIRECTORY_IO_BUFFER_BYTES = 1 shl 20
 private const val DIRECTORY_CHECKSUM_CHUNK_BYTES = 8 * 1024
+private const val POSTING_CHECKSUM_SLICE_BYTES = 8 * 1024
 private const val PREFILTER_INTERRUPTION_POLL_MASK = 1_023
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
