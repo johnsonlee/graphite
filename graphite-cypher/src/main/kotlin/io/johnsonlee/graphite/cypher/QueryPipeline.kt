@@ -2497,11 +2497,16 @@ class QueryPipeline private constructor(
                     while (true) {
                         val taskIndex = taskIndexes.take()
                         if (taskIndex < 0) break
-                        outcomes.put(try {
+                        val outcome = try {
                             Outcome(taskIndex, value = tasks[taskIndex]())
                         } catch (error: Throwable) {
                             Outcome(taskIndex, error = error)
-                        })
+                        }
+                        // The storage call may preserve the worker's interrupted status while
+                        // throwing cancellation. Publishing to this unbounded queue must therefore
+                        // be non-interruptible, or the coordinator can wait forever for this index.
+                        outcomes.add(outcome)
+                        if (outcome.error != null) return@submit
                     }
                 } finally {
                     directStringActiveWorkers.decrementAndGet()

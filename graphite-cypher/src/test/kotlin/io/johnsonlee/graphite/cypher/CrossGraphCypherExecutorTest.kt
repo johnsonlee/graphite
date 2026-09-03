@@ -691,6 +691,83 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `prepared global wide interrupted worker publishes cancellation and joins peers`() {
+        val workerCount = resolveDirectStringGraphParallelism(64)
+        val peerStarted = CountDownLatch(1)
+        val peerInterrupted = CountDownLatch(1)
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    when (graphIndex) {
+                        1 -> {
+                            if (workerCount > 1) check(peerStarted.await(2, TimeUnit.SECONDS))
+                            Thread.currentThread().interrupt()
+                            throw CypherQueryCancelledException("prepared worker interrupted")
+                        }
+                        2 -> if (workerCount > 1) {
+                            peerStarted.countDown()
+                            try {
+                                Thread.sleep(TimeUnit.SECONDS.toMillis(5))
+                            } catch (interrupted: InterruptedException) {
+                                peerInterrupted.countDown()
+                                throw interrupted
+                            }
+                        }
+                    }
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+
+        val queryThread = Executors.newSingleThreadExecutor()
+        val future = queryThread.submit<CypherResult> {
+            CrossGraphCypherExecutor(graphs).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                    "RETURN n.caller_class LIMIT 1"
+            )
+        }
+        try {
+            val failure = assertFailsWith<java.util.concurrent.ExecutionException> {
+                future.get(2, TimeUnit.SECONDS)
+            }
+            assertTrue(
+                failure.cause is CypherQueryCancelledException,
+                "unexpected query failure: ${failure.cause}"
+            )
+            assertEquals("prepared worker interrupted", failure.cause?.message)
+            if (workerCount > 1) {
+                assertTrue(peerInterrupted.await(2, TimeUnit.SECONDS), "peer worker was not interrupted and joined")
+            }
+        } finally {
+            queryThread.shutdownNow()
+        }
+    }
+
+    @Test
     fun `prepared global wide workers shut down after exhausting the shared queue`() {
         val activeLookups = AtomicInteger()
         val completedLookups = AtomicInteger()
