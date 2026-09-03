@@ -149,7 +149,10 @@ graphId forms. The queries preserve the production non-`DISTINCT`, four-property
 
 The same real fixtures also cover selected-set widths 2, 8, and 64 through `n.graphId IN [...]`,
 `n.graphId IN $graphIds`, and a request-selected K-source reference. Together with the existing
-single-graph equality matrix, this covers widths 1/2/8/64. The candidate must receive 64 input
+single-graph equality matrix, this covers widths 1/2/8/64. The K=64 zero-hit request-selected
+reference is deliberately the first query in every 64-graph replay, before any width-one lookup can
+initialize an index; this makes `cold` a true first-request gate for the widest external graph set.
+The candidate must receive 64 input
 sources for every Cypher graphId form, touch no source outside the selected set, and report `64-K`
 sources pruned. Zero and targeted queries must consume all K selected sources. Dense queries are
 expected to stop after the first selected graph fills the global `LIMIT 200`, so they must access

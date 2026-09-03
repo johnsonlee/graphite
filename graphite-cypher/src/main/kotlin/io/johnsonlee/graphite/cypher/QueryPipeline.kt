@@ -1307,6 +1307,7 @@ class QueryPipeline private constructor(
             ?.let { graphRoute.residual }
             ?: where.condition
         val graphScoped = graphSourceScopeApplied || preselectedSources != null || routedGraphIds != null
+        val serialLeadingStorage = graphScoped && candidateSources.size == 1
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1318,7 +1319,7 @@ class QueryPipeline private constructor(
                 columns,
                 limitCount,
                 candidateSources,
-                graphScoped
+                serialLeadingStorage
             )
         }
         if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
@@ -1360,7 +1361,7 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         candidateSources = candidateSources,
-                        serialLeadingStorage = graphScoped
+                        serialLeadingStorage = serialLeadingStorage
                     )
                 }
             }
@@ -1395,7 +1396,7 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        graphScoped
+                        serialLeadingStorage
                     )
                 }
             }
@@ -1442,7 +1443,7 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        graphScoped
+                        serialLeadingStorage
                     )
                 }
             }

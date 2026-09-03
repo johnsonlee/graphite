@@ -1338,6 +1338,13 @@ private fun broadQueryCoverageWorkload(
     if (graphSources.size == MAX_GRAPH_COUNT) {
         addFixture64GlobalWideDistributionCases(graphSources, fixtureDistributions)
         addFixture64GraphSetCases(graphSources)
+        val coldFirst = indexOfFirst { case ->
+            case.shape == GRAPH_SET_REFERENCE_SHAPE &&
+                case.selectivity == BroadQuerySelectivity.ZERO &&
+                case.requestGraphIds?.size == MAX_GRAPH_COUNT
+        }
+        check(coldFirst >= 0) { "Missing cold-first K64 request-selected graph-set case" }
+        add(0, removeAt(coldFirst))
     }
 }
 

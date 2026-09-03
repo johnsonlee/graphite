@@ -2863,3 +2863,33 @@ existing compact-index path.
 **Conclusion:** keep pending exact hosted confirmation. The change removes cold full-index
 allocation from exact signature discovery without altering result order, limits, cancellation, or
 the general Method query path.
+
+### 2026-09-03 - Attempt 092: Parallelize cold externally selected multi-graph scans
+
+**Hypothesis:** explicit scope identifies which graphs are eligible; it does not imply that a set of
+64 eligible graphs should execute serially. Keep the preferred persisted-index serial policy only
+for a single selected graph. Multi-graph selected sets should use the same bounded additive graph
+and segment plan as an equivalent `graphId IN` query.
+
+**Evidence:**
+
+- The existing 1,137-case fixture64 workload now moves its K=64 zero-hit request-selected case to
+  the first record without adding synthetic or duplicate queries. This runs before all width-one
+  queries and index construction, so the cold label represents the production first-request state.
+- Three independent fresh JVMs used the fixture-JAR-derived 64 persisted graphs, 8 GiB heap, and
+  four active CPUs. The first record completed successfully in `35.740`, `26.305`, and `36.180 ms`,
+  accessed exactly all 64 selected graphs, returned the expected empty result, and charged the same
+  `151,595` work units each time. All three complete 315-record request-selected manifests have the
+  same SHA-256 `fee54d81e6c7a19341ba8a1c236b779772bcd06a6eb63f5e2dfc4798106e81d4`.
+- The blocking reproduction on exact parent `5eb7f30` measured the same cold K64 request at
+  `1,979-2,194 ms` when scoped serialization was enabled and `137-176 ms` under the parent parallel
+  policy. The retained change removes that source-count-independent serial flag only when more than
+  one source remains.
+- Deterministic execution tests force the first background graph wave to overlap for both textual
+  64-id routing and externally selected 64-graph execution. They assert the computed graph-worker
+  ceiling, split storage consumers, complete source coverage, and no residual active worker. The
+  existing eight-graph compatibility test remains serial, and single-graph scope continues to use
+  the preferred persisted-index marker.
+
+**Conclusion:** keep pending exact hosted confirmation. This addresses the cold-first K64 blocker
+without changing one-graph graphId latency or exceeding the additive CPU plan.

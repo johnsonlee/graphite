@@ -214,18 +214,20 @@ class CrossGraphCypherExecutorTest {
         assertEquals(selectedGraphIds.indices.toSet(), storageConsumers.keys)
         assertTrue(
             storageConsumers.values.all { consumer ->
-                consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+                consumer is SerialGraphWorkBatchConsumer
             }
         )
         // Pruning 64 sources to eight must retain the small-source compatibility path: one
-        // graph lookup at a time. The preferred persisted consumer still permits that graph's
-        // one-time parallel raw build without admitting concurrent outer graph lookups.
+        // graph lookup at a time without marking the entire selected set as one serial graph.
         assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
     }
 
     @Test
-    fun `full graph id set serializes graphs and retains each mapped string index`() {
+    fun `full graph id set parallelizes cold scans within the cpu budget`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
@@ -251,6 +253,13 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
+                        if (graphIndex in 1..plannedWorkers) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
+                                "planned $plannedWorkers graph workers but only " +
+                                    "${plannedWorkers - firstParallelWave.count} entered"
+                            }
+                        }
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -274,22 +283,24 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(graphIds.indices.toSet(), storageConsumers.keys)
-        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
-        assertTrue(
-            storageConsumers.values.all { consumer ->
-                consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
-            }
-        )
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer || consumer is PreferredRawGraphWorkBatchConsumer
+        })
+        assertTrue(storageConsumers.values.count { it is SplitGraphWorkBatchConsumer } >= plannedWorkers)
     }
 
     @Test
-    fun `externally selected graph set serializes graphs without requiring a graph id predicate`() {
+    fun `externally selected full graph set parallelizes without a graph id predicate`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
         val empty = graph()
-        val selectedGraphs = List(8) { graphIndex ->
+        val selectedGraphs = List(64) { graphIndex ->
             CypherGraph("selected-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
                 override fun nodeCount(type: Class<out Node>): Long? =
                     if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
@@ -310,6 +321,13 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
+                        if (graphIndex in 1..plannedWorkers) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
+                                "planned $plannedWorkers graph workers but only " +
+                                    "${plannedWorkers - firstParallelWave.count} entered"
+                            }
+                        }
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -332,13 +350,12 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
-        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
-        assertTrue(
-            storageConsumers.values.all { consumer ->
-                consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
-            }
-        )
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer || consumer is PreferredRawGraphWorkBatchConsumer
+        })
+        assertTrue(storageConsumers.values.count { it is SplitGraphWorkBatchConsumer } >= plannedWorkers)
     }
 
     @Test
