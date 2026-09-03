@@ -100,13 +100,9 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     if (trigram == anchor.trigram) {
                         foundAnchorTrigram = true
                         stringTable.get(stringId, actual)
-                        val value = actual.toString()
-                        val compared = if (predicate.transform == StringValueTransform.LOWERCASE) {
-                            value.lowercase()
-                        } else {
-                            value
+                        if (reusableContains(actual, predicate.transform, predicate.expected)) {
+                            matches[matchCount++] = stringId
                         }
-                        if (compared.contains(predicate.expected)) matches[matchCount++] = stringId
                     }
                 }
             }

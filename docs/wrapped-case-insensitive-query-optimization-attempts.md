@@ -2223,3 +2223,40 @@ of a small selected chunk for far fewer interpreted checksum calls.
 **Conclusion:** keep as a measurable P50/CPU improvement, not as proof that the remaining wrapped
 DISTINCT tail gate is solved. The binary format and checksum are unchanged, every selected chunk is
 still verified before its matches are accepted, and exact string comparison remains authoritative.
+
+### 2026-09-03 - Attempt 071: Reuse the allocation-bounded lowercase matcher in the prefilter
+
+**Hypothesis:** after a selected trigram chunk is verified, the compact prefilter converts every
+candidate `MutableString` to a new `String` and then allocates another lowercase `String` before the
+exact `contains` check. The mapped raw scanner already has a correctness-tested reusable matcher:
+ASCII values lowercase in the mutable decode buffer, while any non-ASCII value falls back to
+Kotlin's locale-independent `String.lowercase()` semantics. Reuse that implementation at the
+prefilter boundary instead of maintaining a second allocating comparison path.
+
+**Evidence:**
+
+- Base: Attempt 070. Candidate: this experiment commit. Dataset and correctness oracle: the same
+  64 distinct persisted pinned-JAR graphs used by Attempts 069-070. Three candidate runs are under
+  `/tmp/pr113-exp071-reuse-matcher/`; the immediate Attempt 070 controls are under
+  `/tmp/pr113-exp070-bulk-crc/`.
+- All candidate runs completed 34/34 cases with exact oracle parity. Wrapped DISTINCT dense remains
+  exactly `462,762` work units, wrapped non-DISTINCT dense 665, and localized-early 80,171 in every
+  run.
+- Wrapped DISTINCT dense improved from Attempt 070's `79.263/70.414/74.240 ms` to
+  `73.525/69.479/66.517 ms`; all three observations are no worse and the worst observation falls
+  7.2%. Complete-run process CPU fell again from `1.815-1.880 s` to `1.704-1.800 s`.
+- Wrapped non-DISTINCT dense stabilized at `1.325/1.286/1.368 ms`, versus Attempt 070's
+  `1.552/1.656/1.581 ms`. Localized-early stabilized at `8.594/8.583/8.952 ms`, versus
+  `13.165/8.683/10.267 ms`. Overall P50 was `2.987/2.986/3.150 ms`; P95 was
+  `50.820/54.123/51.576 ms`.
+- Candidate peak heap was `3.46-3.56 GiB` and peak RSS `3.94-4.00 GiB`, with no retained cache or
+  persisted-format addition. Focused exact/corrupt/Unicode trigram tests and WebGraph detekt pass.
+- The repository's unmodified `compare-global-wide-pressure` command paired these three candidate
+  results with the three exact hosted-main results from run `33699712360`. It passed with zero
+  correctness or aligned-regression errors: overall P95 speedup was `17.43x`, `16.23x`, and
+  `16.40x`; the worst required wrapped-shape speedup was `15.05x`. This cross-environment screening
+  has ample 5x margin, while the next exact hosted run remains the authoritative same-runner gate.
+
+**Conclusion:** keep pending exact hosted paired confirmation. One shared exact matcher removes a
+duplicate allocation-heavy path and improves CPU plus both previously aligned dense blockers while
+preserving Unicode semantics, checksums, work accounting, and exact result digests.

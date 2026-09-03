@@ -2923,7 +2923,7 @@ internal fun stringMatches(
     }
 }
 
-private fun reusableContains(
+internal fun reusableContains(
     actual: MutableString,
     transform: StringValueTransform?,
     expected: String
