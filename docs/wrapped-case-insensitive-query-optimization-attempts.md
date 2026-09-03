@@ -3051,3 +3051,31 @@ the shortcut applies only when the current `MethodPattern` semantics prove the v
 **Conclusion:** keep pending exact hosted confirmation. This removes provably useless Method-index
 work from the failing zero-result shape without changing fuzzy-pattern behavior, ordering, limits,
 materialization, or cancellation for patterns that may match.
+
+### 2026-09-03 - Attempt 098: Bulk-checksum persisted prefilter property ids
+
+**Hypothesis:** deferred validation of persisted prefilter property-id arrays computes CRC one byte
+at a time in Kotlin. Retain the full per-id range and ordering validation plus identical work
+accounting, but compute CRC from bounded read-only `ByteBuffer` slices using the JDK bulk path.
+This may reduce the cold dense DISTINCT cost without weakening sidecar validation.
+
+**Evidence:**
+
+- Three paired fresh JVM forks compared the Attempt 097 parent with this isolated experiment over
+  all 34 global-wide cases on the fixture-JAR-derived 64 persisted graphs, an 8 GiB heap, and four
+  active CPUs. Every one of the 204 executions succeeded; all six correctness manifests have the
+  same SHA-256 `a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219`.
+- Dense wrapped DISTINCT latency does not materially change:
+  `3218.110 -> 3287.629`, `3193.078 -> 3297.907`, and
+  `3259.313 -> 3135.776 ms`. Charged work is exactly `69,501,268` in every old and new fork, so the
+  checksum implementation is not the dominant cost.
+- Aggregate P95 changes from `107.465/96.638/97.761 ms` to
+  `134.116/107.385/105.843 ms`; two pairs regress. The first wrapped zero row also changes from
+  `2.259` to `6.528 ms` in pair one and `6.703` to `6.839 ms` in pair two. Total CPU improves only
+  in the third pair and has no stable direction; RSS remains equivalent.
+- The complete `GraphStoreTest`, WebGraph detekt, and WebGraph JMH assembly passed in the
+  experimental clone, confirming semantic safety but not performance value.
+
+**Conclusion:** reject and revert. The byte-wise CRC is not the dense DISTINCT bottleneck, and the
+bulk mapped-buffer pass adds cold-page cost to smaller zero-result queries. No production or test
+code from this experiment is retained.
