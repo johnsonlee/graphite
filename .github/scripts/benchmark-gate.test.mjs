@@ -2867,6 +2867,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
     assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
     assert.match(workflow, /^  global-wide-pressure-evidence:/m);
+    assert.match(workflow, /^  prepare-fixture64:/m);
     assert.match(workflow, /EVIDENCE_CONTEXT: graphite\/fixture64-graph-routing/);
     assert.match(workflow, /TRUSTED_EVIDENCE_ACTOR: johnsonlee/);
     assert.doesNotMatch(workflow, /Startup-prepared P95 speedup must be >=10x/);
@@ -2894,13 +2895,25 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     const graphRoutingJob = workflow.match(
         /^  graph-routing-pressure-evidence:\n[\s\S]*?(?=^  graph-routing-pressure-external-evidence-disabled:)/m
     )?.[0] ?? "";
+    const fixture64Job = workflow.match(
+        /^  prepare-fixture64:\n[\s\S]*?(?=^  graph-routing-pressure-evidence:)/m
+    )?.[0] ?? "";
+    assert.match(fixture64Job, /prepare-fixture64-graphs\.sh/);
+    assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
+    assert.match(fixture64Job, /fixture64\.complete\.json/);
+    assert.match(fixture64Job, /Upload shared fixture64 corpus/);
+    assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
     assert.match(graphRoutingJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
-    assert.match(graphRoutingJob, /prepare-fixture64-graphs\.sh/);
+    assert.match(graphRoutingJob, /needs: \[prepare-fixture64\]/);
+    assert.match(graphRoutingJob, /Download shared fixture64 corpus/);
+    assert.match(graphRoutingJob, /verify-shared-fixture64\.sh/);
+    assert.doesNotMatch(graphRoutingJob, /Generate 64 persisted graphs|prepare-fixture64-graphs\.sh/);
     assert.match(graphRoutingJob, /run-real64-graph-routing\.sh/);
     assert.match(
         graphRoutingJob,
-        /cd candidate\n\s*\.github\/scripts\/run-real64-graph-routing\.sh \\\n\s*\.\.\/benchmark-fixture64-routing\/graphs\.tsv/
+        /cd candidate\n\s*\.github\/scripts\/run-real64-graph-routing\.sh \\\n\s*\.\.\/shared-fixture64\/graphs\/graphs\.tsv/
     );
+    assert.match(graphRoutingJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
     assert.match(graphRoutingJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(graphRoutingJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(graphRoutingJob, /github\.event\.pull_request\.head\.sha/);
@@ -2909,16 +2922,29 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         /^  global-wide-pressure-evidence:\n[\s\S]*?(?=^  global-wide-pressure-external-evidence-disabled:)/m
     )?.[0] ?? "";
     assert.match(globalWideJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
-    assert.match(globalWideJob, /prepare-fixture64-graphs\.sh/);
+    assert.match(globalWideJob, /needs: \[prepare-fixture64\]/);
+    assert.match(globalWideJob, /Download shared fixture64 corpus/);
+    assert.match(globalWideJob, /verify-shared-fixture64\.sh/);
+    assert.doesNotMatch(globalWideJob, /Generate 64 persisted graphs|prepare-fixture64-graphs\.sh/);
     assert.match(globalWideJob, /run-real64-global-wide\.sh/);
     assert.match(
         globalWideJob,
-        /cd candidate\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/benchmark-fixture64\/graphs\.tsv/
+        /cd candidate\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/shared-fixture64\/graphs\/graphs\.tsv/
     );
+    assert.match(globalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
     assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(globalWideJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(globalWideJob, /github\.event\.pull_request\.head\.sha/);
     assert.doesNotMatch(globalWideJob, /gist|EVIDENCE_CONTEXT|materializeGistFiles/);
+    const sharedFixtureVerifier = fs.readFileSync(
+        new URL("./verify-shared-fixture64.sh", import.meta.url),
+        "utf8"
+    );
+    assert.match(sharedFixtureVerifier, /graphite-shared-fixture64-v1/);
+    assert.match(sharedFixtureVerifier, /fixtureJarSetSha256/);
+    assert.match(sharedFixtureVerifier, /fixture-reproducibility\.json/);
+    assert.match(sharedFixtureVerifier, /Fixture64GraphPreparation/);
+    assert.match(sharedFixtureVerifier, /--verify/);
     assert.match(workflow, /global-wide-pressure-evidence\.result/);
     const webgraphBuild = fs.readFileSync(
         new URL("../../graphite-webgraph/build.gradle.kts", import.meta.url),

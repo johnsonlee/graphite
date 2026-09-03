@@ -1921,8 +1921,79 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  prepare-fixture64:
+    name: prepare-fixture64
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout exact candidate fixture builder
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Set up Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Build candidate fixture generator and pinned fixture JARs
+      run: |
+        candidate/gradlew -p candidate \
+          :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
+
+    - name: Generate and authenticate one shared fixture64 artifact
+      env:
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
+          -maxdepth 1 -name '*-jmh.jar' -print -quit)
+        FIXTURE_DIR=candidate/graphite-webgraph/build/benchmark-fixtures
+        test -f "${CANDIDATE_JAR}"
+        mkdir -p shared-fixture64
+        candidate/.github/scripts/prepare-fixture64-graphs.sh \
+          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs
+        candidate/.github/scripts/test-fixture64-reproducibility.sh \
+          "${CANDIDATE_JAR}" "${FIXTURE_DIR}" shared-fixture64/graphs \
+          "${RUNNER_TEMP}/fixture64-repeat" shared-fixture64/fixture-reproducibility.json
+        mapfile -t FIXTURE_JARS < <(find "${FIXTURE_DIR}" -maxdepth 1 -type f -name '*.jar' -print | sort)
+        test "${#FIXTURE_JARS[@]}" -eq 4
+        FIXTURE_JAR_SET_SHA=$(
+          for FIXTURE_JAR in "${FIXTURE_JARS[@]}"; do
+            printf '%s\t%s\n' "$(basename "${FIXTURE_JAR}")" \
+              "$(sha256sum "${FIXTURE_JAR}" | awk '{print $1}')"
+          done | sha256sum | awk '{print $1}'
+        )
+        jq -n \
+          --arg schema graphite-shared-fixture64-v1 \
+          --arg candidateSha "${CANDIDATE_SHA}" \
+          --arg fixtureJarSetSha256 "${FIXTURE_JAR_SET_SHA}" \
+          --arg manifestSha256 "$(sha256sum shared-fixture64/graphs/graphs.tsv | awk '{print $1}')" \
+          --arg provenanceSha256 \
+            "$(sha256sum shared-fixture64/graphs/fixture-provenance.tsv | awk '{print $1}')" \
+          --arg receiptSha256 \
+            "$(sha256sum shared-fixture64/fixture-reproducibility.json | awk '{print $1}')" \
+          '{schema: $schema, complete: true, candidateSha: $candidateSha,
+            fixtureJarSetSha256: $fixtureJarSetSha256, manifestSha256: $manifestSha256,
+            provenanceSha256: $provenanceSha256, receiptSha256: $receiptSha256}' \
+          > shared-fixture64/fixture64.complete.json
+
+    - name: Upload shared fixture64 corpus
+      uses: actions/upload-artifact@v7
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: shared-fixture64/
+        if-no-files-found: error
+        retention-days: 1
+
   graph-routing-pressure-evidence:
     name: graph-routing-pressure-evidence
+    needs: [prepare-fixture64]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -1947,24 +2018,32 @@ jobs:
         candidate/gradlew -p candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 
-    - name: Generate 64 persisted graphs from pinned real fixture JARs
+    - name: Download shared fixture64 corpus
+      uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: shared-fixture64
+
+    - name: Verify restored fixture64 corpus and provenance
       run: |
         CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         test -f "${CANDIDATE_JAR}"
-        candidate/.github/scripts/prepare-fixture64-graphs.sh \
+        candidate/.github/scripts/verify-shared-fixture64.sh \
           "${CANDIDATE_JAR}" \
           candidate/graphite-webgraph/build/benchmark-fixtures \
-          benchmark-fixture64-routing
+          shared-fixture64 \
+          "${{ github.event.pull_request.head.sha }}"
 
     - name: Build and execute trusted graph-routing states
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
+        GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
         .github/scripts/run-real64-graph-routing.sh \
-          ../benchmark-fixture64-routing/graphs.tsv \
+          ../shared-fixture64/graphs/graphs.tsv \
           graphite-webgraph/build/benchmark-fixtures \
           "${{ github.event.pull_request.base.sha }}" \
           "${{ github.event.pull_request.head.sha }}" \
@@ -2343,6 +2422,7 @@ jobs:
 
   global-wide-pressure-evidence:
     name: global-wide-pressure-evidence
+    needs: [prepare-fixture64]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -2367,24 +2447,32 @@ jobs:
         candidate/gradlew -p candidate \
           :webgraph:jmhJar :webgraph:prepareBenchmarkFixtures --no-daemon
 
-    - name: Generate 64 persisted graphs from pinned real fixture JARs
+    - name: Download shared fixture64 corpus
+      uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: shared-fixture64
+
+    - name: Verify restored fixture64 corpus and provenance
       run: |
         CANDIDATE_JAR=$(find candidate/graphite-webgraph/build/libs \
           -maxdepth 1 -name '*-jmh.jar' -print -quit)
         test -f "${CANDIDATE_JAR}"
-        candidate/.github/scripts/prepare-fixture64-graphs.sh \
+        candidate/.github/scripts/verify-shared-fixture64.sh \
           "${CANDIDATE_JAR}" \
           candidate/graphite-webgraph/build/benchmark-fixtures \
-          benchmark-fixture64
+          shared-fixture64 \
+          "${{ github.event.pull_request.head.sha }}"
 
     - name: Build and execute three trusted paired global-wide forks
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
+        GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
         .github/scripts/run-real64-global-wide.sh \
-          ../benchmark-fixture64/graphs.tsv \
+          ../shared-fixture64/graphs/graphs.tsv \
           graphite-webgraph/build/benchmark-fixtures \
           "${{ github.event.pull_request.base.sha }}" \
           "${{ github.event.pull_request.head.sha }}" \

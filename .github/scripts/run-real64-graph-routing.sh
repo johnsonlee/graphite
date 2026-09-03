@@ -18,6 +18,7 @@ FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 ORACLE=${OUTPUT_DIR}/base-single-source-oracle.manifest
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
+SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 STATUS_CONTEXT=graphite/fixture64-graph-routing
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
@@ -61,6 +62,14 @@ sha256_file() {
     sha256sum "$1" | awk '{print $1}'
   else
     shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
+sha256_stream() {
+  if command -v sha256sum >/dev/null; then
+    sha256sum | awk '{print $1}'
+  else
+    shasum -a 256 | awk '{print $1}'
   fi
 }
 
@@ -149,10 +158,23 @@ java -Xmx4g \
   io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
   --verify "${MANIFEST}" "${FIXTURE_PROVENANCE}"
 
-REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
-"${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}" \
-  "${CANDIDATE_JAR}" "${PINNED_FIXTURE_DIR}" "$(dirname "${MANIFEST}")" \
-  "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+if [[ -n "${SHARED_REPRODUCIBILITY_RECEIPT}" ]]; then
+  test -f "${SHARED_REPRODUCIBILITY_RECEIPT}"
+  NORMALIZED_PROVENANCE_SHA=$(cut -f1-20 "${FIXTURE_PROVENANCE}" | sha256_stream)
+  NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next }
+    { print $1, $3, $4, $5, $6 }' "${MANIFEST}" | sha256_stream)
+  jq -e --arg provenance "${NORMALIZED_PROVENANCE_SHA}" --arg manifest "${NORMALIZED_MANIFEST_SHA}" \
+    '.passed == true and .firstProvenanceSha256 == $provenance and
+     .repeatedProvenanceSha256 == $provenance and
+     .firstManifestSemanticSha256 == $manifest and
+     .repeatedManifestSemanticSha256 == $manifest' "${SHARED_REPRODUCIBILITY_RECEIPT}" >/dev/null
+  cp "${SHARED_REPRODUCIBILITY_RECEIPT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+else
+  REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
+  "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}" \
+    "${CANDIDATE_JAR}" "${PINNED_FIXTURE_DIR}" "$(dirname "${MANIFEST}")" \
+    "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+fi
 
 HARNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${HARNESS_PATH}")
 CORRECTNESS_MANIFEST_SHA256=$(sha256_file "${CANDIDATE_TREE}/${CORRECTNESS_MANIFEST_PATH}")

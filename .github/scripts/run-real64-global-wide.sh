@@ -29,6 +29,7 @@ REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
+SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
 
 test -f "${MANIFEST}"
 test -f "${FIXTURE_PROVENANCE}"
@@ -57,6 +58,12 @@ mkdir -p "${OUTPUT_DIR}"
 sha256_file() {
   if command -v sha256sum >/dev/null; then sha256sum "$1" | awk '{print $1}'
   else shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
+sha256_stream() {
+  if command -v sha256sum >/dev/null; then sha256sum | awk '{print $1}'
+  else shasum -a 256 | awk '{print $1}'
   fi
 }
 
@@ -124,10 +131,23 @@ java -Xmx4g \
   -Dhive.jar.path="${HIVE_JAR}" -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
   -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
   --verify "${MANIFEST}" "${FIXTURE_PROVENANCE}"
-REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
-"${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}" \
-  "${CANDIDATE_JAR}" "${PINNED_FIXTURE_DIR}" "$(dirname "${MANIFEST}")" \
-  "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+if [[ -n "${SHARED_REPRODUCIBILITY_RECEIPT}" ]]; then
+  test -f "${SHARED_REPRODUCIBILITY_RECEIPT}"
+  NORMALIZED_PROVENANCE_SHA=$(cut -f1-20 "${FIXTURE_PROVENANCE}" | sha256_stream)
+  NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next }
+    { print $1, $3, $4, $5, $6 }' "${MANIFEST}" | sha256_stream)
+  jq -e --arg provenance "${NORMALIZED_PROVENANCE_SHA}" --arg manifest "${NORMALIZED_MANIFEST_SHA}" \
+    '.passed == true and .firstProvenanceSha256 == $provenance and
+     .repeatedProvenanceSha256 == $provenance and
+     .firstManifestSemanticSha256 == $manifest and
+     .repeatedManifestSemanticSha256 == $manifest' "${SHARED_REPRODUCIBILITY_RECEIPT}" >/dev/null
+  cp "${SHARED_REPRODUCIBILITY_RECEIPT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+else
+  REPEATED_FIXTURE_OUTPUT=${BUILD_ROOT}/fixture64-repeat
+  "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}" \
+    "${CANDIDATE_JAR}" "${PINNED_FIXTURE_DIR}" "$(dirname "${MANIFEST}")" \
+    "${REPEATED_FIXTURE_OUTPUT}" "${OUTPUT_DIR}/fixture-reproducibility.json"
+fi
 
 run_pressure() {
   local JAR=$1
