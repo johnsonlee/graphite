@@ -2919,3 +2919,34 @@ This should remove regex-engine CPU from the hosted `17-scan/contains` regressio
 **Conclusion:** reject and revert. Java's compiled regex path is not the material CPU cost in this
 workload. The next Method experiment must reduce metadata records visited or descriptors
 materialized instead of replacing the per-distinct-string matcher.
+
+### 2026-09-03 - Attempt 094: Restrict exact Method class scans to contiguous metadata ranges
+
+**Hypothesis:** persisted fixture metadata writes each declaring class as one contiguous Method
+run. Record those ranges while constructing the existing compact index, then restrict exact-class
+queries to the matching run. If a producer writes the same class in multiple runs, mark it
+non-contiguous and retain the full scan. This reduces records visited and descriptors materialized
+without making ordering a storage-format requirement.
+
+**Evidence:**
+
+- A read-only inspection of the four complete pinned fixture-JAR-derived graphs found exactly one
+  run per declaring class: Android has 408,510 methods in 44,287 class runs; Tika 312,788/30,617;
+  Hive 404,016/38,217; and Kotlin compiler 249,669/24,255. Class ids are not sorted, so the
+  implementation records primitive id-to-range entries rather than assuming binary-search order.
+- Three fresh JVM forks per case compared exact head `4d3732f` with this candidate using the same
+  four persisted graphs, 8 GiB heap, and four active CPUs. For `17-scan/contains`, mean latency
+  improves from `959.974` to `920.337 ms` (`4.1%`) and summed process CPU from `4.349` to `3.666 s`
+  (`15.7%`). RSS-after changes by `+1.1%`.
+- For the hosted `4-aggregate/count` blocker, mean latency improves from `204.538` to `173.539 ms`
+  (`15.2%`) and summed process CPU from `1.439` to `0.839 s` (`41.7%`). RSS-after improves `3.4%`.
+- Every old and new fork produces the same complete normalized manifest, covering all scoped
+  services and root grouped responses with exact schema, order, digest, graph id, and response-size
+  parity. Deterministic persisted-graph tests additionally prove one-record exact ranges, zero-scan
+  missing classes, and the full-scan correctness fallback for a deliberately non-contiguous class.
+  The focused WebGraph suite and detekt pass.
+
+**Conclusion:** keep pending exact hosted confirmation. The range table is built together with the
+existing compact Method index, preserves source order, and adds no new cold metadata pass. It
+directly addresses both current Method CPU blockers while retaining a conservative fallback for
+graphs that do not group methods by declaring class.

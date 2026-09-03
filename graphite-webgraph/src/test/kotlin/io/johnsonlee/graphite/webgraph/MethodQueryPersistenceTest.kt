@@ -187,6 +187,35 @@ class MethodQueryPersistenceTest {
                 assertEquals(persistedOrder.take(2), graph.methodSlice(MethodPattern(), 2))
 
                 var inspected = 0
+                assertEquals(
+                    persistedOrder.filter { it.declaringClass.className == "com.example.Beta" },
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Beta"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).toList()
+                )
+                assertEquals(1, inspected)
+
+                inspected = 0
+                assertEquals(
+                    persistedOrder.filter { it.declaringClass.className == "com.example.Alpha" },
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Alpha"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).toList()
+                )
+                assertEquals(persistedOrder.size, inspected)
+
+                inspected = 0
+                assertTrue(
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Missing"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).none()
+                )
+                assertEquals(0, inspected)
+
+                inspected = 0
                 val first = graph.methodSlice(
                     MethodPattern(),
                     1,
