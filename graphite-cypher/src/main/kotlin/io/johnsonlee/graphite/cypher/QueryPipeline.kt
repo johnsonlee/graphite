@@ -1662,7 +1662,7 @@ class QueryPipeline private constructor(
                     filter,
                     limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
                     storageSourceCount = candidateSources.size,
-                    serialStorage = preferPersistedStorage
+                    serialStorage = preferPersistedStorage && !balanced
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {

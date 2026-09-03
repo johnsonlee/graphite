@@ -360,7 +360,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `startup prepared wide selected graph set serializes retained micro lookups`() {
+    fun `startup prepared wide selected graph set keeps segmented storage scans`() {
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val persistentCapabilityChecks = AtomicInteger()
@@ -430,7 +430,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(0, activeGraphWorkers.get())
         assertEquals(0, persistentCapabilityChecks.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount
         })
     }
 

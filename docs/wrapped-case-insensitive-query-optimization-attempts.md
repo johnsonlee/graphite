@@ -3333,3 +3333,27 @@ This changes neither the NCPU-balanced worker allocation nor graph-scoped execut
 **Conclusion:** pending exact real-64 validation. Keep only if the repeated dense/localized
 regressions disappear without weakening correctness, resource, worker-budget, or graph-routing
 guards.
+
+### 2026-09-03 - Attempt 108: Restore segmented storage for selected K=64
+
+**Hypothesis:** a graph-scoped query over 64 selected graphs should avoid graph-level scheduling
+overhead once its persisted indexes are prepared, but serial graphs do not require serial storage.
+Keep the selected graphs source-ordered and execute one graph lookup at a time, while restoring the
+balanced segment consumer inside each lookup. K=1 and K=8 retain their serial persisted-index path;
+the unscoped global-wide graph-worker policy is unchanged.
+
+**Evidence:**
+
+- Base revision is Attempt 107; candidate exact hosted evidence is pending. Both use the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- Exact hosted Attempt 106 identifies the mechanism directly in all three graph-routing states:
+  main records 64 cold parallel segment scans, candidate records zero, and selected K=64 P95
+  regresses from `3.880` to `12.710 ms` cold, `0.787` to `2.246 ms` warm, and `2.822` to
+  `9.873 ms` startup-prepared.
+- The deterministic prepared-selected-set test continues to prove one active graph worker,
+  source-complete access, no redundant prepared-capability probes, and no leaked work. It now also
+  requires every K=64 storage lookup to receive the balanced split consumer and its configured
+  segment-worker budget.
+
+**Conclusion:** pending exact real-64 validation. Keep only if selected K=64 no longer regresses and
+the unscoped global-wide 5x measurements and correctness gates remain intact.
