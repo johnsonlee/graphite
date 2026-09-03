@@ -538,9 +538,15 @@ class CrossGraphCypherExecutorTest {
             CypherGraph("graph-$sourceIndex", object :
                 Graph by empty,
                 WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
                 StringPropertyDisjunctionProjection {
                 override fun nodeCount(type: Class<out Node>): Long? =
                     if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
 
                 override fun <T : Node> nodesByStringPropertyDisjunction(
                     type: Class<T>,

@@ -3148,3 +3148,29 @@ projection or selected-value verification.
 
 **Conclusion:** reject and revert. Prepared projection sources retain the existing execution policy;
 no production or test code from this experiment is retained.
+
+### 2026-09-03 - Attempt 102: Preserve bounded raw-leading probes for prepared non-DISTINCT queries
+
+**Hypothesis:** Attempt 100 exposes indexed DISTINCT before scheduling, but the prepared-index
+serial branch also captures dense bounded non-DISTINCT queries that should satisfy their limit from
+a raw projected leading segment. Make that eligibility explicit before the serial decision; retain
+the existing additive graph-plus-segment parallel continuation when the leading segment is short.
+
+**Evidence:**
+
+- Three paired fresh-JVM runs against remote main used the same pinned fixture-JAR-derived 64
+  persisted graphs, 8 GiB heap, and four active CPUs. All 204 executions per revision succeeded and
+  all six complete correctness manifests match exactly.
+- This repairs all five repeated micro-regressions found by Attempt 100. Aggregate P50 improves by
+  roughly `77..80x`, aggregate P95 by `7.07..7.84x`, and the worst wrapped-query speedup is `5.35x`
+  in the first paired screen. No synthetic timing is used as evidence.
+- A second screen of the simplified condition preserves `76.6..83.7x` P50 and `7.33..7.61x` P95.
+  Two worst-row observations fall to `4.50..4.81x` while the same localized early row varies from
+  `5.3..7.1 ms`, so the exact hosted gate remains required before claiming a stable 5x floor.
+- The regression test now marks the dense bounded graph as startup-prepared and still requires the
+  raw projection path, proving readiness cannot accidentally force node materialization or the
+  ordinary serial lookup branch.
+
+**Conclusion:** keep pending exact hosted confirmation. The change restores the already bounded
+raw-leading fast path for non-DISTINCT queries without broadening eligible query shapes, changing
+results, or multiplying graph and segment worker budgets.

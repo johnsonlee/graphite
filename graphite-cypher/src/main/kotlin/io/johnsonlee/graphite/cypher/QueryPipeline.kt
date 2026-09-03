@@ -1634,10 +1634,13 @@ class QueryPipeline private constructor(
             nodePredicateFactory,
             candidateSources
         )?.let { return it }
+        val rawLeadingStorage = usesBalancedStringSplit(candidateSources.size) && !preferPersistedStorage &&
+            nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
         // A retained-index lookup is too small to amortize outer graph scheduling. The mapped
         // strategy selects this branch for loaded and startup-prepared indexes, while a cold
         // graph-scoped set still fans out across graphs with one persisted-index build per graph.
-        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
+        if (!rawLeadingStorage &&
+            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
             workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
@@ -1665,8 +1668,6 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
-        val rawLeadingStorage = balanced && !preferPersistedStorage &&
-            filter.prefersBoundedRawLeadingProbe(limit)
         val graphParallelism = directStringGraphParallelism(candidateSources.size)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
@@ -1689,7 +1690,7 @@ class QueryPipeline private constructor(
         // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
         if (balanced) {
-            val leadingProjection = if (rawLeadingStorage && nodePredicateFactory == null) {
+            val leadingProjection = if (rawLeadingStorage) {
                 projectRawLeadingRows(nodeClass, filter, items, columns, limit, candidateSources, tracker)
             } else {
                 null
