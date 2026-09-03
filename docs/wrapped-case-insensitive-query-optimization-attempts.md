@@ -2439,3 +2439,33 @@ returned.
 but the equal segment boundary prevents it from reducing the failing localized-early case and the
 aggregate evidence is neutral. The next experiment routes only long selective transformed terms to
 the persisted exact index while leaving short dense terms on the bounded raw path.
+
+### 2026-09-03 - Attempt 078: Route long transformed terms to the persisted exact index
+
+**Hypothesis:** Attempt 067 showed that loading the exact index is too expensive for the short dense
+term `get`, but a 32-or-more-character transformed term has a far narrower candidate set. After the
+compact trigram prefilter confirms a possible hit, load the persisted exact index before raw segment
+scanning only for those long terms; keep short dense terms on the existing bounded raw path.
+
+**Evidence:**
+
+- Base: exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate: an isolated
+  selective-index snapshot; the rejected production change is not retained. Dataset, oracle, JVM,
+  and base runs are the same as Attempts 076-077. Three candidate runs are under
+  `/tmp/pr113-attempt078-selective-index/`; all complete 34/34 cases with exact correctness parity.
+- Cold index restoration overwhelms the selective lookup. `localized-early` work rose from 80,173
+  to 1,116,134 and latency from base `9.286/9.471/18.289 ms` to
+  `24.731/26.653/24.922 ms`. `localized-middle` charged 888,346 work units and `localized-late`
+  799,176; all three distributions regressed in all three aligned pairs.
+- The ordinary wrapped targeted case was worse still: work rose from 221,480 to 1,605,059 and
+  latency from `17.898/16.874/17.287 ms` to `107.703/130.464/109.534 ms`. Short dense and zero-hit
+  cases correctly retained their original raw/prefilter routes, but that isolation is insufficient
+  to justify the long-term regression.
+- Overall P50 stayed near `2.86-2.94 ms`, while P95 regressed from `45.782-48.603 ms` to
+  `79.957-87.521 ms`. Candidate process CPU was `2.167-2.354 s` versus base `1.664-1.803 s`, above
+  the 15% resource gate in every pair. Peak heap and RSS moved only slightly.
+
+**Conclusion:** reject and revert. A long literal does not amortize full exact-index restoration;
+its checksum, structure, and posting load costs more than the raw scan it replaces. Retain the
+compact trigram prefilter and test a source-ordered raw scan over its exact string-id matches without
+loading the complete index.
