@@ -2995,3 +2995,30 @@ using a read-only planning capability that does not change storage fallback beha
 remain additive, but graph selection no longer disables per-graph index retention. Ready indexes
 avoid K=64 task scheduling, while cold explicitly selected graph sets build each reusable index
 once in parallel without changing result order, work accounting, or cancellation fallback.
+
+### 2026-09-03 - Attempt 096: Restore a startup-prepared index on the first preferred lookup
+
+**Hypothesis:** the preferred-persisted storage branch incorrectly requires a raw scan in the
+current process before it will load an existing sidecar. A freshly reopened startup-prepared graph
+has a zero scan count, so its first node lookup falls through to raw storage despite the planner's
+prepared-index decision. Attempt sidecar loading immediately; a missing, invalid, or memory-budget-
+denied sidecar still returns `null` and preserves the existing parallel raw-build fallback.
+
+**Evidence:**
+
+- A deterministic persist-close-reopen test now invokes the production
+  `PreferredPersistedStringIndexGraphWorkBatchConsumer` on the first lookup. It asserts the exact
+  row, one persisted-index lookup, zero raw scans, and `loadedFromPersistence=true`. The prior
+  aggregate-only test did not exercise this branch. The complete `GraphStoreTest` and WebGraph
+  detekt pass in a clean clone.
+- A fresh JVM then replayed all 1,137 startup-prepared routing queries over the 64 persisted graphs
+  generated from the four pinned fixture JARs, with an 8 GiB heap and four active CPUs. All queries
+  match the existing correctness oracle, access no non-target graph, perform zero raw scans, and
+  record exactly 2,043 persisted-index lookups over all 64 graphs (`30..39` per graph).
+- The repository comparator passes with no errors. Against remote main, startup-prepared P50/P95
+  changes from `0.286/3.318 ms` to `0.082/1.100 ms`; graph-parameter P50/P95 improves by
+  `4.22x/3.61x`. Peak RSS changes from `6.44` to `6.17 GB`, while peak used heap is within `0.7%`.
+
+**Conclusion:** keep pending exact hosted confirmation. Startup readiness and storage execution now
+agree: an existing valid sidecar is restored on the first preferred lookup, while cold graphs with
+no usable sidecar still enter the additive parallel raw-scan and index-build path.

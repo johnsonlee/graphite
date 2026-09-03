@@ -1453,14 +1453,17 @@ class GraphStoreTest {
                     )
                 )
                 assertEquals(
-                    1L,
-                    restored.aggregateStringPropertyDisjunction(
+                    1,
+                    restored.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
-                        null
-                    )?.count
+                        1,
+                        PreferredPersistedStringIndexGraphWorkBatchConsumer { }
+                    ).orEmpty().count()
                 )
                 assertTrue(restored.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(0L, restored.callSiteParallelScanCount())
+                assertEquals(1L, restored.callSiteStringIndexLookupCount())
             } finally {
                 restored.close()
             }

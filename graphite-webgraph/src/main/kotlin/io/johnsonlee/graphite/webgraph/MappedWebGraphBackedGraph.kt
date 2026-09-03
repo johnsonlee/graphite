@@ -869,9 +869,8 @@ internal class MappedWebGraphBackedGraph(
             }
             if (workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer) {
                 retainPersistedCallSiteStringIndex.set(true)
-                val preferredIndex = callSiteStringIndex ?: callSiteParallelScanCount.get()
-                    .takeIf { count -> count > 0L }
-                    ?.let { loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer) }
+                val preferredIndex = callSiteStringIndex ?:
+                    loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
                 preferredIndex?.let { index ->
                     callSiteStringIndexLookupCount.incrementAndGet()
                     return index.matchingNodeIds(predicates, workConsumer, limit)
