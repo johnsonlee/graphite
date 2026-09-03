@@ -3676,3 +3676,33 @@ file constant, fixture provenance fields, corruption tests, driver requirements,
 documentation rather than renaming the sidecar. The 5x target and resource bounds pass locally;
 the remaining aligned micro-row and all review/CI gates remain hard blockers. Do not merge or tag
 without an explicit user instruction.
+
+### 2026-09-04 - Attempt 119: Preflight cold misses before restoring the retained index
+
+**Hypothesis:** after removing the independent trigram-prefilter format, the first long zero-hit
+query restores all 64 complete `graph.callsite-string-index` files before it can prove the term is
+absent. Run the existing exact string-table preflight first, and reject selected DISTINCT tuples
+whose required strings do not occur in a graph's dictionary. Both checks are deterministic and
+conservative: an uncertain graph still takes the authoritative retained-index path.
+
+**Evidence:**
+
+- Base is exact head `dde3b35`; candidate is this experiment, subsequently reverted. Three paired
+  fresh-JVM screens use the same 64 persisted graphs generated from the four pinned fixture JARs,
+  the same independent correctness oracle, an 8 GiB heap, and `ActiveProcessorCount=4`. Synthetic
+  coverage checks only path selection and positive/negative correctness.
+- All six real-fixture runs complete 34/34 observations with exact oracle parity. The first
+  `global-wide-four-properties/zero` row improves from `797.609/799.022/873.722 ms` and
+  `57,642,320` work units to `312.257/314.457/310.386 ms` and `2,793,940` units. Wrapped
+  non-DISTINCT dense also falls from `1.714..2.030 ms` to `1.215..1.350 ms` with the same 665 units.
+- The improvement moves too much exact preflight work into the rest of the matrix. Aggregate
+  P50 regresses from `2.347/2.429/2.529 ms` to `231.151/231.732/230.402 ms`; P95 regresses from
+  `79.801/64.932/91.639 ms` to `312.257/391.661/333.828 ms`. Total charged work rises from
+  `59,541,143` to `88,305,370`, and process CPU rises from `3.11..3.80 s` to `11.01..11.74 s`.
+  Peak heap and RSS do not compensate for that regression.
+
+**Conclusion:** reject and revert. Exact per-graph string-table preflight fixes the isolated cold
+zero row, but repeating it for each long shape destroys the 5x workload objective. No production
+or test code from this experiment remains. The next attempt must obtain a reusable, integrity-
+checked view from the existing `graph.callsite-string-index` rather than add another persisted
+format or rescan every graph dictionary per query.
