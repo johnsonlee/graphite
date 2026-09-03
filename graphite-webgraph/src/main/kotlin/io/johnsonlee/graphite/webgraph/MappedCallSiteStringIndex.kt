@@ -1015,6 +1015,8 @@ internal class MappedCallSiteStringIndex(
 
     @Synchronized
     fun clearQueryCaches() {
+        val cacheBytes = matchingStringCacheBytes + matchingNodeCacheBytes + projectedRowCacheBytes
+        if (cacheBytes > 0L) reservation.shrinkTo(reservation.bytes - cacheBytes)
         matchingStringIds.clear()
         matchingStringCacheBytes = 0L
         matchingNodeIds.clear()
