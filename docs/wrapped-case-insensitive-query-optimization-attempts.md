@@ -2500,3 +2500,33 @@ characters and leave short dense terms unchanged.
 dense localized case, but term length is not a sufficient planner signal. The next experiment uses
 a bounded source-prefix sample to select serial continuation only when observed match density can
 fill LIMIT, otherwise restoring the existing segment path.
+
+### 2026-09-03 - Attempt 080: Select serial continuation from a bounded prefix sample
+
+**Hypothesis:** sample a bounded source-ordered prefix using the prefilter's exact string ids. If
+its observed density projects enough matches to fill LIMIT, continue the same iterator serially;
+otherwise discard the sample and use the existing split scan. This should preserve Attempt 079's
+dense win without serializing a sparse targeted graph.
+
+**Evidence:**
+
+- Base: exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate: isolated 8 Ki
+  and 32 Ki prefix-sampling snapshots; neither rejected production change is retained. Dataset,
+  oracle, four-CPU/8 GiB JVM, and three base runs are the same as Attempts 076-079. Final 32 Ki
+  candidate files are under `/tmp/pr113-attempt080-adaptive-serial-32k/`.
+- All candidate runs complete 34/34 cases with exact correctness parity. An 8,192-node sample
+  selects serial execution for `localized-middle` but finds zero early matches for
+  `localized-early`; that case falls back to parallel work after paying the sample and rises from
+  80,173 to 88,365 work units. Raising the prefix to 32,768 still misses its clustered match region
+  and raises work to 112,941.
+- The 32 Ki sample also raises wrapped targeted work from 221,480 to 287,016 and latency from base
+  `17.898/16.874/17.287 ms` to `30.535/27.375/28.514 ms`, producing a deterministic aligned
+  regression. `localized-middle` remains fast at 59,334 work units and `4.246/4.202/4.064 ms`, but
+  the planner cannot infer the later cluster from a source prefix.
+- Final overall P50 is `3.120-3.232 ms` and P95 `48.617-49.544 ms`, versus base
+  `2.896-3.075/45.782-48.603 ms`. Process CPU is `1.788-1.843 s`, peak heap about 3.82 GB, and peak
+  RSS 4.27-4.30 GB. Increasing the sample spends more CPU/work without solving the target blocker.
+
+**Conclusion:** reject and revert. Prefix density is not representative for class-clustered call
+sites. Replace prediction with a distribution-independent ordered small-block scheduler that keeps
+only the bounded in-flight lookahead allowed by the segment-worker budget.
