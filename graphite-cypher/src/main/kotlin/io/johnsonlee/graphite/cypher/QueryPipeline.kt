@@ -30,6 +30,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
@@ -183,6 +184,12 @@ private class SerialStringGraphWorkConsumer(
     override fun consume(workUnits: Long) = consumeBatch(workUnits)
 }
 
+private class PreferredPersistedStringIndexGraphWorkConsumer(
+    private val consumeBatch: (Long) -> Unit
+) : PreferredPersistedStringIndexGraphWorkBatchConsumer {
+    override fun consume(workUnits: Long) = consumeBatch(workUnits)
+}
+
 private class PreferredRawStringGraphWorkConsumer(
     private val consumeBatch: (Long) -> Unit
 ) : PreferredRawGraphWorkBatchConsumer {
@@ -199,7 +206,7 @@ internal fun directStringStorageWorkConsumer(
 ): GraphWorkConsumer = if (preferRaw) {
     PreferredRawStringGraphWorkConsumer(consumeBatch ?: { _ -> })
 } else if (forceSerial) {
-    SerialStringGraphWorkConsumer(consumeBatch ?: { _ -> })
+    PreferredPersistedStringIndexGraphWorkConsumer(consumeBatch ?: { _ -> })
 } else if (sourceCount == 1) {
     consumeBatch?.let { consume -> ParallelGraphWorkBatchConsumer(consume) } ?: noOpParallelGraphWorkConsumer
 } else if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
@@ -284,6 +291,12 @@ class QueryPipeline private constructor(
 
     internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean) :
         this(graphs, true, workTrackingEnabled, false)
+
+    internal constructor(
+        graphs: List<CypherGraph>,
+        workTrackingEnabled: Boolean,
+        graphSourceScopeApplied: Boolean
+    ) : this(graphs, true, workTrackingEnabled, graphSourceScopeApplied)
 
     init {
         val graphIds = HashSet<String>(sources.size)
@@ -1293,7 +1306,7 @@ class QueryPipeline private constructor(
             ?.takeUnless { graphRoute.conflicting }
             ?.let { graphRoute.residual }
             ?: where.condition
-        val graphScoped = preselectedSources != null || routedGraphIds != null
+        val graphScoped = graphSourceScopeApplied || preselectedSources != null || routedGraphIds != null
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1608,7 +1621,10 @@ class QueryPipeline private constructor(
             nodePredicateFactory,
             candidateSources
         )?.let { return it }
-        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
+        // A graph-scoped retained-index lookup is too small to amortize outer graph scheduling.
+        // Preserve source order here while the storage marker still permits one graph's cold raw build to fan out.
+        if (serialLeadingStorage ||
+            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
             workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
@@ -1619,7 +1635,8 @@ class QueryPipeline private constructor(
                     nodeClass,
                     filter,
                     limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
-                    storageSourceCount = candidateSources.size
+                    storageSourceCount = candidateSources.size,
+                    serialStorage = serialLeadingStorage
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {

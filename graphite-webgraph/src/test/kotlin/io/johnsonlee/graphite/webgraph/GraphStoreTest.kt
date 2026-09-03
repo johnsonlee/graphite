@@ -51,6 +51,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
@@ -1462,6 +1463,65 @@ class GraphStoreTest {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `preferred persisted lookup builds once in parallel then reuses the retained index`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(TypeDescriptor("example.Caller$index"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "definitely-absent"
+        )
+        val dir = Files.createTempDirectory("webgraph-preferred-persisted-callsite-index")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            GraphStore.save(graph, dir)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                val consumer = PreferredPersistedStringIndexGraphWorkBatchConsumer { }
+
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = consumer
+                    ).orEmpty().toList().isEmpty()
+                )
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = consumer
+                    ).orEmpty().toList().isEmpty()
+                )
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test

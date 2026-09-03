@@ -2771,3 +2771,45 @@ the same four physical graph workers. This should improve load balance without r
 and move startup tail latency in the wrong direction. The K=64 regression is fixed execution-path
 overhead rather than fixture-family load imbalance; the next attempt must avoid imposing graph and
 segment scheduling on retained-index micro-workloads.
+
+### 2026-09-03 - Attempt 089: Serialize scoped graph lookups while retaining one cold intra-graph build
+
+**Hypothesis:** graphId-routed and request-selected graph sets pay outer graph-task scheduling even
+after each mapped graph has a retained string index and only microseconds of lookup work remains.
+Walk explicitly scoped sources in deterministic order, but pass a storage marker that permits the
+selected graph's first raw scan to use all segment workers and retains the resulting index. The
+unscoped global path keeps the existing additive graph/segment plan.
+
+**Evidence:**
+
+- Base is remote main `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; candidate is Attempt 087 plus
+  this isolated scoped-path change. Three paired runs under
+  `/tmp/pr113-attempt089g-main-window/` use the fixture-JAR-derived 64 persisted graphs, the complete
+  1,137-query routing oracle, 8 GiB heap, and four active CPUs. Every cold, warm, and
+  startup-prepared fork passes the comparator with exact row, order, digest, graph identity, and
+  response-size parity.
+- Exact head `e53a747a833a5930e761293577be530c61e7fb3f` previously failed the routing gate: cold K=64
+  P50 was `0.807 -> 3.027 ms`, warm P50 `0.280 -> 0.584 ms`, and startup-prepared P95
+  `4.975 -> 8.426 ms`. With this change, the three paired K=64 observations are cold P50
+  `0.320/0.313/0.312 -> 0.288/0.268/0.394 ms`, warm P50
+  `0.164/0.199/0.175 -> 0.186/0.111/0.122 ms`, and startup-prepared P95
+  `2.146/2.131/2.444 -> 1.389/1.469/1.396 ms`; all remain inside the required regression bound.
+- The rebuilt final JAR was independently replayed under
+  `/tmp/pr113-attempt089-final-routing-cpu4/` with `-XX:ActiveProcessorCount=4`. All three states
+  pass again. Cold K=64 P50/P95 is `0.320/2.356 -> 0.292/1.767 ms`; warm is
+  `0.164/0.241 -> 0.166/0.253 ms`; startup-prepared is
+  `0.332/2.146 -> 0.304/1.486 ms`.
+- Lifecycle evidence is exact: cold performs 64 parallel raw scans, then 1,979 retained-index
+  lookups across all 64 graphs with peak scan concurrency four; warm and startup-prepared perform
+  zero raw scans and 2,043 retained-index lookups across all 64 graphs. Request-selected cases from
+  `/api/cypher/graphs` carry an explicit scope bit, so a query without a textual graphId predicate
+  receives the same execution policy.
+- Deterministic synthetic tests are used only for correctness and path validation: they assert
+  that textual graphId and externally selected graph sets serialize outer graph access, that the
+  consumer permits intra-graph parallelism, and that a mapped graph builds once then reuses the
+  retained index. The complete core, Cypher, WebGraph, and Explore tests, all four detekt tasks,
+  and JMH assembly pass.
+
+**Conclusion:** keep. This removes the graph-routing regression without changing the unscoped
+global-wide execution path. Exact pushed-head graph-routing, method-compatibility, and global-wide
+CI remain mandatory before resolving their review threads or merging.

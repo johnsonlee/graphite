@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
@@ -863,6 +864,18 @@ internal class MappedWebGraphBackedGraph(
             callSiteStringLookupEntryCount.incrementAndGet()
             if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
                 serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
+            }
+            if (workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer) {
+                retainPersistedCallSiteStringIndex.set(true)
+                val preferredIndex = callSiteStringIndex ?: callSiteParallelScanCount.get()
+                    .takeIf { count -> count > 0L }
+                    ?.let { loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer) }
+                preferredIndex?.let { index ->
+                    callSiteStringIndexLookupCount.incrementAndGet()
+                    return index.matchingNodeIds(predicates, workConsumer, limit)
+                        .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                        .map(type::cast)
+                }
             }
             val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
             if (exactMatches?.all(IntArray::isEmpty) == true) return emptySequence()

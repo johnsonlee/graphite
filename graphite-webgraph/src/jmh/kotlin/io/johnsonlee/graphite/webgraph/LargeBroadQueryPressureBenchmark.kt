@@ -241,7 +241,11 @@ open class LargeBroadQueryPressureBenchmark {
             checkNotNull(sourcesById[graphId]) { "Requested graph is not loaded: $graphId" }
         } ?: sources
         val task = queryExecutor.submit(Callable {
-            CrossGraphCypherExecutor(executionSources, context).execute(case.query, case.parameters)
+            CrossGraphCypherExecutor(
+                executionSources,
+                context,
+                graphSourceScopeApplied = case.requestGraphIds != null
+            ).execute(case.query, case.parameters)
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)

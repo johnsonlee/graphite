@@ -127,6 +127,11 @@ fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 /** Requests a bounded serial lookup to prefer raw storage so it can stop as soon as LIMIT is full. */
 fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
 
+/** Permits one parallel raw build, then requests retained string-index lookups without segment fanout. */
+fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer :
+    SerialGraphWorkBatchConsumer,
+    ParallelGraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()
