@@ -51,36 +51,33 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         stringId: Int,
         workConsumer: GraphWorkConsumer?
     ): Boolean {
-        if (propertyIndex !in propertyStringIds.indices) return false
+        val propertyValues = propertyStringIds.getOrNull(propertyIndex) ?: return false
         if (!validatePropertyStringIds(propertyIndex, workConsumer)) {
             // A corrupt optional membership summary must not prune a real row. The authoritative
             // raw projection will perform the full property/value comparison instead.
             return true
         }
-        return binarySearch(propertyStringIds[propertyIndex], stringId)
+        return binarySearch(propertyValues, stringId)
     }
 
     private fun validatePropertyStringIds(propertyIndex: Int, workConsumer: GraphWorkConsumer?): Boolean {
-        when (propertyStringValidationStates.get(propertyIndex)) {
-            PROPERTY_STRING_IDS_VALID -> return true
-            PROPERTY_STRING_IDS_INVALID -> return false
-        }
+        val cachedState = propertyStringValidationStates.get(propertyIndex)
+        if (cachedState != PROPERTY_STRING_IDS_UNVALIDATED) return cachedState == PROPERTY_STRING_IDS_VALID
         return synchronized(propertyStringIds[propertyIndex]) {
-            when (propertyStringValidationStates.get(propertyIndex)) {
-                PROPERTY_STRING_IDS_VALID -> true
-                PROPERTY_STRING_IDS_INVALID -> false
-                PROPERTY_STRING_IDS_UNVALIDATED -> validatePropertyStringIds(
-                        propertyStringIds[propertyIndex],
-                        stringCount,
-                        propertyStringChecksums[propertyIndex],
-                        workConsumer
-                    ).also { valid ->
-                        propertyStringValidationStates.set(
-                            propertyIndex,
-                            if (valid) PROPERTY_STRING_IDS_VALID else PROPERTY_STRING_IDS_INVALID
-                        )
-                    }
-                else -> error("Unexpected property string validation state")
+            val synchronizedState = propertyStringValidationStates.get(propertyIndex)
+            if (synchronizedState != PROPERTY_STRING_IDS_UNVALIDATED) {
+                return@synchronized synchronizedState == PROPERTY_STRING_IDS_VALID
+            }
+            validatePropertyStringIds(
+                propertyStringIds[propertyIndex],
+                stringCount,
+                propertyStringChecksums[propertyIndex],
+                workConsumer
+            ).also { valid ->
+                propertyStringValidationStates.set(
+                    propertyIndex,
+                    if (valid) PROPERTY_STRING_IDS_VALID else PROPERTY_STRING_IDS_INVALID
+                )
             }
         }
     }

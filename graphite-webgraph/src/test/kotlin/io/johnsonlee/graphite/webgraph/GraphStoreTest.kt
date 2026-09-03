@@ -363,6 +363,19 @@ class GraphStoreTest {
                         workConsumer = split
                     )?.map { row -> row.values }
                 )
+                repeat(2) {
+                    assertEquals(
+                        listOf(listOf("example.TargetCaller")),
+                        loaded.distinctStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            projectedProperties = listOf("caller_class"),
+                            limit = 1,
+                            selectedValues = setOf(listOf("example.TargetCaller")),
+                            workConsumer = split
+                        )?.map { row -> row.values }
+                    )
+                }
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 val chargedBatches = mutableListOf<Long>()
                 val checksumRejection = IllegalStateException("posting checksum slice rejected")
@@ -558,17 +571,19 @@ class GraphStoreTest {
                 (corruptPropertyIds[firstPropertyIdByte].toInt() xor 1).toByte()
             Files.write(indexFile, corruptPropertyIds)
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertEquals(
-                    listOf(listOf("example.TargetCaller")),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf("caller_class"),
-                        limit = 1,
-                        selectedValues = setOf(listOf("example.TargetCaller")),
-                        workConsumer = split
-                    )?.map { row -> row.values }
-                )
+                repeat(2) {
+                    assertEquals(
+                        listOf(listOf("example.TargetCaller")),
+                        loaded.distinctStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(predicate),
+                            projectedProperties = listOf("caller_class"),
+                            limit = 1,
+                            selectedValues = setOf(listOf("example.TargetCaller")),
+                            workConsumer = split
+                        )?.map { row -> row.values }
+                    )
+                }
                 // Invalid optional membership data is ignored conservatively; exact raw
                 // projection remains authoritative and the full sidecar stays unloaded.
                 assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
@@ -1356,7 +1371,7 @@ class GraphStoreTest {
     fun `zero hit query reuses a bounded index and repairs legacy sidecars on graph close`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
-            repeat(4_096) { nodeId ->
+            repeat(4_095) { nodeId ->
                 addNode(
                     CallSiteNode(
                         NodeId(nodeId),
@@ -1377,30 +1392,43 @@ class GraphStoreTest {
         """.trimIndent()
         val dir = Files.createTempDirectory("webgraph-zero-hit-callsite-repair")
         val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
         try {
-            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            System.clearProperty(property)
             GraphStore.save(graph, dir)
-            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
-            val prefilterFile = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
-            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            // Forty sources select the balanced graph/segment planner; 4,095 nodes sit just below
+            // the parallel raw-scan threshold, forcing the query-built structural index lifecycle.
+            val loadedGraphs = List(40) { GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph }
             try {
-                val executor = CrossGraphCypherExecutor(listOf(CypherGraph("legacy", loaded)))
+                val executor = CrossGraphCypherExecutor(
+                    loadedGraphs.mapIndexed { index, loaded -> CypherGraph("legacy-$index", loaded) }
+                )
                 assertTrue(executor.execute(query).rows.isEmpty())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                loadedGraphs.forEach { loaded ->
+                    assertTrue(loaded.isCallSiteStringIndexInitialized())
+                    assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                }
                 val retainedAfterFirstQuery = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
                 assertTrue(retainedAfterFirstQuery > retainedBefore)
-                assertFalse(Files.exists(indexFile))
-                assertFalse(Files.exists(prefilterFile))
+                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
+                val indexLookupsAfterFirst = loadedGraphs.map { loaded ->
+                    loaded.callSiteStringProjectionLookupCount() + loaded.callSiteStringIndexLookupCount()
+                }
 
                 assertTrue(executor.execute(query).rows.isEmpty())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(retainedAfterFirstQuery, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+                loadedGraphs.forEachIndexed { index, loaded ->
+                    assertTrue(loaded.isCallSiteStringIndexInitialized())
+                    val indexLookups = loaded.callSiteStringProjectionLookupCount() +
+                        loaded.callSiteStringIndexLookupCount()
+                    assertTrue(indexLookups > indexLookupsAfterFirst[index])
+                }
             } finally {
-                loaded.close()
+                loadedGraphs.forEach(MappedWebGraphBackedGraph::close)
             }
-            assertTrue(Files.isRegularFile(indexFile))
-            assertTrue(Files.isRegularFile(prefilterFile))
+            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { repaired ->
@@ -1410,6 +1438,7 @@ class GraphStoreTest {
             }
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
         } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
         }
     }
