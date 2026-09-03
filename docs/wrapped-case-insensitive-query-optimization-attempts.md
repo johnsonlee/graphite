@@ -2407,3 +2407,35 @@ retaining the same source ordering, LIMIT, work accounting, and later-graph fano
 **Conclusion:** reject and revert. Keep the allocation-bounded raw projection for transformed
 leading rows. The next experiment must target work before or inside the storage scan rather than
 replacing the projection with full node materialization.
+
+### 2026-09-03 - Attempt 077: Stop later segments when the first ordered range fills LIMIT
+
+**Hypothesis:** a split raw scan currently waits for every segment even when segment zero already
+contains the first 200 source-ordered matches. Signal later segments to stop as soon as that leading
+range fills LIMIT, preserving the exact ordered prefix while avoiding work whose rows cannot be
+returned.
+
+**Evidence:**
+
+- Base: exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate: an isolated
+  early-stop snapshot; the rejected production and test changes are not retained. Dataset and
+  oracle: the same 64 pinned-JAR persisted graphs used by Attempt 076. Three four-CPU, 8 GiB
+  candidate runs are under `/tmp/pr113-attempt077-ordered-segment-stop/` and the paired base runs
+  are under `/tmp/pr113-attempt076-control.YmW6XG/results/`.
+- All three candidate runs completed 34/34 queries with exact row-count, ordered-digest, response,
+  and provenance parity. A deterministic storage test also proved that a match at the beginning of
+  the first ordered range stops later work and leaves no active worker.
+- The change does not reach the hosted blocker. `localized-early` still charged exactly 80,173 work
+  units because its first equal-sized segment contains fewer than 200 matches; latency was
+  `8.935/8.611/9.970 ms` versus base `9.286/9.471/18.289 ms`, an overlapping range rather than a
+  deterministic fix. `localized-middle` did trigger the optimization and fell from 112,089 to
+  73,670 work units, measuring `7.690/4.754/8.123 ms` versus `17.754/13.007/13.411 ms`.
+- Overall P50 was `3.010/2.896/3.075 ms` on base and `3.046/3.165/2.925 ms` on candidate; P95 was
+  `48.603/48.377/45.782 ms` and `49.454/48.313/49.455 ms`. Process CPU was
+  `1.664-1.803 s` on base and `1.700-1.782 s` on candidate. Peak heap remained near 3.82 GB and
+  peak RSS near 4.26-4.33 GB. The same-head comparator therefore found no stable aggregate gain.
+
+**Conclusion:** reject and revert. Ordered early cancellation is correct and helps one distribution,
+but the equal segment boundary prevents it from reducing the failing localized-early case and the
+aggregate evidence is neutral. The next experiment routes only long selective transformed terms to
+the persisted exact index while leaving short dense terms on the bounded raw path.
