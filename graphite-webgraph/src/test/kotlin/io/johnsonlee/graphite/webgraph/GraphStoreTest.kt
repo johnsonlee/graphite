@@ -296,6 +296,171 @@ class GraphStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
+    fun `split raw scans reuse exact matches from the existing persisted index`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { nodeId ->
+                val callerClass = if (nodeId == 0) {
+                    "example.TargetCaller"
+                } else {
+                    "example.OtherCaller$nodeId"
+                }
+                val callerName = if (nodeId == 1) "targetOnlyInCallerName" else "call$nodeId"
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor(callerClass), callerName, emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            CALLER_CLASS_PROPERTY,
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val split = object : SplitGraphWorkBatchConsumer {
+            override val segmentWorkerCount: Int = 1
+            override fun consume(workUnits: Long) = Unit
+        }
+        val dir = Files.createTempDirectory("webgraph-existing-callsite-index-split")
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            assertTrue(Files.isRegularFile(indexFile))
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = split
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        workConsumer = split
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        selectedValues = setOf(listOf("example.TargetCaller")),
+                        workConsumer = split
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        // The value exists in the dictionary but not in caller_class postings.
+                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
+                        workConsumer = split
+                    )
+                )
+                assertEquals(
+                    listOf(listOf(null)),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf("graphId"),
+                        limit = 3,
+                        selectedValues = linkedSetOf(emptyList(), listOf("invalid"), listOf(null)),
+                        workConsumer = SerialGraphWorkBatchConsumer { }
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    listOf(listOf(null)),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf("graphId"),
+                        limit = 1,
+                        selectedValues = setOf(listOf(null)),
+                        workConsumer = SerialGraphWorkBatchConsumer { }
+                    )?.map { row -> row.values }
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(expected = "definitely-not-present")),
+                        limit = 1,
+                        workConsumer = split
+                    ).orEmpty().none()
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(property = CALLEE_NAME_PROPERTY)),
+                        limit = 1,
+                        workConsumer = split
+                    ).orEmpty().none()
+                )
+            }
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { rejected ->
+                val rejection = IllegalStateException("persisted index work rejected")
+                val failure = assertFailsWith<IllegalStateException> {
+                    rejected.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = object : SplitGraphWorkBatchConsumer {
+                            override val segmentWorkerCount: Int = 1
+                            override fun consume(workUnits: Long) = throw rejection
+                        }
+                    )?.toList()
+                }
+                assertSame(rejection, failure)
+                assertFalse(rejected.isCallSiteStringIndexInitialized())
+            }
+
+            val originalIndex = Files.readAllBytes(indexFile)
+            val corruptIndex = originalIndex.copyOf()
+            corruptIndex[corruptIndex.size / 2] = (corruptIndex[corruptIndex.size / 2].toInt() xor 1).toByte()
+            Files.write(indexFile, corruptIndex)
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = split
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `dense mapped matches scan ordered prefix waves and corrupt counts fall back`() {
         val returnType = TypeDescriptor("void")
         val firstMatch = 11_000
