@@ -3227,3 +3227,39 @@ Give a balanced K=64 cold set the existing segment-split consumer so worker budg
 **Conclusion:** keep pending exact hosted confirmation. This removes the observed 4.5-second cold
 serialization without changing selected-graph isolation, result order, lookup accounting, memory
 admission, or the additive graph-plus-segment parallelism budget.
+
+### 2026-09-03 - Attempt 105: Parallelize prepared wide selected sets
+
+**Hypothesis:** a retained index makes one graph lookup cheap, but does not make 64 independent
+graph lookups free. For a balanced wide selected set, keep the existing NCPU split even after every
+index is prepared: half of the budget schedules graphs and half remains available to storage
+segments. Smaller selected sets retain the serial prepared-index policy so task overhead does not
+regress their micro lookups.
+
+**Evidence:**
+
+- Exact hosted head `5aa60556fba5d99cc6ce5aec754cb5ff7bb021a7` established the failure before this
+  change. All six routing correctness manifests have SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`, but prepared K=64
+  graph-set P50/P95 was `4.293/17.659 ms` cold, `1.663/1.917 ms` warm, and
+  `5.315/14.860 ms` startup-prepared. Instrumentation reported zero graph workers for candidate
+  prepared lookups, directly confirming serialization.
+- Local fixture-JAR screens initially looked promising, but exact hosted head
+  `717de5c3904c676624edb4ea48fed89bd378367c` rejects the result. Instrumentation proves the
+  intended plan really ran (`availableProcessors=4`, graph workers and peak `2`, segment workers
+  and peak `2`), while K=64 still regresses in all three states: cold P50/P95
+  `0.843/3.047 -> 5.504/13.808 ms`, warm `0.561/0.919 -> 2.541/4.220 ms`, and
+  startup-prepared `1.493/3.595 -> 4.080/13.443 ms`.
+- The exact hosted run completes all 1,137 cases in every state with no timeout or failure; all six
+  correctness files retain the same SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`. Selected-source and
+  non-target checks also pass. The failure is therefore scheduling cost, not a semantic or routing
+  error: roughly 63 tiny per-graph futures cost more than the prepared index lookups they wrap.
+- Global-wide still clears the 5x aggregate and wrapped-shape floors in all three pairs, but the
+  dense non-DISTINCT micro row repeats a `3.019 -> 4.642 ms` regression in all three independent
+  pairs. That row accesses only the leading graph, so this attempt also fails its existing
+  regression guard despite lower aggregate CPU, heap, and RSS.
+
+**Conclusion:** reject and revert. Per-graph fanout is the wrong granularity for prepared indexes;
+the next attempt must batch contiguous graphs per worker instead of submitting one future per graph.
+No production or test code from this experiment is retained.
