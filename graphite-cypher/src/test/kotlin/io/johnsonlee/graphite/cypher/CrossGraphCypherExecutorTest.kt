@@ -360,7 +360,11 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `startup prepared wide selected graph set keeps segmented storage scans`() {
+    fun `startup prepared wide selected graph set reuses fixed graph workers`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64, graphScoped = true)
+        val batchWorkers = minOf(plannedWorkers, 63)
+        val firstParallelBatch = CountDownLatch(batchWorkers)
+        val batchStarts = (1..batchWorkers).toSet()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val persistentCapabilityChecks = AtomicInteger()
@@ -404,6 +408,13 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     return try {
+                        if (graphIndex in batchStarts) {
+                            firstParallelBatch.countDown()
+                            check(firstParallelBatch.await(5, TimeUnit.SECONDS)) {
+                                "planned $batchWorkers graph batches but only " +
+                                    "${batchWorkers - firstParallelBatch.count} entered"
+                            }
+                        }
                         workConsumer.consume()
                         emptySequence()
                     } finally {
@@ -426,12 +437,11 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
-        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(batchWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
-        assertEquals(0, persistentCapabilityChecks.get())
+        assertEquals(1, persistentCapabilityChecks.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
-                resolveDirectStringParallelismPlan().segmentWorkerCount
+            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
         })
     }
 

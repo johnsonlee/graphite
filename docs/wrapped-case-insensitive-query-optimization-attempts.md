@@ -3354,9 +3354,14 @@ the unscoped global-wide graph-worker policy is unchanged.
   source-complete access, no redundant prepared-capability probes, and no leaked work. It now also
   requires every K=64 storage lookup to receive the balanced split consumer and its configured
   segment-worker budget.
+- A same-machine real-64 cold comparison rejects the change. K=64 candidate literal/parameter
+  zero-hit remains `5.064/0.950 ms` versus main's `0.789/0.183 ms`, while targeted remains
+  `3.284/1.241 ms` versus `2.200/0.220 ms`. The split consumer also makes four-predicate retained
+  index lookups schedule tiny range tasks; this is the wrong concurrency level for prepared data.
 
-**Conclusion:** pending exact real-64 validation. Keep only if selected K=64 no longer regresses and
-the unscoped global-wide 5x measurements and correctness gates remain intact.
+**Conclusion:** reject and revert. Prepared selected sets need graph concurrency, not segment
+concurrency inside each already-small retained lookup. Attempt 111 replaces this with fixed graph
+workers and restores serial storage for the scoped path.
 
 ### 2026-09-03 - Attempt 109: Skip unused DISTINCT prepared probes
 
@@ -3406,3 +3411,37 @@ and raw segmented paths unchanged when no index is retained.
 **Conclusion:** reject and revert. The retained index was already reached cheaply enough after
 prefilter state was prepared; moving this check does not address the per-graph scheduling cost. No
 production or test code from this experiment is retained.
+
+### 2026-09-03 - Attempt 111: Batch prepared selected sets with fixed graph workers
+
+**Hypothesis:** selected K=64 retained-index lookups are individually too small for segment tasks or
+one Future per graph, but their aggregate work can use the CPU efficiently. Reuse the fixed bounded
+graph-worker queue from Attempt 106, allocate up to all available CPUs to graph workers for this
+scoped prepared path, and keep every graph's storage lookup serial. The leading graph remains
+synchronous for source-order `LIMIT` early return. Cold selected sets and unscoped global-wide
+queries retain their existing additive NCPU split.
+
+**Evidence:**
+
+- Base revision is Attempt 110; candidate exact hosted evidence is pending. Both use the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- Attempt 105 proved that submitting one Future per prepared graph is too expensive; Attempt 106
+  proved that a fixed worker queue removes that allocation/scheduling pattern for global-wide work.
+  This attempt reuses the same tested primitive instead of adding another executor or persisted
+  format.
+- The prepared selected-set test requires exactly the graph-scoped worker budget to run
+  concurrently, all 64 sources to be visited for a zero-hit query, graph-order completion with no
+  leaked workers, zero redundant capability probes, and a serial persisted-storage consumer on
+  every graph. Existing cold selected-set tests continue to require the additive split consumer.
+- A same-machine real-64 cold run confirms the scheduling hypothesis for full-set work. Relative
+  to Attempt 109, K=64 literal zero-hit falls from `5.064` to `0.774 ms` and literal targeted from
+  `3.284` to `1.429 ms`; main is `0.789/2.200 ms`. All 1,137 queries match the oracle, all expected
+  graphs are accessed, and the process completes in `2.205 s` versus main's `5.349 s`.
+- The attempt is not independently mergeable yet: leading-hit rows still allocate all 64 scanner
+  objects before returning. K=64 candidate P50 is therefore about `0.681 ms` versus main's
+  `0.255 ms`, exceeding the absolute regression guard even though P95 improves. The next isolated
+  attempt must defer suffix scanner construction until the leading graph misses `LIMIT`.
+
+**Conclusion:** keep the fixed scoped-worker primitive as the measured K=64 zero/targeted fix, but
+do not merge this head. Attempt 112 must remove leading-hit setup overhead before exact hosted
+validation.
