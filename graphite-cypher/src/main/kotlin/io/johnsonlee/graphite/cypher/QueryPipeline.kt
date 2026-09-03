@@ -2086,6 +2086,7 @@ class QueryPipeline private constructor(
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         val zeroHitSources = BooleanArray(candidateSources.size)
+        val projectedRowsBySource = arrayOfNulls<List<OrderedProjectedRow>>(candidateSources.size)
         fun projectSource(sourceIndex: Int): IndexedProjectedRows {
             val source = candidateSources[sourceIndex]
             val forceSerialStorage = candidateSources.size == 1 &&
@@ -2136,6 +2137,7 @@ class QueryPipeline private constructor(
             )
         }
         fun mergeSource(projected: IndexedProjectedRows): Boolean {
+            projectedRowsBySource[projected.sourceIndex] = projected.rows
             if (projected.rows.isEmpty()) {
                 zeroHitSources[projected.sourceIndex] = true
                 if (candidateSources.size > 1) {
@@ -2184,8 +2186,11 @@ class QueryPipeline private constructor(
             }
         }
         val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
-        val provenanceSourceIndexes = candidateSources.indices.filterNot { sourceIndex ->
-            zeroHitSources[sourceIndex]
+        val knownRowsBySource = projectedRowsBySource.map { projectedRows ->
+            projectedRows?.mapTo(hashSetOf()) { ordered -> visibleRow(ordered.row) }
+        }
+        val provenanceSourceIndexes = candidateSources.indices.filter { sourceIndex ->
+            !zeroHitSources[sourceIndex] && knownRowsBySource[sourceIndex]?.containsAll(selected) != true
         }
         val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
             {

@@ -3601,3 +3601,38 @@ This changes no persisted format and leaves unscoped global-wide fanout on the N
 path removes the sub-millisecond scheduling regression with repeatable gate margin, and the actual
 unscoped target remains above 5x P95 with the required additive NCPU allocation. Exact hosted
 three-pair validation remains required before merge.
+
+### 2026-09-04 - Attempt 117: Reuse projected provenance and reject absent tuples earlier
+
+**Hypothesis:** the remaining wrapped DISTINCT tail repeats work after the leading projection has
+already filled `LIMIT 200`. Its provenance phase rechecks the leading graph and searches each
+selected four-property tuple in output-column order on every suffix graph. Preserve provenance
+already established by the initial projection, and probe each graph's highest-cardinality indexed
+property first so absent tuples short-circuit before the other string-table lookups. This changes no
+persisted format, route, result ordering, or NCPU graph/segment allocation.
+
+**Evidence:**
+
+- Base is exact Attempt 116 head `d9497e1`; candidate is this attempt. Three alternating fresh-JVM
+  pairs use the same 64 persisted graphs generated from the four pinned fixture JARs, an 8 GiB
+  heap, and four active CPUs. All 204 candidate observations match the complete oracle; the target
+  row returns the same 200 rows, digest, and graph provenance in every pair.
+- `global-wide-wrapped-case-insensitive-distinct-dense` falls from `79.167` to `55.184 ms`,
+  `85.345` to `49.353 ms`, and `93.491` to `54.873 ms`, or `1.43x`, `1.73x`, and `1.70x` over
+  Attempt 116. Its charged index lookups fall deterministically from `582,366` to `476,367` in
+  every run because graph zero is no longer searched twice and missing suffix tuples reject on the
+  most selective available property.
+- The deterministic 64-source DISTINCT test proves graph zero supplies the initial rows, only
+  graphs 1 through 63 receive the selected-tuple provenance lookup, and the final row still merges
+  provenance from graphs zero and 63. The mapped selected-tuple test and Cypher detekt pass.
+- Candidate process CPU is `1.716/1.618/1.748 s` versus `1.818/1.822/1.837 s`; peak used heap is
+  `3.71..3.81 GB` and peak RSS is `4.24..4.33 GB`, with no material resource increase. Aggregate
+  P95 versus Attempt 116 is noisy (`1.21x`, `0.97x`, `0.77x`) because unchanged millisecond-scale
+  distribution rows exchange the 33rd order-statistic position. The target DISTINCT improvement is
+  stable, but it does not by itself prove the hosted 5x gate.
+
+**Conclusion:** keep as a measured incremental improvement. The previous hosted result missed the
+wrapped DISTINCT 5x floor narrowly at `4.97x` and `4.74x`; this attempt removes a repeatable
+`1.43x..1.73x` portion of that target row without weakening correctness or resource bounds. Exact
+hosted three-pair evidence remains the hard gate, and this PR must not be merged or tagged without
+an explicit user instruction.

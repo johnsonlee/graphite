@@ -679,7 +679,7 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(2, hit.projectionCalls)
+        assertEquals(1, hit.projectionCalls)
         assertEquals(1, hit.cacheBuilds)
         assertEquals(0, hit.releases)
         assertEquals(1, miss.projectionCalls)
@@ -778,7 +778,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `parallel indexed distinct projection verifies selected rows in every graph`() {
+    fun `parallel indexed distinct projection reuses known rows from every graph`() {
         class SelectedIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
             StringPropertyDisjunctionDistinctProjection,
@@ -815,8 +815,8 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(1, first.selectedLookups)
-        assertEquals(1, second.selectedLookups)
+        assertEquals(0, first.selectedLookups)
+        assertEquals(0, second.selectedLookups)
     }
 
     @Test

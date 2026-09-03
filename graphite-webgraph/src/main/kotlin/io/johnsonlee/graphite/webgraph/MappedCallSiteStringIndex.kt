@@ -871,12 +871,17 @@ internal class MappedCallSiteStringIndex(
         val targetSize = minOf(limit, selectedValues.size)
         val hits = ArrayList<StringPropertyDistinctRow>(targetSize)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val valueLookupOrder = propertyIndexes.indices.sortedByDescending { valueIndex ->
+            propertyIndexes[valueIndex].takeIf { it >= 0 }
+                ?.let { propertyIndex -> properties[propertyIndex].uniqueStringCount }
+                ?: Int.MIN_VALUE
+        }
         try {
             for (values in selectedValues) {
                 if (values.size != propertyIndexes.size) continue
                 val ids = IntArray(values.size)
                 var valid = true
-                for (index in values.indices) {
+                for (index in valueLookupOrder) {
                     val propertyIndex = propertyIndexes[index]
                     val value = values[index]
                     val id = value?.let(stringTable::findId) ?: -1

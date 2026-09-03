@@ -2057,7 +2057,7 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertEquals(setOf(0), initialCalls)
-        assertEquals((0 until graphCount).toSet(), selectedCalls)
+        assertEquals((1 until graphCount).toSet(), selectedCalls)
         assertEquals(0, persistentCapabilityChecks.get())
         assertEquals(resolveDirectStringParallelismPlan().segmentWorkerCount, leadingSegments.get())
         assertEquals(listOf("graph-0", "graph-63"), graphIds(result.rows.single()))
