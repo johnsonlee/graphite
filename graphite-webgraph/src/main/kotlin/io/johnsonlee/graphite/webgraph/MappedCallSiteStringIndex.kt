@@ -363,6 +363,25 @@ internal class MappedCallSiteStringIndex(
         return result
     }
 
+    internal fun exactMatchingStringIds(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?
+    ): List<IntArray>? {
+        if (predicates.any { predicate ->
+                !predicate.canUseLowercaseTrigramPostings() ||
+                    predicate.mode == StringMatchMode.EQUALS ||
+                    predicate.expected.length < MIN_CALL_SITE_TRIGRAM_LENGTH
+            }
+        ) return null
+        return predicates.map { predicate -> matchingStringIds(predicate, workConsumer) ?: return null }
+    }
+
+    internal fun containsPropertyStringId(
+        propertyIndex: Int,
+        stringId: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Boolean = properties.getOrNull(propertyIndex)?.containsStringId(stringId, workConsumer) == true
+
     private fun matchingCandidateStringIds(
         candidates: IntArray,
         runtime: PredicateRuntime,
@@ -741,63 +760,6 @@ internal class MappedCallSiteStringIndex(
         )
     }
 
-    /**
-     * Writes a bounded, checksummed directory over balanced chunks of the trigram postings already
-     * stored in the complete CallSite index. The directory contains no string or posting copy.
-     */
-    @Synchronized
-    internal fun writePersistentTrigramDirectory(output: DataOutput, exactIndexBytes: Long) {
-        checkCallSiteIndexPersistenceInterrupted()
-        val postings = checkNotNull(trigramPostings.takeIf { trigramPostingsInitialized }) {
-            "CallSite trigram postings must be prepared before persistence"
-        }
-        val callSiteCount = properties.firstOrNull()?.postingCount ?: 0
-        val postingsOffset = persistentTrigramPostingsOffset(callSiteCount)
-        require(exactIndexBytes == postingsOffset + postings.size.toLong() * Long.SIZE_BYTES + Long.SIZE_BYTES)
-        val graphContentIdentity = persistedContentIdentity
-        require(graphContentIdentity.size == CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
-        val chunkCount = callSiteTrigramDirectoryChunkCount(postings.size)
-        val chunkSize = callSiteTrigramDirectoryChunkSize(postings.size)
-
-        output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_MAGIC)
-        output.writeInt(CALL_SITE_TRIGRAM_PREFILTER_VERSION)
-        output.writeInt(stringTable.size())
-        output.writeInt(callSiteCount)
-        output.writeInt(postings.size)
-        output.writeInt(chunkCount)
-        output.writeLong(exactIndexBytes)
-        output.writeLong(postingsOffset)
-        output.write(graphContentIdentity)
-        properties.forEach { property -> output.writeInt(property.usedStringIdsChecksum().toInt()) }
-
-        var start = 0
-        while (start < postings.size) {
-            val end = minOf(postings.size, start + chunkSize)
-            val checksum = CRC32()
-            for (index in start until end) {
-                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
-                    checkCallSiteIndexPersistenceInterrupted()
-                }
-                checksum.updateDirectoryLongBigEndian(postings[index])
-            }
-            output.writeInt((postings[end - 1] ushr Int.SIZE_BITS).toInt())
-            output.writeInt(end)
-            output.writeInt(checksum.value.toInt())
-            start = end
-        }
-    }
-
-    private fun persistentTrigramPostingsOffset(callSiteCount: Int): Long = Math.addExact(
-        CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong(),
-        Math.addExact(
-            properties.sumOf { property ->
-                property.uniqueStringCount.toLong() * 2L * Int.SIZE_BYTES +
-                    callSiteCount.toLong() * Int.SIZE_BYTES
-            },
-            stringTable.size().toLong() * Long.SIZE_BYTES
-        )
-    )
-
     internal fun contentIdentity(): ByteArray = persistedContentIdentity.copyOf()
 
     fun distinctProjection(
@@ -1073,15 +1035,6 @@ internal class MappedCallSiteStringIndex(
             updatePersistentIntChecksum(postingNodeIds, checksum)
         }
 
-        fun usedStringIdsChecksum(): Long = CRC32().also { checksum ->
-            usedStringIds.forEachIndexed { index, value ->
-                if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
-                    checkCallSiteIndexPersistenceInterrupted()
-                }
-                checksum.updateDirectoryIntBigEndian(value)
-            }
-        }.value
-
         private fun writePersistentInts(values: IntArray, output: DataOutput) {
             values.forEachIndexed { index, value ->
                 if ((index and CALL_SITE_INDEX_PERSISTENCE_POLL_MASK) == 0) {
@@ -1219,6 +1172,15 @@ internal class MappedCallSiteStringIndex(
             if (row < 0) return null
             val start = if (row == 0) 0 else postingEnds[row - 1]
             return start until postingEnds[row]
+        }
+
+        fun containsStringId(stringId: Int, workConsumer: GraphWorkConsumer?): Boolean {
+            val accounting = BufferedGraphWorkConsumer(workConsumer)
+            return try {
+                findStringRow(stringId, accounting) >= 0
+            } finally {
+                accounting.flush()
+            }
         }
 
         fun postingNodeId(position: Int): Int = postingNodeIds[position]
@@ -2728,18 +2690,6 @@ private fun CRC32.updateLong(value: Long) {
     }
 }
 
-private fun CRC32.updateDirectoryLongBigEndian(value: Long) {
-    repeat(Long.SIZE_BYTES) { byteIndex ->
-        update(((value ushr ((Long.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS)) and 0xffL).toInt())
-    }
-}
-
-private fun CRC32.updateDirectoryIntBigEndian(value: Int) {
-    repeat(Int.SIZE_BYTES) { byteIndex ->
-        update(value ushr ((Int.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS) and 0xff)
-    }
-}
-
 internal const val CALLER_CLASS_PROPERTY = "caller_class"
 internal const val CALLER_NAME_PROPERTY = "caller_name"
 internal const val CALLEE_CLASS_PROPERTY = "callee_class"
@@ -2758,6 +2708,13 @@ internal const val CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES = 32
 internal const val CALL_SITE_STRING_INDEX_HEADER_BYTES =
     4 * Int.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES +
         CALL_SITE_STRING_PROPERTY_COUNT * Int.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
+internal const val CALL_SITE_INDEX_PERSISTENCE_POLL_MASK = 1_023
+
+internal fun checkCallSiteIndexPersistenceInterrupted() {
+    if (Thread.currentThread().isInterrupted) {
+        throw CancellationException("Mapped CallSite index persistence interrupted")
+    }
+}
 private const val CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK = 1_023
 private const val MIN_PARALLEL_CALL_SITE_TRIGRAM_SORT_SIZE = 1 shl 20
 private const val RADIX_BUCKET_COUNT = 1 shl Byte.SIZE_BITS

@@ -66,7 +66,7 @@ jq -e \
    .manifestSha256 == $manifestSha256 and .provenanceSha256 == $provenanceSha256 and
    .receiptSha256 == $receiptSha256' "${MARKER}" >/dev/null
 
-NORMALIZED_PROVENANCE_SHA=$(cut -f1-20 "${PROVENANCE}" | sha256_stream)
+NORMALIZED_PROVENANCE_SHA=$(cut -f1-18 "${PROVENANCE}" | sha256_stream)
 NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next }
   { print $1, $3, $4, $5, $6 }' "${MANIFEST}" | sha256_stream)
 jq -e \

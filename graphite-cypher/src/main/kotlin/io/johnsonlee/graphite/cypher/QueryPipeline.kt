@@ -1642,6 +1642,15 @@ class QueryPipeline private constructor(
         val balanced = usesBalancedStringSplit(candidateSources.size)
         val rawLeadingStorage = balanced && !preferPersistedStorage &&
             nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val rawLeadingProjection = if (rawLeadingStorage) {
+            projectRawLeadingRows(nodeClass, filter, items, columns, limit, candidateSources, tracker)
+        } else {
+            null
+        }
+        if (rawLeadingProjection != null && rawLeadingProjection.size >= limit) {
+            return CypherResult(columns, rawLeadingProjection.take(limit))
+        }
         val parallelStringScan = canExecuteDirectStringDisjunctionInParallel(
             nodeClass,
             variable,
@@ -1652,6 +1661,8 @@ class QueryPipeline private constructor(
         val scopedRetainedStorage = balanced && preferPersistedStorage &&
             nodePredicateFactory == null &&
             hasRetainedStringDisjunction(nodeClass, filter, candidateSources)
+        val leadingRetainedStorage = balanced && nodePredicateFactory == null &&
+            hasRetainedStringDisjunction(nodeClass, filter, candidateSources.take(1))
         val mayBatchPreparedStorage = balanced && nodePredicateFactory == null &&
             (!preferPersistedStorage || parallelStringScan)
         // Retained graph-scoped lookups are cheaper than dispatching graph tasks, so keep their
@@ -1684,7 +1695,6 @@ class QueryPipeline private constructor(
             return CypherResult(columns, rows)
         }
 
-        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val graphParallelism = directStringGraphParallelism(candidateSources.size)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
@@ -1707,11 +1717,7 @@ class QueryPipeline private constructor(
         // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
         if (balanced) {
-            val leadingProjection = if (rawLeadingStorage) {
-                projectRawLeadingRows(nodeClass, filter, items, columns, limit, candidateSources, tracker)
-            } else {
-                null
-            }
+            val leadingProjection = rawLeadingProjection
             if (leadingProjection == null) {
                 val source = candidateSources.first()
                 val nodePredicate = nodePredicateFactory?.invoke(source)
@@ -1722,7 +1728,7 @@ class QueryPipeline private constructor(
                     tracker,
                     limit = if (nodePredicate == null) limit else Int.MAX_VALUE,
                     storageSourceCount = candidateSources.size,
-                    serialStorage = rawLeadingStorage
+                    serialStorage = rawLeadingStorage || leadingRetainedStorage
                 ).let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
                     val candidate = nodeValue(source, node)

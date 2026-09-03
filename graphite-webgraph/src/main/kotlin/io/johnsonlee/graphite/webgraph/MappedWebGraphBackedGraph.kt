@@ -202,13 +202,6 @@ internal class MappedWebGraphBackedGraph(
     private val callSiteStringIndexLock = Any()
     private val callSiteStringIndexIdentityFile =
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
-    private val callSiteTrigramPrefilterFile =
-        callSiteStringIndexFile.resolveSibling(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
-    private val callSiteTrigramPrefilterLock = Any()
-    @Volatile
-    private var callSiteTrigramPrefilter: MappedCallSiteTrigramPrefilter? = null
-    @Volatile
-    private var callSiteTrigramPrefilterUnavailable = false
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
     private var callSiteStringIndexLoadedFromPersistence = false
@@ -354,12 +347,6 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (persistedTrigramPrefilterCannotMatch(predicates, workConsumer)) {
-            return StringPropertyDisjunctionAggregate(
-                count = 0,
-                distinctValues = if (distinctProperty == null) null else emptySet()
-            )
-        }
         if (shouldPreflightCallSitePredicates(predicates) &&
             callSitePredicatesCannotMatch(predicates, workConsumer)
         ) {
@@ -391,7 +378,19 @@ internal class MappedWebGraphBackedGraph(
             return null
         }
         callSiteStringLookupEntryCount.incrementAndGet()
-        val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
+        retainPersistedCallSiteStringIndexForSplit(workConsumer)
+        val retainedIndex = callSiteStringIndex ?: if (
+            workConsumer is SerialGraphWorkBatchConsumer || workConsumer is SplitGraphWorkBatchConsumer
+        ) {
+            loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
+        } else {
+            null
+        }
+        val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
+            retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
+        } else {
+            null
+        }
         if (exactMatches?.all(IntArray::isEmpty) == true) return emptyList()
         if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
             parallelRawDistinctCallSiteStringProjection(
@@ -401,11 +400,10 @@ internal class MappedWebGraphBackedGraph(
                 selectedValues,
                 workConsumer,
                 exactMatches,
-                callSiteTrigramPrefilter
+                retainedIndex
             )?.let { return it }
         }
-        retainPersistedCallSiteStringIndexForSplit(workConsumer)
-        callSiteStringIndex?.let { index ->
+        retainedIndex?.let { index ->
             callSiteStringProjectionLookupCount.incrementAndGet()
             return index.distinctProjection(
                 predicates,
@@ -414,18 +412,6 @@ internal class MappedWebGraphBackedGraph(
                 selectedValues,
                 workConsumer
             )
-        }
-        if (workConsumer is SerialGraphWorkBatchConsumer || workConsumer is SplitGraphWorkBatchConsumer) {
-            loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)?.let { index ->
-                callSiteStringProjectionLookupCount.incrementAndGet()
-                return index.distinctProjection(
-                    predicates,
-                    projectedProperties,
-                    limit,
-                    selectedValues,
-                    workConsumer
-                )
-            }
         }
         if (serialCallSitePredicatesCannotMatch(predicates, workConsumer)) {
             return emptyList()
@@ -489,7 +475,7 @@ internal class MappedWebGraphBackedGraph(
         selectedValues: Set<List<String?>>?,
         workConsumer: SplitGraphWorkBatchConsumer,
         exactMatchingStringIds: List<IntArray>? = null,
-        propertyStringFilter: MappedCallSiteTrigramPrefilter? = null
+        propertyStringFilter: MappedCallSiteStringIndex? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
@@ -752,7 +738,7 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (workConsumer is PreferredRawGraphWorkBatchConsumer && callSiteStringIndex == null) {
+        if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
             rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)?.let { return it }
         }
         val index = callSiteStringIndex ?: return null
@@ -881,7 +867,17 @@ internal class MappedWebGraphBackedGraph(
                         .map(type::cast)
                 }
             }
-            val exactMatches = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
+            retainPersistedCallSiteStringIndexForSplit(workConsumer)
+            val retainedIndex = callSiteStringIndex ?: if (workConsumer is SplitGraphWorkBatchConsumer) {
+                loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)
+            } else {
+                null
+            }
+            val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
+                retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
+            } else {
+                null
+            }
             if (exactMatches?.all(IntArray::isEmpty) == true) return emptySequence()
             if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
                 parallelRawCallSiteStringDisjunction<T>(
@@ -890,28 +886,14 @@ internal class MappedWebGraphBackedGraph(
                     limit,
                     workConsumer,
                     exactMatches,
-                    callSiteTrigramPrefilter?.exactMatchesCanFillLimit(
-                        predicates,
-                        exactMatches,
-                        limit,
-                        workConsumer
-                    ) == true
+                    false
                 )?.let { return it }
             }
-            retainPersistedCallSiteStringIndexForSplit(workConsumer)
-            callSiteStringIndex?.let { index ->
+            retainedIndex?.let { index ->
                 callSiteStringIndexLookupCount.incrementAndGet()
                 return index.matchingNodeIds(predicates, workConsumer, limit)
                     .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
                     .map(type::cast)
-            }
-            if (workConsumer is SplitGraphWorkBatchConsumer) {
-                loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)?.let { index ->
-                    callSiteStringIndexLookupCount.incrementAndGet()
-                    return index.matchingNodeIds(predicates, workConsumer, limit)
-                        .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
-                        .map(type::cast)
-                }
             }
             parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
             serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
@@ -1604,49 +1586,6 @@ internal class MappedWebGraphBackedGraph(
                     predicate.expected.length >= MIN_CALL_SITE_STRING_PREFLIGHT_TERM_LENGTH
             }
 
-    private fun persistedTrigramPrefilterCannotMatch(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: GraphWorkConsumer?
-    ): Boolean = persistedTrigramPrefilterExactMatches(predicates, workConsumer)
-        ?.all(IntArray::isEmpty) == true
-
-    private fun persistedTrigramPrefilterExactMatches(
-        predicates: List<StringPropertyPredicate>,
-        workConsumer: GraphWorkConsumer?
-    ): List<IntArray>? {
-        if (callSiteStringIndex != null || workConsumer !is SplitGraphWorkBatchConsumer || predicates.isEmpty()) {
-            return null
-        }
-        callSiteTrigramPrefilter?.let { prefilter ->
-            return prefilter.exactMatchingStringIds(predicates, workConsumer)
-        }
-        if (callSiteTrigramPrefilterUnavailable) return null
-        val prefilter = synchronized(callSiteTrigramPrefilterLock) {
-            callSiteTrigramPrefilter ?: run {
-                if (callSiteTrigramPrefilterUnavailable) return@synchronized null
-                val identity = runCatching { Files.readAllBytes(callSiteStringIndexIdentityFile) }.getOrNull()
-                val loaded = identity?.let { expected ->
-                    MappedCallSiteTrigramPrefilter.load(
-                        callSiteTrigramPrefilterFile,
-                        callSiteStringIndexFile,
-                        stringTable.size(),
-                        nodeTypeIndex.count(CallSiteNode::class.java).toInt(),
-                        expected,
-                        stringTable,
-                        workConsumer
-                    )
-                }
-                if (loaded == null) {
-                    callSiteTrigramPrefilterUnavailable = true
-                } else {
-                    callSiteTrigramPrefilter = loaded
-                }
-                loaded
-            }
-        } ?: return null
-        return prefilter.exactMatchingStringIds(predicates, workConsumer)
-    }
-
     @Suppress("ReturnCount")
     override fun prefersSerialStringPropertyDisjunction(
         type: Class<out Node>,
@@ -1950,10 +1889,6 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun clearStringPropertyIndexes() {
         closeCallSiteStringIndex(force = true)
-        synchronized(callSiteTrigramPrefilterLock) {
-            callSiteTrigramPrefilter = null
-            callSiteTrigramPrefilterUnavailable = false
-        }
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
@@ -2032,8 +1967,6 @@ internal class MappedWebGraphBackedGraph(
     internal fun isCallSiteStringIndexLoadedFromPersistence(): Boolean =
         callSiteStringIndexLoadedFromPersistence
 
-    internal fun isCallSiteTrigramPrefilterInitialized(): Boolean = callSiteTrigramPrefilter != null
-
     /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.
      * A denied shared-memory reservation is a normal fallback and leaves raw scans available.
@@ -2068,7 +2001,7 @@ internal class MappedWebGraphBackedGraph(
             checkCallSiteIndexPersistenceInterrupted()
             replaceAtomically(temporary, callSiteStringIndexFile)
             temporary = null
-            persistCallSiteTrigramPrefilter(index, callSiteStringIndexFile, callSiteTrigramPrefilterFile)
+            true
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {

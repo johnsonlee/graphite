@@ -527,7 +527,6 @@ internal data class NodeIndexData(
  * - `graph.resources`          -- persisted text resources, including an explicit empty store when none exist
  * - `graph.callsite-string-content.identity` -- CallSite fields + node offsets identity for index ownership
  * - `graph.callsite-string-index` -- optional persisted CSR/trigram search index for mapped CallSites
- * - `graph.callsite-trigram-prefilter` -- optional mapped trigram range/checksum directory
  */
 @Suppress("LargeClass", "TooManyFunctions")
 object GraphStore {
@@ -544,7 +543,6 @@ object GraphStore {
     private const val NODE_DATA_FILE = "graph.nodedata"
     private const val METADATA_FILE = "graph.metadata"
     internal const val CALL_SITE_STRING_INDEX_FILE = "graph.callsite-string-index"
-    internal const val CALL_SITE_TRIGRAM_PREFILTER_FILE = "graph.callsite-trigram-prefilter"
     private const val NOT_A_DIRECTORY_PREFIX = "Not a directory:"
     internal const val MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY =
         "graphite.webgraph.prepareCallSiteStringIndexOnLoad"
@@ -584,7 +582,6 @@ object GraphStore {
     ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
-        Files.deleteIfExists(dir.resolve(CALL_SITE_TRIGRAM_PREFILTER_FILE))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0

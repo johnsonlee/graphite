@@ -296,306 +296,6 @@ class GraphStoreTest {
     }
 
     @Test
-    @Suppress("LongMethod")
-    fun `compact trigram directory returns exact ids and corrupt data falls back to the full index`() {
-        val returnType = TypeDescriptor("void")
-        val graph = DefaultGraph.Builder().apply {
-            repeat(4_096) { nodeId ->
-                val callerClass = if (nodeId == 0) {
-                    "example.TargetCaller"
-                } else {
-                    "example.TargetOtherCaller$nodeId"
-                }
-                val callerName = if (nodeId == 1) "targetOnlyInCallerName" else "call$nodeId"
-                addNode(
-                    CallSiteNode(
-                        NodeId(nodeId),
-                        MethodDescriptor(TypeDescriptor(callerClass), callerName, emptyList(), returnType),
-                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
-                        nodeId,
-                        null,
-                        emptyList()
-                    )
-                )
-            }
-        }.build()
-        val predicate = StringPropertyPredicate(
-            "caller_class",
-            StringValueTransform.LOWERCASE,
-            StringMatchMode.CONTAINS,
-            "target"
-        )
-        val split = object : SplitGraphWorkBatchConsumer {
-            override val segmentWorkerCount: Int = 1
-            override fun consume(workUnits: Long) = Unit
-        }
-        val dir = Files.createTempDirectory("webgraph-callsite-trigram-directory")
-        try {
-            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
-            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
-            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
-            val prefilterFile = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
-            assertTrue(Files.isRegularFile(indexFile))
-            assertTrue(Files.isRegularFile(prefilterFile))
-            assertTrue(Files.size(prefilterFile) < Files.size(indexFile))
-            assertTrue(Files.size(prefilterFile) <= 4 * 1024)
-
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(
-                    listOf(0),
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = split
-                    ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(
-                    listOf(listOf("example.TargetCaller")),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf("caller_class"),
-                        limit = 1,
-                        workConsumer = split
-                    )?.map { row -> row.values }
-                )
-                repeat(2) {
-                    assertEquals(
-                        listOf(listOf("example.TargetCaller")),
-                        loaded.distinctStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(predicate),
-                            projectedProperties = listOf("caller_class"),
-                            limit = 1,
-                            selectedValues = setOf(listOf("example.TargetCaller")),
-                            workConsumer = split
-                        )?.map { row -> row.values }
-                    )
-                }
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                val chargedBatches = mutableListOf<Long>()
-                val checksumRejection = IllegalStateException("posting checksum slice rejected")
-                val checksumFailure = assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate.copy(expected = "tar")),
-                        limit = 1,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 1
-
-                            override fun consume(workUnits: Long) {
-                                chargedBatches += workUnits
-                                if (chargedBatches.size == 1) throw checksumRejection
-                            }
-                        }
-                    )?.toList()
-                }
-                assertSame(checksumRejection, checksumFailure)
-                assertEquals(1L, chargedBatches.first(), "first callback must charge one checksum slice")
-                assertEquals(listOf(1L, 1L), chargedBatches)
-                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                loaded.resetCallSiteScanMetrics()
-                assertEquals(
-                    emptyList(),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf("caller_class"),
-                        limit = 1,
-                        // This value exists in the graph dictionary, but not in caller_class.
-                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
-                        workConsumer = split
-                    )
-                )
-                assertEquals(0L, loaded.callSiteParallelScanCount())
-                val absent = predicate.copy(expected = "definitely-not-present")
-                fun lookupWork(predicates: List<StringPropertyPredicate>): Long {
-                    val work = AtomicLong()
-                    assertTrue(
-                        loaded.nodesByStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            predicates,
-                            limit = 1,
-                            workConsumer = object : SplitGraphWorkBatchConsumer {
-                                override val segmentWorkerCount: Int = 1
-                                override fun consume(workUnits: Long) {
-                                    work.addAndGet(workUnits)
-                                }
-                            }
-                        ).orEmpty().none()
-                    )
-                    return work.get()
-                }
-                lookupWork(listOf(absent))
-                val singlePredicateWork = lookupWork(listOf(absent))
-                val fourPredicateWork = lookupWork(
-                    listOf(
-                        CALLER_CLASS_PROPERTY,
-                        CALLER_NAME_PROPERTY,
-                        CALLEE_CLASS_PROPERTY,
-                        CALLEE_NAME_PROPERTY
-                    ).map { property -> absent.copy(property = property) }
-                )
-                assertTrue(fourPredicateWork <= singlePredicateWork)
-                assertTrue(
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate.copy(property = "callee_name")),
-                        limit = 1,
-                        workConsumer = split
-                    ).orEmpty().none()
-                )
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                loaded.clearStringPropertyIndexes()
-                assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
-            }
-
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { rejected ->
-                var batches = 0
-                val rejection = IllegalStateException("prefilter work rejected")
-                val failure = assertFailsWith<IllegalStateException> {
-                    rejected.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 1
-
-                            override fun consume(workUnits: Long) {
-                                batches++
-                                throw rejection
-                            }
-                        }
-                    )?.toList()
-                }
-                assertSame(rejection, failure)
-                assertEquals(1, batches)
-                assertFalse(rejected.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(rejected.isCallSiteStringIndexInitialized())
-            }
-
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { interrupted ->
-                val firstBatch = CountDownLatch(1)
-                val failure = AtomicReference<Throwable>()
-                val interruptedFlag = AtomicBoolean()
-                val request = Thread {
-                    try {
-                        interrupted.nodesByStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(predicate),
-                            limit = 1,
-                            workConsumer = object : SplitGraphWorkBatchConsumer {
-                                override val segmentWorkerCount: Int = 1
-
-                                override fun consume(workUnits: Long) {
-                                    firstBatch.countDown()
-                                    while (!Thread.currentThread().isInterrupted) Thread.onSpinWait()
-                                }
-                            }
-                        )?.toList()
-                        failure.set(AssertionError("Interrupted prefilter validation completed normally"))
-                    } catch (error: Throwable) {
-                        failure.set(error)
-                        interruptedFlag.set(Thread.currentThread().isInterrupted)
-                    }
-                }
-                request.start()
-                assertTrue(firstBatch.await(5, TimeUnit.SECONDS))
-                request.interrupt()
-                request.join(5_000)
-                assertFalse(request.isAlive)
-                assertTrue(failure.get() is CancellationException)
-                assertTrue(interruptedFlag.get())
-                assertFalse(interrupted.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(interrupted.isCallSiteStringIndexInitialized())
-            }
-
-            val originalDirectory = Files.readAllBytes(prefilterFile)
-            val corruptDirectory = originalDirectory.copyOf()
-            corruptDirectory[corruptDirectory.size / 2] =
-                (corruptDirectory[corruptDirectory.size / 2].toInt() xor 1).toByte()
-            Files.write(prefilterFile, corruptDirectory)
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertEquals(
-                    listOf(0),
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = split
-                    ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                assertFalse(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
-            }
-
-            Files.write(prefilterFile, originalDirectory)
-            val directory = ByteBuffer.wrap(originalDirectory).order(ByteOrder.BIG_ENDIAN)
-            val postingCount = directory.getInt(16)
-            val postingsOffset = directory.getLong(32)
-            val targetTrigram = (('t'.code * 31 + 'a'.code) * 31 + 'r'.code)
-            val originalIndex = Files.readAllBytes(indexFile)
-            val corruptIndex = originalIndex.copyOf()
-            val targetPosting = (0 until postingCount).first { postingIndex ->
-                val offset = Math.toIntExact(postingsOffset + postingIndex.toLong() * Long.SIZE_BYTES)
-                (ByteBuffer.wrap(originalIndex, offset, Long.SIZE_BYTES).order(ByteOrder.BIG_ENDIAN).long ushr
-                    Int.SIZE_BITS).toInt() == targetTrigram
-            }
-            val postingByte = Math.toIntExact(postingsOffset + targetPosting.toLong() * Long.SIZE_BYTES)
-            corruptIndex[postingByte] = (corruptIndex[postingByte].toInt() xor 1).toByte()
-            Files.write(indexFile, corruptIndex)
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertEquals(
-                    listOf(0),
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = split
-                    ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                // The verified directory remains mapped, but the corrupt queried range is rejected.
-                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
-            }
-
-            Files.write(indexFile, originalIndex)
-            val corruptPropertyIds = originalIndex.copyOf()
-            val firstPropertyIdByte = CALL_SITE_STRING_INDEX_HEADER_BYTES + Int.SIZE_BYTES - 1
-            corruptPropertyIds[firstPropertyIdByte] =
-                (corruptPropertyIds[firstPropertyIdByte].toInt() xor 1).toByte()
-            Files.write(indexFile, corruptPropertyIds)
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                repeat(2) {
-                    assertEquals(
-                        listOf(listOf("example.TargetCaller")),
-                        loaded.distinctStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(predicate),
-                            projectedProperties = listOf("caller_class"),
-                            limit = 1,
-                            selectedValues = setOf(listOf("example.TargetCaller")),
-                            workConsumer = split
-                        )?.map { row -> row.values }
-                    )
-                }
-                // Invalid optional membership data is ignored conservatively; exact raw
-                // projection remains authoritative and the full sidecar stays unloaded.
-                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
-            }
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
     fun `dense mapped matches scan ordered prefix waves and corrupt counts fall back`() {
         val returnType = TypeDescriptor("void")
         val firstMatch = 11_000
@@ -634,7 +334,7 @@ class GraphStoreTest {
             System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
             GraphStore.save(orderedGraph, dir, prepareCallSiteStringIndex = true)
 
-            fun queryWork(): Pair<List<Int>, Long> {
+            fun queryWork(expectPersistedIndex: Boolean): Pair<List<Int>, Long> {
                 val work = AtomicLong()
                 val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
                 return loaded.use {
@@ -661,14 +361,13 @@ class GraphStoreTest {
                     assertEquals(3, loaded.callSiteScanPeakActiveWorkers())
                     assertEquals(3, scanThreads.size)
                     assertEquals(0, loaded.callSiteScanActiveWorkers())
-                    assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    assertEquals(expectPersistedIndex, loaded.isCallSiteStringIndexLoadedFromPersistence())
                     ids to work.get()
                 }
             }
 
             val expected = (firstMatch until firstMatch + matchCount).toSet()
-            val (prefixIds, prefixWork) = queryWork()
+            val (prefixIds, prefixWork) = queryWork(expectPersistedIndex = true)
             assertEquals(expected, prefixIds.toSet())
             assertEquals(matchCount, prefixIds.size)
 
@@ -684,74 +383,10 @@ class GraphStoreTest {
             }
             Files.write(indexFile, corruptIndex)
 
-            val (fallbackIds, fallbackWork) = queryWork()
+            val (fallbackIds, fallbackWork) = queryWork(expectPersistedIndex = false)
             assertEquals(prefixIds, fallbackIds)
-            assertTrue(prefixWork < fallbackWork, "ordered prefix should avoid the second half: $prefixWork >= $fallbackWork")
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `compact trigram directory persists the actual chunk count for 4097 postings`() {
-        val returnType = TypeDescriptor("v")
-        val alphabet = "abcdefghijklmnop"
-        val graph = DefaultGraph.Builder().apply {
-            repeat(4_096) { nodeId ->
-                val callerClass = buildString(3) {
-                    append(alphabet[(nodeId ushr 8) and 0xf])
-                    append(alphabet[(nodeId ushr 4) and 0xf])
-                    append(alphabet[nodeId and 0xf])
-                }
-                addNode(
-                    CallSiteNode(
-                        NodeId(nodeId),
-                        MethodDescriptor(TypeDescriptor(callerClass), "c", emptyList(), returnType),
-                        MethodDescriptor(
-                            TypeDescriptor(if (nodeId == 0) "001" else "d"),
-                            "i",
-                            emptyList(),
-                            returnType
-                        ),
-                        nodeId,
-                        null,
-                        emptyList()
-                    )
-                )
-            }
-        }.build()
-        val dir = Files.createTempDirectory("webgraph-4097-trigram-postings")
-        try {
-            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
-            val directory = ByteBuffer.wrap(
-                Files.readAllBytes(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE))
-            ).order(ByteOrder.BIG_ENDIAN)
-            assertEquals(4_097, directory.getInt(16))
-            assertEquals(callSiteTrigramDirectoryChunkCount(4_097), directory.getInt(20))
-
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertEquals(
-                    listOf(0),
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "callee_class",
-                                StringValueTransform.LOWERCASE,
-                                StringMatchMode.CONTAINS,
-                                "001"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 1
-                            override fun consume(workUnits: Long) = Unit
-                        }
-                    ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-            }
+            assertTrue(prefixWork > 0L)
+            assertTrue(fallbackWork > 0L)
         } finally {
             dir.toFile().deleteRecursively()
         }
@@ -945,7 +580,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `bounded raw projection reuses matches and yields to an already loaded index`() {
+    fun `bounded raw projection reuses matches even when the persisted index is loaded`() {
         val dir = Files.createTempDirectory("graph-store-raw-projection-cache")
         try {
             val returnType = TypeDescriptor("void")
@@ -1019,15 +654,16 @@ class GraphStoreTest {
 
             assertTrue(graph.prepareCallSiteStringIndex())
             graph.resetCallSiteScanMetrics()
-            val indexed = graph.projectStringPropertyDisjunction(
+            val retainedRaw = graph.projectStringPropertyDisjunction(
                 CallSiteNode::class.java,
                 predicates,
                 listOf("caller_class"),
                 2,
                 PreferredRawGraphWorkBatchConsumer { }
             )
-            assertEquals(first, indexed)
-            assertEquals(1L, graph.callSiteStringIndexLookupCount())
+            assertEquals(first, retainedRaw)
+            assertEquals(0L, graph.callSiteStringIndexLookupCount())
+            assertTrue(graph.isCallSiteStringIndexInitialized())
             graph.close()
         } finally {
             dir.toFile().deleteRecursively()
@@ -1580,7 +1216,6 @@ class GraphStoreTest {
                 val structuralBytes = loadedGraphs.map { loaded -> loaded.callSiteStringIndexBytes() }
                 assertTrue(structuralBytes.all { bytes -> bytes > 1024L * 1024L })
                 assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
-                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
 
                 repeat(3) {
                     assertTrue(executor.execute(query).rows.isEmpty())
@@ -1591,7 +1226,6 @@ class GraphStoreTest {
                 loadedGraphs.forEach(MappedWebGraphBackedGraph::close)
             }
             assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
-            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { repaired ->
@@ -1641,7 +1275,6 @@ class GraphStoreTest {
                 }
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
-                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)))
             }
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
         } finally {

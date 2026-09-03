@@ -1814,7 +1814,6 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     assert.match(driver, /Fixture64GraphPreparation/);
     assert.match(driver, /--verify "\$\{MANIFEST\}" "\$\{FIXTURE_PROVENANCE\}"/);
     assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-string-index"/);
-    assert.match(driver, /test -f "\$\{GRAPH_PATH\}\/graph\.callsite-trigram-prefilter"/);
     assert.match(driver, /:webgraph:prepareBenchmarkFixtures/);
     assert.match(driver, /cmp -s "\$\{SUPPLIED_JAR\}" "\$\{PINNED_JAR\}"/);
     assert.match(driver, /test-fixture64-reproducibility\.sh/);
@@ -1860,7 +1859,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
     assert.match(reproducibility, /relocate_output "\$\{FIRST_OUTPUT\}"/);
     assert.match(reproducibility, /relocate_output "\$\{SECOND_OUTPUT\}"/);
     assert.match(reproducibility, /for OUTPUT in "\$\{FIRST_OUTPUT\}" "\$\{SECOND_OUTPUT\}"/);
-    assert.match(reproducibility, /cut -f1-20/);
+    assert.match(reproducibility, /cut -f1-18/);
     assert.match(reproducibility, /--self-test-order-fingerprint/);
     assert.match(reproducibility, /fixture-reproducibility\.json|RECEIPT/);
     assert.match(reproducibility, /TAMPERED_PROVENANCE/);
@@ -1873,12 +1872,7 @@ test("fixture64 preparation partitions pinned real JARs into 64 verified graph s
         reproducibility,
         /Corrupt fixture64 graph\.callsite-string-index unexpectedly passed verification/
     );
-    assert.match(
-        reproducibility,
-        /Corrupt fixture64 graph\.callsite-trigram-prefilter unexpectedly passed verification/
-    );
     assert.match(source, /callSiteIndexSha256/);
-    assert.match(source, /callSitePrefilterSha256/);
     assert.match(source, /isCallSiteStringIndexLoadedFromPersistence\(\)/);
     assert.match(source, /deriveGlobalWideDistributions\(manifestRows\)/);
     assert.match(source, /localized\(LOCALIZED_EARLY_DISTRIBUTION, 0\)/);

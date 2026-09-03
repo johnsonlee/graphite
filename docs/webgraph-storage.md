@@ -18,7 +18,6 @@ graph-dir/
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
-├── graph.callsite-trigram-prefilter Optional mmap trigram chunk directory for wide-query candidate lookup
 ├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
@@ -32,16 +31,10 @@ moving that scan onto the first online query. Direct library callers can request
 `GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
 optional query cache to preserve the existing save and storage contract.
 
-Prepared graphs also contain `graph.callsite-trigram-prefilter`. Wide split queries mmap this small
-CRC-protected chunk directory and the existing trigram-posting section of
-`graph.callsite-string-index`. The directory contains no copy of the postings. It divides the
-sorted postings into at most 333 balanced chunks and stores each chunk's maximum trigram, end
-offset, and checksum. A binary search selects only the chunk or adjacent chunks that can contain a
-query trigram; their checksum is verified before exact matching string IDs are accepted. The
-directory is at most 4,092 bytes, including its own final CRC. The shared segment pool then compares
-those integer IDs while scanning raw CallSite records. A missing, incompatible, or corrupt
-directory or queried chunk fails open to the full-index path, so it changes performance only, not
-query results.
+Wide split queries restore and validate the existing `graph.callsite-string-index` under its shared
+heap budget, then reuse its exact trigram candidates and property membership for segmented raw
+CallSite scans. No additional persisted lookup format is required. A missing, incompatible,
+corrupt, or budget-denied index still fails open to the raw-scan correctness path.
 
 For legacy graphs, or when the sidecar is missing or invalid, a relevant query builds the index in
 memory and atomically persists it when that complete index is released or the mapped graph closes.
@@ -79,13 +72,6 @@ transpose construction during load.
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
-The separate `graph.callsite-trigram-prefilter` stream starts with magic `0x47525450` (`GRTP`),
-followed by a 32-bit version `4`, string/CallSite/posting counts, the exact-index byte size and
-posting offset, content identity, checksums for the four property string-ID sections, and sorted
-`(maximum trigram, end offset, chunk CRC32)` entries. A final CRC covers the complete directory. Posting
-values and property string IDs remain solely in `graph.callsite-string-index`; the checksums permit
-the mapped reader to validate and consult those property sections without copying them.
-
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
 not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an

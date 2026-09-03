@@ -3636,3 +3636,43 @@ wrapped DISTINCT 5x floor narrowly at `4.97x` and `4.74x`; this attempt removes 
 `1.43x..1.73x` portion of that target row without weakening correctness or resource bounds. Exact
 hosted three-pair evidence remains the hard gate, and this PR must not be merged or tagged without
 an explicit user instruction.
+
+### 2026-09-04 - Attempt 118: Remove the independent trigram prefilter format
+
+**Hypothesis:** `graph.callsite-trigram-prefilter` is an unjustified persisted-format expansion.
+The 64 fixture graphs already contain only `0.34 GiB` of verified `graph.callsite-string-index`
+data, while the additional prefilter files total about `256 KiB`; with the required 8 GiB heap,
+loading the existing indexes is affordable. Restore and validate that existing format, reuse its
+exact trigram candidates and property membership for segmented raw scans, and let a bounded dense
+leading projection return before suffix planning. This should retain the 5x milestone without a
+second CallSite lookup protocol.
+
+**Evidence:**
+
+- Base is exact head `7161b54`; candidate is this attempt. The paired fresh-JVM screen uses the
+  same 64 persisted graphs generated from the four pinned fixture JARs, the same independent
+  correctness oracle, an 8 GiB heap, and four active CPUs. The candidate code does not open or
+  require the pre-existing `graph.callsite-trigram-prefilter` files.
+- All 34 base and candidate observations succeed with zero failures and zero timeouts. Candidate
+  rows, digests, and graph provenance match the oracle. The complete 84-case
+  `CrossGraphCypherExecutorTest`, 164-case mapped `GraphStoreTest`, core/Cypher/WebGraph detekt,
+  JMH compilation, 87 benchmark-gate contract tests, and shell syntax checks pass in an isolated
+  clean checkout.
+- Aggregate P50/P95 fall from `236.630/482.382 ms` on main to `2.170/62.536 ms`, or
+  `109.05x/7.71x`. `global-wide-wrapped-case-insensitive-distinct-dense` falls from `482.382` to
+  `62.536 ms` (`7.71x`) while preserving its 200 rows and digest. The runtime reports the required
+  additive `2 graph + 2 segment` split.
+- Candidate process CPU falls from `10.938` to `3.130 s`; peak used heap falls from `5.003` to
+  `4.610 GB`; peak RSS falls from `6.180` to `5.016 GB`; normalized allocation falls from `5.230`
+  to `4.901 GB/op`. Retained CallSite indexes account for `369 MB`, well inside the heap-derived
+  shared budget.
+- The dense ordinary wrapped row keeps identical charged work (`665`) but measures
+  `0.876 -> 1.741 ms` in this single local pair. The bounded leading return removes suffix planning,
+  but exact hosted reverse-order evidence remains necessary to decide whether this micro-row is a
+  real regression or runner noise.
+
+**Conclusion:** keep for exact hosted validation. This attempt deletes the `GRTP` reader, writer,
+file constant, fixture provenance fields, corruption tests, driver requirements, and storage-format
+documentation rather than renaming the sidecar. The 5x target and resource bounds pass locally;
+the remaining aligned micro-row and all review/CI gates remain hard blockers. Do not merge or tag
+without an explicit user instruction.

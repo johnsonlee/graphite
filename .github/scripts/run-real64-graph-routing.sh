@@ -48,7 +48,6 @@ test "$(cut -f16 "${FIXTURE_PROVENANCE}" | tail -n +2 | sort -u | wc -l | tr -d 
 while IFS=$'\t' read -r GRAPH_ID GRAPH_PATH _; do
   [[ "${GRAPH_ID}" == \#* ]] && continue
   test -f "${GRAPH_PATH}/graph.callsite-string-index"
-  test -f "${GRAPH_PATH}/graph.callsite-trigram-prefilter"
 done < "${MANIFEST}"
 command -v java >/dev/null
 command -v jq >/dev/null
@@ -160,7 +159,7 @@ java -Xmx4g \
 
 if [[ -n "${SHARED_REPRODUCIBILITY_RECEIPT}" ]]; then
   test -f "${SHARED_REPRODUCIBILITY_RECEIPT}"
-  NORMALIZED_PROVENANCE_SHA=$(cut -f1-20 "${FIXTURE_PROVENANCE}" | sha256_stream)
+  NORMALIZED_PROVENANCE_SHA=$(cut -f1-18 "${FIXTURE_PROVENANCE}" | sha256_stream)
   NORMALIZED_MANIFEST_SHA=$(awk -F '\t' 'BEGIN { OFS="\t" } /^#/ { print; next }
     { print $1, $3, $4, $5, $6 }' "${MANIFEST}" | sha256_stream)
   jq -e --arg provenance "${NORMALIZED_PROVENANCE_SHA}" --arg manifest "${NORMALIZED_MANIFEST_SHA}" \
