@@ -1986,9 +1986,10 @@ jobs:
     - name: Upload shared fixture64 corpus
       uses: actions/upload-artifact@v7
       with:
-        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
         path: shared-fixture64/
         if-no-files-found: error
+        overwrite: true
         retention-days: 1
 
   graph-routing-pressure-evidence:
@@ -2021,7 +2022,7 @@ jobs:
     - name: Download shared fixture64 corpus
       uses: actions/download-artifact@v8
       with:
-        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
         path: shared-fixture64
 
     - name: Verify restored fixture64 corpus and provenance
@@ -2450,7 +2451,7 @@ jobs:
     - name: Download shared fixture64 corpus
       uses: actions/download-artifact@v8
       with:
-        name: shared-fixture64-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
         path: shared-fixture64
 
     - name: Verify restored fixture64 corpus and provenance

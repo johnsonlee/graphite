@@ -2902,7 +2902,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
     assert.match(fixture64Job, /fixture64\.complete\.json/);
     assert.match(fixture64Job, /Upload shared fixture64 corpus/);
-    assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
+    assert.match(fixture64Job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+    assert.match(fixture64Job, /overwrite: true/);
+    assert.doesNotMatch(fixture64Job, /shared-fixture64-.*github\.run_attempt/);
     assert.match(graphRoutingJob, /:webgraph:jmhJar :webgraph:prepareBenchmarkFixtures/);
     assert.match(graphRoutingJob, /needs: \[prepare-fixture64\]/);
     assert.match(graphRoutingJob, /Download shared fixture64 corpus/);
