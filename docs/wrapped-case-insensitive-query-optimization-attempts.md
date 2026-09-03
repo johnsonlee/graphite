@@ -3445,3 +3445,30 @@ queries retain their existing additive NCPU split.
 **Conclusion:** keep the fixed scoped-worker primitive as the measured K=64 zero/targeted fix, but
 do not merge this head. Attempt 112 must remove leading-hit setup overhead before exact hosted
 validation.
+
+### 2026-09-03 - Attempt 112: Defer suffix scanner construction past leading LIMIT
+
+**Hypothesis:** every balanced query constructs 64 `DirectStringSourceScanner` instances before
+probing graph zero. Dense selected-set queries then return from graph zero, so the other 63 scanner
+objects and their captured state are pure latency/allocation overhead. Construct only the leading
+scanner synchronously; create suffix scanners inside fixed-worker tasks after the leading source
+proves more graphs are required. Non-balanced execution and source-order merging remain unchanged.
+
+**Evidence:**
+
+- Base revision is Attempt 111; candidate exact hosted evidence is pending. Both use the same 64
+  persisted graphs generated from the four pinned fixture JARs, an 8 GiB heap, and four active CPUs.
+- Attempt 111's same-machine real-64 run already proves the fixed scoped workers repair zero and
+  targeted K=64 latency, but its six-row K=64 P50 remains about `0.681 ms` versus main's `0.255 ms`.
+  The three leading-hit observations access only graph zero, isolating setup before graph access as
+  the remaining median blocker.
+- Existing leading-LIMIT tests require exact result values, graph-zero-only access, and no
+  all-sidecar capability probe for global-wide execution. The prepared selected-set test separately
+  proves fixed-worker concurrency, complete zero-hit access, and clean worker shutdown.
+- The same-machine real-64 cold rerun does not support the allocation hypothesis. K=64 candidate
+  P50 remains about `0.690 ms` versus main's `0.255 ms`; dense literal/parameter rows are
+  `0.757/0.622 ms` versus `0.266/0.255 ms`. The change is within run noise relative to Attempt 111.
+
+**Conclusion:** reject and revert. Scanner allocation is not the material leading-hit overhead. No
+production code from this experiment is retained; the next attempt must defer the scoped fanout
+decision itself until after the leading result, removing its capability check from dense queries.
