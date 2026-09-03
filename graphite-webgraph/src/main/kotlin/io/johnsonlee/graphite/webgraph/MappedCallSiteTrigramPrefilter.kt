@@ -89,7 +89,13 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                     chunks.get(chunkOffset - CHUNK_ENTRY_INTS + CHUNK_END_INDEX)
                 }
                 val chunkEnd = chunks.get(chunkOffset + CHUNK_END_INDEX)
-                if (!validatePostingChunk(chunkStart, chunkEnd, chunkOffset, accounting)) return null
+                if (!validatePostingChunk(
+                        chunkStart,
+                        chunkEnd,
+                        chunkOffset,
+                        workConsumer
+                    )
+                ) return null
                 for (postingIndex in chunkStart until chunkEnd) {
                     if ((postingIndex and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
                     accounting.consume()
@@ -117,7 +123,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         start: Int,
         end: Int,
         chunkOffset: Int,
-        accounting: BufferedGraphWorkConsumer
+        workConsumer: GraphWorkConsumer?
     ): Boolean {
         val byteStart = Math.multiplyExact(start, Long.SIZE_BYTES)
         val byteEnd = Math.multiplyExact(end, Long.SIZE_BYTES)
@@ -125,8 +131,7 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
         var position = byteStart
         while (position < byteEnd) {
             checkInterrupted()
-            accounting.consume()
-            accounting.flush()
+            consumeGraphWork(workConsumer, 1L)
             val limit = minOf(byteEnd, position + POSTING_CHECKSUM_SLICE_BYTES)
             val bytes = trigramPostingBytes.duplicate().apply {
                 position(position)

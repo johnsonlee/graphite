@@ -300,7 +300,11 @@ class GraphStoreTest {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { nodeId ->
-                val callerClass = if (nodeId == 0) "example.TargetCaller" else "example.OtherCaller$nodeId"
+                val callerClass = if (nodeId == 0) {
+                    "example.TargetCaller"
+                } else {
+                    "example.TargetOtherCaller$nodeId"
+                }
                 val callerName = if (nodeId == 1) "targetOnlyInCallerName" else "call$nodeId"
                 addNode(
                     CallSiteNode(
@@ -360,25 +364,26 @@ class GraphStoreTest {
                     )?.map { row -> row.values }
                 )
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                var checksumSlices = 0
+                val chargedBatches = mutableListOf<Long>()
                 val checksumRejection = IllegalStateException("posting checksum slice rejected")
                 val checksumFailure = assertFailsWith<IllegalStateException> {
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
-                        listOf(predicate.copy(expected = "othercaller")),
+                        listOf(predicate.copy(expected = "tar")),
                         limit = 1,
                         workConsumer = object : SplitGraphWorkBatchConsumer {
                             override val segmentWorkerCount: Int = 1
 
                             override fun consume(workUnits: Long) {
-                                checksumSlices++
-                                throw checksumRejection
+                                chargedBatches += workUnits
+                                if (chargedBatches.size == 1) throw checksumRejection
                             }
                         }
                     )?.toList()
                 }
                 assertSame(checksumRejection, checksumFailure)
-                assertEquals(1, checksumSlices)
+                assertEquals(1L, chargedBatches.first(), "first callback must charge one checksum slice")
+                assertEquals(listOf(1L, 1L), chargedBatches)
                 assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 loaded.resetCallSiteScanMetrics()
