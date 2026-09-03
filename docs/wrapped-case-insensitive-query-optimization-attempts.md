@@ -3102,3 +3102,32 @@ sequence should keep the fast empty result while deferring all index work until 
 **Conclusion:** keep. The exact impossible-pattern shortcut remains, while abandoned or deferred
 Method sequences no longer pay eager CPU or heap cost. The exact pushed-head CI and Method
 compatibility gate remain mandatory before resolving the review thread.
+
+### 2026-09-03 - Attempt 100: Hoist indexed DISTINCT projection ahead of scheduling policy
+
+**Hypothesis:** the prepared-index scheduling branch serializes small retained lookups before the
+indexed DISTINCT projection is considered. Evaluate that projection first so DISTINCT wide queries
+can merge bounded per-graph index rows directly, independent of whether ordinary node lookup would
+use graph fanout or serial execution.
+
+**Evidence:**
+
+- Three paired fresh-JVM runs compared remote main `78ce46b57b2` with this candidate on the same
+  fixture-JAR-derived 64 persisted graphs, an 8 GiB heap, and four active CPUs. All 204 executions
+  per revision succeeded in every pair and all six complete correctness manifests have the same
+  SHA-256 `a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219`.
+- Aggregate P50 improves by `84.01x`, `107.02x`, and `78.09x`; P95 improves by `9.61x`, `7.92x`,
+  and `7.71x`. Candidate P50 is `2.58..3.05 ms`, candidate P95 is `49.3..50.6 ms`, and the worst
+  wrapped-query speedup is `6.19x`. Total process CPU falls from `10.7..11.3 s` to `1.63..1.78 s`,
+  while peak RSS falls from `5.73..6.10 GB` to `3.93..3.94 GB`.
+- An incremental comparison with the Attempt 099 parent confirms the targeted dense DISTINCT rows
+  fall from roughly `3.1 s` to `50..63 ms`. A focused regression test proves graphs reported as
+  prepared still invoke `StringPropertyDisjunctionDistinctProjection` rather than the ordinary
+  serial lookup branch.
+- The first screening run also exposed five repeated dense non-DISTINCT micro-regressions. They are
+  retained as explicit guardrail failures rather than hidden by the aggregate gain; the following
+  attempt must repair them before this series can be pushed or its review comment resolved.
+
+**Conclusion:** keep as the 5x-path primitive, pending the next isolated guardrail fix and exact
+hosted confirmation. The change only reorders an existing correctness-preserving projection path;
+it does not alter result merging, graph order, limits, cancellation, or storage data.

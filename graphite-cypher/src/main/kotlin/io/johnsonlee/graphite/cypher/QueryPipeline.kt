@@ -1577,6 +1577,17 @@ class QueryPipeline private constructor(
         nodePredicateFactory: DirectNodePredicateFactory? = null,
         candidateSources: List<CypherGraph> = sources
     ): CypherResult {
+        if (nodePredicateFactory == null) {
+            executeIndexedDistinctStringProjection(
+                nodeClass,
+                variable,
+                filter,
+                items,
+                columns,
+                limit,
+                candidateSources
+            )?.let { return it }
+        }
         if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)) {
             return executeDirectStringDisjunctionInParallel(
                 nodeClass,
@@ -1898,17 +1909,6 @@ class QueryPipeline private constructor(
         nodePredicateFactory: DirectNodePredicateFactory?,
         candidateSources: List<CypherGraph>
     ): CypherResult {
-        if (nodePredicateFactory == null) {
-            executeIndexedDistinctStringProjection(
-                nodeClass,
-                variable,
-                filter,
-                items,
-                columns,
-                limit,
-                candidateSources
-            )?.let { return it }
-        }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = candidateSources.map { source ->
             DirectStringSourceScanner(
