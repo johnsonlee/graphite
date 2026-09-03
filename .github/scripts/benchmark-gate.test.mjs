@@ -2993,7 +2993,13 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /graphite-webgraph\/build\/benchmark-fixtures\/\*\.jar/);
     assert.match(fixture64Job, /graphite-core\/src\/main\/\*\*/);
     assert.match(fixture64Job, /graphite-sootup\/src\/main\/\*\*/);
-    assert.match(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
+    assert.match(fixture64Job, /graphite-webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/GraphStore\.kt/);
+    assert.match(
+        fixture64Job,
+        /graphite-webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/CallSiteIndexPersistenceInput\.kt/
+    );
+    assert.doesNotMatch(fixture64Job, /graphite-webgraph\/src\/main\/\*\*/);
+    assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
     assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
     assert.match(
