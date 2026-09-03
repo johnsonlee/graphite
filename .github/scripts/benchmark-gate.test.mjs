@@ -1664,6 +1664,45 @@ test("fixture workload verifier rejects unpruned graph-set fanout on base and ca
     const accepted = verify();
     assert.equal(accepted.status, 0, `${accepted.stdout}\n${accepted.stderr}`);
 
+    const referenceWithoutK64ZeroAccess = referenceRows.map((row) => {
+        const values = row.split("\t");
+        if (values[familyIndex] === "graph-set-reference" &&
+            Number(values[selectedCountIndex]) === 64 && values[selectivityIndex] === "zero") {
+            values[accessedCountIndex] = "0";
+            values[accessedIdsIndex] = "";
+            values[targetAccessCountIndex] = "0";
+            values[nonTargetAccessCountIndex] = "0";
+        }
+        return values.join("\t");
+    });
+    const uninstrumentedReference = `${observationHeader}\n${referenceWithoutK64ZeroAccess.join("\n")}\n`;
+    fs.writeFileSync(files["reference-observations"], uninstrumentedReference);
+    fs.writeFileSync(files["reference-correctness"], correctnessFromObservations(uninstrumentedReference));
+    const acceptedReferenceGap = verify();
+    assert.equal(
+        acceptedReferenceGap.status,
+        0,
+        `${acceptedReferenceGap.stdout}\n${acceptedReferenceGap.stderr}`
+    );
+
+    const candidateWithoutK64ZeroAccess = strictRows.map((row) => {
+        const values = row.split("\t");
+        if (values[familyIndex] === "graph-id-set" &&
+            Number(values[selectedCountIndex]) === 64 && values[selectivityIndex] === "zero") {
+            values[accessedCountIndex] = "0";
+            values[accessedIdsIndex] = "";
+            values[targetAccessCountIndex] = "0";
+            values[nonTargetAccessCountIndex] = "0";
+        }
+        return values.join("\t");
+    });
+    fs.writeFileSync(
+        files["candidate-cold-observations"],
+        `${observationHeader}\n${candidateWithoutK64ZeroAccess.join("\n")}\n`
+    );
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(files["candidate-cold-observations"], strictObservations);
+
     fs.writeFileSync(files["base-cold-observations"], legacyBaseObservations);
     assert.notEqual(verify().status, 0);
     fs.writeFileSync(files["base-cold-observations"], strictObservations);

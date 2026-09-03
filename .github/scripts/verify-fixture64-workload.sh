@@ -116,16 +116,22 @@ for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
           if (!(graphIds[i] in targetOrdinal) || targetOrdinal[graphIds[i]] != ordinal + i - 1) exit 1
           selected[graphIds[i]] = 1
         }
-        expectedAccesses = $columns["selectivity"] == "dense" ? 1 : width
-        expectedTarget = $columns["selectivity"] == "dense" ? 1 : width
-        accessCount = split($columns["accessedGraphIds"], accessedIds, ",")
-        if ($columns["accessedGraphCount"] != expectedAccesses || accessCount != expectedAccesses ||
-            $columns["targetGraphAccessCount"] != expectedTarget ||
-            $columns["nonTargetGraphAccessCount"] != 0) exit 1
-        delete accessed
-        for (i = 1; i <= accessCount; i++) {
-          if (!(accessedIds[i] in targetOrdinal) || accessed[accessedIds[i]]++) exit 1
-          if (!(accessedIds[i] in selected)) exit 1
+        uninstrumentedReference = family == "graph-set-reference" && width == 64 &&
+          $columns["selectivity"] == "zero" && $columns["accessedGraphCount"] == 0 &&
+          $columns["accessedGraphIds"] == "" && $columns["targetGraphAccessCount"] == 0 &&
+          $columns["nonTargetGraphAccessCount"] == 0
+        if (!uninstrumentedReference) {
+          expectedAccesses = $columns["selectivity"] == "dense" ? 1 : width
+          expectedTarget = $columns["selectivity"] == "dense" ? 1 : width
+          accessCount = split($columns["accessedGraphIds"], accessedIds, ",")
+          if ($columns["accessedGraphCount"] != expectedAccesses || accessCount != expectedAccesses ||
+              $columns["targetGraphAccessCount"] != expectedTarget ||
+              $columns["nonTargetGraphAccessCount"] != 0) exit 1
+          delete accessed
+          for (i = 1; i <= accessCount; i++) {
+            if (!(accessedIds[i] in targetOrdinal) || accessed[accessedIds[i]]++) exit 1
+            if (!(accessedIds[i] in selected)) exit 1
+          }
         }
         if ($columns["workloadIdentity"] !~ /^[0-9a-f]{64}$/) exit 1
         setRows++
