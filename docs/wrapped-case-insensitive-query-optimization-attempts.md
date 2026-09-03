@@ -3131,3 +3131,20 @@ use graph fanout or serial execution.
 **Conclusion:** keep as the 5x-path primitive, pending the next isolated guardrail fix and exact
 hosted confirmation. The change only reorders an existing correctness-preserving projection path;
 it does not alter result merging, graph order, limits, cancellation, or storage data.
+
+### 2026-09-03 - Attempt 101: Serialize prepared projection sources after the leading graph
+
+**Hypothesis:** once the leading graph satisfies part of a bounded DISTINCT projection, scheduling
+the remaining prepared sources serially may avoid graph-task overhead without changing the indexed
+projection or selected-value verification.
+
+**Evidence:**
+
+- A same-machine screen compared Attempt 100 with this isolated scheduling change on the pinned
+  fixture-JAR-derived 64 persisted graphs. Complete correctness manifests remained identical.
+- The dense DISTINCT rows did not improve consistently: three observations changed from
+  `63/53/56 ms` to `71/77/72 ms`. Total process CPU and peak RSS were flat or worse, so the added
+  policy branch supplied no measurable benefit to offset its complexity.
+
+**Conclusion:** reject and revert. Prepared projection sources retain the existing execution policy;
+no production or test code from this experiment is retained.
