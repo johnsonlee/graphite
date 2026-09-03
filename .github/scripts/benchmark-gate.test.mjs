@@ -1685,9 +1685,9 @@ test("fixture workload verifier rejects unpruned graph-set fanout on base and ca
         `${acceptedReferenceGap.stdout}\n${acceptedReferenceGap.stderr}`
     );
 
-    const candidateWithoutK64ZeroAccess = strictRows.map((row) => {
+    const withoutK64ZeroAccess = (family) => strictRows.map((row) => {
         const values = row.split("\t");
-        if (values[familyIndex] === "graph-id-set" &&
+        if (values[familyIndex] === family &&
             Number(values[selectedCountIndex]) === 64 && values[selectivityIndex] === "zero") {
             values[accessedCountIndex] = "0";
             values[accessedIdsIndex] = "";
@@ -1696,9 +1696,26 @@ test("fixture workload verifier rejects unpruned graph-set fanout on base and ca
         }
         return values.join("\t");
     });
+    const uninstrumentedBase = `${observationHeader}\n${
+        withoutK64ZeroAccess("graph-set-reference").join("\n")
+    }\n`;
+    fs.writeFileSync(files["base-cold-observations"], uninstrumentedBase);
+    const acceptedBaseGap = verify();
+    assert.equal(acceptedBaseGap.status, 0, `${acceptedBaseGap.stdout}\n${acceptedBaseGap.stderr}`);
+    fs.writeFileSync(files["base-cold-observations"], strictObservations);
+
+    const candidateWithoutK64ZeroAccess = withoutK64ZeroAccess("graph-id-set");
     fs.writeFileSync(
         files["candidate-cold-observations"],
         `${observationHeader}\n${candidateWithoutK64ZeroAccess.join("\n")}\n`
+    );
+    assert.notEqual(verify().status, 0);
+    fs.writeFileSync(files["candidate-cold-observations"], strictObservations);
+
+    const candidateReferenceWithoutK64ZeroAccess = withoutK64ZeroAccess("graph-set-reference");
+    fs.writeFileSync(
+        files["candidate-cold-observations"],
+        `${observationHeader}\n${candidateReferenceWithoutK64ZeroAccess.join("\n")}\n`
     );
     assert.notEqual(verify().status, 0);
     fs.writeFileSync(files["candidate-cold-observations"], strictObservations);

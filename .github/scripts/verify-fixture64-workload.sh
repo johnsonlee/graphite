@@ -46,6 +46,7 @@ OBSERVATIONS=(
   "${BASE_WARM_OBSERVATIONS}"
   "${CANDIDATE_WARM_OBSERVATIONS}"
 )
+OBSERVATION_ROLES=(reference base candidate base candidate)
 CORRECTNESS_RECORDS=(
   "${REFERENCE_CORRECTNESS}"
   "${SEMANTIC_ORACLE}"
@@ -56,13 +57,19 @@ CORRECTNESS_RECORDS=(
 )
 if [[ $# -eq 17 ]]; then
   OBSERVATIONS+=("${14}" "${16}")
+  OBSERVATION_ROLES+=(base candidate)
   CORRECTNESS_RECORDS+=("${15}" "${17}")
 fi
 
 for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
   RESULT=${OBSERVATIONS[${RESULT_INDEX}]}
+  RESULT_ROLE=${OBSERVATION_ROLES[${RESULT_INDEX}]}
+  ALLOW_UNINSTRUMENTED_REFERENCE=0
+  if [[ "${RESULT_ROLE}" != candidate ]]; then
+    ALLOW_UNINSTRUMENTED_REFERENCE=1
+  fi
   test -f "${RESULT}"
-  awk -F '\t' '
+  awk -F '\t' -v allowUninstrumentedReference="${ALLOW_UNINSTRUMENTED_REFERENCE}" '
     NR == FNR {
       if (FNR > 1) {
         ordinal = FNR - 2
@@ -116,7 +123,8 @@ for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
           if (!(graphIds[i] in targetOrdinal) || targetOrdinal[graphIds[i]] != ordinal + i - 1) exit 1
           selected[graphIds[i]] = 1
         }
-        uninstrumentedReference = family == "graph-set-reference" && width == 64 &&
+        uninstrumentedReference = allowUninstrumentedReference &&
+          family == "graph-set-reference" && width == 64 &&
           $columns["selectivity"] == "zero" && $columns["accessedGraphCount"] == 0 &&
           $columns["accessedGraphIds"] == "" && $columns["targetGraphAccessCount"] == 0 &&
           $columns["nonTargetGraphAccessCount"] == 0
