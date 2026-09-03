@@ -1353,6 +1353,68 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `zero hit query reuses a bounded index and repairs legacy sidecars on graph close`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { nodeId ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor("example.Caller$nodeId"), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val query = """
+            MATCH (n:CallSiteNode)
+            WHERE toLower(n.caller_class) CONTAINS 'zzz'
+            RETURN DISTINCT n.caller_class
+            LIMIT 200
+        """.trimIndent()
+        val dir = Files.createTempDirectory("webgraph-zero-hit-callsite-repair")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(graph, dir)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val prefilterFile = dir.resolve(GraphStore.CALL_SITE_TRIGRAM_PREFILTER_FILE)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val executor = CrossGraphCypherExecutor(listOf(CypherGraph("legacy", loaded)))
+                assertTrue(executor.execute(query).rows.isEmpty())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                val retainedAfterFirstQuery = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                assertTrue(retainedAfterFirstQuery > retainedBefore)
+                assertFalse(Files.exists(indexFile))
+                assertFalse(Files.exists(prefilterFile))
+
+                assertTrue(executor.execute(query).rows.isEmpty())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(retainedAfterFirstQuery, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+            assertTrue(Files.isRegularFile(indexFile))
+            assertTrue(Files.isRegularFile(prefilterFile))
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { repaired ->
+                val executor = CrossGraphCypherExecutor(listOf(CypherGraph("legacy", repaired)))
+                assertTrue(executor.execute(query).rows.isEmpty())
+                assertTrue(repaired.isCallSiteStringIndexLoadedFromPersistence())
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `interrupted request cache release does not persist a query-built CallSite index`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {

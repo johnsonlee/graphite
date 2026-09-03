@@ -2346,3 +2346,32 @@ checksum until `selectedValues` actually asks whether that property contains a s
 **Conclusion:** keep pending exact hosted paired confirmation. Deferring unused optional membership
 validation removes 1.42 million cold zero-hit work units and improves all observed real64 zero-hit
 tails without changing the persisted format or trusting unchecked data to exclude a result.
+
+### 2026-09-03 - Attempt 075: Retain bounded legacy repair state until graph close
+
+**Hypothesis:** Attempt 072 correctly removed complete sidecar writes from request cleanup, but
+closing the query-built index there also discards the only state that graph close can persist. A
+legacy graph with missing sidecars can therefore rebuild the same complete index on every zero-hit
+request. Retain only the globally budgeted structural index, clear request-result caches at release,
+and leave the existing atomic best-effort writer on the non-request graph-close lifecycle.
+
+**Evidence:**
+
+- A deterministic production-path regression saves 4,096 CallSites without sidecars and executes
+  the actual `CrossGraphCypherExecutor` zero-hit DISTINCT query twice. Both results are empty, the
+  second request reuses the same reservation instead of rebuilding, and neither request writes a
+  sidecar. Closing the graph then creates both the exact index and compact prefilter; a new mapped
+  graph executes the same query from the repaired persisted index with the same result.
+- Retained structural memory remains governed by `MappedCallSiteStringIndexMemoryBudget`; release
+  clears predicate, node-id, and projected-row caches immediately. Graph close releases the
+  reservation after persistence, and the regression verifies the process-wide retained byte count
+  returns exactly to its pre-test value.
+- The already-interrupted release regression still throws `CancellationException`, leaves both
+  targets absent, clears the in-memory index, and returns the global retained byte count to its
+  original value. This synthetic fixture is lifecycle/correctness evidence only, not a performance
+  benchmark.
+- Both focused lifecycle tests and WebGraph detekt pass. The complete WebGraph suite and exact
+  hosted performance/resource gates remain required before resolving the review thread.
+
+**Conclusion:** keep pending full verification. This restores legacy sidecar self-repair and
+repeat-query reuse without reintroducing request-thread persistence or unbounded cache retention.

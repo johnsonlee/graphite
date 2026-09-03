@@ -1911,8 +1911,20 @@ internal class MappedWebGraphBackedGraph(
             // indexed projection during the measured query.
             if (!force && callSiteStringIndexLoadedFromPersistence &&
                 retainPersistedCallSiteStringIndex.get()
-            ) return
+            ) {
+                callSiteStringIndex?.clearQueryCaches()
+                return
+            }
             val index = callSiteStringIndex
+            if (!force && !Thread.currentThread().isInterrupted && persistentCallSiteStringIndexEnabled &&
+                !callSiteStringIndexLoadedFromPersistence && index?.isTrigramPostingsInitialized() == true
+            ) {
+                // Keep the bounded structural index available for the next request and hand its
+                // best-effort persistence to graph close. Request-owned result caches are released
+                // now, and an interrupted request still follows the prompt close path below.
+                index.clearQueryCaches()
+                return
+            }
             if (force && persistentCallSiteStringIndexEnabled &&
                 !callSiteStringIndexLoadedFromPersistence &&
                 index?.isTrigramPostingsInitialized() == true

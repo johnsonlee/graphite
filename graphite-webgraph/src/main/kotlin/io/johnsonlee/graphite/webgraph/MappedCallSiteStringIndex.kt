@@ -1014,16 +1014,21 @@ internal class MappedCallSiteStringIndex(
     }
 
     @Synchronized
-    override fun close() {
-        exactProjectionTupleIndex = null
-        trigramPostingCounts = null
-        trigramStringIds = null
+    fun clearQueryCaches() {
         matchingStringIds.clear()
         matchingStringCacheBytes = 0L
         matchingNodeIds.clear()
         matchingNodeCacheBytes = 0L
         projectedRows.clear()
         projectedRowCacheBytes = 0L
+    }
+
+    @Synchronized
+    override fun close() {
+        exactProjectionTupleIndex = null
+        trigramPostingCounts = null
+        trigramStringIds = null
+        clearQueryCaches()
         reservation.close()
     }
 
