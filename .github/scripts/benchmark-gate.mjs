@@ -920,16 +920,22 @@ export function compareGraphIdPressure(
         }
     }
     if (candidateIndexState === "cold") {
-        if (candidateResources.callSiteParallelScanCount !== 64 ||
-            candidateResources.callSiteParallelScanGraphCount !== 64
-        ) {
-            errors.push("candidate: cold selected-graph workload must execute exactly one intra-graph " +
-                "parallel scan on each graph; " +
+        const rawBuildLifecycle = candidateResources.callSiteParallelScanCount === 64 &&
+            candidateResources.callSiteParallelScanGraphCount === 64 &&
+            candidateResources.callSiteScanPeakActiveWorkers >= 2;
+        const persistedLoadLifecycle = candidateResources.callSiteParallelScanCount === 0 &&
+            candidateResources.callSiteParallelScanGraphCount === 0 &&
+            candidateResources.callSiteScanPeakActiveWorkers === 0 &&
+            candidateResources.callSiteIndexAdmittedGraphs === 64 &&
+            candidateResources.callSiteTrigramIndexedGraphs === 64;
+        if (!rawBuildLifecycle && !persistedLoadLifecycle) {
+            errors.push("candidate: cold selected-graph workload must either build one parallel index per graph " +
+                "or restore all 64 persisted sidecars; " +
                 `scans=${candidateResources.callSiteParallelScanCount}, ` +
-                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
-        }
-        if (candidateResources.callSiteScanPeakActiveWorkers < 2) {
-            errors.push("candidate: cold selected-graph workload did not prove at least two simultaneously active scan workers");
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}, ` +
+                `peak=${candidateResources.callSiteScanPeakActiveWorkers}, ` +
+                `admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
+                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
         }
         if (candidateResources.callSiteStringIndexLookupCount !== 1979 ||
             candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
@@ -974,6 +980,37 @@ export function compareGraphIdPressure(
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
     const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const coldFirstId = "request-selected-set-wrapped-contains-k64-group-00-zero";
+    let coldFirst = null;
+    if (candidateIndexState === "cold") {
+        const baseFirst = baseRows[0];
+        const candidateFirst = candidateRows[0];
+        if (baseFirst?.id !== coldFirstId || candidateFirst?.id !== coldFirstId) {
+            errors.push(`cold: first observation must be ${coldFirstId} in both revisions`);
+        } else {
+            const baseLatencyNanos = finiteNumber(baseFirst.latencyNanos);
+            const candidateLatencyNanos = finiteNumber(candidateFirst.latencyNanos);
+            if (baseFirst.outcome !== "success" || candidateFirst.outcome !== "success" ||
+                baseLatencyNanos === null || candidateLatencyNanos === null ||
+                baseLatencyNanos <= 0 || candidateLatencyNanos <= 0
+            ) {
+                errors.push("cold: first K64 request requires successful positive latency samples");
+            } else {
+                const limitNanos = Math.max(baseLatencyNanos * 1.15, baseLatencyNanos + 250_000_000);
+                if (candidateLatencyNanos > limitNanos) {
+                    errors.push(`cold: first K64 request latency regressed; base/candidate ` +
+                        `${baseLatencyNanos}/${candidateLatencyNanos}, limit ${limitNanos}`);
+                }
+                coldFirst = {
+                    id: coldFirstId,
+                    baseLatencyNanos,
+                    candidateLatencyNanos,
+                    speedup: baseLatencyNanos / candidateLatencyNanos,
+                    limitNanos
+                };
+            }
+        }
+    }
     for (const row of candidateRows) {
         const graphIdPredicate = row.family === "graph-id" || row.family === "graph-id-set";
         const targetGraphIds = (row.targetGraphIds ?? "").split(",").filter(Boolean);
@@ -1484,7 +1521,8 @@ export function compareGraphIdPressure(
         rows,
         graphParameterLatencyRows,
         graphSetLatencyRows,
-        graphSetLatencyByWidth
+        graphSetLatencyByWidth,
+        coldFirst
     };
 }
 
@@ -2098,6 +2136,11 @@ export function renderGraphIdPressureReport(comparison) {
         `- Query-level graphId P95 speedup: **${comparison.p95Speedup.toFixed(2)}x**`,
         `- Request-selected P50 speedup: **${comparison.graphParameterP50Speedup.toFixed(2)}x**`,
         `- Request-selected P95 speedup: **${comparison.graphParameterP95Speedup.toFixed(2)}x**`,
+        ...(comparison.coldFirst === null ? [] : [
+            `- First cold K64 request: **${(comparison.coldFirst.baseLatencyNanos / 1e6).toFixed(3)} → ` +
+                `${(comparison.coldFirst.candidateLatencyNanos / 1e6).toFixed(3)} ms ` +
+                `(${comparison.coldFirst.speedup.toFixed(2)}x)**`
+        ]),
         `- Request-selected regression: ` +
             `**${(comparison.graphParameterP50Regression * 100).toFixed(2)}% P50 / ` +
             `${(comparison.graphParameterP95Regression * 100).toFixed(2)}% P95**`,

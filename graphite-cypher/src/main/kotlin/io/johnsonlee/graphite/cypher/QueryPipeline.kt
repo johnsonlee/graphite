@@ -1680,7 +1680,7 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = preferPersistedStorage ||
+                serialStorage = preferPersistedStorage && !balanced ||
                     rawLeadingStorage && balanced && sourceIndex == 0
             )
         }
@@ -1883,11 +1883,13 @@ class QueryPipeline private constructor(
             .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
         predicates.isNotEmpty() && candidateSources.any { source ->
             if (source.graph.nodeCount(candidateType) == 0L) return@any false
+            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
             val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup
-            if (prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) == true) {
+            if (prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) == true &&
+                strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != false
+            ) {
                 return@any false
             }
-            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
             strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
         }
     }
@@ -1997,9 +1999,12 @@ class QueryPipeline private constructor(
         val zeroHitSources = BooleanArray(candidateSources.size)
         fun projectSource(sourceIndex: Int): IndexedProjectedRows {
             val source = candidateSources[sourceIndex]
+            val preparedStorage = (source.graph as? PreparedStringPropertyDisjunctionLookup)
+                ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
             val storageWorkConsumer = stringStorageWorkConsumer(
                 candidateSources.size,
-                tracker
+                tracker,
+                forceSerial = candidateSources.size == 1 && preparedStorage
             )
             val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
                 CallSiteNode::class.java,
@@ -2043,8 +2048,10 @@ class QueryPipeline private constructor(
         fun mergeSource(projected: IndexedProjectedRows): Boolean {
             if (projected.rows.isEmpty()) {
                 zeroHitSources[projected.sourceIndex] = true
-                (candidateSources[projected.sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
-                    ?.releaseStringPropertyDisjunctionCache()
+                if (candidateSources.size > 1) {
+                    (candidateSources[projected.sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
+                        ?.releaseStringPropertyDisjunctionCache()
+                }
             }
             projected.rows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
             return rows.size >= limit
@@ -2093,7 +2100,13 @@ class QueryPipeline private constructor(
         val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
             {
                 val source = candidateSources[sourceIndex]
-                val storageWorkConsumer = stringStorageWorkConsumer(candidateSources.size, tracker)
+                val preparedStorage = (source.graph as? PreparedStringPropertyDisjunctionLookup)
+                    ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+                val storageWorkConsumer = stringStorageWorkConsumer(
+                    candidateSources.size,
+                    tracker,
+                    forceSerial = candidateSources.size == 1 && preparedStorage
+                )
                 val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
                 val rawHits = mutableSetOf<Map<String, Any?>>()
                 if (sourceSelectedValues.isNotEmpty()) {

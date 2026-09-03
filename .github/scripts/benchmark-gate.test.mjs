@@ -397,6 +397,10 @@ function graphIdObservations(
             }
         }
     }
+    const coldFirstId = "request-selected-set-wrapped-contains-k64-group-00-zero";
+    const coldFirstIndex = rows.findIndex((row) => row.startsWith(`${coldFirstId}\t`));
+    const [coldFirst] = rows.splice(coldFirstIndex, 1);
+    rows.unshift(coldFirst);
     return `${header}\n${rows.join("\n")}\n`;
 }
 
@@ -887,8 +891,22 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(serialCandidate.passed, false);
-    assert.match(serialCandidate.errors.join("\n"), /exactly one intra-graph parallel scan on each graph/);
-    assert.match(serialCandidate.errors.join("\n"), /at least two simultaneously active scan workers/);
+    assert.match(serialCandidate.errors.join("\n"), /build one parallel index per graph or restore all 64/);
+
+    const sidecarCandidate = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteParallelScanCount: 0,
+            callSiteParallelScanGraphCount: 0,
+            callSiteScanPeakActiveWorkers: 0
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
 });
 
 test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
@@ -908,6 +926,21 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
     assert.equal(materialRegression.passed, false);
+
+    const base = graphIdObservations(1_000_000, "success", 1_000_000);
+    const candidateRows = graphIdObservations(1_000_000, "success", 1_000_000).trim().split("\n");
+    const header = candidateRows[0].split("\t");
+    const first = candidateRows[1].split("\t");
+    first[header.indexOf("latencyNanos")] = "4500000000";
+    candidateRows[1] = first.join("\t");
+    const hiddenFirstRequestRegression = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        base,
+        `${candidateRows.join("\n")}\n`
+    );
+    assert.equal(hiddenFirstRequestRegression.passed, false);
+    assert.match(hiddenFirstRequestRegression.errors.join("\n"), /first K64 request latency regressed/);
 });
 
 test("fixture64 scorer rejects detached and correlated-rotation latency rows", () => {

@@ -3190,3 +3190,40 @@ queries avoid retained-index setup while still satisfying `LIMIT` from the leadi
 
 **Conclusion:** reject and revert. Keep the existing four-term eligibility bound; no production or
 test code from this experiment is retained.
+
+### 2026-09-03 - Attempt 104: Defer cold sidecar readiness and split the first K64 request
+
+**Hypothesis:** treating the mere presence of a sidecar file as an unconditional serial-scheduling
+signal serializes the first explicitly selected K=64 query while each graph restores and validates
+its index. Keep sidecar readiness semantics, but consult the existing storage strategy: unopened
+mapped indexes explicitly prefer parallel work, while loaded small indexes prefer serial lookup.
+Give a balanced K=64 cold set the existing segment-split consumer so worker budgets remain additive.
+
+**Evidence:**
+
+- A fresh JVM replayed all 1,137 routing queries over the 64 persisted graphs generated from the
+  four pinned fixture JARs, with an 8 GiB heap and four active CPUs. Every query matches the
+  correctness oracle; the manifest SHA-256 is
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+- The final implementation's fresh confirmation lowers the first cold K=64 request from the exact
+  hosted candidate's `4,519.689 ms` to `39.552 ms`.
+  It accesses exactly the selected 64 graphs, no non-target graph, performs no full raw scan, and
+  charges `151,595` prefilter work units. The remaining workload restores all 64 valid sidecars and
+  records exactly 1,979 retained-index lookups distributed `29..38` per graph.
+- Aggregate candidate P50/P95 is `0.077/14.056 ms`; total process CPU is `5.941 s` and peak RSS is
+  `6.319 GB`. These numbers are retained for audit, but the first-request row—not aggregate
+  percentiles—is the direct regression evidence for this attempt.
+- Deterministic tests preserve startup sidecar readiness and first-lookup restoration with zero raw
+  scans. Textual and externally supplied 64-graph selections prove graph fanout uses the configured
+  split worker count, while loaded prepared-index mocks retain serial scheduling. The pressure gate
+  now accepts either a genuine 64-graph parallel build or successful restoration of all 64
+  sidecars, and independently fails a hidden first-request latency regression above 15% or 250 ms.
+- The combined WebGraph suite exposed two single-source lifecycle regressions from the preceding
+  DISTINCT hoist. A zero-hit restored sidecar was immediately released, while a fresh exact query
+  could be forced away from building its reusable index. The fix prefers persisted storage only
+  when the one source actually reports a prepared sidecar and limits zero-hit release to
+  multi-source provenance work; both existing lifecycle tests now pass.
+
+**Conclusion:** keep pending exact hosted confirmation. This removes the observed 4.5-second cold
+serialization without changing selected-graph isolation, result order, lookup accounting, memory
+admission, or the additive graph-plus-segment parallelism budget.

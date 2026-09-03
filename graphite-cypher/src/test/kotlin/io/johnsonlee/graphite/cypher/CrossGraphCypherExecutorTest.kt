@@ -287,7 +287,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount
         })
     }
 
@@ -353,7 +354,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount
         })
     }
 
