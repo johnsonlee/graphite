@@ -156,6 +156,8 @@ class MethodQueryPersistenceTest {
                 assertTrue(graph.methodSlice(MethodPattern(), 0).isEmpty())
                 assertFalse(graph.isMethodIndexInitialized())
 
+                assertColdExactMethodSlice(graph, persistedOrder[2])
+
                 assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
                 assertTrue(graph.isMethodIndexInitialized())
                 assertFalse(graph.isMetadataInitialized())
@@ -212,6 +214,53 @@ class MethodQueryPersistenceTest {
         } finally {
             directory.toFile().deleteRecursively()
         }
+    }
+
+    private fun assertColdExactMethodSlice(graph: MappedWebGraphBackedGraph, target: MethodDescriptor) {
+        var inspected = 0
+        val pattern = MethodPattern(
+            declaringClass = Pattern.quote(target.declaringClass.className),
+            name = Pattern.quote(target.name),
+            parameterTypes = target.parameterTypes.map { Pattern.quote(it.className) },
+            useRegex = true
+        )
+        assertFailsWith<CancellationException> {
+            graph.methodSlice(
+                pattern,
+                1,
+                MethodMetadataScanConsumer {
+                    inspected++
+                    if (inspected == 2) throw CancellationException("cancelled")
+                }
+            )
+        }
+        assertEquals(2, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
+
+        inspected = 0
+        assertEquals(
+            listOf(target),
+            graph.methodSlice(pattern, 1, MethodMetadataScanConsumer { inspected++ })
+        )
+        assertEquals(3, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
+
+        assertEquals(
+            listOf(target),
+            graph.methodSlice(pattern.copy(returnType = Pattern.quote(target.returnType.className)), 1)
+        )
+        assertFalse(graph.isMethodIndexInitialized())
+
+        inspected = 0
+        assertTrue(
+            graph.methodSlice(
+                pattern.copy(name = Pattern.quote("__graphite_missing__")),
+                1,
+                MethodMetadataScanConsumer { inspected++ }
+            ).isEmpty()
+        )
+        assertEquals(0, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
     }
 
     @Test

@@ -2836,3 +2836,30 @@ index for later queries.
 
 **Conclusion:** reject and revert. The method-index construction loop remains unchanged; cold-path
 specialization must stay outside it.
+
+### 2026-09-03 - Attempt 091: Scan exact cold Method signatures without materializing a full index
+
+**Hypothesis:** an exact `m.signature` predicate already resolves class, name, and parameter strings
+to sorted string-table ids. Before the reusable Method index exists, scan the mapped metadata once
+using those ids and materialize only matches. Non-exact queries and all warm queries retain the
+existing compact-index path.
+
+**Evidence:**
+
+- Three fresh forks for each `4-position` exact case used the same four fixture-JAR-derived persisted
+  graphs, 8 GiB heap, and four active CPUs. The old/new mean latency in milliseconds was
+  `152.192 -> 146.217` for early, `152.337 -> 143.970` for middle, and `153.449 -> 148.396` for late.
+  Middle improves `5.5%`; its summed process CPU falls from `1.416` to `1.091 s` (`22.9%`). The
+  zero-hit control remains flat at `131.538 -> 128.305 ms` with equivalent CPU.
+- The complete old and new compatibility manifests are byte-identical. They cover every scoped
+  service plus every root grouped result across Android, Tika, Hive, and Kotlin compiler graphs.
+- Deterministic tests use a small persisted graph only as a correctness/path gate. They prove exact
+  class/name/parameter and optional return-type matching, missing string-table ids, scan counts,
+  cancellation without partial index publication, and fallback to the reusable index for non-exact
+  patterns. Synthetic data is not used as performance evidence.
+- The focused WebGraph suite and detekt pass. The exact pushed-head method-compatibility gate remains
+  authoritative for the prior hosted `4-position/middle` regression.
+
+**Conclusion:** keep pending exact hosted confirmation. The change removes cold full-index
+allocation from exact signature discovery without altering result order, limits, cancellation, or
+the general Method query path.
