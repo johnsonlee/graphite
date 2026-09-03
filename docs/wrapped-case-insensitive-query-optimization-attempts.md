@@ -2673,3 +2673,29 @@ three-range boundary miss and Attempt 081's many-task overhead.
 **Conclusion:** reject and revert. Executor dequeue races make a queued range an ineffective work
 bound. Stop tuning partition counts; the next attempt must be based on measured call-stack or
 allocation evidence for the two exact hosted blockers.
+
+### 2026-09-03 - Attempt 086: Specialize small exact string-id sets
+
+**Hypothesis:** JFR execution samples from ten real64 replays identify `IntOpenHashSet.contains` as
+the most frequent top frame in mapped raw scans. Exact long-term matches commonly contain one id
+per predicate, so compare arrays of at most eight ids directly and retain the hash set for larger
+candidate collections.
+
+**Evidence:**
+
+- The 13-second recording `/tmp/pr113-hotspot-candidate.jfr` contains 589 execution samples. After
+  filtering to benchmark and Graphite workers, `IntOpenHashSet.contains` is the top frame in 24
+  samples, ahead of the raw CallSite scan lambda at 21. This is profiling evidence only; acceptance
+  still uses real64 paired latency and exact correctness.
+- Three initial candidate runs under `/tmp/pr113-attempt086-exact-small-set/` complete 34/34 cases
+  with exact parity but fail the same-head comparator. Because their base batch was older, a second
+  six-fork experiment under `/tmp/pr113-attempt086-paired/` alternates candidate/base,
+  base/candidate, candidate/base on the same machine and time window.
+- All six paired runs pass correctness. The specialized lookup does not reduce charged scan work,
+  and localized early regresses in two aligned pairs, including `9.863 -> 11.861 ms`. Overall P95
+  speedup is `0.95x/1.08x/0.88x`; wrapped DISTINCT P95 is also below 1x in two pairs. CPU moves in
+  both directions and heap/RSS are unchanged.
+
+**Conclusion:** reject and revert. Frequent sampling inside hash lookup does not establish that a
+short linear search is cheaper in the optimized loop. The next profile must retain inclusive stack,
+allocation, and blocking context before selecting another production change.
