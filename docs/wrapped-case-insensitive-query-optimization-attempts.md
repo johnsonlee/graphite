@@ -3919,6 +3919,39 @@ result. This retains Attempt 123's avoidance of an eager four-property node-offs
   segment`, and observes both peaks at two.
 
 **Conclusion:** keep. Query-selected semantic validation closes the checksum-valid corruption hole
-without restoring the eager all-property page faults, changing the persisted format, or sacrificing
-the 5x P95 milestone. Exact-head full CI and hosted review gates remain required before the review
-thread is resolved. This commit is not authorization to merge or tag.
+without restoring the eager all-property page faults or changing the persisted format, but reject
+this uncached form as a terminal implementation. Exact-head hosted run `33814266997` kept the
+aggregate global-wide gate above 5x, yet repeated a `global-wide-wrapped-case-insensitive/dense`
+regression (`2.024 -> 5.613 ms`) in all three aligned pairs and failed cold K=64 graph routing
+(`0.696/5.522 -> 1.247/3.724 ms` at P50/P95). The same run also reported red real-a zero-hit
+latency and Method36 regex RSS checks, so the exact head did not satisfy the all-gates hard gate.
+The next attempt must retain this semantic check while removing repeated range validation and its
+duplicate node-order reads. This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 125: Validate all posting ranges once at mapped-view load
+
+**Hypothesis:** replace per-query posting-order validation with a single load-time pass. Build a
+temporary CallSite node-id-to-encounter-rank table from the existing mapped node-type index, then
+validate every posting range while the existing CRC/property-posting pass is already sequential.
+Discard the rank table after load, retain no new index, and leave the persisted format unchanged.
+
+**Evidence:**
+
+- The checksum-valid reordered-range regression passes: the mapped view rejects the malformed
+  sidecar and the authoritative raw scan returns encounter-order result `[0]`. Focused correctness,
+  WebGraph detekt, and JMH compilation pass. No synthetic performance evidence is used.
+- Three fresh-JVM real-64 runs on the four pinned fixture JAR families preserve all 102 oracle
+  observations. P50 is `1.892/1.842/1.873 ms` (`123.58x/131.41x/127.74x` versus frozen main), but
+  P95 is `80.501/63.316/52.273 ms`; the first pair reaches only `4.84x`, below the 5x hard gate.
+- Eager encounter-rank construction raises deterministic charged work from `58,071,626` to
+  `63,114,789` units. Replacing the temporary hash table with a compact zero-filled `IntArray`
+  removes hashing overhead but cannot remove the full CallSite walk.
+- A same-machine cold graph-routing replay against Attempt 124 confirms the regression: first K=64
+  request rises from `295.235` to `373.519 ms`, and K=64 P95 rises from `1.377` to `2.766 ms`.
+  The full-load pass touches millions of CallSites that the selected query never needs.
+
+**Conclusion:** reject and revert. Validating every range once is semantically sound but violates
+the pressure objective by doing broad work before the selected query identifies any relevant
+posting. No production or test code from this experiment remains. The next attempt should cache
+validation per selected `(property, posting row)` and reuse the first validation's node orders,
+without adding a file, magic, version, writer, or persisted field.
