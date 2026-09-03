@@ -2191,3 +2191,35 @@ completed batches are merged in source order and later batches are cancelled onc
 **Conclusion:** keep pending exact hosted confirmation. Coarsening the task unit removes most of
 the K64 scheduler tax without changing result order, correctness, graph selection, work accounting,
 or the additive CPU budget. It does not alter the unscoped 64-graph `2 + 2` global-wide path.
+
+### 2026-09-03 - Attempt 070: Bulk-validate selected trigram chunks
+
+**Hypothesis:** the compact prefilter validates every selected posting chunk by feeding each stored
+long to `CRC32` through eight Kotlin-level byte updates. Keep the same persisted checksum and exact
+posting checks, but validate the mapped byte slice with the JDK's bulk `CRC32.update(ByteBuffer)`
+path before scanning its postings for the requested trigram. This trades a second sequential read
+of a small selected chunk for far fewer interpreted checksum calls.
+
+**Evidence:**
+
+- Base: Attempt 069 commit `645237a`; candidate: this experiment commit. Dataset: the same 64
+  distinct pinned-JAR persisted graphs and remote-main correctness oracle. Three candidate runs are
+  under `/tmp/pr113-exp070-bulk-crc/`; three same-time-window base runs are under
+  `/tmp/pr113-exp070-control/`. Synthetic tests are used only for corruption/fallback behavior.
+- All six runs completed 34/34 global-wide cases with exact oracle parity. Candidate and base both
+  charge exactly `462,762` work units for wrapped DISTINCT dense and `80,171` for localized-early;
+  bulk CRC therefore does not obtain its result by weakening budget accounting.
+- Base P50 was `4.620`, `4.635`, and `4.855 ms`; candidate P50 was `2.959`, `3.261`, and
+  `3.166 ms` (a 31.7% median reduction). Base P95 was `54.306`, `51.801`, and `55.866 ms`;
+  candidate P95 was `55.357`, `53.024`, and `51.755 ms`, an overlapping range rather than a tail
+  claim.
+- Wrapped DISTINCT dense was `91.866/75.419/71.318 ms` on base and
+  `79.263/70.414/74.240 ms` on candidate: two wins and one small regression. Process CPU fell from
+  `1.890-1.950 s` to `1.815-1.880 s`. Candidate peak heap was `3.60-3.61 GiB` and peak RSS
+  `4.04-4.07 GiB`, unchanged in practice.
+- Full WebGraph tests and detekt pass. Existing tests verify exact hits and misses, directory and
+  selected-chunk corruption fallback, work-budget rejection, and interruption.
+
+**Conclusion:** keep as a measurable P50/CPU improvement, not as proof that the remaining wrapped
+DISTINCT tail gate is solved. The binary format and checksum are unchanged, every selected chunk is
+still verified before its matches are accepted, and exact string comparison remains authoritative.

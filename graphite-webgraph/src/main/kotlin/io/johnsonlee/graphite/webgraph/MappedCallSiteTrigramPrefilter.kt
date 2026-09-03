@@ -36,6 +36,7 @@ import java.util.zip.CheckedOutputStream
  */
 internal class MappedCallSiteTrigramPrefilter private constructor(
     private val chunks: IntBuffer,
+    private val trigramPostingBytes: ByteBuffer,
     private val trigramPostings: LongBuffer,
     private val propertyStringIds: Array<IntBuffer>,
     private val stringCount: Int,
@@ -82,40 +83,55 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
             val matches = IntArray(anchor.size)
             var matchCount = 0
             var foundAnchorTrigram = false
-            var chunkIndex = anchor.firstChunk
-            val chunkChecksum = CRC32()
-            for (postingIndex in anchor.start until anchor.end) {
-                if ((postingIndex and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
-                accounting.consume()
-                val posting = trigramPostings.get(postingIndex)
-                chunkChecksum.updatePrefilterLongBigEndian(posting)
-                val trigram = (posting ushr Int.SIZE_BITS).toInt()
-                val stringId = posting.toInt()
-                if (stringId !in 0 until stringCount) return null
-                if (trigram == anchor.trigram) {
-                    foundAnchorTrigram = true
-                    stringTable.get(stringId, actual)
-                    val value = actual.toString()
-                    val compared = if (predicate.transform == StringValueTransform.LOWERCASE) value.lowercase() else value
-                    if (compared.contains(predicate.expected)) matches[matchCount++] = stringId
-                }
+            for (chunkIndex in anchor.firstChunk..anchor.lastChunk) {
                 val chunkOffset = chunkIndex * CHUNK_ENTRY_INTS
-                if (postingIndex + 1 == chunks.get(chunkOffset + CHUNK_END_INDEX)) {
-                    val expectedChecksum = chunks.get(chunkOffset + CHUNK_CHECKSUM_INDEX).toLong() and
-                        PREFILTER_UNSIGNED_INT_MASK
-                    if (trigram != chunks.get(chunkOffset + CHUNK_MAX_TRIGRAM_INDEX) ||
-                        chunkChecksum.value != expectedChecksum
-                    ) return null
-                    chunkChecksum.reset()
-                    chunkIndex++
+                val chunkStart = if (chunkIndex == 0) 0 else {
+                    chunks.get(chunkOffset - CHUNK_ENTRY_INTS + CHUNK_END_INDEX)
+                }
+                val chunkEnd = chunks.get(chunkOffset + CHUNK_END_INDEX)
+                if (!validatePostingChunk(chunkStart, chunkEnd, chunkOffset)) return null
+                for (postingIndex in chunkStart until chunkEnd) {
+                    if ((postingIndex and PREFILTER_INTERRUPTION_POLL_MASK) == 0) checkInterrupted()
+                    accounting.consume()
+                    val posting = trigramPostings.get(postingIndex)
+                    val trigram = (posting ushr Int.SIZE_BITS).toInt()
+                    val stringId = posting.toInt()
+                    if (stringId !in 0 until stringCount) return null
+                    if (trigram == anchor.trigram) {
+                        foundAnchorTrigram = true
+                        stringTable.get(stringId, actual)
+                        val value = actual.toString()
+                        val compared = if (predicate.transform == StringValueTransform.LOWERCASE) {
+                            value.lowercase()
+                        } else {
+                            value
+                        }
+                        if (compared.contains(predicate.expected)) matches[matchCount++] = stringId
+                    }
                 }
             }
-            if (chunkIndex != anchor.lastChunk + 1) return null
             if (!foundAnchorTrigram) return IntArray(0)
             return matches.copyOf(matchCount)
         } finally {
             accounting.flush()
         }
+    }
+
+    private fun validatePostingChunk(start: Int, end: Int, chunkOffset: Int): Boolean {
+        checkInterrupted()
+        val byteStart = Math.multiplyExact(start, Long.SIZE_BYTES)
+        val byteEnd = Math.multiplyExact(end, Long.SIZE_BYTES)
+        val bytes = trigramPostingBytes.duplicate().apply {
+            position(byteStart)
+            limit(byteEnd)
+        }.slice()
+        val checksum = CRC32().apply { update(bytes) }
+        checkInterrupted()
+        val lastTrigram = (trigramPostings.get(end - 1) ushr Int.SIZE_BITS).toInt()
+        val expectedChecksum = chunks.get(chunkOffset + CHUNK_CHECKSUM_INDEX).toLong() and
+            PREFILTER_UNSIGNED_INT_MASK
+        return lastTrigram == chunks.get(chunkOffset + CHUNK_MAX_TRIGRAM_INDEX) &&
+            checksum.value == expectedChecksum
     }
 
     private fun findChunkSpan(trigram: Int): TrigramChunkSpan? {
@@ -208,14 +224,16 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                             propertyChecksums,
                             workConsumer
                         )
-                        val postingBytes = postingCount.toLong() * Long.SIZE_BYTES
-                        val postings = indexChannel.map(
+                        val postingByteCount = postingCount.toLong() * Long.SIZE_BYTES
+                        val postingBuffer = indexChannel.map(
                             FileChannel.MapMode.READ_ONLY,
                             postingsOffset,
-                            postingBytes
-                        ).order(ByteOrder.BIG_ENDIAN).asLongBuffer()
+                            postingByteCount
+                        ).order(ByteOrder.BIG_ENDIAN)
+                        val postings = postingBuffer.asLongBuffer()
                         MappedCallSiteTrigramPrefilter(
                             chunkValues.asReadOnlyBuffer(),
+                            postingBuffer.asReadOnlyBuffer(),
                             postings.asReadOnlyBuffer(),
                             propertyStrings,
                             stringCount,
@@ -431,12 +449,6 @@ private fun replaceCallSiteTrigramPrefilter(source: Path, target: Path) {
 private fun checkInterrupted() {
     if (Thread.currentThread().isInterrupted) {
         throw CancellationException("Mapped CallSite trigram prefilter interrupted")
-    }
-}
-
-private fun CRC32.updatePrefilterLongBigEndian(value: Long) {
-    repeat(Long.SIZE_BYTES) { byteIndex ->
-        update(((value ushr ((Long.SIZE_BYTES - 1 - byteIndex) * Byte.SIZE_BITS)) and 0xffL).toInt())
     }
 }
 
