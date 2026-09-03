@@ -19,6 +19,7 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.CRC32
 
 internal interface CallSiteStringIdMembership {
@@ -46,6 +47,7 @@ internal class MappedCallSiteStringIndexView private constructor(
     private val stringTable: StringTable,
     private val nodeOrder: (Int) -> Long
 ) : CallSiteStringIdMembership {
+    private val validatedPostingRanges = ConcurrentHashMap<Long, Boolean>()
 
     override fun containsPropertyStringId(
         propertyIndex: Int,
@@ -110,8 +112,13 @@ internal class MappedCallSiteStringIndexView private constructor(
             if (propertyIndex < 0) return null
             exactMatchingStringIds[predicateIndex].forEach { stringId ->
                 val range = postingRange(propertyIndex, stringId, workConsumer) ?: return@forEach
-                val cursor = validatedPostingCursor(propertyPostingNodeIds[propertyIndex], range, workConsumer)
-                    ?: return null
+                val cursor = validatedPostingCursor(
+                    propertyIndex,
+                    range.row,
+                    propertyPostingNodeIds[propertyIndex],
+                    range.positions,
+                    workConsumer
+                ) ?: return null
                 ranges += cursor
             }
         }
@@ -144,36 +151,47 @@ internal class MappedCallSiteStringIndexView private constructor(
     }
 
     private fun validatedPostingCursor(
+        propertyIndex: Int,
+        row: Int,
         postings: IntBuffer,
         range: IntRange,
         workConsumer: GraphWorkConsumer?
     ): MappedPostingCursor? {
+        val key = propertyIndex.toLong() shl Int.SIZE_BITS or (row.toLong() and UINT_MASK)
+        validatedPostingRanges[key]?.let { valid ->
+            return if (valid) MappedPostingCursor(postings, range, nodeOrder) else null
+        }
         val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val orders = LongArray(range.last - range.first + 1)
         var previousOrder = Long.MIN_VALUE
+        var valid = true
         try {
             for (position in range) {
                 if ((position and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
                 accounting.consume()
                 val order = nodeOrder(postings.get(position))
-                if (order < 0L || order <= previousOrder) return null
+                orders[position - range.first] = order
+                if (order < 0L || order <= previousOrder) valid = false
                 previousOrder = order
             }
         } finally {
             accounting.flush()
         }
-        return MappedPostingCursor(postings, range, nodeOrder)
+        val accepted = validatedPostingRanges.putIfAbsent(key, valid) ?: valid
+        if (!accepted) return null
+        return MappedPostingCursor(postings, range, nodeOrder, orders)
     }
 
     private fun postingRange(
         propertyIndex: Int,
         stringId: Int,
         workConsumer: GraphWorkConsumer?
-    ): IntRange? {
+    ): IndexedPostingRange? {
         val row = binarySearch(propertyStringIds[propertyIndex], stringId, workConsumer)
         if (row < 0) return null
         val end = propertyPostingEnds[propertyIndex].get(row)
         val start = if (row == 0) 0 else propertyPostingEnds[propertyIndex].get(row - 1)
-        return start until end
+        return IndexedPostingRange(row, start until end)
     }
 
     private fun exactMatchingStringIds(
@@ -370,9 +388,6 @@ internal class MappedCallSiteStringIndexView private constructor(
                     previousEnd = end
                 }
                 require(previousEnd == callSiteCount)
-                // Keep cold view validation sequential. The writer stores each range in encounter
-                // order and the file checksum authenticates those bytes; resolving nodeOrder for
-                // every posting here would fault unrelated node-offset pages before any match.
                 validator.updateInts(propertyPostings[propertyIndex]) { nodeId ->
                     require(nodeId in 0 until nodeIdCapacity)
                 }
@@ -535,17 +550,21 @@ private data class MappedPredicateKey(
     val expected: String
 )
 
+private data class IndexedPostingRange(val row: Int, val positions: IntRange)
+
 private class MappedPostingCursor(
     private val postings: IntBuffer,
     range: IntRange,
-    private val nodeOrder: (Int) -> Long
+    private val nodeOrder: (Int) -> Long,
+    private val validatedOrders: LongArray? = null
 ) {
+    private val firstPosition = range.first
     private var position = range.first
     private val lastPosition = range.last
 
     var nodeId: Int = postings.get(position)
         private set
-    var order: Long = nodeOrder(nodeId)
+    var order: Long = orderAt(position)
         private set
 
     fun hasCurrent(): Boolean = position <= lastPosition
@@ -553,14 +572,17 @@ private class MappedPostingCursor(
     fun advance(): Boolean {
         if (++position > lastPosition) return false
         nodeId = postings.get(position)
-        order = nodeOrder(nodeId)
+        order = orderAt(position)
         return true
     }
+
+    private fun orderAt(index: Int): Long = validatedOrders?.get(index - firstPosition) ?: nodeOrder(nodeId)
 }
 
 private const val TRIGRAM_LENGTH = 3
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
+private const val UINT_MASK = 0xffff_ffffL
 private const val VIEW_INTERRUPTION_POLL_MASK = 1_023
 private const val CHECKSUM_CHUNK_BYTES = 1 shl 20
 private const val MIN_INDEX_VIEW_BYTES = CALL_SITE_STRING_INDEX_HEADER_BYTES + Long.SIZE_BYTES

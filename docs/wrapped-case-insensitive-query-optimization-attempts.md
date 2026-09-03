@@ -3955,3 +3955,40 @@ the pressure objective by doing broad work before the selected query identifies 
 posting. No production or test code from this experiment remains. The next attempt should cache
 validation per selected `(property, posting row)` and reuse the first validation's node orders,
 without adding a file, magic, version, writer, or persisted field.
+
+### 2026-09-04 - Attempt 126: Cache selected posting-range validation
+
+**Hypothesis:** retain Attempt 124's query-selected semantic validation, but validate each immutable
+`(property, posting row)` at most once per mapped view. On the first lookup, resolve and verify the
+entire range before yielding any node, retain only its valid/invalid result, and give that query's
+cursor the already-resolved node orders so it does not read them twice. Later lookups reuse the
+validation result and resolve only nodes actually consumed by the merge. This avoids Attempt 125's
+full CallSite walk and keeps checksum-valid semantic corruption on the authoritative raw fallback.
+
+**Evidence:**
+
+- The checksum-valid `[0, 1, 2] -> [1, 0, 2]` regression still returns `[0]`: the first selected
+  range is fully checked before `LIMIT 1`, its invalid result is retained by the view, and the raw
+  path supplies encounter order. Focused correctness, WebGraph detekt, and JMH compilation pass.
+- Three fresh-JVM real-64 runs use the same four pinned fixture JAR families, 8 GiB heap, four
+  active CPUs, and frozen main-derived 34-case oracle as Attempts 122-125. All 102 observations
+  match outcome, row order, digest, response size, and provenance. No synthetic performance
+  evidence is used.
+- Candidate P50 is `1.819/1.727/1.673 ms` versus main's
+  `233.827/242.054/239.299 ms`, or `128.56x/140.12x/143.04x`. Candidate P95 is
+  `50.849/68.260/57.374 ms`, or `7.65x/5.85x/7.17x`; every independent fork clears 5x and the
+  worst wrapped case-insensitive P95 speedup is `7.61x`.
+- Process CPU is `1.421/1.572/1.447 s`; peak used heap is `4.38/4.38/4.38 GiB`, and peak RSS is
+  `4.89/4.87/4.89 GiB`. Charged work returns to exactly `58,071,626` in every fork instead of
+  Attempt 125's `63,114,789`; no unselected CallSite is walked for encounter-rank construction.
+- A same-machine cold graph-routing replay against exact Attempt 124 completes all 1,137 oracle
+  cases. Query-level graphId P50/P95 is `1.06x/1.01x`, request-selected P50/P95 is
+  `0.99x/0.99x`, K=64 aggregate is `0.341/1.377 -> 0.322/1.494 ms`, and the first cold K=64
+  request improves from `295.235` to `260.761 ms`. Peak RSS falls from `6.60` to `6.17 GiB`.
+
+**Conclusion:** keep for exact hosted validation. The cache is process-local state attached to the
+existing read-only mapped view; it adds no file, magic, version, writer, persisted field, or startup
+scan. It preserves the semantic hard gate, restores the real-64 5x milestone, and removes the cold
+K=64 regression measured in Attempt 125. Exact-head full CI, hosted performance/resource gates,
+and both remaining review threads are still required. This commit is not authorization to merge or
+tag.
