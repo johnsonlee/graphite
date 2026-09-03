@@ -3079,3 +3079,26 @@ This may reduce the cold dense DISTINCT cost without weakening sidecar validatio
 **Conclusion:** reject and revert. The byte-wise CRC is not the dense DISTINCT bottleneck, and the
 bulk mapped-buffer pass adds cold-page cost to smaller zero-result queries. No production or test
 code from this experiment is retained.
+
+### 2026-09-03 - Attempt 099: Preserve lazy Method streams around exact-pattern rejection
+
+**Hypothesis:** Attempt 097's impossible-pattern check is safe only when it preserves the public
+`StreamingMethodLookup` contract. Wrapping both the check and `methodIndex()` access in the returned
+sequence should keep the fast empty result while deferring all index work until sequence consumption.
+
+**Evidence:**
+
+- On exact parent `0530cd6b565cb261721a2eb616acff62707a92c1`, a persisted-graph regression test first
+  captured the review report: constructing `graph.methods(MethodPattern())` immediately initialized
+  the retained Method index and failed before consuming the sequence.
+- With the lazy wrapper, the same test proves the Method index remains uninitialized after sequence
+  construction and initializes only when `take(1)` consumes it. The existing result, count,
+  DISTINCT ordering, and UNWIND assertions continue to pass without initializing full graph metadata.
+- The complete WebGraph test suite and WebGraph detekt pass in a clean regular clone. This test is a
+  correctness and execution-path fixture only; no synthetic timing result is used as performance
+  evidence. The consumed Method lookup still delegates to the same index and matcher, so this step
+  makes no new latency claim.
+
+**Conclusion:** keep. The exact impossible-pattern shortcut remains, while abandoned or deferred
+Method sequences no longer pay eager CPU or heap cost. The exact pushed-head CI and Method
+compatibility gate remain mandatory before resolving the review thread.

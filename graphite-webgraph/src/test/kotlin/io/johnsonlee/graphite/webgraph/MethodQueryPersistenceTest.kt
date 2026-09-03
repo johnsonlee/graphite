@@ -84,7 +84,9 @@ class MethodQueryPersistenceTest {
             val graph = GraphStore.loadMapped(directory) as MappedWebGraphBackedGraph
             try {
                 assertFalse(graph.isMetadataInitialized())
-                assertEquals(1, graph.methods(MethodPattern()).take(1).count())
+                val unconsumed = graph.methods(MethodPattern())
+                assertFalse(graph.isMethodIndexInitialized())
+                assertEquals(1, unconsumed.take(1).count())
                 assertFalse(graph.isMetadataInitialized())
 
                 val count = CypherExecutor(
