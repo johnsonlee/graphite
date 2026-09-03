@@ -595,6 +595,103 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `dense mapped matches scan ordered prefix waves and corrupt counts fall back`() {
+        val returnType = TypeDescriptor("void")
+        val firstMatch = 11_000
+        val matchCount = 200
+        val graph = DefaultGraph.Builder().apply {
+            repeat(32_768) { nodeId ->
+                val callerClass = if (nodeId in firstMatch until firstMatch + matchCount) {
+                    "example.LocalizedNeedleCaller"
+                } else {
+                    "example.OtherCaller"
+                }
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val orderedGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).sortedBy { node -> node.id.value }
+        }
+        val predicate = StringPropertyPredicate(
+            CALLER_CLASS_PROPERTY,
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "localizedneedle"
+        )
+        val dir = Files.createTempDirectory("webgraph-dense-prefix-waves")
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(orderedGraph, dir, prepareCallSiteStringIndex = true)
+
+            fun queryWork(): Pair<List<Int>, Long> {
+                val work = AtomicLong()
+                val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+                return loaded.use {
+                    val scanThreads = ConcurrentHashMap.newKeySet<String>()
+                    val scanWorkersStarted = CountDownLatch(3)
+                    val ids = loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = matchCount,
+                        workConsumer = object : SplitGraphWorkBatchConsumer {
+                            override val segmentWorkerCount: Int = 2
+                            override fun consume(workUnits: Long) {
+                                work.addAndGet(workUnits)
+                                if (loaded.callSiteScanActiveWorkers() > 0 &&
+                                    scanThreads.add(Thread.currentThread().name)
+                                ) {
+                                    scanWorkersStarted.countDown()
+                                    assertTrue(scanWorkersStarted.await(5, TimeUnit.SECONDS))
+                                }
+                            }
+                        }
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                    assertEquals(1L, loaded.callSiteParallelScanCount())
+                    assertEquals(3, loaded.callSiteScanPeakActiveWorkers())
+                    assertEquals(3, scanThreads.size)
+                    assertEquals(0, loaded.callSiteScanActiveWorkers())
+                    assertTrue(loaded.isCallSiteTrigramPrefilterInitialized())
+                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    ids to work.get()
+                }
+            }
+
+            val expected = (firstMatch until firstMatch + matchCount).toSet()
+            val (prefixIds, prefixWork) = queryWork()
+            assertEquals(expected, prefixIds.toSet())
+            assertEquals(matchCount, prefixIds.size)
+
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val corruptIndex = Files.readAllBytes(indexFile)
+            val header = ByteBuffer.wrap(corruptIndex).order(ByteOrder.BIG_ENDIAN)
+            val callerUniqueCount = header.getInt(
+                4 * Int.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
+            )
+            val postingEndsOffset = CALL_SITE_STRING_INDEX_HEADER_BYTES + callerUniqueCount * Int.SIZE_BYTES
+            repeat(callerUniqueCount) { row ->
+                header.putInt(postingEndsOffset + row * Int.SIZE_BYTES, 0)
+            }
+            Files.write(indexFile, corruptIndex)
+
+            val (fallbackIds, fallbackWork) = queryWork()
+            assertEquals(prefixIds, fallbackIds)
+            assertTrue(prefixWork < fallbackWork, "ordered prefix should avoid the second half: $prefixWork >= $fallbackWork")
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `compact trigram directory persists the actual chunk count for 4097 postings`() {
         val returnType = TypeDescriptor("v")
         val alphabet = "abcdefghijklmnop"

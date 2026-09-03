@@ -872,7 +872,13 @@ internal class MappedWebGraphBackedGraph(
                     predicates,
                     limit,
                     workConsumer,
-                    exactMatches
+                    exactMatches,
+                    callSiteTrigramPrefilter?.exactMatchesCanFillLimit(
+                        predicates,
+                        exactMatches,
+                        limit,
+                        workConsumer
+                    ) == true
                 )?.let { return it }
             }
             retainPersistedCallSiteStringIndexForSplit(workConsumer)
@@ -1022,7 +1028,8 @@ internal class MappedWebGraphBackedGraph(
         predicates: List<StringPropertyPredicate>,
         limit: Int,
         workConsumer: GraphWorkConsumer?,
-        exactMatchingStringIds: List<IntArray>? = null
+        exactMatchingStringIds: List<IntArray>? = null,
+        orderedPrefixWaves: Boolean = false
     ): Sequence<T>? {
         if (workConsumer !is ParallelGraphWorkBatchConsumer) return null
         val splitWork = workConsumer as? SplitGraphWorkBatchConsumer
@@ -1041,7 +1048,8 @@ internal class MappedWebGraphBackedGraph(
             nodeCount.toInt(),
             backgroundWorkerCount + if (splitWork == null) 0 else 1
         )
-        val chunkSize = (nodeCount + workerCount - 1L) / workerCount
+        val rangeCount = if (orderedPrefixWaves) workerCount * ORDERED_PREFIX_WAVE_COUNT else workerCount
+        val chunkSize = (nodeCount + rangeCount - 1L) / rangeCount
         val predicatePropertyIndexes = predicates.map { predicate ->
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
@@ -1054,7 +1062,7 @@ internal class MappedWebGraphBackedGraph(
             }
         } else emptyList()
         val exactMatchSets = exactMatchingStringIds?.map(::IntOpenHashSet)
-        val scanRanges = (0 until workerCount).mapNotNull { workerIndex ->
+        val scanRanges = (0 until rangeCount).mapNotNull { workerIndex ->
             val start = (workerIndex * chunkSize).toInt()
             val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
             if (start >= end) return@mapNotNull null
@@ -1157,13 +1165,8 @@ internal class MappedWebGraphBackedGraph(
             }
         }
         callSiteParallelScanCount.incrementAndGet()
-        val inlineTask = tasks.firstOrNull().takeIf { splitWork != null }
-        val backgroundTasks = if (inlineTask == null) tasks else tasks.drop(1)
-        backgroundTasks.map { task ->
-            if (splitWork == null) task else trackedSplitCallSiteTask(task)
-        }.forEach(completion::submit)
         val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
-        var received = 0
+        var executedTasks = 0
         var failure: Throwable? = null
         var interruption: InterruptedException? = null
         fun recordFailure(error: Throwable) {
@@ -1172,28 +1175,43 @@ internal class MappedWebGraphBackedGraph(
                 failure = error
             }
         }
-        inlineTask?.let { task ->
-            try {
-                val workerResult = task.call()
-                results[workerResult.workerIndex] = workerResult
-            } catch (error: Throwable) {
-                recordFailure(error)
-            } finally {
-                received++
+        var waveStart = 0
+        var orderedPrefixComplete = false
+        while (waveStart < tasks.size && failure == null && interruption == null && !orderedPrefixComplete) {
+            val wave = tasks.subList(waveStart, minOf(tasks.size, waveStart + workerCount))
+            val inlineTask = wave.firstOrNull().takeIf { splitWork != null }
+            val backgroundTasks = if (inlineTask == null) wave else wave.drop(1)
+            backgroundTasks.map { task ->
+                if (splitWork == null) task else trackedSplitCallSiteTask(task)
+            }.forEach(completion::submit)
+            var received = 0
+            inlineTask?.let { task ->
+                try {
+                    val workerResult = task.call()
+                    results[workerResult.workerIndex] = workerResult
+                } catch (error: Throwable) {
+                    recordFailure(error)
+                } finally {
+                    received++
+                }
             }
-        }
-        while (received < tasks.size) {
-            try {
-                val workerResult = completion.take().get()
-                results[workerResult.workerIndex] = workerResult
-                received++
-            } catch (error: InterruptedException) {
-                abort.set(true)
-                if (interruption == null) interruption = error
-            } catch (error: ExecutionException) {
-                recordFailure(error.cause ?: error)
-                received++
+            while (received < wave.size) {
+                try {
+                    val workerResult = completion.take().get()
+                    results[workerResult.workerIndex] = workerResult
+                    received++
+                } catch (error: InterruptedException) {
+                    abort.set(true)
+                    if (interruption == null) interruption = error
+                } catch (error: ExecutionException) {
+                    recordFailure(error.cause ?: error)
+                    received++
+                }
             }
+            executedTasks += wave.size
+            orderedPrefixComplete = orderedPrefixWaves && results.asSequence().take(executedTasks)
+                .filterNotNull().sumOf { result -> result.matches.size } >= limit
+            waveStart += wave.size
         }
         interruption?.let { error ->
             indexReservation?.close()
@@ -1209,7 +1227,9 @@ internal class MappedWebGraphBackedGraph(
         indexReservation?.let { reservation ->
             indexReservation = null
             val completed = results.filterNotNull()
-            if (completed.size == tasks.size && completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)) {
+            if (executedTasks == tasks.size && completed.size == tasks.size &&
+                completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)
+            ) {
                 try {
                     buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
                 } catch (cancelled: CancellationException) {
@@ -2455,6 +2475,7 @@ private const val RAW_PROJECTION_MIN_PROBE_NODES = 64
 private const val RAW_PROJECTION_MAX_PROBE_NODES = 1_024
 private const val RAW_PROJECTION_PROBE_FACTOR = 4
 private const val MAX_RAW_PROJECTION_MATCH_ENTRIES = 16
+private const val ORDERED_PREFIX_WAVE_COUNT = 2
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 internal const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L

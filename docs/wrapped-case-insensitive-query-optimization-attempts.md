@@ -2699,3 +2699,45 @@ candidate collections.
 **Conclusion:** reject and revert. Frequent sampling inside hash lookup does not establish that a
 short linear search is cheaper in the optimized loop. The next profile must retain inclusive stack,
 allocation, and blocking context before selecting another production change.
+
+### 2026-09-03 - Attempt 087: Scan dense exact matches in ordered prefix waves
+
+**Hypothesis:** the fixed three-range scan makes all three physical scan slots traverse equal
+thirds even when LIMIT is satisfied by an early source-order prefix. Use the posting ends already
+stored in the exact sidecar only as a conservative density signal. When the matching string ids can
+provide at least LIMIT occurrences, split the graph into six ordered ranges but submit only one
+three-slot wave at a time. If the first half supplies LIMIT rows, never submit the second half;
+sparse terms retain the existing single three-range wave.
+
+**Evidence:**
+
+- A 200-replay isolated JFR under `/tmp/pr113-profile-isolated.reRNGH/results/` attributes the
+  localized-early CPU samples to the mapped raw scan on all three active scan slots, rather than a
+  lock, GC, or inactive executor. The extra work is speculative range scanning after the ordered
+  prefix can already determine the result.
+- Base is exact PR head `efa9fb477718b3e711a9a695c0a30ebfb6439c43`. Candidate evidence is the
+  final isolated checkout under `/tmp/pr113-attempt087.qSvzUz/`; the six same-window forks under
+  `/tmp/pr113-attempt087-final-paired/` alternate candidate/base, base/candidate, candidate/base.
+  Every fork executes the complete 34-case, four-pinned-JAR real64 workload with 8 GiB heap and
+  four active CPUs. All candidate outcomes, row counts, ordered digests, response sizes, and hit
+  graph ids match the exact base oracle.
+- Localized-early charged work falls deterministically from `80,173` to `46,650`. Latency moves
+  from `9.513/28.355/9.546 ms` on base to `5.234/3.902/7.034 ms` on candidate. Wrapped targeted
+  remains on the original one-wave path, while wrapped non-DISTINCT dense remains at 665 work
+  units and `1.379/1.300/1.275 ms` versus base `1.303/1.325/1.369 ms`; there is no repeated
+  changed-path regression.
+- The complete same-head comparator remains red because one reverse-order fork has unrelated
+  wrapped DISTINCT and aggregate P95 noise and two pairs flag the untouched provenance-targeted
+  row. This attempt is therefore not represented as a complete PR gate result. Process CPU is
+  lower in all three pairs; heap and RSS ranges overlap.
+- Posting-end buffers are mapped lazily, only for this planner decision. Missing, truncated, or
+  malformed summaries fall back to the original one-wave scan and cannot exclude a row. The new
+  deterministic regression forces three physical scan slots to overlap, proves the prefix path
+  returns the exact ordered result, corrupts every caller posting end, and proves fallback returns
+  the identical result while doing more work. The complete WebGraph test suite and detekt pass.
+
+**Conclusion:** keep as a measured localized-early improvement pending exact hosted confirmation.
+It preserves the additive `2 graph + 2 segment` plan and does not create queued-task races: at most
+the existing two background segment tasks plus the inline graph worker run at once. The remaining
+global wrapped-dense and graph-routing blockers stay open and must pass on the same pushed head
+before this optimization is mergeable.

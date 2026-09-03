@@ -39,12 +39,14 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
     private val chunks: IntBuffer,
     private val trigramPostingBytes: ByteBuffer,
     private val trigramPostings: LongBuffer,
-    private val propertyStringIds: Array<IntBuffer>,
+    private val propertyDirectory: MappedPropertyDirectory,
     private val propertyStringChecksums: LongArray,
     private val stringCount: Int,
     private val stringTable: StringTable
 ) {
+    private val propertyStringIds get() = propertyDirectory.stringIds
     private val propertyStringValidationStates = AtomicIntegerArray(propertyStringIds.size)
+    private val propertyPostingEnds = arrayOfNulls<IntBuffer>(propertyStringIds.size)
 
     fun containsPropertyStringId(
         propertyIndex: Int,
@@ -96,6 +98,65 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                 ?: return null
         }
     }
+
+    fun exactMatchesCanFillLimit(
+        predicates: List<StringPropertyPredicate>,
+        exactMatchingStringIds: List<IntArray>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer?
+    ): Boolean {
+        if (limit <= 0) return true
+        if (predicates.size != exactMatchingStringIds.size) return false
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        var occurrences = 0L
+        try {
+            predicates.indices.forEach { predicateIndex ->
+                val propertyIndex = callSiteStringPropertyIndex(predicates[predicateIndex].property)
+                if (propertyIndex < 0) return false
+                val stringIds = propertyStringIds[propertyIndex]
+                val postingEnds = propertyPostingEnds(propertyIndex) ?: return false
+                exactMatchingStringIds[predicateIndex].forEach { stringId ->
+                    val row = binarySearchIndex(stringIds, stringId, accounting)
+                    if (row < 0) return@forEach
+                    val end = postingEnds.get(row)
+                    val start = if (row == 0) 0 else postingEnds.get(row - 1)
+                    if (start !in 0..end || end > propertyDirectory.callSiteCount) return false
+                    occurrences += end - start
+                    if (occurrences >= limit) return true
+                }
+            }
+            return false
+        } finally {
+            accounting.flush()
+        }
+    }
+
+    private fun propertyPostingEnds(propertyIndex: Int): IntBuffer? =
+        propertyPostingEnds[propertyIndex] ?: synchronized(propertyPostingEnds) {
+            propertyPostingEnds[propertyIndex] ?: try {
+                val count = propertyDirectory.uniqueCounts[propertyIndex]
+                val values = if (count == 0) {
+                    IntBuffer.allocate(0)
+                } else {
+                    val propertyOffset = (0 until propertyIndex).sumOf { precedingIndex ->
+                        propertyDirectory.uniqueCounts[precedingIndex].toLong() * 2L * Int.SIZE_BYTES +
+                            propertyDirectory.callSiteCount.toLong() * Int.SIZE_BYTES
+                    }
+                    val offset = CALL_SITE_STRING_INDEX_HEADER_BYTES.toLong() + propertyOffset +
+                        count.toLong() * Int.SIZE_BYTES
+                    FileChannel.open(propertyDirectory.exactIndexPath, StandardOpenOption.READ).use { channel ->
+                        channel.map(FileChannel.MapMode.READ_ONLY, offset, count.toLong() * Int.SIZE_BYTES)
+                            .order(ByteOrder.BIG_ENDIAN).asIntBuffer().asReadOnlyBuffer()
+                    }
+                }
+                propertyPostingEnds[propertyIndex] = values
+                values
+            } catch (_: IOException) {
+                null
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+        }
 
     private fun exactMatchingStringIds(
         predicate: StringPropertyPredicate,
@@ -283,7 +344,12 @@ internal class MappedCallSiteTrigramPrefilter private constructor(
                             chunkValues.asReadOnlyBuffer(),
                             postingBuffer.asReadOnlyBuffer(),
                             postings.asReadOnlyBuffer(),
-                            propertyStrings,
+                            MappedPropertyDirectory(
+                                propertyStrings,
+                                exactIndexPath,
+                                uniqueCounts.copyOf(),
+                                callSiteCount
+                            ),
                             propertyChecksums,
                             stringCount,
                             stringTable
@@ -482,6 +548,26 @@ private fun binarySearch(values: IntBuffer, target: Int): Boolean {
     return false
 }
 
+private fun binarySearchIndex(
+    values: IntBuffer,
+    target: Int,
+    accounting: BufferedGraphWorkConsumer
+): Int {
+    var low = 0
+    var high = values.limit() - 1
+    while (low <= high) {
+        accounting.consume()
+        val middle = (low + high).ushr(1)
+        val value = values.get(middle)
+        when {
+            value < target -> low = middle + 1
+            value > target -> high = middle - 1
+            else -> return middle
+        }
+    }
+    return -1
+}
+
 private fun replaceCallSiteTrigramPrefilter(source: Path, target: Path) {
     try {
         Files.move(
@@ -521,6 +607,13 @@ private data class PrefilterPredicateKey(
     val transform: StringValueTransform?,
     val mode: StringMatchMode,
     val expected: String
+)
+
+private data class MappedPropertyDirectory(
+    val stringIds: Array<IntBuffer>,
+    val exactIndexPath: Path,
+    val uniqueCounts: IntArray,
+    val callSiteCount: Int
 )
 
 internal const val CALL_SITE_TRIGRAM_PREFILTER_MAGIC = 0x47525450
