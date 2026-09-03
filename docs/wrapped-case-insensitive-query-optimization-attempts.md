@@ -3877,7 +3877,8 @@ resolve `nodeOrder` lazily while query-selected posting ranges are merged.
 - Focused tests now cover multi-element mapped posting cursors, cross-property source-order merge
   and de-duplication, and both the `exactMatchesCanFillLimit` true and false segmented fallback.
   Cypher also executes the split consumer's work-forwarding branch. Full measured coverage returns
-  to WebGraph `98.1081%` and Cypher `98.0006%` without changing thresholds or exclusions.
+  to WebGraph `98.1081%` and Cypher `98.0324%` without changing thresholds or exclusions; the
+  explicit qualified-work-tracker contract keeps Cypher clear of the rounding boundary.
 
 **Conclusion:** keep. Eager validation remains integrity-checked but sequential and no longer walks
 the entire node-offset mapping merely to open a CallSite sidecar. The 64-real correctness/latency

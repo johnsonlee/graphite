@@ -168,6 +168,24 @@ class QueryPipelineTest {
         assertEquals(11, result.rows.size)
     }
 
+    @Test
+    fun `qualified pipeline forwards an explicit work tracker`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", null)))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "id"), "id")))
+        )
+        val tracked = QueryPipeline(
+            listOf(CypherGraph("first", graph), CypherGraph("second", graph)),
+            workTrackingEnabled = true
+        )
+        val result = tracked.execute(
+            clauses,
+            CypherWorkTracker(CypherExecutionBudget(maxWorkUnits = 100_000))
+        )
+
+        assertEquals(22, result.rows.size)
+    }
+
     // ========================================================================
     // MATCH - 2. Match by label
     // ========================================================================
