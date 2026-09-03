@@ -2563,3 +2563,33 @@ regardless of its position while bounding speculative work to the additive segme
 scheduled solely from term length. The persisted exact index already stores each string id's
 posting end; the next experiment will map and validate those compact arrays and enable ordered
 chunks only when the exact matching ids can supply at least LIMIT occurrences.
+
+### 2026-09-03 - Attempt 082: Gate ordered chunks with mapped posting counts
+
+**Hypothesis:** map the posting-end arrays already stored beside each property's sorted string ids
+and sum the exact matching ids' occurrence counts. Enable Attempt 081's ordered chunks only when
+that upper bound can fill LIMIT; otherwise retain the existing equal-segment scan. This should
+isolate chunk scheduling to dense localized terms without changing the persisted format.
+
+**Evidence:**
+
+- Base, fixture-derived 64 graphs, oracle, four-CPU/8 GiB JVM, and three paired cold runs are the
+  same as Attempts 076-081. Final candidate evidence is under
+  `/tmp/pr113-attempt082-occurrence-gated-b/`; every run completed 34/34 cases with exact ordered
+  result, response, digest, and provenance parity.
+- The mapped count distinguishes the two previously conflicting shapes. Wrapped targeted retains
+  the equal-segment path and essentially its old work (`221,480 -> 221,567` including bounded
+  planner reads), with `16.891/17.591/17.997 ms` versus base `17.898/16.874/17.287 ms`. Localized
+  early takes the chunk path and reduces work from 80,173 to `52,836-57,956`.
+- Reduced work does not translate into stable latency: localized early measures
+  `17.559/11.975/11.907 ms` versus base `9.286/9.471/18.289 ms`, and the comparator reports the
+  aligned regression in two pairs. Overall P50 is `3.124/3.040/3.014 ms` versus
+  `3.010/2.896/3.075 ms`; P95 is `50.138/46.507/47.230 ms` versus
+  `48.603/48.377/45.782 ms`.
+- Process CPU is `1.849/1.723/1.718 s` versus base `1.718/1.664/1.803 s`; peak heap and RSS remain
+  bounded. The remaining cost is therefore the small-task scheduler itself, not excess scan work
+  or memory pressure.
+
+**Conclusion:** reject the ordered-chunk route. Keep the occurrence count as a planner signal for
+the next isolated experiment, but pair it with Attempt 079's already faster source-ordered serial
+integer-id scan. Sparse terms must continue using equal segments.
