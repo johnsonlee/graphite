@@ -3758,3 +3758,37 @@ yet. It removes full heap-index restoration, materially lowers CPU and memory, a
 selected queries pass without a second persisted format. The remaining work is isolated: replace
 the scheduler overhead for exact dense ordered prefixes and remove the wrapped DISTINCT tail
 variance in a separate attempt. This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 121: Serialize mapped exact dense prefixes
+
+**Hypothesis:** once the mapped posting counts prove that exact matching string ids contain at
+least `LIMIT` occurrences, scanning those ids in source order on the caller thread should avoid the
+two segment-task submissions responsible for the repeated `localized-early` aligned regression.
+Restrict the route to predicates sharing the same transform, match mode, and expected string so a
+multi-term upper-bound sum cannot serialize an unrelated sparse query.
+
+**Evidence:**
+
+- Base is exact Attempt 120 head `969bb1c`; candidate variants were built in the same isolated
+  checkout and replayed against the same 64 pinned-fixture-JAR graphs, independent correctness
+  oracle, 8 GiB heap, and four active CPUs. Every screen completed 34/34 global-wide cases with
+  exact row, order, digest, response-size, and provenance parity. Focused mapped-valid and corrupt-
+  fallback tests plus WebGraph detekt passed before the production changes were reverted.
+- The unrestricted first variant exposed an unsafe performance signal rather than a correctness
+  error: summed occurrences across different predicates can exceed `LIMIT` even when the result
+  remains sparse. `global-wide-four-properties-targeted` rose to `108.360 ms`. Requiring one shared
+  matcher restored that row to `42.356 ms`.
+- The protected final variant still did not reduce the actual blocker. `localized-early` measured
+  `13.187 ms` with `44,900` charged units, versus Attempt 120's `4.926-12.196 ms` and main's stable
+  `4.091-4.142 ms`. Direct comparison for up to eight exact string ids did not change that result.
+  `localized-middle` and `localized-late` measured `2.938/7.642 ms`, but those isolated wins do not
+  compensate for the repeated early-row regression.
+- The final screen's aggregate P50/P95 was `1.785/53.122 ms`, process CPU was `1.610 s`, and the
+  required aggregate `2 graph + 2 segment` peaks remained observable on other query shapes. One
+  screen cannot establish a stable tail improvement, and the intended aligned row remained red.
+
+**Conclusion:** reject and revert. Removing segment scheduling after exact string matching does
+not remove the cost that distinguishes candidate from main; the redundant work is resolving exact
+strings and then scanning raw nodes again. No production or test change from this experiment is
+retained. The next attempt should consume the already-persisted property node postings directly,
+with integrity validation and raw fallback, instead of tuning the second scan.
