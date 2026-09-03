@@ -3506,3 +3506,33 @@ material K=64 median overhead, and changing the leading consumer adds index work
 test code from this experiment is retained. The unscoped 5x result and NCPU split remain established
 by the earlier kept attempts; the next isolated change must target the selected-set planner or
 fixed-worker overhead measured before graph-zero lookup.
+
+### 2026-09-04 - Attempt 114: Prefer the retained index with a split fallback
+
+**Hypothesis:** Attempt 113 changed the leading prepared graph to a split consumer while removing
+the capability probe, so it no longer exercised the same retained-index path as Attempt 111. Add a
+dual-purpose work consumer: prefer the already-retained index when present, but retain the balanced
+segment budget as a correctness-preserving fallback when it is absent. Defer scoped fanout planning
+until graph zero misses LIMIT. This isolates the capability probe without sacrificing the cold
+selected-set `2 + 2` contract and introduces no storage-format change.
+
+**Evidence:**
+
+- Base revision is `e2d6123`; the candidate was built and measured in an isolated worktree using
+  the same 64 persisted graphs from the four pinned fixture JARs, an 8 GiB heap, and four active
+  CPUs. The complete 80-test `CrossGraphCypherExecutorTest` class and Cypher detekt both pass.
+- The 1,137-case real-64 routing replay matches its independent correctness oracle with zero
+  failures and zero timeouts. K=64 P50/P95 remain `0.685/1.187 ms` versus main's
+  `0.255/2.200 ms`; dense literal/parameter latency is `0.777/0.548 ms`, still within the same
+  range as Attempts 111 through 113. The candidate therefore still violates the K64 absolute
+  median regression guard.
+- The hybrid leading lookup increases retained-index lookups to `2,043`, versus the gate's expected
+  `1,979` post-build accesses, while zero/targeted K64 rows improve only in the already-repaired
+  tail. The full replay takes `2.142 s`, process CPU is `6.285 s`, and it records up to four graph
+  workers; none of those measurements identifies a benefit for the leading dense path.
+
+**Conclusion:** reject and revert. Preserving the retained-index preference while removing the
+capability probe still does not reduce K64 median latency and adds one leading index lookup per
+graph over the replay. No production or test code from this experiment is retained. The next
+attempt must bypass the balanced scanner machinery for the synchronous leading result itself,
+matching main's direct source loop before any suffix fanout is considered.
