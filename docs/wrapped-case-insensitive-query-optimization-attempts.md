@@ -2101,3 +2101,28 @@ ids for the remaining properties, and synthesize the selected source id into the
 **Conclusion:** keep pending exact hosted paired confirmation. This removes one of Attempt 064's
 two deterministic aligned-shape regressions without changing predicate matching, source order,
 the 5x graph/segment plan, or the explicitly graph-scoped dispatch corrected by Attempt 065.
+
+### 2026-09-03 - Attempt 067: Send transformed dense terms back to the index
+
+**Hypothesis:** Attempt 064's remaining non-distinct wrapped dense regression comes from lowercasing
+four raw strings across the first 665 CallSites. Restrict the bounded raw leading path to predicates
+without a transform so wrapped `toLower(... ) CONTAINS` queries use the existing persisted
+trigram/index path and its segment workers.
+
+**Evidence:**
+
+- Base: Attempt 066. Candidate: an isolated one-line eligibility snapshot based on Attempt 066;
+  the rejected production change is not retained. Dataset: the same 64 persisted JAR-derived shards
+  in `/tmp/pr113-exp064-fixture64.7PSN8d/graphs/`. Three four-CPU candidate runs are under
+  `/tmp/pr113-exp067-global.8mmmD6/` and all complete 34/34 rows with exact oracle parity.
+- Non-distinct wrapped dense worsened from Attempt 066's raw `1.498-1.609 ms` and 665 work units to
+  `3.992`, `4.076`, and `6.184 ms` with 9,767 work units. This remains above hosted main's
+  `1.518-2.130 ms` range and therefore does not clear the aligned-shape gate.
+- Aggregate P50/P95 remained `4.161-4.756/50.598-52.665 ms`, but total charged work rose from
+  `5,862,263` to `5,880,932`. Process CPU was `1.71-1.94 s`, peak heap `3.46-3.60 GiB`, and peak
+  RSS `3.96-4.05 GiB`; the resource movement does not justify the deterministic wrapped regression.
+
+**Conclusion:** reject and revert. A transformed dense term cannot simply be sent to the existing
+index path: its fixed lookup/range overhead exceeds the bounded 665-node raw scan on this fixture.
+Keep Attempt 066's raw behavior and optimize the transformed raw comparison itself, or admit a
+measured hot representation that does not add this 9,102-work penalty.
