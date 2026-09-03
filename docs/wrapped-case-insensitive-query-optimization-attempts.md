@@ -2070,9 +2070,16 @@ additive and cannot create graph-worker x segment-worker oversubscription.
   was `5.077-5.087 s` versus `5.252 s`. Peak heap was `5.28-5.31 GiB` versus `5.50 GiB`, and peak
   RSS `6.72-6.96 GiB` versus `6.62 GiB`; the upper RSS observation is +5.1%, below the 15% gate.
 
-**Conclusion:** keep pending exact hosted graph-routing confirmation. This is a graph-scoped
-dispatch correction only; unscoped >=40-source scans retain the NCPU-half graph/segment split and
-therefore retain the independently established 5x global-wide path.
+The subsequent exact hosted run `33699712360` kept all 1,979 index lookups and exact result parity,
+but rejected the per-graph task shape. K=64 P50/P95 regressed from main's `1.714/5.572 ms` to
+`4.287/8.130 ms`; all six zero/targeted rows paid roughly `4-8 ms` although they performed only
+`64-3,125` work units. The four graph workers were active, but submitting one tiny retained-index
+lookup per task made scheduler overhead larger than the useful work.
+
+**Conclusion:** superseded by Attempt 069. Returning the segment half to graph fanout is correct,
+but one task per selected graph is the wrong granularity for hot, low-work K=64 lookups. Unscoped
+>=40-source scans retain the NCPU-half graph/segment split and the independently established 5x
+global-wide path.
 
 ### 2026-09-03 - Attempt 066: Synthesize graphId around the raw projection
 
@@ -2150,3 +2157,37 @@ comparison loop while preserving the exact Kotlin lowercase fallback for any non
 **Conclusion:** reject and revert. The existing mutable-buffer lowercase scan is not the measured
 bottleneck on the local real64 JVM. Keep the smaller Attempt 066 production tree and use exact
 hosted paired evidence before investing further in this millisecond-scale cold-path variance.
+
+### 2026-09-03 - Attempt 069: Batch graph-scoped retained-index fanout
+
+**Hypothesis:** Attempt 065 assigns one executor task to each of the 63 sources after the ordered
+leading probe. The exact hosted K=64 zero and targeted rows perform only `64-3,125` storage work
+units, so their `4-8 ms` latency is dominated by submitting, completing, and replenishing 63 tiny
+tasks. Partition the remaining sources into at most NCPU contiguous batches. Each batch remains one
+graph worker and performs serial per-graph storage work, preserving the additive `NCPU + 0` bound;
+completed batches are merged in source order and later batches are cancelled once LIMIT is full.
+
+**Evidence:**
+
+- Base: exact Attempt 066 head `4f61526d3e3978a60ba6d0194545e845540c66a9`, hosted run
+  `33699712360`. Candidate: this experiment commit. Dataset: the same 64 distinct persisted shards
+  regenerated from the pinned Android, Tika, Hive, and Kotlin compiler fixture JARs in
+  `/tmp/pr113-exp064-fixture64.7PSN8d/graphs/`; synthetic graphs supply concurrency and ordering
+  assertions only.
+- Three four-CPU candidate runs under `/tmp/pr113-exp069-batched-routing/` completed all
+  `1,137/1,137` rows with exact oracle parity. K64 P50 was `0.728`, `0.844`, and `0.822 ms`; P95 was
+  `2.809`, `3.038`, and `3.006 ms`. K64 work was exactly `4,146` units in every run.
+- The three dense K64 variants still stop at the leading graph and each records one accessed graph,
+  one retained-index lookup, and 200 work units. Zero and targeted cases preserve complete selected
+  source coverage. Peak graph concurrency remains four; graph-scoped per-graph storage stays serial.
+- Relative to the exact hosted Attempt 066 result, median K64 P50 improves from `4.287 ms` to
+  `0.822 ms` (`5.21x`) and P95 from `8.130 ms` to `3.006 ms` (`2.70x`). Complete-run wall time was
+  `4.948-5.010 s`, process CPU `8.88-9.14 s`, peak heap `5.29-5.53 GiB`, and peak RSS
+  `6.72-6.99 GiB`; all overlap the Attempt 065 local resource envelope.
+- Focused cross-graph tests and Cypher detekt pass in the isolated verification checkout. The
+  concurrency regression requires the four graph workers to enter different contiguous batches
+  concurrently and requires every storage consumer to remain serial.
+
+**Conclusion:** keep pending exact hosted confirmation. Coarsening the task unit removes most of
+the K64 scheduler tax without changing result order, correctness, graph selection, work accounting,
+or the additive CPU budget. It does not alter the unscoped 64-graph `2 + 2` global-wide path.

@@ -245,8 +245,7 @@ class CrossGraphCypherExecutorTest {
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
                     storageConsumers[graphIndex] = workConsumer
-                    if (graphIndex in 1..plannedWorkers) {
-                        workerThreads += Thread.currentThread().name
+                    if (graphIndex > 0 && workerThreads.add(Thread.currentThread().name)) {
                         firstWaveEntered.countDown()
                         check(firstWaveEntered.await(5, TimeUnit.SECONDS))
                     }

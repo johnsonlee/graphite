@@ -1674,9 +1674,16 @@ class QueryPipeline private constructor(
             // Keep a bounded rolling window of graph scans. Advancing it as soon as the next
             // source-ordered result is merged removes the synchronization barrier between tiny
             // retained-index waves without initializing every later graph speculatively.
-            runDirectStringTasksInOrderUntil(scanners.drop(waveStart).map { scanner ->
-                { scanner.nextRows(limit) }
-            }, graphParallelism) { batch ->
+            val remainingScanners = scanners.drop(waveStart)
+            val graphTasks = if (serialLeadingStorage && remainingScanners.isNotEmpty()) {
+                val batchSize = (remainingScanners.size + graphParallelism - 1) / graphParallelism
+                remainingScanners.chunked(batchSize).map { scannerBatch ->
+                    { scanDirectStringRows(scannerBatch, limit) }
+                }
+            } else {
+                remainingScanners.map { scanner -> { scanner.nextRows(limit) } }
+            }
+            runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { batch ->
                 val remaining = limit - rows.size
                 if (remaining > 0) rows += batch.take(remaining)
                 rows.size >= limit
@@ -1695,6 +1702,19 @@ class QueryPipeline private constructor(
             waveStart += wave.size
         }
         return CypherResult(columns, rows)
+    }
+
+    private fun scanDirectStringRows(
+        scanners: List<DirectStringSourceScanner>,
+        limit: Int
+    ): List<Map<String, Any?>> {
+        val rows = mutableListOf<Map<String, Any?>>()
+        for (scanner in scanners) {
+            val remaining = limit - rows.size
+            if (remaining <= 0) break
+            rows += scanner.nextRows(remaining)
+        }
+        return rows
     }
 
     @Suppress("LongParameterList", "ReturnCount")
