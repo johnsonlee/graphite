@@ -32,6 +32,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
@@ -1307,7 +1308,7 @@ class QueryPipeline private constructor(
             ?.let { graphRoute.residual }
             ?: where.condition
         val graphScoped = graphSourceScopeApplied || preselectedSources != null || routedGraphIds != null
-        val serialLeadingStorage = graphScoped && candidateSources.size == 1
+        val preferPersistedStorage = graphScoped
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1319,7 +1320,7 @@ class QueryPipeline private constructor(
                 columns,
                 limitCount,
                 candidateSources,
-                serialLeadingStorage
+                preferPersistedStorage
             )
         }
         if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
@@ -1361,7 +1362,7 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         candidateSources = candidateSources,
-                        serialLeadingStorage = serialLeadingStorage
+                        preferPersistedStorage = preferPersistedStorage
                     )
                 }
             }
@@ -1396,7 +1397,7 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        serialLeadingStorage
+                        preferPersistedStorage
                     )
                 }
             }
@@ -1443,7 +1444,7 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        serialLeadingStorage
+                        preferPersistedStorage
                     )
                 }
             }
@@ -1523,7 +1524,7 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         candidateSources: List<CypherGraph>,
-        serialLeadingStorage: Boolean
+        preferPersistedStorage: Boolean
     ): CypherResult {
         val hasTypedCandidate = hasTypedDirectStringCandidate(nodeClass, filter)
         if (hasTypedCandidate) {
@@ -1535,7 +1536,7 @@ class QueryPipeline private constructor(
                 columns,
                 limit,
                 candidateSources = candidateSources,
-                serialLeadingStorage = serialLeadingStorage
+                preferPersistedStorage = preferPersistedStorage
             )
         }
 
@@ -1610,7 +1611,7 @@ class QueryPipeline private constructor(
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
         candidateSources: List<CypherGraph> = sources,
-        serialLeadingStorage: Boolean = false
+        preferPersistedStorage: Boolean = false
     ): CypherResult {
         executeIndexedStringProjectionRows(
             nodeClass,
@@ -1622,10 +1623,10 @@ class QueryPipeline private constructor(
             nodePredicateFactory,
             candidateSources
         )?.let { return it }
-        // A graph-scoped retained-index lookup is too small to amortize outer graph scheduling.
-        // Preserve source order here while the storage marker still permits one graph's cold raw build to fan out.
-        if (serialLeadingStorage ||
-            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
+        // A retained-index lookup is too small to amortize outer graph scheduling. The mapped
+        // strategy selects this branch for loaded and startup-prepared indexes, while a cold
+        // graph-scoped set still fans out across graphs with one persisted-index build per graph.
+        if (!canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources) ||
             workTrackingEnabled && !usesBalancedStringSplit(candidateSources.size)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
@@ -1637,7 +1638,7 @@ class QueryPipeline private constructor(
                     filter,
                     limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
                     storageSourceCount = candidateSources.size,
-                    serialStorage = serialLeadingStorage
+                    serialStorage = preferPersistedStorage
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
@@ -1653,7 +1654,8 @@ class QueryPipeline private constructor(
 
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val balanced = usesBalancedStringSplit(candidateSources.size)
-        val rawLeadingStorage = balanced && filter.prefersBoundedRawLeadingProbe(limit)
+        val rawLeadingStorage = balanced && !preferPersistedStorage &&
+            filter.prefersBoundedRawLeadingProbe(limit)
         val graphParallelism = directStringGraphParallelism(candidateSources.size)
         val scanners = candidateSources.mapIndexed { sourceIndex, source ->
             DirectStringSourceScanner(
@@ -1666,7 +1668,8 @@ class QueryPipeline private constructor(
                 tracker,
                 nodePredicateFactory,
                 candidateSources.size,
-                serialStorage = rawLeadingStorage && balanced && sourceIndex == 0
+                serialStorage = preferPersistedStorage ||
+                    rawLeadingStorage && balanced && sourceIndex == 0
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
@@ -1868,6 +1871,10 @@ class QueryPipeline private constructor(
             .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
         predicates.isNotEmpty() && candidateSources.any { source ->
             if (source.graph.nodeCount(candidateType) == 0L) return@any false
+            val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup
+            if (prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) == true) {
+                return@any false
+            }
             val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
             strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) != true
         }

@@ -2950,3 +2950,48 @@ without making ordering a storage-format requirement.
 existing compact Method index, preserves source order, and adds no new cold metadata pass. It
 directly addresses both current Method CPU blockers while retaining a conservative fallback for
 graphs that do not group methods by declaring class.
+
+### 2026-09-03 - Attempt 095: Separate scoped graph fanout from persisted-index policy
+
+**Hypothesis:** Attempt 092 used one flag for two independent decisions: whether selected graphs
+run concurrently and whether each graph should build or restore its retained CallSite index. The
+cold K=64 request consequently used a bounded raw probe across 64 graphs without retaining those
+results, then rebuilt all 64 indexes later. Select cold graph sets concurrently while giving every
+graph the preferred-persisted storage consumer; serialize loaded or startup-prepared micro-lookups
+using a read-only planning capability that does not change storage fallback behavior.
+
+**Evidence:**
+
+- Three paired runs compared remote main `78ce46b57b2` with the candidate on the same machine. Each
+  fresh JVM used 64 persisted graphs generated from the four pinned Android, Tika, Hive, and Kotlin
+  compiler fixture JARs, an 8 GiB heap, and four active CPUs. All nine cold, warm, and
+  startup-prepared comparisons pass the complete graph-routing comparator with no errors and exact
+  1,137-query oracle parity.
+- Cold now performs exactly 64 index-building scans with peak scan concurrency four, followed by
+  exactly 1,979 retained-index lookups distributed `29..38` per graph. Warm and startup-prepared
+  perform zero raw scans and exactly 2,043 lookups distributed `30..39` per graph. This restores
+  the missing 64 lookups from the exact hosted Attempt 092 failure and removes its duplicate
+  bounded-raw work.
+- The three paired K=64 P50/P95 observations in milliseconds are cold
+  `0.254/1.311 -> 0.357/1.478`, `0.345/2.465 -> 0.355/1.507`, and
+  `0.411/2.519 -> 0.342/1.533`; warm `0.100/0.245 -> 0.250/0.364`,
+  `0.448/0.803 -> 0.174/0.327`, and `0.156/0.244 -> 0.268/0.340`; and
+  startup-prepared `0.190/1.390 -> 0.368/1.539`, `0.255/1.294 -> 0.339/1.481`,
+  and `0.263/1.287 -> 0.329/1.478`. Every observation remains inside the comparator's relative-or-
+  absolute jitter gate.
+- Candidate peak RSS stays within the resource gate in all nine comparisons. The largest increase
+  is the first cold pair, `5.94 -> 6.73 GiB` (`13.3%`); the other cold pairs change by `+0.8%` and
+  `-0.4%`, and warm/startup-prepared remain within `2%` or improve except for normal measurement
+  jitter. The cold build uses the intended additive CPU ceiling rather than graph-worker times
+  segment-worker multiplication.
+- Deterministic tests prove that textual `graphId IN` and externally supplied graph sets overlap
+  their cold graph workers while every storage call receives the preferred-persisted consumer.
+  A persisted-sidecar test proves startup readiness before index loading. The full WebGraph test
+  class also preserves the memory-budget-denied raw fallback; an initially attempted reuse of the
+  storage strategy interface failed that correctness test and was removed before this commit.
+  Focused Cypher and WebGraph suites plus all detekt tasks pass.
+
+**Conclusion:** keep pending exact hosted confirmation. Graph concurrency and segment concurrency
+remain additive, but graph selection no longer disables per-graph index retention. Ready indexes
+avoid K=64 task scheduling, while cold explicitly selected graph sets build each reusable index
+once in parallel without changing result order, work accounting, or cancellation fallback.

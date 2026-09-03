@@ -1446,6 +1446,12 @@ class GraphStoreTest {
             val restored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(restored.isCallSiteStringIndexInitialized())
+                assertTrue(
+                    restored.hasPreparedStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate)
+                    )
+                )
                 assertEquals(
                     1L,
                     restored.aggregateStringPropertyDisjunction(

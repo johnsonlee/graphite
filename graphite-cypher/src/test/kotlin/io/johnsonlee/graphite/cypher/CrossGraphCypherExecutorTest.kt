@@ -24,6 +24,7 @@ import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -286,9 +287,8 @@ class CrossGraphCypherExecutorTest {
         assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is SplitGraphWorkBatchConsumer || consumer is PreferredRawGraphWorkBatchConsumer
+            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
         })
-        assertTrue(storageConsumers.values.count { it is SplitGraphWorkBatchConsumer } >= plannedWorkers)
     }
 
     @Test
@@ -353,9 +353,72 @@ class CrossGraphCypherExecutorTest {
         assertEquals(plannedWorkers, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
-            consumer is SplitGraphWorkBatchConsumer || consumer is PreferredRawGraphWorkBatchConsumer
+            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
         })
-        assertTrue(storageConsumers.values.count { it is SplitGraphWorkBatchConsumer } >= plannedWorkers)
+    }
+
+    @Test
+    fun `startup prepared selected graph set serializes retained micro lookups`() {
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    return try {
+                        workConsumer.consume()
+                        emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
+        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+        })
     }
 
     @Test
