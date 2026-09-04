@@ -4308,3 +4308,29 @@ heap rebuild and most raw string decoding without changing the persisted format 
 **Conclusion:** reject this initial implementation, retain the mmap direction. It proves the
 persisted sidecar can collapse the median and CPU, but broad tuple/provenance work still dominates
 P95 and the candidate misses 10x by a wide margin.
+
+### 2026-09-05 - Attempt 135: Stream mapped validation in persisted order
+
+**Hypothesis:** keep the mmap view, but make its validation and traversal sequential in persisted
+order so opening 64 sidecars faults fewer unrelated pages and does less temporary work before the
+selected tuple is known.
+
+**Evidence:**
+
+- Base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; candidate was an
+  isolated uncommitted variant over that SHA. The real fixture64 manifest and provenance are
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b` and
+  `86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d`.
+  The 8 GiB/four-CPU cold replay used all 64 persisted graphs and no synthetic performance data.
+- All `34/34` cases matched the oracle with no failure or timeout. Candidate P50/P95/max was
+  `2.443/261.187/418.976 ms`, versus `238.758/404.579/1727.752 ms` for v2.4.7.
+  CPU improved to `2.783 s`, but P95 stayed at only `1.55x` speedup.
+  Peak used heap/RSS was `5.006/6.115 GB`, and work fell to `74,857,303`.
+- Result identity is JSON/TSV SHA-256
+  `cfc9fa4d683af5702882c10c08260f3993b52b678b30aec1c5c3571c172ce774` /
+  `4c20b380065fa324bf6e871fa35fb979de60f74e62acd213efc64c2b3a310283`.
+  The prototype code was removed; only this record is committed.
+
+**Conclusion:** reject as a terminal plan. Sequential mapping reduces CPU and charged work, but it
+does not change the tail-driving lookup shape. The next attempt must anchor provenance on a
+selective posting instead of walking broad mapped state.
