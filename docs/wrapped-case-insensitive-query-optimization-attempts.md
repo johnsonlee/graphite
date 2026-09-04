@@ -4360,3 +4360,36 @@ preserving the earliest encounter-order tuple.
 **Conclusion:** reject this form but retain shortest-posting anchoring as a building block.
 Selective intersection materially improves P95 and resource use, yet still misses the 10x target;
 the remaining duplicate raw/mapped provenance pass must be removed.
+
+### 2026-09-05 - Attempt 137: Choose a hybrid raw-first provenance route
+
+**Hypothesis:** use the raw leading graph when it can fill the limit cheaply and enter the mmap tuple
+path only for broad or sparse provenance. A hybrid selector may avoid mmap startup for dense rows
+without giving back the shortest-posting tail reduction.
+
+**Evidence:**
+
+- Three fresh candidate JVM screens ran over exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` with the same real fixture64 manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  8 GiB heap, four CPUs, and independent 34-case oracle. All `102/102` cases were correct with
+  zero failure or timeout; no synthetic timing data was used.
+- The three candidate P50/P95/max samples were
+  `2.583/73.450/417.527`, `5.584/1260.470/6325.956`, and
+  `2.673/67.265/600.937 ms`. CPU was `1.713/2.411/1.491 s`;
+  peak heap was `4.697/4.433/4.702 GB`, peak RSS
+  `5.225/4.846/5.217 GB`, and work was a stable `60,315,205`.
+  The second fresh JVM exposes an unacceptable multi-second cold-tail outlier.
+- Run 1/2/3 JSON SHA-256 is
+  `9c164412bc7dd3052197a2681c519cf112e2db9cc2bbdd2712a5e26ba7265de7`,
+  `aae9ecd1a2080b2f23d725fa7373c9c7988e0bafc8fda21569ddf3d484c7e98b`, and
+  `b87007a7d548fb7a1999dcb286665c7838e5bb34045f074da0bd3111741fadc2`;
+  TSV SHA-256 is
+  `1c7c23c0dbb1cca8d67c77630a3ff31bc76a77e67269a0d1df7c7089ba463ea8`,
+  `cd1f7bd470fbd8e6b8d094647d9d60f38e1436025cc90bf980fe8a29ec507d61`, and
+  `312d2347730fb42ead51ddb27b781ac2b6ebd46000c6d3e82302998c91716a1e`.
+  The candidate was an uncommitted isolated patch and is absent from the tree.
+
+**Conclusion:** reject and remove. The selector preserves results and average work but introduces
+severe cold-state instability; a 10x claim cannot rely on two favorable screens around a
+`6.326 s` max. The mapped path must make one deterministic choice before emitting any row.
