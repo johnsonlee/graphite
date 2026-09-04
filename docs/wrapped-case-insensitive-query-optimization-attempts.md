@@ -3986,9 +3986,57 @@ full CallSite walk and keeps checksum-valid semantic corruption on the authorita
   `0.99x/0.99x`, K=64 aggregate is `0.341/1.377 -> 0.322/1.494 ms`, and the first cold K=64
   request improves from `295.235` to `260.761 ms`. Peak RSS falls from `6.60` to `6.17 GiB`.
 
-**Conclusion:** keep for exact hosted validation. The cache is process-local state attached to the
-existing read-only mapped view; it adds no file, magic, version, writer, persisted field, or startup
-scan. It preserves the semantic hard gate, restores the real-64 5x milestone, and removes the cold
-K=64 regression measured in Attempt 125. Exact-head full CI, hosted performance/resource gates,
-and both remaining review threads are still required. This commit is not authorization to merge or
-tag.
+**Conclusion:** keep as the correctness-preserving mapped-posting foundation, but supersede its
+terminal query plan with Attempt 127. Exact-head hosted run `33818543224` passed unit, corpus,
+resource, Method, Explorer, and the first complete global-wide gate; its rerun also restored the
+fixture64 cache without regeneration. The rerun nevertheless reproduced graph-routing overhead:
+K=8 cold P50/P95 was `0.442/1.475 -> 0.722/1.586 ms`, while K=64 was
+`0.799/2.503 -> 0.960/3.605 ms`. It also repeated an aligned wrapped-dense regression
+(`2.094 -> 3.684 ms` in the first pair) despite aggregate P50/P95 speedups of at least
+`75.78x/7.68x`. Correctness, graph access, lookup counts, and work were unchanged, isolating the
+remaining problem to fixed query-layer planning, node materialization, and projection overhead.
+This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 127: Project retained selected graph sets directly
+
+**Hypothesis:** once every graph in an explicitly selected set already retains the existing
+`graph.callsite-string-index`, the query layer should not probe the generic graph/segment plan and
+then materialize matching `CallSiteNode` objects only to read the same four stored strings. Extend
+the existing bounded direct projection from one source to an ordered retained source set. Check
+that every source is retained before consuming any projection, append source-local rows in catalog
+order, and stop as soon as the global `LIMIT` is full. If any source is cold, lacks the capability,
+contains an applicable `AnnotationNode`, or has a residual node predicate, decline the fast path
+before emitting a row and preserve the authoritative existing execution path.
+
+**Evidence:**
+
+- Base is exact Attempt 126/cache-boundary head `5204cf8`. Candidate uses the same 64 persisted
+  graphs generated from the four pinned fixture JARs, the same independent main-derived oracle,
+  an 8 GiB heap, and `ActiveProcessorCount=4`. No synthetic timing evidence is used; synthetic
+  coverage verifies only source order, remaining-limit propagation, per-row graph provenance, and
+  early global-limit termination.
+- Three fresh-JVM cold graph-routing runs complete all `1,137/1,137` rows with exact oracle parity.
+  K=8 P50 is `0.033/0.036/0.034 ms` and P95 is `0.440/0.473/0.456 ms`; K=64 P50 is
+  `0.099/0.096/0.103 ms` and P95 is `1.281/1.277/1.248 ms`. Against the same-machine Attempt 126
+  control (`0.452/1.724 ms` at K=8 and `1.387/6.053 ms` at K=64), median latency improves about
+  `13.5x/13.9x`, while tail latency improves about `3.8x/4.7x`.
+- Every run retains exactly 1,979 indexed lookups over all 64 graphs, distributed 29..38 per graph.
+  Dense K=64 literal, parameter, and request-selected forms still access only the leading graph,
+  perform one lookup and 200 work units, and return identical ordered digests. The intentionally
+  cold first K=64 zero query still takes the original scan/build fallback and initializes all 64
+  graphs; it is not converted into an eager 64-sidecar restore.
+- The unchanged global-wide engine was replayed in three fresh JVMs against the 34-case real64
+  oracle. All `102/102` observations are exact, P50 is `2.033/1.953/1.959 ms`, P95 is
+  `56.740/53.220/52.660 ms`, and charged work remains exactly `58,071,626`. Relative to the frozen
+  same-machine main samples, the conservative P50/P95 speedups remain above `115x/6.8x`.
+- A separate attempt to send the wrapped dense row through object-materializing serial raw scan
+  regressed it from `1.504` to `3.414 ms` and was reverted. Rewriting the fused projection loop did
+  not provide a stable material gain and was also reverted. The retained change is therefore only
+  the measured multi-source projection path; it adds no file, format, magic, version, writer, or
+  startup work.
+
+**Conclusion:** keep for exact hosted validation. This removes the repeated fixed scheduler and
+node-projection tax from graph-id sets and `/api/cypher/graphs` selected sets without changing the
+cold fallback, source order, correctness oracle, work accounting, or persisted representation.
+Exact-head full CI, hosted global-wide and graph-routing gates, and all review threads remain hard
+gates. This commit is not authorization to merge or tag.

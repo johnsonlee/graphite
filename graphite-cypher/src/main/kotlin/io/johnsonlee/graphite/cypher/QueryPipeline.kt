@@ -1869,12 +1869,14 @@ class QueryPipeline private constructor(
         candidateSources: List<CypherGraph>
     ): CypherResult? {
         if ((nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) ||
-            nodePredicateFactory != null || candidateSources.size != 1
+            nodePredicateFactory != null
         ) {
             return null
         }
-        val source = candidateSources.single()
-        if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
+        if (nodeClass == Node::class.java && candidateSources.any { source ->
+                source.graph.nodeCount(AnnotationNode::class.java) != 0L
+            }
+        ) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
             if (property.expression != CypherExpr.Variable(variable) ||
@@ -1888,16 +1890,32 @@ class QueryPipeline private constructor(
             if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
             StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
         }
-        val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
+        val projections = candidateSources.map { source ->
+            source.graph as? StringPropertyDisjunctionProjection ?: return null
+        }
+        if (candidateSources.size > 1 && candidateSources.indices.any { index ->
+                val retained = candidateSources[index].graph as? RetainedStringPropertyDisjunctionLookup
+                    ?: return@any true
+                !retained.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+            }
+        ) return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val projectedRows = projection.projectStringPropertyDisjunction(
-            CallSiteNode::class.java,
-            predicates,
-            projectedProperties,
-            limit,
-            tracker
-        ) ?: return null
-        return DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
+        val rows = mutableListOf<Map<String, Any?>>()
+        candidateSources.indices.forEach { index ->
+            val source = candidateSources[index]
+            val projectedRows = projections[index].projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                projectedProperties,
+                limit - rows.size,
+                tracker
+            ) ?: return null
+            val projected = DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
+            if (candidateSources.size == 1) return projected
+            rows.addAll(projected.rows.take(limit - rows.size))
+            if (rows.size >= limit) return CypherResult(columns, rows)
+        }
+        return CypherResult(columns, rows)
     }
 
     @Suppress("LongParameterList")

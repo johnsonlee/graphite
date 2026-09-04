@@ -1546,6 +1546,52 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `selected retained graph set projects in source order up to the global limit`() {
+        val projectedSources = mutableListOf<Int>()
+        val projectedLimits = mutableListOf<Int>()
+        val empty = graph()
+        val graphs = List(3) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectedSources += sourceIndex
+                    projectedLimits += limit
+                    return List(minOf(2, limit)) { row ->
+                        StringPropertyProjectionRow(listOf("Caller-$sourceIndex-$row"))
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1', 'graph-2'] AND " +
+                "n.caller_class CONTAINS 'Caller' RETURN n.caller_class AS caller LIMIT 3"
+        )
+
+        assertEquals(listOf(0, 1), projectedSources)
+        assertEquals(listOf(3, 1), projectedLimits)
+        assertEquals(
+            listOf("Caller-0-0", "Caller-0-1", "Caller-1-0"),
+            result.rows.map { row -> row["caller"] }
+        )
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[2]))
+    }
+
+    @Test
     fun `ordered distinct graph id limit reads the source catalog instead of scanning nodes`() {
         val nodeScans = AtomicInteger()
         fun catalogGraph(populated: Boolean): Graph {
