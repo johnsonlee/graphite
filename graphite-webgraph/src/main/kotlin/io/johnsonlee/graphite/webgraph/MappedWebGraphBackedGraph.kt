@@ -758,9 +758,43 @@ internal class MappedWebGraphBackedGraph(
         if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
             rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)?.let { return it }
         }
+        if (workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer) {
+            initializedMappedCallSiteStringProjection(
+                predicates,
+                projectedProperties,
+                limit,
+                workConsumer
+            )?.let { return it }
+        }
         val index = callSiteStringIndex ?: return null
         callSiteStringIndexLookupCount.incrementAndGet()
         return index.projectRows(predicates, projectedProperties, limit, workConsumer)
+    }
+
+    private fun initializedMappedCallSiteStringProjection(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): List<StringPropertyProjectionRow>? {
+        if (!predicates.shareStringMatcher()) return null
+        val mappedView = mappedCallSiteStringIndexView ?: return null
+        callSiteStringLookupEntryCount.incrementAndGet()
+        val exactMatches = mappedView.exactMatchingStringIds(predicates, workConsumer) ?: return null
+        val nodeIds = mappedView.matchingNodeIds(predicates, exactMatches, workConsumer) ?: return null
+        val projectedPropertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        return nodeIds.take(limit).map { nodeId ->
+            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+            }
+            StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
+                stringTable.get(stringIds[propertyIndex]).toString()
+            })
+        }.toList()
     }
 
     @Suppress("LoopWithTooManyJumpStatements")

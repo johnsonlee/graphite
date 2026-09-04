@@ -1191,6 +1191,168 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `bounded leading projection preserves an unbound property owner`() {
+        val returnType = TypeDescriptor("void")
+        val leading = graph(*Array(200) { nodeId ->
+            CallSiteNode(
+                NodeId(nodeId),
+                MethodDescriptor(TypeDescriptor("Call$nodeId"), "invoke", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+                nodeId,
+                null,
+                emptyList()
+            )
+        })
+        val sources = List(40) { sourceIndex ->
+            val delegate = if (sourceIndex == 0) leading else graph()
+            CypherGraph("graph-$sourceIndex", object : Graph by delegate, StringPropertyDisjunctionProjection {
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? =
+                    error("A property owned by an unbound variable must use normal projection semantics")
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Call' " +
+                "RETURN x.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertTrue(result.rows.all { row -> row["caller"] == null })
+        assertTrue(result.rows.all { row -> graphIds(row) == listOf("graph-0") })
+    }
+
+    @Test
+    fun `long global query projects the initialized mapped leading graph without materializing nodes`() {
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The mapped projection path must not materialize nodes")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> = error("The mapped projection path must not materialize nodes")
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+                    check(sourceIndex == 0)
+                    assertEquals(StringValueTransform.LOWERCASE, predicates.single().transform)
+                    assertEquals("needle", predicates.single().expected)
+                    assertEquals(listOf("caller_class"), projectedProperties)
+                    return List(limit) { row -> StringPropertyProjectionRow(listOf("Caller$row")) }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) " +
+                "WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'needle' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertEquals("graph-0", result.rows.first()["graph"])
+        assertEquals("Caller0", result.rows.first()["caller"])
+        assertEquals("Caller199", result.rows.last()["caller"])
+        assertEquals(setOf(0), projectedSources)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `partial mapped leading projection continues from the second graph`() {
+        val returnType = TypeDescriptor("void")
+        val laterHit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("Caller1"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val scannedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    scannedSources += sourceIndex
+                    return if (sourceIndex == 1) sequenceOf(laterHit as T) else emptySequence()
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+                    check(sourceIndex == 0)
+                    return listOf(StringPropertyProjectionRow(listOf("Caller0")))
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) " +
+                "WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'caller' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(
+            listOf("graph-0" to "Caller0", "graph-1" to "Caller1"),
+            result.rows.map { row -> row["graph"] to row["caller"] }
+        )
+        assertEquals(setOf(0), projectedSources)
+        assertTrue(0 !in scannedSources)
+        assertTrue(1 in scannedSources)
+    }
+
+    @Test
     @Suppress("UNCHECKED_CAST")
     fun `bounded leading projection continues with later graphs when it does not fill limit`() {
         val returnType = TypeDescriptor("void")
@@ -1645,6 +1807,65 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertEquals(listOf(0, 1), retainedChecks)
+        assertEquals(0, projectionCalls.get())
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[1]))
+    }
+
+    @Test
+    fun `selected graph set falls back before projection when one source is not retained`() {
+        val returnType = TypeDescriptor("void")
+        val projectionCalls = AtomicInteger()
+        fun callSite(sourceIndex: Int) = CallSiteNode(
+            NodeId(sourceIndex),
+            MethodDescriptor(TypeDescriptor("example.Caller-$sourceIndex"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+            sourceIndex,
+            null,
+            emptyList()
+        )
+        val firstBacking = graph(callSite(0))
+        val first = object : Graph by firstBacking,
+            RetainedStringPropertyDisjunctionLookup,
+            StringPropertyDisjunctionProjection {
+            override fun hasRetainedStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>
+            ): Boolean = true
+
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow>? {
+                projectionCalls.incrementAndGet()
+                return null
+            }
+        }
+        val secondBacking = graph(callSite(1))
+        val second = object : Graph by secondBacking, StringPropertyDisjunctionProjection {
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow>? {
+                projectionCalls.incrementAndGet()
+                return null
+            }
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("graph-0", first), CypherGraph("graph-1", second))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Caller' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
         assertEquals(0, projectionCalls.get())
         assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
         assertEquals(listOf("graph-0"), graphIds(result.rows[0]))

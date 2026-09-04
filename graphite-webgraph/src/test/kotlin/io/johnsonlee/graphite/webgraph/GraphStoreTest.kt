@@ -343,6 +343,16 @@ class GraphStoreTest {
             assertTrue(Files.isRegularFile(indexFile))
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertNull(
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        workConsumer = mappedSplit
+                    )
+                )
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertEquals(
                     listOf(0),
                     loaded.nodesByStringPropertyDisjunction(
@@ -365,6 +375,21 @@ class GraphStoreTest {
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(
+                    listOf(
+                        listOf("example.TargetCaller", "call0"),
+                        listOf("example.TargetCaller", "call2"),
+                        listOf("example.OtherCaller1", "targetOnlyInCallerName")
+                    ),
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate, predicate.copy(property = CALLER_NAME_PROPERTY)),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY, CALLER_NAME_PROPERTY),
+                        limit = 3,
+                        workConsumer = mappedSplit
+                    )?.map { row -> row.values }
+                )
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
                 val mixedPredicates = listOf(
                     predicate,
                     predicate.copy(property = CALLER_NAME_PROPERTY, expected = "targetonly")
@@ -612,6 +637,17 @@ class GraphStoreTest {
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        workConsumer = mappedSplit
+                    )?.map { row -> row.values }
+                )
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
             }
         } finally {
             dir.toFile().deleteRecursively()

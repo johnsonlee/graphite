@@ -1664,13 +1664,35 @@ class QueryPipeline private constructor(
         val rawLeadingStorage = balanced && !preferPersistedStorage &&
             nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val rawLeadingProjection = if (rawLeadingStorage) {
-            projectRawLeadingRows(nodeClass, filter, items, columns, limit, candidateSources, tracker)
+        val leadingProjection = if (rawLeadingStorage) {
+            projectLeadingRows(
+                nodeClass,
+                variable,
+                filter,
+                items,
+                columns,
+                limit,
+                candidateSources,
+                tracker,
+                preferRaw = true
+            )
+        } else if (balanced && nodePredicateFactory == null) {
+            projectLeadingRows(
+                nodeClass,
+                variable,
+                filter,
+                items,
+                columns,
+                limit,
+                candidateSources,
+                tracker,
+                preferRaw = false
+            )
         } else {
             null
         }
-        if (rawLeadingProjection != null && rawLeadingProjection.size >= limit) {
-            return CypherResult(columns, rawLeadingProjection.take(limit))
+        if (leadingProjection != null && leadingProjection.size >= limit) {
+            return CypherResult(columns, leadingProjection.take(limit))
         }
         val parallelStringScan = canExecuteDirectStringDisjunctionInParallel(
             nodeClass,
@@ -1740,7 +1762,6 @@ class QueryPipeline private constructor(
         // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
         if (balanced) {
-            val leadingProjection = rawLeadingProjection
             if (leadingProjection == null) {
                 val source = candidateSources.first()
                 val nodePredicate = nodePredicateFactory?.invoke(source)
@@ -1808,21 +1829,24 @@ class QueryPipeline private constructor(
     }
 
     @Suppress("LongParameterList", "ReturnCount")
-    private fun projectRawLeadingRows(
+    private fun projectLeadingRows(
         nodeClass: Class<out Node>,
+        variable: String,
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
         candidateSources: List<CypherGraph>,
-        tracker: CypherWorkTracker?
+        tracker: CypherWorkTracker?,
+        preferRaw: Boolean
     ): List<Map<String, Any?>>? {
         if (nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) return null
         val source = candidateSources.first()
         if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
-            if (property.propertyName != GRAPH_ID_PROPERTY &&
+            if (property.expression != CypherExpr.Variable(variable) ||
+                property.propertyName != GRAPH_ID_PROPERTY &&
                 property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES
             ) return null
             property.propertyName
@@ -1840,7 +1864,12 @@ class QueryPipeline private constructor(
             predicates,
             storageProjectedProperties,
             limit,
-            stringStorageWorkConsumer(candidateSources.size, tracker, preferRaw = true)
+            stringStorageWorkConsumer(
+                candidateSources.size,
+                tracker,
+                preferRaw = preferRaw,
+                preferMappedView = !preferRaw
+            )
         ) ?: return null
         val provenance = setOf(source.id)
         return projectedRows.map { raw ->

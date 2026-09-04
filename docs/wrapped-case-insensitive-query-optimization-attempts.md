@@ -4154,3 +4154,63 @@ LIMIT, cancellation polling, work accounting, and projection semantics.
 exact pushed head. It does not change the NCPU allocation, persisted graph format, index policy,
 or query routing. Full CI, both hosted real64 pressure gates, and all review threads remain hard
 gates. This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 131: Project the initialized mapped leading graph without nodes
+
+**Hypothesis:** the remaining `global-wide-distribution-localized-early/dense` regression is not
+missing graph or segment concurrency: its ordered `LIMIT 200` is satisfied by source zero after
+only 1,053 charged work units. That source already initialized the existing
+`graph.callsite-string-index` mapped view during the earlier query sequence, but the query path
+still materializes complete `CallSiteNode` objects and then projects four strings. Reuse only that
+already-initialized mapped view to produce projection rows directly. Never initialize the sidecar
+from this projection probe, keep short dense terms on Attempt 130's raw-leading path, and decline
+to the authoritative retained-index/raw/node fallback on an unsupported matcher or invalid view.
+
+**Evidence:**
+
+- Base is exact Attempt 130 correctness-regression head
+  `f07ce836f3cc61fc0051fa2d08986f0cad0bc9fa`; candidate is this experiment commit. Three paired
+  fresh-JVM runs alternate base/candidate order on the same 64 distinct persisted graphs generated
+  from the four pinned Android, Tika, Hive, and Kotlin fixture JARs. Each process uses an 8 GiB heap
+  and `ActiveProcessorCount=4`. Synthetic graphs are used only by focused correctness/path tests,
+  never as performance evidence.
+- All `204/204` observations across the six processes match the independent oracle for outcome,
+  ordered rows, digest, response bytes, and graph provenance, with zero timeout or failure. Focused
+  WebGraph and Cypher tests plus both detekt gates pass. The mapped projection test proves a cold
+  projection probe cannot initialize the view, an initialized view preserves its existing posting
+  encounter order, and a checksum-valid invalid posting takes the correct retained-index fallback.
+  Query-layer regressions prove both a full leading result and a partial leading result preserve
+  source order, provenance, global `LIMIT`, and continuation from source one without rescanning
+  source zero or materializing nodes. A 40-source regression also proves that `RETURN
+  x.caller_class` retains 200 `null` values when the matched variable is `n`; removing the new
+  property-owner check makes that test fail by entering the projection fast path.
+  An adjacent selected-set regression covers the all-source retained preflight: when one projection
+  source lacks retained-index capability, no source projects before the normal ordered fallback.
+  Final Cypher application line coverage is `98.0132%`, above the 98% CI threshold.
+- `global-wide-distribution-localized-early/dense` improves from
+  `2.626/2.702/2.708 ms` to `1.183/1.203/1.188 ms`, or `2.22x/2.25x/2.28x`. Every run returns the
+  same 200 rows and digest from source zero with exactly 1,053 work units. The short wrapped-dense
+  raw path remains effectively unchanged at `1.529/1.389/1.511 ms` versus
+  `1.371/1.366/1.416 ms`, with the same 200 rows and 665 work units.
+- Aggregate base P50 is `1.800/1.918/2.079 ms` and candidate P50 is
+  `1.716/1.745/1.892 ms`. Base P95 is `49.896/45.804/65.826 ms` and candidate P95 is
+  `42.031/43.380/80.179 ms`; the tail remains the wrapped `DISTINCT` dense case. Pair three is
+  `21.8%` slower, but that greater-than-15%-and-1-ms movement occurs in only one of three pairs and
+  therefore does not meet the existing repeated-regression rule. Aggregate charged work is exactly
+  `58,071,626` in every process.
+- Base/candidate process CPU is `1.646/1.545/1.691 s` versus `1.409/1.477/1.614 s`; peak used heap
+  is `4.381/4.380/4.386 GiB` versus `4.040/4.386/4.388 GiB`; peak RSS is
+  `4.897/4.917/4.892 GiB` versus `4.625/4.905/4.885 GiB`. Every process reads four available
+  processors, plans `2 graph + 2 segment`, and observes both worker peaks at two.
+- Exact hosted Attempt 130 run `33831665334` is the current main comparison: all three aggregate
+  P95 speedups already clear 5x (`5.55x/6.79x/7.75x`) with exact `102/102` correctness, but its
+  aligned localized-early regression repeats in two pairs and wrapped-dense repeats in all three.
+  Attempt 131's local paired evidence addresses the localized-early component only; the pushed
+  exact-head CI and its unresolved review threads remain mandatory gates.
+
+**Conclusion:** keep for exact-head hosted validation. The change removes node materialization only
+when the existing mapped view is already live, produces no startup-wide work, and adds no persisted
+file, format, magic, version, writer, or configuration. It deliberately does not claim to solve the
+separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
+pass before completion. This commit is not authorization to merge or tag; either action requires a
+new explicit user instruction.
