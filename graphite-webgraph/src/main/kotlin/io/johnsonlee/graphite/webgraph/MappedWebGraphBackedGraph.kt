@@ -1544,10 +1544,10 @@ internal class MappedWebGraphBackedGraph(
     private fun streamMethods(
         pattern: MethodPattern,
         scanConsumer: MethodMetadataScanConsumer? = null
-    ): Sequence<MethodDescriptor> = if (MappedMethodIndex.cannotMatch(pattern, stringTable)) {
-        emptySequence()
-    } else {
-        methodIndex().methods(pattern, scanConsumer)
+    ): Sequence<MethodDescriptor> = sequence {
+        if (!MappedMethodIndex.cannotMatch(pattern, stringTable)) {
+            yieldAll(methodIndex().methods(pattern, scanConsumer))
+        }
     }
 
     private fun methodIndex(): MappedMethodIndex {
