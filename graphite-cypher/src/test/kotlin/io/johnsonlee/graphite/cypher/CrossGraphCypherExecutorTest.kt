@@ -1592,6 +1592,60 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `selected retained graph set preflights every source before projection`() {
+        val returnType = TypeDescriptor("void")
+        val projectionCalls = AtomicInteger()
+        val retainedChecks = mutableListOf<Int>()
+        val graphs = List(2) { sourceIndex ->
+            val callerClass = "example.Caller-$sourceIndex"
+            val backing = graph(
+                CallSiteNode(
+                    NodeId(sourceIndex),
+                    MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    sourceIndex,
+                    null,
+                    emptyList()
+                )
+            )
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by backing,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    retainedChecks += sourceIndex
+                    return sourceIndex == 0
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectionCalls.incrementAndGet()
+                    error("No source may project before the complete retained preflight passes")
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Caller-' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf(0, 1), retainedChecks)
+        assertEquals(0, projectionCalls.get())
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[1]))
+    }
+
+    @Test
     fun `ordered distinct graph id limit reads the source catalog instead of scanning nodes`() {
         val nodeScans = AtomicInteger()
         fun catalogGraph(populated: Boolean): Graph {
