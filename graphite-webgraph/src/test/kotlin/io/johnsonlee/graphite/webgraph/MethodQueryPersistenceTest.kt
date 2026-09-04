@@ -11,6 +11,7 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.util.concurrent.CancellationException
 import java.util.regex.Pattern
@@ -304,6 +305,98 @@ class MethodQueryPersistenceTest {
         )
         assertEquals(0, inspected)
         assertFalse(graph.isMethodIndexInitialized())
+    }
+
+    @Test
+    fun `mapped method index preserves defensive count and interruption checks`() {
+        val methods = listOf(
+            MethodDescriptor(
+                TypeDescriptor("com.example.Alpha"),
+                "find",
+                listOf(TypeDescriptor("java.lang.String")),
+                TypeDescriptor("java.lang.Object")
+            ),
+            MethodDescriptor(
+                TypeDescriptor("com.example.Beta"),
+                "skip",
+                emptyList(),
+                TypeDescriptor("void")
+            )
+        )
+        val directory = Files.createTempDirectory("mapped-method-index-guards")
+        try {
+            GraphStore.save(DefaultGraph.Builder().apply { methods.forEach(::addMethod) }.build(), directory)
+            val metadata = ByteBuffer.wrap(Files.readAllBytes(directory.resolve("graph.metadata")))
+            val strings = StringTable.load(directory)
+            val index = MappedMethodIndex.build(metadata.duplicate(), strings, methods.size.toLong())
+
+            assertTrue(
+                index.methods(
+                    MethodPattern(name = "find", parameterTypes = listOf("int"))
+                ).none()
+            )
+            assertEquals(
+                index.methods(MethodPattern()).toList(),
+                index.slice(MethodPattern(), methods.size)
+            )
+
+            val exhaustedExact = MethodPattern(
+                declaringClass = Pattern.quote("com.example.Alpha"),
+                name = Pattern.quote("skip"),
+                parameterTypes = emptyList(),
+                useRegex = true
+            )
+            assertEquals(
+                emptyList(),
+                MappedMethodIndex.sliceExact(
+                    metadata.duplicate(),
+                    strings,
+                    methods.size.toLong(),
+                    exhaustedExact,
+                    1,
+                    null
+                )
+            )
+            assertFailsWith<IllegalArgumentException> {
+                MappedMethodIndex.sliceExact(
+                    metadata.duplicate(),
+                    strings,
+                    methods.size.toLong() + 1,
+                    exhaustedExact,
+                    1,
+                    null
+                )
+            }
+            assertFailsWith<IllegalArgumentException> {
+                MappedMethodIndex.build(metadata.duplicate(), strings, methods.size.toLong() + 1)
+            }
+
+            Thread.currentThread().interrupt()
+            try {
+                assertFailsWith<CancellationException> {
+                    MappedMethodIndex.sliceExact(
+                        metadata.duplicate(),
+                        strings,
+                        methods.size.toLong(),
+                        exhaustedExact,
+                        1,
+                        null
+                    )
+                }
+            } finally {
+                Thread.interrupted()
+            }
+            Thread.currentThread().interrupt()
+            try {
+                assertFailsWith<CancellationException> {
+                    MappedMethodIndex.build(metadata.duplicate(), strings, methods.size.toLong())
+                }
+            } finally {
+                Thread.interrupted()
+            }
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
     }
 
     @Test
