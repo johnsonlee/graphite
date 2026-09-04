@@ -4688,3 +4688,81 @@ can avoid repeated string comparisons while retaining raw encounter order.
 remove cross-case JIT asymmetry, and mapped IDs add work to an already cheap raw scan. The honest
 fix is benchmark symmetry: keep the raw control, but put it first for both byte-identical harnesses
 in their fresh JVMs.
+
+### 2026-09-05 - Attempt 147: Map the persisted index and reuse selected provenance
+
+**Hypothesis:** open the existing v2 `graph.callsite-string-index` as a validated read-only mapped
+view for serial global-wide queries, resolve selected tuples through their shortest postings, and
+return the already verified earliest tuple instead of rescanning raw CallSites. Keep bounded exact
+three-character queries on v2.4.7's raw path, and place that identical raw control first in both
+fresh benchmark JVMs so the comparison has symmetric cold/JIT state.
+
+**Evidence:**
+
+- Base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; the candidate revision is
+  the Attempt 147 commit containing this record. Its stable content identities are mapped view
+  `d3c585f69bc3f3aba1ace0a572fc45547c397581efaccfd296fb9191de32feab`, graph integration
+  `cd059f8ef3f0353ec3ab5e23b7d178fb0c26b35e91524918c50ccc19dd4601a2`, shared constants
+  `9765aae0be20169724f4846fd8da703afe5553ff09f1a1dfe710bae0fc0308b8`, focused tests
+  `3ea9731b9fb5dfc79f8ff068a631c1f8176d4ed0b4ed8241080bea58626ee760`, and JMH harness
+  `b07de7fca27c786b305dda77cd1fc08c328bbf5ad17e254d2082af29e0e36bf8`. The base and
+  candidate benchmark JAR raw SHA-256 is
+  `5297473aa8c38353c2aa21cc61a86c7c7fac3fab427b31c2cd0065f66865a2dd` /
+  `0b361ad01168c36a5fc7f8c57d8693e205dc70ea018b09c1872b747643055613`; their canonical ZIP
+  content hashes are `12f060ddf4c886acf7774bcc1e13cf9761ddf2109ef83d9f6acee09ba55e96a8` /
+  `7d5092fe02e176b5582802ef308ae22867d2a980aeb59b58f2b97a564859362c`.
+- Three independent cold pairs ran candidate/base, base/candidate, candidate/base under JDK
+  17.0.18, `-Xmx8g`, `-XX:ActiveProcessorCount=4`, zero warmup, one measurement, and one fork.
+  Both revisions used the byte-identical candidate-reviewed harness and the same 64 distinct real
+  persisted graphs from four pinned fixture JARs. Manifest SHA-256 is
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`; fixture provenance
+  SHA-256 is `86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d`.
+- All six measured processes completed `34/34` cases with zero failure or timeout and `2,925`
+  rows. All 204 observations matched the base-generated outcome, row count, response bytes, and
+  digest oracle; fixture distribution plus hit/access provenance passed their independent checks.
+  Oracle SHA-256 is
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`; work fell from
+  `109,198,717` to `57,710,024` units in every pair.
+- Base to candidate P50/P95/max was
+  `238.065/403.804/507.673 -> 1.931/27.139/407.101 ms`,
+  `235.851/472.811/493.800 -> 1.805/26.692/411.352 ms`, and
+  `242.379/400.292/503.915 -> 1.904/26.903/416.873 ms`. Every pair clears the `10x` P95
+  requirement at `14.88x/17.71x/14.88x`; the worst required wrapped-shape speedup is `24.42x`.
+- The first-position v2.4.7 raw control stayed neutral at identical `681` work units:
+  `27.340 -> 27.139 ms`, `26.462 -> 26.692 ms`, and `27.278 -> 26.903 ms`. No case repeated
+  a greater-than-15%-and-1-ms regression. Candidate max stayed below its paired base max.
+- CPU fell `10.438/10.839/10.294 -> 1.039/1.137/1.065 s`. Peak heap was
+  `4.39/4.30/4.65 -> 3.92/4.38/4.37 GiB`, and peak RSS was
+  `5.45/5.37/5.74 -> 4.40/4.85/5.02 GiB`; every resource measurement passed the paired
+  non-regression bound. Pair 3's advisory committed-heap and post-run used-heap gauges rose once,
+  but did not repeat; its peak used heap, RSS, and normalized allocation all fell. The local
+  fail-closed data comparator returned PASS with no errors. Comparator/status/report SHA-256 is
+  `023b00cc6506465107e9e4bf4f545763c55dc5b147b3849564d1086125d3500e` /
+  `35560cd4c9b020766726c07bc3c16320824ae9710ceb9ccc24d171b266ed5b62` /
+  `b7d9696e1c6d54f6d49fa703b52b300307a88f334678506238230d6a3cae3a7d`.
+- Pair base JSON/TSV SHA-256 is
+  `8a65dedce728694676c321edb8637abaa3424f9f2452939bd2bbe106573bc554` /
+  `19b57dc96df3fc242faedcc630147f92ac79fe1a309d70b3deb8b1d9acf065de`,
+  `d7008a87868198daf02b266eab0f45128f301651c86911e3c4b2dfe4852c0e8b` /
+  `4d8417b50ce643d499e6e4bdaa5f97403bb36be6c5c6472b8986345140ccbcbc`, and
+  `71c71d0a0debfec6f137104f32f2cc5432fbb3391179d2b581edd942aae1a026` /
+  `64701c36e6eda6c590c72b69690fac88f22d2a70229ab676b488f7ac03a87462`.
+  Candidate JSON/TSV SHA-256 is
+  `d4207e6eb2be6aa1a296465eeb7ed3a000de0d1937caa0bb3ef157c51f281092` /
+  `a6c80cb4c16dd99e519f5b55c610341ea0af9db1d361eebd0ff954c60e7eae37`,
+  `44d04154d145a053b6dc217db5ff18977d9c766c7f8f889cb77178767f55cca3` /
+  `bd8b88762564c0a511ee8775e574d1a1fb3a77e91d1d31934dc3d877dc8b3f58`, and
+  `ad27fd10e4f721b76fb87e8ba33883da47b3d6b2fecf990952fb1e2178ac53c5` /
+  `cfe39e96c3d1bc47ed800f81111829fcf8c66051aa718dc17cb97ef0ec3e5658`.
+- `:webgraph:test`, `:webgraph:detekt`, and `:webgraph:jmhJar` passed together. The suite ran 178
+  tests with zero failure/error/skip, including all 12 focused mapped-view tests. Missing, stale, or
+  corrupt sidecars fall back without rewriting; heap-index priority, interruption, exact consumer
+  exception identity, encounter order, limits, null projections, repeatability, concurrency, and
+  clear/reopen lifecycle are covered. The reader changes no magic, format version, or writer bytes.
+
+**Conclusion:** keep. This is the first fully gated candidate to exceed `10x` P95 in every
+independent pairing without a repeated per-case or resource regression. Use the read-only mapped
+view only for eligible serial queries; preserve every unsupported, short-dense, unavailable, and
+invalid-index path as the v2.4.7 fallback. The source and local artifacts are content-addressed
+above; the hosted dual-baseline run must still bind the committed candidate SHA and remains the
+authoritative merge gate.

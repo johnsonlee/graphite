@@ -101,6 +101,11 @@ private data class ParallelCallSiteScanResult(
         get() = nodeIds != null && propertyStringIds != null && scannedCount == expectedCount
 }
 
+private data class SelectedCallSiteProjection(
+    val stringIds: IntArray,
+    val values: List<String?>
+)
+
 /**
  * A [Graph] backed by WebGraph compression for edges and memory-mapped I/O for nodes.
  *
@@ -191,6 +196,11 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
     @Volatile
     private var callSiteStringIndex: MappedCallSiteStringIndex? = null
+    private val mappedCallSiteStringIndexViewLock = Any()
+    @Volatile
+    private var mappedCallSiteStringIndexView: MappedCallSiteStringIndexView? = null
+    @Volatile
+    private var mappedCallSiteStringIndexViewUnavailable = false
     private var callSiteStringIndexLoadedFromPersistence = false
     private var callSiteStringIndexPersistenceBudgetDenied = false
     private fun callSiteStringIndexContentIdentity(workConsumer: GraphWorkConsumer?): ByteArray {
@@ -209,6 +219,7 @@ internal class MappedWebGraphBackedGraph(
         return digest.digest()
     }
     private val callSiteParallelScanCount = AtomicLong()
+    private val callSiteSerialScanCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
     private val callSiteScanPeakActiveWorkers = AtomicInteger()
@@ -358,12 +369,9 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        if (shouldPreflightCallSitePredicates(predicates) &&
-            callSitePredicatesCannotMatch(predicates, workConsumer)
-        ) {
-            return emptyList()
-        }
+        if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         callSiteStringIndex?.let { index ->
+            callSiteStringIndexLookupCount.incrementAndGet()
             return index.distinctProjection(
                 predicates,
                 projectedProperties,
@@ -371,6 +379,29 @@ internal class MappedWebGraphBackedGraph(
                 selectedValues,
                 workConsumer
             )
+        }
+        if (selectedValues == null && workConsumer is SerialGraphWorkBatchConsumer &&
+            predicates.preferBoundedRawCallSiteScan(limit)
+        ) {
+            return rawDistinctCallSiteStringProjection(
+                predicates,
+                projectedProperties,
+                limit,
+                null,
+                workConsumer
+            )
+        }
+        mappedDistinctCallSiteStringProjectionIfUseful(
+            predicates,
+            projectedProperties,
+            limit,
+            selectedValues,
+            workConsumer
+        )?.let { return it }
+        if (shouldPreflightCallSitePredicates(predicates) &&
+            callSitePredicatesCannotMatch(predicates, workConsumer)
+        ) {
+            return emptyList()
         }
         if (workConsumer is SerialGraphWorkBatchConsumer) {
             return rawDistinctCallSiteStringProjection(
@@ -391,6 +422,133 @@ internal class MappedWebGraphBackedGraph(
         )
     }
 
+    private fun mappedDistinctCallSiteStringProjectionIfUseful(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        selectedValues: Set<List<String?>>?,
+        workConsumer: GraphWorkConsumer?
+    ): List<StringPropertyDistinctRow>? {
+        if (predicates.any { predicate -> !predicate.canUseMappedCallSiteIndexView() }) return null
+        val view = mappedCallSiteStringIndexView(workConsumer) ?: return null
+        val exactMatches = if (selectedValues == null) {
+            view.exactMatchingStringIds(predicates, workConsumer)
+        } else {
+            null
+        }
+        val useMappedView = if (selectedValues != null) {
+            view.supportsPredicates(predicates)
+        } else {
+            exactMatches != null &&
+                !view.exactMatchesCanFillLimit(predicates, exactMatches, limit, workConsumer)
+        }
+        if (!useMappedView) return null
+        return mappedDistinctCallSiteStringProjection(
+            predicates,
+            projectedProperties,
+            limit,
+            selectedValues,
+            workConsumer,
+            view,
+            exactMatches
+        )?.also { callSiteStringIndexLookupCount.incrementAndGet() }
+    }
+
+    @Suppress(
+        "CyclomaticComplexMethod",
+        "LongMethod",
+        "LoopWithTooManyJumpStatements",
+        "NestedBlockDepth",
+        "ReturnCount"
+    )
+    private fun mappedDistinctCallSiteStringProjection(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        selectedValues: Set<List<String?>>?,
+        workConsumer: GraphWorkConsumer?,
+        view: MappedCallSiteStringIndexView,
+        exactMatches: List<IntArray>?
+    ): List<StringPropertyDistinctRow>? {
+        if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
+        if (exactMatches?.all { stringIds -> stringIds.isEmpty() } == true) return emptyList()
+        val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
+        val selectedStringIds = HashMap<String, Int>()
+        val selectedProjections = selectedValues?.mapNotNull { values ->
+            if (values.size != projectedPropertyIndexes.size) return@mapNotNull null
+            val ids = IntArray(projectedPropertyIndexes.size)
+            projectedPropertyIndexes.indices.forEach { index ->
+                val propertyIndex = projectedPropertyIndexes[index]
+                val value = values[index]
+                ids[index] = when {
+                    propertyIndex < 0 && value == null -> -1
+                    propertyIndex < 0 || value == null -> return@mapNotNull null
+                    else -> selectedStringIds.getOrPut(value) { stringTable.findId(value) }
+                        .takeIf { it >= 0 } ?: return@mapNotNull null
+                }
+            }
+            SelectedCallSiteProjection(ids, values)
+        }
+        if (selectedProjections?.isEmpty() == true) return emptyList()
+        if (selectedProjections != null) {
+            val predicatePropertyIndexes = predicates.map { predicate ->
+                requiredCallSiteStringPropertyIndex(predicate.property)
+            }
+            if (predicatePropertyIndexes.any { it !in projectedPropertyIndexes }) return null
+            consumeGraphWork(workConsumer, selectedProjections.size.toLong())
+            val eligibleSelections = selectedProjections.filter { selected ->
+                predicatePropertyIndexes.indices.any { predicateIndex ->
+                    projectedPropertyIndexes.indices.any { projectedIndex ->
+                        projectedPropertyIndexes[projectedIndex] == predicatePropertyIndexes[predicateIndex] &&
+                            selected.values[projectedIndex]?.let { value ->
+                                val predicate = predicates[predicateIndex]
+                                stringMatches(value, predicate.transform, predicate.mode, predicate.expected)
+                            } == true
+                    }
+                }
+            }
+            val matchedNodeIds = view.firstNodesMatchingTuples(
+                projectedPropertyIndexes,
+                Array(eligibleSelections.size) { index -> eligibleSelections[index].stringIds },
+                workConsumer
+            ) ?: return null
+            val selectedRows = ArrayList<StringPropertyDistinctRow>(eligibleSelections.size)
+            for (index in eligibleSelections.indices) {
+                val nodeId = matchedNodeIds[index]
+                if (nodeId < 0) continue
+                selectedRows += StringPropertyDistinctRow(
+                    nodeOffsets.offset(nodeId),
+                    eligibleSelections[index].values
+                )
+            }
+            return selectedRows.sortedBy(StringPropertyDistinctRow::encounterOrder).take(limit)
+        }
+
+        val matchedNodeIds = view.matchingNodeIds(
+            predicates,
+            exactMatches ?: return null,
+            workConsumer
+        ) ?: return null
+        val rows = ArrayList<StringPropertyDistinctRow>()
+        val seenValues = HashSet<List<String?>>()
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        for (nodeId in matchedNodeIds) {
+            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+            }
+            val values = projectedPropertyIndexes.map { propertyIndex ->
+                if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex]).toString()
+            }
+            if (!seenValues.add(values)) continue
+            rows += StringPropertyDistinctRow(nodeOffsets.offset(nodeId), values)
+            if (rows.size >= limit) break
+        }
+        return rows
+    }
+
     @Suppress("CyclomaticComplexMethod", "LongMethod", "LoopWithTooManyJumpStatements", "NestedBlockDepth")
     private fun rawDistinctCallSiteStringProjection(
         predicates: List<StringPropertyPredicate>,
@@ -400,6 +558,7 @@ internal class MappedWebGraphBackedGraph(
         workConsumer: GraphWorkConsumer
     ): List<StringPropertyDistinctRow> {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
+        callSiteSerialScanCount.incrementAndGet()
         val predicatePropertyIndexes = predicates.map { predicate ->
             requiredCallSiteStringPropertyIndex(predicate.property)
         }
@@ -495,6 +654,23 @@ internal class MappedWebGraphBackedGraph(
                     .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
                     .map(type::cast)
             }
+            if (workConsumer is SerialGraphWorkBatchConsumer && predicates.preferBoundedRawCallSiteScan(limit)) {
+                return serialRawCallSiteStringDisjunction(type, predicates, limit, workConsumer)
+            }
+            if (predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView)) {
+                mappedCallSiteStringIndexView(workConsumer)?.let { view ->
+                    val exactMatches = view.exactMatchingStringIds(predicates, workConsumer)
+                    if (exactMatches != null) {
+                        val matchedNodeIds = view.matchingNodeIds(predicates, exactMatches, workConsumer)
+                        if (matchedNodeIds != null) {
+                            callSiteStringIndexLookupCount.incrementAndGet()
+                            return matchedNodeIds.take(limit)
+                                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                                .map(type::cast)
+                        }
+                    }
+                }
+            }
             parallelRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
             serialRawCallSiteStringDisjunction<T>(type, predicates, limit, workConsumer)?.let { return it }
         }
@@ -571,6 +747,7 @@ internal class MappedWebGraphBackedGraph(
         if (type != CallSiteNode::class.java || limit == Int.MAX_VALUE) return null
         if (workConsumer !is SerialGraphWorkBatchConsumer) return null
         return sequence {
+            callSiteSerialScanCount.incrementAndGet()
             val propertyIndexes = predicates.map { predicate ->
                 requiredCallSiteStringPropertyIndex(predicate.property)
             }
@@ -1409,6 +1586,11 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun clearStringPropertyIndexes() {
         releaseStringPropertyDisjunctionCache()
+        synchronized(mappedCallSiteStringIndexViewLock) {
+            mappedCallSiteStringIndexView?.close()
+            mappedCallSiteStringIndexView = null
+            mappedCallSiteStringIndexViewUnavailable = false
+        }
         synchronized(stringPropertyIndexLock) {
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
@@ -1438,6 +1620,10 @@ internal class MappedWebGraphBackedGraph(
     internal fun callSiteStringIndexBytes(): Long = callSiteStringIndex?.retainedBytes ?: 0L
 
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
+
+    internal fun isMappedCallSiteStringIndexViewInitialized(): Boolean = mappedCallSiteStringIndexView != null
+
+    internal fun isMappedCallSiteStringIndexViewUnavailable(): Boolean = mappedCallSiteStringIndexViewUnavailable
 
     internal fun isCallSiteTrigramIndexInitialized(): Boolean =
         callSiteStringIndex?.isTrigramPostingsInitialized() == true
@@ -1498,6 +1684,8 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
 
+    internal fun callSiteSerialScanCount(): Long = callSiteSerialScanCount.get()
+
     internal fun callSiteStringIndexLookupCount(): Long = callSiteStringIndexLookupCount.get()
 
     internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
@@ -1509,6 +1697,7 @@ internal class MappedWebGraphBackedGraph(
     internal fun resetCallSiteScanMetrics() {
         check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
         callSiteParallelScanCount.set(0L)
+        callSiteSerialScanCount.set(0L)
         callSiteStringIndexLookupCount.set(0L)
         callSiteScanPeakActiveWorkers.set(0)
         callSiteScanAbortedWorkers.set(0L)
@@ -1561,6 +1750,48 @@ internal class MappedWebGraphBackedGraph(
             uniqueStringIds.copyOf(uniqueSize),
             stringTable
         )
+    }
+
+    private fun mappedCallSiteStringIndexView(
+        workConsumer: GraphWorkConsumer?
+    ): MappedCallSiteStringIndexView? {
+        if (workConsumer !is SerialGraphWorkBatchConsumer) return null
+        if (!persistentCallSiteStringIndexEnabled || !Files.isRegularFile(callSiteStringIndexFile)) return null
+        mappedCallSiteStringIndexView?.let { return it }
+        if (mappedCallSiteStringIndexViewUnavailable) return null
+        return synchronized(mappedCallSiteStringIndexViewLock) {
+            mappedCallSiteStringIndexView?.let { return@synchronized it }
+            if (mappedCallSiteStringIndexViewUnavailable) return@synchronized null
+            val callSiteCount = nodeTypeIndex.count(CallSiteNode::class.java)
+            if (callSiteCount <= 0L || callSiteCount > Int.MAX_VALUE) {
+                mappedCallSiteStringIndexViewUnavailable = true
+                return@synchronized null
+            }
+            val loaded = MappedCallSiteStringIndexView.load(
+                callSiteStringIndexFile,
+                stringTable.size(),
+                callSiteCount.toInt(),
+                persistedCallSiteStringIndexContentIdentity(workConsumer),
+                stringTable,
+                nodeOffsets.size,
+                nodeAccessor = object : MappedCallSiteNodeAccessor {
+                    override fun encounterOrder(nodeId: Int): Long = nodeOffsets.offset(nodeId)
+
+                    override fun tupleMatches(
+                        nodeId: Int,
+                        propertyIndexes: IntArray,
+                        stringIds: IntArray
+                    ): Boolean = rawCallSiteStringTupleMatches(nodeId, propertyIndexes, stringIds)
+                },
+                workConsumer
+            )
+            if (loaded == null) {
+                mappedCallSiteStringIndexViewUnavailable = true
+            } else {
+                mappedCallSiteStringIndexView = loaded
+            }
+            loaded
+        }
     }
 
     @Suppress("CyclomaticComplexMethod", "ReturnCount", "TooGenericExceptionCaught")
@@ -1843,6 +2074,35 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
+    private fun rawCallSiteStringTupleMatches(
+        nodeId: Int,
+        propertyIndexes: IntArray,
+        expectedStringIds: IntArray
+    ): Boolean {
+        if (propertyIndexes.size != expectedStringIds.size) return false
+        val fields = nodeOffsets.offset(nodeId).toInt() + NODE_HEADER_BYTES
+        var calleeFields = -1
+        for (index in propertyIndexes.indices) {
+            val actualStringId = when (propertyIndexes[index]) {
+                CALLER_CLASS_PROPERTY_INDEX -> mappedNodeData.getInt(fields)
+                CALLER_NAME_PROPERTY_INDEX -> mappedNodeData.getInt(fields + Int.SIZE_BYTES)
+                CALLEE_CLASS_PROPERTY_INDEX, CALLEE_NAME_PROPERTY_INDEX -> {
+                    if (calleeFields < 0) {
+                        val callerParameters = mappedNodeData.getInt(fields + 2 * Int.SIZE_BYTES)
+                        calleeFields = fields + (METHOD_DESCRIPTOR_FIXED_INTS + callerParameters) * Int.SIZE_BYTES
+                    }
+                    mappedNodeData.getInt(
+                        calleeFields +
+                            if (propertyIndexes[index] == CALLEE_NAME_PROPERTY_INDEX) Int.SIZE_BYTES else 0
+                    )
+                }
+                else -> continue
+            }
+            if (actualStringId != expectedStringIds[index]) return false
+        }
+        return true
+    }
+
     private fun readNodeAt(offset: Long): Node {
         val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
         return NodeSerializer.readNode(input, stringTable, nodeDataVersion)
@@ -1886,6 +2146,7 @@ private const val MAX_TRIGRAM_INDEX_STRINGS = 500_000
 private const val TRIGRAM_ENTRY_ESTIMATED_BYTES = 64L
 private const val TRIGRAM_POSTING_ESTIMATED_BYTES = 12L
 private const val MIN_TRIGRAM_LENGTH = 3
+private const val MAX_BOUNDED_RAW_CALL_SITE_LIMIT = 4_096
 private const val STRING_PROPERTY_INDEX_LOAD_FACTOR = 0.75f
 private const val STRING_HASH_FACTOR = 31
 internal const val RAW_STRING_MISS: Byte = 1
@@ -2336,7 +2597,12 @@ internal fun stringMatches(
     }
 }
 
-private fun reusableContains(
+private fun List<StringPropertyPredicate>.preferBoundedRawCallSiteScan(limit: Int): Boolean =
+    limit in 1..MAX_BOUNDED_RAW_CALL_SITE_LIMIT && any { predicate ->
+        predicate.canUseMappedCallSiteIndexView() && predicate.expected.length == MIN_TRIGRAM_LENGTH
+    }
+
+internal fun reusableContains(
     actual: MutableString,
     transform: StringValueTransform?,
     expected: String

@@ -172,6 +172,19 @@ half of the additive NCPU plan (`NCPU - floor(NCPU / 2)`), overridable with
 cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
 parallelism.
 
+The v2.4.7-based global-wide path does not retain that complete heap index. For supported serial
+queries it opens an integrity-checked read-only view of the same version-2
+`graph.callsite-string-index`: header, graph content identity, dimensions, CRC, directories,
+posting bounds, and selected posting encounter order are verified before any mapped result is
+published. Missing, stale, or invalid views take the unchanged authoritative raw fallback and are
+never rewritten by the read path. An interrupted validation instead propagates cancellation,
+leaves the view unpublished, and permits a later request to retry. The view is kept for the mapped
+graph lifetime and its reference is dropped by `clearStringPropertyIndexes` and `close`. Java
+provides no supported synchronous unmap API, so `close` does not use reflective cleaner access; the
+mapping becomes GC-reclaimable once in-flight queries release it. The paired gate therefore treats
+peak RSS, in addition to heap and CPU, as a hard resource check. No filename, magic, version,
+writer, or on-disk field changes.
+
 During a real run, verify actual use in JFR/VisualVM by filtering for
 `graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
 during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core

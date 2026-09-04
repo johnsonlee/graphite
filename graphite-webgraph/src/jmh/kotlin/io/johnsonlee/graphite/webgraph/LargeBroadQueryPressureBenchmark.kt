@@ -325,6 +325,7 @@ open class LargeBroadQueryPressureBenchmark {
                 graphId = sources[index].id,
                 stringLookupEntries = optionalInternalLong(graph, "callSiteStringLookupEntryCount"),
                 parallelScans = requiredInternalLong(graph, "callSiteParallelScanCount"),
+                serialScans = optionalInternalLong(graph, "callSiteSerialScanCount"),
                 indexLookups = requiredInternalLong(graph, "callSiteStringIndexLookupCount"),
                 preflightChecks = optionalInternalLong(graph, "callSiteStringPreflightCount"),
                 projectionLookups = optionalInternalLong(graph, "callSiteStringProjectionLookupCount"),
@@ -909,12 +910,14 @@ private data class BroadQueryGraphAccess(
     val graphId: String,
     val stringLookupEntries: Long,
     val parallelScans: Long,
+    val serialScans: Long,
     val indexLookups: Long,
     val preflightChecks: Long,
     val projectionLookups: Long,
     val peakActiveWorkers: Long
 ) {
-    fun wasAccessed(): Boolean = stringLookupEntries > 0L || parallelScans > 0L || indexLookups > 0L ||
+    fun wasAccessed(): Boolean = stringLookupEntries > 0L || parallelScans > 0L || serialScans > 0L ||
+        indexLookups > 0L ||
         preflightChecks > 0L ||
         projectionLookups > 0L
 }
@@ -1336,6 +1339,12 @@ private fun broadQueryCoverageWorkload(
     }
     check(globalWideShapeIndex == GLOBAL_WIDE_SHAPE_COUNT)
     if (graphSources.size == MAX_GRAPH_COUNT) {
+        val coldRawControl = indexOfFirst { case ->
+            case.shape == "global-wide-four-properties" &&
+                case.selectivity == BroadQuerySelectivity.DENSE
+        }
+        check(coldRawControl >= 0) { "Missing cold raw global-wide control" }
+        add(0, removeAt(coldRawControl))
         addFixture64GlobalWideDistributionCases(graphSources, fixtureDistributions)
         addFixture64GraphSetCases(graphSources)
         val coldFirst = indexOfFirst { case ->
