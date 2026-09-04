@@ -107,7 +107,7 @@ internal class MappedMethodIndex private constructor(
 
     private class StringPattern(pattern: String?, useRegex: Boolean, strings: StringTable) {
         private val raw = pattern
-        private val exactRegex = exactRegex(pattern, useRegex)
+        private val exactRegex = exactPatternValue(pattern, useRegex)
         private val regex = pattern?.takeIf { useRegex && exactRegex == null }?.let(Pattern::compile)
         private val prefix = pattern?.takeIf { !useRegex && it.endsWith("*") }?.dropLast(1)
         private val expectedId = when {
@@ -136,18 +136,18 @@ internal class MappedMethodIndex private constructor(
             }.also { matched -> matchStates[stringId] = if (matched) STRING_MATCH else STRING_MISS }
         }
 
-        private companion object {
-            fun exactRegex(pattern: String?, useRegex: Boolean): String? {
-                if (!useRegex || pattern == null) return null
-                return pattern.takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
-                    ?.substring(2, pattern.length - 2)
-                    ?.replace("\\E\\\\E\\Q", "\\E")
-                    ?.takeIf { Pattern.quote(it) == pattern }
-            }
-        }
     }
 
     companion object {
+        fun cannotMatch(pattern: MethodPattern, strings: StringTable): Boolean {
+            fun missing(value: String?): Boolean = exactPatternValue(value, pattern.useRegex)
+                ?.let(strings::findId)
+                ?.let { stringId -> stringId < 0 } == true
+
+            return missing(pattern.declaringClass) || missing(pattern.name) ||
+                pattern.parameterTypes?.any(::missing) == true || missing(pattern.returnType)
+        }
+
         @Suppress("ReturnCount", "ComplexCondition")
         fun sliceExact(
             metadata: ByteBuffer,
@@ -362,4 +362,13 @@ internal class MappedMethodIndex private constructor(
                 ?.takeIf { Pattern.quote(it) == pattern }
         }
     }
+}
+
+private fun exactPatternValue(pattern: String?, useRegex: Boolean): String? = when {
+    pattern == null -> null
+    !useRegex -> pattern.takeUnless { it.endsWith("*") }
+    else -> pattern.takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
+        ?.substring(2, pattern.length - 2)
+        ?.replace("\\E\\\\E\\Q", "\\E")
+        ?.takeIf { Pattern.quote(it) == pattern }
 }

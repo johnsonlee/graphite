@@ -158,7 +158,9 @@ class MethodQueryPersistenceTest {
 
                 assertColdExactMethodSlice(graph, persistedOrder[2])
 
-                assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
+                assertMissingExactMethodSkipsIndex(graph)
+
+                assertEquals(persistedOrder.take(1), graph.methodSlice(MethodPattern(), 1))
                 assertTrue(graph.isMethodIndexInitialized())
                 assertFalse(graph.isMetadataInitialized())
 
@@ -225,16 +227,13 @@ class MethodQueryPersistenceTest {
                 assertEquals(1, inspected)
 
                 inspected = 0
-                assertFailsWith<CancellationException> {
+                assertTrue(
                     graph.methods(
                         MethodPattern(name = "missing"),
-                        MethodMetadataScanConsumer {
-                            inspected++
-                            if (inspected == 2) throw CancellationException("cancelled")
-                        }
-                    ).toList()
-                }
-                assertEquals(2, inspected)
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).none()
+                )
+                assertEquals(0, inspected)
                 assertFalse(graph.isMetadataInitialized())
             } finally {
                 graph.close()
@@ -243,6 +242,19 @@ class MethodQueryPersistenceTest {
         } finally {
             directory.toFile().deleteRecursively()
         }
+    }
+
+    private fun assertMissingExactMethodSkipsIndex(graph: MappedWebGraphBackedGraph) {
+        var inspected = 0
+        assertTrue(
+            graph.methods(
+                MethodPattern(declaringClass = "com.example.Beta", name = "missing"),
+                MethodMetadataScanConsumer { inspected++ }
+            ).none()
+        )
+        assertEquals(0, inspected)
+        assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
+        assertFalse(graph.isMethodIndexInitialized())
     }
 
     private fun assertColdExactMethodSlice(graph: MappedWebGraphBackedGraph, target: MethodDescriptor) {
