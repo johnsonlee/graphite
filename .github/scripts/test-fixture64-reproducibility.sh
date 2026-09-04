@@ -18,9 +18,32 @@ test -f "${JMH_JAR}"
 test -d "${FIXTURE_DIR}"
 test -f "${FIRST_OUTPUT}/graphs.tsv"
 test -f "${FIRST_OUTPUT}/fixture-provenance.tsv"
-test ! -e "${SECOND_OUTPUT}"
 
-"${SCRIPT_DIR}/prepare-fixture64-graphs.sh" "${JMH_JAR}" "${FIXTURE_DIR}" "${SECOND_OUTPUT}"
+if [[ ! -e "${SECOND_OUTPUT}" ]]; then
+  "${SCRIPT_DIR}/prepare-fixture64-graphs.sh" "${JMH_JAR}" "${FIXTURE_DIR}" "${SECOND_OUTPUT}"
+fi
+test -f "${SECOND_OUTPUT}/graphs.tsv"
+test -f "${SECOND_OUTPUT}/fixture-provenance.tsv"
+
+relocate_output() {
+  local output=$1
+  local output_root manifest_tmp provenance_tmp
+  output_root=$(cd "${output}" && pwd)
+  manifest_tmp=$(mktemp)
+  provenance_tmp=$(mktemp)
+  awk -F '\t' -v OFS='\t' -v root="${output_root}" \
+    '/^#/ { print; next } { $2=root "/" $1; print }' "${output}/graphs.tsv" > "${manifest_tmp}"
+  awk -F '\t' -v OFS='\t' -v root="${output_root}" \
+    'NR == 1 { print; next } { $19=root "/" $1; print }' \
+    "${output}/fixture-provenance.tsv" > "${provenance_tmp}"
+  mv "${manifest_tmp}" "${output}/graphs.tsv"
+  mv "${provenance_tmp}" "${output}/fixture-provenance.tsv"
+}
+
+# actions/cache restores graph directories into a different runner workspace. Rebind only the
+# location columns; all semantic and content hashes remain unchanged and are checked below.
+relocate_output "${FIRST_OUTPUT}"
+relocate_output "${SECOND_OUTPUT}"
 
 diff -u \
   <(cut -f1-18 "${FIRST_OUTPUT}/fixture-provenance.tsv") \
@@ -45,6 +68,16 @@ ANDROID_JAR=$(find_one 'android-all-*.jar')
 TIKA_JAR=$(find_one 'tika-app-*.jar')
 HIVE_JAR=$(find_one 'hive-exec-*.jar')
 KOTLIN_JAR=$(find_one 'kotlin-compiler-embeddable-*.jar')
+for OUTPUT in "${FIRST_OUTPUT}" "${SECOND_OUTPUT}"; do
+  java -Xmx4g \
+    -Dandroid.jar.path="${ANDROID_JAR}" \
+    -Dtika.jar.path="${TIKA_JAR}" \
+    -Dhive.jar.path="${HIVE_JAR}" \
+    -Dkotlin.compiler.jar.path="${KOTLIN_JAR}" \
+    -cp "${JMH_JAR}" \
+    io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
+    --verify "${OUTPUT}/graphs.tsv" "${OUTPUT}/fixture-provenance.tsv"
+done
 java -cp "${JMH_JAR}" \
   io.johnsonlee.graphite.webgraph.Fixture64GraphPreparation \
   --self-test-order-fingerprint
@@ -52,9 +85,11 @@ TAMPERED_PROVENANCE=$(mktemp)
 MODIFIED_FIXTURE_DIR=$(mktemp -d)
 RESOURCE_BACKUP=
 CALL_SITE_INDEX_BACKUP=
+CALL_SITE_PREFILTER_BACKUP=
 trap 'rm -f "${TAMPERED_PROVENANCE}"; rm -rf "${MODIFIED_FIXTURE_DIR}"; \
   [[ -z "${RESOURCE_BACKUP}" ]] || rm -f "${RESOURCE_BACKUP}"; \
-  [[ -z "${CALL_SITE_INDEX_BACKUP}" ]] || rm -f "${CALL_SITE_INDEX_BACKUP}"' EXIT
+  [[ -z "${CALL_SITE_INDEX_BACKUP}" ]] || rm -f "${CALL_SITE_INDEX_BACKUP}"; \
+  [[ -z "${CALL_SITE_PREFILTER_BACKUP}" ]] || rm -f "${CALL_SITE_PREFILTER_BACKUP}"' EXIT
 awk -F '\t' 'BEGIN { OFS="\t" } NR == 2 { $16=sprintf("%064d", 0) } { print }' \
   "${FIRST_OUTPUT}/fixture-provenance.tsv" > "${TAMPERED_PROVENANCE}"
 
