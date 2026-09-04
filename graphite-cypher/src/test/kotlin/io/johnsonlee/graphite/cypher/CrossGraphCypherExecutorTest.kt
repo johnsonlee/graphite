@@ -1180,11 +1180,11 @@ class CrossGraphCypherExecutorTest {
 
         val result = CrossGraphCypherExecutor(graphs).execute(
             "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'get' " +
-                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 200"
+                "RETURN n.caller_class AS caller LIMIT 200"
         )
 
         assertEquals(200, result.rows.size)
-        assertEquals("graph-0", result.rows.first()["graph"])
+        assertEquals(listOf("graph-0"), graphIds(result.rows.first()))
         assertEquals("Caller0", result.rows.first()["caller"])
         assertEquals("Caller199", result.rows.last()["caller"])
         assertEquals(setOf(0), projectedSources)
