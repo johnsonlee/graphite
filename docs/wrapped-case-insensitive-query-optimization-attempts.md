@@ -4419,3 +4419,32 @@ no cache state.
 **Conclusion:** reject. Removing cache state is not enough to reach 10x and repeats complete posting
 validation on recurring terms. Keep full pre-yield validation, but eliminate the second provenance
 scan rather than the integrity check.
+
+### 2026-09-05 - Attempt 139: Replace tuple object reads with primitive mapped accessors
+
+**Hypothesis:** selected tuple verification still constructs or crosses high-level node/property
+accessors. Read tuple fields and node offsets directly from primitive mmap accessors to remove that
+allocation and dispatch from the tail.
+
+**Evidence:**
+
+- Two isolated variants were measured over exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` using the same real fixture64 manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  8 GiB heap, four CPUs, and 34-case oracle. Both completed `34/34` cases with zero failure or
+  timeout.
+- The direct tuple-read variant measured P50/P95/max
+  `2.802/171.565/976.852 ms`, CPU `2.297 s`, heap/RSS
+  `4.687/5.240 GB`, and `60,315,958` work units. Its JSON/TSV SHA-256 is
+  `ef58a71227c88f732213696cc44cd44c6a25240cc96eb4b79aa62a83979fe9ae` /
+  `e27378a57cc9d020452aeeecbfdd08f64118cae5a0b117acbf3a348dd76ad2f3`.
+- The primitive accessor variant improved that to
+  `2.867/77.392/463.901 ms`, CPU `1.836 s`, heap/RSS
+  `4.239/5.474 GB`, with the same work. Its JSON/TSV SHA-256 is
+  `e39d0009594f8a5a957ef4ae726334f7fc4fea7c7fffb85b3ce297cf25cd97ae` /
+  `4ac02802d615782be599b78e89be26092a8265db83648748391a501c0f95432e`.
+  No synthetic timing data was used; neither prototype received a Git revision.
+
+**Conclusion:** reject both exact variants and remove their code. Primitive access is the better
+building block, but even its P95 is only `5.23x` faster than v2.4.7. Reusing the tuple match already
+found for provenance is still necessary.
