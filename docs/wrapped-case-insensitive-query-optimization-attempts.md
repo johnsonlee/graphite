@@ -4472,3 +4472,35 @@ searches and posting setup are amortized across the request.
 
 **Conclusion:** reject. Batching lookup setup does not remove the duplicate selected-provenance
 verification pass and is materially slower at P95 than the best primitive single-tuple path.
+
+### 2026-09-05 - Attempt 141: Reuse selected provenance without rescanning
+
+**Hypothesis:** once the shortest posting finds and fully verifies the earliest exact four-property
+tuple, return that selected provenance directly instead of rescanning the same graph through the
+generic raw path. Preserve encounter order and validate the complete chosen posting before exposing
+any row so corruption can still fall back atomically.
+
+**Evidence:**
+
+- The isolated candidate was based on exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. The same real fixture64 manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  provenance `86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d`,
+  8 GiB heap, four CPUs, and 34-case oracle were used. Both screens were `34/34` correct with no
+  timeout or failure.
+- The first candidate screen measured P50/P95/max
+  `2.775/15.990/622.367 ms`, or `86.03x/25.30x` at P50/P95 versus v2.4.7.
+  CPU was `1.259 s`, peak heap/RSS `4.249/4.761 GB`, and work `60,092,871`.
+  JSON/TSV SHA-256 is
+  `e992b13a35efbf672d8225425059a54b3cf6735b5681b6d1cd7aa61559c09067` /
+  `90489640b6cc9ec7db8758a8f5777f4ecc006a05ff35157ce5d2d9494cf6f3db`.
+- A clean reconstruction over the same base measured
+  `2.478/27.730/392.140 ms`, still `14.59x` at P95, with `1.308 s` CPU,
+  `4.245/4.721 GB` heap/RSS, and identical `60,092,871` work. Its JSON/TSV SHA-256 is
+  `17c63e53479d9b3471d516eb93a8b1902b0f5f739ef3672812931cab090eab71` /
+  `97e4474446b33cf60875a78e7c31ca163e7415d2893acf7bd2793e4eae0c7bc3`.
+  These were uncommitted prototypes; the exact artifacts, not a nonexistent Git SHA, identify them.
+
+**Conclusion:** retain the no-rescan design as the candidate foundation, but do not accept either
+single screen as final proof. It is the first variant to exceed 10x P95 twice while reducing CPU,
+RSS, and work; independent alternating pairs and full correctness/access auditing are required next.
