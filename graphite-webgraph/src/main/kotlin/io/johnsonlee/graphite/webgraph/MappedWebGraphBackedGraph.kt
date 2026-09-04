@@ -38,6 +38,7 @@ import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.WarmMappedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StreamingMethodLookup
 import io.johnsonlee.graphite.graph.WorkAwareTransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
@@ -166,6 +167,7 @@ internal class MappedWebGraphBackedGraph(
     RetainedStringPropertyDisjunctionLookup,
     StringPropertyDisjunctionLookupStrategy,
     ColdMappedStringPropertyDisjunctionLookup,
+    WarmMappedStringPropertyDisjunctionLookup,
     StringPropertyLookupOrder,
     Closeable {
 
@@ -1787,6 +1789,13 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringIndex == null && mappedCallSiteStringIndexView == null &&
         !mappedCallSiteStringIndexViewUnavailable && persistentCallSiteStringIndexEnabled &&
         Files.isRegularFile(callSiteStringIndexFile)
+
+    override fun hasWarmMappedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean = type == CallSiteNode::class.java &&
+        predicates.isNotEmpty() && predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView) &&
+        callSiteStringIndex == null && mappedCallSiteStringIndexView != null
 
     /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.

@@ -5180,3 +5180,124 @@ mapped graph views should remove the cold zero/max regression without changing l
 largest current-main regression while preserving the v2.4.7 rollback and an `18.60x` worst-pair
 P95 speedup. Do not call the overall branch mergeable yet: independently remove the three repeated
 targeted/localized aligned regressions, then rerun the complete three-pair dual-baseline gate.
+
+### 2026-09-05 - Attempt 152: Reuse the mapped suffix workers after cold initialization
+
+**Hypothesis:** Attempt 151 initializes every suffix graph's mapped string-index view during the
+cold zero case, but later targeted cases return to the legacy wave barrier and short raw scans.
+Expose a read-only warm-view capability and reuse the same four-worker, serial-per-graph,
+catalog-ordered suffix runner only when every suffix source proves that its mapped view is already
+warm and supports all predicates. Mixed warm/cold, heap-index, unsupported predicate, scoped,
+`DISTINCT`, and general-expression requests must keep their existing authoritative paths.
+
+**Evidence:**
+
+- Goal base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; non-regression base is
+  current main/v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; the measured candidate is
+  temporary commit `9df94f2c8953cd7ae2a4771eb58195b286011f0a` on retained Attempt 151
+  `33121e71`. The final attempt commit has the same production and harness bytes plus the
+  review-requested hit/order test. Its full-index production/test/harness diff SHA-256 is
+  `3309b3c027d4e12847e5f0ab66d5d2a84be5c5543de46cb015ee0184d1232d66`. Stable content
+  identities are graph capability
+  `391b51e072c217b697921493ee117237d53087a104b645b87763ad55a0377afd`, query integration
+  `ce722f2322f691f358fa527ce2042e20870d54cf9161538fc464231ed93838f4`, storage implementation
+  `93fae93718ccfb5973b6410b12a9c67ad678dc084617e4409e592fc0b53f2887`, query tests
+  `c2410d734607a910b7d66f7a513678f3dea48f5081273b40f8aacbb4e10c8de9`, and storage tests
+  `e83658ed846ba46a44a0ae18fe72daa241b152806e037e2a422ed8651356f32d`.
+- Goal/current/candidate JMH JAR raw SHA-256 is
+  `0175abd230a14b278221d4ad5a818f383000e9a8a651e052c262e74880c5cc3a` /
+  `4fff6a1bfa004a915d54c93b907530796285b865077f65080abf8d7c177dc259` /
+  `eabade7b79e63d8d9ff8c424e17875d7869caffffd259cccea8a91624ba7ed4d`; canonical ZIP content
+  SHA-256 is `f1a9d6712240adbbb31821ad63fab3fd46ee5f67f50213876119bf505560cfb9` /
+  `4c6362804163fe5ba6dda30c2c3af523349028c1c769cb5f22d39ed99ee52c18` /
+  `d311723ad86f87102dffd21291ecf1c2331da6237080e536e053155ae7d22ab9`. All three used the
+  byte-identical candidate-reviewed harness
+  `ccc8aac6c6b286bc9420bd190b515c7791ce74077987a2d8bb4ef79a6a51c780`.
+- The exact command shape remained
+  `java -jar <jar> io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+  -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold -p timeoutMillis=300000
+  -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -v SILENT -rf json -rff <result.json> -jvmArgs
+  "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=<manifest>
+  -Dgraphite.broad.pressure.correctness.mode=verify
+  -Dgraphite.broad.pressure.correctness.oracle=<oracle>
+  -Dgraphite.broad.pressure.output=<correctness>
+  -Dgraphite.broad.pressure.observations.output=<observations.tsv>"`. Three fresh paired forks ran
+  candidate/goal/current, goal/current/candidate, and candidate/goal/current. The host was Apple M3
+  Max/macOS 14.3 with JDK 17.0.18, four exposed CPUs, one fork, one single-shot measurement, and no
+  warmup.
+- All runs used the same 64 distinct real persisted graphs derived from pinned Android, Tika, Hive,
+  and Kotlin compiler JARs. Original manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`; the local-path-only
+  manifest SHA-256 is `24876ee54a7c5cded5a68b476613ac26e357f3973bb2d54a2ac56f5ea54bbd81`.
+  The independent v2.4.7 oracle and all nine correctness outputs have SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+- All nine measured processes completed `34/34` cases with zero failure or timeout and `2,925`
+  rows. All 306 observations matched outcome, row count, response bytes, digest, fixture
+  distribution, hit provenance, accessed graph IDs, and catalog order. Goal/current/candidate work
+  was exactly `109,198,717 / 58,071,626 / 57,706,213` units in every pair.
+- The unmodified v2.4.7 goal comparator passed every correctness, work, latency, and resource rule:
+
+  | Pair | Order | Goal P50/P95/max | Candidate P50/P95/max | P95 speedup | Wrapped minimum |
+  | ---: | :--- | :--- | :--- | ---: | ---: |
+  | 1 | candidate-base | 237.393/405.961/414.652 ms | 1.613/20.193/160.130 ms | 20.10x | 21.14x |
+  | 2 | base-candidate | 237.830/372.342/386.897 ms | 1.577/19.499/162.044 ms | 19.10x | 22.84x |
+  | 3 | candidate-base | 236.806/342.467/381.925 ms | 1.776/20.167/163.234 ms | 16.98x | 18.94x |
+
+  Worst individual P95 speedup is `16.98x`, worst wrapped-family speedup is `18.94x`, and worst
+  order-median speedup is `18.54x`; all are above the required `10x` threshold.
+- The complete current-main non-regression comparator also passed. Aggregate P95 improved
+  `37.496/49.058/44.536 -> 20.193/19.499/20.167 ms`; cold four-property zero/max improved
+  `235.041/244.786/236.864 -> 160.130/162.044/163.234 ms`. The Attempt 151 targeted failures are
+  closed: four-property targeted improved
+  `8.365/8.036/8.061 -> 6.347/6.948/7.669 ms`, and class-pair targeted changed
+  `4.687/4.332/3.763 -> 3.118/3.100/4.185 ms` with no material sample. Localized-early changed
+  `1.184/1.235/1.209 -> 2.232/1.988/2.053 ms`; only pair one exceeded the 1 ms noise floor, by
+  `0.048 ms`, so no regression repeated in two forks. All other aligned cases, including dense and
+  DISTINCT zero, remained within the gate's 15% plus 1 ms materiality rule.
+- Goal/current/candidate process CPU was
+  `10.240/1.456/1.418`, `10.115/1.557/1.418`, and `9.837/1.463/1.476 s`. Candidate peak used heap
+  was `4.716/4.712/4.716 GB`, peak RSS was `5.250/5.264/5.255 GB`, and normalized allocation was
+  `4.812/4.812/4.812 GB/op`; every paired goal and current resource rule passed. Candidate
+  telemetry reported `graphWorkerCount=4`, `graphScanPeakActiveWorkers=4`,
+  `segmentWorkerCount=0`, and `segmentScanPeakActiveWorkers=0` in every fork.
+- Goal report/status SHA-256 is
+  `f63adde8eb8acf74956d4a0913d124a0cb71ecd20a750461577f60feb1f506b7` /
+  `50096d1504f0e84f88494db07f0c743d91c36e2cb571321fe7697f2e4a6839be`; current report/status is
+  `5a92809bec89a29a93e3e6bf6644c4c8c257c37775659298c30c3b67e6241b7e` /
+  `a72cbdd6cdba1d12afecc73f6a70d4c4055c3d548fd2c25a1f558c31d7a71499`; combined dual-baseline
+  report/status is `697146744fa0af27ec56cc9162f677d3fbf1694032d9a8ed963fa7ea516c2066` /
+  `b6eee9f6d687f54dfaaeb15dfa1eda00c5250a4607f3ceddc213641bed4e8c6d`.
+- Goal JSON/TSV SHA-256 is
+  `12686f1f285f2aa0554c687f347035c87d685b3a874cd6cd9e25d1d20662b84e` /
+  `bebe9cd5059450e6da251899326ed49aa2092a6c642e45b1b2cfef98764713c2`,
+  `88b7393bb1cd9d5abcc503be7aeea1f2c31a5bedeb49ebe510bf45492b6d9679` /
+  `583b9cfadb24025b7b7f9257ea53b05f330666318370beb6d40dee773de6cad7`, and
+  `fd64fa4fae6d70726b4aee1a46c3880bf0c055babae255970c96bfcc83cee347` /
+  `1d44424923e54a5aa98037f7f71a4ff517075d7cc572f662538246e4f0fea197`. Current JSON/TSV is
+  `b06f74c453d3ec79cc932c9d987264d6ece659adc6d5a18dd4c3db840150c98f` /
+  `4715aea839d86addc6b33669c0991bd4ad34b8174b7667fdc5443610c03a367a`,
+  `826cdcdfd8b492dcf3de2e4e6c72172fc9e9442bd50bd8fefd60b5e6122514f8` /
+  `4af4cb5daf4dfe1125b10c2ee81061ef2dd4d05c5218673763837a47724920d9`, and
+  `814e54abd0f44817a877475acbfd8a82573807ab5c02669385c3723b8c185241` /
+  `bcea1398fa170a5f372fd47994f62a11ca4f03585b83a47baa28c1b8e7480cd7`. Candidate JSON/TSV is
+  `e6ca87449437470a05e6358b2b4e663c4e8a6476382c495cd932e5dd1d64bdae` /
+  `d0e271b245075d86f5dd9229d017e3904702131c3246f18e8711a72f1e41604f`,
+  `222c2576ffadbb0d9f5e3f5d10b5c340b4d1f56a13b263a76e1e01530467aab6` /
+  `3ce1163d108857798d3cb575b3f5fcffda384086651e8b28fa5b9a91f1cb70a2`, and
+  `c14d24baf29731a50f48fdce11588b6fd7905d34273d04d4e52cce4d2e45a7b7` /
+  `85ab0203ad63c7593a66c03da8a2c0905ab0101f460a2845c6401101152f3df8`.
+- Focused execution/storage tests passed `72/72` and `152/152`; core, Cypher, and webgraph
+  compilation and detekt passed, as did the rebuilt JMH JAR and `git diff --check`. Tests cover
+  cold, fully warm, and mixed suffixes; supported and unsupported predicates; heap-index priority;
+  strict order, limit, provenance, bounded workers, serial storage, cancellation, interruption,
+  budget and failure identity; and mapped-view clear/reload/eager lifecycle. The final added test
+  forces a later warm source to enter before the earlier hit and still proves the earlier source's
+  row and provenance win. An independent read-only review found no production blocker.
+
+**Conclusion:** keep. This closes the remaining targeted regressions by retaining the mapped views
+that the cold scan already paid to initialize, while preserving the four-worker cold-zero fix and
+all authoritative fallbacks. The exact three-pair dual-baseline gate is fully green: every v2.4.7
+pair exceeds `10x`, and no correctness, access, latency, CPU, heap, RSS, allocation, or worker-policy
+regression is material against current main/v2.4.8. This attempt completes the requested rollback
+and global-wide P95 target; the branch is ready for final repository verification and PR review.

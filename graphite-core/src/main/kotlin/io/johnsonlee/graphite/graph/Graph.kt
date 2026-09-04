@@ -277,6 +277,14 @@ interface ColdMappedStringPropertyDisjunctionLookup {
     ): Boolean
 }
 
+/** Optional read-only planning hint that a compatible mapped string-index view is already open. */
+interface WarmMappedStringPropertyDisjunctionLookup {
+    fun hasWarmMappedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
+}
+
 /**
  * Ordering capability for storage lookups that are emitted in canonical node traversal order.
  * Implementations must return a stable key and must emit all string-property lookup sequences

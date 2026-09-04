@@ -39,6 +39,7 @@ import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
+import io.johnsonlee.graphite.graph.WarmMappedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import org.junit.Test
@@ -578,6 +579,96 @@ class CrossGraphCypherExecutorTest {
         assertTrue(graphs.all { it.lookups.get() == 1 })
         assertTrue(graphs.all { measured -> measured.lookupThreads.none { it.startsWith("graphite-cypher-scan-") } })
         assertEquals(0, directStringGraphPeakActiveWorkers())
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+    }
+
+    @Test
+    fun `fully warm mapped suffix reuses bounded outer workers and preferred views`() {
+        val expectedWorkers = resolveColdMappedStringGraphParallelism()
+        if (expectedWorkers <= 1) return
+        val workersEntered = CountDownLatch(expectedWorkers)
+        val releaseWorkers = CountDownLatch(1)
+        val graphs = List(40) { sourceIndex ->
+            ColdMappedLookupGraph(
+                graph(),
+                initiallyCold = false,
+                beforeLookup = {
+                    if (sourceIndex in 1..expectedWorkers) {
+                        workersEntered.countDown()
+                        check(releaseWorkers.await(5, TimeUnit.SECONDS))
+                    }
+                }
+            )
+        }
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1_000))
+        val queryThread = Executors.newSingleThreadExecutor()
+        resetDirectStringGraphWorkerMetrics()
+        val future = queryThread.submit<CypherResult> {
+            CrossGraphCypherExecutor(
+                graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+                context
+            ).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                    "RETURN n.caller_class AS caller LIMIT 5"
+            )
+        }
+        try {
+            assertTrue(workersEntered.await(2, TimeUnit.SECONDS))
+            assertEquals(expectedWorkers, directStringGraphPeakActiveWorkers())
+            releaseWorkers.countDown()
+            assertTrue(future.get(5, TimeUnit.SECONDS).rows.isEmpty())
+            assertTrue(graphs.all { it.lookups.get() == 1 })
+            assertTrue(graphs.all { measured -> measured.serialConsumers.all { it } })
+            assertTrue(graphs.all { measured -> measured.preferredMappedConsumers.all { it } })
+            assertEquals(40L, context.diagnostics.workUnitsConsumed)
+            assertEquals(0, coldMappedStringGraphActiveWorkers())
+        } finally {
+            releaseWorkers.countDown()
+            queryThread.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `fully warm mapped suffix preserves source order limit and provenance for hits`() {
+        val expectedWorkers = resolveColdMappedStringGraphParallelism()
+        if (expectedWorkers <= 1) return
+        val laterSourceEntered = CountDownLatch(1)
+        val graphs = List(40) { sourceIndex ->
+            val nodes = when (sourceIndex) {
+                1 -> listOf(callSite(1, "example.TargetFirst"))
+                2 -> listOf(callSite(2, "example.TargetLater"))
+                else -> emptyList()
+            }
+            ColdMappedLookupGraph(
+                graph(*nodes.toTypedArray()),
+                initiallyCold = false,
+                beforeLookup = {
+                    when (sourceIndex) {
+                        1 -> check(laterSourceEntered.await(5, TimeUnit.SECONDS))
+                        2 -> laterSourceEntered.countDown()
+                    }
+                }
+            )
+        }
+        resetDirectStringGraphWorkerMetrics()
+
+        val result = CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+            CypherGraph("graph-$index", source)
+        }).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("graph-1" to "example.TargetFirst"), result.rows.map { row ->
+            row["graph"] to row["caller"]
+        })
+        assertEquals(listOf("graph-1"), graphIds(result.rows.single()))
+        assertEquals(1, graphs[1].lookups.get())
+        assertEquals(1, graphs[2].lookups.get())
+        assertTrue(graphs.filter { it.lookups.get() > 0 }.all { measured ->
+            measured.serialConsumers.all { it } && measured.preferredMappedConsumers.all { it }
+        })
+        assertTrue(directStringGraphPeakActiveWorkers() in 1..expectedWorkers)
         assertEquals(0, coldMappedStringGraphActiveWorkers())
     }
 
@@ -3053,6 +3144,7 @@ class CrossGraphCypherExecutorTest {
         private val beforeLookup: () -> Unit = {}
     ) : Graph by backing,
         ColdMappedStringPropertyDisjunctionLookup,
+        WarmMappedStringPropertyDisjunctionLookup,
         WorkAwareStringPropertyDisjunctionLookup,
         StringPropertyDisjunctionProjection {
         private val cold = AtomicBoolean(initiallyCold)
@@ -3070,6 +3162,11 @@ class CrossGraphCypherExecutorTest {
             coldChecks.incrementAndGet()
             return type == CallSiteNode::class.java && predicates.isNotEmpty() && cold.get()
         }
+
+        override fun hasWarmMappedStringPropertyDisjunction(
+            type: Class<out Node>,
+            predicates: List<StringPropertyPredicate>
+        ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty() && !cold.get()
 
         override fun <T : Node> nodesByStringPropertyDisjunction(
             type: Class<T>,

@@ -292,6 +292,7 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertTrue(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertFalse(loaded.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertFalse(
@@ -319,10 +320,26 @@ class GraphStoreTest {
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertFalse(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertTrue(loaded.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertFalse(loaded.hasWarmMappedStringPropertyDisjunction(Node::class.java, predicates))
+                assertFalse(
+                    loaded.hasWarmMappedStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "xy"
+                            )
+                        )
+                    )
+                )
                 assertEquals(1L, loaded.callSiteStringIndexLookupCount())
 
                 loaded.clearStringPropertyIndexes()
                 assertTrue(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertFalse(loaded.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertTrue(loaded.prepareCallSiteStringIndex())
                 loaded.resetCallSiteScanMetrics()
@@ -335,6 +352,7 @@ class GraphStoreTest {
                 assertEquals(listOf(2), retainedIds)
                 assertTrue(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 assertEquals(1L, loaded.callSiteStringIndexLookupCount())
             } finally {
                 loaded.close()

@@ -43,6 +43,7 @@ import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
+import io.johnsonlee.graphite.graph.WarmMappedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.nodesByStringProperty
 import io.johnsonlee.graphite.graph.nodesByStringPropertyDisjunction
@@ -1678,8 +1679,14 @@ class QueryPipeline private constructor(
             StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
         }
         val suffix = candidateSources.drop(1)
-        val firstColdSuffix = suffix.first().graph as? ColdMappedStringPropertyDisjunctionLookup ?: return null
-        if (!firstColdSuffix.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates)) return null
+        val firstSuffix = suffix.first().graph
+        val hasColdSuffix = (firstSuffix as? ColdMappedStringPropertyDisjunctionLookup)
+            ?.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+        val hasWarmSuffix = !hasColdSuffix && suffix.all { source ->
+            (source.graph as? WarmMappedStringPropertyDisjunctionLookup)
+                ?.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+        }
+        if (!hasColdSuffix && !hasWarmSuffix) return null
 
         val rows = rawLeadingRows?.toMutableList() ?: mutableListOf()
         if (rawLeadingRows == null) {
