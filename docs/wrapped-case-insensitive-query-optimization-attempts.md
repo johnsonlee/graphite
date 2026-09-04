@@ -4281,3 +4281,30 @@ admission and a forced-index control.
 **Conclusion:** reject and remove. Normal admission makes P95 worse, while forced admission merely
 moves the full-index build into the cold tail, increases heap pressure, and still regresses P95.
 A graph-lifetime read-only view of the existing persisted index is the next direction.
+
+### 2026-09-05 - Attempt 134: Read the persisted CallSite string index through mmap
+
+**Hypothesis:** `graph.callsite-string-index` already contains the string table and node postings
+needed by the query. A checksum- and structure-validated read-only mmap view can avoid both a full
+heap rebuild and most raw string decoding without changing the persisted format or writer.
+
+**Evidence:**
+
+- The candidate was an isolated mmap prototype over exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; rejected code was removed before this
+  record-only commit. Its JSON/TSV SHA-256 is
+  `09d8037229f97a5358fa7626bbc1777f54a20edd932a0fbebb31dabb1f81056f` /
+  `79620c1308c50a485006465fcd66e62612fcabfb88fa8c1745de4a81efd0d702`.
+- The same real fixture64 cold replay and oracle as Attempt 132 completed `34/34` queries with
+  zero failure or timeout. Base P50/P95/max was `238.758/404.579/1727.752 ms`; mmap candidate
+  was `2.478/260.414/415.707 ms`. P50 improved `96.36x`, but P95 improved only `1.55x`.
+- Process CPU fell `10.275 -> 4.259 s`; peak used heap was
+  `5.005 -> 5.080 GB`, peak RSS `6.167 -> 6.154 GB`, and charged work
+  `109,198,717 -> 80,421,998`. The fixture manifest/provenance SHA-256 remained
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b` /
+  `86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d`;
+  no synthetic performance data was used.
+
+**Conclusion:** reject this initial implementation, retain the mmap direction. It proves the
+persisted sidecar can collapse the median and CPU, but broad tuple/provenance work still dominates
+P95 and the candidate misses 10x by a wide margin.
