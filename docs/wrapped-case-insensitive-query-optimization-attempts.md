@@ -4334,3 +4334,29 @@ selected tuple is known.
 **Conclusion:** reject as a terminal plan. Sequential mapping reduces CPU and charged work, but it
 does not change the tail-driving lookup shape. The next attempt must anchor provenance on a
 selective posting instead of walking broad mapped state.
+
+### 2026-09-05 - Attempt 136: Anchor selected tuples on the shortest posting
+
+**Hypothesis:** a selected provenance tuple requires four exact properties. Resolve its four string
+IDs, choose the shortest property posting as the anchor, and verify the remaining values only for
+those candidate nodes. This should replace the broad mapped walk with selective intersection while
+preserving the earliest encounter-order tuple.
+
+**Evidence:**
+
+- Exact base is v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. The isolated candidate
+  used the same 64 persisted real graphs, fixture manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`, 8 GiB heap,
+  four CPUs, and 34-case oracle. All `34/34` cases succeeded with zero timeout or failure.
+- Candidate P50/P95/max was `2.525/94.351/419.564 ms`, versus base
+  `238.758/404.579/1727.752 ms`. P95 improved `4.29x`; CPU fell
+  `10.275 -> 1.802 s`, heap/RSS was `4.712/5.248 GB`, and charged work fell
+  `109,198,717 -> 61,302,962`.
+- The candidate JSON/TSV SHA-256 is
+  `99ac5fbeaf6409dabde0cc62c2aae7eb1bdd3c9c9212d1c5dfd02fd6a9a745e9` /
+  `5f2b25b9a37be4f5fbb5b45f19fcfbfd85378e3460337f2afe75ba6a3ca5389f`.
+  This rejected prototype was not assigned a Git revision and no production change from it remains.
+
+**Conclusion:** reject this form but retain shortest-posting anchoring as a building block.
+Selective intersection materially improves P95 and resource use, yet still misses the 10x target;
+the remaining duplicate raw/mapped provenance pass must be removed.
