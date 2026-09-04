@@ -4595,3 +4595,34 @@ broad shapes, and report the exact graph IDs inspected by mapped DISTINCT proven
 reject this execution order as final evidence. The production path exceeds 10x P95 with lower CPU,
 RSS, and work; the benchmark must put the identical raw control in the same cold/JIT position for
 both revisions, and the gate must validate bounded worker telemetry without prescribing topology.
+
+### 2026-09-05 - Attempt 144: Replace sequences with an explicit iterator and shared mask
+
+**Hypothesis:** coroutine/sequence state and repeated property-matcher dispatch may explain the
+remaining cold raw control difference. Replace the mapped result sequence internals with an
+explicit iterator, then share a primitive property mask across that iterator.
+
+**Evidence:**
+
+- Both isolated variants ran over the stable Attempt 143 production state and exact v2.4.7 base
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`, using the same 64 real persisted graphs,
+  8 GiB/four-CPU cold JVM, and 34-case oracle. Both were `34/34` correct in the replay, with no
+  timeout or failure; no synthetic performance data was used.
+- Explicit iterator P50/P95/max was `2.200/14.732/419.999 ms`, CPU `1.266 s`,
+  heap/RSS `4.695/5.205 GB`, and work `57,710,024`. The raw control remained
+  `6.865 ms` at 681 work units. JSON/TSV SHA-256 is
+  `8666bae3aef84ddf8e0d119d8839073bd5ac5ea557df34d1321a934efa4ec155` /
+  `41c75fcbd21e62ddb8fa192facf98d53132eaba4c5017f5b2904993e9c9bd69d`.
+- Shared mask P50/P95/max was `1.990/15.562/416.522 ms`, CPU `1.263 s`,
+  heap/RSS `4.693/5.207 GB`, and unchanged work. The same raw control was
+  `6.535 ms`. JSON/TSV SHA-256 is
+  `6554ae1a45198efa0f7fd6670cbbd0fcf58c7988e3b9083b803b6ba7a4e3554e` /
+  `1be54e662cf016420084d1b6048edb25f844e94ebe5899953ff74a2654413a6d`.
+- The explicit iterator also complicated terminal exception state: preserving the exact consumer
+  exception object and preventing post-failure continuation required extra state absent from the
+  repeatable sequence design. Focused exception behavior was therefore treated as a semantic
+  blocker even though the aggregate screen was fast.
+
+**Conclusion:** reject both variants and restore the sequence implementation. Neither removes the
+identical 681-work raw-control delta, and the iterator adds avoidable exception-state risk. The
+candidate must preserve repeatable/concurrent iteration and exact callback exception identity.
