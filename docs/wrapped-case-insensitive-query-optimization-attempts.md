@@ -4448,3 +4448,27 @@ allocation and dispatch from the tail.
 **Conclusion:** reject both exact variants and remove their code. Primitive access is the better
 building block, but even its P95 is only `5.23x` faster than v2.4.7. Reusing the tuple match already
 found for provenance is still necessary.
+
+### 2026-09-05 - Attempt 140: Batch selected tuple lookup
+
+**Hypothesis:** resolve all selected provenance tuples in one mapped pass so repeated string-table
+searches and posting setup are amortized across the request.
+
+**Evidence:**
+
+- Exact base is v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; the candidate was an
+  isolated, later-removed prototype. The cold 34-case run used the same 64 persisted graphs from
+  four pinned fixture JARs, manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  8 GiB heap, and four CPUs. Correctness was `34/34`, with zero failure or timeout.
+- Candidate P50/P95/max was `2.456/107.255/443.040 ms`, versus base
+  `238.758/404.579/1727.752 ms`. CPU was `1.857 s`, peak heap/RSS
+  `4.679/5.403 GB`, and work `60,315,307`. Batching therefore achieved only
+  `3.77x` at P95.
+- JSON/TSV SHA-256 is
+  `e40bcabb842013a687c6e9947675f9a0c3595ea7641d10fb1b939693874565a9` /
+  `e2d60cd5f6aee6ec4d83fc93eebba48e4e1430392c6e25535701d21473a36c0b`.
+  No synthetic performance data was used and no rejected production code remains.
+
+**Conclusion:** reject. Batching lookup setup does not remove the duplicate selected-provenance
+verification pass and is materially slower at P95 than the best primitive single-tuple path.
