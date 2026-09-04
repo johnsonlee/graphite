@@ -4393,3 +4393,29 @@ without giving back the shortest-posting tail reduction.
 **Conclusion:** reject and remove. The selector preserves results and average work but introduces
 severe cold-state instability; a 10x claim cannot rely on two favorable screens around a
 `6.326 s` max. The mapped path must make one deterministic choice before emitting any row.
+
+### 2026-09-05 - Attempt 138: Remove mapped validation caching
+
+**Hypothesis:** the graph-lifetime posting-validation cache may be adding synchronization and lookup
+cost to every selected tuple. Revalidate the chosen immutable posting directly per query and retain
+no cache state.
+
+**Evidence:**
+
+- The candidate was an isolated patch over exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. The same 64 real persisted graphs, manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  8 GiB/four-CPU cold setup, and 34-case oracle were used. All `34/34` queries passed with no
+  timeout or failure.
+- Candidate P50/P95/max was `2.839/59.796/458.863 ms`, a `6.77x` P95 improvement over the
+  v2.4.7 `404.579 ms` control but still below 10x. CPU was `1.325 s`, peak heap/RSS
+  `4.272/4.749 GB`, and charged work `60,315,958`.
+- JSON/TSV SHA-256 is
+  `5cb2b198ab15194fbdd72c868bbd231c9ffe30966812efd9a017fe3e3b449d50` /
+  `766852742b7de2821081fa2f478c3d5fb82f8c42b7d322feadef94205ce6bcd3`.
+  The experiment had no candidate Git commit; this record retains its result identity and no
+  rejected production code.
+
+**Conclusion:** reject. Removing cache state is not enough to reach 10x and repeats complete posting
+validation on recurring terms. Keep full pre-yield validation, but eliminate the second provenance
+scan rather than the integrity check.
