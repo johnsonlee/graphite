@@ -4077,3 +4077,42 @@ view must release the reservation.
 around the already-measured Attempt 126 optimization; it adds no persisted file, format, magic,
 version, writer, or startup-wide validation pass. Full CI, both hosted real64 pressure gates, and
 all review threads remain hard gates. This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 129: Keep unscoped dense projection on the raw-leading path
+
+**Hypothesis:** Attempt 127's retained multi-source projection is intended for explicitly selected
+graph sets, but the same entry point also admitted an unscoped global query whenever all 64 sources
+already retained their string indexes. That changes the established low-work dense `LIMIT 200`
+plan from one raw-leading projection to a 64-source retained preflight and adds fixed query-layer
+overhead without reducing its 665 charged work units. Keep direct retained projection for a single
+source and for explicitly scoped graphId, graphId-set, and request-selected graph sets, but decline
+it for an unscoped multi-source query so the measured raw-leading path remains authoritative.
+
+**Evidence:**
+
+- Exact-head hosted run `33825074274`, attempt 2, preserved result rows, digest, graph access, and
+  exactly 665 work units for `global-wide-wrapped-case-insensitive/dense`, but candidate latency was
+  `3.247/4.161/4.818 ms` versus aligned base `2.165/2.704/2.381 ms`. This isolated the failed gate
+  to fixed planning/projection overhead rather than scan work or correctness.
+- A focused regression gives every source both retained-index and projection capabilities. The
+  unscoped 40-source dense query must nevertheless use the existing `PreferredRawGraphWorkBatchConsumer`,
+  project only source zero, return the same ordered 200 rows and graph provenance, and never enter
+  node materialization. The complete `CrossGraphCypherExecutorTest`, Cypher detekt, and JMH build pass.
+- One fresh-JVM real fixture64 global-wide replay uses the four pinned fixture JAR families, the
+  independent 34-case correctness oracle, an 8 GiB heap, and four active CPUs. All `34/34`
+  observations pass with zero timeout, P50 `1.746 ms`, and P95 `128.923 ms`. The isolated dense row
+  falls to `1.420 ms` while retaining 200 rows, the exact digest, source-zero provenance, and 665
+  work units. The high one-fork aggregate P95 comes from the distinct/global and zero-hit cases and
+  is not used as proof that the hosted 5x gate has passed; exact-head paired hosted evidence remains
+  required.
+- A separate real fixture64 cold graph-routing replay verifies all `1,137/1,137` observations
+  against the independent oracle. It retains exactly 1,979 indexed lookups over all 64 graphs,
+  distributed 29..38 per graph. Graph-id-set K=8 P50/P95 is `0.048/0.549 ms` and K=64 is
+  `0.098/1.321 ms`, confirming that explicit graphId sets and `/api/cypher/graphs` request-selected
+  sets retain the scoped path and exact source pruning.
+
+**Conclusion:** keep for exact-head hosted validation. This restores the previously measured
+unscoped dense raw-leading plan without weakening Attempt 127's explicitly selected multi-source
+projection. It changes no persisted file or format and uses no synthetic performance evidence.
+Full CI, both hosted real64 pressure gates, and all review threads remain hard gates. This commit
+is not authorization to merge or tag.

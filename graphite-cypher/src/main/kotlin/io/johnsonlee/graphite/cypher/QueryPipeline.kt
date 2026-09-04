@@ -1657,7 +1657,8 @@ class QueryPipeline private constructor(
             columns,
             limit,
             nodePredicateFactory,
-            candidateSources
+            candidateSources,
+            preferPersistedStorage
         )?.let { return it }
         val balanced = usesBalancedStringSplit(candidateSources.size)
         val rawLeadingStorage = balanced && !preferPersistedStorage &&
@@ -1866,10 +1867,11 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory?,
-        candidateSources: List<CypherGraph>
+        candidateSources: List<CypherGraph>,
+        preferPersistedStorage: Boolean
     ): CypherResult? {
         if ((nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) ||
-            nodePredicateFactory != null
+            nodePredicateFactory != null || candidateSources.size > 1 && !preferPersistedStorage
         ) {
             return null
         }
