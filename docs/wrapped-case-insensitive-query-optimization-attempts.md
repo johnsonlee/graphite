@@ -4249,3 +4249,35 @@ raw CallSite predicate, source order, projection, and limit behavior.
 **Conclusion:** reject and remove. Primitive tuple iteration reduces some tail and memory cost but
 does not approach the required 10x P95 and slightly worsens the median. No production code from
 this prototype remains.
+
+### 2026-09-05 - Attempt 133: Prebuild a full retained heap string index
+
+**Hypothesis:** paying once to materialize the complete CallSite string index on heap may eliminate
+the repeated wide raw scan and reduce P95 enough to justify its admission cost. Measure both normal
+admission and a forced-index control.
+
+**Evidence:**
+
+- Base, fixture, JVM, and oracle are identical to Attempt 132: exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`, manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`, 64 real persisted
+  graphs, 8 GiB, and four CPUs. Both isolated prototype variants completed `34/34` queries with
+  zero failure or timeout.
+- Normal admission measured P50/P95/max
+  `240.112/413.342/550.110 ms`, process CPU `10.634 s`, peak used heap/RSS
+  `3.993/5.358 GB`, and `111,243,848` work units. Its JSON/TSV SHA-256 is
+  `d8cab48a6d98ba5c5cf2ba0485b34b55031d02a9b944f202ba285dcf205de3e8` /
+  `67643d8fd0ef674ff3b2bef73457fe03f731e25645fe41c57e9a5f166aeb9253`.
+- Forced admission lowered P50 to `3.144 ms` but P95/max was
+  `461.308/1564.316 ms`; CPU was `6.019 s`, heap/RSS `5.024/5.921 GB`, and work
+  `42,644,875`. Its JSON/TSV SHA-256 is
+  `d0312ed722cd958cf8e4eb5bcea305d987617fec87e355c157b4f84502bbf6dc` /
+  `4d9af467749633a872a5412585b85a9563fb1d6ad0c5d008a6b3c0dd47444b33`.
+  The paired v2.4.7 control was `238.758/404.579/1727.752 ms`, `10.275 s` CPU,
+  `5.005/6.167 GB` heap/RSS, and `109,198,717` work units.
+- These were rejected isolated patches over v2.4.7, not Git revisions. Their exact result artifacts
+  above identify the measurements; this record commit retains no experimental production code.
+
+**Conclusion:** reject and remove. Normal admission makes P95 worse, while forced admission merely
+moves the full-index build into the cold tail, increases heap pressure, and still regresses P95.
+A graph-lifetime read-only view of the existing persisted index is the next direction.
