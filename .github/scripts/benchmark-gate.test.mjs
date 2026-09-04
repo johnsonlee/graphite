@@ -8,6 +8,13 @@ import test from "node:test";
 import { validatePairedEvidence } from "./benchmark-pages.mjs";
 import { materializeGistFiles } from "./gist-evidence.mjs";
 import {
+    GLOBAL_WIDE_GOAL_BASE_SHA,
+    applyCurrentMainNonRegressionPolicy,
+    combineDualBaselineComparisons,
+    renderCurrentMainNonRegressionReport,
+    renderDualBaselineReport
+} from "./benchmark-global-wide-dual-baseline.mjs";
+import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
     COMMENT_MARKER,
@@ -535,7 +542,7 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
     assert.match(unstable.errors.join("\n"), /pair-2: P95 speedup/);
 });
 
-test("fixture64 global wide-query pressure verifies NCPU split and correctness", () => {
+test("fixture64 global wide-query pressure verifies bounded worker telemetry and correctness", () => {
     const evidence = globalWideEvidence();
     const baseRuns = Array.from({ length: 3 }, () => [
         globalWidePressureResult(400_000_000, { graphWorkerCount: 0, segmentWorkerCount: 0 })
@@ -558,7 +565,7 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /NCPU split 16 -> 16\+8; expected 8\+8/);
+    assert.match(comparison.errors.join("\n"), /configured graph\/segment workers 16\+8 exceed/);
     assert.match(comparison.errors.join("\n"), /family differs from correctness oracle/);
 
     const wrongObservedPeak = globalWidePressureResult(35_000_000, {
@@ -576,7 +583,24 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(overcommitted.passed, false);
-    assert.match(overcommitted.errors.join("\n"), /observed graph\/segment worker peaks 8\+16; expected 8\+8/);
+    assert.match(overcommitted.errors.join("\n"), /observed peak graph\/segment workers 8\+16 exceed/);
+
+    const serial = compareGlobalWidePressure(
+        baseRuns,
+        Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000, {
+            graphWorkerCount: 0,
+            segmentWorkerCount: 0,
+            graphScanPeakActiveWorkers: 0,
+            segmentScanPeakActiveWorkers: 0
+        })]),
+        baseObservations,
+        Array.from({ length: 3 }, () => evidence.observations),
+        evidence.oracle,
+        10,
+        ["candidate-base", "base-candidate", "candidate-base"],
+        evidence.manifest
+    );
+    assert.equal(serial.passed, true);
 
     const skippedGraphs = globalWideEvidence();
     skippedGraphs.observations = skippedGraphs.observations.replace(
@@ -802,15 +826,24 @@ test("fixture64 global wide-query pressure gates every fork and paired resources
         globalWidePressureResult(p95, {
             processCpuNanos: index === 1 ? 149_000_000 : 100_000_000,
             peakUsedHeapBytes: index === 1 ? Math.floor(1.49 * 1024 ** 3) : 1024 ** 3,
-            peakResidentSetBytes: index === 1 ? Math.floor(1.49 * 1024 ** 3) : 1024 ** 3
+            peakResidentSetBytes: index === 1 ? Math.floor(1.49 * 1024 ** 3) : 1024 ** 3,
+            maxLatencyNanos: index === 2 ? 500_000_000 : p95
         })
     ]);
+    const pairThreeRows = globalWideEvidence(25_000_000).observations.split("\n");
+    const latencyIndex = pairThreeRows[0].split("\t").indexOf("latencyNanos");
+    const firstObservation = pairThreeRows[1].split("\t");
+    firstObservation[latencyIndex] = "500000000";
+    pairThreeRows[1] = firstObservation.join("\t");
     const comparison = compareGlobalWidePressure(
         baseRuns,
         candidates,
         Array.from({ length: 3 }, () => globalWideEvidence(400_000_000).observations),
-        [80_000_000, 32_000_000, 25_000_000].map((latency) =>
-            globalWideEvidence(latency).observations),
+        [
+            globalWideEvidence(80_000_000).observations,
+            globalWideEvidence(32_000_000).observations,
+            pairThreeRows.join("\n")
+        ],
         evidence.oracle,
         10,
         ["candidate-base", "base-candidate", "candidate-base"],
@@ -819,6 +852,101 @@ test("fixture64 global wide-query pressure gates every fork and paired resources
     assert.equal(comparison.passed, false);
     assert.match(comparison.errors.join("\n"), /pair-1: P95 speedup 5\.00x/);
     assert.match(comparison.errors.join("\n"), /pair-2: process CPU .* by >15%/);
+    assert.match(comparison.errors.join("\n"), /pair-3: max latency 500000000 exceeds paired base 400000000/);
+});
+
+function currentMainStructuralComparison(candidateMultiplier = 1, materialPairs = []) {
+    const baseLatencyNanos = 10_000_000;
+    const runs = Array.from({ length: 3 }, (_, index) => {
+        const multiplier = materialPairs.includes(index + 1) ? candidateMultiplier : 1;
+        const candidateLatencyNanos = Math.round(baseLatencyNanos * multiplier);
+        return {
+            order: index === 1 ? "base-candidate" : "candidate-base",
+            baseP50LatencyNanos: baseLatencyNanos,
+            baseP95LatencyNanos: baseLatencyNanos,
+            p50LatencyNanos: candidateLatencyNanos,
+            p95LatencyNanos: candidateLatencyNanos,
+            baseProcessCpuNanos: 1_000_000_000,
+            processCpuNanos: 1_000_000_000,
+            basePeakUsedHeapBytes: 1024 ** 3,
+            peakUsedHeapBytes: 1024 ** 3,
+            basePeakResidentSetBytes: 2 * 1024 ** 3,
+            peakResidentSetBytes: 2 * 1024 ** 3,
+            wrappedShapeRuns: [
+                "global-wide-wrapped-case-insensitive",
+                "global-wide-wrapped-case-insensitive-distinct"
+            ].map((shape) => ({
+                shape,
+                baseLatencyNanos,
+                latencyNanos: candidateLatencyNanos,
+                speedup: baseLatencyNanos / candidateLatencyNanos
+            }))
+        };
+    });
+    return { passed: true, errors: [], minimumSpeedup: 0, runs, orderSummaries: [] };
+}
+
+test("global-wide current-main policy tolerates noise but blocks repeated material regression", () => {
+    const oneOutlier = applyCurrentMainNonRegressionPolicy(
+        currentMainStructuralComparison(1.16, [1])
+    );
+    assert.equal(oneOutlier.passed, true);
+    assert.equal(oneOutlier.minimumSpeedup, undefined);
+
+    const repeated = applyCurrentMainNonRegressionPolicy(
+        currentMainStructuralComparison(1.16, [1, 3])
+    );
+    assert.equal(repeated.passed, false);
+    assert.match(repeated.errors.join("\n"), /current-main\/aggregate-p95: material regression repeated/);
+    assert.match(
+        repeated.errors.join("\n"),
+        /current-main\/wrapped\/global-wide-wrapped-case-insensitive-distinct: material regression repeated/
+    );
+    assert.match(renderCurrentMainNonRegressionReport(repeated), /Latency metric/);
+
+    const belowNoiseFloor = applyCurrentMainNonRegressionPolicy(
+        currentMainStructuralComparison(1.16, [1, 2, 3]),
+        15,
+        2_000_000
+    );
+    assert.equal(belowNoiseFloor.passed, true);
+});
+
+test("global-wide dual-baseline result requires both exact policies and reports both revisions", () => {
+    const goal = { passed: true, errors: [], minimumSpeedup: 10, runs: [{}, {}, {}] };
+    const current = applyCurrentMainNonRegressionPolicy(currentMainStructuralComparison());
+    const input = {
+        goal,
+        current,
+        goalBaseSha: GLOBAL_WIDE_GOAL_BASE_SHA,
+        currentBaseSha: "4e328b0109e13c896b74004823fb049fcb19251a",
+        candidateSha: "802e89714fbc27d549db3814109cd80c75c69b33"
+    };
+    const passed = combineDualBaselineComparisons(input);
+    assert.equal(passed.passed, true);
+    const report = renderDualBaselineReport(passed, "### Goal\n\nPASS", "### Current\n\nPASS");
+    assert.match(report, /Frozen 10x goal base/);
+    assert.match(report, /Current PR base non-regression reference/);
+
+    const failedGoal = combineDualBaselineComparisons({
+        ...input,
+        goal: { ...goal, passed: false, errors: ["9.99x"] },
+        goalExitCode: 1
+    });
+    assert.equal(failedGoal.passed, false);
+    assert.match(failedGoal.errors.join("\n"), /v2\.4\.7 goal: 9\.99x/);
+
+    const failedCurrent = combineDualBaselineComparisons({
+        ...input,
+        current: { ...current, passed: false, errors: ["P95 regressed"] },
+        currentExitCode: 1
+    });
+    assert.equal(failedCurrent.passed, false);
+    assert.match(failedCurrent.errors.join("\n"), /current-main: P95 regressed/);
+
+    const wrongAnchor = combineDualBaselineComparisons({ ...input, goalBaseSha: input.currentBaseSha });
+    assert.equal(wrongAnchor.passed, false);
+    assert.match(wrongAnchor.errors.join("\n"), /goal baseline must remain frozen at v2\.4\.7/);
 });
 
 test("fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks", () => {
@@ -831,7 +959,11 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /test-fixture64-reproducibility\.sh|REPRODUCIBILITY_SCRIPT_PATH/);
     assert.match(driver, /if \(\( RUN % 2 == 1 \)\); then run_candidate; run_base;/);
     assert.match(driver, /--bases "\$\{BASE_JSON_LIST\}"/);
-    assert.match(driver, /--minimum-speedup 5/);
+    assert.match(driver, /COMPARISON_POLICY=\$5/);
+    assert.match(driver, /test "\$\{BASE_SHA\}" = "\$\{GOAL_BASE_SHA\}"/);
+    assert.match(driver, /--minimum-speedup 10/);
+    assert.match(driver, /benchmark-global-wide-dual-baseline\.mjs/);
+    assert.match(driver, /compare-current/);
     assert.match(driver, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE/);
     assert.match(driver, /if \[\[ "\$\{PUBLISH_EVIDENCE\}" == false \]\]/);
     assert.match(driver, /graphite\/fixture64-global-wide/);
@@ -2933,7 +3065,8 @@ test("workflow component artifacts include the run attempt required by staging",
         "benchmark-large-corpus",
         "benchmark-latency",
         "benchmark-latency-resources",
-        "benchmark-graph-routing"
+        "benchmark-graph-routing",
+        "benchmark-global-wide"
     ];
 
     for (const producer of producers) {
@@ -2950,6 +3083,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
 
     assert.doesNotMatch(workflow, /44b57562f2b3d0c88882a9002bdc488e05e5d7a7|PRE_PR_95_BASELINE_SHA/);
     assert.match(workflow, /WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6/);
+    assert.match(
+        workflow,
+        /GLOBAL_WIDE_GOAL_BASE_SHA: 78ce46b57b2d88ae0f1823432ffefc5c7685bc1b/
+    );
     assert.match(workflow, /^  build-explore-jmh:/m);
     assert.match(workflow, /^  build-wrapped-query-jmh:/m);
     assert.match(workflow, /^  graph-routing-pressure-evidence:/m);
@@ -3037,12 +3174,25 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(globalWideJob, /run-real64-global-wide\.sh/);
     assert.match(
         globalWideJob,
-        /cd candidate\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/shared-fixture64\/graphs\/graphs\.tsv/
+        /cd candidate\n\s*set \+e\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/shared-fixture64\/graphs\/graphs\.tsv/
     );
     assert.match(globalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
     assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(globalWideJob, /github\.event\.pull_request\.base\.sha/);
     assert.match(globalWideJob, /github\.event\.pull_request\.head\.sha/);
+    assert.equal((globalWideJob.match(/run-real64-global-wide\.sh/g) ?? []).length, 2);
+    assert.match(
+        globalWideJob,
+        /"\$\{GLOBAL_WIDE_GOAL_BASE_SHA\}" \\\n\s+"\$\{\{ github\.event\.pull_request\.head\.sha \}\}" \\\n\s+goal \\\n/
+    );
+    assert.match(
+        globalWideJob,
+        /"\$\{\{ github\.event\.pull_request\.base\.sha \}\}" \\\n\s+"\$\{\{ github\.event\.pull_request\.head\.sha \}\}" \\\n\s+current \\\n/
+    );
+    assert.match(globalWideJob, /benchmark-global-wide-dual-baseline\.mjs combine/);
+    assert.match(globalWideJob, /--goal-exit-code "\$\{GOAL_EXIT\}"/);
+    assert.match(globalWideJob, /--current-exit-code "\$\{CURRENT_EXIT\}"/);
+    assert.match(globalWideJob, /--status \.\.\/benchmark-results\/global-wide-status\.json/);
     assert.doesNotMatch(globalWideJob, /gist|EVIDENCE_CONTEXT|materializeGistFiles/);
     const sharedFixtureVerifier = fs.readFileSync(
         new URL("./verify-shared-fixture64.sh", import.meta.url),

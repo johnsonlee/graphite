@@ -18,13 +18,14 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  BENCHMARK_REPORT_TRANSITION_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 023b00cc6506465107e9e4bf4f545763c55dc5b147b3849564d1086125d3500e
+  BENCHMARK_REPORT_TRANSITION_SHA256: 023b00cc6506465107e9e4bf4f545763c55dc5b147b3849564d1086125d3500e
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 023b00cc6506465107e9e4bf4f545763c55dc5b147b3849564d1086125d3500e
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 023b00cc6506465107e9e4bf4f545763c55dc5b147b3849564d1086125d3500e
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
+  GLOBAL_WIDE_GOAL_BASE_SHA: 78ce46b57b2d88ae0f1823432ffefc5c7685bc1b
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
 
@@ -2465,7 +2466,7 @@ jobs:
     name: global-wide-pressure-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     permissions:
       contents: read
 
@@ -2505,20 +2506,45 @@ jobs:
           shared-fixture64 \
           "${{ github.event.pull_request.head.sha }}"
 
-    - name: Build and execute three trusted paired global-wide forks
+    - name: Build and execute trusted dual-baseline global-wide forks
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
         GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
+        set +e
+        .github/scripts/run-real64-global-wide.sh \
+          ../shared-fixture64/graphs/graphs.tsv \
+          graphite-webgraph/build/benchmark-fixtures \
+          "${GLOBAL_WIDE_GOAL_BASE_SHA}" \
+          "${{ github.event.pull_request.head.sha }}" \
+          goal \
+          "${{ github.repository }}" \
+          ../benchmark-results/goal
+        GOAL_EXIT=$?
         .github/scripts/run-real64-global-wide.sh \
           ../shared-fixture64/graphs/graphs.tsv \
           graphite-webgraph/build/benchmark-fixtures \
           "${{ github.event.pull_request.base.sha }}" \
           "${{ github.event.pull_request.head.sha }}" \
+          current \
           "${{ github.repository }}" \
-          ../benchmark-results
+          ../benchmark-results/current
+        CURRENT_EXIT=$?
+        set -e
+        node .github/scripts/benchmark-global-wide-dual-baseline.mjs combine \
+          --goal-status ../benchmark-results/goal/global-wide-status.json \
+          --goal-report ../benchmark-results/goal/global-wide-report.md \
+          --current-status ../benchmark-results/current/global-wide-status.json \
+          --current-report ../benchmark-results/current/global-wide-report.md \
+          --goal-base-sha "${GLOBAL_WIDE_GOAL_BASE_SHA}" \
+          --current-base-sha "${{ github.event.pull_request.base.sha }}" \
+          --candidate-sha "${{ github.event.pull_request.head.sha }}" \
+          --goal-exit-code "${GOAL_EXIT}" \
+          --current-exit-code "${CURRENT_EXIT}" \
+          --report ../benchmark-results/global-wide-report.md \
+          --status ../benchmark-results/global-wide-status.json
 
     - name: Upload trusted global-wide result
       if: always()
@@ -2552,7 +2578,7 @@ jobs:
     - name: Materialize and authenticate immutable global-wide evidence
       uses: actions/github-script@v9
       env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        BASE_SHA: ${{ env.GLOBAL_WIDE_GOAL_BASE_SHA }}
         CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
         EVIDENCE_CONTEXT: graphite/fixture64-global-wide
         TRUSTED_EVIDENCE_ACTOR: johnsonlee
@@ -2683,7 +2709,7 @@ jobs:
           --run-orders candidate-base,base-candidate,candidate-base \
           --graph-manifest "${E}/graphs.tsv" \
           --correctness-oracle "${E}/base-global-wide-oracle-seed.correctness" \
-          --minimum-speedup 5 --report benchmark-results/global-wide-report.md \
+          --minimum-speedup 10 --report benchmark-results/global-wide-report.md \
           --status benchmark-results/global-wide-status.json
         cmp benchmark-results/global-wide-report.md "${E}/global-wide-report.md"
         cmp benchmark-results/global-wide-status.json "${E}/global-wide-status.json"

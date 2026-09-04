@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-if [[ $# -lt 4 || $# -gt 6 ]]; then
+if [[ $# -lt 5 || $# -gt 7 ]]; then
   echo "Usage: $0 <fixture64-graphs.tsv> <fixture-jar-directory> <base-sha> <candidate-sha>" \
-    "[owner/repo] [output-dir]" >&2
+    "<goal|current> [owner/repo] [output-dir]" >&2
   exit 2
 fi
 
@@ -12,19 +12,34 @@ MANIFEST=$1
 FIXTURE_JAR_DIR=$2
 BASE_SHA=$3
 CANDIDATE_SHA=$4
-REPOSITORY=${5:-johnsonlee/graphite}
-OUTPUT_DIR=${6:-global-wide-results}
+COMPARISON_POLICY=$5
+REPOSITORY=${6:-johnsonlee/graphite}
+OUTPUT_DIR=${7:-global-wide-results}
 FIXTURE_PROVENANCE=$(dirname "${MANIFEST}")/fixture-provenance.tsv
 FILTER=io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
 HARNESS_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt
 CORRECTNESS_PATH=graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/QueryCorrectnessManifest.kt
 COMPARATOR_PATH=.github/scripts/benchmark-gate.mjs
+DUAL_BASELINE_GATE_PATH=.github/scripts/benchmark-global-wide-dual-baseline.mjs
 SCRIPT_PATH=.github/scripts/run-real64-global-wide.sh
 FIXTURE_VERIFIER_PATH=graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/Fixture64GraphPreparation.kt
 REPRODUCIBILITY_SCRIPT_PATH=.github/scripts/test-fixture64-reproducibility.sh
 ZIP_HASHER_PATH=.github/scripts/canonical-zip-sha256.py
 GIST_EVIDENCE_PATH=.github/scripts/gist-evidence.mjs
-STATUS_CONTEXT=graphite/fixture64-global-wide
+GOAL_BASE_SHA=78ce46b57b2d88ae0f1823432ffefc5c7685bc1b
+case "${COMPARISON_POLICY}" in
+  goal)
+    test "${BASE_SHA}" = "${GOAL_BASE_SHA}"
+    STATUS_CONTEXT=graphite/fixture64-global-wide
+    ;;
+  current)
+    STATUS_CONTEXT=graphite/fixture64-global-wide-current-main
+    ;;
+  *)
+    echo "Comparison policy must be goal or current" >&2
+    exit 2
+    ;;
+esac
 REPOSITORY_ROOT=$(git rev-parse --show-toplevel)
 REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
@@ -87,6 +102,7 @@ test "$(git -C "${CANDIDATE_TREE}" rev-parse HEAD)" = "${CANDIDATE_SHA}"
 test -f "${CANDIDATE_TREE}/${HARNESS_PATH}"
 test -f "${CANDIDATE_TREE}/${CORRECTNESS_PATH}"
 test -f "${CANDIDATE_TREE}/${COMPARATOR_PATH}"
+test -f "${CANDIDATE_TREE}/${DUAL_BASELINE_GATE_PATH}"
 test -f "${CANDIDATE_TREE}/${SCRIPT_PATH}"
 test -f "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}"
 test -f "${CANDIDATE_TREE}/${REPRODUCIBILITY_SCRIPT_PATH}"
@@ -196,17 +212,30 @@ IFS=, BASE_JSON_LIST="${BASE_JSON_FILES[*]}"
 IFS=, BASE_OBSERVATION_LIST="${BASE_OBSERVATION_FILES[*]}"
 IFS=, CANDIDATE_JSON_LIST="${CANDIDATE_JSON_FILES[*]}"
 IFS=, CANDIDATE_OBSERVATION_LIST="${CANDIDATE_OBSERVATION_FILES[*]}"
-node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
-  --bases "${BASE_JSON_LIST}" \
-  --candidates "${CANDIDATE_JSON_LIST}" \
-  --base-observations "${BASE_OBSERVATION_LIST}" \
-  --candidate-observations "${CANDIDATE_OBSERVATION_LIST}" \
-  --run-orders candidate-base,base-candidate,candidate-base \
-  --graph-manifest "${MANIFEST}" \
-  --correctness-oracle "${ORACLE}" \
-  --minimum-speedup 5 \
-  --report "${OUTPUT_DIR}/global-wide-report.md" \
-  --status "${OUTPUT_DIR}/global-wide-status.json"
+if [[ "${COMPARISON_POLICY}" == goal ]]; then
+  node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
+    --bases "${BASE_JSON_LIST}" \
+    --candidates "${CANDIDATE_JSON_LIST}" \
+    --base-observations "${BASE_OBSERVATION_LIST}" \
+    --candidate-observations "${CANDIDATE_OBSERVATION_LIST}" \
+    --run-orders candidate-base,base-candidate,candidate-base \
+    --graph-manifest "${MANIFEST}" \
+    --correctness-oracle "${ORACLE}" \
+    --minimum-speedup 10 \
+    --report "${OUTPUT_DIR}/global-wide-report.md" \
+    --status "${OUTPUT_DIR}/global-wide-status.json"
+else
+  node "${CANDIDATE_TREE}/${DUAL_BASELINE_GATE_PATH}" compare-current \
+    --bases "${BASE_JSON_LIST}" \
+    --candidates "${CANDIDATE_JSON_LIST}" \
+    --base-observations "${BASE_OBSERVATION_LIST}" \
+    --candidate-observations "${CANDIDATE_OBSERVATION_LIST}" \
+    --run-orders candidate-base,base-candidate,candidate-base \
+    --graph-manifest "${MANIFEST}" \
+    --correctness-oracle "${ORACLE}" \
+    --report "${OUTPUT_DIR}/global-wide-report.md" \
+    --status "${OUTPUT_DIR}/global-wide-status.json"
+fi
 jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null
 
 cp "${MANIFEST}" "${OUTPUT_DIR}/graphs.tsv"
@@ -215,6 +244,7 @@ HARNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${HARNESS_PATH}")
 CORRECTNESS_SHA256=$(sha256_file "${CANDIDATE_TREE}/${CORRECTNESS_PATH}")
 FIXTURE_VERIFIER_SHA256=$(sha256_file "${CANDIDATE_TREE}/${FIXTURE_VERIFIER_PATH}")
 COMPARATOR_SHA256=$(sha256_file "${CANDIDATE_TREE}/${COMPARATOR_PATH}")
+DUAL_BASELINE_GATE_SHA256=$(sha256_file "${CANDIDATE_TREE}/${DUAL_BASELINE_GATE_PATH}")
 SCRIPT_SHA256=$(sha256_file "${CANDIDATE_TREE}/${SCRIPT_PATH}")
 BASE_JAR_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${BASE_JAR}")
 CANDIDATE_JAR_SHA256=$(python3 "${CANDIDATE_TREE}/${ZIP_HASHER_PATH}" "${CANDIDATE_JAR}")
@@ -222,7 +252,9 @@ jq -n \
   --arg repository "${REPOSITORY}" --arg baseSha "${BASE_SHA}" --arg candidateSha "${CANDIDATE_SHA}" \
   --arg harnessSha256 "${HARNESS_SHA256}" --arg correctnessSha256 "${CORRECTNESS_SHA256}" \
   --arg fixtureVerifierSha256 "${FIXTURE_VERIFIER_SHA256}" \
-  --arg comparatorSha256 "${COMPARATOR_SHA256}" --arg scriptSha256 "${SCRIPT_SHA256}" \
+  --arg comparatorSha256 "${COMPARATOR_SHA256}" \
+  --arg dualBaselineGateSha256 "${DUAL_BASELINE_GATE_SHA256}" \
+  --arg scriptSha256 "${SCRIPT_SHA256}" --arg comparisonPolicy "${COMPARISON_POLICY}" \
   --arg baseJarContentSha256 "${BASE_JAR_SHA256}" \
   --arg candidateJarContentSha256 "${CANDIDATE_JAR_SHA256}" \
   --arg manifestSha256 "$(sha256_file "${MANIFEST}")" \
@@ -231,7 +263,8 @@ jq -n \
   '{repository:$repository,baseSha:$baseSha,candidateSha:$candidateSha,
     harnessSha256:$harnessSha256,correctnessSha256:$correctnessSha256,
     fixtureVerifierSha256:$fixtureVerifierSha256,comparatorSha256:$comparatorSha256,
-    scriptSha256:$scriptSha256,baseJarContentSha256:$baseJarContentSha256,
+    dualBaselineGateSha256:$dualBaselineGateSha256,scriptSha256:$scriptSha256,
+    comparisonPolicy:$comparisonPolicy,baseJarContentSha256:$baseJarContentSha256,
     candidateJarContentSha256:$candidateJarContentSha256,manifestSha256:$manifestSha256,
     fixtureProvenanceSha256:$fixtureProvenanceSha256,oracleSha256:$oracleSha256,
     fixtureSource:"four-pinned-fixture-jars",runOrder:"candidate-base,base-candidate,candidate-base"}' \
@@ -239,8 +272,13 @@ jq -n \
 
 WORST_P50=$(jq '[.runs[].p50Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
 WORST_P95=$(jq '[.runs[].p95Speedup] | min' "${OUTPUT_DIR}/global-wide-status.json")
-DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 correct=pass' \
-  "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}")
+if [[ "${COMPARISON_POLICY}" == goal ]]; then
+  DESCRIPTION=$(printf 'fixture64-wide base=%.12s p50=%.2fx p95=%.2fx pairs=3 correct=pass' \
+    "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}")
+else
+  DESCRIPTION=$(printf 'fixture64-wide-current base=%.12s p50=%.2fx p95=%.2fx pairs=3 correct=pass' \
+    "${BASE_SHA}" "${WORST_P50}" "${WORST_P95}")
+fi
 test "${#DESCRIPTION}" -le 140
 EVIDENCE_FILES=(
   "${OUTPUT_DIR}/provenance.json" "${OUTPUT_DIR}/graphs.tsv"
@@ -255,10 +293,11 @@ FILES_JSON=$(for FILE in "${EVIDENCE_FILES[@]}"; do
 done | jq -s from_entries)
 jq -n --arg schema graphite-fixture64-global-wide-evidence-v2 --arg repository "${REPOSITORY}" \
   --arg baseSha "${BASE_SHA}" --arg candidateSha "${CANDIDATE_SHA}" \
+  --arg comparisonPolicy "${COMPARISON_POLICY}" \
   --arg statusContext "${STATUS_CONTEXT}" --arg description "${DESCRIPTION}" \
   --argjson files "${FILES_JSON}" \
   '{schema:$schema,repository:$repository,baseSha:$baseSha,candidateSha:$candidateSha,
-    statusContext:$statusContext,description:$description,files:$files}' \
+    comparisonPolicy:$comparisonPolicy,statusContext:$statusContext,description:$description,files:$files}' \
   > "${OUTPUT_DIR}/evidence-manifest.json"
 EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
 if [[ "${PUBLISH_EVIDENCE}" == false ]]; then

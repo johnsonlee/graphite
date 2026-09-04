@@ -267,10 +267,17 @@ startup-prepared states, verifies correctness, and reruns the comparator on the 
 No external URL, Gist, or author-published commit status is accepted as execution evidence.
 
 Unscoped 64-graph wide queries have a separate required component,
-`global-wide-pressure-evidence`. It requires
-three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
+`global-wide-pressure-evidence`. Its cumulative goal comparison is pinned to the immutable v2.4.7
+commit `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`, rather than to the moving PR base. It requires
+three paired goal-base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
+`candidate/base`) and requires a P95 speedup of at least 10x in every independent fork. The job
+independently repeats the same three-pair protocol against the current PR base. That second verdict
+blocks a latency regression only when it exceeds 15% and 1 ms in at least two forks; correctness,
+graph access, process CPU, peak heap, and peak RSS remain hard comparator requirements. In both
+comparisons, candidate max latency may not exceed its paired base by more than 15% in any fork.
+Worker telemetry is bounded by the available processor count without prescribing an implementation
+topology. The combined component passes only when both the frozen-goal and current-main verdicts
+pass. The ten core
 query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
@@ -291,7 +298,7 @@ four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` a
 DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
 query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
 fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
+requirement, each wrapped case-insensitive form must independently reach the same 10x target in
 every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
@@ -310,10 +317,20 @@ Run the unscoped global-wide gate against the same verified manifest and fixture
 .github/scripts/run-real64-global-wide.sh \
   /absolute/path/to/fixture64/graphs.tsv \
   graphite-webgraph/build/benchmark-fixtures \
-  "$BASE_SHA" "$CANDIDATE_SHA"
+  78ce46b57b2d88ae0f1823432ffefc5c7685bc1b "$CANDIDATE_SHA" goal \
+  johnsonlee/graphite /absolute/path/to/results/goal
+
+.github/scripts/run-real64-global-wide.sh \
+  /absolute/path/to/fixture64/graphs.tsv \
+  graphite-webgraph/build/benchmark-fixtures \
+  "$CURRENT_MAIN_SHA" "$CANDIDATE_SHA" current \
+  johnsonlee/graphite /absolute/path/to/results/current
 ```
 
-The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
+The workflow combines the two status/report pairs with
+`.github/scripts/benchmark-global-wide-dual-baseline.mjs`; missing reports, a moved goal anchor, or
+either failed driver fails closed. Each driver verifies both SHAs against GitHub, creates independent
+clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both
 JMH JARs itself. It records the two commit SHAs plus SHA-256 for the harness, comparator, driver,
 both built JARs, graph manifest, fixture provenance, the `base-single-source` oracle origin, and the

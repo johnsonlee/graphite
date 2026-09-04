@@ -1688,7 +1688,7 @@ export function compareGlobalWidePressure(
     const manifest = parseGlobalWideGraphManifest(graphManifestContents, errors);
     const expectedBenchmark =
         "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
-    const selectResult = (results, revision, requireNcpuSplit) => {
+    const selectResult = (results, revision) => {
         const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
             result.params?.graphCount === "64" && result.params?.coverageFamily === "global-wide" &&
             result.params?.indexState === "cold");
@@ -1708,23 +1708,31 @@ export function compareGlobalWidePressure(
             if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
         }
         const processors = pressureMetric(result, "availableProcessors");
-        const graphWorkers = pressureMetric(result, "graphWorkerCount");
-        const segmentWorkers = pressureMetric(result, "segmentWorkerCount");
         if (processors === null || processors < 1 || !Number.isInteger(processors)) {
             errors.push(`${revision}: availableProcessors=${processors}; expected a positive integer`);
-        } else if (requireNcpuSplit) {
-            const expectedGraphWorkers = processors === 1 ? 1 : Math.floor(processors / 2);
-            const expectedSegmentWorkers = processors === 1 ? 0 : processors - expectedGraphWorkers;
-            if (graphWorkers !== expectedGraphWorkers || segmentWorkers !== expectedSegmentWorkers) {
-                errors.push(`${revision}: NCPU split ${processors} -> ${graphWorkers}+${segmentWorkers}; ` +
-                    `expected ${expectedGraphWorkers}+${expectedSegmentWorkers}`);
+        } else {
+            const workerMetrics = [
+                "graphWorkerCount", "segmentWorkerCount",
+                "graphScanPeakActiveWorkers", "segmentScanPeakActiveWorkers"
+            ];
+            const workers = new Map(workerMetrics.map((metric) => [metric, pressureMetric(result, metric)]));
+            for (const [metric, value] of workers) {
+                if (value === null || value < 0 || !Number.isInteger(value) || value > processors) {
+                    errors.push(`${revision}: ${metric}=${value}; expected an integer in [0, ${processors}]`);
+                }
             }
-            const graphPeak = pressureMetric(result, "graphScanPeakActiveWorkers");
-            const segmentPeak = pressureMetric(result, "segmentScanPeakActiveWorkers");
-            const expectedGraphPeak = processors === 1 ? 0 : expectedGraphWorkers;
-            if (graphPeak !== expectedGraphPeak || segmentPeak !== expectedSegmentWorkers) {
-                errors.push(`${revision}: observed graph/segment worker peaks ${graphPeak}+${segmentPeak}; ` +
-                    `expected ${expectedGraphPeak}+${expectedSegmentWorkers}`);
+            for (const [label, graphMetric, segmentMetric] of [
+                ["configured", "graphWorkerCount", "segmentWorkerCount"],
+                ["observed peak", "graphScanPeakActiveWorkers", "segmentScanPeakActiveWorkers"]
+            ]) {
+                const graphValue = workers.get(graphMetric);
+                const segmentValue = workers.get(segmentMetric);
+                if (Number.isInteger(graphValue) && Number.isInteger(segmentValue) &&
+                    graphValue + segmentValue > processors
+                ) {
+                    errors.push(`${revision}: ${label} graph/segment workers ${graphValue}+${segmentValue} ` +
+                        `exceed availableProcessors=${processors}`);
+                }
             }
         }
         for (const metric of [
@@ -1738,9 +1746,9 @@ export function compareGlobalWidePressure(
         return result;
     };
     const baseResults = baseResultSets.map((results, index) =>
-        selectResult(results, `base-${index + 1}`, false));
+        selectResult(results, `base-${index + 1}`));
     const candidateResults = candidateResultSets.map((results, index) =>
-        selectResult(results, `candidate-${index + 1}`, true));
+        selectResult(results, `candidate-${index + 1}`));
     if (baseResults.length < 3) errors.push("base: at least three independent JVM forks are required");
     if (candidateResults.length < 3) errors.push("candidate: at least three independent JVM forks are required");
     if (baseResults.length !== candidateResults.length) {
@@ -1957,8 +1965,10 @@ export function compareGlobalWidePressure(
             candidateRowsByRun[index] ?? [], result, `candidate-${index + 1}`);
         const baseP50 = baseLatency.p50;
         const baseP95 = baseLatency.p95;
+        const baseMax = baseLatency.max;
         const p50 = candidateLatency.p50;
         const p95 = candidateLatency.p95;
+        const max = candidateLatency.max;
         const p95Speedup = p95 > 0 ? baseP95 / p95 : 0;
         const wrappedP95 = (rows, shape) => Math.max(0, ...rows
             .filter((row) => row.shape === shape)
@@ -1987,6 +1997,9 @@ export function compareGlobalWidePressure(
         if (p95Speedup < minimumSpeedup) {
             errors.push(`pair-${index + 1}: P95 speedup ${p95Speedup.toFixed(2)}x; ` +
                 `required ${minimumSpeedup.toFixed(2)}x in every independent fork`);
+        }
+        if (baseMax > 0 && max > baseMax * 1.15) {
+            errors.push(`pair-${index + 1}: max latency ${max} exceeds paired base ${baseMax} by >15%`);
         }
         for (const wrapped of wrappedShapeRuns) {
             if (wrapped.speedup < minimumSpeedup) {
@@ -2029,8 +2042,10 @@ export function compareGlobalWidePressure(
             order: runOrders[index] ?? "unknown",
             baseP50LatencyNanos: baseP50,
             baseP95LatencyNanos: baseP95,
+            baseMaxLatencyNanos: baseMax,
             p50LatencyNanos: p50,
             p95LatencyNanos: p95,
+            maxLatencyNanos: max,
             p50Speedup: p50 > 0 ? baseP50 / p50 : 0,
             p95Speedup,
             baseWrappedP95LatencyNanos,
@@ -2103,11 +2118,12 @@ export function renderGlobalWidePressureReport(comparison) {
             `- ${summary.order}: **${summary.runCount} pair(s), ` +
             `${summary.medianP50Speedup.toFixed(2)}x P50 / ${summary.medianP95Speedup.toFixed(2)}x P95**`),
         "",
-        "| Pair | Order | Base P50 | Base P95 | Candidate P50 | Candidate P95 | P50 speedup | P95 speedup | CPU total | CPU cores | Heap | RSS |",
-        "| ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Pair | Order | Base P50 | Base P95 | Base max | Candidate P50 | Candidate P95 | Candidate max | P50 speedup | P95 speedup | CPU total | CPU cores | Heap | RSS |",
+        "| ---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
         ...comparison.runs.map((run, index) =>
             `| ${index + 1} | ${run.order} | ${ms(run.baseP50LatencyNanos)} | ${ms(run.baseP95LatencyNanos)} | ` +
-            `${ms(run.p50LatencyNanos)} | ${ms(run.p95LatencyNanos)} | ` +
+            `${ms(run.baseMaxLatencyNanos)} | ${ms(run.p50LatencyNanos)} | ${ms(run.p95LatencyNanos)} | ` +
+            `${ms(run.maxLatencyNanos)} | ` +
             `${run.p50Speedup.toFixed(2)}x | ${run.p95Speedup.toFixed(2)}x | ` +
             `${ms(run.baseProcessCpuNanos)} → ${ms(run.processCpuNanos)} | ` +
             `${(run.cpuCoreUtilizationPermille / 1000).toFixed(2)} | ` +
