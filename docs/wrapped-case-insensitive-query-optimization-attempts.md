@@ -4214,3 +4214,38 @@ file, format, magic, version, writer, or configuration. It deliberately does not
 separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
 pass before completion. This commit is not authorization to merge or tag; either action requires a
 new explicit user instruction.
+
+### 2026-09-05 - Attempt 132: Scan selected provenance tuples with primitive loops
+
+**Hypothesis:** the v2.4.7 selected-provenance path spends its tail in generic collection and
+sequence machinery. Replace only that tuple scan with primitive loops while preserving the exact
+raw CallSite predicate, source order, projection, and limit behavior.
+
+**Evidence:**
+
+- Base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. The candidate was an
+  isolated prototype over that revision and was rejected before a production commit was minted;
+  this record commit is retrospective and contains no candidate code. The measurement identity is
+  bound to JSON/TSV SHA-256
+  `6b8a532fb65faafbe25afabaf5ab3c8a6a723630bd485c94d7a83975866f010f` /
+  `1ca420eeea78dadca710d291d7f905501155ed65892caf9420e05790ffa1362d`;
+  base artifacts are
+  `b40f1265508baa5146b6f433f4aaf49f9ac6c89ce70f8cbb3269b703d6164862` /
+  `4eb359cc26d4f3cbee0284b50138fa8f9b468ff5eccb5a8a549ce5caf296ad56`.
+- The cold global-wide replay used 64 distinct persisted graphs generated from the four pinned
+  Android, Tika, Hive, and Kotlin fixture JARs, an 8 GiB heap, four active CPUs, and the 34-case
+  oracle. Manifest SHA-256 is
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`;
+  provenance SHA-256 is
+  `86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d`.
+  No synthetic performance data was used.
+- All `34/34` queries succeeded with zero failure or timeout. Base P50/P95/max was
+  `238.758/404.579/1727.752 ms`; candidate was
+  `241.523/345.298/399.726 ms`. P95 improved only `1.17x`, while P50 regressed.
+  Process CPU was `10.275 -> 9.595 s`, peak used heap
+  `5.005 -> 3.852 GB`, peak RSS `6.167 -> 5.028 GB`, and charged work
+  `109,198,717 -> 107,052,406`.
+
+**Conclusion:** reject and remove. Primitive tuple iteration reduces some tail and memory cost but
+does not approach the required 10x P95 and slightly worsens the median. No production code from
+this prototype remains.
