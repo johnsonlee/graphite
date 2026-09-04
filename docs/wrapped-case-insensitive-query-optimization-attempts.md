@@ -4040,3 +4040,40 @@ node-projection tax from graph-id sets and `/api/cypher/graphs` selected sets wi
 cold fallback, source order, correctness oracle, work accounting, or persisted representation.
 Exact-head full CI, hosted global-wide and graph-routing gates, and all review threads remain hard
 gates. This commit is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 128: Bound selected posting-range validation state
+
+**Hypothesis:** Attempt 126's per-selected-range validation avoids the rejected eager full-graph
+walk, but its boxed concurrent map can retain one entry for every queried `(property, posting row)`
+for the lifetime of each mapped graph. Replace that unbounded state with a fixed 1,024-slot
+direct-mapped primitive cache. Charge a conservative 16 KiB reservation to the existing shared
+CallSite index budget before allocating it, allow collisions to repeat deterministic validation,
+and retain no validation state when the reservation is unavailable. Closing or clearing the mapped
+view must release the reservation.
+
+**Evidence:**
+
+- A deterministic correctness/memory test denies the complete retained index while leaving exactly
+  16 KiB for the mapped-view cache, queries 1,088 disjoint posting rows twice, and verifies every
+  ordered result. Retained entries stay within 1,024, retained bytes stay exactly 16 KiB, and
+  clearing the view returns those bytes to the shared budget. A second phase occupies the entire
+  budget, verifies 64 further disjoint rows through the uncached mapped fallback, observes zero
+  retained validation entries/bytes, and confirms graph close does not leak budget.
+- The cache uses one `LongArray` and one `ByteArray`; it has no boxed `Long -> Boolean` entries and
+  cannot grow. A collision replaces one slot and affects only future validation work, never query
+  results. The first validation still resolves the complete selected range before yielding any
+  node, so checksum-valid posting-order corruption continues to take the authoritative raw fallback.
+- One fresh-JVM real fixture64 global-wide replay, using the four pinned fixture JAR families, the
+  existing independent 34-case oracle, an 8 GiB heap, and four active CPUs, completes `34/34`
+  observations with P50 `1.720 ms`, P95 `46.751 ms`, zero timeout, peak used heap `4.04 GiB`, and
+  peak RSS `4.54 GiB`. This is a no-regression check only; synthetic data is not performance
+  evidence.
+- One corresponding real fixture64 cold graph-routing replay completes `1,137/1,137` cases. K=8
+  P50/P95 is `0.040/0.465 ms` and K=64 is `0.098/1.211 ms`, versus Attempt 127's same-machine
+  representative `0.035/0.473 ms` and `0.096/1.277 ms`. The fixed reservation therefore shows no
+  material routing-latency regression while making heap retention independent of query diversity.
+
+**Conclusion:** keep for exact-head hosted validation. This is a lifecycle and accounting boundary
+around the already-measured Attempt 126 optimization; it adds no persisted file, format, magic,
+version, writer, or startup-wide validation pass. Full CI, both hosted real64 pressure gates, and
+all review threads remain hard gates. This commit is not authorization to merge or tag.

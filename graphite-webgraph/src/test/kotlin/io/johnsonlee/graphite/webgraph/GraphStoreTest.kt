@@ -619,6 +619,145 @@ class GraphStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
+    fun `mapped posting validation stays bounded when complete index memory is unavailable`() {
+        val returnType = TypeDescriptor("void")
+        val distinctRows = MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY + 64
+        val graph = DefaultGraph.Builder().apply {
+            repeat(distinctRows) { nodeId ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(nodeId),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Caller"),
+                            "unique${nodeId.toString().padStart(4, '0')}needle",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        nodeId,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
+            override val segmentWorkerCount: Int = 1
+            override fun consume(workUnits: Long) = Unit
+        }
+        val dir = Files.createTempDirectory("webgraph-bounded-mapped-posting-validation")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        var blocker: Closeable? = null
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val available = MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+                available - MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES
+            )
+            assertNotNull(blocker)
+
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(loaded.prepareCallSiteStringIndex())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(
+                    MappedCallSiteStringIndexMemoryBudget.maxBytes -
+                        MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES,
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+                repeat(2) {
+                    repeat(distinctRows) { nodeId ->
+                        val expected = "unique${nodeId.toString().padStart(4, '0')}needle"
+                        assertEquals(
+                            listOf(nodeId),
+                            loaded.nodesByStringPropertyDisjunction(
+                                CallSiteNode::class.java,
+                                listOf(
+                                    StringPropertyPredicate(
+                                        CALLER_NAME_PROPERTY,
+                                        StringValueTransform.LOWERCASE,
+                                        StringMatchMode.CONTAINS,
+                                        expected
+                                    )
+                                ),
+                                limit = 1,
+                                workConsumer = mappedSplit
+                            ).orEmpty().map { node -> node.id.value }.toList()
+                        )
+                    }
+                }
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(loaded.mappedPostingRangeValidationCount() in 1..MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY)
+                assertEquals(
+                    MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES,
+                    loaded.mappedPostingRangeValidationBytes()
+                )
+                assertEquals(
+                    MappedCallSiteStringIndexMemoryBudget.maxBytes,
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+                loaded.clearStringPropertyIndexes()
+                assertEquals(0, loaded.mappedPostingRangeValidationCount())
+                assertEquals(0L, loaded.mappedPostingRangeValidationBytes())
+                assertEquals(
+                    MappedCallSiteStringIndexMemoryBudget.maxBytes -
+                        MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES,
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+            } finally {
+                loaded.close()
+            }
+
+            blocker?.close()
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(available)
+            assertNotNull(blocker)
+            val uncached = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(uncached.prepareCallSiteStringIndex())
+                assertFalse(uncached.isCallSiteStringIndexInitialized())
+                repeat(64) { nodeId ->
+                    val expected = "unique${nodeId.toString().padStart(4, '0')}needle"
+                    assertEquals(
+                        listOf(nodeId),
+                        uncached.nodesByStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(
+                                StringPropertyPredicate(
+                                    CALLER_NAME_PROPERTY,
+                                    StringValueTransform.LOWERCASE,
+                                    StringMatchMode.CONTAINS,
+                                    expected
+                                )
+                            ),
+                            limit = 1,
+                            workConsumer = mappedSplit
+                        ).orEmpty().map { node -> node.id.value }.toList()
+                    )
+                }
+                assertTrue(uncached.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(0, uncached.mappedPostingRangeValidationCount())
+                assertEquals(0L, uncached.mappedPostingRangeValidationBytes())
+                assertEquals(
+                    MappedCallSiteStringIndexMemoryBudget.maxBytes,
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+            } finally {
+                uncached.close()
+            }
+            assertEquals(
+                MappedCallSiteStringIndexMemoryBudget.maxBytes,
+                MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+            )
+        } finally {
+            blocker?.close()
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `dense mapped matches scan ordered prefix waves and corrupt counts fall back`() {
         val returnType = TypeDescriptor("void")
         val firstMatch = 11_000

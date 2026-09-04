@@ -1973,6 +1973,7 @@ internal class MappedWebGraphBackedGraph(
 
     private fun closeCallSiteStringIndex(force: Boolean) {
         if (force) synchronized(mappedCallSiteStringIndexViewLock) {
+            mappedCallSiteStringIndexView?.close()
             mappedCallSiteStringIndexView = null
             mappedCallSiteStringIndexViewUnavailable = false
         }
@@ -2037,6 +2038,12 @@ internal class MappedWebGraphBackedGraph(
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
 
     internal fun isMappedCallSiteStringIndexViewInitialized(): Boolean = mappedCallSiteStringIndexView != null
+
+    internal fun mappedPostingRangeValidationCount(): Int =
+        mappedCallSiteStringIndexView?.validatedPostingRangeCount() ?: 0
+
+    internal fun mappedPostingRangeValidationBytes(): Long =
+        mappedCallSiteStringIndexView?.validatedPostingRangeBytes() ?: 0L
 
     internal fun isCallSiteTrigramIndexInitialized(): Boolean =
         callSiteStringIndex?.isTrigramPostingsInitialized() == true

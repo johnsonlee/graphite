@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.lang.MutableString
+import java.io.Closeable
 import java.io.IOException
 import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
@@ -19,7 +20,6 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
-import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.CRC32
 
 internal interface CallSiteStringIdMembership {
@@ -46,8 +46,16 @@ internal class MappedCallSiteStringIndexView private constructor(
     private val stringCount: Int,
     private val stringTable: StringTable,
     private val nodeOrder: (Int) -> Long
-) : CallSiteStringIdMembership {
-    private val validatedPostingRanges = ConcurrentHashMap<Long, Boolean>()
+) : CallSiteStringIdMembership, Closeable {
+    private val validatedPostingRanges = BoundedPostingRangeValidationCache.create()
+
+    override fun close() {
+        validatedPostingRanges?.close()
+    }
+
+    internal fun validatedPostingRangeCount(): Int = validatedPostingRanges?.size() ?: 0
+
+    internal fun validatedPostingRangeBytes(): Long = validatedPostingRanges?.retainedBytes ?: 0L
 
     override fun containsPropertyStringId(
         propertyIndex: Int,
@@ -158,7 +166,7 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): MappedPostingCursor? {
         val key = propertyIndex.toLong() shl Int.SIZE_BITS or (row.toLong() and UINT_MASK)
-        validatedPostingRanges[key]?.let { valid ->
+        validatedPostingRanges?.get(key)?.let { valid ->
             return if (valid) MappedPostingCursor(postings, range, nodeOrder) else null
         }
         val accounting = BufferedGraphWorkConsumer(workConsumer)
@@ -177,7 +185,7 @@ internal class MappedCallSiteStringIndexView private constructor(
         } finally {
             accounting.flush()
         }
-        val accepted = validatedPostingRanges.putIfAbsent(key, valid) ?: valid
+        val accepted = validatedPostingRanges?.putIfAbsent(key, valid) ?: valid
         if (!accepted) return null
         return MappedPostingCursor(postings, range, nodeOrder, orders)
     }
@@ -552,6 +560,78 @@ private data class MappedPredicateKey(
 
 private data class IndexedPostingRange(val row: Int, val positions: IntRange)
 
+/**
+ * Fixed-size direct-mapped cache for immutable posting-range validation results.
+ *
+ * A collision only repeats validation on a later lookup. The primitive arrays avoid per-query
+ * boxed keys and entries, and the shared reservation makes the retained heap visible to the same
+ * budget as the complete CallSite index. If the reservation is unavailable, callers validate
+ * every selected range without retaining query-dependent state.
+ */
+private class BoundedPostingRangeValidationCache private constructor(
+    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
+) : Closeable {
+    private val keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+    private val states = ByteArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+    private var entries = 0
+    private var closed = false
+
+    val retainedBytes: Long
+        @Synchronized get() = if (closed) 0L else reservation.bytes
+
+    @Synchronized
+    operator fun get(key: Long): Boolean? {
+        if (closed) return null
+        val slot = slot(key)
+        if (states[slot] == VALIDATION_EMPTY || keys[slot] != key) return null
+        return states[slot] == VALIDATION_VALID
+    }
+
+    @Synchronized
+    fun putIfAbsent(key: Long, valid: Boolean): Boolean {
+        if (closed) return valid
+        val slot = slot(key)
+        if (states[slot] != VALIDATION_EMPTY && keys[slot] == key) {
+            return states[slot] == VALIDATION_VALID
+        }
+        if (states[slot] == VALIDATION_EMPTY) entries++
+        keys[slot] = key
+        states[slot] = if (valid) VALIDATION_VALID else VALIDATION_INVALID
+        return valid
+    }
+
+    @Synchronized
+    fun size(): Int = if (closed) 0 else entries
+
+    @Synchronized
+    override fun close() {
+        if (closed) return
+        closed = true
+        entries = 0
+        reservation.close()
+    }
+
+    private fun slot(key: Long): Int {
+        val folded = key xor (key ushr Int.SIZE_BITS)
+        val spread = folded xor (folded ushr VALIDATION_CACHE_HASH_SHIFT)
+        return spread.toInt() and (VALIDATED_POSTING_RANGE_CACHE_CAPACITY - 1)
+    }
+
+    companion object {
+        fun create(): BoundedPostingRangeValidationCache? {
+            val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+                VALIDATED_POSTING_RANGE_CACHE_RETAINED_BYTES
+            ) ?: return null
+            return try {
+                BoundedPostingRangeValidationCache(reservation)
+            } catch (error: Throwable) {
+                reservation.close()
+                throw error
+            }
+        }
+    }
+}
+
 private class MappedPostingCursor(
     private val postings: IntBuffer,
     range: IntRange,
@@ -579,6 +659,15 @@ private class MappedPostingCursor(
     private fun orderAt(index: Int): Long = validatedOrders?.get(index - firstPosition) ?: nodeOrder(nodeId)
 }
 
+internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY = 1 shl 10
+internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES = 16L * 1024
+private const val VALIDATED_POSTING_RANGE_CACHE_CAPACITY = MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY
+private const val VALIDATED_POSTING_RANGE_CACHE_RETAINED_BYTES =
+    MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES
+private const val VALIDATION_CACHE_HASH_SHIFT = 16
+private const val VALIDATION_EMPTY: Byte = 0
+private const val VALIDATION_VALID: Byte = 1
+private const val VALIDATION_INVALID: Byte = 2
 private const val TRIGRAM_LENGTH = 3
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
