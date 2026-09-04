@@ -22,14 +22,23 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
+import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
@@ -51,6 +60,1605 @@ import kotlin.test.assertTrue
 
 @Suppress("LargeClass")
 class CrossGraphCypherExecutorTest {
+
+    @Test
+    fun `direct string override shares one additive NCPU budget`() {
+        val balanced = resolveDirectStringParallelismPlan(16, null)
+        assertEquals(8, balanced.graphWorkerCount)
+        assertEquals(8, balanced.segmentWorkerCount)
+
+        val allGraphWorkers = resolveDirectStringParallelismPlan(16, "16")
+        assertEquals(16, allGraphWorkers.graphWorkerCount)
+        assertEquals(0, allGraphWorkers.segmentWorkerCount)
+
+        val bounded = resolveDirectStringParallelismPlan(7, "99")
+        assertEquals(7, bounded.graphWorkerCount)
+        assertEquals(0, bounded.segmentWorkerCount)
+
+        assertEquals(4, resolveDirectStringGraphParallelism(4, 16, null))
+        assertEquals(8, resolveDirectStringGraphParallelism(36, 16, null))
+        assertEquals(4, resolveDirectStringGraphParallelism(36, 4, null))
+        assertEquals(8, resolveDirectStringGraphParallelism(42, 16, null))
+        assertEquals(2, resolveDirectStringGraphParallelism(42, 4, null))
+        assertEquals(8, resolveDirectStringGraphParallelism(64, 16, null))
+        assertEquals(16, resolveDirectStringGraphParallelism(64, 16, "16"))
+        assertEquals(4, resolveDirectStringGraphParallelism(64, 4, null, graphScoped = true))
+        assertEquals(8, resolveDirectStringGraphParallelism(64, 16, null, graphScoped = true))
+        assertEquals(2, resolveDirectStringGraphParallelism(64, 16, "2", graphScoped = true))
+        assertEquals(1, resolveDirectStringGraphParallelism(0, 0, null, graphScoped = true))
+
+        assertEquals(4, resolveDirectStringExecutorParallelism(4, null))
+        assertEquals(8, resolveDirectStringExecutorParallelism(16, null))
+        assertEquals(16, resolveDirectStringExecutorParallelism(16, "16"))
+        assertEquals(4, resolveDirectStringExecutorParallelism(processors = 4))
+
+        val overriddenStorage = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            configuredGraphWorkers = "12"
+        ) as SplitGraphWorkBatchConsumer
+        assertEquals(4, overriddenStorage.segmentWorkerCount)
+        overriddenStorage.consume(3)
+
+        val forcedSerial = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            forceSerial = true
+        )
+        assertTrue(forcedSerial is SerialGraphWorkBatchConsumer)
+        forcedSerial.consume(3)
+
+        val preferredRaw = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            preferRaw = true
+        )
+        assertTrue(preferredRaw is PreferredRawGraphWorkBatchConsumer)
+        preferredRaw.consume(3)
+
+        val preferredMappedView = directStringStorageWorkConsumer(
+            sourceCount = 64,
+            processors = 16,
+            preferMappedView = true
+        )
+        assertTrue(preferredMappedView is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+        assertEquals(8, preferredMappedView.segmentWorkerCount)
+    }
+
+    @Test
+    fun `legacy wide query executor runs the full selected graph worker wave`() {
+        val graphCount = 36
+        val plannedWorkers = resolveDirectStringGraphParallelism(graphCount)
+        if (plannedWorkers < 2) return
+        val firstWaveEntered = CountDownLatch(plannedWorkers)
+        val workerThreads = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        val empty = graph()
+        val graphs = List(graphCount) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    if (graphIndex < plannedWorkers && workerThreads.add(Thread.currentThread().name)) {
+                        firstWaveEntered.countDown()
+                    }
+                    if (graphIndex < plannedWorkers) {
+                        check(firstWaveEntered.await(5, TimeUnit.SECONDS)) {
+                            "planned $plannedWorkers graph workers but only ${workerThreads.size} entered"
+                        }
+                    }
+                    return emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(plannedWorkers, workerThreads.size)
+        assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-cypher-scan-") })
+    }
+
+    @Test
+    fun `graph id set keeps storage split within the pruned source budget`() {
+        val selectedCount = 8
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+        val selectedGraphIds = List(selectedCount) { index -> "graph-$index" }
+
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN \$graphIds AND (" +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent') " +
+                "RETURN n.caller_class LIMIT 1",
+            mapOf("graphIds" to selectedGraphIds)
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphIds.indices.toSet(), storageConsumers.keys)
+        assertTrue(
+            storageConsumers.values.all { consumer ->
+                consumer is SerialGraphWorkBatchConsumer
+            }
+        )
+        // Pruning 64 sources to eight must retain the small-source compatibility path: one
+        // graph lookup at a time without marking the entire selected set as one serial graph.
+        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+    }
+
+    @Test
+    fun `full graph id set parallelizes cold scans within the cpu budget`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        if (graphIndex in 1..plannedWorkers) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
+                                "planned $plannedWorkers graph workers but only " +
+                                    "${plannedWorkers - firstParallelWave.count} entered"
+                            }
+                        }
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+        val graphIds = graphs.map(CypherGraph::id)
+
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN \$graphIds AND (" +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent') " +
+                "RETURN n.caller_class LIMIT 1",
+            mapOf("graphIds" to graphIds)
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(graphIds.indices.toSet(), storageConsumers.keys)
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        })
+    }
+
+    @Test
+    fun `externally selected full graph set parallelizes without a graph id predicate`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        if (graphIndex in 1..plannedWorkers) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
+                                "planned $plannedWorkers graph workers but only " +
+                                    "${plannedWorkers - firstParallelWave.count} entered"
+                            }
+                        }
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        })
+    }
+
+    @Test
+    fun `startup prepared wide selected graph set uses the retained serial fast path`() {
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val persistentCapabilityChecks = AtomicInteger()
+        val accessedGraphs = mutableListOf<Int>()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionLookupStrategy {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun prefersSerialStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    persistentCapabilityChecks.incrementAndGet()
+                    return type == CallSiteNode::class.java && predicates.isNotEmpty()
+                }
+
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    accessedGraphs += graphIndex
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    return try {
+                        workConsumer.consume()
+                        emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphs.indices.toList(), accessedGraphs)
+        assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
+        assertEquals(1, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+        assertEquals(0, persistentCapabilityChecks.get())
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
+        })
+    }
+
+    @Test
+    fun `mixed retained selected graph set keeps its cold suffix parallel`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
+        val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                RetainedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = graphIndex == 0 && type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        if (graphIndex in 1..plannedWorkers && startedGraphs.add(graphIndex)) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS))
+                        }
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' OR " +
+                "n.callee_class CONTAINS 'absent' RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+    }
+
+    @Test
+    fun `unlabeled selected graph set requires every applicable type to be retained`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val firstParallelWave = CountDownLatch(plannedWorkers)
+        val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                RetainedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? = when (type) {
+                    CallSiteNode::class.java, AnnotationNode::class.java -> 10_000L
+                    else -> empty.nodeCount(type)
+                }
+
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        if (graphIndex in 1..plannedWorkers && startedGraphs.add(graphIndex)) {
+                            firstParallelWave.countDown()
+                            check(firstParallelWave.await(5, TimeUnit.SECONDS))
+                        }
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 200_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+    }
+
+    @Test
+    fun `startup prepared global wide set reuses the balanced graph workers`() {
+        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        if (plannedWorkers < 2) return
+        val batchWorkers = minOf(plannedWorkers, 63)
+        val firstParallelBatch = CountDownLatch(batchWorkers)
+        val batchStarts = (1..batchWorkers).toSet()
+        val activeGraphWorkers = AtomicInteger()
+        val peakGraphWorkers = AtomicInteger()
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val selectedGraphs = List(64) { graphIndex ->
+            CypherGraph("selected-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    val active = activeGraphWorkers.incrementAndGet()
+                    peakGraphWorkers.accumulateAndGet(active, ::maxOf)
+                    try {
+                        if (graphIndex in batchStarts) {
+                            firstParallelBatch.countDown()
+                            check(firstParallelBatch.await(5, TimeUnit.SECONDS)) {
+                                "planned $batchWorkers graph batches but only " +
+                                    "${batchWorkers - firstParallelBatch.count} entered"
+                            }
+                        }
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeGraphWorkers.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            selectedGraphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = false
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
+        assertEquals(batchWorkers, peakGraphWorkers.get())
+        assertEquals(0, activeGraphWorkers.get())
+        assertTrue(storageConsumers.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
+                resolveDirectStringParallelismPlan().segmentWorkerCount &&
+                consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        })
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `prepared global wide leading limit avoids probing every sidecar`() {
+        val persistentCapabilityChecks = AtomicInteger()
+        val accessedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val returnType = TypeDescriptor("void")
+        val hit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("example.Target"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionLookupStrategy {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun prefersSerialStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = false
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    persistentCapabilityChecks.incrementAndGet()
+                    return true
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    accessedGraphs += graphIndex
+                    workConsumer.consume()
+                    return if (graphIndex == 0) sequenceOf(hit as T) else emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals("example.Target", result.rows.single()["caller"])
+        assertEquals(setOf(0), accessedGraphs)
+        assertEquals(0, persistentCapabilityChecks.get())
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `prepared global wide limit stops the fixed workers in source order`() {
+        val distantLookups = AtomicInteger()
+        val empty = graph()
+        val returnType = TypeDescriptor("void")
+        val hit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("example.Target"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    if (graphIndex > resolveDirectStringGraphParallelism(64)) distantLookups.incrementAndGet()
+                    workConsumer.consume()
+                    return if (graphIndex == 1) sequenceOf(hit as T) else emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+        )
+
+        val row = result.rows.single()
+        assertEquals("graph-1", row["graph"])
+        assertEquals("example.Target", row["caller"])
+        assertEquals(listOf("graph-1"), graphIds(row))
+        assertEquals(0, distantLookups.get())
+    }
+
+    @Test
+    fun `prepared global wide worker failure is propagated after joining workers`() {
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    if (graphIndex == 1) error("prepared worker failed")
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+
+        val failure = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(graphs).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                    "RETURN n.caller_class LIMIT 1"
+            )
+        }
+
+        assertEquals("prepared worker failed", failure.message)
+    }
+
+    @Test
+    fun `prepared global wide interrupted worker publishes cancellation and joins peers`() {
+        val workerCount = resolveDirectStringGraphParallelism(64)
+        val peerStarted = CountDownLatch(1)
+        val peerInterrupted = CountDownLatch(1)
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    when (graphIndex) {
+                        1 -> {
+                            if (workerCount > 1) check(peerStarted.await(2, TimeUnit.SECONDS))
+                            Thread.currentThread().interrupt()
+                            throw CypherQueryCancelledException("prepared worker interrupted")
+                        }
+                        2 -> if (workerCount > 1) {
+                            peerStarted.countDown()
+                            try {
+                                Thread.sleep(TimeUnit.SECONDS.toMillis(5))
+                            } catch (interrupted: InterruptedException) {
+                                peerInterrupted.countDown()
+                                throw interrupted
+                            }
+                        }
+                    }
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+
+        val queryThread = Executors.newSingleThreadExecutor()
+        val future = queryThread.submit<CypherResult> {
+            CrossGraphCypherExecutor(graphs).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                    "RETURN n.caller_class LIMIT 1"
+            )
+        }
+        try {
+            val failure = assertFailsWith<java.util.concurrent.ExecutionException> {
+                future.get(2, TimeUnit.SECONDS)
+            }
+            assertTrue(
+                failure.cause is CypherQueryCancelledException,
+                "unexpected query failure: ${failure.cause}"
+            )
+            assertEquals("prepared worker interrupted", failure.cause?.message)
+            if (workerCount > 1) {
+                assertTrue(peerInterrupted.await(2, TimeUnit.SECONDS), "peer worker was not interrupted and joined")
+            }
+        } finally {
+            queryThread.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `prepared global wide workers shut down after exhausting the shared queue`() {
+        val activeLookups = AtomicInteger()
+        val completedLookups = AtomicInteger()
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    activeLookups.incrementAndGet()
+                    try {
+                        workConsumer.consume()
+                        completedLookups.incrementAndGet()
+                        return emptySequence()
+                    } finally {
+                        activeLookups.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(64, completedLookups.get())
+        assertEquals(0, activeLookups.get())
+    }
+
+    @Test
+    fun `prepared global wide checked worker failure is wrapped after joining workers`() {
+        val activeLookups = AtomicInteger()
+        val failure = object : Throwable("checked prepared worker failure") {}
+        val empty = graph()
+        val graphs = List(64) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    activeLookups.incrementAndGet()
+                    try {
+                        if (graphIndex == 1) throw failure
+                        workConsumer.consume()
+                        return emptySequence()
+                    } finally {
+                        activeLookups.decrementAndGet()
+                    }
+                }
+            })
+        }
+
+        val thrown = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(graphs).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                    "RETURN n.caller_class LIMIT 1"
+            )
+        }
+
+        assertEquals("Parallel graph scan failed", thrown.message)
+        assertTrue(thrown.cause === failure)
+        assertEquals(0, activeLookups.get())
+    }
+
+    @Test
+    fun `work tracked global wide query probes the leading graph then executes the balanced plan`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val graphCount = 40
+        val firstWaveEntered = CountDownLatch(plan.graphWorkerCount)
+        val firstWaveSegments = java.util.concurrent.ConcurrentHashMap<Int, Pair<String, Int>>()
+        val leadingSegments = AtomicInteger(-1)
+        val empty = graph()
+        val graphs = List(graphCount) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    if (graphIndex == 0) {
+                        leadingSegments.set((workConsumer as SplitGraphWorkBatchConsumer).segmentWorkerCount)
+                        return emptySequence()
+                    }
+                    val split = workConsumer as SplitGraphWorkBatchConsumer
+                    if (graphIndex in 1..plan.graphWorkerCount) {
+                        if (firstWaveSegments.putIfAbsent(
+                                graphIndex,
+                                Thread.currentThread().name to split.segmentWorkerCount
+                            ) == null
+                        ) {
+                            firstWaveEntered.countDown()
+                        }
+                        check(firstWaveEntered.await(5, TimeUnit.SECONDS))
+                    }
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(plan.segmentWorkerCount, leadingSegments.get())
+        assertEquals(plan.graphWorkerCount, firstWaveSegments.size)
+        assertEquals(plan.graphWorkerCount, firstWaveSegments.values.map { it.first }.toSet().size)
+        assertTrue(firstWaveSegments.values.all { it.second == plan.segmentWorkerCount })
+    }
+
+    @Test
+    fun `bounded short global wide query keeps the leading fallback serial`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
+        val empty = graph()
+        val graphs = List(40) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    storageConsumers[graphIndex] = workConsumer
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' " +
+                "RETURN n.caller_name LIMIT 200"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(graphs.indices.toSet(), storageConsumers.keys)
+        assertTrue(storageConsumers.getValue(0) is SerialGraphWorkBatchConsumer)
+        assertTrue(storageConsumers.filterKeys { it > 0 }.values.all { consumer ->
+            consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount == plan.segmentWorkerCount
+        })
+    }
+
+    @Test
+    fun `bounded dense global query projects the leading raw scan without materializing nodes`() {
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The raw projection path must not materialize nodes")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> = error("The raw projection path must not materialize nodes")
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    assertTrue(workConsumer is PreferredRawGraphWorkBatchConsumer)
+                    check(sourceIndex == 0)
+                    assertEquals(listOf("caller_class"), projectedProperties)
+                    return List(limit) { row -> StringPropertyProjectionRow(listOf("Caller$row")) }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'get' " +
+                "RETURN n.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertEquals(listOf("graph-0"), graphIds(result.rows.first()))
+        assertEquals("Caller0", result.rows.first()["caller"])
+        assertEquals("Caller199", result.rows.last()["caller"])
+        assertEquals(setOf(0), projectedSources)
+    }
+
+    @Test
+    fun `bounded leading projection preserves an unbound property owner`() {
+        val returnType = TypeDescriptor("void")
+        val leading = graph(*Array(200) { nodeId ->
+            CallSiteNode(
+                NodeId(nodeId),
+                MethodDescriptor(TypeDescriptor("Call$nodeId"), "invoke", emptyList(), returnType),
+                MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+                nodeId,
+                null,
+                emptyList()
+            )
+        })
+        val sources = List(40) { sourceIndex ->
+            val delegate = if (sourceIndex == 0) leading else graph()
+            CypherGraph("graph-$sourceIndex", object : Graph by delegate, StringPropertyDisjunctionProjection {
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? =
+                    error("A property owned by an unbound variable must use normal projection semantics")
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(sources).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Call' " +
+                "RETURN x.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertTrue(result.rows.all { row -> row["caller"] == null })
+        assertTrue(result.rows.all { row -> graphIds(row) == listOf("graph-0") })
+    }
+
+    @Test
+    fun `long global query projects the initialized mapped leading graph without materializing nodes`() {
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The mapped projection path must not materialize nodes")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> = error("The mapped projection path must not materialize nodes")
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+                    check(sourceIndex == 0)
+                    assertEquals(StringValueTransform.LOWERCASE, predicates.single().transform)
+                    assertEquals("needle", predicates.single().expected)
+                    assertEquals(listOf("caller_class"), projectedProperties)
+                    return List(limit) { row -> StringPropertyProjectionRow(listOf("Caller$row")) }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) " +
+                "WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'needle' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertEquals("graph-0", result.rows.first()["graph"])
+        assertEquals("Caller0", result.rows.first()["caller"])
+        assertEquals("Caller199", result.rows.last()["caller"])
+        assertEquals(setOf(0), projectedSources)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `partial mapped leading projection continues from the second graph`() {
+        val returnType = TypeDescriptor("void")
+        val laterHit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("Caller1"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val scannedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    scannedSources += sourceIndex
+                    return if (sourceIndex == 1) sequenceOf(laterHit as T) else emptySequence()
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
+                    check(sourceIndex == 0)
+                    return listOf(StringPropertyProjectionRow(listOf("Caller0")))
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) " +
+                "WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'caller' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(
+            listOf("graph-0" to "Caller0", "graph-1" to "Caller1"),
+            result.rows.map { row -> row["graph"] to row["caller"] }
+        )
+        assertEquals(setOf(0), projectedSources)
+        assertTrue(0 !in scannedSources)
+        assertTrue(1 in scannedSources)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `bounded leading projection continues with later graphs when it does not fill limit`() {
+        val returnType = TypeDescriptor("void")
+        val laterHit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("Caller1"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val scannedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    scannedSources += sourceIndex
+                    return if (sourceIndex == 1) sequenceOf(laterHit as T) else emptySequence()
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectedSources += sourceIndex
+                    check(sourceIndex == 0)
+                    return listOf(StringPropertyProjectionRow(listOf("Caller0")))
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Call' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(
+            listOf("graph-0" to "Caller0", "graph-1" to "Caller1"),
+            result.rows.map { row -> row["graph"] to row["caller"] }
+        )
+        assertEquals(setOf(0), projectedSources)
+        assertTrue(1 in scannedSources)
+    }
+
+    @Test
+    @Suppress("UNCHECKED_CAST")
+    fun `bounded leading projection falls back to the node scan when storage declines`() {
+        val projectionCalls = AtomicInteger()
+        val nodeScanCalls = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+        val hit = CallSiteNode(
+            NodeId(7),
+            MethodDescriptor(TypeDescriptor("example.Caller"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Target"), "invoke", emptyList(), returnType),
+            0,
+            null,
+            emptyList()
+        )
+        val empty = graph()
+        val graphs = List(40) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    nodeScanCalls.incrementAndGet()
+                    return if (sourceIndex == 0) sequenceOf(hit as T) else emptySequence()
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow>? {
+                    projectionCalls.incrementAndGet()
+                    return null
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'all' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("example.Caller"), result.rows.map { row -> row["caller"] })
+        assertEquals(1, projectionCalls.get())
+        assertEquals(1, nodeScanCalls.get())
+
+        val unsupportedProjection = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'all' " +
+                "RETURN n.id AS id, n.caller_class AS caller LIMIT 1"
+        )
+        assertEquals(7, unsupportedProjection.rows.single()["id"])
+        assertEquals("example.Caller", unsupportedProjection.rows.single()["caller"])
+        assertEquals(1, projectionCalls.get())
+        assertEquals(2, nodeScanCalls.get())
+    }
+
+    @Test
+    fun `balanced row scan does not wait for a whole graph wave before scheduling later sources`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val graphCount = 40
+        val laterSourceEntered = CountDownLatch(1)
+        val laterSourceIndex = plan.graphWorkerCount + 1
+        val empty = graph()
+        val graphs = List(graphCount) { graphIndex ->
+            CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    when (graphIndex) {
+                        plan.graphWorkerCount -> check(laterSourceEntered.await(5, TimeUnit.SECONDS)) {
+                            "later source was held behind the first graph-wave barrier"
+                        }
+                        laterSourceIndex -> laterSourceEntered.countDown()
+                    }
+                    return emptySequence()
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                "RETURN n.caller_class LIMIT 1"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertEquals(0, laterSourceEntered.count)
+    }
+
+    @Test
+    fun `balanced row scan stops before an unneeded distant source`() {
+        val plan = resolveDirectStringParallelismPlan()
+        if (plan.graphWorkerCount < 2) return
+        val graphCount = 40
+        val lastGraphLookups = AtomicInteger()
+        val returnType = TypeDescriptor("void")
+        val empty = graph()
+        val graphs = List(graphCount) { graphIndex ->
+            val backing = if (graphIndex == 1) {
+                DefaultGraph.Builder().apply {
+                    repeat(2) { nodeIndex ->
+                        addNode(
+                            CallSiteNode(
+                                NodeId(nodeIndex),
+                                MethodDescriptor(
+                                    TypeDescriptor("example.Target$nodeIndex"),
+                                    "call",
+                                    emptyList(),
+                                    returnType
+                                ),
+                                MethodDescriptor(TypeDescriptor("example.Repository"), "load", emptyList(), returnType),
+                                nodeIndex,
+                                null,
+                                emptyList()
+                            )
+                        )
+                    }
+                }.build()
+            } else {
+                empty
+            }
+            CypherGraph("graph-$graphIndex", object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    check(graphIndex != graphCount - 1) {
+                        lastGraphLookups.incrementAndGet()
+                        "LIMIT should have stopped before the last graph"
+                    }
+                    @Suppress("UNCHECKED_CAST")
+                    return backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class LIMIT 2"
+        )
+
+        assertEquals(listOf("example.Target0", "example.Target1"), result.rows.map { it["n.caller_class"] })
+        assertEquals(0, lastGraphLookups.get())
+    }
+
+    @Test
+    fun `global wide row limit does not initialize speculative later graph scans`() {
+        val returnType = TypeDescriptor("void")
+        val lookups = List(40) { AtomicInteger() }
+        val graphs = List(40) { graphIndex ->
+            val backing = DefaultGraph.Builder().apply {
+                if (graphIndex == 0) {
+                    repeat(250) { nodeIndex ->
+                        addNode(
+                            CallSiteNode(
+                                NodeId(nodeIndex),
+                                MethodDescriptor(
+                                    TypeDescriptor("example.Target$nodeIndex"),
+                                    "call",
+                                    emptyList(),
+                                    returnType
+                                ),
+                                MethodDescriptor(
+                                    TypeDescriptor("example.Repository"),
+                                    "load",
+                                    emptyList(),
+                                    returnType
+                                ),
+                                nodeIndex,
+                                null,
+                                emptyList()
+                            )
+                        )
+                    }
+                }
+            }.build()
+            CypherGraph("graph-$graphIndex", object : Graph by backing, WorkAwareStringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = nodesByStringPropertyDisjunction(type, predicates, limit, GraphWorkConsumer {})
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    lookups[graphIndex].incrementAndGet()
+                    if (type != CallSiteNode::class.java) return emptySequence()
+                    @Suppress("UNCHECKED_CAST")
+                    return backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 200"
+        )
+
+        assertEquals(200, result.rows.size)
+        assertTrue(result.rows.all { (it["caller"] as String).startsWith("example.Target") })
+        assertEquals(1, lookups.first().get())
+        assertTrue(lookups.drop(1).all { it.get() == 0 })
+    }
 
     @Test
     fun `selected graph projects bounded CallSite strings without materializing nodes`() {
@@ -103,6 +1711,165 @@ class CrossGraphCypherExecutorTest {
         assertEquals("example.FeatureCaller", result.rows.single()["caller"])
         assertEquals("invoke", result.rows.single()["callee"])
         assertEquals(listOf("selected"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `selected retained graph set projects in source order up to the global limit`() {
+        val projectedSources = mutableListOf<Int>()
+        val projectedLimits = mutableListOf<Int>()
+        val empty = graph()
+        val graphs = List(3) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectedSources += sourceIndex
+                    projectedLimits += limit
+                    return List(minOf(2, limit)) { row ->
+                        StringPropertyProjectionRow(listOf("Caller-$sourceIndex-$row"))
+                    }
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1', 'graph-2'] AND " +
+                "n.caller_class CONTAINS 'Caller' RETURN n.caller_class AS caller LIMIT 3"
+        )
+
+        assertEquals(listOf(0, 1), projectedSources)
+        assertEquals(listOf(3, 1), projectedLimits)
+        assertEquals(
+            listOf("Caller-0-0", "Caller-0-1", "Caller-1-0"),
+            result.rows.map { row -> row["caller"] }
+        )
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[2]))
+    }
+
+    @Test
+    fun `selected retained graph set preflights every source before projection`() {
+        val returnType = TypeDescriptor("void")
+        val projectionCalls = AtomicInteger()
+        val retainedChecks = mutableListOf<Int>()
+        val graphs = List(2) { sourceIndex ->
+            val callerClass = "example.Caller-$sourceIndex"
+            val backing = graph(
+                CallSiteNode(
+                    NodeId(sourceIndex),
+                    MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    sourceIndex,
+                    null,
+                    emptyList()
+                )
+            )
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by backing,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    retainedChecks += sourceIndex
+                    return sourceIndex == 0
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectionCalls.incrementAndGet()
+                    error("No source may project before the complete retained preflight passes")
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Caller-' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf(0, 1), retainedChecks)
+        assertEquals(0, projectionCalls.get())
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[1]))
+    }
+
+    @Test
+    fun `selected graph set falls back before projection when one source is not retained`() {
+        val returnType = TypeDescriptor("void")
+        val projectionCalls = AtomicInteger()
+        fun callSite(sourceIndex: Int) = CallSiteNode(
+            NodeId(sourceIndex),
+            MethodDescriptor(TypeDescriptor("example.Caller-$sourceIndex"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+            sourceIndex,
+            null,
+            emptyList()
+        )
+        val firstBacking = graph(callSite(0))
+        val first = object : Graph by firstBacking,
+            RetainedStringPropertyDisjunctionLookup,
+            StringPropertyDisjunctionProjection {
+            override fun hasRetainedStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>
+            ): Boolean = true
+
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow>? {
+                projectionCalls.incrementAndGet()
+                return null
+            }
+        }
+        val secondBacking = graph(callSite(1))
+        val second = object : Graph by secondBacking, StringPropertyDisjunctionProjection {
+            override fun projectStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyProjectionRow>? {
+                projectionCalls.incrementAndGet()
+                return null
+            }
+        }
+
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("graph-0", first), CypherGraph("graph-1", second))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Caller' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(0, projectionCalls.get())
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+        assertEquals(listOf("graph-1"), graphIds(result.rows[1]))
     }
 
     @Test
@@ -768,6 +2535,77 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `balanced distinct projection probes only the leading graph before provenance`() {
+        val graphCount = 64
+        val initialCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val selectedCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val persistentCapabilityChecks = AtomicInteger()
+        val leadingSegments = AtomicInteger()
+        val empty = graph()
+        val value = listOf("example.Source", "call", "example.Target", "load")
+        val graphs = List(graphCount) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                PreparedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionDistinctProjection,
+                StringPropertyLookupOrder {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 1L else 0L
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    persistentCapabilityChecks.incrementAndGet()
+                    return true
+                }
+
+                override fun distinctStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    selectedValues: Set<List<String?>>?,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyDistinctRow>? {
+                    if (selectedValues == null) {
+                        initialCalls += sourceIndex
+                        if (sourceIndex == 0 && workConsumer is SplitGraphWorkBatchConsumer) {
+                            leadingSegments.set(workConsumer.segmentWorkerCount)
+                        }
+                    } else {
+                        selectedCalls += sourceIndex
+                    }
+                    return when {
+                        selectedValues == null && sourceIndex == 0 -> listOf(StringPropertyDistinctRow(0, value))
+                        selectedValues != null && sourceIndex in setOf(0, graphCount - 1) ->
+                            listOf(StringPropertyDistinctRow(0, value))
+                        else -> emptyList()
+                    }
+                }
+
+                override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE " +
+                "toLower(coalesce(n.caller_class, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.caller_name, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.callee_class, '')) CONTAINS 'source' OR " +
+                "toLower(coalesce(n.callee_name, '')) CONTAINS 'source' " +
+                "RETURN DISTINCT n.caller_class AS callerClass, n.caller_name AS callerName, " +
+                "n.callee_class AS calleeClass, n.callee_name AS calleeName LIMIT 1"
+        )
+
+        assertEquals(setOf(0), initialCalls)
+        assertEquals((1 until graphCount).toSet(), selectedCalls)
+        assertEquals(0, persistentCapabilityChecks.get())
+        assertEquals(resolveDirectStringParallelismPlan().segmentWorkerCount, leadingSegments.get())
+        assertEquals(listOf("graph-0", "graph-63"), graphIds(result.rows.single()))
+    }
+
+    @Test
     fun `qualified broad discovery drains large matches with bounded deduplication state`() {
         val matchCount = 5_000
         val consumed = mutableMapOf("orders" to 0, "billing" to 0)
@@ -1272,6 +3110,81 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `parallel row scanners forward bounded limits while residual filters keep complete candidates`() {
+        if (Runtime.getRuntime().availableProcessors() < 2 ||
+            System.getProperty("graphite.cypher.directStringParallelism") != null
+        ) return
+        val lookupLimits = List(2) { java.util.concurrent.ConcurrentLinkedQueue<Int>() }
+        val returnType = TypeDescriptor("void")
+
+        fun lookupGraph(graphIndex: Int): Graph {
+            val backing = DefaultGraph.Builder().apply {
+                repeat(4) { nodeIndex ->
+                    addNode(
+                        CallSiteNode(
+                            NodeId(nodeIndex),
+                            MethodDescriptor(
+                                TypeDescriptor("example.Target${graphIndex}Service$nodeIndex"),
+                                "call",
+                                emptyList(),
+                                returnType
+                            ),
+                            MethodDescriptor(
+                                TypeDescriptor("example.Repository"),
+                                if (nodeIndex == 3) "Keep" else "Discard",
+                                emptyList(),
+                                returnType
+                            ),
+                            nodeIndex,
+                            null,
+                            emptyList()
+                        )
+                    )
+                }
+            }.build()
+            return object : Graph by backing, StringPropertyDisjunctionLookup {
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> {
+                    lookupLimits[graphIndex] += limit
+                    @Suppress("UNCHECKED_CAST")
+                    return backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
+                }
+            }
+        }
+
+        val queryExecutor = executor(
+            "graph-0" to lookupGraph(0),
+            "graph-1" to lookupGraph(1)
+        )
+        val bounded = queryExecutor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' OR " +
+                "n.callee_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("graph-0", "graph-0"), bounded.rows.map { it["graph"] })
+        assertEquals(
+            listOf("example.Target0Service0", "example.Target0Service1"),
+            bounded.rows.map { it["caller"] }
+        )
+        assertTrue(lookupLimits.all { limits -> limits.toList() == listOf(2) })
+
+        lookupLimits.forEach { it.clear() }
+        val residual = queryExecutor.execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' AND " +
+                "n.callee_name CONTAINS 'Keep' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("graph-0"), residual.rows.map { it["graph"] })
+        assertEquals(listOf("example.Target0Service3"), residual.rows.map { it["caller"] })
+        assertTrue(lookupLimits.all { limits -> limits.toList() == listOf(4) })
+    }
+
+    @Test
     fun `filtered string counts aggregate graph-local scans in parallel`() {
         if (Runtime.getRuntime().availableProcessors() < 2) return
         val barrier = CyclicBarrier(2)
@@ -1332,6 +3245,53 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
         assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
         assertEquals(2, maximumActive.get())
+    }
+
+    @Test
+    fun `untracked filtered counts use storage aggregation and expose worker metrics`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val aggregateCalls = AtomicInteger()
+
+        fun aggregatingGraph(vararg callerClasses: String): Graph {
+            val backing = graph()
+            return object : Graph by backing, StringPropertyDisjunctionAggregation {
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?
+                ): StringPropertyDisjunctionAggregate? {
+                    assertEquals(CallSiteNode::class.java, type)
+                    assertTrue(predicates.any { it.property == "caller_class" })
+                    aggregateCalls.incrementAndGet()
+                    barrier.await(2, TimeUnit.SECONDS)
+                    return StringPropertyDisjunctionAggregate(
+                        callerClasses.size.toLong(),
+                        distinctProperty?.let { callerClasses.toSet() }
+                    )
+                }
+            }
+        }
+
+        resetDirectStringGraphWorkerMetrics()
+        val executor = executor(
+            "orders" to aggregatingGraph("example.TargetA", "example.TargetB"),
+            "billing" to aggregatingGraph("example.TargetA", "example.TargetC")
+        )
+        val predicate = "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target'"
+        val count = executor.execute("MATCH (n:CallSiteNode) WHERE $predicate RETURN count(*) AS total")
+        val distinct = executor.execute(
+            "MATCH (n:CallSiteNode) WHERE $predicate RETURN count(DISTINCT n.caller_class) AS total"
+        )
+
+        assertEquals(4L, count.rows.single()["total"])
+        assertEquals(3L, distinct.rows.single()["total"])
+        assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
+        assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
+        assertEquals(4, aggregateCalls.get())
+        assertEquals(2, directStringGraphPeakActiveWorkers())
+        resetDirectStringGraphWorkerMetrics()
+        assertEquals(0, directStringGraphPeakActiveWorkers())
     }
 
     @Test
@@ -1695,6 +3655,64 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `balanced ordered scan wraps non runtime failure and joins interrupted peers`() {
+        val graphWorkers = resolveDirectStringGraphParallelism(40)
+        if (graphWorkers < 2) return
+        val peerStarted = CountDownLatch(1)
+        val peerInterrupted = CountDownLatch(1)
+        val failure = object : Throwable("checked storage failure") {}
+        val empty = graph()
+
+        fun lookupGraph(scan: () -> Unit): Graph = object : Graph by empty, StringPropertyDisjunctionLookup {
+            override fun nodeCount(type: Class<out Node>): Long? =
+                if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+            override fun <T : Node> nodesByStringPropertyDisjunction(
+                type: Class<T>,
+                predicates: List<StringPropertyPredicate>,
+                limit: Int
+            ): Sequence<T> = sequence {
+                scan()
+            }
+        }
+
+        val sources = List(40) { graphIndex ->
+            val sourceGraph = when (graphIndex) {
+                1 -> lookupGraph {
+                    check(peerStarted.await(2, TimeUnit.SECONDS))
+                    throw failure
+                }
+                2 -> lookupGraph {
+                    peerStarted.countDown()
+                    try {
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(5))
+                    } catch (interrupted: InterruptedException) {
+                        peerInterrupted.countDown()
+                        throw interrupted
+                    }
+                }
+                else -> lookupGraph { }
+            }
+            CypherGraph("graph-$graphIndex", sourceGraph)
+        }
+
+        resetDirectStringGraphWorkerMetrics()
+        val thrown = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(sources).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' OR " +
+                    "n.callee_class CONTAINS 'absent' RETURN n.caller_class LIMIT 1"
+            )
+        }
+
+        assertEquals("Parallel graph scan failed", thrown.message)
+        assertTrue(thrown.cause === failure)
+        assertTrue(peerInterrupted.await(2, TimeUnit.SECONDS), "peer task was not interrupted and joined")
+        assertTrue(directStringGraphPeakActiveWorkers() >= 2)
+        resetDirectStringGraphWorkerMetrics()
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+    }
+
+    @Test
     fun `supports graph qualified properties functions and fast filtered limits`() {
         val executor = executor(
             "orders" to graph(IntConstant(NodeId(7), 10)),
@@ -1718,7 +3736,7 @@ class CrossGraphCypherExecutorTest {
         val scanCounts = List(4) { AtomicInteger() }
         val lookupLimits = List(4) { mutableListOf<Int>() }
         val parallelPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
-        val serialPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
+        val segmentWorkerAllocations = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Int>() }
         val returnType = TypeDescriptor("void")
         val graphs = scanCounts.indices.map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -1766,7 +3784,9 @@ class CrossGraphCypherExecutorTest {
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
                     parallelPermissions[graphIndex] += workConsumer is ParallelGraphWorkBatchConsumer
-                    serialPermissions[graphIndex] += workConsumer is SerialGraphWorkBatchConsumer
+                    (workConsumer as? SplitGraphWorkBatchConsumer)?.segmentWorkerCount?.let {
+                        segmentWorkerAllocations[graphIndex] += it
+                    }
                     workConsumer.consume()
                     return nodesByStringPropertyDisjunction(type, predicates, limit)
                 }
@@ -1804,18 +3824,29 @@ class CrossGraphCypherExecutorTest {
             assertEquals(250, lookupLimits.last().first())
             assertTrue(lookupLimits.last().all { limit -> limit in 0..250 })
             assertTrue(parallelPermissions.last().all { it })
-            assertTrue(serialPermissions.last().none { it })
+            assertTrue(segmentWorkerAllocations.last().isEmpty())
         }
 
         parallelPermissions.forEach { it.clear() }
-        serialPermissions.forEach { it.clear() }
+        segmentWorkerAllocations.forEach { it.clear() }
         val unqualified = executor.execute(
             "MATCH (n) WHERE $broadPredicate " +
                 "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
         )
         assertEquals(graphs.map { it.id }.toSet(), unqualified.rows.map { it["graph"] }.toSet())
-        assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.none { it } })
-        assertTrue(serialPermissions.all { permissions -> permissions.isNotEmpty() && permissions.all { it } })
+        val configuredGraphWorkers = System.getProperty("graphite.cypher.directStringParallelism")
+        if (configuredGraphWorkers == null) {
+            assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.none { it } })
+            assertTrue(segmentWorkerAllocations.all { allocations -> allocations.isEmpty() })
+        } else {
+            val graphWorkers = resolveDirectStringGraphParallelism(graphs.size)
+            val segmentWorkers = resolveDirectStringParallelismPlan().segmentWorkerCount
+            assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.all { it } })
+            val observed = segmentWorkerAllocations.map { allocations -> allocations.first() }
+            observed.chunked(graphWorkers).forEach { wave ->
+                assertTrue(wave.all { it == segmentWorkers })
+            }
+        }
 
         scanCounts.forEach { it.set(0) }
         lookupLimits.forEach(MutableList<Int>::clear)
@@ -1853,6 +3884,23 @@ class CrossGraphCypherExecutorTest {
         assertEquals(1L, count.rows.single()["total"])
         assertTrue(scanCounts.take(3).all { it.get() == 0 })
         assertTrue(scanCounts.last().get() > 0)
+    }
+
+    @Test
+    fun `missing graph id stays empty with configured direct string parallelism`() {
+        val property = "graphite.cypher.directStringParallelism"
+        val previous = System.getProperty(property)
+        try {
+            System.setProperty(property, "8")
+            val result = CrossGraphCypherExecutor(listOf(CypherGraph("loaded", graph()))).execute(
+                "MATCH (n:CallSiteNode) WHERE n.graphId = 'missing' AND " +
+                    "n.caller_class CONTAINS 'absent' RETURN n.caller_class LIMIT 1"
+            )
+
+            assertTrue(result.rows.isEmpty())
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+        }
     }
 
     @Test

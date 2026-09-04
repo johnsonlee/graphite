@@ -25,6 +25,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -165,6 +166,24 @@ class QueryPipelineTest {
         val result = pipeline.execute(clauses)
         // 11 nodes total
         assertEquals(11, result.rows.size)
+    }
+
+    @Test
+    fun `qualified pipeline forwards an explicit work tracker`() {
+        val clauses = listOf(
+            CypherClause.Match(listOf(pattern(nodePattern("n", null)))),
+            CypherClause.Return(listOf(returnItem(prop(variable("n"), "id"), "id")))
+        )
+        val tracked = QueryPipeline(
+            listOf(CypherGraph("first", graph), CypherGraph("second", graph)),
+            workTrackingEnabled = true
+        )
+        val result = tracked.execute(
+            clauses,
+            CypherWorkTracker(CypherExecutionBudget(maxWorkUnits = 100_000))
+        )
+
+        assertEquals(22, result.rows.size)
     }
 
     // ========================================================================
@@ -678,7 +697,7 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(2, hit.projectionCalls)
+        assertEquals(1, hit.projectionCalls)
         assertEquals(1, hit.cacheBuilds)
         assertEquals(0, hit.releases)
         assertEquals(1, miss.projectionCalls)
@@ -777,7 +796,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `parallel indexed distinct projection verifies selected rows in every graph`() {
+    fun `parallel indexed distinct projection reuses known rows from every graph`() {
         class SelectedIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
             StringPropertyDisjunctionDistinctProjection,
@@ -814,8 +833,8 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(1, first.selectedLookups)
-        assertEquals(1, second.selectedLookups)
+        assertEquals(0, first.selectedLookups)
+        assertEquals(0, second.selectedLookups)
     }
 
     @Test
@@ -870,6 +889,56 @@ class QueryPipelineTest {
         assertEquals(listOf("second"), skipped.rows.map { it["graphId"] })
         assertEquals(2, first.selectedLookups)
         assertEquals(2, second.selectedLookups)
+    }
+
+    @Test
+    fun `prepared indexes retain the indexed distinct projection path`() {
+        class PreparedIndexedGraph(private val delegate: Graph) :
+            Graph by delegate,
+            PreparedStringPropertyDisjunctionLookup,
+            StringPropertyDisjunctionDistinctProjection,
+            StringPropertyLookupOrder {
+            var projectionCalls = 0
+
+            override fun nodeCount(type: Class<out Node>): Long? =
+                if (type == CallSiteNode::class.java) 10_000L else delegate.nodeCount(type)
+
+            override fun hasPreparedStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>
+            ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+            override fun distinctStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>,
+                projectedProperties: List<String>,
+                limit: Int,
+                selectedValues: Set<List<String?>>?,
+                workConsumer: GraphWorkConsumer?
+            ): List<StringPropertyDistinctRow> {
+                projectionCalls++
+                val values = listOf("com.example.Service")
+                return listOf(StringPropertyDistinctRow(0, values))
+                    .takeIf { selectedValues == null || values in selectedValues }
+                    .orEmpty()
+                    .take(limit)
+            }
+
+            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
+        }
+
+        val first = PreparedIndexedGraph(DefaultGraph.Builder().build())
+        val second = PreparedIndexedGraph(DefaultGraph.Builder().build())
+        val result = CrossGraphCypherExecutor(
+            listOf(CypherGraph("first", first), CypherGraph("second", second))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'example' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertTrue(first.projectionCalls > 0)
+        assertTrue(second.projectionCalls > 0)
     }
 
     @Test

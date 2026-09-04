@@ -31,6 +31,11 @@ moving that scan onto the first online query. Direct library callers can request
 `GraphStore.save(..., prepareCallSiteStringIndex = true)`; the default library save omits this
 optional query cache to preserve the existing save and storage contract.
 
+Wide split queries restore and validate the existing `graph.callsite-string-index` under its shared
+heap budget, then reuse its exact trigram candidates and property membership for segmented raw
+CallSite scans. No additional persisted lookup format is required. A missing, incompatible,
+corrupt, or budget-denied index still fails open to the raw-scan correctness path.
+
 For legacy graphs, or when the sidecar is missing or invalid, a relevant query builds the index in
 memory and atomically persists it when that complete index is released or the mapped graph closes.
 Budget denial, cancellation, or an unwritable directory preserves the raw-scan correctness
@@ -67,7 +72,6 @@ transpose construction during load.
 Current node and metadata writers emit version `3`. Their readers accept legacy version `1` and transitional
 version `2` data from stable releases and decode legacy annotation payloads, but any graph re-saved by a current
 build is upgraded to version `3`. The independent `graph.resources` format remains at version `1`.
-
 Current builds always write `graph.resources`, including a valid zero-entry store when no supported text resources
 exist. Its absence therefore identifies a graph produced without resource persistence (for example by a legacy CLI),
 not an empty resource set. Other graph APIs remain available, while resource HTTP endpoints return `409` with an

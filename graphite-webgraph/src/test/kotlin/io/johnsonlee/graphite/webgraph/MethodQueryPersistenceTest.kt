@@ -84,7 +84,9 @@ class MethodQueryPersistenceTest {
             val graph = GraphStore.loadMapped(directory) as MappedWebGraphBackedGraph
             try {
                 assertFalse(graph.isMetadataInitialized())
-                assertEquals(1, graph.methods(MethodPattern()).take(1).count())
+                val unconsumed = graph.methods(MethodPattern())
+                assertFalse(graph.isMethodIndexInitialized())
+                assertEquals(1, unconsumed.take(1).count())
                 assertFalse(graph.isMetadataInitialized())
 
                 val count = CypherExecutor(
@@ -156,7 +158,11 @@ class MethodQueryPersistenceTest {
                 assertTrue(graph.methodSlice(MethodPattern(), 0).isEmpty())
                 assertFalse(graph.isMethodIndexInitialized())
 
-                assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
+                assertColdExactMethodSlice(graph, persistedOrder[2])
+
+                assertMissingExactMethodSkipsIndex(graph)
+
+                assertEquals(persistedOrder.take(1), graph.methodSlice(MethodPattern(), 1))
                 assertTrue(graph.isMethodIndexInitialized())
                 assertFalse(graph.isMetadataInitialized())
 
@@ -185,6 +191,35 @@ class MethodQueryPersistenceTest {
                 assertEquals(persistedOrder.take(2), graph.methodSlice(MethodPattern(), 2))
 
                 var inspected = 0
+                assertEquals(
+                    persistedOrder.filter { it.declaringClass.className == "com.example.Beta" },
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Beta"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).toList()
+                )
+                assertEquals(1, inspected)
+
+                inspected = 0
+                assertEquals(
+                    persistedOrder.filter { it.declaringClass.className == "com.example.Alpha" },
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Alpha"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).toList()
+                )
+                assertEquals(persistedOrder.size, inspected)
+
+                inspected = 0
+                assertTrue(
+                    graph.methods(
+                        MethodPattern(declaringClass = "com.example.Missing"),
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).none()
+                )
+                assertEquals(0, inspected)
+
+                inspected = 0
                 val first = graph.methodSlice(
                     MethodPattern(),
                     1,
@@ -194,16 +229,13 @@ class MethodQueryPersistenceTest {
                 assertEquals(1, inspected)
 
                 inspected = 0
-                assertFailsWith<CancellationException> {
+                assertTrue(
                     graph.methods(
                         MethodPattern(name = "missing"),
-                        MethodMetadataScanConsumer {
-                            inspected++
-                            if (inspected == 2) throw CancellationException("cancelled")
-                        }
-                    ).toList()
-                }
-                assertEquals(2, inspected)
+                        MethodMetadataScanConsumer { inspected++ }
+                    ).none()
+                )
+                assertEquals(0, inspected)
                 assertFalse(graph.isMetadataInitialized())
             } finally {
                 graph.close()
@@ -212,6 +244,66 @@ class MethodQueryPersistenceTest {
         } finally {
             directory.toFile().deleteRecursively()
         }
+    }
+
+    private fun assertMissingExactMethodSkipsIndex(graph: MappedWebGraphBackedGraph) {
+        var inspected = 0
+        assertTrue(
+            graph.methods(
+                MethodPattern(declaringClass = "com.example.Beta", name = "missing"),
+                MethodMetadataScanConsumer { inspected++ }
+            ).none()
+        )
+        assertEquals(0, inspected)
+        assertTrue(graph.methodSlice(MethodPattern(name = "missing"), 10).isEmpty())
+        assertFalse(graph.isMethodIndexInitialized())
+    }
+
+    private fun assertColdExactMethodSlice(graph: MappedWebGraphBackedGraph, target: MethodDescriptor) {
+        var inspected = 0
+        val pattern = MethodPattern(
+            declaringClass = Pattern.quote(target.declaringClass.className),
+            name = Pattern.quote(target.name),
+            parameterTypes = target.parameterTypes.map { Pattern.quote(it.className) },
+            useRegex = true
+        )
+        assertFailsWith<CancellationException> {
+            graph.methodSlice(
+                pattern,
+                1,
+                MethodMetadataScanConsumer {
+                    inspected++
+                    if (inspected == 2) throw CancellationException("cancelled")
+                }
+            )
+        }
+        assertEquals(2, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
+
+        inspected = 0
+        assertEquals(
+            listOf(target),
+            graph.methodSlice(pattern, 1, MethodMetadataScanConsumer { inspected++ })
+        )
+        assertEquals(3, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
+
+        assertEquals(
+            listOf(target),
+            graph.methodSlice(pattern.copy(returnType = Pattern.quote(target.returnType.className)), 1)
+        )
+        assertFalse(graph.isMethodIndexInitialized())
+
+        inspected = 0
+        assertTrue(
+            graph.methodSlice(
+                pattern.copy(name = Pattern.quote("__graphite_missing__")),
+                1,
+                MethodMetadataScanConsumer { inspected++ }
+            ).isEmpty()
+        )
+        assertEquals(0, inspected)
+        assertFalse(graph.isMethodIndexInitialized())
     }
 
     @Test
