@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.Node
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -11,9 +12,18 @@ class GraphCapabilityTest {
 
     @Test
     fun `v2 4 8 scheduling capability API remains callable without restoring its runtime path`() {
+        val availableProcessors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+        val defaultPlan = GraphScanParallelismPlan.balanced()
+        assertEquals(availableProcessors, defaultPlan.graphWorkerCount + defaultPlan.segmentWorkerCount)
+        assertEquals(
+            GraphScanParallelismPlan(availableProcessors, 0),
+            GraphScanParallelismPlan.withGraphWorkers(graphWorkers = Int.MAX_VALUE)
+        )
         assertEquals(GraphScanParallelismPlan(1, 0), GraphScanParallelismPlan.balanced(1))
         assertEquals(GraphScanParallelismPlan(2, 3), GraphScanParallelismPlan.balanced(5))
         assertEquals(GraphScanParallelismPlan(4, 0), GraphScanParallelismPlan.withGraphWorkers(4, 99))
+        assertFailsWith<IllegalArgumentException> { GraphScanParallelismPlan(0, 0) }
+        assertFailsWith<IllegalArgumentException> { GraphScanParallelismPlan(1, -1) }
 
         var work = 0L
         val persisted = PreferredPersistedStringIndexGraphWorkBatchConsumer { units -> work += units }
@@ -104,6 +114,14 @@ class GraphCapabilityTest {
         assertEquals(3, work)
         assertEquals(0L, aggregate.aggregateStringPropertyDisjunction(CallSiteNode::class.java, emptyList())?.count)
         assertEquals(
+            emptySet(),
+            aggregate.aggregateStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                emptyList(),
+                workConsumer = batch
+            )?.distinctValues
+        )
+        assertEquals(
             setOf("caller_name"),
             aggregate.aggregateStringPropertyDisjunction(
                 CallSiteNode::class.java,
@@ -134,5 +152,28 @@ class GraphCapabilityTest {
         assertEquals(true, released)
         assertEquals(true, strategy.prefersSerialStringPropertyDisjunction(CallSiteNode::class.java, emptyList()))
         assertNull(StringPropertyDisjunctionAggregate(0).distinctValues)
+
+        val graph = DefaultGraph.Builder().build()
+        assertNull(
+            graph.nodesByStringProperty(
+                CallSiteNode::class.java,
+                "caller_class",
+                StringMatchMode.CONTAINS,
+                "Target",
+                1,
+                batch
+            )
+        )
+        assertNull(
+            graph.nodesByTransformedStringProperty(
+                CallSiteNode::class.java,
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "target",
+                1,
+                batch
+            )
+        )
     }
 }

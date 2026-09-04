@@ -677,7 +677,7 @@ class CrossGraphCypherExecutorTest {
         val expectedWorkers = resolveColdMappedStringGraphParallelism()
         if (expectedWorkers <= 1) return
         val suffixWorkersEntered = CountDownLatch(expectedWorkers)
-        val releaseFirstSuffix = CountDownLatch(1)
+        val releaseSuffixWorkers = CountDownLatch(1)
         val accessedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
         val graphs = List(40) { sourceIndex ->
             val nodes = when (sourceIndex) {
@@ -699,9 +699,7 @@ class CrossGraphCypherExecutorTest {
                     accessedSources += sourceIndex
                     if (sourceIndex in 1..expectedWorkers) {
                         suffixWorkersEntered.countDown()
-                        if (sourceIndex == 1) {
-                            check(releaseFirstSuffix.await(5, TimeUnit.SECONDS))
-                        }
+                        check(releaseSuffixWorkers.await(5, TimeUnit.SECONDS))
                     }
                 }
             )
@@ -721,10 +719,15 @@ class CrossGraphCypherExecutorTest {
             val expectedSources = (1..expectedWorkers).toSet()
             assertEquals(expectedSources, accessedSources)
             assertEquals(expectedWorkers, directStringGraphPeakActiveWorkers())
+            assertEquals(expectedWorkers, coldMappedStringGraphPeakActiveWorkers())
+            val activeReset = assertFailsWith<IllegalStateException> {
+                resetColdMappedStringGraphWorkerMetrics()
+            }
+            assertTrue(activeReset.message.orEmpty().contains("Cannot reset active"))
             assertTrue(graphs.drop(1).filter { it.lookups.get() > 0 }.all { measured ->
                 measured.lookupLimits.all { it == 1 }
             })
-            releaseFirstSuffix.countDown()
+            releaseSuffixWorkers.countDown()
             val result = future.get(5, TimeUnit.SECONDS)
             assertEquals(
                 listOf(
@@ -737,7 +740,7 @@ class CrossGraphCypherExecutorTest {
             assertEquals(expectedSources, accessedSources)
             assertEquals(0, coldMappedStringGraphActiveWorkers())
         } finally {
-            releaseFirstSuffix.countDown()
+            releaseSuffixWorkers.countDown()
             queryThread.shutdownNow()
         }
     }
@@ -875,6 +878,81 @@ class CrossGraphCypherExecutorTest {
         })
         assertTrue(graphs.all { it.coldChecks.get() == 0 })
         assertEquals(0, directStringGraphPeakActiveWorkers())
+    }
+
+    @Test
+    fun `cold mapped suffix declines whole-node projections and preserves the serial result`() {
+        val graphs = List(40) { sourceIndex ->
+            ColdMappedLookupGraph(
+                if (sourceIndex == 0) graph(callSite(7, "example.Target")) else graph()
+            )
+        }
+
+        val result = CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+            CypherGraph("graph-$index", source)
+        }).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' RETURN n LIMIT 1"
+        )
+
+        assertEquals("graph-0:7", (result.rows.single()["n"] as Map<*, *>)["elementId"])
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+        assertTrue(graphs.all { it.coldChecks.get() == 0 })
+    }
+
+    @Test
+    fun `null indexed projection falls back to authoritative graph nodes`() {
+        val source = ColdMappedLookupGraph(graph(callSite(8, "example.Target")))
+
+        val result = CrossGraphCypherExecutor(listOf(CypherGraph("graph-0", source))).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `generic-node projection ignores storage rows when annotations can match dynamically`() {
+        val annotation = AnnotationNode(
+            NodeId(9),
+            "com.example.Feature",
+            "com.example.Owner",
+            "create",
+            mapOf("caller_class" to "example.NotTheTarget")
+        )
+        val source = ColdMappedLookupGraph(
+            graph(callSite(10, "example.Target"), annotation),
+            rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("fabricated.Value")))
+        )
+
+        val result = CrossGraphCypherExecutor(listOf(CypherGraph("graph-0", source))).execute(
+            "MATCH (n) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("example.Target"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `raw leading projection rejects a storage row wider than the requested columns`() {
+        val leading = ColdMappedLookupGraph(
+            graph(),
+            rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("example.Target", "unexpected")))
+        )
+        val graphs = listOf(leading) + List(39) { ColdMappedLookupGraph(graph()) }
+
+        val error = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+                CypherGraph("graph-$index", source)
+            }).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'x' " +
+                    "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 1"
+            )
+        }
+
+        assertTrue(error.message.orEmpty().contains("Storage projection width 2 does not match 1 string columns"))
     }
 
     @Test
