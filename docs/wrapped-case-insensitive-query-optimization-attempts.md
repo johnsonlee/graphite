@@ -5301,3 +5301,104 @@ all authoritative fallbacks. The exact three-pair dual-baseline gate is fully gr
 pair exceeds `10x`, and no correctness, access, latency, CPU, heap, RSS, allocation, or worker-policy
 regression is material against current main/v2.4.8. This attempt completes the requested rollback
 and global-wide P95 target; the branch is ready for final repository verification and PR review.
+
+## 2026-09-05 - Final integration verification: preserve the v2.4.8 core ABI
+
+The post-attempt review found that v2.4.8 had published five additional scheduling contracts even
+though the replacement no longer uses its 2+2 runtime. The final integration therefore restores
+`SplitGraphWorkBatchConsumer`, `PreferredMappedStringIndexViewGraphWorkBatchConsumer`,
+`PreferredPersistedStringIndexGraphWorkBatchConsumer`, `PreparedStringPropertyDisjunctionLookup`,
+and `GraphScanParallelismPlan` as compatibility-only declarations. `javap -public` output for those
+types, `RetainedStringPropertyDisjunctionLookup`, and `PreferredRawGraphWorkBatchConsumer` is
+byte-for-byte identical in public JVM signatures to v2.4.8, and the final core JAR is missing no
+class entry present in the v2.4.8 core JAR. A source-level capability test also exercises the plan
+factories, type hierarchy, callbacks, and prepared hint. No replacement query or storage code
+references the compatibility-only types.
+
+Restoring `GraphScanParallelismPlan` exposed an evidence-only ambiguity: the real64 harness first
+found that legacy class and reported the candidate as a 2+2 plan even though measured peaks were
+four graph and zero segment workers. The harness now probes the active v2.4.7-based replacement
+resolver first and uses the legacy plan only as fallback. This preserves truthful telemetry for all
+three revisions: v2.4.7 reports 0+0, v2.4.8 reports 2+2, and the candidate reports 4+0. The corrected
+harness SHA-256 is `b2f811b88bd0f92621eb9382b792df288ebedbfc9b25a6c19c709fbecf7bbf34`.
+
+The first post-ABI batch with the superseded harness is retained for audit. Its v2.4.7 goal side
+passed, but current-main comparison failed because one candidate cold-zero max was `309.759 ms`
+against `241.290 ms`; the other two candidate maxima were `156.086/152.070 ms`. A complete repeat
+did not reproduce the outlier and passed both baselines, but that batch still misidentified the
+worker plan and is not the final evidence. The authoritative run below rebuilt all three JARs from
+the corrected byte-identical harness and reran the complete nine-process protocol rather than
+selecting individual forks.
+
+- The exact measured production/test/harness tree is integration commit
+  `a8f61c06c76f1007b214c61060dfa0fc226fd0e7` on Attempt 152 `6d5792b3`. The final record-only
+  amendment has the same production, tests, and JMH bytes. Full-index integration diff SHA-256 is
+  `9f120d87a874c504ce4feead72778952d10ee3cffa7b4ad6ce1349946cc20fd8`; core source/test content
+  SHA-256 is `04c5e1534d02b7d8bd960622c64440a0130f0ff1adce5568da248288779b89fd` /
+  `5d0d3cea910624bfb761aa15ca2939bbf4371b3cea54b0abd55f1111cd91efa6`.
+- Goal/current/candidate JMH JAR raw SHA-256 is
+  `414cc0a9bc07ace800ba78ab809d2ce87ae240d126c238ab8a62543a5a0a5877` /
+  `08df2003e262dea4fdf8e221f985bf60dca5dfd933661af2fd46eef5a0a49a9d` /
+  `e46153fbf2488524170122585dadb4b9de4b82c4237dd6c62a8cfc7b472b497f`; canonical ZIP content
+  SHA-256 is `85e94a36da9bd038c5116ec76c8cbe3187de429557af78949d7390c777c3ecde` /
+  `35ae857bfe50c92fa44dfe1242245f2dd75017955d3e70e9e9c490e9a6883787` /
+  `d7edc3177e80205323c08582a74de934523ecc41cbafc8e0f247a0d45a94fcd1`.
+- The command, host, four-CPU/8-GiB limits, 64 persisted graphs, manifest/provenance, oracle, 34
+  cases, and alternating pair orders are identical to Attempt 152. All nine processes completed
+  with zero failure or timeout and `2,925` rows. All 306 observations and all nine correctness
+  outputs matched the same oracle. Goal/current/candidate work was exactly
+  `109,198,717 / 58,071,626 / 57,706,213` units in every pair.
+
+  | Pair | Order | Goal P50/P95/max | Candidate P50/P95/max | P95 speedup | Wrapped minimum |
+  | ---: | :--- | :--- | :--- | ---: | ---: |
+  | 1 | candidate-base | 236.289/411.533/488.447 ms | 1.639/24.440/170.892 ms | 16.84x | 19.99x |
+  | 2 | base-candidate | 248.397/386.471/414.972 ms | 1.568/24.926/172.007 ms | 15.50x | 15.50x |
+  | 3 | candidate-base | 239.572/436.651/451.233 ms | 1.553/26.245/155.112 ms | 16.64x | 17.19x |
+
+  Worst individual, wrapped-family, and order-median P95 speedup is `15.50x`; every independent
+  requirement remains above `10x`.
+
+  | Pair | Current P50/P95/max | Candidate P50/P95/max | P95 change |
+  | ---: | :--- | :--- | ---: |
+  | 1 | 1.622/40.929/248.750 ms | 1.639/24.440/170.892 ms | -40.29% |
+  | 2 | 1.683/40.887/229.202 ms | 1.568/24.926/172.007 ms | -39.04% |
+  | 3 | 1.692/43.545/241.242 ms | 1.553/26.245/155.112 ms | -39.73% |
+
+  The current-main comparator passed every aligned correctness, access, latency, work, CPU, heap,
+  RSS, allocation, and max-latency rule. Candidate CPU was `1.508/1.486/1.436 s`, peak used heap
+  `4.718/4.710/4.710 GB`, peak RSS `5.257/5.241/5.241 GB`, and normalized allocation
+  `4.812/4.812/4.812 GB/op`. Every candidate fork reports four configured graph workers, peak four
+  active graph workers, zero segment workers, and zero peak segment workers.
+- Goal report/status SHA-256 is
+  `decffe49ee23d8155053d5b8c6796dd83b2d45e4a68bf8d61a3ea3fe094909d1` /
+  `8c359e9123313eaa6df49848dc9e8bf47546c098c7efaf1513345d5141ff387e`; current report/status is
+  `2ba563ca394623735cce5c5da3d7cdeb073bdee9149c45c0d20aa4e38c283305` /
+  `efb2fa40f37e45bcd4b7fd61dcfef7f13e67154c19dc6f07a4ae9c127f147c06`; combined report/status is
+  `bc759275788c39e33f7a5b363c3c489790b6537b8b0241c497910d44162ed7d9` /
+  `f3dc8761ae7e993c1f334acbe61145f91a38fdadc5cb25cca71c71bc7d44e427`.
+- Goal JSON/TSV SHA-256 is
+  `3a8fd887a2fd02457848b69155acce3f13619c33f8d33aeaf253014a0991d55d` /
+  `3f478495ba653786a8dc59a81b9dd2f18f49b5e3dec31a97453895aeb025f2fb`,
+  `f79927cbdab779f79c52e70dc07b24b33dc2b4cfaf17f4f0ee2425551b3902ce` /
+  `06194e77909daf1204ca2dc1173c9c39935686e74f5aa08ab7ec46932b382e6e`, and
+  `23c461cd978e37c37b055754157ae17b311915ada0b6763390be7b57523b815b` /
+  `7b254a766449bc24e03cf69de2199dfb48d7a69fa358e02bbf353d29c9e284bb`. Current JSON/TSV is
+  `baa6c608b4d92c68a95ba75b0ea831edce7f8576a73f862d9c8921f978da205d` /
+  `4786fc91aa7f385c31a48a5330fdf1117d9a06980ed35c569e4ca7e040be2d5d`,
+  `1cd4aa1b4acd533035f49bdb3bca208f88c75329aec9facdd2fcc05b1f7e6241` /
+  `4de0234b71771345ca755cfd744f55ed16d97d19014919c762408b1c9da50ac0`, and
+  `f42842559604969e9d1c7381371459fd8f75f0e33e0985103a22f9c9ff953193` /
+  `122acc84426b4c3c164f65d10775aafe920d3534d3eca4245662f7d1e47b5852`. Candidate JSON/TSV is
+  `693d290002cc7b06f1fc7cfd448ed22548c56cc6f92fea6cdc5208053b76f86a` /
+  `7929ad44049522de7bd6c2eccfe11df0472e94b8db850021c0d485191521eb61`,
+  `a016267db22e54e86e196eca7fab3e00cbb8b2e66885c881804f6c3dbd77a9de` /
+  `9280840c957c00842731f395a0f284bac758c71ce9b2f2570aaba5966b86c582`, and
+  `294243b0c4fdf2b38256bd593da095a921048317cfeb1952eabe44e7251a13cc` /
+  `89b916e76cf939c7cba59124df02665d0ad00fc20b789d2c5aa891ca5ba372d4`.
+- The exact integration tree passed full `test detekt`, focused compatibility tests, both Cypher and
+  webgraph JMH builds, the public-signature/class-entry comparison, JavaScript gate tests `115/115`,
+  and `git diff --check`.
+
+**Integration conclusion:** keep the compatibility declarations and corrected telemetry. They
+remove the published-ABI blocker without reactivating v2.4.8 scheduling. The final real-data run
+proves the requested runtime remains above `10x` versus v2.4.7 and non-regressing versus v2.4.8.

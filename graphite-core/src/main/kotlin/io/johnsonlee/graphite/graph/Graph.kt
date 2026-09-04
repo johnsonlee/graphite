@@ -76,6 +76,52 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
 fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
 /**
+ * Compatibility contract published in v2.4.8 for an additive graph/segment worker split.
+ * Replacement query paths may ignore the segment request, but the type remains available to
+ * already-compiled consumers.
+ */
+interface SplitGraphWorkBatchConsumer : ParallelGraphWorkBatchConsumer {
+    val segmentWorkerCount: Int
+}
+
+/**
+ * Compatibility marker published in v2.4.8 for preferring its mapped string-index view.
+ * The v2.4.7-based replacement uses its own serial mapped-view marker internally.
+ */
+interface PreferredMappedStringIndexViewGraphWorkBatchConsumer : SplitGraphWorkBatchConsumer
+
+/** Additive graph/segment worker allocation retained as part of the v2.4.8 public API. */
+data class GraphScanParallelismPlan(
+    val graphWorkerCount: Int,
+    val segmentWorkerCount: Int
+) {
+    init {
+        require(graphWorkerCount > 0) { "graphWorkerCount must be positive" }
+        require(segmentWorkerCount >= 0) { "segmentWorkerCount must not be negative" }
+    }
+
+    companion object {
+        /** Splits NCPU evenly; the segment side receives the spare CPU when NCPU is odd. */
+        fun balanced(processors: Int = Runtime.getRuntime().availableProcessors()): GraphScanParallelismPlan {
+            val available = processors.coerceAtLeast(1)
+            if (available == 1) return GraphScanParallelismPlan(1, 0)
+            val graphWorkers = available / 2
+            return GraphScanParallelismPlan(graphWorkers, available - graphWorkers)
+        }
+
+        /** Applies a graph-worker override while keeping graph plus segment workers within NCPU. */
+        fun withGraphWorkers(
+            processors: Int = Runtime.getRuntime().availableProcessors(),
+            graphWorkers: Int
+        ): GraphScanParallelismPlan {
+            val available = processors.coerceAtLeast(1)
+            val boundedGraphWorkers = graphWorkers.coerceIn(1, available)
+            return GraphScanParallelismPlan(boundedGraphWorkers, available - boundedGraphWorkers)
+        }
+    }
+}
+
+/**
  * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
  * already parallelizes independent graph sources. This avoids nested scan pools while preserving
  * the same shared work and cancellation accounting.
@@ -84,6 +130,11 @@ fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
 /** Requests a bounded serial projection to probe raw storage without initializing an index. */
 fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
+
+/** Compatibility marker published in v2.4.8 for a retained persisted-index lookup. */
+fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer :
+    SerialGraphWorkBatchConsumer,
+    ParallelGraphWorkBatchConsumer
 
 /** Requests an existing persisted mapped string-index view through a caller-serialized lookup. */
 fun interface PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
@@ -247,6 +298,14 @@ interface StringPropertyDisjunctionDistinctProjection {
  */
 interface ReleasableStringPropertyDisjunctionCache {
     fun releaseStringPropertyDisjunctionCache()
+}
+
+/** Compatibility planning hint published in v2.4.8 for a prepared persisted lookup. */
+interface PreparedStringPropertyDisjunctionLookup {
+    fun hasPreparedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
 }
 
 /** Optional planning hint that a complete disjunction index is already retained in process memory. */

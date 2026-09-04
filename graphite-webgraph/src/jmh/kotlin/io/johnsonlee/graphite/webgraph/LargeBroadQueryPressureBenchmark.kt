@@ -813,18 +813,7 @@ open class LargeBroadQueryPressureCounters {
 }
 
 private fun reflectedGraphScanParallelism(processors: Int): Pair<Int, Int>? {
-    val balanced = runCatching {
-        val planClass = Class.forName("io.johnsonlee.graphite.graph.GraphScanParallelismPlan")
-        val companion = planClass.getField("Companion").get(null)
-        val companionClass = companion.javaClass
-        val plan = companionClass.getMethod("balanced", Int::class.javaPrimitiveType).invoke(companion, processors)
-        val graphWorkers = plan.javaClass.getMethod("getGraphWorkerCount").invoke(plan) as Int
-        val segmentWorkers = plan.javaClass.getMethod("getSegmentWorkerCount").invoke(plan) as Int
-        graphWorkers to segmentWorkers
-    }.getOrNull()
-    if (balanced != null) return balanced
-
-    return runCatching {
+    val replacement = runCatching {
         val owner = Class.forName("io.johnsonlee.graphite.cypher.QueryPipelineKt")
         val resolver = owner.declaredMethods.single { method ->
             method.name.startsWith("resolveColdMappedStringGraphParallelism") && method.parameterCount == 2
@@ -832,6 +821,17 @@ private fun reflectedGraphScanParallelism(processors: Int): Pair<Int, Int>? {
         resolver.isAccessible = true
         val configured = System.getProperty("graphite.cypher.directStringParallelism")
         (resolver.invoke(null, processors, configured) as Int) to 0
+    }.getOrNull()
+    if (replacement != null) return replacement
+
+    return runCatching {
+        val planClass = Class.forName("io.johnsonlee.graphite.graph.GraphScanParallelismPlan")
+        val companion = planClass.getField("Companion").get(null)
+        val companionClass = companion.javaClass
+        val plan = companionClass.getMethod("balanced", Int::class.javaPrimitiveType).invoke(companion, processors)
+        val graphWorkers = plan.javaClass.getMethod("getGraphWorkerCount").invoke(plan) as Int
+        val segmentWorkers = plan.javaClass.getMethod("getSegmentWorkerCount").invoke(plan) as Int
+        graphWorkers to segmentWorkers
     }.getOrNull()
 }
 

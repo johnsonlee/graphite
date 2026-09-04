@@ -5,8 +5,44 @@ import io.johnsonlee.graphite.core.Node
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class GraphCapabilityTest {
+
+    @Test
+    fun `v2 4 8 scheduling capability API remains callable without restoring its runtime path`() {
+        assertEquals(GraphScanParallelismPlan(1, 0), GraphScanParallelismPlan.balanced(1))
+        assertEquals(GraphScanParallelismPlan(2, 3), GraphScanParallelismPlan.balanced(5))
+        assertEquals(GraphScanParallelismPlan(4, 0), GraphScanParallelismPlan.withGraphWorkers(4, 99))
+
+        var work = 0L
+        val persisted = PreferredPersistedStringIndexGraphWorkBatchConsumer { units -> work += units }
+        persisted.consume(2)
+        assertEquals(2L, work)
+        assertEquals(
+            setOf(SerialGraphWorkBatchConsumer::class.java, ParallelGraphWorkBatchConsumer::class.java),
+            PreferredPersistedStringIndexGraphWorkBatchConsumer::class.java.interfaces.toSet()
+        )
+
+        val mapped = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
+            override val segmentWorkerCount = 2
+
+            override fun consume(workUnits: Long) {
+                work += workUnits
+            }
+        }
+        mapped.consume(4)
+        assertEquals(6L, work)
+        assertEquals(2, mapped.segmentWorkerCount)
+
+        val prepared = object : PreparedStringPropertyDisjunctionLookup {
+            override fun hasPreparedStringPropertyDisjunction(
+                type: Class<out Node>,
+                predicates: List<StringPropertyPredicate>
+            ): Boolean = type == CallSiteNode::class.java && predicates.isEmpty()
+        }
+        assertTrue(prepared.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, emptyList()))
+    }
 
     @Test
     fun `string disjunction capability defaults and lifecycle are callable`() {
