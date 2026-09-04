@@ -1527,6 +1527,16 @@ internal class MappedWebGraphBackedGraph(
         scanConsumer: MethodMetadataScanConsumer?
     ): List<MethodDescriptor> {
         if (limit <= 0) return emptyList()
+        if (methodIndex == null) {
+            MappedMethodIndex.sliceExact(
+                mappedMethodMetadata.duplicate(),
+                stringTable,
+                methodCount,
+                pattern,
+                limit,
+                scanConsumer
+            )?.let { return it }
+        }
         return methodIndex().slice(pattern, limit, scanConsumer)
     }
 

@@ -131,6 +131,56 @@ internal class MappedMethodIndex private constructor(
     }
 
     companion object {
+        @Suppress("ReturnCount", "ComplexCondition")
+        fun sliceExact(
+            metadata: ByteBuffer,
+            strings: StringTable,
+            expectedMethodCount: Long,
+            pattern: MethodPattern,
+            limit: Int,
+            scanConsumer: MethodMetadataScanConsumer?
+        ): List<MethodDescriptor>? {
+            val exact = ExactMethodPattern.from(pattern, strings) ?: return null
+            if (limit <= 0 || exact.missingString) return emptyList()
+            val input = ByteBufferDataInput(metadata, 0)
+            NodeSerializer.readHeader(input, NodeSerializer.MAGIC_METADATA)
+            val methodCount = input.readInt()
+            require(methodCount >= 0) { "Invalid metadata method count: $methodCount" }
+            require(methodCount.toLong() == expectedMethodCount) {
+                "Metadata method count changed while loading: expected $expectedMethodCount, found $methodCount"
+            }
+            val result = ArrayList<MethodDescriptor>(minOf(methodCount, limit))
+            repeat(methodCount) { index ->
+                if ((index and BUILD_INTERRUPTION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                    throw java.util.concurrent.CancellationException("Mapped method scan interrupted")
+                }
+                scanConsumer?.inspect()
+                val declaringClassId = input.readInt()
+                val nameId = input.readInt()
+                val parameterCount = input.readInt()
+                require(parameterCount >= 0) { "Invalid method parameter count: $parameterCount" }
+                var parametersMatch = parameterCount == exact.parameterTypeIds.size
+                repeat(parameterCount) { parameterIndex ->
+                    val parameterTypeId = input.readInt()
+                    if (parameterIndex >= exact.parameterTypeIds.size ||
+                        parameterTypeId != exact.parameterTypeIds[parameterIndex]
+                    ) {
+                        parametersMatch = false
+                    }
+                }
+                val returnTypeId = input.readInt()
+                if (declaringClassId == exact.declaringClassId &&
+                    nameId == exact.nameId &&
+                    parametersMatch &&
+                    (exact.returnTypeId == null || returnTypeId == exact.returnTypeId)
+                ) {
+                    result += exact.materialize(strings, returnTypeId)
+                    if (result.size >= limit) return result
+                }
+            }
+            return result
+        }
+
         fun build(
             metadata: ByteBuffer,
             strings: StringTable,
@@ -195,5 +245,54 @@ internal class MappedMethodIndex private constructor(
         private const val BUILD_INTERRUPTION_POLL_MASK = 1_023
         private const val STRING_MISS: Byte = 1
         private const val STRING_MATCH: Byte = 2
+    }
+
+    private data class ExactMethodPattern(
+        val declaringClass: String,
+        val name: String,
+        val parameterTypes: List<String>,
+        val returnType: String?,
+        val declaringClassId: Int,
+        val nameId: Int,
+        val parameterTypeIds: IntArray,
+        val returnTypeId: Int?
+    ) {
+        val missingString: Boolean
+            get() = declaringClassId < 0 || nameId < 0 ||
+                parameterTypeIds.any { it < 0 } || returnTypeId != null && returnTypeId < 0
+
+        fun materialize(strings: StringTable, actualReturnTypeId: Int): MethodDescriptor = MethodDescriptor(
+            TypeDescriptor(declaringClass),
+            name,
+            parameterTypes.map(::TypeDescriptor),
+            TypeDescriptor(returnType ?: strings.get(actualReturnTypeId))
+        )
+
+        companion object {
+            @Suppress("ReturnCount")
+            fun from(pattern: MethodPattern, strings: StringTable): ExactMethodPattern? {
+                if (!pattern.useRegex) return null
+                val declaringClass = exactValue(pattern.declaringClass ?: return null) ?: return null
+                val name = exactValue(pattern.name ?: return null) ?: return null
+                val parameterTypes = pattern.parameterTypes?.map { exactValue(it) ?: return null } ?: return null
+                val returnType = pattern.returnType?.let { exactValue(it) ?: return null }
+                return ExactMethodPattern(
+                    declaringClass,
+                    name,
+                    parameterTypes,
+                    returnType,
+                    strings.findId(declaringClass),
+                    strings.findId(name),
+                    parameterTypes.map(strings::findId).toIntArray(),
+                    returnType?.let(strings::findId)
+                )
+            }
+
+            private fun exactValue(pattern: String): String? = pattern
+                .takeIf { it.startsWith("\\Q") && it.endsWith("\\E") }
+                ?.substring(2, pattern.length - 2)
+                ?.replace("\\E\\\\E\\Q", "\\E")
+                ?.takeIf { Pattern.quote(it) == pattern }
+        }
     }
 }
