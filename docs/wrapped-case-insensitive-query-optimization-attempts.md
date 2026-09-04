@@ -4626,3 +4626,35 @@ explicit iterator, then share a primitive property mask across that iterator.
 **Conclusion:** reject both variants and restore the sequence implementation. Neither removes the
 identical 681-work raw-control delta, and the iterator adds avoidable exception-state risk. The
 candidate must preserve repeatable/concurrent iteration and exact callback exception identity.
+
+### 2026-09-05 - Attempt 145: Validate every posting at load and route every dense case through mmap
+
+**Hypothesis:** moving posting-order validation to one graph-load pass could remove query-time
+validation overhead. As a companion probe, route every dense case through the already validated
+mmap view to avoid the raw control path entirely.
+
+**Evidence:**
+
+- The isolated variants used exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`, the same 64 real persisted graphs and
+  manifest `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  an 8 GiB/four-CPU cold JVM, and the exact 34-case oracle. Both completed `34/34` cases without
+  failure or timeout.
+- Global load-time posting validation measured P50/P95/max
+  `2.197/16.860/514.249 ms`, CPU `1.383 s`, heap/RSS
+  `4.698/5.374 GB`, and `57,705,255` work units. It did not improve P95 over the selected-range
+  design and raised candidate max materially. JSON/TSV SHA-256 is
+  `5ec1a4b80ca5687b2d67ade05c21c9a69af1f2942fda1874dfe54799bc7bb5ad` /
+  `58054424bcb71f0e0965ad630048a0969c458a3e6f2587bb41699c758a7412f6`.
+- Routing all dense cases through mmap measured
+  `2.539/26.604/514.391 ms`, CPU `1.517 s`, heap/RSS
+  `4.711/5.377 GB`, and `59,809,076` work units. It made P95 and work worse than the guarded
+  candidate. JSON/TSV SHA-256 is
+  `0c6cf4a9b63270def3be7652e41f9e0bdccb424ec99f186c29338e43350fec28` /
+  `fe7e34c4b821357c09f523ae7afd6db0c607cc12923cdf92b1213336240d25a5`.
+  No prototype code was committed or retained.
+
+**Conclusion:** reject and remove both changes. Whole-index semantic validation faults data that
+the selected query never uses, while all-mapped dense routing gives back the proven cheap
+v2.4.7 raw-leading behavior. Retain complete validation only for the selected posting before any
+row is returned.
