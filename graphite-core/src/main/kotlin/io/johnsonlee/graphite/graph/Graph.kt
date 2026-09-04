@@ -82,6 +82,9 @@ fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
  */
 fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 
+/** Requests a bounded serial projection to probe raw storage without initializing an index. */
+fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()

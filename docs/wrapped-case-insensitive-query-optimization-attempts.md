@@ -4855,3 +4855,125 @@ that its retained index already supports every predicate; otherwise no source pr
 whole request follows the authoritative fallback. This closes the hosted graph-routing regression
 without widening unscoped global-wide behavior. The final committed candidate still requires the
 hosted dual-baseline gate together with the remaining global-wide dense and zero/max fixes.
+
+### 2026-09-05 - Attempt 149: Project the leading dense source from primitive storage
+
+**Hypothesis:** current main's accepted primitive projection and bounded node-prefix reuse can be
+restored without restoring v2.4.8 wholesale. For an unscoped, non-`DISTINCT` CallSite query with
+only short `CONTAINS` disjuncts and `LIMIT <= 200`, probe only catalog source zero through primitive
+string IDs, synthesize graph provenance in the query layer, and cache at most 16 immutable matching
+node-ID prefixes. If the bounded probe cannot prove a complete prefix, retry source zero through
+the authoritative v2.4.7 path before visiting later sources.
+
+**Evidence:**
+
+- Goal base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; non-regression base is
+  current main/v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; candidate production is the
+  Attempt 149 commit containing this record on predecessor
+  `8ce816eb07a70efa30072fe5f7d55bcc8611a054`. The exact pre-document production/test diff SHA-256
+  is `133e0eba0e1f77ec6408e9c37e9ed942d762a60b07b94a457a3e4d92a4c1dd9b`. Stable content
+  identities are graph capability
+  `9e072938dd03023867000e299f7dcc86ed38bf309093fa7c76d006267babf7ba`, query integration
+  `31c0647e0f29efdc53c5e50c0e2f021a36df0c02cc6c03b50a7f55b513311b18`, storage implementation
+  `c0b6eb30271911d7a938d9de267c70bd3f3606d742bf6fe04aa5267e5ecd4ca7`, query tests
+  `1a69896435bbb69e2bd6523c5b7465dd211368c10e77b77cb18a991fdf5c0fcc`, and storage tests
+  `feb379ea429c7649b5a5dfa91a2e33e9a891e29c499eb06a5376f4a6d0e0e271`.
+- Goal/current/candidate JMH JAR raw SHA-256 is
+  `20672f264688d0d7c2ed2ed775c4a6441aac8f67b83bafeff9fc83845a3fc829` /
+  `a00874b3fee87193d7902c6c5fc32aa32caf2be37eb6b8d58dee67767500608b` /
+  `d7b45a2d68f2e37269c1743e785088b17edf1a14eb57b3bfea0be4b9f9d06593`; canonical ZIP content
+  SHA-256 is `12f060ddf4c886acf7774bcc1e13cf9761ddf2109ef83d9f6acee09ba55e96a8` /
+  `830bee69d86335dfdb1e1635205522e2262909d1dae92a9f81959db0a46b3461` /
+  `e94b987bff0a436fe1ebdadf58089ab547c3a0d0c1f7d3ac17388776869c6365`. All three used the
+  byte-identical candidate-reviewed JMH harness
+  `b07de7fca27c786b305dda77cd1fc08c328bbf5ad17e254d2082af29e0e36bf8`.
+- The exact command shape was
+  `java -jar <jar> io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+  -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold -p timeoutMillis=300000
+  -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json -rff <result.json> -jvmArgs
+  "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=<manifest>
+  -Dgraphite.broad.pressure.correctness.<record-or-verify> ..."`. Three fresh paired forks ran
+  goal/current bases then candidate, candidate then goal/current bases, and goal/current bases then
+  candidate. The host was Apple M3 Max/macOS 14.3 with JDK 17.0.18, four exposed CPUs, one
+  single-shot measurement, and no warmup.
+- Every run used the same 64 distinct real persisted graphs derived from pinned Android, Tika,
+  Hive, and Kotlin compiler JARs. Original manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`; the local-path-only
+  manifest SHA-256 is `24876ee54a7c5cded5a68b476613ac26e357f3973bb2d54a2ac56f5ea54bbd81`.
+  The base-recorded oracle and every correctness output have SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+- All nine measured processes completed `34/34` cases with zero failure or timeout and `2,925`
+  rows. All 306 observations matched outcome, row count, response bytes, digest, fixture
+  distribution, hit provenance, accessed graph IDs, and catalog ordering. Goal-base work fell from
+  `109,198,717` to `57,706,192` units in every pair; current main measured `58,071,626` units.
+- The exact v2.4.7 goal comparator passed every pair and every resource check:
+
+  | Pair | Order | Base P50/P95/max | Candidate P50/P95/max | P95 speedup |
+  | ---: | :--- | :--- | :--- | ---: |
+  | 1 | base-candidate | 236.987/376.099/453.467 ms | 1.509/20.956/380.040 ms | 17.95x |
+  | 2 | candidate-base | 235.087/443.578/1468.366 ms | 1.478/20.431/392.894 ms | 21.71x |
+  | 3 | base-candidate | 238.797/381.866/412.874 ms | 1.869/23.445/402.104 ms | 16.29x |
+
+  Worst required wrapped-shape speedup was `17.61x`; worst order-median speedup was `17.12x`.
+- The isolated dense hypothesis passed against current main. First four-property dense latency/work
+  was `19.170/18.731/18.883 ms` and `681` units on main versus
+  `20.956/20.431/19.206 ms` and `681` units on the candidate. Repeated class/name/caller/callee
+  projections were `0.860/0.791/0.549/0.442 ms` in pair one and exactly `200` units, matching
+  main's `0.855/0.845/0.559/0.412 ms` and `200` units. Wrapped dense retained `665` units, while
+  broad-all reused the prefix at `200` units. Every eligible dense case accessed only source zero;
+  explicit storage access telemetry reported one lookup even on cache hits.
+- The current-main aggregate P95 improved in all pairs
+  (`47.968/53.476/101.526 -> 20.956/20.431/23.445 ms`), but the exact non-regression gate still
+  failed. Cold four-property zero/max regressed
+  `245.407/246.422/247.600 -> 380.040/392.894/402.104 ms`; first targeted regressed
+  `7.902/7.817/7.751 -> 11.098/9.069/9.847 ms`; DISTINCT zero repeated a material regression in
+  two pairs (`3.099/3.195/3.202 -> 4.261/4.257/4.028 ms`); localized-early regressed
+  `1.327/1.191/1.228 -> 2.802/2.316/2.324 ms`. These paths are outside the new raw-leading
+  projection and remain separate hypotheses.
+- Goal-base CPU fell `10.258/10.313/10.379 -> 1.229/1.227/1.275 s`; current-main CPU was
+  `1.546/1.564/1.679 s`. Goal peak heap/RSS fell from
+  `4.65/4.64/4.65 GiB` and `5.73/5.72/5.75 GiB` to
+  `4.16/4.38/4.38 GiB` and `4.64/4.87/4.87 GiB`. Against current main, candidate peak heap and
+  RSS also stayed below every paired base. Normalized allocation was approximately `4.81 GB` on
+  the candidate, below both baselines. All correctness, access, CPU, heap, RSS, allocation, and
+  worker-policy checks passed; only the listed aligned latency checks failed current-main policy.
+- Goal report/status SHA-256 is
+  `0f655e79d1ab85982b45260b1f7f794612adb3bd8a140e1edc9bfe615fefb884` /
+  `81e1228f315c377d1a1e2feaf4aa83198bb1cbff41429f1d6b17949170ef7ef8`; current-main
+  report/status SHA-256 is
+  `0619b8cf331cecccb463bad083505a59fbba4823b9249d8367e4b439cd908df9` /
+  `c0ec40abdb6145145ac9d54717a50db4e5173013e638ba91a2904effac23fca8`.
+  Goal-base JSON/TSV pairs are
+  `a026a058c18fc9c4e8d24fe61022406daeaa8e37f48f79e3942738f0c3c903d1` /
+  `dff258913dd45150ae987ef3c01ac88c8c253b89758ee4a07ba679ee02f06b86`,
+  `185832e0f627f4a503a4e25908f9a52df25417d09ba01c8c1969a1d73f481baa` /
+  `7cbfd6a0ce7940f82d42148faa46b276195182c2e514db4095278eeb1dd37d61`, and
+  `2fc2d922c5f16d2a398b442d982a6c45c6a150eeb60d001b8ac3537d500bf4b8` /
+  `c444c33087b9f024334e8a0a59ab89dff9b599d2e7632a0630d62fce73c93075`. Current-main JSON/TSV
+  pairs are `1bef10b47c7daeaedfb57c75b139554bf46a9aa21882e6ee7d80fe18447d3609` /
+  `fdd0b0b07f3aee334e5252df34b22203c9d0c98be8deb8c0cb1cb2dfeb3437e2`,
+  `8c08663879348083ad992e6bb3b11a2e97d9aed58f332ddd357922c94f974829` /
+  `0ee4180718b1e51de7a1543a214061f20e2eeec0d9d9060fd4c761073600c2e5`, and
+  `0a013694e06f33f61449a7a07300a280249fa1c01a27029ce38e6c8e59d52e4c` /
+  `8d6ac1726195deeda5cd629c884b90befa5b3faf179af6f7ec76ad17aa9394e3`. Candidate JSON/TSV pairs
+  are `a8d103c7cf8f87454a1a75cd47f38abc7416ce1cbaab2cdaea9e97d644632807` /
+  `f3df01e39bfcfd5cc7beef6f696b64790a6535bc92c4e2daaecd7a3f230af924`,
+  `53ce40bd567b571647496589e0bf20f57ae065479d385e5e8fe339d097aaa43f` /
+  `e1658ef665f869250d0704c5817f9c993355819bf65f286902be15603e8e0733`, and
+  `6ecfdf48df673606844401dc6af78533241e3493d923ea52cf874e8eb1685dea` /
+  `ed01b1969a6147f38753b491986037e20f7ad1712dca239a519e642773234ec6`.
+- Focused execution and storage tests passed `63/63` and `151/151`; core, Cypher, and webgraph
+  compilation plus detekt passed, as did `:webgraph:jmhJar` and `git diff --check`. Tests cover
+  scope and feature eligibility, authoritative partial fallback, result/source order, aliases,
+  duplicate projections, null values, provenance, consumer-error identity, cache key/capacity/
+  immutability/clear lifecycle, heap-index priority, explicit access telemetry, and proof that the
+  primitive path does not initialize the mapped index. An independent read-only review found no
+  correctness blocker.
+
+**Conclusion:** keep as the dense-path building block, but do not call the overall candidate
+mergeable yet. This attempt independently restores current main's primitive leading projection and
+bounded reuse while preserving Attempt 147's global-wide reductions and Attempt 148's scoped path;
+it passes the exact v2.4.7 `10x` gate. The next commits must separately remove the measured cold
+mmap zero/max, first-targeted, DISTINCT-empty, and localized-early regressions, then rerun the full
+three-pair dual-baseline gate.

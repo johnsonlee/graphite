@@ -55,6 +55,7 @@ import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
@@ -558,6 +559,195 @@ class GraphStoreTest {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             graphADir.toFile().deleteRecursively()
             graphBDir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `bounded raw projection is conclusive cached bounded and yields to a retained index`() {
+        val returnType = TypeDescriptor("void")
+        val source = DefaultGraph.Builder().apply {
+            repeat(2_048) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.NeedleCaller$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Target$index"),
+                            "invoke",
+                            emptyList(),
+                            returnType
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val dir = Files.createTempDirectory("graph-store-raw-projection-cache")
+        try {
+            GraphStore.save(source, dir)
+            val graph = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                graph.resetCallSiteScanMetrics()
+                val predicates = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Needle")
+                )
+                assertFailsWith<IllegalStateException> {
+                    graph.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        2,
+                        PreferredRawGraphWorkBatchConsumer { error("query work denied") }
+                    )
+                }
+                assertEquals(0, graph.rawProjectionMatchCount())
+                assertEquals(1L, graph.callSiteStringProjectionLookupCount())
+
+                val firstWork = AtomicLong()
+                val first = graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class"),
+                    2,
+                    PreferredRawGraphWorkBatchConsumer(firstWork::addAndGet)
+                )
+                assertEquals(2, first?.size)
+                assertTrue(first.orEmpty().all { row ->
+                    row.values.single()?.startsWith("example.NeedleCaller") == true
+                })
+                assertEquals(2L, firstWork.get())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertEquals(2L, graph.callSiteStringProjectionLookupCount())
+                assertFalse(graph.isCallSiteStringIndexInitialized())
+                assertFalse(graph.isMappedCallSiteStringIndexViewInitialized())
+
+                val cachedWork = AtomicLong()
+                val cached = graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("callee_class"),
+                    2,
+                    PreferredRawGraphWorkBatchConsumer(cachedWork::addAndGet)
+                )
+                assertEquals(2, cached?.size)
+                assertTrue(cached.orEmpty().all { row ->
+                    row.values.single()?.startsWith("example.Target") == true
+                })
+                assertEquals(2L, cachedWork.get())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertEquals(3L, graph.callSiteStringProjectionLookupCount())
+
+                val keyVariants = listOf(
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            StringValueTransform.LOWERCASE,
+                            StringMatchMode.CONTAINS,
+                            "needle"
+                        )
+                    ) to 2,
+                    listOf(
+                        StringPropertyPredicate(
+                            "caller_class",
+                            null,
+                            StringMatchMode.STARTS_WITH,
+                            "example"
+                        )
+                    ) to 2,
+                    listOf(
+                        StringPropertyPredicate("caller_name", null, StringMatchMode.CONTAINS, "call")
+                    ) to 2,
+                    predicates to 3
+                )
+                keyVariants.forEach { (variant, limit) ->
+                    assertNotNull(
+                        graph.projectStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            variant,
+                            listOf("caller_class"),
+                            limit,
+                            PreferredRawGraphWorkBatchConsumer { }
+                        )
+                    )
+                }
+                assertEquals(5, graph.rawProjectionMatchCount())
+
+                val missWork = AtomicLong()
+                assertNull(
+                    graph.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_name",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "absent"
+                            )
+                        ),
+                        listOf("caller_class"),
+                        200,
+                        PreferredRawGraphWorkBatchConsumer(missWork::addAndGet)
+                    )
+                )
+                assertEquals(800L, missWork.get())
+                assertEquals(5, graph.rawProjectionMatchCount())
+
+                val cacheTerms = graph.nodes(CallSiteNode::class.java)
+                    .take(20)
+                    .map { node -> node.caller.declaringClass.className }
+                    .toList()
+                cacheTerms.forEach { expected ->
+                    assertNotNull(
+                        graph.projectStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            listOf(
+                                StringPropertyPredicate(
+                                    "caller_class",
+                                    null,
+                                    StringMatchMode.CONTAINS,
+                                    expected
+                                )
+                            ),
+                            listOf("caller_name"),
+                            1,
+                            PreferredRawGraphWorkBatchConsumer { }
+                        )
+                    )
+                }
+                assertEquals(16, graph.rawProjectionMatchCount())
+
+                graph.clearStringPropertyIndexes()
+                assertEquals(0, graph.rawProjectionMatchCount())
+                assertFalse(graph.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(graph.prepareCallSiteStringIndex())
+                graph.resetCallSiteScanMetrics()
+                assertEquals(
+                    first,
+                    graph.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        listOf("caller_class"),
+                        2,
+                        PreferredRawGraphWorkBatchConsumer { }
+                    )
+                )
+                assertEquals(1L, graph.callSiteStringIndexLookupCount())
+                assertEquals(0L, graph.callSiteStringProjectionLookupCount())
+                assertEquals(0, graph.rawProjectionMatchCount())
+                assertFalse(graph.isMappedCallSiteStringIndexViewInitialized())
+            } finally {
+                graph.close()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
         }
     }
 

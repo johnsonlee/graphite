@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
@@ -193,6 +194,7 @@ internal class MappedWebGraphBackedGraph(
     private val stringPropertyIndexLock = Any()
     private val stringPropertyAdmissions = StringPropertyAdmissions()
     private val rawStringMatchStates = RawStringMatchStates()
+    private val rawProjectionMatches = RawProjectionMatches()
     private val callSiteStringIndexLock = Any()
     private val callSiteStringIndexIdentityFile =
         callSiteStringIndexFile.resolveSibling(CALL_SITE_STRING_CONTENT_IDENTITY_FILE)
@@ -223,6 +225,7 @@ internal class MappedWebGraphBackedGraph(
     private val callSiteParallelScanCount = AtomicLong()
     private val callSiteSerialScanCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
+    private val callSiteStringProjectionLookupCount = AtomicLong()
     private val callSiteScanActiveWorkers = AtomicInteger()
     private val callSiteScanPeakActiveWorkers = AtomicInteger()
     private val callSiteScanAbortedWorkers = AtomicLong()
@@ -635,9 +638,111 @@ internal class MappedWebGraphBackedGraph(
         ) {
             return null
         }
-        val index = callSiteStringIndex ?: return null
-        callSiteStringIndexLookupCount.incrementAndGet()
-        return index.projectRows(predicates, projectedProperties, limit, workConsumer)
+        callSiteStringIndex?.let { index ->
+            callSiteStringIndexLookupCount.incrementAndGet()
+            return index.projectRows(predicates, projectedProperties, limit, workConsumer)
+        }
+        if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
+            return rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)
+        }
+        return null
+    }
+
+    @Suppress("LoopWithTooManyJumpStatements")
+    private fun rawCallSiteStringProjection(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        workConsumer: GraphWorkConsumer
+    ): List<StringPropertyProjectionRow>? {
+        callSiteStringProjectionLookupCount.incrementAndGet()
+        if (limit <= 0) return emptyList()
+        if (Thread.currentThread().isInterrupted) {
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+        }
+        val cacheKey = RawProjectionMatchKey(predicates.toList(), limit)
+        val projectedPropertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
+        rawProjectionMatches[cacheKey]?.let { cachedNodeIds ->
+            consumeGraphWork(workConsumer, cachedNodeIds.size.coerceAtLeast(1).toLong())
+            return projectRawCallSiteRows(cachedNodeIds, projectedPropertyIndexes)
+        }
+        val predicatePropertyIndexes = predicates.map { predicate ->
+            requiredCallSiteStringPropertyIndex(predicate.property)
+        }
+        val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
+        val matchers = predicates.map { predicate ->
+            val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            sharedMatchers.getOrPut(key) {
+                BoundedStringMatcher(stringTable, key, RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY)
+            }
+        }
+        val rows = ArrayList<StringPropertyProjectionRow>(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
+        val matchedNodeIds = IntArray(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        val nodeIds = nodeTypeIndex.idIterator(CallSiteNode::class.java)
+        val maxInspected = maxOf(
+            RAW_PROJECTION_MIN_PROBE_NODES,
+            (limit.toLong() * RAW_PROJECTION_PROBE_FACTOR)
+                .coerceAtMost(RAW_PROJECTION_MAX_PROBE_NODES.toLong())
+                .toInt()
+        ).coerceAtMost(RAW_PROJECTION_MAX_PROBE_NODES)
+        var inspected = 0
+        try {
+            while (nodeIds.hasNext() && inspected < maxInspected) {
+                val nodeId = nodeIds.nextInt()
+                if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
+                    Thread.currentThread().isInterrupted
+                ) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                inspected++
+                accounting.consume()
+                var matched = false
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                    stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                    stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                    stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+                    var predicateIndex = 0
+                    while (!matched && predicateIndex < predicates.size) {
+                        val stringId = stringIds[predicatePropertyIndexes[predicateIndex]]
+                        matched = matchers[predicateIndex].matches(stringId)
+                        predicateIndex++
+                    }
+                }
+                if (!matched) continue
+                matchedNodeIds[rows.size] = nodeId
+                rows += StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
+                    stringTable.get(stringIds[propertyIndex]).toString()
+                })
+                if (rows.size >= limit) break
+            }
+            if (rows.size < limit && nodeIds.hasNext()) return null
+            accounting.flush()
+            rawProjectionMatches.put(cacheKey, matchedNodeIds.copyOf(rows.size))
+            return rows
+        } finally {
+            accounting.flush()
+        }
+    }
+
+    private fun projectRawCallSiteRows(
+        nodeIds: IntArray,
+        projectedPropertyIndexes: List<Int>
+    ): List<StringPropertyProjectionRow> {
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        return nodeIds.map { nodeId ->
+            withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+                stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+            }
+            StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
+                stringTable.get(stringIds[propertyIndex]).toString()
+            })
+        }
     }
 
     @Suppress("UNCHECKED_CAST", "CyclomaticComplexMethod", "ReturnCount")
@@ -1610,6 +1715,7 @@ internal class MappedWebGraphBackedGraph(
             stringPropertyIndexes.clear()
             stringPropertyAdmissions.clear()
             rawStringMatchStates.clear()
+            rawProjectionMatches.clear()
         }
     }
 
@@ -1631,6 +1737,8 @@ internal class MappedWebGraphBackedGraph(
     internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()
 
     internal fun rawStringMatchStateCount(): Int = rawStringMatchStates.size()
+
+    internal fun rawProjectionMatchCount(): Int = rawProjectionMatches.size()
 
     internal fun callSiteStringIndexBytes(): Long = callSiteStringIndex?.retainedBytes ?: 0L
 
@@ -1709,6 +1817,8 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteStringIndexLookupCount(): Long = callSiteStringIndexLookupCount.get()
 
+    internal fun callSiteStringProjectionLookupCount(): Long = callSiteStringProjectionLookupCount.get()
+
     internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
 
     internal fun callSiteScanActiveWorkers(): Int = callSiteScanActiveWorkers.get()
@@ -1720,6 +1830,7 @@ internal class MappedWebGraphBackedGraph(
         callSiteParallelScanCount.set(0L)
         callSiteSerialScanCount.set(0L)
         callSiteStringIndexLookupCount.set(0L)
+        callSiteStringProjectionLookupCount.set(0L)
         callSiteScanPeakActiveWorkers.set(0)
         callSiteScanAbortedWorkers.set(0L)
     }
@@ -2154,6 +2265,11 @@ private const val MAX_RAW_STRING_MATCH_STATE_BYTES = 16 * 1024 * 1024
 private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
 private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
+private const val RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY = 1 shl 12
+private const val RAW_PROJECTION_MIN_PROBE_NODES = 64
+private const val RAW_PROJECTION_MAX_PROBE_NODES = 1_024
+private const val RAW_PROJECTION_PROBE_FACTOR = 4
+private const val MAX_RAW_PROJECTION_MATCH_ENTRIES = 16
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
 private const val STRING_PROPERTY_INDEX_ARRAYS = 3
 internal const val PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 16L
@@ -2205,18 +2321,52 @@ private data class StringPredicateKey(
     val expected: String
 )
 
+private data class RawProjectionMatchKey(
+    val predicates: List<StringPropertyPredicate>,
+    val limit: Int
+)
+
+/** Bounded immutable node-id prefixes keyed by the complete storage predicate and LIMIT. */
+private class RawProjectionMatches {
+    private val matches = LinkedHashMap<RawProjectionMatchKey, IntArray>(
+        MAX_RAW_PROJECTION_MATCH_ENTRIES + 1,
+        STRING_PROPERTY_INDEX_LOAD_FACTOR,
+        true
+    )
+
+    @Synchronized
+    operator fun get(key: RawProjectionMatchKey): IntArray? = matches[key]?.copyOf()
+
+    @Synchronized
+    fun put(key: RawProjectionMatchKey, nodeIds: IntArray) {
+        if (matches.containsKey(key)) return
+        while (matches.size >= MAX_RAW_PROJECTION_MATCH_ENTRIES) {
+            matches.remove(matches.entries.iterator().next().key)
+        }
+        matches[key] = nodeIds.copyOf()
+    }
+
+    @Synchronized
+    fun clear() = matches.clear()
+
+    @Synchronized
+    fun size(): Int = matches.size
+}
+
 /**
  * Serial, allocation-bounded predicate state for scans over a large global string table.
  * A cache collision only repeats the deterministic comparison and cannot change its result.
  */
 private class BoundedStringMatcher(
     private val stringTable: StringTable,
-    private val predicate: StringPredicateKey
+    private val predicate: StringPredicateKey,
+    cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY
 ) {
     private val stringCount = stringTable.size()
-    private val dense = if (stringCount <= LOCAL_STRING_MATCH_CACHE_CAPACITY) ByteArray(stringCount) else null
-    private val keys = if (dense == null) IntArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
-    private val values = if (dense == null) ByteArray(LOCAL_STRING_MATCH_CACHE_CAPACITY) else null
+    private val capacity = cacheCapacity.coerceAtLeast(1).takeHighestOneBit()
+    private val dense = if (stringCount <= capacity) ByteArray(stringCount) else null
+    private val keys = if (dense == null) IntArray(capacity) else null
+    private val values = if (dense == null) ByteArray(capacity) else null
     private val actual = MutableString()
 
     fun matches(stringId: Int): Boolean {
@@ -2251,7 +2401,7 @@ private class BoundedStringMatcher(
 
     private fun cacheSlot(stringId: Int): Int {
         val spread = stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)
-        return spread and (LOCAL_STRING_MATCH_CACHE_CAPACITY - 1)
+        return spread and (capacity - 1)
     }
 }
 
