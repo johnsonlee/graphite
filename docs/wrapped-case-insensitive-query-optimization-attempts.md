@@ -4116,3 +4116,41 @@ unscoped dense raw-leading plan without weakening Attempt 127's explicitly selec
 projection. It changes no persisted file or format and uses no synthetic performance evidence.
 Full CI, both hosted real64 pressure gates, and all review threads remain hard gates. This commit
 is not authorization to merge or tag.
+
+### 2026-09-04 - Attempt 130: Keep the bounded raw projection loop primitive
+
+**Hypothesis:** the remaining exact-head aligned regression is fixed overhead in the bounded
+raw-leading projection rather than missing graph/segment concurrency: the failing dense query
+visits only the first real graph and exactly 665 CallSites. Remove boxed iterator dispatch and the
+per-node `indices.any` lambda from that loop, while preserving its bounded matcher, source order,
+LIMIT, cancellation polling, work accounting, and projection semantics.
+
+**Evidence:**
+
+- Exact hosted Attempt 129 run `33827837795` preserved all results and exceeded the aggregate 5x
+  milestone, with P95 speedups of `8.68x`, `7.72x`, and `6.28x`. It nevertheless repeated the
+  `global-wide-wrapped-case-insensitive/dense` aligned regression in all three pairs: base
+  `2.496/2.655/2.083 ms`, candidate `4.017/5.722/3.539 ms`. The exact-head gate therefore remains
+  failed even though the query still returned the same 200 rows, digest, first-graph provenance,
+  and 665 work units.
+- Three fresh-JVM candidate replays use the existing 64 distinct persisted graphs generated from
+  the four pinned fixture JAR families, the independent 34-case oracle, an 8 GiB heap, and four
+  active CPUs. All `102/102` observations pass with zero timeout and unchanged aggregate work of
+  `58,071,626` units per replay. The benchmark reports the intended additive split on every run:
+  two graph workers plus two segment workers.
+- The isolated wrapped dense row is `1.349`, `1.340`, and `1.383 ms`, versus the unchanged-loop
+  screens at roughly `1.37..1.52 ms`; row count, ordered digest, accessed graph, and 665 work units
+  are identical. Aggregate P50 is `1.707/1.869/1.701 ms`; aggregate P95 is
+  `58.801/56.637/39.907 ms`. These unpaired local numbers are diagnostic only; the exact pushed
+  base/candidate hosted gate remains authoritative for the 5x claim and the aligned regression.
+- Isolated alternatives were rejected before this retained change. Restoring the fixed 64K
+  matcher code shape produced `1.435/1.516/1.370 ms`; special-casing a shared predicate matcher
+  produced `1.490/1.369/1.495 ms`. Routing only transformed predicates through the raw-node
+  coroutine regressed to `3.475/3.352/3.270 ms`. Routing every dense shape through that node path
+  appeared fast only after earlier cases had warmed the coroutine and also regressed ordinary
+  dense shapes by up to roughly 4x, so neither ordering-dependent result is retained.
+
+**Conclusion:** keep as a small, semantics-preserving hot-loop improvement and validate on the
+exact pushed head. It does not change the NCPU allocation, persisted graph format, index policy,
+or query routing. Full CI, both hosted real64 pressure gates, and all review threads remain hard
+gates. This commit is not authorization to merge or tag.

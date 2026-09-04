@@ -795,7 +795,7 @@ internal class MappedWebGraphBackedGraph(
         val matchedNodeIds = IntArray(limit)
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
-        val nodeIds = nodeTypeIndex.ids(CallSiteNode::class.java).iterator()
+        val nodeIds = nodeTypeIndex.idIterator(CallSiteNode::class.java)
         val scaledProbe = (limit.toLong() * RAW_PROJECTION_PROBE_FACTOR)
             .coerceAtMost(RAW_PROJECTION_MAX_PROBE_NODES.toLong())
             .toInt()
@@ -806,7 +806,7 @@ internal class MappedWebGraphBackedGraph(
         var inspected = 0
         try {
             while (nodeIds.hasNext() && inspected < maxInspected) {
-                val nodeId = nodeIds.next()
+                val nodeId = nodeIds.nextInt()
                 if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                     Thread.currentThread().isInterrupted
                 ) {
@@ -820,9 +820,11 @@ internal class MappedWebGraphBackedGraph(
                     stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
                     stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
                     stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
-                    matched = predicates.indices.any { index ->
-                        val stringId = stringIds[predicatePropertyIndexes[index]]
-                        matchStates[index].matches(stringId)
+                    var predicateIndex = 0
+                    while (!matched && predicateIndex < predicates.size) {
+                        val stringId = stringIds[predicatePropertyIndexes[predicateIndex]]
+                        matched = matchStates[predicateIndex].matches(stringId)
+                        predicateIndex++
                     }
                 }
                 if (!matched) continue
