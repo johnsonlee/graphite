@@ -18,11 +18,14 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.ColdMappedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -44,6 +47,7 @@ import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
@@ -490,6 +494,296 @@ class CrossGraphCypherExecutorTest {
         )
         assertEquals(listOf("example.Caller"), twoGraphs.rows.map { row -> row["n.caller_class"] })
         assertEquals(1, projectionCalls.get())
+    }
+
+    @Test
+    fun `cold mapped suffix keeps a dense leading source synchronous without speculation`() {
+        if (resolveColdMappedStringGraphParallelism() <= 1) return
+        val graphs = List(40) { sourceIndex ->
+            val nodes = if (sourceIndex == 0) {
+                listOf(
+                    callSite(0, "example.TargetFirst"),
+                    callSite(1, "example.TargetSecond")
+                )
+            } else {
+                emptyList()
+            }
+            ColdMappedLookupGraph(graph(*nodes.toTypedArray()))
+        }
+        resetDirectStringGraphWorkerMetrics()
+
+        val result = CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+            CypherGraph("graph-$index", source)
+        }).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("graph-0", "graph-0"), result.rows.map { row -> row["graph"] })
+        assertEquals(listOf(1, 0), listOf(graphs.first().lookups.get(), graphs.drop(1).sumOf { it.lookups.get() }))
+        assertTrue(graphs.first().preferredMappedConsumers.all { it })
+        assertEquals(1, graphs[1].coldChecks.get())
+        assertTrue(graphs.drop(2).all { it.coldChecks.get() == 0 })
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+    }
+
+    @Test
+    fun `cold mapped zero hit suffix uses fixed serial-storage workers with exact work accounting`() {
+        assertEquals(1, resolveColdMappedStringGraphParallelism(processors = 1, configuredGraphWorkers = null))
+        assertEquals(2, resolveColdMappedStringGraphParallelism(processors = 2, configuredGraphWorkers = null))
+        assertEquals(4, resolveColdMappedStringGraphParallelism(processors = 4, configuredGraphWorkers = null))
+        assertEquals(4, resolveColdMappedStringGraphParallelism(processors = 64, configuredGraphWorkers = null))
+        assertEquals(1, resolveColdMappedStringGraphParallelism(processors = 64, configuredGraphWorkers = "1"))
+        assertEquals(3, resolveColdMappedStringGraphParallelism(processors = 64, configuredGraphWorkers = "3"))
+        assertEquals(4, resolveColdMappedStringGraphParallelism(processors = 64, configuredGraphWorkers = "99"))
+        assertEquals(4, resolveColdMappedStringGraphParallelism(processors = 64, configuredGraphWorkers = "invalid"))
+        if (resolveColdMappedStringGraphParallelism() <= 1) return
+        val graphs = List(40) { ColdMappedLookupGraph(graph()) }
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1_000))
+        resetDirectStringGraphWorkerMetrics()
+
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            context
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                "RETURN n.graphId AS graph LIMIT 5"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertTrue(graphs.all { it.lookups.get() == 1 })
+        assertTrue(graphs.all { measured -> measured.serialConsumers.all { it } })
+        assertTrue(graphs.all { measured -> measured.preferredMappedConsumers.all { it } })
+        assertEquals(40L, context.diagnostics.workUnitsConsumed)
+        assertTrue(directStringGraphPeakActiveWorkers() in 1..resolveColdMappedStringGraphParallelism())
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+    }
+
+    @Test
+    fun `warm mapped suffix retains serial execution without graph worker fanout`() {
+        val graphs = List(40) { index -> ColdMappedLookupGraph(graph(), initiallyCold = index != 1) }
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1_000))
+        resetDirectStringGraphWorkerMetrics()
+
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            context
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                "RETURN n.caller_class AS caller LIMIT 5"
+        )
+
+        assertTrue(result.rows.isEmpty())
+        assertTrue(graphs.all { it.lookups.get() == 1 })
+        assertTrue(graphs.all { measured -> measured.lookupThreads.none { it.startsWith("graphite-cypher-scan-") } })
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+    }
+
+    @Test
+    fun `cold mapped partial leading rows preserve source order limit and bounded speculation`() {
+        val expectedWorkers = resolveColdMappedStringGraphParallelism()
+        if (expectedWorkers <= 1) return
+        val suffixWorkersEntered = CountDownLatch(expectedWorkers)
+        val releaseFirstSuffix = CountDownLatch(1)
+        val accessedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+        val graphs = List(40) { sourceIndex ->
+            val nodes = when (sourceIndex) {
+                1 -> listOf(callSite(1, "example.Third"))
+                in 2..expectedWorkers -> listOf(callSite(sourceIndex, "example.Speculative$sourceIndex"))
+                else -> emptyList()
+            }
+            ColdMappedLookupGraph(
+                graph(*nodes.toTypedArray()),
+                rawProjectionRows = if (sourceIndex == 0) {
+                    listOf(
+                        StringPropertyProjectionRow(listOf("example.First")),
+                        StringPropertyProjectionRow(listOf("example.Second"))
+                    )
+                } else {
+                    null
+                },
+                beforeLookup = {
+                    accessedSources += sourceIndex
+                    if (sourceIndex in 1..expectedWorkers) {
+                        suffixWorkersEntered.countDown()
+                        if (sourceIndex == 1) {
+                            check(releaseFirstSuffix.await(5, TimeUnit.SECONDS))
+                        }
+                    }
+                }
+            )
+        }
+        val queryThread = Executors.newSingleThreadExecutor()
+        resetDirectStringGraphWorkerMetrics()
+        val future = queryThread.submit<CypherResult> {
+            CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+                CypherGraph("graph-$index", source)
+            }).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'exam' " +
+                    "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 3"
+            )
+        }
+        try {
+            assertTrue(suffixWorkersEntered.await(2, TimeUnit.SECONDS))
+            val expectedSources = (1..expectedWorkers).toSet()
+            assertEquals(expectedSources, accessedSources)
+            assertEquals(expectedWorkers, directStringGraphPeakActiveWorkers())
+            assertTrue(graphs.drop(1).filter { it.lookups.get() > 0 }.all { measured ->
+                measured.lookupLimits.all { it == 1 }
+            })
+            releaseFirstSuffix.countDown()
+            val result = future.get(5, TimeUnit.SECONDS)
+            assertEquals(
+                listOf(
+                    "graph-0" to "example.First",
+                    "graph-0" to "example.Second",
+                    "graph-1" to "example.Third"
+                ),
+                result.rows.map { row -> row["graph"] to row["caller"] }
+            )
+            assertEquals(expectedSources, accessedSources)
+            assertEquals(0, coldMappedStringGraphActiveWorkers())
+        } finally {
+            releaseFirstSuffix.countDown()
+            queryThread.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `cold mapped suffix preserves cancellation and storage failure identity`() {
+        if (resolveColdMappedStringGraphParallelism() <= 1) return
+        val cancellation = CypherCancellationSignal()
+        val cancellationReason = CypherQueryCancelledException("cancel cold suffix")
+        val cancellingGraphs = List(40) { sourceIndex ->
+            ColdMappedLookupGraph(graph(), beforeLookup = {
+                if (sourceIndex == 1) cancellation.cancel(cancellationReason)
+            })
+        }
+        val cancellationContext = CypherExecutionContext(
+            CypherExecutionBudget(maxWorkUnits = 1_000),
+            cancellation
+        )
+        resetDirectStringGraphWorkerMetrics()
+
+        val cancelled = assertFailsWith<CypherQueryCancelledException> {
+            CrossGraphCypherExecutor(
+                cancellingGraphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+                cancellationContext
+            ).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                    "RETURN n.caller_class LIMIT 5"
+            )
+        }
+        assertTrue(cancelled === cancellationReason)
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+
+        val storageFailure = IllegalStateException("cold mapped storage failed")
+        val failingGraphs = List(40) { sourceIndex ->
+            ColdMappedLookupGraph(graph(), beforeLookup = {
+                if (sourceIndex == 1) throw storageFailure
+            })
+        }
+        resetDirectStringGraphWorkerMetrics()
+        val failed = assertFailsWith<IllegalStateException> {
+            CrossGraphCypherExecutor(failingGraphs.mapIndexed { index, source ->
+                CypherGraph("graph-$index", source)
+            }).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                    "RETURN n.caller_class LIMIT 5"
+            )
+        }
+        assertTrue(failed === storageFailure)
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+
+        val budgetGraphs = List(40) { ColdMappedLookupGraph(graph()) }
+        resetDirectStringGraphWorkerMetrics()
+        assertFailsWith<CypherBudgetExceededException> {
+            CrossGraphCypherExecutor(
+                budgetGraphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+                CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1))
+            ).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                    "RETURN n.caller_class LIMIT 5"
+            )
+        }
+        assertEquals(0, coldMappedStringGraphActiveWorkers())
+    }
+
+    @Test
+    fun `interrupting cold mapped coordinator joins peers and restores interrupt status`() {
+        if (resolveColdMappedStringGraphParallelism() <= 1) return
+        val workersEntered = CountDownLatch(2)
+        val releaseWorkers = CountDownLatch(1)
+        val failure = java.util.concurrent.atomic.AtomicReference<Throwable?>()
+        val interruptedAfterFailure = AtomicBoolean()
+        val graphs = List(40) { sourceIndex ->
+            ColdMappedLookupGraph(graph(), beforeLookup = {
+                if (sourceIndex in 1..2) {
+                    workersEntered.countDown()
+                    releaseWorkers.await(5, TimeUnit.SECONDS)
+                }
+            })
+        }
+        resetDirectStringGraphWorkerMetrics()
+        val coordinator = Thread({
+            try {
+                CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+                    CypherGraph("graph-$index", source)
+                }).execute(
+                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'zero' " +
+                        "RETURN n.caller_class LIMIT 5"
+                )
+            } catch (error: Throwable) {
+                failure.set(error)
+                interruptedAfterFailure.set(Thread.currentThread().isInterrupted)
+            }
+        }, "cold-mapped-coordinator-test")
+        coordinator.start()
+        try {
+            assertTrue(workersEntered.await(2, TimeUnit.SECONDS))
+            coordinator.interrupt()
+            coordinator.join(5_000)
+            assertTrue(!coordinator.isAlive)
+            assertTrue(failure.get() is IllegalStateException)
+            assertTrue(failure.get()?.cause is InterruptedException)
+            assertTrue(interruptedAfterFailure.get())
+            assertEquals(0, coldMappedStringGraphActiveWorkers())
+        } finally {
+            releaseWorkers.countDown()
+            coordinator.interrupt()
+            coordinator.join(5_000)
+        }
+    }
+
+    @Test
+    fun `cold mapped suffix declines residual node predicates`() {
+        val graphs = List(40) { sourceIndex ->
+            val node = when (sourceIndex) {
+                0 -> callSite(0, "example.Target", calleeClass = "example.Denied")
+                1 -> callSite(1, "example.Target", calleeClass = "example.Allowed")
+                else -> null
+            }
+            ColdMappedLookupGraph(if (node == null) graph() else graph(node))
+        }
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1_000))
+        resetDirectStringGraphWorkerMetrics()
+
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            context
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' AND " +
+                "(n.callee_class CONTAINS 'Allowed' OR n.callee_name CONTAINS 'missing') " +
+                "RETURN n.graphId AS graph, n.callee_class AS callee LIMIT 1"
+        )
+
+        assertEquals(listOf("graph-1" to "example.Allowed"), result.rows.map { row ->
+            row["graph"] to row["callee"]
+        })
+        assertTrue(graphs.all { it.coldChecks.get() == 0 })
+        assertEquals(0, directStringGraphPeakActiveWorkers())
     }
 
     @Test
@@ -2751,6 +3045,76 @@ class CrossGraphCypherExecutorTest {
         assertTrue(relationships.any { it["kind"] == "SEQUENTIAL" })
         assertTrue(relationships.any { it["kind"] == "LOOKUP" })
     }
+
+    private class ColdMappedLookupGraph(
+        private val backing: Graph,
+        initiallyCold: Boolean = true,
+        private val rawProjectionRows: List<StringPropertyProjectionRow>? = null,
+        private val beforeLookup: () -> Unit = {}
+    ) : Graph by backing,
+        ColdMappedStringPropertyDisjunctionLookup,
+        WorkAwareStringPropertyDisjunctionLookup,
+        StringPropertyDisjunctionProjection {
+        private val cold = AtomicBoolean(initiallyCold)
+        val coldChecks = AtomicInteger()
+        val lookups = AtomicInteger()
+        val lookupLimits = java.util.concurrent.ConcurrentLinkedQueue<Int>()
+        val serialConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
+        val preferredMappedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
+        val lookupThreads = java.util.concurrent.ConcurrentLinkedQueue<String>()
+
+        override fun hasColdMappedStringPropertyDisjunction(
+            type: Class<out Node>,
+            predicates: List<StringPropertyPredicate>
+        ): Boolean {
+            coldChecks.incrementAndGet()
+            return type == CallSiteNode::class.java && predicates.isNotEmpty() && cold.get()
+        }
+
+        override fun <T : Node> nodesByStringPropertyDisjunction(
+            type: Class<T>,
+            predicates: List<StringPropertyPredicate>,
+            limit: Int
+        ): Sequence<T> = backing.nodes(type).take(limit)
+
+        override fun <T : Node> nodesByStringPropertyDisjunction(
+            type: Class<T>,
+            predicates: List<StringPropertyPredicate>,
+            limit: Int,
+            workConsumer: GraphWorkConsumer
+        ): Sequence<T> {
+            lookups.incrementAndGet()
+            lookupLimits += limit
+            serialConsumers += workConsumer is SerialGraphWorkBatchConsumer
+            preferredMappedConsumers += workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
+            lookupThreads += Thread.currentThread().name
+            beforeLookup()
+            (workConsumer as? GraphWorkBatchConsumer)?.consume(1L) ?: workConsumer.consume()
+            cold.set(false)
+            return backing.nodes(type).take(limit)
+        }
+
+        override fun projectStringPropertyDisjunction(
+            type: Class<out Node>,
+            predicates: List<StringPropertyPredicate>,
+            projectedProperties: List<String>,
+            limit: Int,
+            workConsumer: GraphWorkConsumer?
+        ): List<StringPropertyProjectionRow>? = rawProjectionRows?.take(limit)
+    }
+
+    private fun callSite(
+        id: Int,
+        callerClass: String,
+        calleeClass: String = "example.Dependency"
+    ): CallSiteNode = CallSiteNode(
+        NodeId(id),
+        MethodDescriptor(TypeDescriptor(callerClass), "call$id", emptyList(), TypeDescriptor("void")),
+        MethodDescriptor(TypeDescriptor(calleeClass), "invoke$id", emptyList(), TypeDescriptor("void")),
+        id,
+        null,
+        emptyList()
+    )
 
     private fun executor(vararg graphs: Pair<String, Graph>): CrossGraphCypherExecutor =
         CrossGraphCypherExecutor(graphs.map { (id, graph) -> CypherGraph(id, graph) })

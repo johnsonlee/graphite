@@ -16,6 +16,7 @@ import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.ColdMappedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
@@ -23,6 +24,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
@@ -163,6 +165,7 @@ internal class MappedWebGraphBackedGraph(
     ReleasableStringPropertyDisjunctionCache,
     RetainedStringPropertyDisjunctionLookup,
     StringPropertyDisjunctionLookupStrategy,
+    ColdMappedStringPropertyDisjunctionLookup,
     StringPropertyLookupOrder,
     Closeable {
 
@@ -760,6 +763,22 @@ internal class MappedWebGraphBackedGraph(
                 return index.matchingNodeIds(predicates, workConsumer, limit)
                     .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
                     .map(type::cast)
+            }
+            if (workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer &&
+                predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView)
+            ) {
+                mappedCallSiteStringIndexView(workConsumer)?.let { view ->
+                    val exactMatches = view.exactMatchingStringIds(predicates, workConsumer)
+                    if (exactMatches != null) {
+                        val matchedNodeIds = view.matchingNodeIds(predicates, exactMatches, workConsumer)
+                        if (matchedNodeIds != null) {
+                            callSiteStringIndexLookupCount.incrementAndGet()
+                            return matchedNodeIds.take(limit)
+                                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                                .map(type::cast)
+                        }
+                    }
+                }
             }
             if (workConsumer is SerialGraphWorkBatchConsumer && predicates.preferBoundedRawCallSiteScan(limit)) {
                 return serialRawCallSiteStringDisjunction(type, predicates, limit, workConsumer)
@@ -1759,6 +1778,15 @@ internal class MappedWebGraphBackedGraph(
         predicates: List<StringPropertyPredicate>
     ): Boolean = type == CallSiteNode::class.java && callSiteStringIndex != null &&
         predicates.all { supportsRawStringProperty(type, it.property) }
+
+    override fun hasColdMappedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean = type == CallSiteNode::class.java &&
+        predicates.isNotEmpty() && predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView) &&
+        callSiteStringIndex == null && mappedCallSiteStringIndexView == null &&
+        !mappedCallSiteStringIndexViewUnavailable && persistentCallSiteStringIndexEnabled &&
+        Files.isRegularFile(callSiteStringIndexFile)
 
     /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.

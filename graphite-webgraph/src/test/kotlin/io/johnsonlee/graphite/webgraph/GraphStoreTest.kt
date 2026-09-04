@@ -56,6 +56,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
@@ -242,6 +243,104 @@ class GraphStoreTest {
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
         } finally {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `cold mapped CallSite hint is read only and preferred serial access opens only the view`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor(if (index == 2) "example.TargetCaller" else "example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency"),
+                            "invoke$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "tar"
+            )
+        )
+        val dir = Files.createTempDirectory("webgraph-cold-mapped-hint")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(
+                    loaded.hasColdMappedStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_class",
+                                null,
+                                StringMatchMode.CONTAINS,
+                                "xy"
+                            )
+                        )
+                    )
+                )
+
+                loaded.resetCallSiteScanMetrics()
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    1,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(listOf(2), ids)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+
+                loaded.clearStringPropertyIndexes()
+                assertTrue(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(loaded.prepareCallSiteStringIndex())
+                loaded.resetCallSiteScanMetrics()
+                val retainedIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    1,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(listOf(2), retainedIds)
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            previous?.let { System.setProperty(property, it) } ?: System.clearProperty(property)
             dir.toFile().deleteRecursively()
         }
     }

@@ -85,6 +85,9 @@ fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
 /** Requests a bounded serial projection to probe raw storage without initializing an index. */
 fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
 
+/** Requests an existing persisted mapped string-index view through a caller-serialized lookup. */
+fun interface PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
+
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()
@@ -257,6 +260,18 @@ interface RetainedStringPropertyDisjunctionLookup {
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
 interface StringPropertyDisjunctionLookupStrategy {
     fun prefersSerialStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
+}
+
+/**
+ * Optional read-only planning hint for a persisted string lookup whose mapped view has not been
+ * opened yet. Implementations must not open, validate, or otherwise initialize the mapped view
+ * while answering this question.
+ */
+interface ColdMappedStringPropertyDisjunctionLookup {
+    fun hasColdMappedStringPropertyDisjunction(
         type: Class<out Node>,
         predicates: List<StringPropertyPredicate>
     ): Boolean

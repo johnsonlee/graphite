@@ -5058,3 +5058,125 @@ than current main's `252.836 ms`. The first diagnostic pair already violates the
 gate by `117.799 ms`; two more repetitions cannot justify retaining this implementation, so they
 were intentionally not run. Test a four-worker outer-only suffix as a separate hypothesis; do not
 carry this attempt's production code forward implicitly.
+
+### 2026-09-05 - Attempt 151: Use the full four-CPU budget for cold mapped graph suffixes
+
+**Hypothesis:** Attempt 150 reduced cold suffix latency with two outer workers but left half of the
+four-CPU benchmark budget idle. Keep the same source-zero-first, serial-per-graph, catalog-ordered
+algorithm, but permit up to four suffix workers, bounded by available processors and the existing
+`graphite.cypher.directStringParallelism` setting. With no nested segment work, four independent
+mapped graph views should remove the cold zero/max regression without changing logical work.
+
+**Evidence:**
+
+- Goal base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; non-regression base is
+  current main/v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; the measured candidate
+  production tree is temporary commit `f76e53de330bdc36604579ba4a42686c9214d3bb` on Attempt 150
+  record commit `9e4f80e3`. The final commit containing this record has the same production tree.
+  Its full-index production/test/harness diff SHA-256 is
+  `634027f56df844e0871cb07926c44aa82645cb91916af99706ec0fd2db1ef187`; the regular verification
+  clone produced the identical diff hash.
+- Goal/current/candidate JMH JAR raw SHA-256 is
+  `0175abd230a14b278221d4ad5a818f383000e9a8a651e052c262e74880c5cc3a` /
+  `4fff6a1bfa004a915d54c93b907530796285b865077f65080abf8d7c177dc259` /
+  `65056a3e224a71592cb2ee05d3e146965c717c85095f34af72e074a66160a965`; canonical ZIP content
+  SHA-256 is `f1a9d6712240adbbb31821ad63fab3fd46ee5f67f50213876119bf505560cfb9` /
+  `4c6362804163fe5ba6dda30c2c3af523349028c1c769cb5f22d39ed99ee52c18` /
+  `60b687057c5238eb2886bf8c588c3a12c7ecfdf412162dccf296353de9f6fef7`. All three used the
+  byte-identical candidate-reviewed harness
+  `ccc8aac6c6b286bc9420bd190b515c7791ce74077987a2d8bb4ef79a6a51c780`. Review found that its
+  initial fallback telemetry ignored an explicit worker property; the measured JARs contain the
+  corrected reflection call and report the actual configured count.
+- The exact command shape was
+  `java -jar <jar> io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+  -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold -p timeoutMillis=300000
+  -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -v SILENT -rf json -rff <result.json> -jvmArgs
+  "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=<manifest>
+  -Dgraphite.broad.pressure.correctness.mode=verify
+  -Dgraphite.broad.pressure.correctness.oracle=<oracle>
+  -Dgraphite.broad.pressure.output=<correctness>
+  -Dgraphite.broad.pressure.observations.output=<observations.tsv>"`. Three fresh paired forks ran
+  candidate/goal/current, goal/current/candidate, and candidate/goal/current. The host was Apple M3
+  Max/macOS 14.3 with JDK 17.0.18, four exposed CPUs, one fork, one single-shot measurement, and no
+  warmup.
+- All runs used the same 64 distinct real persisted graphs derived from pinned Android, Tika, Hive,
+  and Kotlin compiler JARs. Original manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`; the local-path-only
+  manifest SHA-256 is `24876ee54a7c5cded5a68b476613ac26e357f3973bb2d54a2ac56f5ea54bbd81`.
+  The independent v2.4.7 oracle and all nine correctness outputs have SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+- All nine measured processes completed `34/34` cases with zero failure or timeout and `2,925`
+  rows. All 306 observations matched outcome, row count, response bytes, digest, fixture
+  distribution, hit provenance, accessed graph IDs, and catalog order. Goal/current/candidate work
+  was exactly `109,198,717 / 58,071,626 / 57,706,192` units in every pair.
+- The unmodified v2.4.7 goal comparator passed with no error:
+
+  | Pair | Order | Goal P50/P95/max | Candidate P50/P95/max | P95 speedup | Wrapped minimum |
+  | ---: | :--- | :--- | :--- | ---: | ---: |
+  | 1 | candidate-base | 239.093/410.427/432.035 ms | 1.591/20.535/185.691 ms | 19.99x | 26.25x |
+  | 2 | base-candidate | 253.288/398.009/409.987 ms | 1.808/19.191/158.488 ms | 20.74x | 22.97x |
+  | 3 | candidate-base | 235.681/402.065/431.833 ms | 1.471/21.613/167.085 ms | 18.60x | 19.98x |
+
+  Every independent pair exceeds the required `10x` P95 target, every wrapped family exceeds it,
+  and candidate max stays below its paired goal max.
+- The isolated zero/max hypothesis passed against current main. Cold four-property zero latency was
+  `235.154/258.897/244.472 -> 185.691/158.488/167.085 ms`, with identical `57,642,093` work units
+  and all 64 graphs accessed on both revisions. Candidate aggregate P95 also improved
+  `39.145/50.746/40.821 -> 20.535/19.191/21.613 ms`; candidate max stayed below current max in all
+  three pairs. Dense stayed neutral or improved at identical `681` work units, and DISTINCT zero
+  stayed neutral at identical `99` work units.
+- The full current-main comparator remains red only on three separate paths that this attempt did
+  not accelerate. Four-property targeted was
+  `7.933/8.061/8.238 -> 10.130/10.106/10.125 ms`; class-pair targeted was
+  `3.914/3.916/4.239 -> 5.302/6.002/5.326 ms`; localized-early was
+  `1.196/1.246/1.185 -> 2.224/2.442/2.261 ms`. Each crosses both the 15% and 1 ms threshold in all
+  three pairs. Their work and accessed-graph counts are identical to current main, isolating fixed
+  projection/path overhead rather than extra logical scanning.
+- Goal/current/candidate process CPU was
+  `10.570/1.467/1.427`, `10.464/1.640/1.371`, and `10.439/1.504/1.371 s`. Candidate peak used heap
+  was `4.715/4.714/4.710 GB` and peak RSS was `5.402/5.236/5.249 GB`; every paired goal and current
+  CPU/heap/RSS resource check passed. Candidate normalized allocation was
+  `4.810/4.810/4.810 GB/op`, below both baselines in every pair. Run-level telemetry reported
+  `graphWorkerCount=4`, `graphScanPeakActiveWorkers=4`, `segmentWorkerCount=0`, and
+  `segmentScanPeakActiveWorkers=0` in every candidate fork.
+- Goal/current comparator report/status SHA-256 is
+  `80c83565a75d5f48e82f0f0e6d139dfdb6a43003846d93c7532dbb2541f3fd24` /
+  `b2ea528af8ed4450281a68dc6d902b722926a56c908e30b89fb0ba1428c8178c` and
+  `8537faa92d24dd38d9f43fe2c16e981ee91416fc88e95e54924ccd37dd316fb1` /
+  `6cca2c08cd4c3111270b446360b453403ef71a99c676f8c0fea9aa899e915357`. Combined dual-baseline
+  report/status SHA-256 is
+  `9f805b66baba38a814765b95eca53e45c036804096d5560b37d437e08d50e9f3` /
+  `11ccd9443f7ac9f58d4615dd34646b4e437f40543f66ebde01c3be3e980657ac`.
+- Goal JSON/TSV SHA-256 is
+  `5933720949fde3bcd4df07364db5767ed80cdcae5777bd033bfc554d0dddd28f` /
+  `09b2b9eb4e44a4453765d5cbfa48b28bd0d5804a8f55d6a50efda700fe2722e1`,
+  `a5588956d6737b435222499692fe3b562193a3943dc850d1c925d2a5a2eb5aae` /
+  `b1b4b729919de0f45e73bf5784db14e526b1139430f058673ad6e0b550516053`, and
+  `3a6234e9a55dafe976ab8009728147e6cd5334fab2b08a64e14ae5e1c197c5c6` /
+  `de92637a957bfa89a4ac88a3e6e861daf76c12dfbf4f30f130a24e5ff45437ce`.
+  Current JSON/TSV SHA-256 is
+  `7f132eb02c376a4735cf55fb95d353d9c03f860176942801529473b769a50f58` /
+  `2d515823013e949c135b7f87f33dd7276168588bf51910a459526dc0f9b9d8e3`,
+  `c241257f6b1292e123a26f9f65a6b3147346f01fb589126cfd5a4bbb69361b45` /
+  `39ec334f88514858c7f821c2ce384a0f4a9ea768027265426af20aa405a997de`, and
+  `2fc9025b3fd7c864ec565fb722e304359a5ebd29bc1c43f8ed003bf869339c1e` /
+  `b321d075b9ba67deb16effc82808f8de80464721a624c9eda975cd0841e37e0f`.
+  Candidate JSON/TSV SHA-256 is
+  `30819939790cab2b60704c2702ac6694052430102e93b1e028aaa6c08404328c` /
+  `081028232e10abd2e98ea814920bd2507b67e5645e7f2b8694dabad8a12d8fa7`,
+  `81c785cd9b7953bdd8e6a593de46b2c9119dd1285766ec4de7316bb34b4c3457` /
+  `d8afb5e49c771b31fb05013e83bb7cadb13da58a1a045a09701ccecc54770706`, and
+  `13497f6717b6c48136a9e327821b48b0023b80bf586ab5829174940f7f0d3565` /
+  `f579180b966f17dc2f2594efc7972422caee0da08a4e4fa61b5828f3c8376c62`.
+- Focused execution/storage tests passed `70/70` and `152/152`; core, Cypher, and webgraph
+  compilation and detekt passed, as did the rebuilt JMH JAR and `git diff --check`. Tests cover
+  one-to-four CPU/config caps, invalid/oversized settings, exact four-worker bounded speculation,
+  serial storage, order, limit, fallback, cancellation, interruption, and exact error identity. An
+  independent read-only review found no production blocker and confirmed that the worker
+  `ThreadLocal` prevents nested fanout.
+
+**Conclusion:** keep as the cold zero/max building block. Four outer workers close Attempt 149's
+largest current-main regression while preserving the v2.4.7 rollback and an `18.60x` worst-pair
+P95 speedup. Do not call the overall branch mergeable yet: independently remove the three repeated
+targeted/localized aligned regressions, then rerun the complete three-pair dual-baseline gate.
