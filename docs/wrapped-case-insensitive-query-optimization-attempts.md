@@ -4546,3 +4546,52 @@ when paired with byte-identical-harness v2.4.7 controls and alternating process 
 values are intact, but access proof is incomplete, dense regressions repeat, and evidence cannot
 pass the repository gate. Retain the mmap/no-rescan direction; add exact access accounting and
 protect v2.4.7's short dense path before measuring again.
+
+### 2026-09-05 - Attempt 143: Preserve short dense raw scans and prove mapped access
+
+**Hypothesis:** the remaining broad benefit comes from zero/targeted selected provenance, while
+short dense terms already fill `LIMIT 200` cheaply in the first graph. Statically keep exact
+three-character bounded predicates on the unmodified v2.4.7 raw path, use mmap only for supported
+broad shapes, and report the exact graph IDs inspected by mapped DISTINCT provenance.
+
+**Evidence:**
+
+- Candidate production was reconstructed over exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. Stable source identities after rejected
+  subvariants were removed are: view
+  `d3c585f69bc3f3aba1ace0a572fc45547c397581efaccfd296fb9191de32feab`,
+  graph integration
+  `cd059f8ef3f0353ec3ab5e23b7d178fb0c26b35e91524918c50ccc19dd4601a2`, and focused test
+  `35eb48fbe36a275b904dc0f1f0d43ba1d86e93b79e77a651563981c4bb7a78b4`.
+- Three alternating pairs used the same candidate-reviewed harness, real fixture64 manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+  8 GiB heap, four CPUs, and exact 34-case oracle. All 204 observations passed correctness and exact
+  candidate access proof. Base to candidate P50/P95/max was
+  `258.457/470.105/470.881 -> 2.119/15.626/409.911 ms`,
+  `254.802/415.132/444.233 -> 2.390/19.546/435.125 ms`, and
+  `245.078/409.344/438.022 -> 2.277/17.258/440.823 ms`.
+  P95 speedup was `30.08x/21.24x/23.72x`.
+- CPU fell `12.008/10.870/10.724 -> 1.212/1.224/1.285 s`; candidate peak heap/RSS was
+  `4.698/5.210`, `4.695/5.205`, and `4.359/4.866 GB`, all within paired bounds.
+  Work fell `109,198,717 -> 57,710,024`.
+- The then-current comparator still failed for two reasons: it prescribed a `2+2` worker split
+  even though the candidate intentionally uses a serial consumer, and the identical raw
+  `global-wide-four-properties/dense` case measured
+  `4.917 -> 7.066`, `5.326 -> 7.836`, and `4.515 -> 7.317 ms`.
+  Both sides did exactly 681 work units, exposing cross-case JIT state: v2.4.7 had warmed this raw
+  scanner in two earlier cases while the candidate's mapped path had skipped them.
+- Comparator status/report SHA-256 is
+  `646570434a6086ad6ab470a6a8098bdfe818aedef670f1c48cbd16eaa73e358a` /
+  `d6f46429539105d3418ecc128d7085ceacdb113d6c338c20d512e9cdedb9b6ea`.
+  Candidate pair JSON/TSV SHA-256 is
+  `01f85994bd76a69d2b8d05655c73d0be3fe4e9c922012bfec7a1d69ea7953912` /
+  `5d595a6e3b9c8af37f23b3b4ead946615e8d35be832d7e4731d502b2f372a913`,
+  `840556021d79b32a0dd98ace71d8c3bdf8aebf0c2f8a5819d6eee2ea0dec10ce` /
+  `61963a9a47247ff5c024eef09de56ffaedc2bfe14cb9a7ed343c50d6fcd8fefd`, and
+  `11fdfc001808f5a9e75c94c6d0b7d22d4820c0a34bd2ede67a084cd6b301093c` /
+  `01f182a4aa3b201f6a867f91214dc13e31f505ec8a9c374360f3b08a84bcdd22`.
+
+**Conclusion:** retain the statically guarded implementation and access/correctness hardening, but
+reject this execution order as final evidence. The production path exceeds 10x P95 with lower CPU,
+RSS, and work; the benchmark must put the identical raw control in the same cold/JIT position for
+both revisions, and the gate must validate bounded worker telemetry without prescribing topology.
