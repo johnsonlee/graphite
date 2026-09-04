@@ -161,6 +161,12 @@ class GraphStoreTest {
             StringMatchMode.CONTAINS,
             "target"
         )
+        fun assertRetained(graph: MappedWebGraphBackedGraph, expected: Boolean) {
+            assertEquals(
+                expected,
+                graph.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+            )
+        }
         val dir = Files.createTempDirectory("webgraph-eager-callsite-index")
         val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
         val previous = System.getProperty(property)
@@ -175,6 +181,7 @@ class GraphStoreTest {
             val lazyRestored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
+                assertRetained(lazyRestored, false)
                 assertEquals(3, lazyRestored.nodes(CallSiteNode::class.java).count())
                 assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
                 assertEquals(
@@ -185,14 +192,17 @@ class GraphStoreTest {
                 assertTrue(lazyRestored.isCallSiteStringIndexInitialized())
                 assertTrue(lazyRestored.isCallSiteTrigramIndexInitialized())
                 assertTrue(lazyRestored.isCallSiteStringIndexLoadedFromPersistence())
+                assertRetained(lazyRestored, true)
                 lazyRestored.clearStringPropertyIndexes()
                 assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
+                assertRetained(lazyRestored, false)
                 assertEquals(
                     listOf(1),
                     lazyRestored.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertTrue(lazyRestored.isCallSiteStringIndexLoadedFromPersistence())
+                assertRetained(lazyRestored, true)
             } finally {
                 lazyRestored.close()
             }
@@ -205,6 +215,7 @@ class GraphStoreTest {
                 assertTrue(eager.isCallSiteStringIndexInitialized())
                 assertTrue(eager.isCallSiteTrigramIndexInitialized())
                 assertTrue(eager.isCallSiteStringIndexLoadedFromPersistence())
+                assertRetained(eager, true)
             } finally {
                 eager.close()
             }
@@ -214,6 +225,7 @@ class GraphStoreTest {
             try {
                 assertFalse(lazy.isCallSiteStringIndexInitialized())
                 assertFalse(lazy.isCallSiteTrigramIndexInitialized())
+                assertRetained(lazy, false)
                 assertEquals(
                     listOf(1),
                     lazy.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
@@ -222,6 +234,7 @@ class GraphStoreTest {
                 assertTrue(lazy.isCallSiteStringIndexInitialized())
                 assertTrue(lazy.isCallSiteTrigramIndexInitialized())
                 assertFalse(lazy.isCallSiteStringIndexLoadedFromPersistence())
+                assertRetained(lazy, true)
             } finally {
                 lazy.close()
             }

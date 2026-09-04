@@ -243,6 +243,14 @@ interface ReleasableStringPropertyDisjunctionCache {
     fun releaseStringPropertyDisjunctionCache()
 }
 
+/** Optional planning hint that a complete disjunction index is already retained in process memory. */
+interface RetainedStringPropertyDisjunctionLookup {
+    fun hasRetainedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean
+}
+
 /** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
 interface StringPropertyDisjunctionLookupStrategy {
     fun prefersSerialStringPropertyDisjunction(

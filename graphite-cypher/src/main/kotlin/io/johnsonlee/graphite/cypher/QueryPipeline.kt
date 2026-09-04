@@ -30,6 +30,7 @@ import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
@@ -179,6 +180,12 @@ class QueryPipeline private constructor(
 
     internal constructor(graphs: List<CypherGraph>, workTrackingEnabled: Boolean) :
         this(graphs, true, workTrackingEnabled, false)
+
+    internal constructor(
+        graphs: List<CypherGraph>,
+        workTrackingEnabled: Boolean,
+        graphSourceScopeApplied: Boolean
+    ) : this(graphs, true, workTrackingEnabled, graphSourceScopeApplied)
 
     init {
         val graphIds = HashSet<String>(sources.size)
@@ -1187,6 +1194,7 @@ class QueryPipeline private constructor(
             ?.takeUnless { graphRoute.conflicting }
             ?.let { graphRoute.residual }
             ?: where.condition
+        val graphScoped = graphSourceScopeApplied || preselectedSources != null || routedGraphIds != null
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1197,7 +1205,8 @@ class QueryPipeline private constructor(
                 ret.items,
                 columns,
                 limitCount,
-                candidateSources
+                candidateSources,
+                graphScoped
             )
         }
         if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
@@ -1238,7 +1247,8 @@ class QueryPipeline private constructor(
                         ret.items,
                         columns,
                         limitCount,
-                        candidateSources = candidateSources
+                        candidateSources = candidateSources,
+                        allowRetainedGraphSetProjection = graphScoped
                     )
                 }
             }
@@ -1272,7 +1282,8 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         predicateFactory,
-                        candidateSources
+                        candidateSources,
+                        graphScoped
                     )
                 }
             }
@@ -1389,6 +1400,7 @@ class QueryPipeline private constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     private fun executeDirectStringFilter(
         nodeClass: Class<out Node>,
         variable: String,
@@ -1396,7 +1408,8 @@ class QueryPipeline private constructor(
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        candidateSources: List<CypherGraph>
+        candidateSources: List<CypherGraph>,
+        allowRetainedGraphSetProjection: Boolean
     ): CypherResult {
         val hasTypedCandidate = hasTypedDirectStringCandidate(nodeClass, filter)
         if (hasTypedCandidate) {
@@ -1407,7 +1420,8 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 limit,
-                candidateSources = candidateSources
+                candidateSources = candidateSources,
+                allowRetainedGraphSetProjection = allowRetainedGraphSetProjection
             )
         }
 
@@ -1481,7 +1495,8 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
-        candidateSources: List<CypherGraph> = sources
+        candidateSources: List<CypherGraph> = sources,
+        allowRetainedGraphSetProjection: Boolean = false
     ): CypherResult {
         executeIndexedStringProjectionRows(
             nodeClass,
@@ -1491,7 +1506,8 @@ class QueryPipeline private constructor(
             columns,
             limit,
             nodePredicateFactory,
-            candidateSources
+            candidateSources,
+            allowRetainedGraphSetProjection
         )?.let { return it }
         if (workTrackingEnabled ||
             !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)
@@ -1556,15 +1572,19 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory?,
-        candidateSources: List<CypherGraph>
+        candidateSources: List<CypherGraph>,
+        allowRetainedGraphSetProjection: Boolean
     ): CypherResult? {
         if ((nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) ||
-            nodePredicateFactory != null || candidateSources.size != 1
+            nodePredicateFactory != null || candidateSources.isEmpty() ||
+            candidateSources.size > 1 && !allowRetainedGraphSetProjection
         ) {
             return null
         }
-        val source = candidateSources.single()
-        if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
+        if (nodeClass == Node::class.java && candidateSources.any { source ->
+                source.graph.nodeCount(AnnotationNode::class.java) != 0L
+            }
+        ) return null
         val projectedProperties = items.map { item ->
             val property = item.expression as? CypherExpr.Property ?: return null
             if (property.expression != CypherExpr.Variable(variable) ||
@@ -1578,16 +1598,32 @@ class QueryPipeline private constructor(
             if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
             StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
         }
-        val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
+        val projections = candidateSources.map { source ->
+            source.graph as? StringPropertyDisjunctionProjection ?: return null
+        }
+        if (candidateSources.size > 1 && candidateSources.indices.any { index ->
+                val retained = candidateSources[index].graph as? RetainedStringPropertyDisjunctionLookup
+                    ?: return@any true
+                !retained.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+            }
+        ) return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val projectedRows = projection.projectStringPropertyDisjunction(
-            CallSiteNode::class.java,
-            predicates,
-            projectedProperties,
-            limit,
-            tracker
-        ) ?: return null
-        return DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
+        val rows = mutableListOf<Map<String, Any?>>()
+        candidateSources.indices.forEach { index ->
+            val source = candidateSources[index]
+            val projectedRows = projections[index].projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                projectedProperties,
+                limit - rows.size,
+                tracker
+            ) ?: return null
+            val projected = DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
+            if (candidateSources.size == 1) return projected
+            rows.addAll(projected.rows.take(limit - rows.size))
+            if (rows.size >= limit) return CypherResult(columns, rows)
+        }
+        return CypherResult(columns, rows)
     }
 
     @Suppress("LongParameterList")

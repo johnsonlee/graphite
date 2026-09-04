@@ -23,6 +23,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
@@ -159,6 +160,7 @@ internal class MappedWebGraphBackedGraph(
     StringPropertyDisjunctionProjection,
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
+    RetainedStringPropertyDisjunctionLookup,
     StringPropertyDisjunctionLookupStrategy,
     StringPropertyLookupOrder,
     Closeable {
@@ -1643,6 +1645,12 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun isCallSiteStringIndexLoadedFromPersistence(): Boolean =
         callSiteStringIndexLoadedFromPersistence
+
+    override fun hasRetainedStringPropertyDisjunction(
+        type: Class<out Node>,
+        predicates: List<StringPropertyPredicate>
+    ): Boolean = type == CallSiteNode::class.java && callSiteStringIndex != null &&
+        predicates.all { supportsRawStringProperty(type, it.property) }
 
     /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.

@@ -4766,3 +4766,92 @@ view only for eligible serial queries; preserve every unsupported, short-dense, 
 invalid-index path as the v2.4.7 fallback. The source and local artifacts are content-addressed
 above; the hosted dual-baseline run must still bind the committed candidate SHA and remains the
 authoritative merge gate.
+
+### 2026-09-05 - Attempt 148: Project request-scoped retained graph sets directly
+
+**Hypothesis:** the persisted heap indexes are already retained for request-selected K-source
+queries, but the rollback pipeline still materializes every selected `CallSiteNode` before applying
+`RETURN`. Preflight every selected graph for the retained lookup capability, then project safe
+non-`DISTINCT` string properties directly in catalog order with one global remaining `LIMIT` and
+the existing provenance cache. Keep unscoped global-wide queries, unsupported predicates,
+annotations, residual node predicates, and any incomplete preflight on the authoritative v2.4.7
+fallback.
+
+**Evidence:**
+
+- Base production is exact v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; candidate production is the Attempt 148 commit
+  containing this record. The candidate is based on predecessor
+  `6c6ebee907441b19efb3b33a9f5a90112edd41e7`. Base/candidate JMH JAR raw SHA-256 is
+  `20672f264688d0d7c2ed2ed775c4a6441aac8f67b83bafeff9fc83845a3fc829` /
+  `7d3ff6ec3d423833f72675b8fcf7c71b90ae7e8b2bbdf2a0981336e635cf5a85`; canonical ZIP content
+  SHA-256 is `12f060ddf4c886acf7774bcc1e13cf9761ddf2109ef83d9f6acee09ba55e96a8` /
+  `68333b517e24a9d6c125b88500df6e5e0bf1f82c8f9e1a6cd792b2e19f273ecf`.
+- The exact graph-routing JMH command was
+  `java -jar <jar> io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+  -p graphCount=64 -p coverageFamily=graph-routing -p indexState=<state> -p timeoutMillis=300000
+  -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json -rff <result.json> -jvmArgs
+  "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=<manifest>
+  -Dgraphite.broad.pressure.correctness.<record-or-verify> ..."`. The runs used JDK 17.0.18 on
+  Apple M3 Max/macOS 14.3, one fork, one single-shot measurement, no warmup, cold base/candidate
+  order and warm/startup candidate/base order. Both revisions used the byte-identical
+  candidate-reviewed harness.
+- All runs used the same 64 distinct real persisted graphs derived from the four pinned Android,
+  Tika, Hive, and Kotlin compiler JARs. Original manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`; the local manifest differs
+  only by absolute graph paths. The independent single-source-derived oracle SHA-256 is
+  `bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d`.
+- Every state completed `1137/1137` queries with zero failure or timeout and `78,824` rows. Every
+  candidate observation matched the oracle, and source-access, source-order, graph identity,
+  retained-index lifecycle, and fixture distribution checks passed. The identical correctness
+  output SHA-256 is
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+- The exact paired graph-routing comparator passed cold, warm, and startup-prepared. Selected-set
+  latency was:
+
+  | State | K | Base P50 | Candidate P50 | Base P95 | Candidate P95 |
+  | --- | ---: | ---: | ---: | ---: | ---: |
+  | cold | 2 | 0.151 ms | 0.045 ms | 0.490 ms | 0.262 ms |
+  | cold | 8 | 0.167 ms | 0.064 ms | 0.791 ms | 0.789 ms |
+  | cold | 64 | 0.254 ms | 0.087 ms | 1.706 ms | 1.611 ms |
+  | warm | 2 | 0.032 ms | 0.023 ms | 0.268 ms | 0.068 ms |
+  | warm | 8 | 0.045 ms | 0.025 ms | 0.258 ms | 0.061 ms |
+  | warm | 64 | 0.117 ms | 0.050 ms | 0.261 ms | 0.075 ms |
+  | startup-prepared | 2 | 0.139 ms | 0.050 ms | 0.538 ms | 0.169 ms |
+  | startup-prepared | 8 | 0.159 ms | 0.052 ms | 0.535 ms | 0.490 ms |
+  | startup-prepared | 64 | 0.235 ms | 0.104 ms | 1.371 ms | 1.264 ms |
+
+  The first cold K64 request improved `485.003 -> 398.560 ms`; the initial reverse-order
+  diagnostic was discarded because the candidate alone paid the empty OS page-cache cost.
+- Effective CPU cores were `1.70 -> 1.60`, `1.55 -> 1.60`, and `2.84 -> 2.39` for cold, warm,
+  and startup-prepared. Peak used heap was `4.77 -> 5.46`, `5.48 -> 5.52`, and
+  `5.44 -> 5.52 GiB`; peak RSS was `5.99 -> 7.46`, `6.72 -> 7.55`, and `5.88 -> 5.81 GiB`.
+  All stayed inside the graph-routing resource gate. The candidate performed zero intra-graph
+  scans after preparation and retained all 64 indexes; no mmap or index lifecycle rule changed.
+- Cold/warm/startup candidate JSON/TSV SHA-256 is
+  `144fba19bc62c65af7aba9350b227a1dcf9aa71f05579e8472ab305b52af76b7` /
+  `2d036e30cdc228ce9643a8df52ff14421386bddc51eca0d97f6340572752d63e`,
+  `1a219cb124e5ff752d7151019741cdd5b2397edd79be3789e0ff596111097045` /
+  `a46bd5066b91bb8eeaa1c25f6977be9979b907fc170e91c6e136e8e8cec75818`, and
+  `ad5af4b853a0c04cba7d4bd70de0170971be2e478b207a25f645c2922e9b62df` /
+  `31f4a06f1ae441f159581703b5e79b425beed0dfb7c2d46317606dc5fe807f90`.
+  Comparator status/report SHA-256 is
+  `080243bb5f86dfb77efc3304ae91d52e73e0ee16a086b567fb6890e279946886` /
+  `45e5414efacc98cbe639f50df70da58a69e7e477eca7561802e8afe55a47fc9e`,
+  `38427e9f3713559b573b5b10f2317a8daec608fa7f4434b53b10e6b7f8b799b1` /
+  `73ea1f9e6b893001f28f3a7c19eb77bdecdf951952faa94e00f57383057a675a`, and
+  `d5471278fb917b8ce3a339f11bfe9e9cc68d42879854082184a954c53808abe7` /
+  `94ab734d6f186593aaa810e526534c707c55b9e6f5a278f8cb5d2a0193208258`.
+- Focused Cypher execution and mapped-index lifecycle tests passed, including literal and parameter
+  graph sets, complete all-source preflight before the first projection, source order, remaining
+  limit, provenance, authoritative fallback, explicit request scope, and clear/reload/eager
+  lifecycle. `:core:detekt :cypher:detekt :webgraph:detekt :explore:detekt`,
+  `:webgraph:jmhJar :cypher:jmhJar :explore:test`, the full `CrossGraphCypherExecutorTest`, and the
+  affected `GraphStoreTest` passed.
+
+**Conclusion:** keep. A graph set may use direct projection only after every selected source proves
+that its retained index already supports every predicate; otherwise no source projects and the
+whole request follows the authoritative fallback. This closes the hosted graph-routing regression
+without widening unscoped global-wide behavior. The final committed candidate still requires the
+hosted dual-baseline gate together with the remaining global-wide dense and zero/max fixes.

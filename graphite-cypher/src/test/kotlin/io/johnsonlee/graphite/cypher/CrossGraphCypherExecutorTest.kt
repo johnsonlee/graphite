@@ -22,6 +22,7 @@ import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregate
@@ -103,6 +104,183 @@ class CrossGraphCypherExecutorTest {
         assertEquals("example.FeatureCaller", result.rows.single()["caller"])
         assertEquals("invoke", result.rows.single()["callee"])
         assertEquals(listOf("selected"), graphIds(result.rows.single()))
+    }
+
+    @Test
+    fun `selected retained graph set projects literal and parameter routes in source order`() {
+        val retainedChecks = mutableListOf<Int>()
+        val projectedSources = mutableListOf<Int>()
+        val projectedLimits = mutableListOf<Int>()
+        val empty = graph()
+        val graphs = List(3) { sourceIndex ->
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by empty,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    retainedChecks += sourceIndex
+                    return type == CallSiteNode::class.java && predicates.size == 2
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectedSources += sourceIndex
+                    projectedLimits += limit
+                    return List(minOf(2, limit)) { row ->
+                        StringPropertyProjectionRow(listOf("Caller-$sourceIndex-$row"))
+                    }
+                }
+            })
+        }
+        val executor = CrossGraphCypherExecutor(graphs)
+        val routes = listOf(
+            "n.graphId IN ['graph-0', 'graph-1', 'graph-2']" to emptyMap(),
+            "n.graphId IN \$graphIds" to mapOf("graphIds" to graphs.map(CypherGraph::id))
+        )
+
+        routes.forEach { (route, parameters) ->
+            retainedChecks.clear()
+            projectedSources.clear()
+            projectedLimits.clear()
+            val result = executor.execute(
+                "MATCH (n:CallSiteNode) WHERE $route AND " +
+                    "(n.caller_class CONTAINS 'Caller' OR n.callee_name CONTAINS 'missing') " +
+                    "RETURN n.caller_class AS caller LIMIT 3",
+                parameters
+            )
+
+            assertEquals(listOf(0, 1, 2), retainedChecks)
+            assertEquals(listOf(0, 1), projectedSources)
+            assertEquals(listOf(3, 1), projectedLimits)
+            assertEquals(
+                listOf("Caller-0-0", "Caller-0-1", "Caller-1-0"),
+                result.rows.map { row -> row["caller"] }
+            )
+            assertEquals(listOf("graph-0"), graphIds(result.rows[0]))
+            assertEquals(listOf("graph-1"), graphIds(result.rows[2]))
+        }
+    }
+
+    @Test
+    fun `selected retained graph set preflights every source before projection`() {
+        val returnType = TypeDescriptor("void")
+        val retainedChecks = mutableListOf<Int>()
+        val projectionCalls = AtomicInteger()
+        val graphs = List(2) { sourceIndex ->
+            val callerClass = "example.Caller-$sourceIndex"
+            val backing = graph(
+                CallSiteNode(
+                    NodeId(sourceIndex),
+                    MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    sourceIndex,
+                    null,
+                    emptyList()
+                )
+            )
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by backing,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    retainedChecks += sourceIndex
+                    return sourceIndex == 0
+                }
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectionCalls.incrementAndGet()
+                    error("No source may project before the complete retained preflight passes")
+                }
+            })
+        }
+
+        val result = CrossGraphCypherExecutor(graphs).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Caller-' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf(0, 1), retainedChecks)
+        assertEquals(0, projectionCalls.get())
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), result.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("graph-0"), listOf("graph-1")), result.rows.map(::graphIds))
+    }
+
+    @Test
+    fun `request selected retained graph set projects only after source scope was applied`() {
+        val returnType = TypeDescriptor("void")
+        val projectionCalls = mutableListOf<Int>()
+        val graphs = List(2) { sourceIndex ->
+            val callerClass = "example.Caller-$sourceIndex"
+            val backing = graph(
+                CallSiteNode(
+                    NodeId(sourceIndex),
+                    MethodDescriptor(TypeDescriptor(callerClass), "call", emptyList(), returnType),
+                    MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                    sourceIndex,
+                    null,
+                    emptyList()
+                )
+            )
+            CypherGraph("graph-$sourceIndex", object :
+                Graph by backing,
+                RetainedStringPropertyDisjunctionLookup,
+                StringPropertyDisjunctionProjection {
+                override fun hasRetainedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    projectionCalls += sourceIndex
+                    return listOf(StringPropertyProjectionRow(listOf(callerClass))).take(limit)
+                }
+            })
+        }
+        val query = "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Caller-' " +
+            "RETURN n.caller_class AS caller LIMIT 2"
+
+        val scoped = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(query)
+
+        assertEquals(listOf(0, 1), projectionCalls)
+        assertEquals(listOf("example.Caller-0", "example.Caller-1"), scoped.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("graph-0"), listOf("graph-1")), scoped.rows.map(::graphIds))
+
+        projectionCalls.clear()
+        val unscoped = CrossGraphCypherExecutor(
+            graphs,
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = false
+        ).execute(query)
+
+        assertEquals(emptyList(), projectionCalls)
+        assertEquals(scoped.rows, unscoped.rows)
     }
 
     @Test
