@@ -63,8 +63,7 @@ identity: the whole-JAR SHA-256, an order-independent bytecode-shard SHA-256, an
 order-independent query-semantic SHA-256 over node count plus the complete CallSite string tuple
 multiset. Generated timestamps and physical node order are intentionally excluded. Class/node/
 CallSite counts, corpus id, and shard id are also recorded, and all 64 semantic fingerprints must
-differ. The complete CallSite index and trigram-dictionary byte sizes and SHA-256 values are pinned
-as well. Preparation immediately reloads and re-verifies all 64 graphs against the same identities.
+differ. Preparation immediately reloads and re-verifies all 64 graphs against the same identities.
 For a release-candidate audit, `.github/scripts/test-fixture64-reproducibility.sh` performs two
 independent real-JAR preparations, requires identical identity/term fields, and proves that a
 tampered semantic fingerprint is rejected.
@@ -149,10 +148,7 @@ graphId forms. The queries preserve the production non-`DISTINCT`, four-property
 
 The same real fixtures also cover selected-set widths 2, 8, and 64 through `n.graphId IN [...]`,
 `n.graphId IN $graphIds`, and a request-selected K-source reference. Together with the existing
-single-graph equality matrix, this covers widths 1/2/8/64. The K=64 zero-hit request-selected
-reference is deliberately the first query in every 64-graph replay, before any width-one lookup can
-initialize an index; this makes `cold` a true first-request gate for the widest external graph set.
-The candidate must receive 64 input
+single-graph equality matrix, this covers widths 1/2/8/64. The candidate must receive 64 input
 sources for every Cypher graphId form, touch no source outside the selected set, and report `64-K`
 sources pruned. Zero and targeted queries must consume all K selected sources. Dense queries are
 expected to stop after the first selected graph fills the global `LIMIT 200`, so they must access
@@ -166,8 +162,8 @@ graph. The production CLI and fixture64 builder persist the combined CallSite CS
 CallSite-index heap. Legacy or invalid graph files rebuild it once and atomically persist it when
 the complete index is released or the mapped graph closes. If index admission is denied, the graph retains the
 correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
-`graphite-callsite-scan-N` workers. The default fallback background-worker count is the segment
-half of the additive NCPU plan (`NCPU - floor(NCPU / 2)`), overridable with
+`graphite-callsite-scan-N` workers. The default fallback worker count is
+`min(8, Runtime.availableProcessors())`, overridable with
 `-Dgraphite.webgraph.callSiteScanParallelism=N`. `graphite-cypher-scan-N` names the separate
 cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
 parallelism.
@@ -181,9 +177,10 @@ simultaneously inside one scan. The fixture64 comparator fails closed unless the
 exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
 creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
 Before loading graphs, the harness sets
-`graphite.webgraph.prepareCallSiteStringIndexOnLoad=lazy` for cold and warm forks. This disables
-load-time preparation without disabling production's lazy persisted-sidecar restore. The property
-is restored after the trial. `startup-prepared` explicitly uses the `true` load-time preparation path.
+`graphite.webgraph.prepareCallSiteStringIndexOnLoad=false` for cold and warm forks. This prevents a
+persisted index from being restored behind `clearStringPropertyIndexes` and preserves the intended
+raw-build diagnostic. The property is restored after the trial. `startup-prepared` explicitly uses
+the default `true` load-time preparation path.
 
 The candidate cold fork must report 64 scans followed by exactly 1,979 index lookups, distributed
 29..38 per graph because dense queries stop at the global limit. After warmup metrics are reset, the
@@ -261,53 +258,21 @@ Repeat with warm and `startup-prepared` forks; all three statuses are required e
 The full fixture64 replay is intentionally run on the benchmark host rather than synthesized in a
 small hosted-runner test. The normal `benchmark-regression-gate` depends on
 `graph-routing-pressure-evidence`, which fails closed until the exact candidate commit has a trusted
-`graph-routing-pressure-evidence`. The required PR job checks out the exact base and candidate SHAs,
-regenerates all 64 persisted graphs from the pinned fixture JARs, executes the cold, warm, and
-startup-prepared states, verifies correctness, and reruns the comparator on the same trusted runner.
-No external URL, Gist, or author-published commit status is accepted as execution evidence.
-
-Unscoped 64-graph wide queries have a separate required component,
-`global-wide-pressure-evidence`. It requires
-three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
-query shapes are placed across the 64-graph manifest, and each targeted result is
-bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
-all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
-shortcuts, and a base-first page-cache bias from satisfying the gate.
-
-Four additional fixture-derived cases pin limit-filling behavior to a localized hit in the first,
-middle, or last graph and to a dense term that occurs in all 64 graphs. Their terms and exact hit
-sets are derived from the persisted graphs generated from the pinned JARs and are reverified before
-timing; they are not synthetic performance data.
-
-Each fork uses the `cold` index state: graph handles are loaded, but retained query indexes are
-cleared before the measured replay. This matches the unprepared/legacy graph state behind the
-production multi-second first wide queries. The candidate may restore a verified persisted sidecar
-inside the request; that I/O and validation remains part of the measured latency.
-
-The `global-wide` family uses the production-shaped unlabeled `MATCH (n)` with eight raw
-four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` and `RETURN
-DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
-query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
-fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
-every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
+`graphite/fixture64-graph-routing` commit status. The status is accepted only when it was published
+by `johnsonlee`, names the current base SHA, reports correctness pass, records cold/warm
+P50/P95 speedups of at least 10x, and records a `startup-prepared` P95 speedup of at least 10x.
+A status attached to an older candidate or base cannot satisfy the
+gate. An arbitrary HTTPS URL is neither required nor treated as proof.
+The driver itself uploads the exact JMH JSON, observations, correctness oracle/results, comparator
+reports, corpus provenance, and their SHA-256 manifest to an immutable public Gist revision. The
+commit status points to that revision; CI downloads it, verifies every digest and identity, and
+independently reruns the comparator. A caller-supplied URL is never accepted.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
 
 ```bash
-.github/scripts/run-real64-graph-routing.sh \
-  /absolute/path/to/fixture64/graphs.tsv \
-  graphite-webgraph/build/benchmark-fixtures \
-  "$BASE_SHA" "$CANDIDATE_SHA"
-```
-
-Run the unscoped global-wide gate against the same verified manifest and fixture JARs:
-
-```bash
-.github/scripts/run-real64-global-wide.sh \
+.github/scripts/run-fixture64-graph-routing.sh \
   /absolute/path/to/fixture64/graphs.tsv \
   graphite-webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
@@ -321,9 +286,8 @@ derived correctness-oracle SHA-256 in `provenance.json`;
 caller-supplied JARs are not accepted. Before running, it requires exactly 64 provenance rows, four
 source corpora, and 64 distinct query-semantic graph fingerprints. The candidate-built verifier
 re-hashes the four supplied fixture JARs and every bytecode shard, binds every manifest path and
-term to its provenance row, verifies both query sidecars byte-for-byte, reloads all 64 actual graph
-directories, and recomputes counts, terms, and semantic identities before timing. It then runs base
-and candidate sequentially for independent
+term to its provenance row, reloads all 64 actual graph directories, and recomputes counts, terms,
+and semantic identities before timing. It then runs base and candidate sequentially for independent
 cold, warm, and `startup-prepared` forks,
 verifies the candidate against the base-derived oracle, invokes `compare-graph-id-pressure` for all
 states, publishes immutable downloadable evidence, and only then publishes the trusted commit

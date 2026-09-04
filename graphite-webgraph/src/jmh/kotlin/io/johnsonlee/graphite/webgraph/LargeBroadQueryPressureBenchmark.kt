@@ -10,8 +10,6 @@ import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherGraph
 import io.johnsonlee.graphite.cypher.CypherQueryTimeoutException
 import io.johnsonlee.graphite.cypher.CypherResult
-import io.johnsonlee.graphite.cypher.RESULT_GRAPH_IDS_KEY
-import io.johnsonlee.graphite.cypher.RESULT_METADATA_KEY
 import org.openjdk.jmh.annotations.AuxCounters
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
@@ -99,15 +97,12 @@ open class LargeBroadQueryPressureBenchmark {
         originalPrepareIndexOnLoad = System.getProperty(PREPARE_INDEX_ON_LOAD_PROPERTY)
         System.setProperty(
             PREPARE_INDEX_ON_LOAD_PROPERTY,
-            if (indexState == STARTUP_PREPARED_INDEX_STATE) "true" else LAZY_INDEX_PREPARATION_MODE
+            (indexState == STARTUP_PREPARED_INDEX_STATE).toString()
         )
         prepareIndexOnLoadConfigured = true
         require(graphCount in 1..MAX_GRAPH_COUNT)
         val graphSources = broadQueryGraphSources(graphCount)
-        val fullCoverage = broadQueryCoverageWorkload(
-            graphSources,
-            if (graphCount == MAX_GRAPH_COUNT) broadQueryFixtureDistributions(graphSources) else emptyMap()
-        )
+        val fullCoverage = broadQueryCoverageWorkload(graphSources)
         workload = when (coverageFamily) {
             ALL_COVERAGE_FAMILIES -> fullCoverage
             GRAPH_ROUTING_COVERAGE_FAMILY -> fullCoverage.filter { case -> case.family.isGraphRouting() }
@@ -232,7 +227,6 @@ open class LargeBroadQueryPressureBenchmark {
 
     private fun replay(validateResults: Boolean): List<BroadQuerySample> = workload.map { case ->
         resetCallSiteScanMetrics()
-        resetGraphWorkerMetrics()
         val started = System.nanoTime()
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(Long.MAX_VALUE), cancellation)
@@ -241,11 +235,7 @@ open class LargeBroadQueryPressureBenchmark {
             checkNotNull(sourcesById[graphId]) { "Requested graph is not loaded: $graphId" }
         } ?: sources
         val task = queryExecutor.submit(Callable {
-            pressureQueryExecutor(
-                executionSources,
-                context,
-                case.requestGraphIds != null
-            ).execute(case.query, case.parameters)
+            CrossGraphCypherExecutor(executionSources, context).execute(case.query, case.parameters)
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)
@@ -258,7 +248,6 @@ open class LargeBroadQueryPressureBenchmark {
                 rowCount = result.rows.size.toLong(),
                 responseBytes = canonicalResult.size.toLong(),
                 digest = digest(canonicalResult),
-                hitGraphIds = resultHitGraphIds(result),
                 execution = queryExecutionMetrics(case, executionPath, executionSources.size, context)
             ).also { sample ->
                 if (validateResults && case.expectZeroRows) check(sample.rowCount == 0L) {
@@ -282,7 +271,6 @@ open class LargeBroadQueryPressureBenchmark {
                 0L,
                 0L,
                 TIMEOUT_DIGEST,
-                emptySet(),
                 queryExecutionMetrics(case, executionPath, executionSources.size, context)
             )
         } catch (error: ExecutionException) {
@@ -293,18 +281,9 @@ open class LargeBroadQueryPressureBenchmark {
                 0L,
                 0L,
                 error.cause?.javaClass?.name ?: error.javaClass.name,
-                emptySet(),
                 queryExecutionMetrics(case, executionPath, executionSources.size, context)
             )
         }
-    }
-
-    private fun resultHitGraphIds(result: CypherResult): Set<String> = result.rows.flatMapTo(linkedSetOf()) { row ->
-        @Suppress("UNCHECKED_CAST")
-        val metadata = row[RESULT_METADATA_KEY] as? Map<String, Any?>
-        (metadata?.get(RESULT_GRAPH_IDS_KEY) as? Iterable<*>)
-            ?.mapNotNull { graphId -> graphId as? String }
-            .orEmpty()
     }
 
     private fun BroadQueryCase.executionPath(): BroadQueryExecutionPath = when {
@@ -323,11 +302,8 @@ open class LargeBroadQueryPressureBenchmark {
             val graph = graphs[index]
             BroadQueryGraphAccess(
                 graphId = sources[index].id,
-                stringLookupEntries = optionalInternalLong(graph, "callSiteStringLookupEntryCount"),
                 parallelScans = requiredInternalLong(graph, "callSiteParallelScanCount"),
                 indexLookups = requiredInternalLong(graph, "callSiteStringIndexLookupCount"),
-                preflightChecks = optionalInternalLong(graph, "callSiteStringPreflightCount"),
-                projectionLookups = optionalInternalLong(graph, "callSiteStringProjectionLookupCount"),
                 peakActiveWorkers = requiredInternalLong(graph, "callSiteScanPeakActiveWorkers")
             )
         }
@@ -347,11 +323,6 @@ open class LargeBroadQueryPressureBenchmark {
             parallelScanCount = perGraph.sumOf(BroadQueryGraphAccess::parallelScans),
             indexLookupCount = perGraph.sumOf(BroadQueryGraphAccess::indexLookups),
             peakActiveWorkers = perGraph.maxOfOrNull(BroadQueryGraphAccess::peakActiveWorkers) ?: 0L,
-            graphWorkerPeakActiveWorkers = graphWorkerMetric("directStringGraphPeakActiveWorkers"),
-            segmentWorkerPeakActiveWorkers = optionalInternalLong(
-                graphs.first(),
-                "callSiteSegmentPeakActiveWorkers"
-            ),
             graphWorkUnits = consumedGraphWorkUnits(context),
             graphIdSourceSelections = planner.graphIdSourceSelections,
             graphIdSourcePruningExecutions = planner.graphIdSourcePruningExecutions,
@@ -384,9 +355,6 @@ open class LargeBroadQueryPressureBenchmark {
         checkNotNull(invokeInternalMetric(graph, prefix) as? Number) {
             "Required benchmark metric $prefix is unavailable on ${graph.javaClass.name}"
         }.toLong()
-
-    private fun optionalInternalLong(graph: MappedWebGraphBackedGraph, prefix: String): Long =
-        (invokeInternalMetric(graph, prefix) as? Number)?.toLong() ?: 0L
 
     private fun consumedGraphWorkUnits(context: CypherExecutionContext): Long {
         val tracker = context.javaClass.declaredFields.singleOrNull { field ->
@@ -424,11 +392,6 @@ open class LargeBroadQueryPressureBenchmark {
         wallNanos: Long
     ) {
         val latencies = samples.map(BroadQuerySample::latencyNanos).sorted()
-        val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-        val split = reflectedGraphScanParallelism(processors)
-        counters.availableProcessors = processors.toLong()
-        counters.graphWorkerCount = split?.first?.toLong() ?: 0L
-        counters.segmentWorkerCount = split?.second?.toLong() ?: 0L
         counters.graphCount = graphCount.toLong()
         counters.distinctGraphPathCount = graphPaths.map { it.toAbsolutePath().normalize() }.toSet().size.toLong()
         counters.queryCount = samples.size.toLong()
@@ -543,12 +506,6 @@ open class LargeBroadQueryPressureBenchmark {
         counters.callSiteScanPeakActiveWorkers = samples.maxOfOrNull {
             sample -> sample.execution.peakActiveWorkers
         } ?: 0L
-        counters.graphScanPeakActiveWorkers = samples.maxOfOrNull {
-            sample -> sample.execution.graphWorkerPeakActiveWorkers
-        } ?: 0L
-        counters.segmentScanPeakActiveWorkers = samples.maxOfOrNull {
-            sample -> sample.execution.segmentWorkerPeakActiveWorkers
-        } ?: 0L
     }
 
     private fun familyP95(samples: List<BroadQuerySample>, family: BroadQueryFamily): Long =
@@ -580,19 +537,6 @@ open class LargeBroadQueryPressureBenchmark {
     private fun resetCallSiteScanMetrics() {
         graphs.forEach { graph -> invokeInternalMetric(graph, "resetCallSiteScanMetrics") }
     }
-
-    private fun resetGraphWorkerMetrics() {
-        graphWorkerMetric("resetDirectStringGraphWorkerMetrics")
-    }
-
-    private fun graphWorkerMetric(prefix: String): Long = runCatching {
-        val owner = Class.forName("io.johnsonlee.graphite.cypher.QueryPipelineKt")
-        val method = owner.declaredMethods.firstOrNull { candidate ->
-            candidate.parameterCount == 0 && candidate.name.startsWith(prefix)
-        } ?: return@runCatching 0L
-        method.isAccessible = true
-        (method.invoke(null) as? Number)?.toLong() ?: 0L
-    }.getOrDefault(0L)
 
     private fun invokeInternalMetric(graph: MappedWebGraphBackedGraph, prefix: String): Any? = runCatching {
         graph.javaClass.declaredMethods.firstOrNull { method ->
@@ -631,8 +575,6 @@ open class LargeBroadQueryPressureBenchmark {
             "responseBytes",
             "digest",
             "latencyNanos",
-            "fixtureDistributionId",
-            "hitGraphIds",
             "executionPath",
             "inputSourceCount",
             "accessedGraphCount",
@@ -668,8 +610,6 @@ open class LargeBroadQueryPressureBenchmark {
                 sample.responseBytes,
                 sample.digest,
                 sample.latencyNanos,
-                sample.case.fixtureDistributionId.orEmpty(),
-                sample.hitGraphIds.joinToString(","),
                 sample.execution.path.id,
                 sample.execution.inputSourceCount,
                 sample.execution.accessedGraphIds.size,
@@ -732,9 +672,6 @@ open class LargeBroadQueryPressureBenchmark {
 @State(Scope.Thread)
 @AuxCounters(AuxCounters.Type.EVENTS)
 open class LargeBroadQueryPressureCounters {
-    @JvmField var availableProcessors: Long = 0
-    @JvmField var graphWorkerCount: Long = 0
-    @JvmField var segmentWorkerCount: Long = 0
     @JvmField var graphCount: Long = 0
     @JvmField var distinctGraphPathCount: Long = 0
     @JvmField var queryCount: Long = 0
@@ -795,8 +732,6 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var callSiteStringIndexLookupMinPerGraph: Long = 0
     @JvmField var callSiteStringIndexLookupMaxPerGraph: Long = 0
     @JvmField var callSiteScanPeakActiveWorkers: Long = 0
-    @JvmField var graphScanPeakActiveWorkers: Long = 0
-    @JvmField var segmentScanPeakActiveWorkers: Long = 0
     @JvmField var requestSelectedSourceQueryCount: Long = 0
     @JvmField var cypherGraphIdPredicateQueryCount: Long = 0
     @JvmField var inputSourceCount: Long = 0
@@ -810,16 +745,6 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var filteredNodeLimitFastPathExecutions: Long = 0
     @JvmField var generalFallbackExecutions: Long = 0
 }
-
-private fun reflectedGraphScanParallelism(processors: Int): Pair<Int, Int>? = runCatching {
-    val planClass = Class.forName("io.johnsonlee.graphite.graph.GraphScanParallelismPlan")
-    val companion = planClass.getField("Companion").get(null)
-    val companionClass = companion.javaClass
-    val plan = companionClass.getMethod("balanced", Int::class.javaPrimitiveType).invoke(companion, processors)
-    val graphWorkers = plan.javaClass.getMethod("getGraphWorkerCount").invoke(plan) as Int
-    val segmentWorkers = plan.javaClass.getMethod("getSegmentWorkerCount").invoke(plan) as Int
-    graphWorkers to segmentWorkers
-}.getOrNull()
 
 private data class BroadQueryCase(
     val id: String,
@@ -838,8 +763,7 @@ private data class BroadQueryCase(
     val workloadIdentity: String? = null,
     val requestGraphIds: List<String>? = null,
     val expectedRowCountRange: LongRange? = null,
-    val configuredTimeoutMillis: Long? = null,
-    val fixtureDistributionId: String? = null
+    val configuredTimeoutMillis: Long? = null
 ) {
     fun timeoutMillis(defaultMillis: Long): Long = configuredTimeoutMillis ?: defaultMillis
 }
@@ -851,7 +775,6 @@ private data class BroadQuerySample(
     val rowCount: Long,
     val responseBytes: Long,
     val digest: String,
-    val hitGraphIds: Set<String>,
     val execution: BroadQueryExecutionMetrics
 ) {
     fun correctnessRecord(): QueryCorrectnessRecord = QueryCorrectnessRecord(
@@ -883,8 +806,6 @@ private data class BroadQueryExecutionMetrics(
     val parallelScanCount: Long,
     val indexLookupCount: Long,
     val peakActiveWorkers: Long,
-    val graphWorkerPeakActiveWorkers: Long,
-    val segmentWorkerPeakActiveWorkers: Long,
     val graphWorkUnits: Long,
     val graphIdSourceSelections: Long,
     val graphIdSourcePruningExecutions: Long,
@@ -907,16 +828,11 @@ private data class BroadQueryPlannerDiagnostics(
 
 private data class BroadQueryGraphAccess(
     val graphId: String,
-    val stringLookupEntries: Long,
     val parallelScans: Long,
     val indexLookups: Long,
-    val preflightChecks: Long,
-    val projectionLookups: Long,
     val peakActiveWorkers: Long
 ) {
-    fun wasAccessed(): Boolean = stringLookupEntries > 0L || parallelScans > 0L || indexLookups > 0L ||
-        preflightChecks > 0L ||
-        projectionLookups > 0L
+    fun wasAccessed(): Boolean = parallelScans > 0L || indexLookups > 0L
 }
 
 private enum class BroadQueryExecutionPath(val id: String) {
@@ -951,7 +867,6 @@ private enum class BroadQueryFamily(val id: String) {
     PROJECTION("projection"),
     AGGREGATION("aggregation"),
     GLOBAL("global"),
-    GLOBAL_WIDE("global-wide"),
     REGEX("regex"),
     GRAPH_ID("graph-id"),
     GRAPH_PARAMETER("graph-parameter"),
@@ -963,8 +878,6 @@ private enum class BroadQueryFamily(val id: String) {
     fun isGraphIdPredicate(): Boolean = this == GRAPH_ID || this == GRAPH_ID_SET
 
     fun isRequestSelectedReference(): Boolean = this == GRAPH_PARAMETER || this == GRAPH_SET_REFERENCE
-
-    fun isGlobalWidePressure(): Boolean = this == GLOBAL_WIDE
 }
 
 private enum class BroadQuerySelectivity(val id: String) {
@@ -1137,13 +1050,6 @@ private data class BroadQueryGraphSource(
     val workloadIdentity: String
 )
 
-private data class BroadQueryFixtureDistribution(
-    val id: String,
-    val targetGraphId: String,
-    val term: String,
-    val hitGraphIds: List<String>
-)
-
 private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource> {
     val configured = requireNotNull(System.getProperty(GRAPH_MANIFEST_PROPERTY)) {
         "Real persisted graphs are required for performance evidence: " +
@@ -1184,39 +1090,6 @@ private fun broadQueryGraphSources(graphCount: Int): List<BroadQueryGraphSource>
     return sources
 }
 
-private fun broadQueryFixtureDistributions(
-    graphSources: List<BroadQueryGraphSource>
-): Map<String, BroadQueryFixtureDistribution> {
-    val manifest = Path.of(checkNotNull(System.getProperty(GRAPH_MANIFEST_PROPERTY)))
-        .toAbsolutePath().normalize()
-    val graphIds = graphSources.map(BroadQueryGraphSource::id)
-    val graphIdSet = graphIds.toSet()
-    val records = Files.readAllLines(manifest)
-        .filter { line -> line.startsWith(WIDE_DISTRIBUTION_PREFIX) }
-        .map { line ->
-            val fields = line.split('\t')
-            require(fields.size == WIDE_DISTRIBUTION_FIELD_COUNT) {
-                "$manifest has a malformed fixture64 global-wide distribution record"
-            }
-            BroadQueryFixtureDistribution(fields[1], fields[2], fields[3], fields[4].split(','))
-        }
-    require(records.map(BroadQueryFixtureDistribution::id).toSet() == REQUIRED_WIDE_DISTRIBUTIONS) {
-        "$manifest must contain exactly ${REQUIRED_WIDE_DISTRIBUTIONS.sorted()} distribution records"
-    }
-    records.forEach { record ->
-        require(record.targetGraphId in graphIdSet && record.hitGraphIds.isNotEmpty() &&
-            record.hitGraphIds.toSet().size == record.hitGraphIds.size &&
-            record.hitGraphIds.all { graphId -> graphId in graphIdSet }
-        ) {
-            "$manifest distribution ${record.id} is not bound to the 64 graph rows"
-        }
-        require(record.hitGraphIds == graphIds.filter(record.hitGraphIds.toSet()::contains)) {
-            "$manifest distribution ${record.id} hit graphs must retain manifest order"
-        }
-    }
-    return records.associateBy(BroadQueryFixtureDistribution::id)
-}
-
 private data class BroadQueryTarget(
     val graphId: String,
     val graphIndex: Int,
@@ -1225,14 +1098,9 @@ private data class BroadQueryTarget(
     val workloadIdentity: String? = null
 )
 
-private fun broadQueryCoverageWorkload(
-    graphSources: List<BroadQueryGraphSource>,
-    fixtureDistributions: Map<String, BroadQueryFixtureDistribution>
-): List<BroadQueryCase> = buildList {
+private fun broadQueryCoverageWorkload(graphSources: List<BroadQueryGraphSource>): List<BroadQueryCase> = buildList {
     require(graphSources.isNotEmpty())
-    var globalWideShapeIndex = 0
     BROAD_QUERY_COVERAGE.forEachIndexed { shapeIndex, spec ->
-        val placementShapeIndex = if (spec.family.isGlobalWidePressure()) globalWideShapeIndex++ else 0
         val targets = if (spec.family.isGraphRouting()) {
             graphSources.flatMapIndexed { graphIndex, source ->
                 BroadQuerySelectivity.entries.map { selectivity ->
@@ -1245,25 +1113,6 @@ private fun broadQueryCoverageWorkload(
                     )
                 }
             }
-        } else if (spec.family.isGlobalWidePressure()) {
-            BroadQuerySelectivity.entries.map { selectivity ->
-                val placementIndex = when (selectivity) {
-                    BroadQuerySelectivity.DENSE -> 0
-                    else -> if (graphSources.size == 1) {
-                        0
-                    } else {
-                        placementShapeIndex * graphSources.lastIndex / (GLOBAL_WIDE_SHAPE_COUNT - 1)
-                    }
-                }
-                val source = graphSources[placementIndex]
-                BroadQueryTarget(
-                    source.id,
-                    placementIndex,
-                    selectivity,
-                    source.routingTerms.getValue(selectivity),
-                    source.workloadIdentity
-                )
-            }
         } else {
             BroadQuerySelectivity.entries.map { selectivity ->
                 BroadQueryTarget(graphSources.last().id, graphSources.lastIndex, selectivity)
@@ -1273,7 +1122,7 @@ private fun broadQueryCoverageWorkload(
             val targetGraphId = target.graphId
             val selectivity = target.selectivity
             val termIndex = if (spec.family.isGraphRouting()) target.graphIndex else shapeIndex
-            val absent = if (spec.family.isGraphRouting() || spec.family.isGlobalWidePressure()) {
+            val absent = if (spec.family.isGraphRouting()) {
                 checkNotNull(target.routingTerm)
             } else {
                 "GraphitePressureAbsent${shapeIndex.toString().padStart(2, '0')}${selectivity.id}X"
@@ -1313,20 +1162,12 @@ private fun broadQueryCoverageWorkload(
                     parameters = spec.parameters(terms),
                     expectZeroRows = spec.zeroReturnsNoRows && selectivity == BroadQuerySelectivity.ZERO,
                     targetGraphId = targetGraphId.takeIf { spec.family.isGraphRouting() },
-                    workloadIdentity = target.workloadIdentity.takeIf {
-                        spec.family.isGraphRouting() || spec.family.isGlobalWidePressure()
-                    },
+                    workloadIdentity = target.workloadIdentity.takeIf { spec.family.isGraphRouting() },
                     requestGraphIds = listOf(targetGraphId).takeIf {
                         spec.family == BroadQueryFamily.GRAPH_PARAMETER
                     },
                     expectedRowCountRange = if (spec.family == BroadQueryFamily.GRAPH_PARAMETER) {
                         selectivity.expectedReferenceRows()
-                    } else if (spec.family.isGlobalWidePressure()) {
-                        when (selectivity) {
-                            BroadQuerySelectivity.ZERO -> 0L..0L
-                            BroadQuerySelectivity.TARGETED -> 1L until ROUTING_RESULT_LIMIT
-                            BroadQuerySelectivity.DENSE -> ROUTING_RESULT_LIMIT..ROUTING_RESULT_LIMIT
-                        }
                     } else {
                         null
                     }
@@ -1334,52 +1175,7 @@ private fun broadQueryCoverageWorkload(
             )
         }
     }
-    check(globalWideShapeIndex == GLOBAL_WIDE_SHAPE_COUNT)
-    if (graphSources.size == MAX_GRAPH_COUNT) {
-        addFixture64GlobalWideDistributionCases(graphSources, fixtureDistributions)
-        addFixture64GraphSetCases(graphSources)
-        val coldFirst = indexOfFirst { case ->
-            case.shape == GRAPH_SET_REFERENCE_SHAPE &&
-                case.selectivity == BroadQuerySelectivity.ZERO &&
-                case.requestGraphIds?.size == MAX_GRAPH_COUNT
-        }
-        check(coldFirst >= 0) { "Missing cold-first K64 request-selected graph-set case" }
-        add(0, removeAt(coldFirst))
-    }
-}
-
-private fun MutableList<BroadQueryCase>.addFixture64GlobalWideDistributionCases(
-    graphSources: List<BroadQueryGraphSource>,
-    distributions: Map<String, BroadQueryFixtureDistribution>
-) {
-    REQUIRED_WIDE_DISTRIBUTIONS.sorted().forEach { distributionId ->
-        val distribution = checkNotNull(distributions[distributionId])
-        val source = graphSources.single { candidate -> candidate.id == distribution.targetGraphId }
-        val localized = distributionId != BROAD_WIDE_DISTRIBUTION
-        require(if (localized) {
-            distribution.hitGraphIds == listOf(distribution.targetGraphId)
-        } else {
-            distribution.hitGraphIds == graphSources.map(BroadQueryGraphSource::id)
-        })
-        add(
-            BroadQueryCase(
-                id = "global-wide-distribution-$distributionId",
-                family = BroadQueryFamily.GLOBAL_WIDE,
-                shape = "global-wide-distribution-$distributionId",
-                selectivity = BroadQuerySelectivity.DENSE,
-                operator = "wrapped-lowercase-contains",
-                boundary = "fixture-distribution",
-                projection = "properties",
-                limit = ROUTING_RESULT_LIMIT.toInt(),
-                query = requestGraphWrappedContains(distribution.term),
-                parameters = emptyMap(),
-                expectZeroRows = false,
-                workloadIdentity = source.workloadIdentity,
-                expectedRowCountRange = ROUTING_RESULT_LIMIT.toLong()..ROUTING_RESULT_LIMIT.toLong(),
-                fixtureDistributionId = distributionId
-            )
-        )
-    }
+    if (graphSources.size == MAX_GRAPH_COUNT) addFixture64GraphSetCases(graphSources)
 }
 
 private fun MutableList<BroadQueryCase>.addFixture64GraphSetCases(
@@ -1564,40 +1360,6 @@ private fun wrappedContainsOr(term: String): String = """
     RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name
     LIMIT 200
 """.trimIndent()
-
-private fun globalWidePredicate(term: String): String =
-    "n.caller_class CONTAINS '${cypherString(term)}' OR " +
-        "n.caller_name CONTAINS '${cypherString(term)}' OR " +
-        "n.callee_class CONTAINS '${cypherString(term)}' OR " +
-        "n.callee_name CONTAINS '${cypherString(term)}'"
-
-private fun globalWideProjection(term: String, projection: String): String = """
-    MATCH (n)
-    WHERE ${globalWidePredicate(term)}
-    RETURN $projection
-    LIMIT 200
-""".trimIndent()
-
-private fun parameterizedGlobalWideProjection(projection: String): String = """
-    MATCH (n)
-    WHERE n.caller_class CONTAINS ${'$'}term
-       OR n.caller_name CONTAINS ${'$'}term
-       OR n.callee_class CONTAINS ${'$'}term
-       OR n.callee_name CONTAINS ${'$'}term
-    RETURN $projection
-    LIMIT 200
-""".trimIndent()
-
-private const val GLOBAL_WIDE_SHAPE_COUNT = 10
-private const val WIDE_DISTRIBUTION_PREFIX = "# global-wide-distribution-v1"
-private const val WIDE_DISTRIBUTION_FIELD_COUNT = 5
-private const val BROAD_WIDE_DISTRIBUTION = "broad-all-64"
-private val REQUIRED_WIDE_DISTRIBUTIONS = setOf(
-    "localized-early",
-    "localized-middle",
-    "localized-late",
-    BROAD_WIDE_DISTRIBUTION
-)
 
 private fun graphIdPropertyWrappedContains(graphId: String, term: String): String = """
     MATCH (n)
@@ -1892,7 +1654,7 @@ private val BROAD_QUERY_COVERAGE = listOf(
     },
     BroadQueryCoverageSpec(
         "contains-or-wrapped", BroadQueryFamily.WRAPPED, "distinct-properties", 200,
-        operator = "raw-contains"
+        operator = "wrapped-contains"
     ) {
         wrappedContainsOr(it.term)
     },
@@ -2000,80 +1762,6 @@ private val BROAD_QUERY_COVERAGE = listOf(
         parameterizedFourPropertyOr()
     },
     BroadQueryCoverageSpec(
-        "global-wide-four-properties", BroadQueryFamily.GLOBAL_WIDE, "properties", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(it.term, "n.caller_class, n.caller_name, n.callee_class, n.callee_name")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-class-pair", BroadQueryFamily.GLOBAL_WIDE, "class-properties", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(it.term, "n.caller_class, n.callee_class")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-name-pair", BroadQueryFamily.GLOBAL_WIDE, "name-properties", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(it.term, "n.caller_name, n.callee_name")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-caller-class", BroadQueryFamily.GLOBAL_WIDE, "caller-class", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(it.term, "n.caller_class")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-callee-class", BroadQueryFamily.GLOBAL_WIDE, "callee-class", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(it.term, "n.callee_class")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-provenance", BroadQueryFamily.GLOBAL_WIDE, "graph-id-properties", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(
-            it.term,
-            "n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name"
-        )
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-aliased", BroadQueryFamily.GLOBAL_WIDE, "aliased-properties", 200,
-        operator = "raw-contains"
-    ) {
-        globalWideProjection(
-            it.term,
-            "n.caller_class AS caller, n.caller_name AS callerMethod, " +
-                "n.callee_class AS callee, n.callee_name AS calleeMethod"
-        )
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-parameterized", BroadQueryFamily.GLOBAL_WIDE, "properties", 200,
-        operator = "raw-contains", boundary = "parameters",
-        parameters = { mapOf("term" to it.term) }
-    ) {
-        parameterizedGlobalWideProjection("n.caller_class, n.caller_name, n.callee_class, n.callee_name")
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-wrapped-case-insensitive",
-        BroadQueryFamily.GLOBAL_WIDE,
-        "properties",
-        200,
-        operator = "wrapped-lowercase-contains"
-    ) {
-        requestGraphWrappedContains(it.term)
-    },
-    BroadQueryCoverageSpec(
-        "global-wide-wrapped-case-insensitive-distinct",
-        BroadQueryFamily.GLOBAL_WIDE,
-        "distinct-properties",
-        200,
-        operator = "wrapped-lowercase-contains"
-    ) {
-        wrappedContainsOr(it.term)
-    },
-    BroadQueryCoverageSpec(
         "exact-name-in", BroadQueryFamily.EXACT, "distinct-properties", 200, operator = "in"
     ) {
         exactNameIn(it.exactName, it.absent)
@@ -2101,31 +1789,9 @@ private val BROAD_QUERY_COVERAGE = listOf(
 )
 
 private const val MAX_GRAPH_COUNT = 64
-
-private val pressureQueryExecutor:
-    (List<CypherGraph>, CypherExecutionContext, Boolean) -> CrossGraphCypherExecutor = run {
-    val scopedConstructor = runCatching {
-        CrossGraphCypherExecutor::class.java.getConstructor(
-            List::class.java,
-            CypherExecutionContext::class.java,
-            Boolean::class.javaPrimitiveType
-        )
-    }.getOrNull()
-    val factory: (List<CypherGraph>, CypherExecutionContext, Boolean) -> CrossGraphCypherExecutor =
-        { graphs, context, graphSourceScopeApplied ->
-        if (graphSourceScopeApplied && scopedConstructor != null) {
-            scopedConstructor.newInstance(graphs, context, true)
-        } else {
-            CrossGraphCypherExecutor(graphs, context)
-        }
-    }
-    factory
-}
-
 private const val COLD_INDEX_STATE = "cold"
 private const val WARM_INDEX_STATE = "warm"
 private const val STARTUP_PREPARED_INDEX_STATE = "startup-prepared"
-private const val LAZY_INDEX_PREPARATION_MODE = "lazy"
 private val BROAD_QUERY_INDEX_STATES = setOf(
     COLD_INDEX_STATE,
     WARM_INDEX_STATE,

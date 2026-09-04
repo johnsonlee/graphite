@@ -64,8 +64,6 @@ internal object Fixture64GraphPreparation {
         check(graphFingerprints.size == FIXTURE_GRAPH_COUNT) {
             "Fixture partitioning produced duplicate query-semantic graph content"
         }
-        val manifestRows = manifest.drop(1).map(::parseManifestLine)
-        manifest += deriveGlobalWideDistributions(manifestRows).map(FixtureWideDistribution::manifestLine)
         Files.write(output.resolve(MANIFEST_FILE), manifest)
         Files.write(output.resolve(PROVENANCE_FILE), provenance)
         verifyPreparedCorpus(output.resolve(MANIFEST_FILE), output.resolve(PROVENANCE_FILE))
@@ -241,9 +239,6 @@ internal object Fixture64GraphPreparation {
 
     private fun selectTerms(graphId: String, callSites: List<CallSiteNode>): FixtureSearchTerms {
         val valuesByNode = callSites.map(::searchableValues)
-        val lowercaseValuesByNode = valuesByNode.map { values ->
-            values.mapTo(linkedSetOf(), String::lowercase)
-        }
         val frequencies = HashMap<String, Int>()
         valuesByNode.forEach { values ->
             values.forEach { value -> frequencies.compute(value) { _, count -> (count ?: 0) + 1 } }
@@ -255,26 +250,18 @@ internal object Fixture64GraphPreparation {
             }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.key.length }.thenBy { it.key })
             .map(Map.Entry<String, Int>::key)
-            .firstOrNull { term ->
-                matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) in TARGETED_RESULT_RANGE &&
-                    matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) in
-                    TARGETED_RESULT_RANGE
-            }
+            .firstOrNull { term -> matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) in TARGETED_RESULT_RANGE }
             ?: error("Unable to derive a 1..199-row targeted term for $graphId")
 
         val dense = DENSE_TERM_CANDIDATES.firstOrNull { term ->
-            term != targeted && matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT &&
-                matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
+            term != targeted && matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
         } ?: frequencies.entries.asSequence()
             .filter { (value, count) ->
                 value != targeted && count >= DENSE_RESULT_LIMIT && isManifestSafe(value)
             }
             .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
             .map(Map.Entry<String, Int>::key)
-            .firstOrNull { term ->
-                matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT &&
-                    matchingNodeCount(lowercaseValuesByNode, term.lowercase(), DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT
-            }
+            .firstOrNull { term -> matchingNodeCount(valuesByNode, term, DENSE_RESULT_LIMIT) == DENSE_RESULT_LIMIT }
             ?: error("Unable to derive a 200-row dense term for $graphId")
 
         val zero = "__graphite_fixture64_absent_${graphId}__"
@@ -287,7 +274,7 @@ internal object Fixture64GraphPreparation {
         node.caller.name,
         node.callee.declaringClass.className,
         node.callee.name
-    )
+    ).mapTo(linkedSetOf()) { value -> value.lowercase() }
 
     private fun matchingNodeCount(valuesByNode: List<Set<String>>, term: String, limit: Int): Int {
         var count = 0
@@ -299,75 +286,6 @@ internal object Fixture64GraphPreparation {
 
     private fun isManifestSafe(value: String): Boolean = value.none { character ->
         character == '\t' || character == '\n' || character == '\r'
-    }
-
-    /**
-     * Derive distribution cases from the persisted fixture graphs themselves. These records are
-     * comments so the six-column graph manifest remains backwards compatible, while benchmark
-     * and verification code can require their exact contents.
-     */
-    private fun deriveGlobalWideDistributions(
-        rows: List<FixtureManifestRow>
-    ): List<FixtureWideDistribution> {
-        require(rows.size == FIXTURE_GRAPH_COUNT)
-        val summaries = rows.map { row ->
-            GraphStore.loadMapped(row.graphPath).useGraph { graph ->
-                val frequencies = HashMap<String, Int>()
-                val lowercaseValues = linkedSetOf<String>()
-                graph.nodes(CallSiteNode::class.java).forEach { node ->
-                    searchableValues(node).forEach { value ->
-                        frequencies.compute(value) { _, count -> (count ?: 0) + 1 }
-                        lowercaseValues += value.lowercase()
-                    }
-                }
-                FixtureSearchSummary(
-                    row.graphId,
-                    lowercaseValues,
-                    frequencies.entries.asSequence()
-                        .filter { (value, count) ->
-                            value.length >= MIN_LOCALIZED_DENSE_TERM_LENGTH &&
-                                count >= DENSE_RESULT_LIMIT && isManifestSafe(value)
-                        }
-                        .sortedWith(
-                            compareByDescending<Map.Entry<String, Int>> { entry -> entry.key.length }
-                                .thenBy { entry -> entry.key }
-                        )
-                        .take(MAX_LOCALIZED_DENSE_CANDIDATES)
-                        .map { entry -> entry.key }
-                        .toList()
-                )
-            }
-        }
-        fun hitGraphIds(term: String): List<String> {
-            val expected = term.lowercase()
-            return summaries.filter { summary ->
-                summary.lowercaseValues.any { value -> expected in value }
-            }.map(FixtureSearchSummary::graphId)
-        }
-        fun localized(id: String, targetIndex: Int): FixtureWideDistribution {
-            val target = summaries[targetIndex]
-            val term = target.localizedDenseCandidates.firstOrNull { candidate ->
-                hitGraphIds(candidate) == listOf(target.graphId)
-            } ?: error("Unable to derive a 200-row globally localized term for ${target.graphId}")
-            return FixtureWideDistribution(id, target.graphId, term, listOf(target.graphId))
-        }
-
-        val broadTerm = rows.first().dense
-        val broadHits = hitGraphIds(broadTerm)
-        require(broadHits == rows.map(FixtureManifestRow::graphId)) {
-            "Fixture64 broad term '$broadTerm' must hit every persisted graph; hit ${broadHits.size}"
-        }
-        return listOf(
-            localized(LOCALIZED_EARLY_DISTRIBUTION, 0),
-            localized(LOCALIZED_MIDDLE_DISTRIBUTION, (FIXTURE_GRAPH_COUNT - 1) / 2),
-            localized(LOCALIZED_LATE_DISTRIBUTION, FIXTURE_GRAPH_COUNT - 1),
-            FixtureWideDistribution(
-                BROAD_DISTRIBUTION,
-                rows.first().graphId,
-                broadTerm,
-                broadHits
-            )
-        )
     }
 
     private fun sha256(path: Path): String {
@@ -385,7 +303,6 @@ internal object Fixture64GraphPreparation {
 
     private fun verifyPreparedCorpus(manifestPath: Path, provenancePath: Path) {
         val manifestRows = parseManifest(manifestPath)
-        val recordedDistributions = parseWideDistributions(manifestPath)
         val provenanceRows = parseProvenance(provenancePath)
         require(manifestRows.size == FIXTURE_GRAPH_COUNT) {
             "Expected $FIXTURE_GRAPH_COUNT manifest rows, found ${manifestRows.size}"
@@ -497,33 +414,14 @@ internal object Fixture64GraphPreparation {
                 }
             }
         }
-        require(recordedDistributions == deriveGlobalWideDistributions(manifestRows)) {
-            "Fixture64 global-wide distribution records do not reproduce from the persisted graphs"
-        }
     }
 
     private fun parseManifest(path: Path): List<FixtureManifestRow> = Files.readAllLines(path)
         .filterNot { line -> line.isBlank() || line.startsWith("#") }
-        .mapIndexed { index, line -> parseManifestLine(line, "$path:${index + 1}") }
-
-    private fun parseManifestLine(line: String, source: String = MANIFEST_FILE): FixtureManifestRow {
-        val fields = line.split('\t')
-        require(fields.size == MANIFEST_FIELD_COUNT) { "$source: expected 6 fields" }
-        return FixtureManifestRow(fields[0], Path.of(fields[1]), fields[2], fields[3], fields[4], fields[5])
-    }
-
-    private fun parseWideDistributions(path: Path): List<FixtureWideDistribution> =
-        Files.readAllLines(path).filter { line -> line.startsWith(WIDE_DISTRIBUTION_PREFIX) }.map { line ->
+        .mapIndexed { index, line ->
             val fields = line.split('\t')
-            require(fields.size == WIDE_DISTRIBUTION_FIELD_COUNT) {
-                "$path: malformed fixture64 global-wide distribution record"
-            }
-            FixtureWideDistribution(
-                fields[1],
-                fields[2],
-                fields[3],
-                fields[4].split(',')
-            )
+            require(fields.size == MANIFEST_FIELD_COUNT) { "$path:${index + 1}: expected 6 fields" }
+            FixtureManifestRow(fields[0], Path.of(fields[1]), fields[2], fields[3], fields[4], fields[5])
         }
 
     private fun parseProvenance(path: Path): List<FixtureProvenanceRow> {
@@ -786,25 +684,6 @@ internal object Fixture64GraphPreparation {
         val graphPath: Path
     )
     private data class FixtureSearchTerms(val zero: String, val targeted: String, val dense: String)
-    private data class FixtureSearchSummary(
-        val graphId: String,
-        val lowercaseValues: Set<String>,
-        val localizedDenseCandidates: List<String>
-    )
-    private data class FixtureWideDistribution(
-        val id: String,
-        val targetGraphId: String,
-        val term: String,
-        val hitGraphIds: List<String>
-    ) {
-        fun manifestLine(): String = listOf(
-            WIDE_DISTRIBUTION_PREFIX,
-            id,
-            targetGraphId,
-            term,
-            hitGraphIds.joinToString(",")
-        ).joinToString("\t")
-    }
 
     private val TARGETED_RESULT_RANGE = 1 until 200
     private val DENSE_TERM_CANDIDATES = listOf("get", "java", "org", "com", "set", "invoke")
@@ -813,8 +692,6 @@ internal object Fixture64GraphPreparation {
     private const val SHARDS_PER_CORPUS = 16
     private const val DENSE_RESULT_LIMIT = 200
     private const val MIN_TARGETED_TERM_LENGTH = 12
-    private const val MIN_LOCALIZED_DENSE_TERM_LENGTH = 8
-    private const val MAX_LOCALIZED_DENSE_CANDIDATES = 500
     private const val HASH_BUFFER_BYTES = 64 * 1024
     private const val DETERMINISTIC_ZIP_TIME_MILLIS = 0L
     private const val CLASS_SUFFIX = ".class"
@@ -822,22 +699,15 @@ internal object Fixture64GraphPreparation {
     private const val MANIFEST_FILE = "graphs.tsv"
     private const val PROVENANCE_FILE = "fixture-provenance.tsv"
     private const val MANIFEST_FIELD_COUNT = 6
-    private const val WIDE_DISTRIBUTION_FIELD_COUNT = 5
-    private const val WIDE_DISTRIBUTION_PREFIX = "# global-wide-distribution-v1"
-    private const val LOCALIZED_EARLY_DISTRIBUTION = "localized-early"
-    private const val LOCALIZED_MIDDLE_DISTRIBUTION = "localized-middle"
-    private const val LOCALIZED_LATE_DISTRIBUTION = "localized-late"
-    private const val BROAD_DISTRIBUTION = "broad-all-64"
     private const val PROVENANCE_FIELD_COUNT = 19
     private const val VERIFY_COMMAND = "--verify"
     private const val ORDER_FINGERPRINT_SELF_TEST = "--self-test-order-fingerprint"
     private const val QUERY_SEMANTIC_VERSION = "fixture64-query-semantics-v2-ordered"
     private const val SHARD_SEMANTIC_VERSION = "fixture64-shard-bytecode-v1"
     private const val RESOURCE_SEMANTIC_VERSION = "fixture64-resource-semantics-v1"
-    private const val WORKLOAD_IDENTITY_VERSION = "fixture64-workload-identity-v4"
+    private const val WORKLOAD_IDENTITY_VERSION = "fixture64-workload-identity-v3"
     private const val PROVENANCE_HEADER =
         "graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount" +
             "\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tresourceCount" +
-            "\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256" +
-            "\tgraphPath"
+            "\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256\tgraphPath"
 }
