@@ -4658,3 +4658,33 @@ mmap view to avoid the raw control path entirely.
 the selected query never uses, while all-mapped dense routing gives back the proven cheap
 v2.4.7 raw-leading behavior. Retain complete validation only for the selected posting before any
 row is returned.
+
+### 2026-09-05 - Attempt 146: Dispatch raw earlier and feed mapped string IDs into raw scan
+
+**Hypothesis:** move the static short-dense decision to the top-level dispatcher to avoid mmap probe
+overhead. Separately, resolve exact string IDs through mmap and pass them to the raw scanner so it
+can avoid repeated string comparisons while retaining raw encounter order.
+
+**Evidence:**
+
+- Both variants were isolated patches over the stable Attempt 143 candidate and exact v2.4.7 base
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. They used the same 64 real persisted graphs,
+  8 GiB/four-CPU cold JVM, fixture manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`, and
+  34-case oracle. Both were `34/34` correct with zero failure or timeout.
+- Top-level dispatch measured `2.064/15.591/421.772 ms` at P50/P95/max, `1.267 s` CPU,
+  `4.697/5.226 GB` heap/RSS, and `57,710,024` work units. Its identical raw control remained
+  `6.832 ms` for 681 units. JSON/TSV SHA-256 is
+  `e3f09fa2f247488ffd63408cb6aa81e312c059d549b4562d5e85c45ac5dad59a` /
+  `a61a7e60db5aa45c0348ba4f6a5c11446ebcaabf9474595cdd734ee9f519913e`.
+- Mapped-ID-assisted raw scan measured `2.171/16.281/445.010 ms`, `1.286 s` CPU,
+  `4.698/5.302 GB` heap/RSS, and `57,751,994` work units. The raw control regressed to
+  `9.462 ms` and `4,878` units. JSON/TSV SHA-256 is
+  `a3ff1e00a323b3d38b5f1094edc24e396f87dda88b5354b1fe7b95d1a4b173dd` /
+  `672566b3de5ab4996c108ef19f54ce5da6ecc790f5f684d8e15dffe374c349c1`.
+  Neither uncommitted candidate is present in the production tree.
+
+**Conclusion:** reject both and restore Attempt 143's production state. Earlier dispatch does not
+remove cross-case JIT asymmetry, and mapped IDs add work to an already cheap raw scan. The honest
+fix is benchmark symmetry: keep the raw control, but put it first for both byte-identical harnesses
+in their fresh JVMs.
