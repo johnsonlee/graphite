@@ -4977,3 +4977,84 @@ bounded reuse while preserving Attempt 147's global-wide reductions and Attempt 
 it passes the exact v2.4.7 `10x` gate. The next commits must separately remove the measured cold
 mmap zero/max, first-targeted, DISTINCT-empty, and localized-early regressions, then rerun the full
 three-pair dual-baseline gate.
+
+### 2026-09-05 - Attempt 150: Parallelize cold mapped graph suffixes with two workers
+
+**Hypothesis:** Attempt 149's remaining cold four-property zero/max regression comes from opening
+and scanning 63 mapped graph suffixes serially after the primitive source-zero probe. For eligible
+unscoped, non-`DISTINCT` CallSite queries, finish source zero synchronously and process only the
+cold mapped suffix with two long-lived graph workers. Bound claimed-but-unmerged work to two
+sources and merge strictly in catalog order so global `LIMIT`, duplicate rows, provenance,
+cancellation, and exception identity stay unchanged. Keep each graph's storage work serial to
+avoid nesting graph and segment worker pools.
+
+**Evidence:**
+
+- Goal base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; non-regression base is
+  current main/v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; the measured temporary
+  candidate is `2f88ddf6ce5df2ab4a31dbf4df82ef2f514e85dd` on predecessor
+  `fb5ac7fc6a2e609bf2807303425430bf4748fe2c`. Its complete production, test, and harness diff
+  SHA-256 is `d3c96e4c950a4b14f6a92b478d7a5a8e4d26981cca55760b911ded17ac76d73c`.
+  This record's final commit removes that rejected diff, as required by the experiment convention.
+- Goal/current/candidate JMH JAR raw SHA-256 is
+  `6ef3810c5fd149a0626969cb030c948f735d86a31600f704e53f17b94e9ec620` /
+  `285adc87fba44fc271194d164020ec7c1e62eba746c232071dd4848209190322` /
+  `3ebe7c304f90c30ab90bb3a33a9aa240002dda0547c8f2ebc4ec1f2f48de0baf`; canonical ZIP content
+  SHA-256 is `6662b668d61e887671a5b2f6db85df23900f15cb875a5f73e0095b3c11aa7b25` /
+  `16b68822c8296c3a164d8e7a52b5c1b83ee4604586ca832cf4ebd3690461544a` /
+  `92921d9ed6fae82bd428419029c4906367e01455b9201b53a3c9569ba9470e9e`. All three used the
+  byte-identical candidate-reviewed harness
+  `3d372b591857da9c05e6cb9b046ed2003e3bff80da51fdb2e3c234f40309ad8f`.
+- The exact command shape was
+  `java -jar <jar> io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries
+  -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold -p timeoutMillis=300000
+  -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json -rff <result.json> -jvmArgs
+  "-Xmx8g -XX:ActiveProcessorCount=4 -Dgraphite.broad.pressure.graphs=<manifest>
+  -Dgraphite.broad.pressure.correctness.<record-or-verify> ..."`. The host was Apple M3 Max/macOS
+  14.3 with JDK 17.0.18, four exposed CPUs, one single-shot measurement, and no warmup. The first
+  diagnostic pair ran candidate, then goal and current bases against a freshly recorded oracle.
+- The run used the same 64 distinct real persisted graphs derived from pinned Android, Tika, Hive,
+  and Kotlin compiler JARs. Original manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`; the local-path-only
+  manifest SHA-256 is `24876ee54a7c5cded5a68b476613ac26e357f3973bb2d54a2ac56f5ea54bbd81`.
+  The independently recorded oracle and all three correctness outputs have SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+- All three measured processes completed `34/34` cases with zero failure or timeout and `2,925`
+  rows. All 102 observations matched outcome, row count, response bytes, digest, fixture
+  distribution, hit provenance, accessed graph IDs, and catalog order. Goal/current/candidate work
+  was `109,198,717 / 58,071,626 / 57,706,192` units.
+- Aggregate goal-base to candidate P50/P95/max was
+  `240.881/354.750/488.445 -> 1.874/19.639/370.634 ms`, so this diagnostic pair retained an
+  `18.06x` v2.4.7 P95 speedup and stayed below the goal-base max. Against current main, aggregate
+  P50/P95 improved `1.776/48.070 -> 1.874/19.639 ms`, but the exact cold four-property zero/max
+  case regressed `252.836 -> 370.634 ms` (`46.6%`, `117.799 ms`) at identical `57,642,093` work
+  units and 64 accessed graphs. That is far outside the current-main `15%` and `1 ms` aligned-case
+  limit. First targeted also regressed `7.805 -> 10.137 ms`; dense stayed neutral at
+  `18.664 -> 19.639 ms` and identical `681` work units. DISTINCT zero was
+  `3.027 -> 3.249 ms`, while localized-early remained materially slower at
+  `1.350 -> 2.638 ms`.
+- Goal/current/candidate CPU was `10.565/1.595/1.327 s`; peak used heap was
+  `4.620/4.745/4.503 GB`; peak RSS was `5.759/5.303/4.997 GB`; normalized allocation was
+  `5.220/4.841/4.810 GB`. The candidate used exactly two configured graph workers, zero segment
+  workers, and observed a peak of two active graph workers on four exposed CPUs. Correctness,
+  work, CPU, heap, RSS, allocation, and worker-policy evidence passed; latency against current main
+  did not.
+- Goal/current/candidate JSON/TSV SHA-256 is
+  `b90325e381c9e7fa6e20f2def97fbead3d35796ed9b7059d0ade43b6e7973ee9` /
+  `ec37b984029fa23e5684215192dad50adfe408711e25be54b6a69f6d0290402d`,
+  `9f25be8dfac33293d72a9360eb5ac4887d161a399b4415800cb6ebee56c672af` /
+  `06979432332d4acbf86987552ff2906c925f85d46dd0c81a0303c09ff79dd675`, and
+  `e52e6195c717d5a8deed5d2177c5fbdfad1ff7cf9c54db4372e9362f6e2550e7` /
+  `16bcb01d9ed01f0ad0a191afc5e0b23b835524472d23b028b8b3288c57cd0392`.
+  Focused execution/storage tests passed `70/70` and `152/152`; core, Cypher, and webgraph
+  compilation and detekt passed, as did the rebuilt JMH JAR and `git diff --check`. Tests cover
+  eligibility and fallback, bounded speculation, strict source order, limits, provenance,
+  heap/mmap/raw priority, cancellation, interruption, and exact error identity.
+
+**Conclusion:** reject and revert. Two outer graph workers reduce Attempt 149's roughly `393 ms`
+cold zero/max result to `370.634 ms`, but leave half the four-CPU budget idle and remain much slower
+than current main's `252.836 ms`. The first diagnostic pair already violates the hard aligned-case
+gate by `117.799 ms`; two more repetitions cannot justify retaining this implementation, so they
+were intentionally not run. Test a four-worker outer-only suffix as a separate hypothesis; do not
+carry this attempt's production code forward implicitly.
