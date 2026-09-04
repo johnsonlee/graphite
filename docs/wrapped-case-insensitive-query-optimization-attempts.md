@@ -4504,3 +4504,45 @@ any row so corruption can still fall back atomically.
 **Conclusion:** retain the no-rescan design as the candidate foundation, but do not accept either
 single screen as final proof. It is the first variant to exceed 10x P95 twice while reducing CPU,
 RSS, and work; independent alternating pairs and full correctness/access auditing are required next.
+
+### 2026-09-05 - Attempt 142: Audit the no-rescan mmap plan in alternating pairs
+
+**Hypothesis:** Attempt 141's no-rescan plan should sustain at least 10x P95 across independent JVMs
+when paired with byte-identical-harness v2.4.7 controls and alternating process order.
+
+**Evidence:**
+
+- Base is exact v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; the candidate is the
+  isolated Attempt 141 prototype, identified by the recorded result set because it predated its Git
+  reconstruction. Three pairs ran base/candidate, candidate/base, base/candidate on the same 64
+  distinct real persisted graphs, 8 GiB heap, four CPUs, manifest
+  `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`, and a
+  base-derived 34-case oracle. All six processes completed `34/34` cases; all 204 observations
+  matched outcome, rows, digest, response size, and hit provenance.
+- Base to candidate P50/P95/max was
+  `268.170/414.735/1007.724 -> 2.416/23.420/405.892 ms`,
+  `238.934/417.521/503.826 -> 2.453/26.849/413.690 ms`, and
+  `241.674/412.879/444.807 -> 2.461/19.187/384.211 ms`.
+  P95 speedup was `17.71x/15.55x/21.52x`.
+- CPU fell `10.867/10.781/10.632 -> 1.347/1.375/1.287 s`; peak used heap fell
+  `4.999/4.994/4.984 -> 4.676/4.677/4.359 GB`; peak RSS fell
+  `6.167/6.169/6.158 -> 5.212/5.176/4.922 GB`. Work was
+  `109,198,717 -> 60,092,871` in every pair.
+- The comparator nevertheless failed. Candidate wrapped-DISTINCT rows reported no exact accessed
+  graph set, the then-current gate prescribed a `2+2` worker topology while this implementation
+  was serial (`0+0`), and ten dense cases repeated aligned regressions. The exact status/report
+  SHA-256 is
+  `aea1415bd402a72c8a16318a24cd1588dd902408293df214edcea1141e777af1` /
+  `4d0bac50d10d4bae6190ba0ec654eeb568b237a39b3f2c01bfa59b4d22894dd3`.
+  Pair candidate JSON/TSV SHA-256 is
+  `bfc3948a64bcc4000cdca059da4f93f5b4c176bcec21c6c4c6c765b84e433b61` /
+  `d5800ffb4e9c0e5f528bf8e29b7b0e8a1f189c2e96ed9ba18ca5c4a90f4fcbc9`,
+  `3f80c6b5660310f29613c31848ad5c6020a98ce82a129d9bfe5d8fc5d13eb0ec` /
+  `69afa785a243b19944a27d0ac931785bfd95a91c6275b92f36631ffae8801675`, and
+  `b30e7e571198eb729e8327f76dd69d16d52949b2bc172f7263d092e709858f2a` /
+  `d1c9d8316d33a2721d03a92310d398b06277a80771cc2bca9a9561873f0603e5`.
+
+**Conclusion:** reject this candidate as terminal despite its aggregate 10x result. Correctness
+values are intact, but access proof is incomplete, dense regressions repeat, and evidence cannot
+pass the repository gate. Retain the mmap/no-rescan direction; add exact access accounting and
+protect v2.4.7's short dense path before measuring again.
