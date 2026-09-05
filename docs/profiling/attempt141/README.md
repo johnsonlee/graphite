@@ -34,3 +34,5 @@
 - [原 34 独立审计](independent-old34-audit.md)、[原 gate 状态](old34-pairs/global-wide-status.json)
 - [决定](decision.json)、[根独立 P95/输入复算](root-decision-audit.json)
 - [构建命令](build-command.json)、[控制命令](v3-control-command.json)、[原 34 runner](run-old34-pairs.py)
+
+拒绝的候选提交为 `22a428c8438b7358ea2c62e774c87d3ea5b9ec7a`。随后恢复生产文件并移除依赖被拒绝 factory 的新增测试；全 130 main/JMH 与 frozen main、全 168 原测试与父提交逐字节一致。候选测试源码保留于报告。见 [回退核验](revert-source-receipt.json)。回退 CI 尚未判定。

@@ -5560,3 +5560,9 @@ CI is independent and not presumed green. Pools remain and final10x is unmet.
 [Readable report](profiling/attempt141/README.md),
 [independent full old34 audit](profiling/attempt141/independent-old34-audit.md),
 [decision](profiling/attempt141/decision.json).
+
+Rejected candidate commit: `22a428c8438b7358ea2c62e774c87d3ea5b9ec7a`. The explicit revert restores
+all 130 main/JMH files to frozen main and all 168 tests to parent b94b8caa,
+removing the factory-dependent candidate test while retaining its archived source.
+[Revert verification](profiling/attempt141/revert-source-receipt.json); revert CI
+is separate and is not presumed passing.
