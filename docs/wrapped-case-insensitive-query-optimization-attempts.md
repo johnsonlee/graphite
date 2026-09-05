@@ -5460,3 +5460,46 @@ It eliminates the much larger raw-index rebuild and improves latency, CPU, heap,
 allocation without changing correctness. A separate attempt must restore sidecars during only the
 wide scoped path, with bounded outer concurrency and serial storage fallback, while proving K2/K8
 and unscoped global behavior unchanged.
+
+### 2026-09-05 - Attempt 154: Restore sidecars during wide scoped routing
+
+**Hypothesis:** Attempt 153 still pays 64 first-lookup restores after the leading request-selected
+K64 zero case. For scoped source sets at the existing wide-query threshold (`>=40`), restore valid
+sidecars on the existing four-worker ordered runner. Combine the persisted and serial-mapped marker
+protocols so corrupt, missing, or budget-denied sidecars cannot create nested storage workers.
+K2/K8 and unscoped global paths remain outside the new branch.
+
+**Evidence:**
+
+- Attempt base is `87a7be02ce617864d179493f74292f50f27bc484`; measured candidate is temporary
+  commit `013a0043` with non-document diff SHA-256
+  `b8871d77a25487260a6b06cd16afe5c7852b517e5ded936be85fcaf23e182b3e`. The same real64
+  fixture, oracle, JDK 17, four-CPU/8-GiB cold graph-routing command, and byte-identical harness from
+  Attempt 153 were used. Candidate JMH JAR raw/canonical SHA-256 is
+  `ae913dd68cb353c4864339aa37df4b3bf5c39356ec6ed9a8ef077fda504e6eda` /
+  `e0376db411be689932bced261e684d40c555f76e9ddf2c107b6cfc3c82f9264d`.
+- The candidate completed `1,137/1,137` queries with zero failure/timeout and the exact oracle
+  SHA-256 `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+  It restored all 64 sidecars with zero raw scan, 2,043 lookups, four peak graph workers, and zero
+  storage scan workers. Focused Cypher tests covered wide zero/dense ordering and bounded
+  speculation plus K2/K8 exclusion; WebGraph tests covered valid/corrupt/missing sidecars and
+  serialized fallback.
+
+  | Revision | Graph-id P50/P95 | First K64 | K2/K8/K64 P95 |
+  | :--- | :--- | ---: | :--- |
+  | Attempt 153 | 0.089/24.051 ms | 446.834 ms | 0.201/0.642/1.497 ms |
+  | Candidate | 0.085/1.588 ms | 596.973 ms | 0.176/0.516/1.189 ms |
+  | Current main | 0.086/17.864 ms | 273.308 ms | 0.224/0.892/1.747 ms |
+
+  Width-one P95 improves `15.1x` versus Attempt 153 and `11.25x` versus the paired current-main
+  sample. However the current-main cold gate limits the first K64 sample to `523.308 ms`
+  (`base + 250 ms`), and the candidate takes `596.973 ms`, so the comparator correctly fails.
+- Candidate wall/CPU was `2.214/6.378 s`, peak used heap `5.914 GB`, peak RSS `6.280 GB`, and
+  allocation `13.805 GB/op`; none is worse than the paired current-main resource sample
+  (`3.095/6.124 s`, `5.788/7.009 GB`, `15.383 GB/op`) by a material gate margin. Resource safety
+  does not override the blocking first-query latency failure.
+
+**Conclusion:** reject and revert. Eagerly retaining all 64 full indexes makes later width-one
+queries extremely fast, but moves too much work into the first K64 request and violates the exact
+current-main cold guard. Keep only this record; do not retain the production or test change. The
+next attempt should reuse the already-open mapped views rather than materializing every full index.
