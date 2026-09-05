@@ -5402,3 +5402,61 @@ selecting individual forks.
 **Integration conclusion:** keep the compatibility declarations and corrected telemetry. They
 remove the published-ABI blocker without reactivating v2.4.8 scheduling. The final real-data run
 proves the requested runtime remains above `10x` versus v2.4.7 and non-regressing versus v2.4.8.
+
+### 2026-09-05 - Attempt 153: Restore persisted indexes for single-graph routes
+
+**Hypothesis:** The v2.4.7-based replacement sends a `ParallelGraphWorkBatchConsumer` to each
+first graph-scoped lookup. A cold mapped graph therefore rejects the persisted-index path and
+rebuilds one raw index per graph. Reuse v2.4.8's compatibility-only
+`PreferredPersistedStringIndexGraphWorkBatchConsumer` only when routing has selected exactly one
+source; load an existing valid sidecar without invoking the builder, and preserve the existing raw
+fallback for a missing, corrupt, or budget-denied sidecar. K2/K8/K64 and unscoped global queries
+remain unchanged in this attempt.
+
+**Evidence:**
+
+- Attempt base is exact retained integration `1d47778441986378a5c08fe2ab950f91483e80d3`;
+  current-main reference is v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; measured candidate is
+  temporary commit `18420a6014cb7ac2dcfba3a3b1d1bae69cee3c37`. The final record amendment has
+  identical production, test, gate, workflow, and JMH bytes. The non-document attempt diff SHA-256
+  is `62fde863ff24668efdada500beb96913dd3285ad9df1d5a6075f41606d34621d`.
+- The fixture is the same 64 distinct real persisted Android/Tika/Hive/Kotlin compiler graph shards
+  used by the exact gate. Local manifest/provenance SHA-256 is
+  `809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2` /
+  `3b10a4a619498122df1bc0718130be25b55bd063b7c2bd79a4af079137c891cc`.
+  The command was `LargeBroadQueryPressureBenchmark.replayBroadQueries -p graphCount=64
+  -p coverageFamily=graph-routing -p indexState=cold -wi 0 -i 1 -f 1 -prof gc`, with
+  `-Xmx8g -XX:ActiveProcessorCount=4`, JDK 17.0.18 on Apple M3 Max/macOS 14.3. Base and candidate
+  used the byte-identical current harness and fresh JVMs; the reported pair ran base then candidate.
+- Base/candidate JMH JAR raw SHA-256 is
+  `c4489df64fdd43a740c36ef2bec59c86386e2baf4bd5f537312948cd024a1e0e` /
+  `e383ce20fecb7a9e22dc5a9c51410db69ecfb18426c4fe22a1eb60a24b5c4c72`; canonical ZIP content
+  SHA-256 is `d7edc3177e80205323c08582a74de934523ecc41cbafc8e0f247a0d45a94fcd1` /
+  `bfc35b2f0b5339896ad4c3ec7c8454c741eb87c8cf8583890d0fd09f894fbbad`.
+- Both revisions completed all `1,137/1,137` queries with zero failure/timeout and byte-identical
+  correctness manifests (SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`). Access and catalog
+  order matched the oracle. Candidate lifecycle changed from 64 parallel raw index builds and
+  1,979 retained lookups to zero raw builds and 2,043 persisted-index lookups over all 64 graphs.
+
+  | Revision | Graph-id P50/P95 | Zero P95 | Targeted P95 | Dense P95 | First K64 |
+  | :--- | :--- | ---: | ---: | ---: | ---: |
+  | Attempt base | 0.093/36.939 ms | 37.536 ms | 42.133 ms | 2.336 ms | 406.149 ms |
+  | Candidate | 0.089/24.051 ms | 30.548 ms | 0.405 ms | 2.296 ms | 446.834 ms |
+
+  The candidate cuts graph-id P95 by `34.9%` and removes the 64 raw builds. K2/K8/K64 P95 is
+  `0.201/0.642/1.497 ms`, versus `0.275/1.137/2.063 ms` for the attempt base.
+- Base/candidate wall time was `6.073/3.623 s`, process CPU `10.199/6.106 s`, peak used heap
+  `5.911/5.783 GB`, peak RSS `7.487/6.919 GB`, and allocation `15.639/15.043 GB/op`. Focused
+  Cypher execution tests passed, all 153 `GraphStoreTest` cases passed, JavaScript gate tests passed
+  `90/90`, the JMH JAR rebuilt, and `git diff --check` passed.
+- A same-host comparison against current main still exposes an order-stable residual: two main
+  runs have graph-id P95 `17.990/17.410 ms`, while two candidate runs have `28.607/24.982 ms`.
+  Current main restores all sidecars during the leading wide request-selected K64 zero case; this
+  single-source attempt instead pays 64 first-lookup restore costs inside the later width-one set.
+
+**Conclusion:** keep as a verified narrow building block, but not as the final graph-routing fix.
+It eliminates the much larger raw-index rebuild and improves latency, CPU, heap, RSS, and
+allocation without changing correctness. A separate attempt must restore sidecars during only the
+wide scoped path, with bounded outer concurrency and serial storage fallback, while proving K2/K8
+and unscoped global behavior unchanged.

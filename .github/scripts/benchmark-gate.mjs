@@ -937,13 +937,18 @@ export function compareGraphIdPressure(
                 `admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
                 `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
         }
-        if (candidateResources.callSiteStringIndexLookupCount !== 1979 ||
+        const expectedColdLookupCount = persistedLoadLifecycle ? 2043 : 1979;
+        const expectedColdLookupMinimum = persistedLoadLifecycle ? 30 : 29;
+        const expectedColdLookupMaximum = persistedLoadLifecycle ? 39 : 38;
+        if (candidateResources.callSiteStringIndexLookupCount !== expectedColdLookupCount ||
             candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
-            candidateResources.callSiteStringIndexLookupMinPerGraph !== 29 ||
-            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 38
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== expectedColdLookupMinimum ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== expectedColdLookupMaximum
         ) {
-            errors.push("candidate: cold selected-graph workload must reuse the retained index for the " +
-                "1,979 post-build accesses distributed 29..38 per graph; " +
+            const lifecycle = persistedLoadLifecycle ? "persisted-load" : "raw-build";
+            errors.push(`candidate: cold ${lifecycle} lifecycle must reuse the retained index for ` +
+                `${expectedColdLookupCount.toLocaleString("en-US")} accesses distributed ` +
+                `${expectedColdLookupMinimum}..${expectedColdLookupMaximum} per graph; ` +
                 `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
                 `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
                 `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +

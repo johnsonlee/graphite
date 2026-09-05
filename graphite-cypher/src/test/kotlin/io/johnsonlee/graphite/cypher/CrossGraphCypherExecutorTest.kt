@@ -24,6 +24,7 @@ import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
@@ -2569,6 +2570,7 @@ class CrossGraphCypherExecutorTest {
         val lookupLimits = List(4) { mutableListOf<Int>() }
         val parallelPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
         val serialPermissions = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
+        val persistedPreferences = List(4) { java.util.concurrent.ConcurrentLinkedQueue<Boolean>() }
         val returnType = TypeDescriptor("void")
         val graphs = scanCounts.indices.map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -2617,6 +2619,8 @@ class CrossGraphCypherExecutorTest {
                 ): Sequence<T> {
                     parallelPermissions[graphIndex] += workConsumer is ParallelGraphWorkBatchConsumer
                     serialPermissions[graphIndex] += workConsumer is SerialGraphWorkBatchConsumer
+                    persistedPreferences[graphIndex] +=
+                        workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
                     workConsumer.consume()
                     return nodesByStringPropertyDisjunction(type, predicates, limit)
                 }
@@ -2640,6 +2644,9 @@ class CrossGraphCypherExecutorTest {
         for ((graphPredicate, parameters) in graphPredicates) {
             scanCounts.forEach { it.set(0) }
             lookupLimits.forEach(MutableList<Int>::clear)
+            parallelPermissions.forEach(java.util.concurrent.ConcurrentLinkedQueue<Boolean>::clear)
+            serialPermissions.forEach(java.util.concurrent.ConcurrentLinkedQueue<Boolean>::clear)
+            persistedPreferences.forEach(java.util.concurrent.ConcurrentLinkedQueue<Boolean>::clear)
             val result = executor.execute(
                 "MATCH (n) WHERE $graphPredicate AND $broadPredicate " +
                     "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250",
@@ -2654,11 +2661,13 @@ class CrossGraphCypherExecutorTest {
             assertEquals(250, lookupLimits.last().first())
             assertTrue(lookupLimits.last().all { limit -> limit in 0..250 })
             assertTrue(parallelPermissions.last().all { it })
-            assertTrue(serialPermissions.last().none { it })
+            assertTrue(serialPermissions.last().all { it })
+            assertTrue(persistedPreferences.last().all { it })
         }
 
         parallelPermissions.forEach { it.clear() }
         serialPermissions.forEach { it.clear() }
+        persistedPreferences.forEach { it.clear() }
         val unqualified = executor.execute(
             "MATCH (n) WHERE $broadPredicate " +
                 "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
@@ -2666,6 +2675,31 @@ class CrossGraphCypherExecutorTest {
         assertEquals(graphs.map { it.id }.toSet(), unqualified.rows.map { it["graph"] }.toSet())
         assertTrue(parallelPermissions.all { permissions -> permissions.isNotEmpty() && permissions.none { it } })
         assertTrue(serialPermissions.all { permissions -> permissions.isNotEmpty() && permissions.all { it } })
+        assertTrue(persistedPreferences.all { preferences -> preferences.isNotEmpty() && preferences.none { it } })
+
+        parallelPermissions.forEach { it.clear() }
+        serialPermissions.forEach { it.clear() }
+        persistedPreferences.forEach { it.clear() }
+        val scopedSet = executor.execute(
+            "MATCH (n) WHERE n.graphId IN ['graph-1', 'graph-3'] AND $broadPredicate " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
+        )
+        assertEquals(listOf("graph-1", "graph-3"), scopedSet.rows.map { it["graph"] })
+        assertTrue(listOf(1, 3).all { index -> persistedPreferences[index].isNotEmpty() })
+        assertTrue(persistedPreferences.all { preferences -> preferences.none { it } })
+
+        persistedPreferences.forEach { it.clear() }
+        val requestSelected = CrossGraphCypherExecutor(
+            listOf(graphs.last()),
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+            graphSourceScopeApplied = true
+        ).execute(
+            "MATCH (n) WHERE $broadPredicate " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 250"
+        )
+        assertEquals(listOf("graph-3"), requestSelected.rows.map { it["graph"] })
+        assertTrue(persistedPreferences.last().isNotEmpty())
+        assertTrue(persistedPreferences.last().all { it })
 
         scanCounts.forEach { it.set(0) }
         lookupLimits.forEach(MutableList<Int>::clear)

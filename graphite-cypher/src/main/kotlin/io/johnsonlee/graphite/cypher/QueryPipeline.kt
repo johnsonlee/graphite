@@ -30,6 +30,7 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
@@ -77,6 +78,8 @@ private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relati
 private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
 private val noOpSerialGraphWorkConsumer = SerialGraphWorkBatchConsumer { }
 private val noOpParallelGraphWorkConsumer = ParallelGraphWorkBatchConsumer { }
+private val noOpPreferredPersistedStringIndexGraphWorkConsumer =
+    PreferredPersistedStringIndexGraphWorkBatchConsumer { }
 private val noOpPreferredRawGraphWorkConsumer = PreferredRawGraphWorkBatchConsumer { }
 private val noOpPreferredSerialMappedStringIndexViewGraphWorkConsumer =
     PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
@@ -1372,7 +1375,8 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         predicateFactory,
-                        candidateSources
+                        candidateSources,
+                        graphScoped
                     )
                 }
             }
@@ -1541,6 +1545,7 @@ class QueryPipeline private constructor(
         candidateSources: List<CypherGraph> = sources,
         allowRetainedGraphSetProjection: Boolean = false
     ): CypherResult {
+        val preferPersistedStringIndex = allowRetainedGraphSetProjection && candidateSources.size == 1
         executeIndexedStringProjectionRows(
             nodeClass,
             variable,
@@ -1600,7 +1605,8 @@ class QueryPipeline private constructor(
                     nodeClass,
                     filter,
                     limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
-                    storageSourceCount = candidateSources.size
+                    storageSourceCount = candidateSources.size,
+                    preferPersistedStringIndex = preferPersistedStringIndex
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
@@ -1623,7 +1629,8 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 tracker,
-                nodePredicateFactory
+                nodePredicateFactory,
+                preferPersistedStringIndex = preferPersistedStringIndex
             )
         }
         val rows = rawLeadingRows?.toMutableList() ?: mutableListOf()
@@ -2400,6 +2407,7 @@ class QueryPipeline private constructor(
         private val tracker: CypherWorkTracker?,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
         private val storageSourceCount: Int = sources.size,
+        private val preferPersistedStringIndex: Boolean = false,
         private val preferMappedStringIndexView: Boolean = false
     ) {
         private val nodePredicate = nodePredicateFactory?.invoke(source)
@@ -2411,6 +2419,7 @@ class QueryPipeline private constructor(
                 filter,
                 tracker,
                 storageSourceCount = storageSourceCount,
+                preferPersistedStringIndex = preferPersistedStringIndex,
                 preferMappedStringIndexView = preferMappedStringIndexView
             )
                 .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
@@ -2538,6 +2547,7 @@ class QueryPipeline private constructor(
         excludedTypes: Set<Class<out Node>> = emptySet(),
         limit: Int = Int.MAX_VALUE,
         storageSourceCount: Int = sources.size,
+        preferPersistedStringIndex: Boolean = false,
         preferMappedStringIndexView: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
@@ -2560,6 +2570,7 @@ class QueryPipeline private constructor(
                 completeScanLimit,
                 tracker,
                 storageSourceCount,
+                preferPersistedStringIndex,
                 preferMappedStringIndexView
             )
             if (fused != null) {
@@ -4327,6 +4338,7 @@ class QueryPipeline private constructor(
         limit: Int,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
         sourceCount: Int = sources.size,
+        preferPersistedStringIndex: Boolean = false,
         preferMappedStringIndexView: Boolean = false
     ): Sequence<T>? {
         val predicates = filters.map { filter ->
@@ -4335,6 +4347,7 @@ class QueryPipeline private constructor(
         val storageWorkConsumer = stringStorageWorkConsumer(
             sourceCount,
             tracker,
+            preferPersistedStringIndex,
             preferMappedStringIndexView
         )
         val workAware = graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
@@ -4348,8 +4361,13 @@ class QueryPipeline private constructor(
     private fun stringStorageWorkConsumer(
         sourceCount: Int,
         tracker: CypherWorkTracker?,
+        preferPersistedStringIndex: Boolean = false,
         preferMappedStringIndexView: Boolean = false
-    ): GraphWorkConsumer = if (preferMappedStringIndexView) {
+    ): GraphWorkConsumer = if (preferPersistedStringIndex) {
+        tracker?.let { activeTracker ->
+            PreferredPersistedStringIndexGraphWorkBatchConsumer(activeTracker::consume)
+        } ?: noOpPreferredPersistedStringIndexGraphWorkConsumer
+    } else if (preferMappedStringIndexView) {
         tracker?.let { activeTracker ->
             PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(activeTracker::consume)
         } ?: noOpPreferredSerialMappedStringIndexViewGraphWorkConsumer

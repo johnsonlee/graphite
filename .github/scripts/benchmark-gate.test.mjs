@@ -1033,6 +1033,9 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
             callSiteTrigramIndexedGraphs: 64,
             callSiteParallelScanCount: 0,
             callSiteParallelScanGraphCount: 0,
+            callSiteStringIndexLookupCount: 2043,
+            callSiteStringIndexLookupMinPerGraph: 30,
+            callSiteStringIndexLookupMaxPerGraph: 39,
             callSiteScanPeakActiveWorkers: 0
         })],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
@@ -1217,6 +1220,47 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
     );
     assert.equal(imbalancedWarmIndexUse.passed, false);
     assert.match(imbalancedWarmIndexUse.errors.join("\n"), /perGraph=1\.\.2044/);
+});
+
+test("fixture64 cold graphId pressure accepts persisted-load lookup accounting", () => {
+    const coldPersisted = graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 64,
+        callSiteIndexRetainedBytes: 1024,
+        callSiteTrigramIndexedGraphs: 64,
+        callSiteParallelScanCount: 0,
+        callSiteParallelScanGraphCount: 0,
+        callSiteStringIndexLookupCount: 2043,
+        callSiteStringIndexLookupMinPerGraph: 30,
+        callSiteStringIndexLookupMaxPerGraph: 39,
+        callSiteScanPeakActiveWorkers: 0
+    });
+    const passed = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [coldPersisted],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+
+    assert.equal(passed.passed, true);
+    assert.equal(passed.resources.candidate.callSiteParallelScanCount, 0);
+    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 2043);
+
+    const undercounted = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteParallelScanCount: 0,
+            callSiteParallelScanGraphCount: 0,
+            callSiteStringIndexLookupCount: 1979,
+            callSiteScanPeakActiveWorkers: 0
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(undercounted.passed, false);
+    assert.match(undercounted.errors.join("\n"), /cold persisted-load lifecycle/);
 });
 
 test("fixture64 startup-prepared pressure measures load-time readiness without query warmup", () => {

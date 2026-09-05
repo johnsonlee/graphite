@@ -24,6 +24,7 @@ import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
@@ -765,6 +766,14 @@ internal class MappedWebGraphBackedGraph(
                 return index.matchingNodeIds(predicates, workConsumer, limit)
                     .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
                     .map(type::cast)
+            }
+            if (workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer) {
+                loadPersistedCallSiteStringIndexIfAvailable(type, workConsumer)?.let { index ->
+                    callSiteStringIndexLookupCount.incrementAndGet()
+                    return index.matchingNodeIds(predicates, workConsumer, limit)
+                        .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                        .map(type::cast)
+                }
             }
             if (workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer &&
                 predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView)
@@ -2075,6 +2084,31 @@ internal class MappedWebGraphBackedGraph(
             } catch (error: Throwable) {
                 reservation.close()
                 throw error
+            }
+        }
+    }
+
+    /**
+     * Restores an existing sidecar without falling through to the serial in-memory index builder.
+     * A missing, invalid, or budget-denied sidecar leaves the caller's raw-scan fallback intact.
+     */
+    private fun loadPersistedCallSiteStringIndexIfAvailable(
+        type: Class<out Node>,
+        workConsumer: GraphWorkConsumer
+    ): MappedCallSiteStringIndex? {
+        if (type != CallSiteNode::class.java || !persistentCallSiteStringIndexEnabled ||
+            !Files.isRegularFile(callSiteStringIndexFile)
+        ) {
+            return null
+        }
+        callSiteStringIndex?.let { return it }
+        return synchronized(callSiteStringIndexLock) {
+            callSiteStringIndex?.let { return@synchronized it }
+            val nodeCount = nodeTypeIndex.count(CallSiteNode::class.java)
+            if (nodeCount <= 0L || nodeCount > Int.MAX_VALUE) return@synchronized null
+            loadPersistedCallSiteStringIndex(nodeCount.toInt(), workConsumer)?.also { persisted ->
+                callSiteStringIndex = persisted
+                callSiteStringIndexLoadedFromPersistence = true
             }
         }
     }

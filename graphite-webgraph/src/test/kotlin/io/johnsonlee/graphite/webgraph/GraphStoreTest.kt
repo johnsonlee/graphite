@@ -55,6 +55,7 @@ import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
+import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -245,6 +246,131 @@ class GraphStoreTest {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
             dir.toFile().deleteRecursively()
         }
+    }
+
+    @Test
+    fun `preferred persisted CallSite lookup loads only a valid sidecar and preserves fallbacks`() {
+        val returnType = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(3) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor(if (index == 1) "example.TargetCaller" else "example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            returnType
+                        ),
+                        MethodDescriptor(TypeDescriptor("example.Dependency"), "invoke", emptyList(), returnType),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-preferred-persisted-callsite-index")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val validIndex = Files.readAllBytes(indexFile)
+            val validModificationTime = Files.getLastModifiedTime(indexFile)
+
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val consumed = AtomicLong()
+                val ids = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(predicate),
+                    limit = 1,
+                    workConsumer = PreferredPersistedStringIndexGraphWorkBatchConsumer(consumed::addAndGet)
+                ).orEmpty().map { node -> node.id.value }.toList()
+
+                assertEquals(listOf(1), ids)
+                assertTrue(consumed.get() > 0L)
+                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                loaded.releaseStringPropertyDisjunctionCache()
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(validModificationTime, Files.getLastModifiedTime(indexFile))
+            } finally {
+                loaded.close()
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+            val consumerFailure = IllegalStateException("preferred sidecar work failure")
+            val failing = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val actual = assertFailsWith<IllegalStateException> {
+                    failing.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = PreferredPersistedStringIndexGraphWorkBatchConsumer { throw consumerFailure }
+                    ).orEmpty().toList()
+                }
+                assertSame(consumerFailure, actual)
+                assertFalse(failing.isCallSiteStringIndexInitialized())
+            } finally {
+                failing.close()
+            }
+
+            val corruptIndex = validIndex.copyOf().apply {
+                this[size / 2] = (this[size / 2].toInt() xor 1).toByte()
+            }
+            Files.write(indexFile, corruptIndex)
+            val corrupt = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    listOf(1),
+                    corrupt.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = PreferredPersistedStringIndexGraphWorkBatchConsumer { }
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertFalse(corrupt.isCallSiteStringIndexLoadedFromPersistence())
+                assertFalse(corrupt.isCallSiteStringIndexInitialized())
+                assertContentEquals(corruptIndex, Files.readAllBytes(indexFile))
+            } finally {
+                corrupt.close()
+            }
+
+            Files.delete(indexFile)
+            val missing = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                assertEquals(
+                    listOf(1),
+                    missing.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = PreferredPersistedStringIndexGraphWorkBatchConsumer { }
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertFalse(missing.isCallSiteStringIndexLoadedFromPersistence())
+            } finally {
+                missing.close()
+            }
+        } finally {
+            if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test
