@@ -62,3 +62,13 @@ JAR 与完整隔离 checkout 保存在 `/private/tmp/graphite-attempt140._5jztd0
 失败尝试提交为 `4215b66e462675baeb3e1b1f2013cf7e6de01812`。
 显式回退恢复全部 130 个 main/JMH 文件与冻结 main 逐字节相同，168 个测试文件
 与候选父提交相同；[回退核验](revert-source-receipt.json)。原始诊断和测量全部保留。
+
+回退 HEAD `b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0` 的
+[单元测试 CI](https://github.com/johnsonlee/graphite/actions/runs/33995836241) 通过，
+[性能 CI](https://github.com/johnsonlee/graphite/actions/runs/33995836230) 失败。
+Method 和路由检查通过；全图查询的回归边界通过，但严格进步条件失败：
+三组 P95 为 119.915932→297.628775、127.839829→118.118335、
+110.626223→117.182906 ms，第 1、3 组没有改善。
+不能将其写成重复单查询回归，也不能因源码或记录的 JAR 内容 hash 相同而豁免。
+这是回退版本的 CI，未改变 140 候选因本地 v3 回归被拒绝的判定。
+[完整回退 CI 证据](revert-ci/README.md)、[独立源码回退审计](independent-revert-audit.md)。

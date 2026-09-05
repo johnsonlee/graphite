@@ -1,0 +1,13 @@
+START old34 1 candidate
+DONE old34 1 candidate
+START old34 1 base
+DONE old34 1 base
+START old34 2 base
+DONE old34 2 base
+START old34 2 candidate
+DONE old34 2 candidate
+START old34 3 candidate
+DONE old34 3 candidate
+START old34 3 base
+DONE old34 3 base
+COMPARISON 1 regressionPassed False strictProgressEveryPair False targetAchieved False

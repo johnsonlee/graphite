@@ -1,0 +1,80 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javac",
+      "--release",
+      "17",
+      "-cp",
+      "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "-d",
+      "/private/tmp/graphite-query-marker-diagnostic/classes",
+      "/private/tmp/graphite-query-marker-diagnostic/src/QueryExecutionMarker.java"
+    ],
+    "output": "javac.log",
+    "exitCode": 0,
+    "startedEpoch": 1788648905.545469,
+    "endedEpoch": 1788648905.897409,
+    "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "python3",
+      "/private/tmp/graphite-query-marker-diagnostic/patch.py"
+    ],
+    "output": "patch.log",
+    "exitCode": 0,
+    "startedEpoch": 1788648905.897801,
+    "endedEpoch": 1788648910.143411,
+    "outputSha256": "568dd0eba47ee861096a3ef9c971c6750ddb511789a2a994f47b1c29d6a10ed4"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javap",
+      "-c",
+      "-p",
+      "-s",
+      "-classpath",
+      "/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+      "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark"
+    ],
+    "output": "diagnostic-benchmark.javap.txt",
+    "exitCode": 0,
+    "startedEpoch": 1788648910.143717,
+    "endedEpoch": 1788648910.395961,
+    "outputSha256": "d00cafd7b10addaa9919f4dd2841280906d1b25829b4faae97daae9a30963856"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javap",
+      "-c",
+      "-p",
+      "-s",
+      "-v",
+      "-classpath",
+      "/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+      "io.johnsonlee.graphite.diagnostic.QueryExecutionMarker"
+    ],
+    "output": "marker-helper.javap.txt",
+    "exitCode": 0,
+    "startedEpoch": 1788648910.3966029,
+    "endedEpoch": 1788648910.6089091,
+    "outputSha256": "02115ced9e14fcf0c895976918e6bff10bae5a67a84b32cafe9afbe9f636b957"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javap",
+      "-c",
+      "-p",
+      "-s",
+      "-v",
+      "-classpath",
+      "/private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar",
+      "io.johnsonlee.graphite.diagnostic.QueryExecutionMarker$QueryWindow"
+    ],
+    "output": "marker-event.javap.txt",
+    "exitCode": 0,
+    "startedEpoch": 1788648910.60923,
+    "endedEpoch": 1788648910.8066611,
+    "outputSha256": "88eceb1072c86ac4499b1ac117133314f837c12e75f0996e3655932762ee1657"
+  }
+]

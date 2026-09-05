@@ -1,0 +1,55 @@
+{
+  "status": "plan-census-and-actual-source-reviewed-pass; runtime acceptance pending",
+  "boundedReadOnly": true,
+  "javaBuildMeasurementExecuted": false,
+  "exactCountAndIdHashChecks": 1216,
+  "logicalGraphBranches": 512,
+  "censusPassed": true,
+  "semanticProof": "Per-property union of exact predicate ID sets preserves pure OR truth; may short-circuit earlier among same-property predicates.",
+  "implementationItemsPending": [],
+  "acceptanceUnchanged": true,
+  "files": [
+    {
+      "path": "HashCommon-8.5.13.java",
+      "sha256": "877f09c5373cd0e503f816afb1ba173d53009917deb095d05e8f00e38dadf91d"
+    },
+    {
+      "path": "README.md",
+      "sha256": "8f37ddbee67cb71eb3b8b28efc145c564c80e4b3d12ddc7032b84304b47c85ec"
+    },
+    {
+      "path": "audit-branches.py",
+      "sha256": "df7ffb3a292ae656293187e2766c5bacc91410974b538096c5f326d9ba55d81d"
+    },
+    {
+      "path": "branch-census.json",
+      "sha256": "08356512530648be897fa63f68b8a0a90a0ce0b2d8f96c22024c8dd1e3c23ac1"
+    },
+    {
+      "path": "branch-census.md",
+      "sha256": "fe0442b21d4a10f81da3831ed8bd9ee478836b58a144992fd9a269a233b9f84d"
+    },
+    {
+      "path": "capacity-sources.json",
+      "sha256": "ad3387734977c55fb9b08b9af0023eb30211cb4fd0990a5c7bda890bb01b2b97"
+    },
+    {
+      "path": "int-open-hash-set.javap.txt",
+      "sha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af"
+    },
+    {
+      "path": "reviewed-production.diff",
+      "sha256": "7322a5e05619cdc6915fb1eb0582c3adff7f8a5df1824acd620ae2a47505f13c"
+    },
+    {
+      "path": "source-review.json",
+      "sha256": "2cfe74c0ab217a5576f872578c9f6c27e8b38ffef09cde060af1c31539b90df0"
+    },
+    {
+      "path": "source-review.md",
+      "sha256": "2471fe52136895430f591269730b54122ed5983bc291bce56881a780bb482e9f"
+    }
+  ],
+  "sourceReview": "source-review.json",
+  "sourceReviewSha256": "2cfe74c0ab217a5576f872578c9f6c27e8b38ffef09cde060af1c31539b90df0"
+}

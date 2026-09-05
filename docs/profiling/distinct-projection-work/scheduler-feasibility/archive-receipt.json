@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-callsite-scheduler-feasibility/README.md",
+      "path": "README.md",
+      "sha256": "390e31391797352c587a518af5106a3d21e32f281648fab7eba8693b0af1cdf5",
+      "bytes": 14477
+    },
+    {
+      "source": "/private/tmp/graphite-callsite-scheduler-feasibility/audit-receipt.json",
+      "path": "audit-receipt.json",
+      "sha256": "54a3058bd85d9f96002cf26647ffae6f9cf903744f76349a81804f48d60a56eb",
+      "bytes": 440
+    },
+    {
+      "source": "/private/tmp/graphite-callsite-scheduler-feasibility/source-receipt.json",
+      "path": "source-receipt.json",
+      "sha256": "cc514ac021afd6ba39c03d345fd09ac0e4fb9dd469a0b1b46f7546b134f21627",
+      "bytes": 3414
+    }
+  ],
+  "excluded": [],
+  "allCopiedBytesMatch": true
+}

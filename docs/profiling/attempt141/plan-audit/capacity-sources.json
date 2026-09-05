@@ -1,0 +1,13 @@
+{
+  "upstream": {
+    "url": "https://raw.githubusercontent.com/vigna/fastutil/8.5.13/src/it/unimi/dsi/fastutil/HashCommon.java",
+    "file": "HashCommon-8.5.13.java",
+    "sha256": "877f09c5373cd0e503f816afb1ba173d53009917deb095d05e8f00e38dadf91d"
+  },
+  "localBytecodeReceipt": {
+    "source": "docs/profiling/distinct-projection-work/compiler-without-tracing/int-open-hash-set.javap.txt",
+    "file": "int-open-hash-set.javap.txt",
+    "sha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af"
+  },
+  "scope": "No Java invocation; archived existing javap and pinned upstream source"
+}

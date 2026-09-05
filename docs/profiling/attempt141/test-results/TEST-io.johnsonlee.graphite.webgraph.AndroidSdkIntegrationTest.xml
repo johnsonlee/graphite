@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T23:45:32.842Z" hostname="johnsonlee.local" time="91.712">
+  <properties/>
+  <testcase name="save and load Android graph" classname="io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest" time="40.803"/>
+  <testcase name="Cypher query works on Android graph" classname="io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest" time="25.281"/>
+  <testcase name="load Android SDK and verify millions of nodes" classname="io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest" time="25.628"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

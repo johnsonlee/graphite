@@ -1,0 +1,29 @@
+[
+  {
+    "name": "profile-1",
+    "startedEpoch": 1788649322.4561431,
+    "endedEpoch": 1788649330.796119,
+    "exitCode": 0,
+    "diagnosticJarSha256Before": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "diagnosticJarSha256After": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "baseJarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  },
+  {
+    "name": "profile-2",
+    "startedEpoch": 1788649330.8667789,
+    "endedEpoch": 1788649339.2773829,
+    "exitCode": 0,
+    "diagnosticJarSha256Before": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "diagnosticJarSha256After": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "baseJarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  },
+  {
+    "name": "profile-3",
+    "startedEpoch": 1788649339.3477771,
+    "endedEpoch": 1788649347.645463,
+    "exitCode": 0,
+    "diagnosticJarSha256Before": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "diagnosticJarSha256After": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+    "baseJarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+  }
+]

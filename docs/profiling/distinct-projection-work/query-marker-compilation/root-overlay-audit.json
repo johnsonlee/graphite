@@ -1,0 +1,32 @@
+{
+  "baseJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "overlayJarSha256": "2728888d2820fc9721149302612c94b1001bfd38ee5a8c69244fed59fc9b6ef9",
+  "originalEntriesComparedIncludingDuplicates": 30488,
+  "unchangedOriginalEntries": 30487,
+  "changedEntries": [
+    "io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.class"
+  ],
+  "addedEntries": [
+    "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.class",
+    "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.class"
+  ],
+  "allProductionEntriesIdentical": true,
+  "modifiedMethod": "replay$lambda$33$lambda$29(Ljava/util/List;Lio/johnsonlee/graphite/cypher/CypherExecutionContext;Lio/johnsonlee/graphite/webgraph/BroadQueryCase;)Lio/johnsonlee/graphite/cypher/CypherResult;",
+  "codeLength": 40,
+  "bci": 36,
+  "oldReference": {
+    "tag": 10,
+    "owner": "io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor",
+    "name": "execute",
+    "descriptor": "(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+  },
+  "newReference": {
+    "tag": 10,
+    "owner": "io/johnsonlee/graphite/diagnostic/QueryExecutionMarker",
+    "name": "execute",
+    "descriptor": "(Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;"
+  },
+  "allOtherClassBytesMatchAfterRemovingAppendedConstantPoolAndReversingSingleInvocation": true,
+  "source": "/private/tmp/graphite-query-marker-capture/audit-overlay.py",
+  "noJavaOrQueryExecution": true
+}

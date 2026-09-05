@@ -1,0 +1,29 @@
+{
+  "attempt": 141,
+  "candidateParent": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "direction": "Replace dense raw DISTINCT exact hash membership with a per-string-ID property byte mask, only when its payload does not exceed the original hash key array payload.",
+  "scope": [
+    "Only exact membership encoding and its bounded construction change; retain predicate iteration, selected feasibility order, property List, raw/index routing, all pools and worker lifecycle.",
+    "Sparse inputs retain original hash sets. Probe invalid IDs as nonmatches; decline before allocation for invalid exact candidate IDs.",
+    "Capacity/range precheck and byte filling are in-memory preprocessing, not additional storage item reads; record extra passes and zero initialization without changing existing per-node work billing. Periodic interruption checks preserve caller flag."
+  ],
+  "evidence": [
+    "Actual sidecar anchor replay for 1,216 term/graph pairs equals an independent exhaustive used-ID oracle with identical sorted ID hashes.",
+    "All 64 old dense and four-term-all graphs meet S<=hash key payload; all targeted and remaining sparse four-OR graphs decline. These are payload/branch facts, not allocation, peak or gain measurements.",
+    "Existing CPU/JFR locate exact hash membership in raw scan; prior small linear lookup attempt086 remains rejected.140 remains explicitly reverted and its terminal CI failure is not waived or rerun."
+  ],
+  "validation": [
+    "Frozen main/JMH source comparison: one changed production file; independent helper semantics tests plus all prior module tests.",
+    "Full WebGraph tests, detekt, JMH packaging/test exclusion, actual callback bytecode and Code length verification.",
+    "One real v3 36-query complete values/order/provenance correctness control with input hashes.",
+    "Three unchanged original34 alternating pairs C/B,B/C,C/B: all14fieldoracle signatures, unchanged regression bounds and strict full global P95 improvement in every pair.",
+    "Only old34pass permits three additional v3 alternating pairs: repeated same-query >15% and >1ms regressions reject, with full output correctness.",
+    "Local pass only permits exact-head full CI for acceptance. Any local failure is recorded in one attempt commit then explicit source revert, without candidate CI.",
+    "No build,profiling,export or other localJava task alongside timed acceptance measurements. No retry-to-green."
+  ],
+  "fixtureManifest": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "fixtureManifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "accepted": false,
+  "finalObjective": "Remove all CallSite-related pools and reach10x frozen-main full global query P95 without functionality or performance regressions; incremental progress does not fulfill the final goal."
+}

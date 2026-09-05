@@ -1,0 +1,28 @@
+{
+  "attempt": 141,
+  "decision": "reject",
+  "accepted": false,
+  "baseline": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "parent": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "candidateJarSha256": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0",
+  "correctness": {
+    "tests": 195,
+    "v3Queries": 36,
+    "v3FullRows": 6171,
+    "old34Signatures": 204
+  },
+  "strictProgressEveryPair": false,
+  "regressionPassed": false,
+  "reasons": [
+    "P95 increases in pairs1 and2",
+    "Pair1 CPU exceeds original15% regression limit"
+  ],
+  "v3PairsRun": false,
+  "candidateCIRun": false,
+  "explicitRevertRequired": [
+    "MappedWebGraphBackedGraph.kt",
+    "RawExactStringPropertyFlagsTest.kt (depends on rejected factory)"
+  ],
+  "poolsRemoved": false,
+  "final10xAchieved": false
+}

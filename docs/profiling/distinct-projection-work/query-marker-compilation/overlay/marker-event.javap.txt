@@ -1,0 +1,133 @@
+Classfile jar:file:///private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar!/io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.class
+  Last modified Sep 6, 2026; size 970 bytes
+  SHA-256 checksum 35152b234ad324b4da1f3f8c600a56c5c278f00b5a33a8ff92450a234f19a6e2
+  Compiled from "QueryExecutionMarker.java"
+public final class io.johnsonlee.graphite.diagnostic.QueryExecutionMarker$QueryWindow extends jdk.jfr.Event
+  minor version: 0
+  major version: 61
+  flags: (0x0031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER
+  this_class: #7                          // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+  super_class: #2                         // jdk/jfr/Event
+  interfaces: 0, fields: 9, methods: 1, attributes: 4
+Constant pool:
+   #1 = Methodref          #2.#3          // jdk/jfr/Event."<init>":()V
+   #2 = Class              #4             // jdk/jfr/Event
+   #3 = NameAndType        #5:#6          // "<init>":()V
+   #4 = Utf8               jdk/jfr/Event
+   #5 = Utf8               <init>
+   #6 = Utf8               ()V
+   #7 = Class              #8             // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+   #8 = Utf8               io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+   #9 = Utf8               ordinal
+  #10 = Utf8               J
+  #11 = Utf8               query
+  #12 = Utf8               Ljava/lang/String;
+  #13 = Utf8               parametersJson
+  #14 = Utf8               parameterEncoding
+  #15 = Utf8               javaThreadId
+  #16 = Utf8               javaThreadName
+  #17 = Utf8               success
+  #18 = Utf8               Z
+  #19 = Utf8               exceptionClass
+  #20 = Utf8               markerFailuresBefore
+  #21 = Utf8               Code
+  #22 = Utf8               LineNumberTable
+  #23 = Utf8               SourceFile
+  #24 = Utf8               QueryExecutionMarker.java
+  #25 = Utf8               RuntimeVisibleAnnotations
+  #26 = Utf8               Ljdk/jfr/Name;
+  #27 = Utf8               value
+  #28 = Utf8               graphite.diagnostic.QueryExecution
+  #29 = Utf8               Ljdk/jfr/Label;
+  #30 = Utf8               Frozen benchmark query execute window
+  #31 = Utf8               Ljdk/jfr/Category;
+  #32 = Utf8               Graphite
+  #33 = Utf8               Offline diagnostic
+  #34 = Utf8               Ljdk/jfr/Enabled;
+  #35 = Integer            1
+  #36 = Utf8               Ljdk/jfr/StackTrace;
+  #37 = Integer            0
+  #38 = Utf8               Ljdk/jfr/Threshold;
+  #39 = Utf8               0 ns
+  #40 = Utf8               NestHost
+  #41 = Class              #42            // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+  #42 = Utf8               io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+  #43 = Utf8               InnerClasses
+  #44 = Utf8               QueryWindow
+{
+  public long ordinal;
+    descriptor: J
+    flags: (0x0001) ACC_PUBLIC
+
+  public java.lang.String query;
+    descriptor: Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+
+  public java.lang.String parametersJson;
+    descriptor: Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+
+  public java.lang.String parameterEncoding;
+    descriptor: Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+
+  public long javaThreadId;
+    descriptor: J
+    flags: (0x0001) ACC_PUBLIC
+
+  public java.lang.String javaThreadName;
+    descriptor: Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+
+  public boolean success;
+    descriptor: Z
+    flags: (0x0001) ACC_PUBLIC
+
+  public java.lang.String exceptionClass;
+    descriptor: Ljava/lang/String;
+    flags: (0x0001) ACC_PUBLIC
+
+  public long markerFailuresBefore;
+    descriptor: J
+    flags: (0x0001) ACC_PUBLIC
+
+  public io.johnsonlee.graphite.diagnostic.QueryExecutionMarker$QueryWindow();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method jdk/jfr/Event."<init>":()V
+         4: return
+      LineNumberTable:
+        line 28: 0
+}
+SourceFile: "QueryExecutionMarker.java"
+RuntimeVisibleAnnotations:
+  0: #26(#27=s#28)
+    jdk.jfr.Name(
+      value="graphite.diagnostic.QueryExecution"
+    )
+  1: #29(#27=s#30)
+    jdk.jfr.Label(
+      value="Frozen benchmark query execute window"
+    )
+  2: #31(#27=[s#32,s#33])
+    jdk.jfr.Category(
+      value=["Graphite","Offline diagnostic"]
+    )
+  3: #34(#27=Z#35)
+    jdk.jfr.Enabled(
+      value=true
+    )
+  4: #36(#27=Z#37)
+    jdk.jfr.StackTrace(
+      value=false
+    )
+  5: #38(#27=s#39)
+    jdk.jfr.Threshold(
+      value="0 ns"
+    )
+NestHost: class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+InnerClasses:
+  public static final #44= #7 of #41;     // QueryWindow=class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow of class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker

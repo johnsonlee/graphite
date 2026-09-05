@@ -1,0 +1,795 @@
+Classfile jar:file:///private/tmp/graphite-query-marker-diagnostic/diagnostic-jmh.jar!/io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.class
+  Last modified Sep 6, 2026; size 4700 bytes
+  SHA-256 checksum b0cd9bd568db772d5ac6accff15b678b94e737f35a381ffa1599988bf4df8ebc
+  Compiled from "QueryExecutionMarker.java"
+public final class io.johnsonlee.graphite.diagnostic.QueryExecutionMarker
+  minor version: 0
+  major version: 61
+  flags: (0x0031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER
+  this_class: #8                          // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+  super_class: #2                         // java/lang/Object
+  interfaces: 0, fields: 2, methods: 8, attributes: 3
+Constant pool:
+    #1 = Methodref          #2.#3         // java/lang/Object."<init>":()V
+    #2 = Class              #4            // java/lang/Object
+    #3 = NameAndType        #5:#6         // "<init>":()V
+    #4 = Utf8               java/lang/Object
+    #5 = Utf8               <init>
+    #6 = Utf8               ()V
+    #7 = Methodref          #8.#9         // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.prepare:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+    #8 = Class              #10           // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+    #9 = NameAndType        #11:#12       // prepare:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+   #10 = Utf8               io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+   #11 = Utf8               prepare
+   #12 = Utf8               (Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+   #13 = Methodref          #14.#15       // io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor.execute:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+   #14 = Class              #16           // io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor
+   #15 = NameAndType        #17:#18       // execute:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+   #16 = Utf8               io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor
+   #17 = Utf8               execute
+   #18 = Utf8               (Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+   #19 = Methodref          #8.#20        // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.finish:(Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+   #20 = NameAndType        #21:#22       // finish:(Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+   #21 = Utf8               finish
+   #22 = Utf8               (Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+   #23 = Class              #24           // java/lang/Throwable
+   #24 = Utf8               java/lang/Throwable
+   #25 = Fieldref           #8.#26        // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.ORDINAL:Ljava/util/concurrent/atomic/AtomicLong;
+   #26 = NameAndType        #27:#28       // ORDINAL:Ljava/util/concurrent/atomic/AtomicLong;
+   #27 = Utf8               ORDINAL
+   #28 = Utf8               Ljava/util/concurrent/atomic/AtomicLong;
+   #29 = Methodref          #30.#31       // java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+   #30 = Class              #32           // java/util/concurrent/atomic/AtomicLong
+   #31 = NameAndType        #33:#34       // incrementAndGet:()J
+   #32 = Utf8               java/util/concurrent/atomic/AtomicLong
+   #33 = Utf8               incrementAndGet
+   #34 = Utf8               ()J
+   #35 = Class              #36           // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+   #36 = Utf8               io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+   #37 = Methodref          #35.#3        // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow."<init>":()V
+   #38 = Fieldref           #35.#39       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.ordinal:J
+   #39 = NameAndType        #40:#41       // ordinal:J
+   #40 = Utf8               ordinal
+   #41 = Utf8               J
+   #42 = Fieldref           #35.#43       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.query:Ljava/lang/String;
+   #43 = NameAndType        #44:#45       // query:Ljava/lang/String;
+   #44 = Utf8               query
+   #45 = Utf8               Ljava/lang/String;
+   #46 = Methodref          #8.#47        // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.parametersJson:(Ljava/util/Map;)Ljava/lang/String;
+   #47 = NameAndType        #48:#49       // parametersJson:(Ljava/util/Map;)Ljava/lang/String;
+   #48 = Utf8               parametersJson
+   #49 = Utf8               (Ljava/util/Map;)Ljava/lang/String;
+   #50 = Fieldref           #35.#51       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.parametersJson:Ljava/lang/String;
+   #51 = NameAndType        #48:#45       // parametersJson:Ljava/lang/String;
+   #52 = String             #53           // sorted-string-null-json-v1
+   #53 = Utf8               sorted-string-null-json-v1
+   #54 = Fieldref           #35.#55       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.parameterEncoding:Ljava/lang/String;
+   #55 = NameAndType        #56:#45       // parameterEncoding:Ljava/lang/String;
+   #56 = Utf8               parameterEncoding
+   #57 = Methodref          #58.#59       // java/lang/Thread.currentThread:()Ljava/lang/Thread;
+   #58 = Class              #60           // java/lang/Thread
+   #59 = NameAndType        #61:#62       // currentThread:()Ljava/lang/Thread;
+   #60 = Utf8               java/lang/Thread
+   #61 = Utf8               currentThread
+   #62 = Utf8               ()Ljava/lang/Thread;
+   #63 = Methodref          #58.#64       // java/lang/Thread.getId:()J
+   #64 = NameAndType        #65:#34       // getId:()J
+   #65 = Utf8               getId
+   #66 = Fieldref           #35.#67       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.javaThreadId:J
+   #67 = NameAndType        #68:#41       // javaThreadId:J
+   #68 = Utf8               javaThreadId
+   #69 = Methodref          #58.#70       // java/lang/Thread.getName:()Ljava/lang/String;
+   #70 = NameAndType        #71:#72       // getName:()Ljava/lang/String;
+   #71 = Utf8               getName
+   #72 = Utf8               ()Ljava/lang/String;
+   #73 = Fieldref           #35.#74       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.javaThreadName:Ljava/lang/String;
+   #74 = NameAndType        #75:#45       // javaThreadName:Ljava/lang/String;
+   #75 = Utf8               javaThreadName
+   #76 = Fieldref           #8.#77        // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+   #77 = NameAndType        #78:#28       // MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+   #78 = Utf8               MARKER_FAILURES
+   #79 = Methodref          #30.#80       // java/util/concurrent/atomic/AtomicLong.get:()J
+   #80 = NameAndType        #81:#34       // get:()J
+   #81 = Utf8               get
+   #82 = Fieldref           #35.#83       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.markerFailuresBefore:J
+   #83 = NameAndType        #84:#41       // markerFailuresBefore:J
+   #84 = Utf8               markerFailuresBefore
+   #85 = Methodref          #35.#86       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.begin:()V
+   #86 = NameAndType        #87:#6        // begin:()V
+   #87 = Utf8               begin
+   #88 = Methodref          #35.#89       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.end:()V
+   #89 = NameAndType        #90:#6        // end:()V
+   #90 = Utf8               end
+   #91 = Fieldref           #35.#92       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.success:Z
+   #92 = NameAndType        #93:#94       // success:Z
+   #93 = Utf8               success
+   #94 = Utf8               Z
+   #95 = String             #96           //
+   #96 = Utf8
+   #97 = Methodref          #2.#98        // java/lang/Object.getClass:()Ljava/lang/Class;
+   #98 = NameAndType        #99:#100      // getClass:()Ljava/lang/Class;
+   #99 = Utf8               getClass
+  #100 = Utf8               ()Ljava/lang/Class;
+  #101 = Methodref          #102.#70      // java/lang/Class.getName:()Ljava/lang/String;
+  #102 = Class              #103          // java/lang/Class
+  #103 = Utf8               java/lang/Class
+  #104 = Fieldref           #35.#105      // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.exceptionClass:Ljava/lang/String;
+  #105 = NameAndType        #106:#45      // exceptionClass:Ljava/lang/String;
+  #106 = Utf8               exceptionClass
+  #107 = Methodref          #35.#108      // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.commit:()V
+  #108 = NameAndType        #109:#6       // commit:()V
+  #109 = Utf8               commit
+  #110 = Class              #111          // java/util/TreeMap
+  #111 = Utf8               java/util/TreeMap
+  #112 = Methodref          #110.#3       // java/util/TreeMap."<init>":()V
+  #113 = InterfaceMethodref #114.#115     // java/util/Map.entrySet:()Ljava/util/Set;
+  #114 = Class              #116          // java/util/Map
+  #115 = NameAndType        #117:#118     // entrySet:()Ljava/util/Set;
+  #116 = Utf8               java/util/Map
+  #117 = Utf8               entrySet
+  #118 = Utf8               ()Ljava/util/Set;
+  #119 = InterfaceMethodref #120.#121     // java/util/Set.iterator:()Ljava/util/Iterator;
+  #120 = Class              #122          // java/util/Set
+  #121 = NameAndType        #123:#124     // iterator:()Ljava/util/Iterator;
+  #122 = Utf8               java/util/Set
+  #123 = Utf8               iterator
+  #124 = Utf8               ()Ljava/util/Iterator;
+  #125 = InterfaceMethodref #126.#127     // java/util/Iterator.hasNext:()Z
+  #126 = Class              #128          // java/util/Iterator
+  #127 = NameAndType        #129:#130     // hasNext:()Z
+  #128 = Utf8               java/util/Iterator
+  #129 = Utf8               hasNext
+  #130 = Utf8               ()Z
+  #131 = InterfaceMethodref #126.#132     // java/util/Iterator.next:()Ljava/lang/Object;
+  #132 = NameAndType        #133:#134     // next:()Ljava/lang/Object;
+  #133 = Utf8               next
+  #134 = Utf8               ()Ljava/lang/Object;
+  #135 = Class              #136          // java/util/Map$Entry
+  #136 = Utf8               java/util/Map$Entry
+  #137 = InterfaceMethodref #135.#138     // java/util/Map$Entry.getKey:()Ljava/lang/Object;
+  #138 = NameAndType        #139:#134     // getKey:()Ljava/lang/Object;
+  #139 = Utf8               getKey
+  #140 = Class              #141          // java/lang/String
+  #141 = Utf8               java/lang/String
+  #142 = InterfaceMethodref #135.#143     // java/util/Map$Entry.getValue:()Ljava/lang/Object;
+  #143 = NameAndType        #144:#134     // getValue:()Ljava/lang/Object;
+  #144 = Utf8               getValue
+  #145 = Class              #146          // java/lang/IllegalArgumentException
+  #146 = Utf8               java/lang/IllegalArgumentException
+  #147 = String             #148          // Marker supports only String keys and String/null values
+  #148 = Utf8               Marker supports only String keys and String/null values
+  #149 = Methodref          #145.#150     // java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+  #150 = NameAndType        #5:#151       // "<init>":(Ljava/lang/String;)V
+  #151 = Utf8               (Ljava/lang/String;)V
+  #152 = Methodref          #110.#153     // java/util/TreeMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+  #153 = NameAndType        #154:#155     // put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+  #154 = Utf8               put
+  #155 = Utf8               (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+  #156 = Class              #157          // java/lang/StringBuilder
+  #157 = Utf8               java/lang/StringBuilder
+  #158 = String             #159          // {
+  #159 = Utf8               {
+  #160 = Methodref          #156.#150     // java/lang/StringBuilder."<init>":(Ljava/lang/String;)V
+  #161 = Methodref          #110.#115     // java/util/TreeMap.entrySet:()Ljava/util/Set;
+  #162 = Methodref          #156.#163     // java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+  #163 = NameAndType        #164:#165     // append:(C)Ljava/lang/StringBuilder;
+  #164 = Utf8               append
+  #165 = Utf8               (C)Ljava/lang/StringBuilder;
+  #166 = Methodref          #8.#167       // io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.quote:(Ljava/lang/StringBuilder;Ljava/lang/String;)V
+  #167 = NameAndType        #168:#169     // quote:(Ljava/lang/StringBuilder;Ljava/lang/String;)V
+  #168 = Utf8               quote
+  #169 = Utf8               (Ljava/lang/StringBuilder;Ljava/lang/String;)V
+  #170 = String             #171          // null
+  #171 = Utf8               null
+  #172 = Methodref          #156.#173     // java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+  #173 = NameAndType        #164:#174     // append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+  #174 = Utf8               (Ljava/lang/String;)Ljava/lang/StringBuilder;
+  #175 = Methodref          #156.#176     // java/lang/StringBuilder.toString:()Ljava/lang/String;
+  #176 = NameAndType        #177:#72      // toString:()Ljava/lang/String;
+  #177 = Utf8               toString
+  #178 = String             #179          // 0123456789abcdef
+  #179 = Utf8               0123456789abcdef
+  #180 = Methodref          #140.#181     // java/lang/String.toCharArray:()[C
+  #181 = NameAndType        #182:#183     // toCharArray:()[C
+  #182 = Utf8               toCharArray
+  #183 = Utf8               ()[C
+  #184 = Methodref          #140.#185     // java/lang/String.length:()I
+  #185 = NameAndType        #186:#187     // length:()I
+  #186 = Utf8               length
+  #187 = Utf8               ()I
+  #188 = Methodref          #140.#189     // java/lang/String.charAt:(I)C
+  #189 = NameAndType        #190:#191     // charAt:(I)C
+  #190 = Utf8               charAt
+  #191 = Utf8               (I)C
+  #192 = String             #193          // \\\"
+  #193 = Utf8               \\\"
+  #194 = String             #195          // \\\\
+  #195 = Utf8               \\\\
+  #196 = String             #197          // \\b
+  #197 = Utf8               \\b
+  #198 = String             #199          // \\f
+  #199 = Utf8               \\f
+  #200 = String             #201          // \\n
+  #201 = Utf8               \\n
+  #202 = String             #203          // \\r
+  #203 = Utf8               \\r
+  #204 = String             #205          // \\t
+  #205 = Utf8               \\t
+  #206 = String             #207          // \\u
+  #207 = Utf8               \\u
+  #208 = Methodref          #30.#3        // java/util/concurrent/atomic/AtomicLong."<init>":()V
+  #209 = Utf8               Code
+  #210 = Utf8               LineNumberTable
+  #211 = Utf8               (Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+  #212 = Utf8               StackMapTable
+  #213 = Utf8               Exceptions
+  #214 = Utf8               Signature
+  #215 = Utf8               (Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map<Ljava/lang/String;*>;)Lio/johnsonlee/graphite/cypher/CypherResult;
+  #216 = Utf8               (Ljava/lang/String;Ljava/util/Map<Ljava/lang/String;*>;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+  #217 = Utf8               markerFailureCount
+  #218 = Utf8               (Ljava/util/Map<Ljava/lang/String;*>;)Ljava/lang/String;
+  #219 = Class              #220          // "[C"
+  #220 = Utf8               [C
+  #221 = Utf8               <clinit>
+  #222 = Utf8               SourceFile
+  #223 = Utf8               QueryExecutionMarker.java
+  #224 = Utf8               NestMembers
+  #225 = Utf8               InnerClasses
+  #226 = Utf8               QueryWindow
+  #227 = Utf8               Entry
+{
+  private static final java.util.concurrent.atomic.AtomicLong ORDINAL;
+    descriptor: Ljava/util/concurrent/atomic/AtomicLong;
+    flags: (0x001a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL
+
+  private static final java.util.concurrent.atomic.AtomicLong MARKER_FAILURES;
+    descriptor: Ljava/util/concurrent/atomic/AtomicLong;
+    flags: (0x001a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL
+
+  private io.johnsonlee.graphite.diagnostic.QueryExecutionMarker();
+    descriptor: ()V
+    flags: (0x0002) ACC_PRIVATE
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 20: 0
+
+  public static io.johnsonlee.graphite.cypher.CypherResult execute(io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor, java.lang.String, java.util.Map<java.lang.String, ?>) throws java.lang.Throwable;
+    descriptor: (Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=7, args_size=3
+         0: aload_1
+         1: aload_2
+         2: invokestatic  #7                  // Method prepare:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+         5: astore_3
+         6: aconst_null
+         7: astore        4
+         9: aload_0
+        10: aload_1
+        11: aload_2
+        12: invokevirtual #13                 // Method io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor.execute:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+        15: astore        5
+        17: aload_3
+        18: aload         4
+        20: invokestatic  #19                 // Method finish:(Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+        23: aload         5
+        25: areturn
+        26: astore        5
+        28: aload         5
+        30: astore        4
+        32: aload         5
+        34: athrow
+        35: astore        6
+        37: aload_3
+        38: aload         4
+        40: invokestatic  #19                 // Method finish:(Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+        43: aload         6
+        45: athrow
+      Exception table:
+         from    to  target type
+             9    17    26   Class java/lang/Throwable
+             9    17    35   any
+            26    37    35   any
+      LineNumberTable:
+        line 42: 0
+        line 43: 6
+        line 45: 9
+        line 50: 17
+        line 45: 23
+        line 46: 26
+        line 47: 28
+        line 48: 32
+        line 50: 35
+        line 51: 43
+      StackMapTable: number_of_entries = 2
+        frame_type = 255 /* full_frame */
+          offset_delta = 26
+          locals = [ class io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor, class java/lang/String, class java/util/Map, class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow, class java/lang/Throwable ]
+          stack = [ class java/lang/Throwable ]
+        frame_type = 72 /* same_locals_1_stack_item */
+          stack = [ class java/lang/Throwable ]
+    Exceptions:
+      throws java.lang.Throwable
+    Signature: #215                         // (Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map<Ljava/lang/String;*>;)Lio/johnsonlee/graphite/cypher/CypherResult;
+
+  private static io.johnsonlee.graphite.diagnostic.QueryExecutionMarker$QueryWindow prepare(java.lang.String, java.util.Map<java.lang.String, ?>);
+    descriptor: (Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=3, locals=6, args_size=2
+         0: getstatic     #25                 // Field ORDINAL:Ljava/util/concurrent/atomic/AtomicLong;
+         3: invokevirtual #29                 // Method java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+         6: lstore_2
+         7: new           #35                 // class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+        10: dup
+        11: invokespecial #37                 // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow."<init>":()V
+        14: astore        4
+        16: aload         4
+        18: lload_2
+        19: putfield      #38                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.ordinal:J
+        22: aload         4
+        24: aload_0
+        25: putfield      #42                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.query:Ljava/lang/String;
+        28: aload         4
+        30: aload_1
+        31: invokestatic  #46                 // Method parametersJson:(Ljava/util/Map;)Ljava/lang/String;
+        34: putfield      #50                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.parametersJson:Ljava/lang/String;
+        37: aload         4
+        39: ldc           #52                 // String sorted-string-null-json-v1
+        41: putfield      #54                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.parameterEncoding:Ljava/lang/String;
+        44: invokestatic  #57                 // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;
+        47: astore        5
+        49: aload         4
+        51: aload         5
+        53: invokevirtual #63                 // Method java/lang/Thread.getId:()J
+        56: putfield      #66                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.javaThreadId:J
+        59: aload         4
+        61: aload         5
+        63: invokevirtual #69                 // Method java/lang/Thread.getName:()Ljava/lang/String;
+        66: putfield      #73                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.javaThreadName:Ljava/lang/String;
+        69: aload         4
+        71: getstatic     #76                 // Field MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+        74: invokevirtual #79                 // Method java/util/concurrent/atomic/AtomicLong.get:()J
+        77: putfield      #82                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.markerFailuresBefore:J
+        80: aload         4
+        82: invokevirtual #85                 // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.begin:()V
+        85: aload         4
+        87: areturn
+        88: astore        4
+        90: getstatic     #76                 // Field MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+        93: invokevirtual #29                 // Method java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+        96: pop2
+        97: aconst_null
+        98: areturn
+      Exception table:
+         from    to  target type
+             7    87    88   Class java/lang/Throwable
+      LineNumberTable:
+        line 55: 0
+        line 57: 7
+        line 58: 16
+        line 59: 22
+        line 60: 28
+        line 61: 37
+        line 62: 44
+        line 63: 49
+        line 64: 59
+        line 65: 69
+        line 66: 80
+        line 67: 85
+        line 68: 88
+        line 69: 90
+        line 70: 97
+      StackMapTable: number_of_entries = 1
+        frame_type = 255 /* full_frame */
+          offset_delta = 88
+          locals = [ class java/lang/String, class java/util/Map, long ]
+          stack = [ class java/lang/Throwable ]
+    Signature: #216                         // (Ljava/lang/String;Ljava/util/Map<Ljava/lang/String;*>;)Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;
+
+  private static void finish(io.johnsonlee.graphite.diagnostic.QueryExecutionMarker$QueryWindow, java.lang.Throwable);
+    descriptor: (Lio/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow;Ljava/lang/Throwable;)V
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=2, locals=3, args_size=2
+         0: aload_0
+         1: ifnonnull     5
+         4: return
+         5: aload_0
+         6: invokevirtual #88                 // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.end:()V
+         9: aload_0
+        10: aload_1
+        11: ifnonnull     18
+        14: iconst_1
+        15: goto          19
+        18: iconst_0
+        19: putfield      #91                 // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.success:Z
+        22: aload_0
+        23: aload_1
+        24: ifnonnull     32
+        27: ldc           #95                 // String
+        29: goto          39
+        32: aload_1
+        33: invokevirtual #97                 // Method java/lang/Object.getClass:()Ljava/lang/Class;
+        36: invokevirtual #101                // Method java/lang/Class.getName:()Ljava/lang/String;
+        39: putfield      #104                // Field io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.exceptionClass:Ljava/lang/String;
+        42: aload_0
+        43: invokevirtual #107                // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow.commit:()V
+        46: goto          57
+        49: astore_2
+        50: getstatic     #76                 // Field MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+        53: invokevirtual #29                 // Method java/util/concurrent/atomic/AtomicLong.incrementAndGet:()J
+        56: pop2
+        57: return
+      Exception table:
+         from    to  target type
+             5    46    49   Class java/lang/Throwable
+      LineNumberTable:
+        line 75: 0
+        line 77: 5
+        line 78: 9
+        line 79: 22
+        line 80: 42
+        line 85: 46
+        line 81: 49
+        line 84: 50
+        line 86: 57
+      StackMapTable: number_of_entries = 7
+        frame_type = 5 /* same */
+        frame_type = 76 /* same_locals_1_stack_item */
+          stack = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow ]
+        frame_type = 255 /* full_frame */
+          offset_delta = 0
+          locals = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow, class java/lang/Throwable ]
+          stack = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow, int ]
+        frame_type = 76 /* same_locals_1_stack_item */
+          stack = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow ]
+        frame_type = 255 /* full_frame */
+          offset_delta = 6
+          locals = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow, class java/lang/Throwable ]
+          stack = [ class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow, class java/lang/String ]
+        frame_type = 73 /* same_locals_1_stack_item */
+          stack = [ class java/lang/Throwable ]
+        frame_type = 7 /* same */
+
+  public static long markerFailureCount();
+    descriptor: ()J
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         0: getstatic     #76                 // Field MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+         3: invokevirtual #79                 // Method java/util/concurrent/atomic/AtomicLong.get:()J
+         6: lreturn
+      LineNumberTable:
+        line 88: 0
+
+  public static java.lang.String parametersJson(java.util.Map<java.lang.String, ?>);
+    descriptor: (Ljava/util/Map;)Ljava/lang/String;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=6, args_size=1
+         0: new           #110                // class java/util/TreeMap
+         3: dup
+         4: invokespecial #112                // Method java/util/TreeMap."<init>":()V
+         7: astore_1
+         8: aload_0
+         9: invokeinterface #113,  1          // InterfaceMethod java/util/Map.entrySet:()Ljava/util/Set;
+        14: invokeinterface #119,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+        19: astore_2
+        20: aload_2
+        21: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+        26: ifeq          105
+        29: aload_2
+        30: invokeinterface #131,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+        35: checkcast     #135                // class java/util/Map$Entry
+        38: astore_3
+        39: aload_3
+        40: invokeinterface #137,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+        45: instanceof    #140                // class java/lang/String
+        48: ifeq          72
+        51: aload_3
+        52: invokeinterface #142,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+        57: ifnull        82
+        60: aload_3
+        61: invokeinterface #142,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+        66: instanceof    #140                // class java/lang/String
+        69: ifne          82
+        72: new           #145                // class java/lang/IllegalArgumentException
+        75: dup
+        76: ldc           #147                // String Marker supports only String keys and String/null values
+        78: invokespecial #149                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+        81: athrow
+        82: aload_1
+        83: aload_3
+        84: invokeinterface #137,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+        89: checkcast     #140                // class java/lang/String
+        92: aload_3
+        93: invokeinterface #142,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+        98: invokevirtual #152                // Method java/util/TreeMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+       101: pop
+       102: goto          20
+       105: new           #156                // class java/lang/StringBuilder
+       108: dup
+       109: ldc           #158                // String {
+       111: invokespecial #160                // Method java/lang/StringBuilder."<init>":(Ljava/lang/String;)V
+       114: astore_2
+       115: iconst_1
+       116: istore_3
+       117: aload_1
+       118: invokevirtual #161                // Method java/util/TreeMap.entrySet:()Ljava/util/Set;
+       121: invokeinterface #119,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+       126: astore        4
+       128: aload         4
+       130: invokeinterface #125,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+       135: ifeq          221
+       138: aload         4
+       140: invokeinterface #131,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       145: checkcast     #135                // class java/util/Map$Entry
+       148: astore        5
+       150: iload_3
+       151: ifne          161
+       154: aload_2
+       155: bipush        44
+       157: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       160: pop
+       161: iconst_0
+       162: istore_3
+       163: aload_2
+       164: aload         5
+       166: invokeinterface #137,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+       171: checkcast     #140                // class java/lang/String
+       174: invokestatic  #166                // Method quote:(Ljava/lang/StringBuilder;Ljava/lang/String;)V
+       177: aload_2
+       178: bipush        58
+       180: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       183: pop
+       184: aload         5
+       186: invokeinterface #142,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+       191: ifnonnull     204
+       194: aload_2
+       195: ldc           #170                // String null
+       197: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       200: pop
+       201: goto          218
+       204: aload_2
+       205: aload         5
+       207: invokeinterface #142,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+       212: checkcast     #140                // class java/lang/String
+       215: invokestatic  #166                // Method quote:(Ljava/lang/StringBuilder;Ljava/lang/String;)V
+       218: goto          128
+       221: aload_2
+       222: bipush        125
+       224: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       227: invokevirtual #175                // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+       230: areturn
+      LineNumberTable:
+        line 92: 0
+        line 93: 8
+        line 94: 39
+        line 95: 52
+        line 96: 72
+        line 98: 82
+        line 99: 102
+        line 100: 105
+        line 101: 115
+        line 102: 117
+        line 103: 150
+        line 104: 161
+        line 105: 163
+        line 106: 177
+        line 107: 184
+        line 108: 204
+        line 109: 218
+        line 110: 221
+      StackMapTable: number_of_entries = 9
+        frame_type = 253 /* append */
+          offset_delta = 20
+          locals = [ class java/util/TreeMap, class java/util/Iterator ]
+        frame_type = 252 /* append */
+          offset_delta = 51
+          locals = [ class java/util/Map$Entry ]
+        frame_type = 9 /* same */
+        frame_type = 249 /* chop */
+          offset_delta = 22
+        frame_type = 254 /* append */
+          offset_delta = 22
+          locals = [ class java/lang/StringBuilder, int, class java/util/Iterator ]
+        frame_type = 252 /* append */
+          offset_delta = 32
+          locals = [ class java/util/Map$Entry ]
+        frame_type = 42 /* same */
+        frame_type = 250 /* chop */
+          offset_delta = 13
+        frame_type = 250 /* chop */
+          offset_delta = 2
+    Signature: #218                         // (Ljava/util/Map<Ljava/lang/String;*>;)Ljava/lang/String;
+
+  private static void quote(java.lang.StringBuilder, java.lang.String);
+    descriptor: (Ljava/lang/StringBuilder;Ljava/lang/String;)V
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=4, locals=5, args_size=2
+         0: aload_0
+         1: bipush        34
+         3: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+         6: pop
+         7: ldc           #178                // String 0123456789abcdef
+         9: invokevirtual #180                // Method java/lang/String.toCharArray:()[C
+        12: astore_2
+        13: iconst_0
+        14: istore_3
+        15: iload_3
+        16: aload_1
+        17: invokevirtual #184                // Method java/lang/String.length:()I
+        20: if_icmpge     255
+        23: aload_1
+        24: iload_3
+        25: invokevirtual #188                // Method java/lang/String.charAt:(I)C
+        28: istore        4
+        30: iload         4
+        32: lookupswitch  { // 7
+                       8: 120
+                       9: 160
+                      10: 140
+                      12: 130
+                      13: 150
+                      34: 100
+                      92: 110
+                 default: 170
+            }
+       100: aload_0
+       101: ldc           #192                // String \\\"
+       103: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       106: pop
+       107: goto          249
+       110: aload_0
+       111: ldc           #194                // String \\\\
+       113: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       116: pop
+       117: goto          249
+       120: aload_0
+       121: ldc           #196                // String \\b
+       123: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       126: pop
+       127: goto          249
+       130: aload_0
+       131: ldc           #198                // String \\f
+       133: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       136: pop
+       137: goto          249
+       140: aload_0
+       141: ldc           #200                // String \\n
+       143: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       146: pop
+       147: goto          249
+       150: aload_0
+       151: ldc           #202                // String \\r
+       153: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       156: pop
+       157: goto          249
+       160: aload_0
+       161: ldc           #204                // String \\t
+       163: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       166: pop
+       167: goto          249
+       170: iload         4
+       172: bipush        32
+       174: if_icmplt     184
+       177: iload         4
+       179: bipush        127
+       181: if_icmplt     242
+       184: aload_0
+       185: ldc           #206                // String \\u
+       187: invokevirtual #172                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       190: aload_2
+       191: iload         4
+       193: bipush        12
+       195: iushr
+       196: bipush        15
+       198: iand
+       199: caload
+       200: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       203: aload_2
+       204: iload         4
+       206: bipush        8
+       208: iushr
+       209: bipush        15
+       211: iand
+       212: caload
+       213: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       216: aload_2
+       217: iload         4
+       219: iconst_4
+       220: iushr
+       221: bipush        15
+       223: iand
+       224: caload
+       225: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       228: aload_2
+       229: iload         4
+       231: bipush        15
+       233: iand
+       234: caload
+       235: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       238: pop
+       239: goto          249
+       242: aload_0
+       243: iload         4
+       245: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       248: pop
+       249: iinc          3, 1
+       252: goto          15
+       255: aload_0
+       256: bipush        34
+       258: invokevirtual #162                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+       261: pop
+       262: return
+      LineNumberTable:
+        line 114: 0
+        line 115: 7
+        line 116: 13
+        line 117: 23
+        line 118: 30
+        line 119: 100
+        line 120: 110
+        line 121: 120
+        line 122: 130
+        line 123: 140
+        line 124: 150
+        line 125: 160
+        line 127: 170
+        line 128: 184
+        line 129: 225
+        line 130: 242
+        line 116: 249
+        line 133: 255
+        line 134: 262
+      StackMapTable: number_of_entries = 13
+        frame_type = 253 /* append */
+          offset_delta = 15
+          locals = [ class "[C", int ]
+        frame_type = 252 /* append */
+          offset_delta = 84
+          locals = [ int ]
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 9 /* same */
+        frame_type = 13 /* same */
+        frame_type = 57 /* same */
+        frame_type = 250 /* chop */
+          offset_delta = 6
+        frame_type = 250 /* chop */
+          offset_delta = 5
+
+  static {};
+    descriptor: ()V
+    flags: (0x0008) ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         0: new           #30                 // class java/util/concurrent/atomic/AtomicLong
+         3: dup
+         4: invokespecial #208                // Method java/util/concurrent/atomic/AtomicLong."<init>":()V
+         7: putstatic     #25                 // Field ORDINAL:Ljava/util/concurrent/atomic/AtomicLong;
+        10: new           #30                 // class java/util/concurrent/atomic/AtomicLong
+        13: dup
+        14: invokespecial #208                // Method java/util/concurrent/atomic/AtomicLong."<init>":()V
+        17: putstatic     #76                 // Field MARKER_FAILURES:Ljava/util/concurrent/atomic/AtomicLong;
+        20: return
+      LineNumberTable:
+        line 18: 0
+        line 19: 10
+}
+SourceFile: "QueryExecutionMarker.java"
+NestMembers:
+  io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow
+InnerClasses:
+  public static final #226= #35 of #8;    // QueryWindow=class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker$QueryWindow of class io/johnsonlee/graphite/diagnostic/QueryExecutionMarker
+  public static #227= #135 of #114;       // Entry=class java/util/Map$Entry of class java/util/Map

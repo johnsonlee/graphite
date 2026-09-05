@@ -1,0 +1,93 @@
+diff --git a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
+index 5298ad7a..33df7fbf 100644
+--- a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
++++ b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
+@@ -46,6 +46,8 @@ import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregatio
+ import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
+ import io.johnsonlee.graphite.graph.WorkAwareStringPropertyLookup
+ import io.johnsonlee.graphite.input.ResourceAccessor
++import it.unimi.dsi.fastutil.Hash
++import it.unimi.dsi.fastutil.HashCommon
+ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
+ import it.unimi.dsi.fastutil.ints.IntArrayList
+ import it.unimi.dsi.fastutil.ints.IntOpenHashSet
+@@ -539,7 +541,10 @@ internal class MappedWebGraphBackedGraph(
+                 }
+             }
+         } else emptyList()
+-        val exactMatchSets = exactMatchingStringIds?.map(::IntOpenHashSet)
++        val exactMatchFlags = exactMatchingStringIds?.let { matches ->
++            rawExactStringPropertyFlags(stringTable.size(), predicatePropertyIndexes, matches)
++        }
++        val exactMatchSets = if (exactMatchFlags == null) exactMatchingStringIds?.map(::IntOpenHashSet) else null
+         val targetSize = minOf(limit, selectedValues?.size ?: limit)
+         val abort = AtomicBoolean()
+         val scanExecutor = if (backgroundWorkerCount > 0) {
+@@ -577,7 +582,12 @@ internal class MappedWebGraphBackedGraph(
+                                 stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+                                 matched = predicates.indices.any { index ->
+-                                    val stringId = stringIds[predicatePropertyIndexes[index]]
++                                    val propertyIndex = predicatePropertyIndexes[index]
++                                    val stringId = stringIds[propertyIndex]
++                                    exactMatchFlags?.let { flags ->
++                                        return@any stringId in flags.indices &&
++                                            flags[stringId].toInt() and (1 shl propertyIndex) != 0
++                                    }
+                                     exactMatchSets?.let { sets -> return@any stringId in sets[index] }
+                                     val states = matchStates[index]
+                                     when (states[stringId]) {
+@@ -3061,6 +3071,53 @@ private fun estimatedStringPropertyAdmissionBytes(key: StringPropertyAdmissionKe
+         key.property.property.length.toLong() * Char.SIZE_BYTES +
+         key.expected.length.toLong() * Char.SIZE_BYTES
+ 
++/** Uses direct property membership only when its payload fits within the replaced hash arrays. */
++@Suppress("LoopWithTooManyJumpStatements")
++internal fun rawExactStringPropertyFlags(
++    stringCount: Int,
++    propertyIndexes: List<Int>,
++    exactMatchingStringIds: List<IntArray>
++): ByteArray? {
++    if (Thread.currentThread().isInterrupted) {
++        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
++    }
++    if (stringCount <= 0 || propertyIndexes.size != exactMatchingStringIds.size ||
++        propertyIndexes.any { it !in 0 until CALL_SITE_STRING_PROPERTY_COUNT }
++    ) return null
++    var hashPayloadBytes = 0L
++    for (ids in exactMatchingStringIds) {
++        val keyBytes = (HashCommon.arraySize(ids.size, Hash.DEFAULT_LOAD_FACTOR) + 1L) * Int.SIZE_BYTES
++        // Saturation at the comparison target keeps the sum safe for any predicate count.
++        hashPayloadBytes = minOf(stringCount.toLong(), hashPayloadBytes + keyBytes)
++    }
++    if (hashPayloadBytes < stringCount) return null
++
++    // A malformed candidate must retain the original hash behavior, without first allocating a table.
++    for (ids in exactMatchingStringIds) {
++        for (index in ids.indices) {
++            checkRawExactFlagsInterrupted(index)
++            if (ids[index] !in 0 until stringCount) return null
++        }
++    }
++    val flags = ByteArray(stringCount)
++    for (predicateIndex in exactMatchingStringIds.indices) {
++        val propertyFlag = 1 shl propertyIndexes[predicateIndex]
++        val ids = exactMatchingStringIds[predicateIndex]
++        for (index in ids.indices) {
++            checkRawExactFlagsInterrupted(index)
++            val stringId = ids[index]
++            flags[stringId] = (flags[stringId].toInt() or propertyFlag).toByte()
++        }
++    }
++    return flags
++}
++
++private fun checkRawExactFlagsInterrupted(index: Int) {
++    if ((index and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
++        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
++    }
++}
++
+ internal fun stringMatches(
+     actual: String,
+     transform: StringValueTransform?,

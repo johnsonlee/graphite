@@ -1,0 +1,154 @@
+graph 0: 100606 nodes verified
+graph 1: 110875 nodes verified
+graph 2: 102233 nodes verified
+graph 3: 108305 nodes verified
+graph 4: 102157 nodes verified
+graph 5: 98095 nodes verified
+graph 6: 114190 nodes verified
+graph 7: 108587 nodes verified
+graph 8: 111032 nodes verified
+graph 9: 110050 nodes verified
+graph 10: 103391 nodes verified
+graph 11: 94712 nodes verified
+graph 12: 121945 nodes verified
+graph 13: 117348 nodes verified
+graph 14: 108560 nodes verified
+graph 15: 94748 nodes verified
+graph 16: 55707 nodes verified
+graph 17: 67073 nodes verified
+graph 18: 60764 nodes verified
+graph 19: 54516 nodes verified
+graph 20: 65357 nodes verified
+graph 21: 59823 nodes verified
+graph 22: 58836 nodes verified
+graph 23: 57832 nodes verified
+graph 24: 63677 nodes verified
+graph 25: 66311 nodes verified
+graph 26: 68948 nodes verified
+graph 27: 62554 nodes verified
+graph 28: 62181 nodes verified
+graph 29: 59606 nodes verified
+graph 30: 59770 nodes verified
+graph 31: 79133 nodes verified
+graph 32: 102295 nodes verified
+graph 33: 81185 nodes verified
+graph 34: 96064 nodes verified
+graph 35: 94421 nodes verified
+graph 36: 86012 nodes verified
+graph 37: 82642 nodes verified
+graph 38: 86251 nodes verified
+graph 39: 102028 nodes verified
+graph 40: 99087 nodes verified
+graph 41: 82759 nodes verified
+graph 42: 79356 nodes verified
+graph 43: 89373 nodes verified
+graph 44: 93578 nodes verified
+graph 45: 86013 nodes verified
+graph 46: 88637 nodes verified
+graph 47: 87946 nodes verified
+graph 48: 59257 nodes verified
+graph 49: 55092 nodes verified
+graph 50: 52094 nodes verified
+graph 51: 48917 nodes verified
+graph 52: 59098 nodes verified
+graph 53: 62560 nodes verified
+graph 54: 52417 nodes verified
+graph 55: 54757 nodes verified
+graph 56: 59877 nodes verified
+graph 57: 59459 nodes verified
+graph 58: 64023 nodes verified
+graph 59: 51565 nodes verified
+graph 60: 54287 nodes verified
+graph 61: 57490 nodes verified
+graph 62: 56472 nodes verified
+graph 63: 53001 nodes verified
+[
+  {
+    "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "hitGraphs": 2,
+    "entries": 2,
+    "payloads": {
+      "perPredicateBytePayload": 217408,
+      "perPropertyBytePayload": 217408,
+      "packedPropertyBytePayload": 54352,
+      "packedPropertyBitPayload": 27184
+    }
+  },
+  {
+    "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "hitGraphs": 64,
+    "entries": 284080,
+    "payloads": {
+      "perPredicateBytePayload": 11175760,
+      "perPropertyBytePayload": 11175760,
+      "packedPropertyBytePayload": 2793940,
+      "packedPropertyBitPayload": 1397224
+    }
+  },
+  {
+    "id": "or-four-broad",
+    "hitGraphs": 55,
+    "entries": 856,
+    "payloads": {
+      "perPredicateBytePayload": 40284224,
+      "perPropertyBytePayload": 10071056,
+      "packedPropertyBytePayload": 2517764,
+      "packedPropertyBitPayload": 1259104
+    }
+  },
+  {
+    "id": "or-four-single-early",
+    "hitGraphs": 1,
+    "entries": 7,
+    "payloads": {
+      "perPredicateBytePayload": 990544,
+      "perPropertyBytePayload": 247636,
+      "packedPropertyBytePayload": 61909,
+      "packedPropertyBitPayload": 30960
+    }
+  },
+  {
+    "id": "or-four-single-middle",
+    "hitGraphs": 1,
+    "entries": 7,
+    "payloads": {
+      "perPredicateBytePayload": 687216,
+      "perPropertyBytePayload": 171804,
+      "packedPropertyBytePayload": 42951,
+      "packedPropertyBitPayload": 21480
+    }
+  },
+  {
+    "id": "or-four-single-late",
+    "hitGraphs": 1,
+    "entries": 7,
+    "payloads": {
+      "perPredicateBytePayload": 444992,
+      "perPropertyBytePayload": 111248,
+      "packedPropertyBytePayload": 27812,
+      "packedPropertyBitPayload": 13912
+    }
+  },
+  {
+    "id": "or-four-few-early-late",
+    "hitGraphs": 2,
+    "entries": 8,
+    "payloads": {
+      "perPredicateBytePayload": 1435536,
+      "perPropertyBytePayload": 358884,
+      "packedPropertyBytePayload": 89721,
+      "packedPropertyBitPayload": 44872
+    }
+  },
+  {
+    "id": "or-four-all",
+    "hitGraphs": 64,
+    "entries": 477669,
+    "payloads": {
+      "perPredicateBytePayload": 44703040,
+      "perPropertyBytePayload": 11175760,
+      "packedPropertyBytePayload": 2793940,
+      "packedPropertyBitPayload": 1397224
+    }
+  }
+]

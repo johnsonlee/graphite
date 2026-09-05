@@ -1,0 +1,656 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/README.md",
+      "path": "README.md",
+      "sha256": "c46021a20935308e8968381eae28145c0ae2c73082cb826f5183ce99f4cd5bb8",
+      "bytes": 4014
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/base-MappedWebGraphBackedGraph-javap.txt",
+      "path": "base-MappedWebGraphBackedGraph-javap.txt",
+      "sha256": "8036dddbf3eff5deffd642bd525aa847194943fd830b73b640505f42c5adb7f4",
+      "bytes": 775401
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/base-javap-command.json",
+      "path": "base-javap-command.json",
+      "sha256": "f37629c798ef949002edff8448c2c631a143a22d4bfbe2ce75465d5c2df5c287",
+      "bytes": 293
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/base-per-node-javap.txt",
+      "path": "base-per-node-javap.txt",
+      "sha256": "911d6cf2186de73e0ef1a9e0508d70f99a2df336352c2d73f68a506d6eaaa188",
+      "bytes": 21510
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/base-per-node-normalized.txt",
+      "path": "base-per-node-normalized.txt",
+      "sha256": "8877d3af2cb2353f1e026c12352650872a46a833c3c4e5ce0d0431053d1c0756",
+      "bytes": 9747
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/build-command.json",
+      "path": "build-command.json",
+      "sha256": "70b9e675dd0bf039e940f2641ccf2220b049eda11f3ad4f37a77f2f2127d7ef4",
+      "bytes": 391
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/build-receipt.json",
+      "path": "build-receipt.json",
+      "sha256": "2ace8d33c48f147d3a249a2977c73655ef094c2093d5d5e39a2e12b3d7b1fea2",
+      "bytes": 18540
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/build.log",
+      "path": "build.log",
+      "sha256": "cae6a83d9aab14a648594d182e446ab8bf80afa6684a82ba639ac8e44c09c58c",
+      "bytes": 3918
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/build.py",
+      "path": "build.py",
+      "sha256": "72459c85988ee942b162ad6b41668746349c30461167f94129ad837092909b6d",
+      "bytes": 3174
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/bytecode-receipt.json",
+      "path": "bytecode-receipt.json",
+      "sha256": "bf5bc3d96172ad382acb3606629129b63169f1147791c44567b88b02ae9632dd",
+      "bytes": 117420
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-MappedWebGraphBackedGraph-javap.txt",
+      "path": "candidate-MappedWebGraphBackedGraph-javap.txt",
+      "sha256": "058abaf3abdbe43bdbd21cd893e303fcfe0a0e765b26e57b83a0f7ce1b81cc0a",
+      "bytes": 777807
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-javap-command.json",
+      "path": "candidate-javap-command.json",
+      "sha256": "5e7296c882f2b41fb09b6c119a97bd575d28a0876fb85773abb0d38f33b84f8e",
+      "bytes": 249
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-per-node-javap.txt",
+      "path": "candidate-per-node-javap.txt",
+      "sha256": "31be83e9061eb9bd797aa5d4c2323ba0320dd6c67188b86462bad42d7aa059c6",
+      "bytes": 22673
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-per-node-normalized.txt",
+      "path": "candidate-per-node-normalized.txt",
+      "sha256": "5d57980735c643e6dda3bbb48269bf29927023d7d7cd40f1354114c5bd96f587",
+      "bytes": 10096
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-source.diff",
+      "path": "candidate-source.diff",
+      "sha256": "7322a5e05619cdc6915fb1eb0582c3adff7f8a5df1824acd620ae2a47505f13c",
+      "bytes": 5126
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-test.kt",
+      "path": "candidate-test.kt",
+      "sha256": "d77b2ebdab630728c8adb1f1e78f3b7835742c0acf6855d74ff10b06c463ff66",
+      "bytes": 4502
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/clone.log",
+      "path": "clone.log",
+      "sha256": "a285001eaf99c3c08f395b06932ca1a17a614fff45f8a827ea99a35617b18040",
+      "bytes": 71
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/decision.json",
+      "path": "decision.json",
+      "sha256": "78df6baa90efc8b119923a0f0e5a69ced3c41601d434b08bfa4ad64d4b5331b6",
+      "bytes": 806
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-build-audit.json",
+      "path": "independent-build-audit.json",
+      "sha256": "18d9f8b2d5faa7303ed53cf9f35392826d7c5fa4fd214755620a5a5d626f09bf",
+      "bytes": 5928
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-build-audit.md",
+      "path": "independent-build-audit.md",
+      "sha256": "78f65e868656bae79d247ee836a0a626c944a3cf7a192e64a04dd306e127417e",
+      "bytes": 3081
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-build-audit.py",
+      "path": "independent-build-audit.py",
+      "sha256": "aa000caffae5ac2a09f4c6f055e1f9c94fea62b5c1624aa4b853ccfe807476fa",
+      "bytes": 8589
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-comparator-receipt.json",
+      "path": "independent-comparator-receipt.json",
+      "sha256": "4bcc28744116cd44785ac9142af663632e82629a5f6bb051372329800cefb204",
+      "bytes": 1980
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-comparator-report.md",
+      "path": "independent-comparator-report.md",
+      "sha256": "1510e3d7028541cfa617412c11b1cf79559ca211d477bad7b8da3f4ee90a5e77",
+      "bytes": 2217
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-comparator-status.json",
+      "path": "independent-comparator-status.json",
+      "sha256": "0b0e4e66dd8d7b2bd2c06bc362c3fca15b8f3e982142b5fd02a5b1dbcf3d2ae4",
+      "bytes": 4771
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-control-audit.json",
+      "path": "independent-control-audit.json",
+      "sha256": "fdfe5e67ec06da04696320e7b8ebb44328ad056f88e6bb6ba4a2ba3f561c6733",
+      "bytes": 12069
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-control-audit.md",
+      "path": "independent-control-audit.md",
+      "sha256": "9a0c02a780b2e70973ee7f52550f1fa47cacfc4117b42c3827c6f5125b122db9",
+      "bytes": 1535
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-control-audit.py",
+      "path": "independent-control-audit.py",
+      "sha256": "6e672e63b1a6b6bfac8500d411f84817dada18a2b41bb0568e36af3d2a9ace7a",
+      "bytes": 5650
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-old34-audit-output.json",
+      "path": "independent-old34-audit-output.json",
+      "sha256": "695906c7af40ad958a7dd0eeb57803726dc0ec77a293469b472900eb0fda11ea",
+      "bytes": 10075
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-old34-audit-receipt.json",
+      "path": "independent-old34-audit-receipt.json",
+      "sha256": "9f47863d0f57f91199b1584eba8bc49bfcd450c5828143ba5125daff41b190c5",
+      "bytes": 1314
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-old34-audit.json",
+      "path": "independent-old34-audit.json",
+      "sha256": "21be4b7f92bc4cd4d83216f927df1b86ad8182e7da77d650d26b07467c10ed1f",
+      "bytes": 65642
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-old34-audit.md",
+      "path": "independent-old34-audit.md",
+      "sha256": "540a75fdc57aaf569a63f9f4553d3d9ee79d3c65327235a8dffba2b908e3a4d9",
+      "bytes": 6734
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/independent-old34-audit.py",
+      "path": "independent-old34-audit.py",
+      "sha256": "3a45799a8d4582d4bc66fcf03f61661f325e0620379d7dc6cd3076de12ce8993",
+      "bytes": 9091
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/inspect-bytecode.py",
+      "path": "inspect-bytecode.py",
+      "sha256": "3086caee978067a1ede7d21296909192b58572a40676c4f984593a308e0b43d4",
+      "bytes": 6531
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/measurement-plan.json",
+      "path": "measurement-plan.json",
+      "sha256": "be9b59ed1aca25827104e56e85cf2df5a1b9dc3bedf64dd5f553c3ce91a2b26b",
+      "bytes": 2922
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/node-instruction.diff",
+      "path": "node-instruction.diff",
+      "sha256": "60ae2f7dcdc34533b0da70c7dbe3d29e27345b66b86a1dcb3442c57a2d7ee9aa",
+      "bytes": 11774
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-input-after-receipt.json",
+      "path": "old34-input-after-receipt.json",
+      "sha256": "73b5d772e76c1e01810f0fc6d57efc9ea38dcf46cfa9f682342c771f80a75b00",
+      "bytes": 246
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-1-command.json",
+      "path": "old34-pairs/base-global-wide-1-command.json",
+      "sha256": "cae92b06a33c6ee068589f6cfe5d092fce719d9dfdaa23c04c889fe4d5657ab1",
+      "bytes": 1073
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-1.json",
+      "path": "old34-pairs/base-global-wide-1.json",
+      "sha256": "8b94e05611f220ccb54df4cdd3864fbbb238a4141b66e217a6db67f27dcede26",
+      "bytes": 69029
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-1.log",
+      "path": "old34-pairs/base-global-wide-1.log",
+      "sha256": "9cad8d43c91a186903638c7846684c7e2fb9b3431f9fa3d949d9de2e7a0127f1",
+      "bytes": 34916
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-1.tsv",
+      "path": "old34-pairs/base-global-wide-1.tsv",
+      "sha256": "e85bd349b7029e70a7be83bfec92ac65db39d532ecd94e2eed81bdbf86120fbb",
+      "bytes": 41048
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-2-command.json",
+      "path": "old34-pairs/base-global-wide-2-command.json",
+      "sha256": "626f93bc69358f52b32569d16efebc2e890f6e8cb05159168904b9e162b25e2a",
+      "bytes": 1073
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-2.json",
+      "path": "old34-pairs/base-global-wide-2.json",
+      "sha256": "d5da413449e696b826887f7bca05908ad8ab5468ab0eaa33d840dc04f215b9ac",
+      "bytes": 68983
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-2.log",
+      "path": "old34-pairs/base-global-wide-2.log",
+      "sha256": "3a8cfd82a7198e722f1df919fe665eb9cd0a6bbf20d32d7e780696d365f5e696",
+      "bytes": 34916
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-2.tsv",
+      "path": "old34-pairs/base-global-wide-2.tsv",
+      "sha256": "22d8b1e65f3c95aca36531ecdd506681825f75abf89025854bc8ede613a22785",
+      "bytes": 41048
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-3-command.json",
+      "path": "old34-pairs/base-global-wide-3-command.json",
+      "sha256": "7e334c2d014f23e42d632afbc7dbb2a41e56faae5a3d81aa0abf4aa367184f0f",
+      "bytes": 1073
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-3.json",
+      "path": "old34-pairs/base-global-wide-3.json",
+      "sha256": "16b1279a16a32c9808f3e124fb4a57ecd6c468d9c075271d39d39a538e412fab",
+      "bytes": 68917
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-3.log",
+      "path": "old34-pairs/base-global-wide-3.log",
+      "sha256": "021fdc3d6ac6f1133ff8fd3462479835c38933afad8ad5db3c7f934581b45105",
+      "bytes": 34916
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/base-global-wide-3.tsv",
+      "path": "old34-pairs/base-global-wide-3.tsv",
+      "sha256": "d38125e1c6b114192b5d424c0ce4e1356437ddd7139ba16630a5cda21de11faa",
+      "bytes": 41047
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-1-command.json",
+      "path": "old34-pairs/candidate-global-wide-1-command.json",
+      "sha256": "cfe75474f6b9f1fb0fecb50b1d69a9940d1fc1b8b431d6675185c2f422699d2e",
+      "bytes": 1039
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-1.json",
+      "path": "old34-pairs/candidate-global-wide-1.json",
+      "sha256": "aac31b7dff89603d02a8d582aa80a61d9d6b7e2e7e2ba4aa6d46984135b95592",
+      "bytes": 68976
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-1.log",
+      "path": "old34-pairs/candidate-global-wide-1.log",
+      "sha256": "df3b2f60c66ae3a39c50fd530ec261641fef11211d0a19358cc8205975a14fa2",
+      "bytes": 34930
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-1.tsv",
+      "path": "old34-pairs/candidate-global-wide-1.tsv",
+      "sha256": "b326f578cafa0bb5dc8579fb66332984ca2a8b73fb42e68bb7684993236df69a",
+      "bytes": 41050
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-2-command.json",
+      "path": "old34-pairs/candidate-global-wide-2-command.json",
+      "sha256": "8e81a2070e3573bc877c9ed1fc57904e911f2e837d3e565221032edf877930ea",
+      "bytes": 1039
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-2.json",
+      "path": "old34-pairs/candidate-global-wide-2.json",
+      "sha256": "ac25291cf0d877ece5f2e8aa187665b843c9469cf7cb1648b63e37ee36f72c0a",
+      "bytes": 68976
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-2.log",
+      "path": "old34-pairs/candidate-global-wide-2.log",
+      "sha256": "0c72a64fa4603f9d9a8d750d4cf0b656ab1d86db99309737edaceee283c6d325",
+      "bytes": 34926
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-2.tsv",
+      "path": "old34-pairs/candidate-global-wide-2.tsv",
+      "sha256": "461de72077fe1fe78dc55c9cbd35586df5943bfb1d3cf7eaa4f4150baebab646",
+      "bytes": 41050
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-3-command.json",
+      "path": "old34-pairs/candidate-global-wide-3-command.json",
+      "sha256": "63e6b4dd6a2d727e485ca39b132b4d965df337084ed4346e0b4314215b988b7e",
+      "bytes": 1039
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-3.json",
+      "path": "old34-pairs/candidate-global-wide-3.json",
+      "sha256": "386036fc809c29be0ad498509197d04a23ac6fe718647ba9e28ec4cfbbc98d88",
+      "bytes": 68974
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-3.log",
+      "path": "old34-pairs/candidate-global-wide-3.log",
+      "sha256": "3d0baa7e264513a76e70a9742cefa1ec95ab8462f63b20a3aa1e3bbbb436fe20",
+      "bytes": 34926
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/candidate-global-wide-3.tsv",
+      "path": "old34-pairs/candidate-global-wide-3.tsv",
+      "sha256": "cdf6e01e0fc8d8eaf09e207e1612cebc8df86111645e216525d82195ef4610cf",
+      "bytes": 41049
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/comparison-command.json",
+      "path": "old34-pairs/comparison-command.json",
+      "sha256": "8ac17be3196adbd457e8067dbf6b175800b4e0eb63946bf6a57bd30eae72294e",
+      "bytes": 1661
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/global-wide-report.md",
+      "path": "old34-pairs/global-wide-report.md",
+      "sha256": "1510e3d7028541cfa617412c11b1cf79559ca211d477bad7b8da3f4ee90a5e77",
+      "bytes": 2217
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/global-wide-status.json",
+      "path": "old34-pairs/global-wide-status.json",
+      "sha256": "0b0e4e66dd8d7b2bd2c06bc362c3fca15b8f3e982142b5fd02a5b1dbcf3d2ae4",
+      "bytes": 4771
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/local-progress.json",
+      "path": "old34-pairs/local-progress.json",
+      "sha256": "9f1a9d2b5bc3f44f95cabf81fa5f76937b42f666b613279ecf2b9936c85d5201",
+      "bytes": 370
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs/oracle.correctness",
+      "path": "old34-pairs/oracle.correctness",
+      "sha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "bytes": 9483
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/old34-pairs.log",
+      "path": "old34-pairs.log",
+      "sha256": "a4ea255e9cbe7f568a6fe5ad0a3a342a99cec3a2469a0dbb5bbf6d5236680170",
+      "bytes": 339
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/HashCommon-8.5.13.java",
+      "path": "plan-audit/HashCommon-8.5.13.java",
+      "sha256": "877f09c5373cd0e503f816afb1ba173d53009917deb095d05e8f00e38dadf91d",
+      "bytes": 7960
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/README.md",
+      "path": "plan-audit/README.md",
+      "sha256": "8f37ddbee67cb71eb3b8b28efc145c564c80e4b3d12ddc7032b84304b47c85ec",
+      "bytes": 7219
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/audit-branches.py",
+      "path": "plan-audit/audit-branches.py",
+      "sha256": "df7ffb3a292ae656293187e2766c5bacc91410974b538096c5f326d9ba55d81d",
+      "bytes": 5839
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/branch-census.json",
+      "path": "plan-audit/branch-census.json",
+      "sha256": "08356512530648be897fa63f68b8a0a90a0ce0b2d8f96c22024c8dd1e3c23ac1",
+      "bytes": 662397
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/branch-census.md",
+      "path": "plan-audit/branch-census.md",
+      "sha256": "fe0442b21d4a10f81da3831ed8bd9ee478836b58a144992fd9a269a233b9f84d",
+      "bytes": 849
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/capacity-sources.json",
+      "path": "plan-audit/capacity-sources.json",
+      "sha256": "ad3387734977c55fb9b08b9af0023eb30211cb4fd0990a5c7bda890bb01b2b97",
+      "bytes": 607
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/independent-plan-audit.json",
+      "path": "plan-audit/independent-plan-audit.json",
+      "sha256": "00082f3d27103fa00ec5dfdee61e5dc8e8e1baf77a8e951f887f6b8ea32dc24e",
+      "bytes": 1945
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/int-open-hash-set.javap.txt",
+      "path": "plan-audit/int-open-hash-set.javap.txt",
+      "sha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af",
+      "bytes": 42791
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/reviewed-production.diff",
+      "path": "plan-audit/reviewed-production.diff",
+      "sha256": "7322a5e05619cdc6915fb1eb0582c3adff7f8a5df1824acd620ae2a47505f13c",
+      "bytes": 5126
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/source-review.json",
+      "path": "plan-audit/source-review.json",
+      "sha256": "2cfe74c0ab217a5576f872578c9f6c27e8b38ffef09cde060af1c31539b90df0",
+      "bytes": 2575
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/plan-audit/source-review.md",
+      "path": "plan-audit/source-review.md",
+      "sha256": "2471fe52136895430f591269730b54122ed5983bc291bce56881a780bb482e9f",
+      "bytes": 2998
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/prebuild-source-receipt.json",
+      "path": "prebuild-source-receipt.json",
+      "sha256": "0491242c871517b2ba9725bdbdb8f010ce44b6921bb6bc0faf8109387a2637ad",
+      "bytes": 1743
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/render-old34-audit.py",
+      "path": "render-old34-audit.py",
+      "sha256": "e722e9c42b06fb4325b23bfc972b0780f1032458c191a5b0adb496fec74ed3cd",
+      "bytes": 5755
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/root-creation.json",
+      "path": "root-creation.json",
+      "sha256": "edb1a0136c0c6ec6324aea5263fde539c6b8d85412be594df1f8476588ff15a2",
+      "bytes": 155
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/root-decision-audit.json",
+      "path": "root-decision-audit.json",
+      "sha256": "caf367cd69d76dca1d5216e18cbfc0e5a95871c54018eee0e6f163c98b1140c8",
+      "bytes": 1098
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/root-premeasurement-audit.json",
+      "path": "root-premeasurement-audit.json",
+      "sha256": "5a2eb083b4a44bc337750c3e63f49bbc09bf3d23d0c86f42e20035d20c8e791d",
+      "bytes": 671
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/run-old34-pairs.py",
+      "path": "run-old34-pairs.py",
+      "sha256": "169962f4a4c2d86fba4b445f2a7f6a00055d4b960ba43a4c1376ebf6f1c2d326",
+      "bytes": 2286
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/run-v3-pairs.py",
+      "path": "run-v3-pairs.py",
+      "sha256": "baf30b22d88faaed39b5bb400c468e94d9bcc72b6764ea6e5d3fb5c15688435e",
+      "bytes": 1662
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "sha256": "52df6f5c139bd09dfb3ef6696a293e9466d18f6205af0dc72bcbe17211aed85d",
+      "bytes": 775
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "sha256": "908935025cfcf762760224e9c8d64b587267b177b586b4be7f14de03ff101d9c",
+      "bytes": 25758
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "sha256": "27423c8b7030105682c5a047b48f466b975d4e06d393555b8de50f17879ac436",
+      "bytes": 824
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "sha256": "0083d4b446534afdfd9cdb7456e9536d739142a8a98d547b6441663aba3dfa79",
+      "bytes": 1061
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "sha256": "288e427d3d34bfed0b677f3f8b1feb505417a0a052b71732e4e48c96c55489e9",
+      "bytes": 1110
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "sha256": "f3a2fcf1920f4af8ec6df973a5aa9dcf2de0827052d66d5949e98e5edecbd611",
+      "bytes": 1302
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/test-results/TEST-io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest.xml",
+      "path": "test-results/TEST-io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest.xml",
+      "sha256": "f9195dc324297fa0bba950fcf3cd87d199a3fbb5e4dac6deffd17492c05a92f7",
+      "bytes": 1714
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/catalog.json",
+      "path": "v3-control/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+      "bytes": 4045487
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/classes/MultiKeywordProfileRunner.class",
+      "path": "v3-control/classes/MultiKeywordProfileRunner.class",
+      "sha256": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+      "bytes": 11838
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/compile-command.json",
+      "path": "v3-control/compile-command.json",
+      "sha256": "c402ac2d3d038dc25c14e6846938309b5697e1fcc7a632930b018552ea35a279",
+      "bytes": 436
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/compile.log",
+      "path": "v3-control/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/fork-001-command.json",
+      "path": "v3-control/fork-001-command.json",
+      "sha256": "5dff72d9251deb41a3696dc100d8da24fb3fe7cdc75b1b33b31ea308ca34c53b",
+      "bytes": 541
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/fork-001-reference-check.json",
+      "path": "v3-control/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+      "bytes": 309
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/fork-001-rows.jsonl",
+      "path": "v3-control/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+      "bytes": 1148821
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/fork-001.log",
+      "path": "v3-control/fork-001.log",
+      "sha256": "3af0753e2c526232e1e316acec675fe479ef3783e0826146ea298cea92ba055a",
+      "bytes": 2545
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/fork-001.tsv",
+      "path": "v3-control/fork-001.tsv",
+      "sha256": "7e7b55c0a97f5220283a680398071f535abd497b21b61eedc03d3029d94a4e30",
+      "bytes": 10332
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/graph-content-after.json",
+      "path": "v3-control/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "bytes": 181997
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/graph-content-before.json",
+      "path": "v3-control/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "bytes": 181997
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/run.json",
+      "path": "v3-control/run.json",
+      "sha256": "7de19dc2bdf55b77f4d168d6086759cda93fff7b979990cfc68eb30160771b9e",
+      "bytes": 13216
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control/workloads.tsv",
+      "path": "v3-control/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+      "bytes": 82857
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control-command.json",
+      "path": "v3-control-command.json",
+      "sha256": "3f21e0a34d231b1f8c09bd3465feed4e835841ad16c1c4778f4db2476817ef7e",
+      "bytes": 660
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control-summary.json",
+      "path": "v3-control-summary.json",
+      "sha256": "bb23bfcfec748a81fced42b042cb71b09f19344538195781aa3926d2b42b75a3",
+      "bytes": 483
+    },
+    {
+      "source": "/private/tmp/graphite-attempt141.sb7dlq4r/v3-control.log",
+      "path": "v3-control.log",
+      "sha256": "a7b2b7198bd1053bffa0b0fecbca5a183151726e75836ab910c7275547f2da36",
+      "bytes": 50
+    }
+  ],
+  "excluded": [
+    {
+      "path": "/private/tmp/graphite-attempt141.sb7dlq4r/candidate-jmh.jar",
+      "sha256": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0",
+      "bytes": 60242916
+    }
+  ],
+  "count": 107,
+  "bytes": 9298530,
+  "allCopiedBytesMatch": true
+}

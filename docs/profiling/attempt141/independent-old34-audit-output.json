@@ -1,0 +1,304 @@
+{
+  "pairs": [
+    {
+      "pair": 1,
+      "order": "candidate-base",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1476806000,
+          "peakUsedHeapBytes": 4711461848,
+          "peakResidentSetBytes": 5412536320,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1685625,
+          "p95LatencyNanos": 41608625,
+          "maxLatencyNanos": 273169292,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "273169292",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "41608625",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "20099625",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1819397000,
+          "peakUsedHeapBytes": 4221203328,
+          "peakResidentSetBytes": 4780425216,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1876250,
+          "p95LatencyNanos": 118184625,
+          "maxLatencyNanos": 240580000,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "240580000",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "118184625",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "39705125",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2439125,
+          "candidateP95Nanos": 2222416,
+          "speedup": 1.0975105470802946
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 41608625,
+          "candidateP95Nanos": 118184625,
+          "speedup": 0.3520646192345239
+        }
+      ],
+      "p95Speedup": 0.3520646192345239,
+      "resourceIncreasePercent": {
+        "processCpuNanos": 23.198104558080068,
+        "peakUsedHeapBytes": -10.4056561597355,
+        "peakResidentSetBytes": -11.678648726370122
+      },
+      "resourcesAbove15Percent": [
+        "processCpuNanos"
+      ],
+      "strictP95Improvement": false
+    },
+    {
+      "pair": 2,
+      "order": "base-candidate",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1492257000,
+          "peakUsedHeapBytes": 4228782576,
+          "peakResidentSetBytes": 4784209920,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1668250,
+          "p95LatencyNanos": 48693708,
+          "maxLatencyNanos": 254200291,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "254200291",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "48693708",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "37971042",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1572952000,
+          "peakUsedHeapBytes": 4400207360,
+          "peakResidentSetBytes": 4942938112,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 2121000,
+          "p95LatencyNanos": 55151042,
+          "maxLatencyNanos": 249464708,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "249464708",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "55151042",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "31430625",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2091000,
+          "candidateP95Nanos": 2367917,
+          "speedup": 0.883054600309048
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 48693708,
+          "candidateP95Nanos": 55151042,
+          "speedup": 0.8829154669462093
+        }
+      ],
+      "p95Speedup": 0.8829154669462093,
+      "resourceIncreasePercent": {
+        "processCpuNanos": 5.407580597712047,
+        "peakUsedHeapBytes": 4.053762067903488,
+        "peakResidentSetBytes": 3.3177514083662984
+      },
+      "resourcesAbove15Percent": [],
+      "strictP95Improvement": false
+    },
+    {
+      "pair": 3,
+      "order": "candidate-base",
+      "sides": {
+        "base": {
+          "processCpuNanos": 1644617000,
+          "peakUsedHeapBytes": 4713378240,
+          "peakResidentSetBytes": 5255282688,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1945875,
+          "p95LatencyNanos": 61887459,
+          "maxLatencyNanos": 255149000,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "255149000",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "61887459",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "35066583",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        },
+        "candidate": {
+          "processCpuNanos": 1519967000,
+          "peakUsedHeapBytes": 4317112888,
+          "peakResidentSetBytes": 4862951424,
+          "graphWorkUnits": 58071626,
+          "p50LatencyNanos": 1908000,
+          "p95LatencyNanos": 46230833,
+          "maxLatencyNanos": 247220750,
+          "p95QueryIds": [
+            "global-wide-wrapped-case-insensitive-distinct-dense"
+          ],
+          "top3": [
+            {
+              "id": "global-wide-four-properties-zero",
+              "latencyNanos": "247220750",
+              "graphWorkUnits": "57642093",
+              "parallelScanCount": "0",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+              "latencyNanos": "46230833",
+              "graphWorkUnits": "283544",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            },
+            {
+              "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+              "latencyNanos": "36270000",
+              "graphWorkUnits": "106706",
+              "parallelScanCount": "2",
+              "indexLookupCount": "0"
+            }
+          ]
+        }
+      },
+      "wrappedShapes": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseP95Nanos": 2310750,
+          "candidateP95Nanos": 2168667,
+          "speedup": 1.065516282582803
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseP95Nanos": 61887459,
+          "candidateP95Nanos": 46230833,
+          "speedup": 1.338661992095189
+        }
+      ],
+      "p95Speedup": 1.338661992095189,
+      "resourceIncreasePercent": {
+        "processCpuNanos": -7.579272256093672,
+        "peakUsedHeapBytes": -8.407247027983056,
+        "peakResidentSetBytes": -7.465464510517306
+      },
+      "resourcesAbove15Percent": [],
+      "strictP95Improvement": true
+    }
+  ],
+  "slowerCount": 57,
+  "repeatedAboveThreshold": {},
+  "nonLatencyChangeCount": 0,
+  "decision": "rejected-locally"
+}

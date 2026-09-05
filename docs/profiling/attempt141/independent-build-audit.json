@@ -1,0 +1,148 @@
+{
+  "passed": true,
+  "scope": "Independent build/XML/source/classfile audit; no performance inference or execution.",
+  "testCounts": {
+    "tests": 195,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest",
+      "count": 3,
+      "sha256": "52df6f5c139bd09dfb3ef6696a293e9466d18f6205af0dc72bcbe17211aed85d"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+      "count": 167,
+      "sha256": "908935025cfcf762760224e9c8d64b587267b177b586b4be7f14de03ff101d9c"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest",
+      "count": 3,
+      "sha256": "27423c8b7030105682c5a047b48f466b975d4e06d393555b8de50f17879ac436"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest",
+      "count": 4,
+      "sha256": "0083d4b446534afdfd9cdb7456e9536d739142a8a98d547b6441663aba3dfa79"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "count": 4,
+      "sha256": "288e427d3d34bfed0b677f3f8b1feb505417a0a052b71732e4e48c96c55489e9"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest",
+      "count": 6,
+      "sha256": "f3a2fcf1920f4af8ec6df973a5aa9dcf2de0827052d66d5949e98e5edecbd611"
+    },
+    {
+      "name": "io.johnsonlee.graphite.webgraph.RawExactStringPropertyFlagsTest",
+      "count": 8,
+      "sha256": "f9195dc324297fa0bba950fcf3cd87d199a3fbb5e4dac6deffd17492c05a92f7"
+    }
+  ],
+  "productionFiles": 130,
+  "changedProductionFiles": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt"
+  ],
+  "newTestSha256": "d77b2ebdab630728c8adb1f1e78f3b7835742c0acf6855d74ff10b06c463ff66",
+  "bytecode": {
+    "base": {
+      "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+      "nodeMethod": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+      "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+      "codeBytes": 790,
+      "instructions": 357,
+      "byteLoads": [
+        347
+      ],
+      "relevantSites": {
+        "kotlin/collections/CollectionsKt.getIndices": [
+          205
+        ],
+        "kotlin/collections/IntIterator.nextInt": [
+          265
+        ],
+        "java/util/List.get": [
+          283,
+          312,
+          333,
+          383,
+          398,
+          413
+        ],
+        "java/lang/Number.intValue": [
+          291,
+          549,
+          679
+        ],
+        "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains": [
+          322
+        ],
+        "java/lang/Integer.valueOf": [
+          573
+        ]
+      }
+    },
+    "candidate": {
+      "classSha256": "125e9c485e98cabddfc0fa623b97525c0bfa1c521c8a31c703c8f25d3664fb9c",
+      "nodeMethod": "parallelRawDistinctCallSiteStringProjection$lambda$34$lambda$33$lambda$32",
+      "descriptor": "(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;[BLjava/util/List;Ljava/util/List;I)Z",
+      "codeBytes": 853,
+      "instructions": 391,
+      "byteLoads": [
+        342,
+        410
+      ],
+      "relevantSites": {
+        "kotlin/collections/CollectionsKt.getIndices": [
+          205
+        ],
+        "kotlin/collections/IntIterator.nextInt": [
+          265
+        ],
+        "java/util/List.get": [
+          281,
+          375,
+          396,
+          446,
+          461,
+          476
+        ],
+        "java/lang/Number.intValue": [
+          289,
+          612,
+          742
+        ],
+        "it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains": [
+          385
+        ],
+        "java/lang/Integer.valueOf": [
+          636
+        ]
+      }
+    }
+  },
+  "candidateJarSha256": "11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0",
+  "baselineJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "hashes": {
+    "build-receipt.json": "2ace8d33c48f147d3a249a2977c73655ef094c2093d5d5e39a2e12b3d7b1fea2",
+    "build-command.json": "70b9e675dd0bf039e940f2641ccf2220b049eda11f3ad4f37a77f2f2127d7ef4",
+    "build.log": "cae6a83d9aab14a648594d182e446ab8bf80afa6684a82ba639ac8e44c09c58c",
+    "bytecode-receipt.json": "bf5bc3d96172ad382acb3606629129b63169f1147791c44567b88b02ae9632dd",
+    "candidate-source.diff": "7322a5e05619cdc6915fb1eb0582c3adff7f8a5df1824acd620ae2a47505f13c",
+    "measurement-plan.json": "be9b59ed1aca25827104e56e85cf2df5a1b9dc3bedf64dd5f553c3ce91a2b26b",
+    "independent-build-audit.py": "aa000caffae5ac2a09f4c6f055e1f9c94fea62b5c1624aa4b853ccfe807476fa"
+  },
+  "decoderSourceSha256": "7c1fe0b126a26a543a0d55fb75c1dcd6faf70d0bcf27e7416ea55432706bdc45",
+  "limitations": [
+    "Static instructions do not establish runtime cost or speedup.",
+    "New candidate validation pass, byte-array zeroing and memory filling are not zero-cost; no extra storage work units are charged, consistent with old in-memory hash construction.",
+    "Unit tests establish helper semantics and existing mapped correctness; they do not independently measure which branch each real graph takes.",
+    "Pre-interrupted cancellation is tested; periodic in-construction interruption follows source checks, without a new deterministic mid-loop test.",
+    "This audit does not validate ongoing v3 control or acceptance results."
+  ]
+}

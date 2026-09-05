@@ -1,0 +1,36 @@
+Source: https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18-ga/src/hotspot/share/utilities/xmlstream.cpp
+Full response SHA256: 14787fbd5bd6440ed41244bd86b47a8e87f6225c4406329436870f6407f6e2e4
+
+[...]
+374: }
+375: PRAGMA_DIAG_POP
+376: 
+377: // Output a timestamp attribute.
+378: void xmlStream::stamp() {
+379:   assert_if_no_error(inside_attrs(), "stamp must be an attribute");
+380:   print_raw(" stamp='");
+381:   out()->stamp();
+382:   print_raw("'");
+383: }
+384: 
+385: 
+386: // ------------------------------------------------------------------
+387: // Output a method attribute, in the form " method='pkg/cls name sig'".
+388: // This is used only when there is no ciMethod available.
+389: void xmlStream::method(Method* method) {
+390:   assert_if_no_error(inside_attrs(), "printing attributes");
+391:   if (method == NULL)  return;
+392:   print_raw(" method='");
+393:   method_text(method);
+394:   print("' bytes='%d'", method->code_size());
+395:   print(" count='%d'", method->invocation_count());
+396:   int bec = method->backedge_count();
+397:   if (bec != 0)  print(" backedge_count='%d'", bec);
+398:   print(" iicount='%d'", method->interpreter_invocation_count());
+399:   int throwouts = method->interpreter_throwout_count();
+400:   if (throwouts != 0)  print(" throwouts='%d'", throwouts);
+401:   MethodData* mdo = method->method_data();
+402:   if (mdo != NULL) {
+403:     uint cnt;
+404:     cnt = mdo->decompile_count();
+405:     if (cnt != 0)  print(" decompiles='%d'", cnt);

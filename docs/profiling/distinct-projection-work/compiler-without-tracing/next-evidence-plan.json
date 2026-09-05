@@ -1,0 +1,18 @@
+{
+  "purpose": "Resolve the remaining query/phase ownership gap before choosing a production optimization; not attempt 141.",
+  "known": "Three no-method-tracing logs publish the exact raw callback as C2, then record the same contains BCI37 / callback BCI322 runtime reinterpret event, with later C1 code.",
+  "missing": [
+    "Precise query ownership of the event",
+    "Initial selection versus selected provenance ownership",
+    "Execution samples or other direct cost evidence around the event without tracing production methods"
+  ],
+  "preferredDiagnostic": "Emit explicit query begin/end JFR events from an isolated benchmark harness only, alongside JVM-native compilation/deoptimization/execution events; keep every production class byte-identical to frozen main. Retain original query order, outputs, oracle, real graph hashes and JVM options. Verify harness changes independently before recording.",
+  "requirements": [
+    "No method tracing of production methods or forced compilation/prewarming",
+    "No changes to production query planning, worker pools, workloads, gate thresholds or frozen JAR",
+    "All 34 result signatures remain checked; supplemental pure OR is a separate protocol if recorded",
+    "Report marker/JFR perturbation limits; event presence is not exclusive time or speedup",
+    "Map queued/published/invalidated compiler IDs independently; keep incomplete tasks distinct from failures"
+  ],
+  "decision": "Do not start another production candidate from the current compiler-log evidence alone."
+}

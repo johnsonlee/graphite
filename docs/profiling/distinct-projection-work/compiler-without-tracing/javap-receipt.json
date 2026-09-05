@@ -1,0 +1,18 @@
+{
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "classEntry": "it/unimi/dsi/fastutil/ints/IntOpenHashSet.class",
+  "classSha256": "f5d96c595dd0dff8209da257e05fc7baa90427a37934c5704b07659e2a7a78d6",
+  "command": [
+    "/opt/homebrew/opt/openjdk@17/bin/javap",
+    "-c",
+    "-p",
+    "-classpath",
+    "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+    "it.unimi.dsi.fastutil.ints.IntOpenHashSet"
+  ],
+  "output": "int-open-hash-set.javap.txt",
+  "outputSha256": "979c637fb50060a6ee7c88eef2540a98789afcbe68fb37a308af36b0e27fb9af",
+  "executedAfterDiagnosticSessionTerminal": 86711,
+  "sourceCallbackMapping": "docs/profiling/distinct-projection-work/raw-source-lines/source-mapping.json"
+}

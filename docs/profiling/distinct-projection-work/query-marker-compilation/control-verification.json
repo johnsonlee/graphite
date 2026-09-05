@@ -1,0 +1,399 @@
+{
+  "passed": true,
+  "name": "control",
+  "markers": 34,
+  "oracleSignatures": 34,
+  "queryTextAndParametersBoundToOriginalCatalog": true,
+  "windows": [
+    {
+      "id": "global-wide-four-properties-zero",
+      "ordinal": 1,
+      "startEpochNanos": 1788649151567123834,
+      "endEpochNanos": 1788649151838109459,
+      "markerDurationNanos": 270985625,
+      "tsvLatencyNanos": 281123209,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-four-properties-targeted",
+      "ordinal": 2,
+      "startEpochNanos": 1788649151843001000,
+      "endEpochNanos": 1788649151852276917,
+      "markerDurationNanos": 9275917,
+      "tsvLatencyNanos": 9357917,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "ordinal": 3,
+      "startEpochNanos": 1788649151855300917,
+      "endEpochNanos": 1788649151859533250,
+      "markerDurationNanos": 4232333,
+      "tsvLatencyNanos": 4299625,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-class-pair-zero",
+      "ordinal": 4,
+      "startEpochNanos": 1788649151868903209,
+      "endEpochNanos": 1788649151870860250,
+      "markerDurationNanos": 1957041,
+      "tsvLatencyNanos": 2026542,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-07__'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-class-pair-targeted",
+      "ordinal": 5,
+      "startEpochNanos": 1788649151872688167,
+      "endEpochNanos": 1788649151876747334,
+      "markerDurationNanos": 4059167,
+      "tsvLatencyNanos": 4171833,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.caller_name CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.callee_class CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.callee_name CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-class-pair-dense",
+      "ordinal": 6,
+      "startEpochNanos": 1788649151879098292,
+      "endEpochNanos": 1788649151879903375,
+      "markerDurationNanos": 805083,
+      "tsvLatencyNanos": 868250,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-name-pair-zero",
+      "ordinal": 7,
+      "startEpochNanos": 1788649151883658750,
+      "endEpochNanos": 1788649151885374084,
+      "markerDurationNanos": 1715334,
+      "tsvLatencyNanos": 1776542,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-14__'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-name-pair-targeted",
+      "ordinal": 8,
+      "startEpochNanos": 1788649151887003000,
+      "endEpochNanos": 1788649151891256000,
+      "markerDurationNanos": 4253000,
+      "tsvLatencyNanos": 4311334,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.caller_name CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.callee_class CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.callee_name CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-name-pair-dense",
+      "ordinal": 9,
+      "startEpochNanos": 1788649151892949500,
+      "endEpochNanos": 1788649151893648917,
+      "markerDurationNanos": 699417,
+      "tsvLatencyNanos": 751500,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_name, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-caller-class-zero",
+      "ordinal": 10,
+      "startEpochNanos": 1788649151896740625,
+      "endEpochNanos": 1788649151898132417,
+      "markerDurationNanos": 1391792,
+      "tsvLatencyNanos": 1448500,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-tika-05__'\nRETURN n.caller_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-caller-class-targeted",
+      "ordinal": 11,
+      "startEpochNanos": 1788649151899866250,
+      "endEpochNanos": 1788649151902732125,
+      "markerDurationNanos": 2865875,
+      "tsvLatencyNanos": 2971375,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.caller_name CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.callee_class CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.callee_name CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord'\nRETURN n.caller_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-caller-class-dense",
+      "ordinal": 12,
+      "startEpochNanos": 1788649151904464625,
+      "endEpochNanos": 1788649151904908834,
+      "markerDurationNanos": 444209,
+      "tsvLatencyNanos": 495750,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-callee-class-zero",
+      "ordinal": 13,
+      "startEpochNanos": 1788649151907690459,
+      "endEpochNanos": 1788649151908954750,
+      "markerDurationNanos": 1264291,
+      "tsvLatencyNanos": 1316875,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-tika-12__'\nRETURN n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-callee-class-targeted",
+      "ordinal": 14,
+      "startEpochNanos": 1788649151910465375,
+      "endEpochNanos": 1788649151912683042,
+      "markerDurationNanos": 2217667,
+      "tsvLatencyNanos": 2272709,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.caller_name CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.callee_class CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.callee_name CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList'\nRETURN n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-callee-class-dense",
+      "ordinal": 15,
+      "startEpochNanos": 1788649151914351834,
+      "endEpochNanos": 1788649151914745292,
+      "markerDurationNanos": 393458,
+      "tsvLatencyNanos": 452542,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.callee_class\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-provenance-zero",
+      "ordinal": 16,
+      "startEpochNanos": 1788649151917247959,
+      "endEpochNanos": 1788649151918309000,
+      "markerDurationNanos": 1061041,
+      "tsvLatencyNanos": 1114041,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-hive-03__'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-provenance-targeted",
+      "ordinal": 17,
+      "startEpochNanos": 1788649151920292292,
+      "endEpochNanos": 1788649151923224792,
+      "markerDurationNanos": 2932500,
+      "tsvLatencyNanos": 2997834,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.caller_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.callee_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.callee_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-provenance-dense",
+      "ordinal": 18,
+      "startEpochNanos": 1788649151924855959,
+      "endEpochNanos": 1788649151925612334,
+      "markerDurationNanos": 756375,
+      "tsvLatencyNanos": 819500,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-aliased-zero",
+      "ordinal": 19,
+      "startEpochNanos": 1788649151928791667,
+      "endEpochNanos": 1788649151929719167,
+      "markerDurationNanos": 927500,
+      "tsvLatencyNanos": 981333,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-hive-10__'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-aliased-targeted",
+      "ordinal": 20,
+      "startEpochNanos": 1788649151931270250,
+      "endEpochNanos": 1788649151934556042,
+      "markerDurationNanos": 3285792,
+      "tsvLatencyNanos": 3333750,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.caller_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.callee_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.callee_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-aliased-dense",
+      "ordinal": 21,
+      "startEpochNanos": 1788649151936730750,
+      "endEpochNanos": 1788649151937449500,
+      "markerDurationNanos": 718750,
+      "tsvLatencyNanos": 781625,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-parameterized-zero",
+      "ordinal": 22,
+      "startEpochNanos": 1788649151940738292,
+      "endEpochNanos": 1788649151941778750,
+      "markerDurationNanos": 1040458,
+      "tsvLatencyNanos": 1148916,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS $term\n   OR n.caller_name CONTAINS $term\n   OR n.callee_class CONTAINS $term\n   OR n.callee_name CONTAINS $term\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {
+        "term": "__graphite_fixture64_absent_fixture-kotlin-compiler-01__"
+      }
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "ordinal": 23,
+      "startEpochNanos": 1788649151943385750,
+      "endEpochNanos": 1788649151945562834,
+      "markerDurationNanos": 2177084,
+      "tsvLatencyNanos": 2237666,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS $term\n   OR n.caller_name CONTAINS $term\n   OR n.callee_class CONTAINS $term\n   OR n.callee_name CONTAINS $term\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {
+        "term": "org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1"
+      }
+    },
+    {
+      "id": "global-wide-parameterized-dense",
+      "ordinal": 24,
+      "startEpochNanos": 1788649151947174917,
+      "endEpochNanos": 1788649151947889125,
+      "markerDurationNanos": 714208,
+      "tsvLatencyNanos": 776708,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS $term\n   OR n.caller_name CONTAINS $term\n   OR n.callee_class CONTAINS $term\n   OR n.callee_name CONTAINS $term\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {
+        "term": "get"
+      }
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "ordinal": 25,
+      "startEpochNanos": 1788649151950818750,
+      "endEpochNanos": 1788649151951867834,
+      "markerDurationNanos": 1049084,
+      "tsvLatencyNanos": 1103417,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "ordinal": 26,
+      "startEpochNanos": 1788649151953336334,
+      "endEpochNanos": 1788649151955567875,
+      "markerDurationNanos": 2231541,
+      "tsvLatencyNanos": 2291416,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "ordinal": 27,
+      "startEpochNanos": 1788649151957162209,
+      "endEpochNanos": 1788649151958493167,
+      "markerDurationNanos": 1330958,
+      "tsvLatencyNanos": 1375791,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "ordinal": 28,
+      "startEpochNanos": 1788649151961423875,
+      "endEpochNanos": 1788649151964445667,
+      "markerDurationNanos": 3021792,
+      "tsvLatencyNanos": 3078625,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "ordinal": 29,
+      "startEpochNanos": 1788649151966173625,
+      "endEpochNanos": 1788649151988857709,
+      "markerDurationNanos": 22684084,
+      "tsvLatencyNanos": 22780375,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "ordinal": 30,
+      "startEpochNanos": 1788649151990663167,
+      "endEpochNanos": 1788649152039010917,
+      "markerDurationNanos": 48347750,
+      "tsvLatencyNanos": 48424000,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-distribution-broad-all-64",
+      "ordinal": 31,
+      "startEpochNanos": 1788649152042318500,
+      "endEpochNanos": 1788649152043034959,
+      "markerDurationNanos": 716459,
+      "tsvLatencyNanos": 775459,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-early",
+      "ordinal": 32,
+      "startEpochNanos": 1788649152046090500,
+      "endEpochNanos": 1788649152047250084,
+      "markerDurationNanos": 1159584,
+      "tsvLatencyNanos": 1217417,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-late",
+      "ordinal": 33,
+      "startEpochNanos": 1788649152050209250,
+      "endEpochNanos": 1788649152054105834,
+      "markerDurationNanos": 3896584,
+      "tsvLatencyNanos": 3946958,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    },
+    {
+      "id": "global-wide-distribution-localized-middle",
+      "ordinal": 34,
+      "startEpochNanos": 1788649152057330125,
+      "endEpochNanos": 1788649152059993417,
+      "markerDurationNanos": 2663292,
+      "tsvLatencyNanos": 2724000,
+      "javaThreadId": 28,
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "parameters": {}
+    }
+  ],
+  "eventTypeCounts": {
+    "jdk.ActiveRecording": 1,
+    "jdk.ActiveSetting": 340,
+    "jdk.JVMInformation": 1,
+    "graphite.diagnostic.QueryExecution": 34
+  },
+  "recordedDataLossEvents": 0,
+  "nonLatencyDifferencesVersusPriorBase": [],
+  "eventsJsonSha256": "340afc420c55fcbf7f43db3203e1039290890ce38600e64a7553b30a5833650e",
+  "limits": "Marker excludes queueing, result serialization, metric collection, marker preparation and commit; duration is not end-to-end latency. No performance acceptance or phase attribution."
+}

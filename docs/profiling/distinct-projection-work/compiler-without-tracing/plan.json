@@ -1,0 +1,19 @@
+{
+  "purpose": "Observe frozen-main compiler decisions without method tracing or async-profiler; not an optimization attempt, performance gate, causal profiler comparison, or speedup claim.",
+  "base": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "template": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1-command.json",
+  "templateSha256": "10f38069494a6fa9a309cec90e595823c1b177038b85ed6126e86ba43672b696",
+  "manifest": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "manifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "forks": 3,
+  "changes": [
+    "output paths",
+    "-XX:+UnlockDiagnosticVMOptions",
+    "-XX:+LogCompilation",
+    "-XX:LogFile=<unique fork path>"
+  ],
+  "unchanged": "Frozen JAR, real 64 graphs, original 34 workload and oracle, no warmup, cold-on-replay, Java17, four active CPUs, 8GiB heap, GC profiler.",
+  "limits": "Compiler logging can perturb timing. It does not provide per-query timestamp windows; compile stamps cannot automatically be assigned to individual queries. No production changes and no acceptance comparison."
+}

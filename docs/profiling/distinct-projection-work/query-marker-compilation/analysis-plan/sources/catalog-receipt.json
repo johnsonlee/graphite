@@ -1,0 +1,29 @@
+{
+  "commands": [
+    [
+      "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-d",
+      "/private/tmp/graphite-query-marker-capture",
+      "/private/tmp/graphite-query-marker-capture/ExportOriginalCatalog.java"
+    ],
+    [
+      "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-cp",
+      "/private/tmp/graphite-query-marker-capture:/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "ExportOriginalCatalog",
+      "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+      "/private/tmp/graphite-query-marker-capture/original-catalog.json"
+    ]
+  ],
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256Before": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "jarSha256After": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "manifest": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "manifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "outputSha256": "84606875e34be7928275e831fd26abbfd9115832952a5bca19ea6f282c8a9284",
+  "sourceSha256": "5bd50f5253426557e1ae445012c6a3e0dde1e5b0f76c4e8e97c09d20125eb772",
+  "classSha256": "fe4a017f755f52a3abe04691bf05f702a9d006cec70e8336218569b69b565d38",
+  "queryCount": 34,
+  "idsAndOrderMatchPriorTsv": true,
+  "graphLoadOrCypherExecution": false
+}

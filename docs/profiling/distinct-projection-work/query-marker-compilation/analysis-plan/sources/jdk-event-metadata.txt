@@ -1,0 +1,196 @@
+@Name("jdk.ActiveSetting")
+@Label("Recording Setting")
+@Category("Flight Recorder")
+class ActiveSetting extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Label("Duration")
+  @Timespan("TICKS")
+  long duration;
+
+  @Label("Event Thread")
+  @Description("Thread in which event was committed in")
+  Thread eventThread;
+
+  @Label("Stack Trace")
+  @Description("Stack Trace starting from the method the event was committed in")
+  StackTrace stackTrace;
+
+  @Label("Event Id")
+  long id;
+
+  @Label("Setting Name")
+  String name;
+
+  @Label("Setting Value")
+  String value;
+}
+
+@Name("jdk.Compilation")
+@Category({"Java Virtual Machine", "Compiler"})
+@Label("Compilation")
+@Description("Results of method compilation attempts")
+class Compilation extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Label("Duration")
+  @Timespan("TICKS")
+  long duration;
+
+  @Label("Event Thread")
+  @Description("Thread in which event was committed in")
+  Thread eventThread;
+
+  @Unsigned
+  @CompileId
+  @Label("Compilation Identifier")
+  int compileId;
+
+  @Label("Compiler")
+  String compiler;
+
+  @Label("Method")
+  Method method;
+
+  @Unsigned
+  @Label("Compilation Level")
+  short compileLevel;
+
+  @Label("Succeeded")
+  boolean succeded;
+
+  @Label("On Stack Replacement")
+  boolean isOsr;
+
+  @Unsigned
+  @DataAmount("BYTES")
+  @Label("Compiled Code Size")
+  long codeSize;
+
+  @Unsigned
+  @DataAmount("BYTES")
+  @Label("Inlined Code Size")
+  long inlinedBytes;
+}
+
+@Name("jdk.DataLoss")
+@Category("Flight Recorder")
+@Label("Data Loss")
+@Description("Data could not be copied out from a buffer, typically because of contention")
+class DataLoss extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Unsigned
+  @DataAmount("BYTES")
+  @Label("Amount")
+  @Description("Amount lost data")
+  long amount;
+
+  @Unsigned
+  @DataAmount("BYTES")
+  @Label("Total")
+  @Description("Total lost amount for thread")
+  long total;
+}
+
+@Name("jdk.Deoptimization")
+@Category({"Java Virtual Machine", "Compiler"})
+@Label("Deoptimization")
+@Description("Describes the detection of an uncommon situation in a compiled method which may lead to deoptimization of the method")
+class Deoptimization extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Label("Event Thread")
+  @Description("Thread in which event was committed in")
+  Thread eventThread;
+
+  @Label("Stack Trace")
+  @Description("Stack Trace starting from the method the event was committed in")
+  StackTrace stackTrace;
+
+  @Unsigned
+  @CompileId
+  @Label("Compilation Identifier")
+  int compileId;
+
+  @Label("Compiler")
+  String compiler;
+
+  @Label("Method")
+  Method method;
+
+  @Label("Line Number")
+  int lineNumber;
+
+  @Label("Bytecode Index")
+  int bci;
+
+  @Label("Instruction")
+  String instruction;
+
+  @Label("Reason")
+  String reason;
+
+  @Label("Action")
+  String action;
+}
+
+@Name("jdk.ExecutionSample")
+@Category({"Java Virtual Machine", "Profiling"})
+@Label("Method Profiling Sample")
+@Description("Snapshot of a threads state")
+class ExecutionSample extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Label("Thread")
+  Thread sampledThread;
+
+  @Label("Stack Trace")
+  StackTrace stackTrace;
+
+  @Label("Thread State")
+  String state;
+}
+
+@Name("jdk.JVMInformation")
+@Category("Java Virtual Machine")
+@Label("JVM Information")
+@Description("Description of JVM and the Java application")
+class JVMInformation extends jdk.jfr.Event {
+  @Label("Start Time")
+  @Timestamp("TICKS")
+  long startTime;
+
+  @Label("JVM Name")
+  String jvmName;
+
+  @Label("JVM Version")
+  String jvmVersion;
+
+  @Label("JVM Command Line Arguments")
+  String jvmArguments;
+
+  @Label("JVM Settings File Arguments")
+  String jvmFlags;
+
+  @Label("Java Application Arguments")
+  String javaArguments;
+
+  @Timestamp("MILLISECONDS_SINCE_EPOCH")
+  @Label("JVM Start Time")
+  long jvmStartTime;
+
+  @Label("Process Identifier")
+  long pid;
+}
+

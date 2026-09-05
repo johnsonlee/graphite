@@ -1,0 +1,45 @@
+{
+  "pairs": [
+    {
+      "pair": 1,
+      "p95Queries": {
+        "base": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "candidate": "global-wide-wrapped-case-insensitive-distinct-dense"
+      },
+      "p95Nanos": {
+        "base": 41608625,
+        "candidate": 118184625
+      }
+    },
+    {
+      "pair": 2,
+      "p95Queries": {
+        "base": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "candidate": "global-wide-wrapped-case-insensitive-distinct-dense"
+      },
+      "p95Nanos": {
+        "base": 48693708,
+        "candidate": 55151042
+      }
+    },
+    {
+      "pair": 3,
+      "p95Queries": {
+        "base": "global-wide-wrapped-case-insensitive-distinct-dense",
+        "candidate": "global-wide-wrapped-case-insensitive-distinct-dense"
+      },
+      "p95Nanos": {
+        "base": 61887459,
+        "candidate": 46230833
+      }
+    }
+  ],
+  "reject": true,
+  "reasons": [
+    "Strict P95 progress fails pairs1 and2",
+    "Original comparator rejects pair1 CPU"
+  ],
+  "inputFilesUnchanged": true,
+  "noV3Pairs": true,
+  "noCandidateCI": true
+}

@@ -1,0 +1,1 @@
+PASS JVM -Xverify:all class loading and empty/sorted/escaped/null/type-rejected parameter encoding; no query, graph or JFR recording

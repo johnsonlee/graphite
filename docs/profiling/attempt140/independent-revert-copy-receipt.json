@@ -1,0 +1,17 @@
+[
+  {
+    "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-revert-audit.py",
+    "destination": "docs/profiling/attempt140/independent-revert-audit.py",
+    "sha256": "553611bc22639bc9c523b522ac43c8a849dd3be58f74a7cc81b4caee973698c2"
+  },
+  {
+    "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-revert-audit.json",
+    "destination": "docs/profiling/attempt140/independent-revert-audit.json",
+    "sha256": "82f68a4efc8adc2f36001179c70fec921352299db430141d567e1f9e30f86cdd"
+  },
+  {
+    "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-revert-audit.md",
+    "destination": "docs/profiling/attempt140/independent-revert-audit.md",
+    "sha256": "ec85dc8edd9b7b68da6fd67bf290246e527c88f70856844e079c8d9fae4d1941"
+  }
+]

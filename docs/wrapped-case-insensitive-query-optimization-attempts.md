@@ -5494,3 +5494,69 @@ to frozen main and preserves all 168 tests byte-identical to parent aede4c82.
 [Revert verification](profiling/attempt140/revert-source-receipt.json) retains
 the failed candidate's evidence. Revert-head CI is separate and not presumed
 passing from source equality.
+
+Revert 140 exact-head CI at `b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0`
+is terminal: unit run `33995836241` passed; benchmark run `33995836230` failed.
+Method checks and all three routing states passed. Global regression bounds
+passed, but strict progress failed in pairs 1 and 3: P95 values were
+119.915932→297.628775, 127.839829→118.118335, and 110.626223→117.182906 ms.
+No repeated per-query double-bound failure was found. Equal source/recorded JAR
+payload hashes do not waive this outcome, and no CI rerun was requested.
+[Exact-head evidence](profiling/attempt140/revert-ci/README.md).
+
+
+### 2026-09-06 - Attempt 141: Bound dense DISTINCT membership with property flags
+
+**Hypothesis:** frozen-main raw DISTINCT repeatedly probes exact IntOpenHashSets.
+Actual persisted trigram-anchor replay for 1,216 term/graph cases matches an
+independent used-ID oracle. For dense predicates, a byte per string ID with four
+property bits has lower payload than the current per-predicate hash key arrays;
+sparse predicates have the opposite result. Select the table only when S is no
+larger than the existing key-array payload sum, retaining hash otherwise. This
+is a capacity/branch fact, not a speedup estimate or measured allocation saving.
+
+**Base and scope:** frozen main `4e328b0109e13c896b74004823fb049fcb19251a`;
+parent `b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0`. Only the exact membership
+encoding and bounded factory change in MappedWebGraphBackedGraph. Preserve the
+predicate iterator, property List, selected feasibility/caches, raw/index routing,
+all pools, node billing, flush and worker join. Invalid candidates decline before
+allocation; invalid raw probes do not match. Additional in-memory range checking,
+zero initialization and filling are recorded, with periodic interruption checks;
+they are not additional storage-item reads and do not change node work billing.
+
+**Correctness/mechanism:** all 195 WebGraph tests, detekt, JMH packaging and test
+exclusion pass. Eight new tests include 4,096 independent OR combinations,
+capacity boundaries, invalid ranges and interruption. All 130 main/JMH sources
+have only the one intended changed file. Node callback Code is 790→853 bytes,
+357→391 static instructions; one captured byte[]/baload and range/bit checks are
+added while old hash fallback/List/iterator/boxing sites remain. Candidate source
+SHA256 `8239e1682428ac08b046ab7957f02d160d02333c354dfb600311770804e4f631`,
+JAR `11b8e055adf26bf5f7d18c0d2015f8b938d0ed0b48b96eb7899715f4b70e2af0`.
+The v3 control verifies all 36 queries and 6,171 complete values/order/provenance
+rows. Real input remains the pinned four-dependency, 64-persisted-shard fixture
+with 5,046,935 CallSites; all 1,088 input files are unchanged.
+
+| Pair/order | Main → candidate P95 (ms) | Main → candidate CPU (s) |
+|---|---:|---:|
+| 1 candidate-base | 41.608625 → 118.184625 | 1.476806 → 1.819397 |
+| 2 base-candidate | 48.693708 → 55.151042 | 1.492257 → 1.572952 |
+| 3 candidate-base | 61.887459 → 46.230833 | 1.644617 → 1.519967 |
+
+**Old34 rejects:** all 204 complete 14-field signatures match. Every non-latency
+TSV field matches, including 58,071,626 work units per replay. All 57/102 slower
+observations are retained; no repeated per-query double-bound failure occurs.
+Nevertheless strict P95 progress fails pairs1/2, and pair1 CPU rises 23.1981%,
+exceeding the unchanged single-pair resource limit. The independent original
+comparator returns exit1 and a deeply identical status. All P95 rows are dense
+DISTINCT; the third pair's improvement cannot override the first two failures.
+
+**Decision: reject and explicitly revert.** No v3 performance pairs or candidate
+CI are run after this failure. Candidate method-level/end-to-end CI performance
+is unavailable, not passing. Do not attribute the failure to JIT, zero filling or
+noise without evidence, or retry to green. Record this single attempt commit,
+then restore the production file and remove the new test that depends on its
+rejected factory; retain the test source and all evidence in the report. Revert
+CI is independent and not presumed green. Pools remain and final10x is unmet.
+[Readable report](profiling/attempt141/README.md),
+[independent full old34 audit](profiling/attempt141/independent-old34-audit.md),
+[decision](profiling/attempt141/decision.json).

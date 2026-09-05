@@ -1,0 +1,25 @@
+{
+  "output": "/private/tmp/graphite-attempt140._5jztd0a/revert-ci/ci-audit.json",
+  "integrityFiles": 51,
+  "globalWorkDifferences": [
+    0,
+    0,
+    0
+  ],
+  "repeatedAligned": [],
+  "workflowRuns": {
+    "33995836241": {
+      "conclusion": "success",
+      "snapshotSha256": "4690b94d927cdf28d028f5c41638c7620b1ddbcf29d0a1233cde3ef5f6184ab5",
+      "failedJobs": []
+    },
+    "33995836230": {
+      "conclusion": "failure",
+      "snapshotSha256": "e5b1a0ac00de3c520d7861601be3f9fe5622a93d5702708b915fc083bf681db0",
+      "failedJobs": [
+        "global-wide-pressure-evidence",
+        "benchmark-regression-gate"
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+--- frozen benchmark
++++ diagnostic benchmark
+@@ -6397,7 +6397,7 @@
+       29: invokevirtual #273                // Method io/johnsonlee/graphite/webgraph/BroadQueryCase.getQuery:()Ljava/lang/String;
+       32: aload_2
+       33: invokevirtual #2121               // Method io/johnsonlee/graphite/webgraph/BroadQueryCase.getParameters:()Ljava/util/Map;
+-      36: invokevirtual #2125               // Method io/johnsonlee/graphite/cypher/CrossGraphCypherExecutor.execute:(Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
++      36: invokestatic  #2288               // Method io/johnsonlee/graphite/diagnostic/QueryExecutionMarker.execute:(Lio/johnsonlee/graphite/cypher/CrossGraphCypherExecutor;Ljava/lang/String;Ljava/util/Map;)Lio/johnsonlee/graphite/cypher/CypherResult;
+       39: areturn
+ 
+   private static final boolean queryExecutionMetrics$lambda$39(io.johnsonlee.graphite.webgraph.BroadQueryGraphAccess);

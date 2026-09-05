@@ -1,0 +1,114 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/ExportStrings.class",
+      "path": "ExportStrings.class",
+      "sha256": "dcd9b9385157314cbec60a244a82f0e0a898822607267e6745136464df9c17c4",
+      "bytes": 3654
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/ExportStrings.java",
+      "path": "ExportStrings.java",
+      "sha256": "e9049eac2c0dbc1ec6b220344ca53147ad9f8a46de7fd90de42d24cf84409281",
+      "bytes": 1746
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/README.md",
+      "path": "README.md",
+      "sha256": "915ee41d58ed2169c284a13af57362c9191d94579969343c5722d56a905240c5",
+      "bytes": 4121
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/census.json",
+      "path": "census.json",
+      "sha256": "9acd5ef33ee950aef299d0ebf9dd8a35107779e3c6427442562142c4d4c179f3",
+      "bytes": 482585
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/census.log",
+      "path": "census.log",
+      "sha256": "c96d896618a266b7aab76a762ce1832c1594668a7e9d76acfe3cc5e73203a229",
+      "bytes": 4227
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/census.py",
+      "path": "census.py",
+      "sha256": "1a566bc3f6b6fb22682ca3adbc4664166df8529eb0274caaa3f8579826de245c",
+      "bytes": 4479
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/export-0.log",
+      "path": "export-0.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/export-1.log",
+      "path": "export-1.log",
+      "sha256": "3834a328833caac90d01965a2210dab3f6f12d59237cb6a3bfff13590608b896",
+      "bytes": 6041
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/independent-census-audit-receipt.json",
+      "path": "independent-census-audit-receipt.json",
+      "sha256": "5bd10208686698fa945b9193d9ee9bfa1c548520be4b5c8c626007da706115e2",
+      "bytes": 772
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/independent-census-audit.json",
+      "path": "independent-census-audit.json",
+      "sha256": "05be67f26c0749ccd48c017deb3936fc1c7fd1e03eb7d0e493f3cbaca7f9190f",
+      "bytes": 513894
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/independent-census-audit.md",
+      "path": "independent-census-audit.md",
+      "sha256": "5dde003c249f014ca1db5512c81d1373cdb9d66ec7047a841f65c395ae40f7c4",
+      "bytes": 3457
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/independent-census-audit.py",
+      "path": "independent-census-audit.py",
+      "sha256": "7f654b7c5b5cac37513a323119d12ffa04ab99db9517635fce65fb9fb13c2781",
+      "bytes": 13753
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/mapped-candidates.json",
+      "path": "mapped-candidates.json",
+      "sha256": "acc9b1b3f23aafe81afd8980ffb85f9d9a3b6270d25c098f69d81abd1d1cb130",
+      "bytes": 856879
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/mapped-candidates.log",
+      "path": "mapped-candidates.log",
+      "sha256": "abed8d239b03725b9f1ef666042b5c18cf78977377268ba85079026bab7abddd",
+      "bytes": 7456
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/mapped-candidates.py",
+      "path": "mapped-candidates.py",
+      "sha256": "9d5b9ca38c3c11faa4c104c421665dc51162605ecb62ddb8ac103e1365bb7429",
+      "bytes": 5057
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/string-export-receipt.json",
+      "path": "string-export-receipt.json",
+      "sha256": "ada6bc20e6ee05cc6358bed6fb7f0754dfae7a98665d6262c9b57de931d53ce4",
+      "bytes": 1549
+    },
+    {
+      "source": "/private/tmp/graphite-exact-membership-census/write-report.py",
+      "path": "write-report.py",
+      "sha256": "5e4a20a81fb4d34bda100a07873d1d6a5d760f6aa161f360da78258eb3d15ee0",
+      "bytes": 4209
+    }
+  ],
+  "excluded": [
+    {
+      "path": "/private/tmp/graphite-exact-membership-census/strings.utf16.bin.gz",
+      "sha256": "3d8d51b999e3e8dd3c7a9c6903fdb4e6111521284899086d17509f3c4f7d66fe",
+      "bytes": 24750102
+    }
+  ],
+  "allCopiedBytesMatch": true
+}

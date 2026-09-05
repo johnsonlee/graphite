@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-raw-predicate-object-audit/README.md",
+      "path": "README.md",
+      "sha256": "1a6688acc4325773f119df6950156775211572a68917a75d67c3a619cebb93e3",
+      "bytes": 5900
+    },
+    {
+      "source": "/private/tmp/graphite-raw-predicate-object-audit/audit.json",
+      "path": "audit.json",
+      "sha256": "7669e1dc387b276fa6f7300978604be2da47adfd1df5233b7f1d4a35d0078519",
+      "bytes": 91770
+    },
+    {
+      "source": "/private/tmp/graphite-raw-predicate-object-audit/audit.py",
+      "path": "audit.py",
+      "sha256": "74f4ca5323eef3863fca0f47de90eb71770310357b61006847770e531d969279",
+      "bytes": 14574
+    }
+  ],
+  "excluded": [],
+  "allCopiedBytesMatch": true
+}

@@ -1,0 +1,6 @@
+{
+  "head": "b94b8caa8dea10d1d2ddb74a0a0c39a3ab5351f0",
+  "benchmarkRun": 33995836230,
+  "confirmedFailures": [],
+  "scope": "All12 Method compatibility shards and aggregate gate completed success according to exact-head terminal job snapshots. No failed Method shard exists to download; no claim of individual raw JMH sample audit."
+}
