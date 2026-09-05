@@ -1,0 +1,48 @@
+{
+  "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "benchmarkRun": 33992947567,
+  "confirmedFailures": [
+    {
+      "scenario": "prefix",
+      "graphCount": 4,
+      "metric": "processCpuNanos",
+      "thresholdPercent": 15,
+      "initial": {
+        "base": 1110000000,
+        "candidate": 1400000000,
+        "increasePercent": 26.126126126126124
+      },
+      "confirmation": {
+        "base": 1290000000,
+        "candidate": 1550000000,
+        "increasePercent": 20.155038759689916
+      }
+    }
+  ],
+  "originalJmhScoresMatchAllMetricStatusRows": true,
+  "correctness": {
+    "initialBaseCandidateEqual": true,
+    "confirmationBaseCandidateEqual": true,
+    "initialConfirmationEqual": true,
+    "uniqueSignaturesPerSidePhase": 3
+  },
+  "inputSha256": {
+    "method4-string/base-method-compatibility-4-string.json": "7fe1d878c2d697c0b45b2e869a67b222e4ceca96a391ad6ff482797cb7ec79c9",
+    "method4-string/base-method-compatibility-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+    "method4-string/candidate-method-compatibility-4-string.json": "a3bd2a5e8df86c2211d1c3d756bb56a26b494fc7ba56822c483374f075c96ac2",
+    "method4-string/candidate-method-compatibility-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+    "method4-string/method-confirmation-base-4-string.json": "e51b2518116386f16de4a633044530801cf92c0695ff7e260792c376e70a8ae2",
+    "method4-string/method-confirmation-base-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+    "method4-string/method-confirmation-candidate-4-string.json": "4f7e175a6ed7cdf914b230198e8f141d0510b31cabddb8926637499edb3f69f6",
+    "method4-string/method-confirmation-candidate-4-string.txt": "729fe7d9a9cced56e405cfb33b7f85851ab2e307acdc0c99cf3d4a176f058399",
+    "method4-string/method-compatibility-4-string-wall-initial-status.json": "8db52c68e308fa237132a13b3ca36c9957ed1141c7b839fbfe1d3dec38675be1",
+    "method4-string/method-compatibility-4-string-wall-status.json": "9339926b6e0ebd70d8701d4827a00efb3b0876bad4d4f25ec726507424f58c6e",
+    "method4-string/method-compatibility-4-string-cpu-initial-status.json": "50bea153d5c4f4322e0425d20cdeaa627f5e9ca5afb5082de0bf2addc581a0ab",
+    "method4-string/method-compatibility-4-string-cpu-status.json": "cd95b9922e54982c1a37d2bca0911764260061cdbffc2d3c1094493765031755",
+    "method4-string/method-compatibility-4-string-rss-after-initial-status.json": "f80e68e4a22d8457043d167654d44db0b296410b210ac0d4ed431d5ec5cd7fa7",
+    "method4-string/method-compatibility-4-string-rss-after-status.json": "9122b5178d7ac9208ece174a17d3ba9e3fb4fef80bce9ab28f2122a6239ec0d3",
+    "method4-string/method-compatibility-4-string-rss-delta-initial-status.json": "2257d6a91e897a3acc67cfd0fa369744903f9702034c5d90a59c5fdc76b13e59",
+    "method4-string/method-compatibility-4-string-rss-delta-status.json": "2257d6a91e897a3acc67cfd0fa369744903f9702034c5d90a59c5fdc76b13e59"
+  },
+  "scope": "Read-only downloaded Method4 string artifact; no new measurement or runtime cause attribution. Whole-process CPU includes client, reference oracle, engine and background work."
+}

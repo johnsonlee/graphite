@@ -1,0 +1,173 @@
+{
+  "result": "pass",
+  "newJavaOrPerformanceRun": false,
+  "ranParentMappingScript": false,
+  "method": "Read frozen JAR via zip; independently parse binary constant pool, Code, instruction boundaries, LineNumberTable and SourceDebugExtension; generic SMAP strata decoder; verify all 148 sampled BCI opcodes/operands and constant-pool target names, preserve duplicate line starts; recompute all regions/types/locations.",
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+  "classVersion": {
+    "major": 61,
+    "minor": 0
+  },
+  "classMatchesActualJfrInputReceipt": true,
+  "methodCodeBytes": 790,
+  "methodInstructionCount": 357,
+  "methodLineTableEntries": 71,
+  "totalNodeLeafSamples": 148,
+  "aggregate": {
+    "targeted": {
+      "regions": {
+        "predicate_index_read": 18,
+        "raw_address_read": 17,
+        "range_or_control": 42,
+        "exact_set_check": 13,
+        "interrupt": 5,
+        "accounting": 1,
+        "scratch_write": 1,
+        "limit_check": 1
+      },
+      "types": {
+        "Interpreted": 63,
+        "C1 compiled": 35
+      },
+      "samples": 98
+    },
+    "denseInitial": {
+      "regions": {
+        "interrupt": 1,
+        "range_or_control": 4,
+        "exact_set_check": 2
+      },
+      "types": {
+        "C1 compiled": 2,
+        "Interpreted": 5
+      },
+      "samples": 7
+    },
+    "denseProvenance": {
+      "regions": {
+        "range_or_control": 23,
+        "predicate_index_read": 3,
+        "exact_set_check": 8,
+        "selected_tuple": 4,
+        "raw_address_read": 5
+      },
+      "types": {
+        "C1 compiled": 40,
+        "Interpreted": 3
+      },
+      "samples": 43
+    }
+  },
+  "duplicateLineCandidateSamples": [
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "bci": 123,
+      "recordedLine": 3638,
+      "candidates": [
+        3637,
+        3638
+      ],
+      "samples": 1
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "bci": 128,
+      "recordedLine": 3638,
+      "candidates": [
+        3637,
+        3638
+      ],
+      "samples": 1
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "bci": 128,
+      "recordedLine": 3638,
+      "candidates": [
+        3637,
+        3638
+      ],
+      "samples": 2
+    }
+  ],
+  "rows": [
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "samples": 32,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "samples": 2,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "samples": 21,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "samples": 36,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "samples": 2,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "samples": 17,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "samples": 30,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "samples": 3,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "samples": 5,
+      "allInstructionsLineCandidatesSmapAndCountsVerified": true
+    }
+  ],
+  "sourceMappingSha256": "4f91ba3a6bf6ed86c4d38cb88688e8fe37806d67c41cb2ca6318a90c3706f8a5",
+  "parentMappingScriptSha256": "ea3dd4e1dcf1c01d239a40ac53b33856319286830a6ca482a80552a919c39fe8",
+  "readmeSha256": "bbf9f50e358ce48b6eb3cc8924fa5a58ebd0d52de5cf7e3729cf526d92efa3e1",
+  "limits": [
+    "No second JFR decoder; frame-event identity uses independently audited export/partition from prior receipt.",
+    "BCI identifies recorded bytecode position, not machine-PC stalls, exclusive instruction CPU time or savings.",
+    "Region names are broad semantic spans including guards and loops; selected_tuple is not a count of actual constructed tuples.",
+    "Kotlin line metadata can describe inline source/call sites and duplicate start PCs; all candidates retained.",
+    "Compiled-frame labels refer to these instrumented recordings only, not unprofiled gate state."
+  ]
+}

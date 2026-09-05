@@ -1,0 +1,68 @@
+Exact head aede4c82f66a925ba9df3fc8588c6e1399c17f61, .github/scripts/benchmark-gate.mjs
+1432:     );
+1433:     const routingOverheadP50 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+1434:         pressurePercentile(candidateRoutingOverheads, 0.50);
+1435:     const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
+1436:         pressurePercentile(candidateRoutingOverheads, 0.95);
+1437:     const graphSetLatencyByWidth = [...GRAPH_SET_WIDTHS.keys()].map((width) => {
+1438:         const widthRows = graphSetLatencyRows.filter((row) => row.width === width);
+1439:         const baseWidthLatencies = widthRows.map((row) => row.baseLatencyNanos);
+1440:         const candidateWidthLatencies = widthRows.map((row) => row.candidateLatencyNanos);
+1441:         const baseP50 = pressurePercentile(baseWidthLatencies, 0.50);
+1442:         const baseP95 = pressurePercentile(baseWidthLatencies, 0.95);
+1443:         const candidateP50 = pressurePercentile(candidateWidthLatencies, 0.50);
+1444:         const candidateP95 = pressurePercentile(candidateWidthLatencies, 0.95);
+1445:         const p50Limit = Math.max(
+1446:             baseP50 * 1.15,
+1447:             baseP50 + maximumGraphParameterAbsoluteRegressionNanos
+1448:         );
+1449:         // K=64 is already a sub-2ms path and this pressure protocol intentionally uses one
+1450:         // full-corpus single shot. Keep the relative guardrail for material latency while
+1451:         // treating sub-1ms P95 movement as runner noise.
+1452:         const maximumGraphSetP95AbsoluteRegressionNanos = 1_000_000;
+1453:         const p95Limit = Math.max(
+1454:             baseP95 * 1.15,
+1455:             baseP95 + maximumGraphSetP95AbsoluteRegressionNanos
+1456:         );
+1457:         if (candidateP50 > p50Limit || candidateP95 > p95Limit) {
+1458:             errors.push(`k${width}: graph-set latency regressed; base/candidate P50 ` +
+1459:                 `${baseP50}/${candidateP50}, P95 ${baseP95}/${candidateP95}`);
+1460:         }
+1461:         return {
+1462:             width,
+1463:             sampleCount: widthRows.length,
+1464:             baseP50,
+1465:             baseP95,
+1466:             candidateP50,
+1467:             candidateP95,
+1468:             p50Speedup: baseP50 / candidateP50,
+1469:             p95Speedup: baseP95 / candidateP95,
+1470:             normalizedCandidateP95: candidateP95 / width
+1471:         };
+1472:     });
+1473:     for (let index = 1; index < graphSetLatencyByWidth.length; index++) {
+1474:         const previous = graphSetLatencyByWidth[index - 1];
+1475:         const current = graphSetLatencyByWidth[index];
+1476:         if (current.normalizedCandidateP95 > previous.normalizedCandidateP95 * 1.5) {
+1477:             errors.push(`k${current.width}: candidate P95/source scales worse than 1.5x versus k${previous.width}`);
+1478:         }
+1479:     }
+1480:     const maximumGraphIdP50Regression = 0.15;
+1481:     const maximumGraphIdAbsoluteRegressionNanos = 250_000;
+1482:     const graphIdP50Regression = p50Speedup > 0 ? (1 / p50Speedup) - 1 : Number.POSITIVE_INFINITY;
+1483:     const graphIdP50Limit = Math.max(
+1484:         baseGraphIdP50 * (1 + maximumGraphIdP50Regression),
+1485:         baseGraphIdP50 + maximumGraphIdAbsoluteRegressionNanos
+1486:     );
+1487:     const graphIdP95Limit = Math.max(
+1488:         baseGraphIdP95 * (1 + maximumGraphIdP50Regression),
+1489:         baseGraphIdP95 + maximumGraphIdAbsoluteRegressionNanos
+1490:     );
+1491:     const p50Passed = candidateGraphIdP50 <= graphIdP50Limit;
+1492:     const p95Passed = candidateGraphIdP95 <= graphIdP95Limit;
+1493:     const gateP50Speedup = p50Speedup;
+1494:     const gateP95Speedup = p95Speedup;
+1495:     const passed = errors.length === 0 && p50Passed && p95Passed &&
+1496:         graphParameterP50Passed && graphParameterP95Passed;
+1497:     return {
+1498:         passed,

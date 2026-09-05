@@ -1,0 +1,5762 @@
+[
+  {
+    "id": "fixture-android-00",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 433174,
+        "sha256": "0c33dddbefdbde036e4c52d585d8d6ef664a8eb190041c2f8660af5aa4f01fc8"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 267564,
+        "sha256": "f35d448bc595bb56d9858eaae1ad9a710288d52d42204cc917da7c1e9202c0f4"
+      },
+      {
+        "path": "forward.properties",
+        "size": 935,
+        "sha256": "a8e9dd1e67326480e174aa7058ca837dcdcfb1863489a31f8df5b00ed52d4485"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "d5aab1480725499f775d4aafbb85b7414dd5dcb3cc61a463642d6353ac65c711"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7054100,
+        "sha256": "eb123708408e4a5062a15ea649512be3c7dc09c7acfa88af8c07329fb272f608"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 77304,
+        "sha256": "fe47cc8efa0a9bc5e9eeea6646dfdb00aec539cc76103f572471750e8afff2b8"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 550088,
+        "sha256": "f9b6810ffbd0edd0278b805cc18ce78e551f24800a7712779682206f49157103"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 1440864,
+        "sha256": "3679b924625ca229e44b8617c57e5b47f7e54236a59b0c3962ca66f7f63edb22"
+      },
+      {
+        "path": "graph.labels",
+        "size": 388773,
+        "sha256": "38df5fcfab6a5e10f3bf03ab56b12435f0e5c61b73ac627dcba59627fa078026"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2773332,
+        "sha256": "d71f1e03195a18c4b845bb5025311b623e311fc6844a81f28b16ecaf2ed80068"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15129518,
+        "sha256": "37f568b87aee3da5406d51318617205a131bfa86c4ea2e22c5559f22b758b925"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4682790,
+        "sha256": "64a40dab1947f3f28b94c9914fc7f79b817a4ab489816d9519070b40f2c02100"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 2881728,
+        "sha256": "0ea5230074dedb5d3d29f06c9b6346b5b6c4a27c058e1dc84b2420ca4db47e6d"
+      },
+      {
+        "path": "graph.resources",
+        "size": 466545,
+        "sha256": "42157c2069a0a9871059d8f42b024c0bf16b905dcba350ca7a349cc58c1c8a32"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1835913,
+        "sha256": "305ca3babf06e37488d8e8cf7ea7fdf94659fe9f45c97b537ea20fa28e857d92"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "66ceb1f81efe17d3f21a91bcd30a2d7e0f24819424bf8ac565b42e49ad540e60"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1441072,
+        "sha256": "55523d4fe49135094e4a47308761a506d91e172c65f9997f1a756f7476be88e6"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-01",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 502957,
+        "sha256": "b3551cd901a5cc9d10e9c2603cf5f6e4bfde5155e0ee48d82a3e9a6606b07b5d"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 417486,
+        "sha256": "6e43f47b0242cb7e636820e8a7e0aeb1df229853058b44b15358f71d3406d477"
+      },
+      {
+        "path": "forward.properties",
+        "size": 942,
+        "sha256": "7625eb6f2c8d04ba64b6127c1487b70c6dd1a3d04dd46dcda3b4f20fc7b9e49d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "b2127c339c5bedec64c81e3c6b7e045859e3cf819d6d4f4ddd7615bd8a855e4b"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7318228,
+        "sha256": "9a519e0d5365c90a5d0ca487c8f108f902926698dbe6c0c54e98931cb74484dd"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 75204,
+        "sha256": "109463816031cfa6d38800e8ee6bfdcb721501c536f98d167619c854e6d048cf"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 545512,
+        "sha256": "da30df1ba4aced62059f6c2e08da1de6522f97dc6f35ab60462f6cfc09072cbd"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 2955708,
+        "sha256": "beffcc43ea0fa84abdf87c34afad74fb0ebaca1183acfd5e4008c4f8151e6e43"
+      },
+      {
+        "path": "graph.labels",
+        "size": 415357,
+        "sha256": "ebe5164f5fef691e08a182b134aa951f944e26373ffb789b85d930ed101125da"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2764276,
+        "sha256": "7d1f6067a1977ff8739fcdee2cc05942baf3e1d9ac83bf9a1cced2a6274b0f20"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16212820,
+        "sha256": "28df21a525e35eb2b727cffb59c6298ab898628da52929a05de4df9dfb92e00d"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4923251,
+        "sha256": "424cd3b1eeff69381699c343e5810894780eb76237c4a9100554af59f0aee104"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 5911416,
+        "sha256": "ce9d63e5ae1386072ab2420ccfae4726b68f02b499323dd6ed8daf131d4c9a05"
+      },
+      {
+        "path": "graph.resources",
+        "size": 111426,
+        "sha256": "4b9a3a00a43347628d094032cdc6ca281799c22e7074a042246014f9612cacd5"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1805701,
+        "sha256": "8778b810aad047314e117a3478c8fe247ab01d0449ff1ba1d76f7bdd47cfda3b"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "440a268cdc3adb5ea240c517ed255191bf9b084de09393b90ddcfd1854215f73"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1515060,
+        "sha256": "a1357313be85d300900b196a437e59567fe2cf08f6a29dc92bbe467e3923ba50"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-02",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 530244,
+        "sha256": "816387aea063da37806b7764335d38dae16fb2aba0281473c4fa51be0763ccac"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 549218,
+        "sha256": "d503155d08fdb9daeca4636299151940518cae44112ba117d8e28d0a9b5afc4a"
+      },
+      {
+        "path": "forward.properties",
+        "size": 940,
+        "sha256": "cf24a0a5764bd40b8ac6574c330527fd7a847e1f149bb2786af8424dc14e483d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "ef3ac78684d403d46d3c73c626f1c34ae58fa3500aa598c852f9db36248263c9"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7373324,
+        "sha256": "8f2bf39a8aa8561dfff8e3229fdf1d2de9e815f1a112026c44933fc51d6d3979"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 76308,
+        "sha256": "a019e92123c08ee82a6ed72d8bd10955460beebee17be9fe72da7eefd129ee45"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 598984,
+        "sha256": "a4d5ed349a46f30103896f3f5b068428593f5504d8bf83a870827c9e2e720e78"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 4420080,
+        "sha256": "d38c83b1f86fc04d0e731f493cf59352065206291c42e1405c9bcf19f733e2b5"
+      },
+      {
+        "path": "graph.labels",
+        "size": 394557,
+        "sha256": "fa804cbcb8a045445ed4c9ceb3d69b0e8751beb120a7833c54f55b44d55fa98d"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2956896,
+        "sha256": "a47103ae151ab5a6f4768809ed0cacd406bce0a0dc90f7b1fd6bbb46b9ef44dd"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15400996,
+        "sha256": "b98d5b1a4758e9b5d5b87b06c84ed09c31b99660d29d338d3b5dcb4ea47ab002"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4759217,
+        "sha256": "bf72624acb95a0c32416267781b548a2bc4c25a378c95d6928fbcc82c9ecce49"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 8840160,
+        "sha256": "a835feb74a09f68679d6e13a13aadd0aa13dafb719a685d8ac4d0df8cdfe06b1"
+      },
+      {
+        "path": "graph.resources",
+        "size": 114790,
+        "sha256": "b8061834e3c69954095fb73b363277a69fbe9a65229c1bec58507d98bac6f9eb"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1853807,
+        "sha256": "2057b900d2fd75b24c4fd0555982b049decaf0d0d2a653a5945aa95b3886eb28"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f8c7f0e10670e4a619ed7bdf08684c62b93896bfa2e8fb4c9d031d9104e9dac7"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1464588,
+        "sha256": "16e2522bec87d335cb11ab656f83c2307e592f85c0d21715efe11839dff8db14"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-03",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 601863,
+        "sha256": "e491e34f46d81a27fb46ae5e36edcbc8a1276353cc9287467990c220268f73c7"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 698060,
+        "sha256": "8f1ed3cfc31a9f9a4f52d428b8b63a0db0fb7c96cccabbe146c03e041279089d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 948,
+        "sha256": "17a97bbf29306e9bb3a7b034e73f2537d84ca292ab72fb47fceff19ca5fc3f12"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a74839a6eb106d54095dd25b4a307ca84c4482225ec31fb7fff43d52cecacc0f"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7632604,
+        "sha256": "97c7e95567243461f267c141e47da73b34a82fa7be5d87f1fb9a99758e4d32cb"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 74376,
+        "sha256": "6d513f0ad927972966dd7e9864aa8fcd825010e378fb44f8f8471559c16385b6"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 624136,
+        "sha256": "4cb1f834bde2cf85f7e2b464c7bf24017d0ec58a7723e2ca8779fa400b5b6f3b"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 5945300,
+        "sha256": "59d4e74d722dcd257316de5c7ddf8c6beefc2cbe46bfbf3559c0a142f061616b"
+      },
+      {
+        "path": "graph.labels",
+        "size": 417318,
+        "sha256": "b444bb394cf9a7e491bce1ee173be5d108eff028756b8385f3f05adf06387779"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2953052,
+        "sha256": "301c574fb40139fb877c9bb96fee2ff1ba74066a9fbdb83c4ed50fbba5f1b586"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15957257,
+        "sha256": "23aa4c2f6ac0cefefd601b66c72598a19ae85cd22db279773326f650e41c5f10"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4956973,
+        "sha256": "e7bd499d95d9cdce543ef264fbb17ce747a6a419577b4a8b0e563c88624cb5aa"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 11890600,
+        "sha256": "6d534140168b0e3153d8fbe9a2e7998cec38420bc92bd7bcc32d8d0ce9ab7c56"
+      },
+      {
+        "path": "graph.resources",
+        "size": 115115,
+        "sha256": "4cfd80caf9173ed2780ccdc3e2411f54d2a47e1e9de0e8ea5d2bcbf5b430b558"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1879629,
+        "sha256": "86bb081d7acb174c7f42ebb9955e7541fb791c0603d26c5aba2f6a5f4350fade"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f25974db872560d5e56136ac54f74bd9f460cd23a8f2ceb8262d51b464f91a7b"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1525436,
+        "sha256": "f49b2fa4561facc87f614051a0540678ed026001cb71d9fa2e3b8caca62d5433"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-04",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 612843,
+        "sha256": "ace5895599a6be60cdae52ea97924fa502be75833befb19ea2769872d4897049"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 826677,
+        "sha256": "7143f56ed55721ae79aa90a86bab531471af4b8a5e2606e664cc02260118f9fd"
+      },
+      {
+        "path": "forward.properties",
+        "size": 935,
+        "sha256": "77621a7d0a07b57ae71dc272016433d0f05831ecada0d575f74589d71f317ca8"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "671f7ccc92cdd5177a66db8f604e1330615fc98199761d2e84e5ed7d536be003"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6984596,
+        "sha256": "0142e0fe7f55f47e1b85199a23a7e2d849710c6eeca23184110748c2d0016bef"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 78072,
+        "sha256": "e563dec767056a616fadb9f3977ab16b058baebcb89efb49228e14afc10973fd"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 508232,
+        "sha256": "61dc41311432016389042c15e7ec86084145b965fbbb13f85c70edfec287c2f7"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 7401028,
+        "sha256": "a544408bd5299d0300bb3b56a68c82160980bca945fd19c2915ec34d7c76c0cf"
+      },
+      {
+        "path": "graph.labels",
+        "size": 383925,
+        "sha256": "65d204eb01c0d340370af3f71a8f2f0d81f42df56fa1a3b86f760eb8454d416a"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2475820,
+        "sha256": "b9643f7658d9c0d38132de864baec6452c3821cb433c8194da92310ca6495643"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15534874,
+        "sha256": "f10b8ab6cd224494c0628ef2ba7e6d41c27e15d163febc426c070246bc8de2bd"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4731124,
+        "sha256": "f80d5ea131aa83a19d0e493b727de9156c51b5820eb9446eb2d5fe45c95087b5"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 14802056,
+        "sha256": "03d1ebe8087dc7e2d58873e6f0d0351f8ac0dc79c385a9441545afb6b7b2c0d2"
+      },
+      {
+        "path": "graph.resources",
+        "size": 106380,
+        "sha256": "a0770d90fb20f64168b42d357237bf111608224d23e9036db2a29f48a49c4004"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1927371,
+        "sha256": "76c638e939aa12df365ce4f4f49f66a3655a957d73deac8a5b19206be61b63cf"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "cbe63b377a313407179cc953427bea24578c4cacdfeb97b6b54925d6aa8d3e64"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1455944,
+        "sha256": "14045ce5b651fef99c1b4bb8f9f1cd69284e91516dad675b3aec833215cd3bfe"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-05",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 662111,
+        "sha256": "0c134a8723e4a2bf756b0f6d32a5d09fec488313ca31d9004d6892bcb281a049"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 959984,
+        "sha256": "7b46acbe6636ebd4adac720bafd06a2e64eddc5cb5fbcc255a4ef26bad8c1ca3"
+      },
+      {
+        "path": "forward.properties",
+        "size": 940,
+        "sha256": "b29b60c6e7e67f1d48c8dca22e7b709a96a6aa71692df20d13cfc5e02abc2134"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "e47e7d1a35a784dfec3838cfb4f1ad42a89e334dd6f6afd4f9ab8b33b173206f"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6988300,
+        "sha256": "e015bb1ca6fccea7ba63dcb1095a265566ab0423d250ac350fa9f768f4bf0d83"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80340,
+        "sha256": "b70511d2a409181e2f20b6932a18ab8ed5b1382cf41377a1ae6acb8660e9c878"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 583784,
+        "sha256": "82ee2489aad0774564f31f23f954fc657775b76ead6f32a14e4e996733191ab8"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 8830068,
+        "sha256": "fb46602a2d31fea6e8cf93ff7ca1be198563ac47850dc2cf96f37d11da1d3f54"
+      },
+      {
+        "path": "graph.labels",
+        "size": 386922,
+        "sha256": "c7787f7f9e4a53369b6451b1bcee02cee2740abaf0b0d7f6303ea86de9b52e75"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2771928,
+        "sha256": "3e161f84378f966eaadc61dda54680ff601070556a430234fb9c83effe3fcdc7"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14794086,
+        "sha256": "54b60d9c96975cb2035dbca84b65e9c5b15e6edbe019de9814535cf432347b8b"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4644388,
+        "sha256": "567f3dfd97db3795998d4bbc53344f2cf6b5181505c95e1c4cd0ecd9e882c62c"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 17660136,
+        "sha256": "e7afcef2b69656639487c04c4b01d4dae907463f57dc2fe52c864516d59f2acd"
+      },
+      {
+        "path": "graph.resources",
+        "size": 115762,
+        "sha256": "db76037d8d59b9c30acdbbf164226a893e70d24d69f1b91979aef4d56462c30b"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1809887,
+        "sha256": "6b2ffb49620fc8ad892c7231f562f7d3ec499b7cd35f821f856468f9c5757de0"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "b449110f7c45dc3b9fbfb7aba4a6d244896e2d9ad3b5b67dd2cc60bf6723f9a1"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1429256,
+        "sha256": "79b789049e39c1220510fc677b83925e5b07d19b763014837692ed6c87c41df2"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-06",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 756413,
+        "sha256": "2143a32a78f2760f550b42558416703b5d4185b4cbd1d4d5e6ca77d99df9e8c9"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1122762,
+        "sha256": "5a397d4e1eddfb05581f4a9a614c1750fe70e156e76f48049ee1a4d15fbca5f7"
+      },
+      {
+        "path": "forward.properties",
+        "size": 941,
+        "sha256": "856da0958fdb653a2e23a27eb4f924aaf7c04f1fc1930227fa8e3a18fcbebcfc"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "f07506913b7ae1be77df83fdd5c4283b7816c558e1f81919be673ade297c88e3"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7894004,
+        "sha256": "2bca94ab70ffbf853b25fdd24e779d7eeb7873d97ef5005d294805082557821f"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 84528,
+        "sha256": "ec855fab03ea51d647d391f6561f7f5f1ad90f2d943f19381f78953aceb77cdb"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 647720,
+        "sha256": "5d2638b261b0100bad16afe7d9c799cc38f6d007cde8ce1a3cb9a0059d13706c"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 10412136,
+        "sha256": "d5e958bf0698f1d33cad4bcb1d71cdf279b408d9637a2787a460533cda02dd1b"
+      },
+      {
+        "path": "graph.labels",
+        "size": 432252,
+        "sha256": "82cb5aa624005cf796838b3771d6414d49959cdd02d269b1d55c4ff544680c96"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3072108,
+        "sha256": "34f01f778ecf73d5feb34b50a2f76fa45b68928ecbe6bfeffa82ab5cd7c2e614"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16654405,
+        "sha256": "1008da937b8d35f87983851b4d154dafbebdf080cfeb86305044c42de6542abd"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5141729,
+        "sha256": "d5b454c774000b94810c5f00b39ddc6042bfd2883e13c545916fd5f0b5078a95"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 20824272,
+        "sha256": "b73389166654a0b972ebef2ece61fabe2ed995c51c08816c946e3089dc210d4a"
+      },
+      {
+        "path": "graph.resources",
+        "size": 169540,
+        "sha256": "24af456bc7f273cf1dfbd2323e7283a7f27e271854f37e2a00411d2c1f431b58"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1980183,
+        "sha256": "00701f82ed82735ca511c51b595bcbe08842ae3ca723b44a75bd59d9d0e28806"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "3d751c251841183ad10e439aa9f3baa8b08bbaa0a8d0e5e771b1449f8975f272"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1582284,
+        "sha256": "add9de896e0a854b7bad38d8ec511d4c1acc6d423bcbba4fc0a8dc15fbff44d9"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-07",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 787123,
+        "sha256": "a920d80b9467287dfc3972a60714c774c37546c223132b22ff0ee7d555ded660"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1262108,
+        "sha256": "4957462efbda9b412cf8297982749636e171642a16365b461d6c6f853dedd474"
+      },
+      {
+        "path": "forward.properties",
+        "size": 942,
+        "sha256": "c0f05b7a1afead4c7c692606d3db2b4b7df1ec61aa700ed10073dffe4f8e77c1"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "05ce32d336382d1b96cd3aa434c686969912469c09882ef448a3bb2752c7cca3"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7498956,
+        "sha256": "e88074dd59d78130e8dddd8ca2010f48d3237025df2091f7775acf8083ba24d8"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82224,
+        "sha256": "c5c3eea4834a4b7a3281d8b8c696ba49622f17d838281daea905a52d2129ce8a"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 573480,
+        "sha256": "8a5a71ea3fd2b0a592cf4e48c341e90afef973aaaa6f6bfc6e9c2aa4bf63ad74"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 11947224,
+        "sha256": "566c4bd2847fa24642785b2f65eb764bd21926760bed719fe04bda445be56f86"
+      },
+      {
+        "path": "graph.labels",
+        "size": 413134,
+        "sha256": "736c1546eba9482410419b3a79f3e52c42bef29ae4acba8b4fd33419782dd2bd"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2891468,
+        "sha256": "321367b0ca572c192a9153d6291f0c50e12e2498b28cb6edfa16b23304875f2d"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16157282,
+        "sha256": "acd458884fafb65932521696d261892a50f1d2de29ad4a092d46d2e66fbee3f2"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4989044,
+        "sha256": "6385d2131c1dfe04470b8315fe1d35abcb4233d29d68dc0f5b312a7102ccd2f4"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 23894448,
+        "sha256": "6bd2904fa1479425e8b5f3374f58dcdffa22197a9b7e8985cc5dd55363360463"
+      },
+      {
+        "path": "graph.resources",
+        "size": 141383,
+        "sha256": "69a50605e6d30bc5b4ebd786b2d008d5318b2d479a7cd6b6f116d5898fa591c2"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1942097,
+        "sha256": "68868b0ac8c46b195f119ddb23c8ef2743cc9e6d4c5a0e2db16630637b412f02"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "86277348aa9066f66555637c10f80dc3bf5bdae48ccc21103859f807fb94f8a9"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1535304,
+        "sha256": "ffc3bfd7645f4475ad2a50677265496a8b3f517721945f1eee7641f8289d2811"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-08",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 844722,
+        "sha256": "6b3388f1be275c4fc978e0bb6d6e362ff7fd852aacfc2a63a4283fc2137ebb70"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1410291,
+        "sha256": "d8f45ca21f608d79596efc550d9f9dc078938a26593ab74975b12f77179cd5b0"
+      },
+      {
+        "path": "forward.properties",
+        "size": 941,
+        "sha256": "1fd04536b3b68f4238dcb2e5fd6a8f8895d93b7d70598f71daf244ee20182fb3"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "4f32f209dc2907cbcbf31b493392c7258e0003dc40a728cd37e1538fe716e30a"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7757220,
+        "sha256": "e1a7cfeaaa20bf85c448e64fc13dfa0263f7d83f206b7d63166b34512edb245e"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 81240,
+        "sha256": "a1aaef42db4cf4cb2e80849bed01e2cb7f8ad4375cebd4eef09ec8c3948f5b9b"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 629448,
+        "sha256": "826cc28baaeb1d673d1b7dedc058a7ef41dd84e2301ae862227ef142edfe7fe6"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 13497156,
+        "sha256": "813ed65b49f727dead494fab670dae74c95f9b9c45544d85d629e8ff54f5a045"
+      },
+      {
+        "path": "graph.labels",
+        "size": 425018,
+        "sha256": "c23d1889837f40eb8dd6c8854b5edd0ecf1f519531022f2415ebd023d2cf509f"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3161792,
+        "sha256": "20f300e243599a34d421f9f038352e37e41d4c995b055236c00ad86d56f842b4"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16115518,
+        "sha256": "d57d99eb4ca19134eeacac87ce102cfdf6f15274a5e209fbb06ca04ce26c2b41"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5037287,
+        "sha256": "f183af3812be138385c7feb376dffd62b872348c96b915811bb4b622923c79d3"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 26994312,
+        "sha256": "120ba5e1d3e95f89fdb217c05d444980541a10877ca9b6ef7a7316deb04c82ca"
+      },
+      {
+        "path": "graph.resources",
+        "size": 129578,
+        "sha256": "c61240c16f0c05ebf2a9a7a5828833f72bceaf0529ce8cfdf513999e95e01917"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1973351,
+        "sha256": "55a7e82e8be8feb1398fe0ef83c5a4a66f785f75f5c17379c788a4006d687d42"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "195ac372d92a7af61ce740284bba7657aa6b5b49c805b71e67e91d521107ab67"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1550148,
+        "sha256": "627f1301dbc47a3c8c767b9066cfb14f8ffcb7d2bc4afc9d8b991c192fcb8c16"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-09",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 892328,
+        "sha256": "bbe7c24ee4d0ff74d53b10a69bfa82c5aa170aca2659cfd8fcfcde087413fa69"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1555681,
+        "sha256": "b6d47fa867ef4587dc518aa3e0a2d3c17ffeff7bc0b0add50cf2823c7da82db2"
+      },
+      {
+        "path": "forward.properties",
+        "size": 943,
+        "sha256": "8ac5f3747af48acb88ef219ca1cbf6b47fb4e4780aef9ce082ea2e49c6262b96"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c8e9f4476d58e719bb701fb8a9780a5df8bd835b5c759419b6303c90d7e9e387"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7570260,
+        "sha256": "efbbb744220125b8a789a72ff57d72b9b8095ff5802f218dd090e9c4a07a9734"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82212,
+        "sha256": "d01f3efac65001a8987265db818854bc588e3001cbaa352d8a9bc1910b3ba368"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 600008,
+        "sha256": "b2674aa7c0f21a786e3c447f40be79805a5d006f563998d3eef7eedc9cffdb8e"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 15055852,
+        "sha256": "c32ee20abc262ce094608e53b4386afb810b840961921cd4f6d8f5ff78863f2e"
+      },
+      {
+        "path": "graph.labels",
+        "size": 422337,
+        "sha256": "60872fc85bb767f47871caa7667ff4933a4f007c61dd33e62bf925f9d53b8dcf"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3024056,
+        "sha256": "90a96c4e0605dbdd1d646afb67b2727896c47d3feec70dd6976164587fe3f0b0"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16596625,
+        "sha256": "bf0e99094b7edc048e415a5dea05fdb1081167a81ef55bc606b875cf810a367c"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5065770,
+        "sha256": "4ff7e1cfaa35996b7bd84303af93c364e4dcf80fec9b3977d03c8beb693741cd"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 30111704,
+        "sha256": "164b5cab38ce93df49b6263bc4360dfd3b3c67db935ed1a1bebdee3b759cfa6e"
+      },
+      {
+        "path": "graph.resources",
+        "size": 115948,
+        "sha256": "13aa9e1ed370f7b51299e46bde47b43d6ef204d17b11ebd3d2396ecb22f2d33a"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1952665,
+        "sha256": "0682a5b92ab7c728a6fd099f653865b2fb5d09eb2d659c4765a73840a2f67b85"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "20453a0ed06137b0bb1705c8c95062beb8988e923a0fb3a4195bf9f561aab1ba"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1558912,
+        "sha256": "089306e6da5e601848f8febe076e1682ea2d680ddf8e8d3c8fb3638d32d42dd8"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-10",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 932032,
+        "sha256": "69a1ebeaa0dc9f9d3781bb2db8a307c682c291830f682d67453b8c732208715a"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1695344,
+        "sha256": "ac00c4e083b108ffda3c503f5a1e5e1d1c9e12ecc816f7753ac3bcee169fee34"
+      },
+      {
+        "path": "forward.properties",
+        "size": 944,
+        "sha256": "5437c0c848f38b5ddeccf2eb88054b4af6de8d5cb7250f9ab93aac1298cd36d5"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "695db6398363afad9797b02745e190092624e7e3839a28dd0bdd33fd120f7609"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7281292,
+        "sha256": "ac689f9b467bb09139736af05a6c8bf3aa9d9c60f9652737a1c23a60aee7218c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80964,
+        "sha256": "c08885f5687916c7ddd19254adffd660596f1ee4373902c10443a6d8b33ef8e0"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 624696,
+        "sha256": "7f1fb0598ae49fb88d10f974a1a08239563840268309cccb38e2b5085c3be444"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 16575168,
+        "sha256": "7497801724c3b5a0d911d2d5cf1057fcfad78c642ad163f288be21d3c35fa92c"
+      },
+      {
+        "path": "graph.labels",
+        "size": 412059,
+        "sha256": "a25c40e93cad9216f94077a15892bcd23f28670d130bbf3097eb82da51877a63"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3263648,
+        "sha256": "099a248d19f6ff16739bb3ab0da2049b0ff3f4044ea3c1f04d8a633915c9e0d9"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15996439,
+        "sha256": "e5fb321abc5cd45638a3a7be82e7fc71b689ea08c23a7aade1c0d2794df8c953"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4937785,
+        "sha256": "5ce21baa7e276ddd04d395a61f51a14c3a53ea926516277a9dd9a39abf3eafb8"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 33150336,
+        "sha256": "5716d395da5f4203b5da765f377a000af827ed2f531d8b5267f778d7f585c82e"
+      },
+      {
+        "path": "graph.resources",
+        "size": 162792,
+        "sha256": "c3b273341bd52a0f6d813f5988b155d93547a103b621e7447bf7d90cdc6bd2ab"
+      },
+      {
+        "path": "graph.strings",
+        "size": 2075903,
+        "sha256": "b66c541d89ee8c798122c8ad48b21bcbc2374dd5f9b511887913441f53a1b2f7"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f491003c5cdf3eb7fb57b19a269e8191a619234427c1525117bb3a326f27ecb8"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1519532,
+        "sha256": "43021e381243ae6afd93e49225675498f84fdc530967003e38cc8c03a4c1b504"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-11",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 932949,
+        "sha256": "7ae9a873b71a9370be91e0b133a1625124b2360f4cbbc8e85e7b15c8d7f2c1fd"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 1811099,
+        "sha256": "f88bea1333eac6606fdf3413e974a99f5b9465b3e57a39123cb8cc543a49371a"
+      },
+      {
+        "path": "forward.properties",
+        "size": 938,
+        "sha256": "15beb7604cea49426bf5c9b700388e638f730d56d7c1f8d721975cb0b207d8ed"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "01c0db13795929238e7ffc631cd8d928b9e80d2f018eb066646bdbf99422afab"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6981628,
+        "sha256": "4c3a8ea16cffa3e162bbf5022ddf5a260fa914d6e630fcdeb732d3f956d94f16"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 76212,
+        "sha256": "11899a8b6375513590baf03516aa7c6d74ec24e9f19a44b686e9a0f6222bcfcf"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 573192,
+        "sha256": "20d5649015c7548c400a2e5d34b5c4d3d360ed491620e01b99fb4ce3e58ff311"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 17962792,
+        "sha256": "8a8d78a388bb25c0000f2c3de85e6b037b46aeb94a97b521a4feb06b78ae44b4"
+      },
+      {
+        "path": "graph.labels",
+        "size": 372640,
+        "sha256": "cce869ece028bdf3468882291af0a235090563620a39e9686177b0756982e59f"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2706748,
+        "sha256": "c6b1667bf8e851dbdb9d3edff2f1eee4b8692ee0f2c28b098dc7ed004d847bb5"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14369265,
+        "sha256": "7af59dc601a10dcc30d5b8ff4ca2e6b68b7afafd6a2bf188091e385790428847"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4509786,
+        "sha256": "f1b35b76c72075c8c725cd21cccd3bf00da1315b58a2f59afc19d565b7582ce7"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 35925584,
+        "sha256": "47f2522658252ed9ef2c660397dd26b19959bf48e65f9add5801957b6b9898e8"
+      },
+      {
+        "path": "graph.resources",
+        "size": 125706,
+        "sha256": "850017a879649bce9ce51b633d4a7b0653eb4f51199d6acbbac7a1049a2cdfed"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1766825,
+        "sha256": "302ff6c7328dc26f03ed845c3df25583078691049ab2dd2d0c0e3b6efbdb4e4c"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "ddcf7d055d47d4839dcd9417cc86f909be07e62df0bb6d642ed948fda255ed08"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1387840,
+        "sha256": "73871ac2523c066ab1faaf517d9720527abceaf8521c3462a1475482cfadf632"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-12",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1089759,
+        "sha256": "ff6793bac0b2ce1b462e19c6818cfeeb421b1e77ba99207af06cada376a8caa6"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2008961,
+        "sha256": "8e4228fc00b1da754fcc75a67dd921a25906efc35bb99fb87f4115bdad16968f"
+      },
+      {
+        "path": "forward.properties",
+        "size": 948,
+        "sha256": "75003618078179c3fd9df83bed4cb1c2c6310c7aed6f1c3b45da977b4f320ea4"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "d1fc06658fa8d50e2183a654abee691f44428bfbf5efe1587b56d6f488db92cb"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7888532,
+        "sha256": "47dfb850628c2392c03ca3d7f81571fb8a8640b61cc87e806b642f6741bc8a3d"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80532,
+        "sha256": "c66e82879c4e7732c5fc6ca108ae6109d4f1bafd76f4f44e0931551b42e86d5c"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 708760,
+        "sha256": "aae2f79a9c27f1c71e2708357e7d519958f2b2f6200c63d4ddeed8053e6f479c"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 19700780,
+        "sha256": "7f75e79c11f085ddfb70dc71f4e5d5e7bbb0bf2ab27162e1cd7b738f9a45cc71"
+      },
+      {
+        "path": "graph.labels",
+        "size": 477311,
+        "sha256": "c2e6d7330684c16142403ccc7914f7480b89200db6f94a23d1e9fec9fe45a04b"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3307400,
+        "sha256": "bc741d8a36f41c023f7ae1ad56dc04d5e3ad98e6ed317c8a6383cc57fcb7e2a7"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 18082589,
+        "sha256": "d5f1ff6d66d16afaf44b24dddef5400b7ffe6a9941199b07060835e99bdcd384"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5648469,
+        "sha256": "ebf8a96fd4cd34ee492e1ce359852b6eed4ddf51b93fce31196dd7871aff2e77"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 39401560,
+        "sha256": "a5efe58ca439a8b134d39c9eee4e7b112d343d6f923405abfec5bad2253de4b7"
+      },
+      {
+        "path": "graph.resources",
+        "size": 117952,
+        "sha256": "6ef66241c666ecfdde95047067ec66d0e6524255c4a08e03647ae757be44814a"
+      },
+      {
+        "path": "graph.strings",
+        "size": 2117303,
+        "sha256": "caaca49b72823d938ec2668d730e50ff24492598e328875d22794bf871b203b7"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "e8429ac3923d124cfe4e4d9eee7736895b8ee602ba7acac79f452fd1e75aa48f"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1738204,
+        "sha256": "bbf2e507c84af179ba36631c9e4577e36dc2274d693f04b3b9eb739bf4a4494f"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-13",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1093926,
+        "sha256": "fdab374dc791de84477b285c6775d4c89354aa5e8cf2847a9bfc18f31dd21ae2"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2143738,
+        "sha256": "ef0b7311e8c708398e54430e837d988b0ed97a291d1066784eb81075086e4c55"
+      },
+      {
+        "path": "forward.properties",
+        "size": 943,
+        "sha256": "b5750d75af11c35decae56903421740cecaacb53debb7ab7760f5a3bf4e18c32"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "85c7cdfcc978afc74265b0fa4f8e5ddabe06627f114d91f6e03e3ba6675aec2b"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7632396,
+        "sha256": "0022839851e6e11b537c46306ea8c46d6e62a3d1392dc069b8e82f3e7d5d2ea8"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82128,
+        "sha256": "75567b246740ce7e64fcc2c675ac1cfdabd2e1e85ecaa63bd997a180c1b089c1"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 594904,
+        "sha256": "db8f7665661c4f19c65a131a53d2b88446d6a10671a6a27bf294c845175107b4"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 21304208,
+        "sha256": "4399c9f7b2558ee938a04f5fcaa1b9490bd08e462dad23315ff7145953dcda7c"
+      },
+      {
+        "path": "graph.labels",
+        "size": 430901,
+        "sha256": "3ea80cfd85405d686f1478674aa89406e85cadcce0b8d54a83fedf043bcec0e8"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3049700,
+        "sha256": "9bd2e2f06bd4523d4f0e96364a35b320596a9478dfbcefc18f4abba4e18b563e"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16978027,
+        "sha256": "473a42758d3a280db437a2507aae89a326d283ee11351e76516a8e0b8dc95c95"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5211149,
+        "sha256": "0a817ab237d969c955706b6a42bc002a41e152c1bf575e60fa5ccccd41dadf47"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 42608416,
+        "sha256": "5fde0dcd368396c26c472cd6ba00ffc00d9242ebd7d35f9221bb66671b702ac9"
+      },
+      {
+        "path": "graph.resources",
+        "size": 112420,
+        "sha256": "bad13143610b3b5be61b8220cad0ff4a0f889428d52fbbc13bf438336413ee24"
+      },
+      {
+        "path": "graph.strings",
+        "size": 2055397,
+        "sha256": "0b8f6e672db256accff3536ed65d4c14cf3d66f240feac2985e59f9d14b99b80"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "7c7fb642a6bba52e69668693134e07970532a149b9074e71405ad42d6d2eba5b"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1603644,
+        "sha256": "f2d798f6cf943189b00e2486cf8ec5113dec8f280bdd549c6ee2e04d2532eee0"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-14",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1129718,
+        "sha256": "3b595677ae61737908573e5a3e81208d5ce6f1fcdb05053d5d59a4b6c2678d72"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2283442,
+        "sha256": "dc6fae6e27188e16f2b41bafdd92e50c94207fe50b3d3dadb3374649ceca9987"
+      },
+      {
+        "path": "forward.properties",
+        "size": 938,
+        "sha256": "951a522efe1ec1120abb05022a1eef3712d7f75dec463a7f2b9b2f14641f7559"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "d30d5c7eafd787171ef2510b00fbe23681f3bf2c77adc8c1564e3d9bff1c5bc6"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 7243460,
+        "sha256": "756037737b8c90b3668e4988c61f400205f532b70f3ab537246f0fbd9b969405"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 78756,
+        "sha256": "9380f971ece1891dd224764987dda2dafd54d50663df4b20d104f78a39122dda"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 611576,
+        "sha256": "79021d44ba003d0c5037775884835edafa9ccdd022b7e3f212737a436441a6a2"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 22841960,
+        "sha256": "c246465461b43aec40812be576a2de22c571fd9c9da17d7ce0b3892e01413765"
+      },
+      {
+        "path": "graph.labels",
+        "size": 419606,
+        "sha256": "88dabf3b4e20b65e499db36440ea48407a567aab9808a1f4bf47eb577cd3eb9e"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3084024,
+        "sha256": "53ecbf8f2b11227a63781b6b3193dbbfb05f542d0d4a561c5febaa5bfac2572a"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16202251,
+        "sha256": "0413ab1827888e62de3c9321f95551c09caac99fb862e55211aa68354522c80c"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4997702,
+        "sha256": "c6ea846462b6aec7d4d4d897bf30904e71798d49e15d30e30cbb676d9694dc37"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 45683920,
+        "sha256": "9924365b4e94f8bb018d1579d57d27ec7d533201dab0ec35d7a385222086d874"
+      },
+      {
+        "path": "graph.resources",
+        "size": 113538,
+        "sha256": "f0b5d4131ac18187564665c31e9342360f8130c12fe009e1487a328eb98f67ae"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1906907,
+        "sha256": "992c429dc16404f79ffbb5afb0a32e760676d718e6224d5e8a20d3400c96bf87"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "cf4c30f4897156c3f176cf71de4e974a8431189428d7d518625fff085934ae52"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1537968,
+        "sha256": "ff7a6b1217b34a222c94b62a0bea6928eaad8ed47c7de63689bdd6e754a823b0"
+      }
+    ]
+  },
+  {
+    "id": "fixture-android-15",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1108172,
+        "sha256": "e12c0faca0930b1e950d738948260a5c6a6d0e21fee7a7e8b514fcb8ef5fb406"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2385867,
+        "sha256": "f99800440f0e5aa0c8b5f9467a7b9a8e3967ed01b0437c51292cfb1b7ace412d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 937,
+        "sha256": "ad14a11562e95ac6dc0d0e9f790162fde8f6c491e22376a24f3e9731e67a672b"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "e0a90991fa5b68b71e18758fe62098a5ace9949e6f1f80fb2d64177488185e72"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6812300,
+        "sha256": "4f127ece849d3a652f20e4ff2cc039305e57cd50f00c68f2e8d9d62fbc9e882d"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 73104,
+        "sha256": "515c7fa58c734165ef804c3474127f1d549aa2d98cd1dbed98608609c17abd22"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 480200,
+        "sha256": "f53569b63cfdb4dbae990c46340fa93a0582c26bf038ea5c8fff02718b793716"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 24164912,
+        "sha256": "23f06eddc54e817bf8c6811cccb51dc618b9a65406c9c7b6307788aed4d64f19"
+      },
+      {
+        "path": "graph.labels",
+        "size": 359485,
+        "sha256": "8291e3773a7718afe8c1ab0332b689bc238ce35e09f70e327001227ce3e43d9a"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2373760,
+        "sha256": "a8054c19f35c54496939ae5d5258e019fb81726e368d65c210400a1ab6332f9e"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 13766977,
+        "sha256": "f8a18cd54b6c0c456cbedee39675110c91e5e52a45e24cda5ce430738449167a"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4299602,
+        "sha256": "f7bea84d97e5eeb990a5f584b35b0186b66bc92e1e7f7abc41a9a772560aa5fa"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 48329824,
+        "sha256": "81ab789f6bc328949239706fd2172aa1015155b05abd662a25d539aefe12c52b"
+      },
+      {
+        "path": "graph.resources",
+        "size": 112783,
+        "sha256": "5cc47d7095786503d0f7ee7740974d489f96c6a5560a879d90126df6a6fce373"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1668007,
+        "sha256": "bd417976e3e4f164ff6599d0a93445f900c09312bb8f63490c0a6a2af039928d"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "35bda441e0728e83e3cd12864c0787c7ef3fbe3d9ddbd2c8e7bebd2e899f5041"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1323168,
+        "sha256": "74b49533dbafe26a1ffeed8e000b83cebb32126827372207d61eebdb8204c1f7"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-00",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1016221,
+        "sha256": "f57c01aeb77dffd1c451a160886193da0c193e219749cb56711c9a7ac6cf3ad9"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2432164,
+        "sha256": "c546bd8a00591e08fd9a01df6b934076997f0b3dfd2b4e8451d0321384bc543a"
+      },
+      {
+        "path": "forward.properties",
+        "size": 920,
+        "sha256": "4fc146183b6dfd0ccd91b59c5df24ae135cae441dae1b5834358bd36b25db0b8"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "4d29d636172c6c468ba3475189fda45c57148782c2bffa29696038944b88ddae"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4187980,
+        "sha256": "77eb8dee739cb2f32932a3a7ff424ca4035fa15e770e547ca260c5feb68395d6"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 56772,
+        "sha256": "5ac28f28d2fb4076504dc44e4452491e653714c110e16a17fc35a26bdb9b7a84"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 321640,
+        "sha256": "4a00a44e00920b74194db6c710cfa0de85b1847b8725678b3fdc5a97d0d877f2"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 25055268,
+        "sha256": "d07be78735b0f95936caefee0db9fa37b46c6fe8c0f38f7f50c59da35d0b1164"
+      },
+      {
+        "path": "graph.labels",
+        "size": 235360,
+        "sha256": "f36c588f6e8b20b53a839913a44d439fce82cd248e84c6ed5a77e90beeaaacae"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1592056,
+        "sha256": "d3d95ee21799bd0cb4be63fb14ef7ee2943d2a91db929f342cd47ce12bd81097"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8784067,
+        "sha256": "42a93c8da1a6e45c4bb4c15c9d7efaf048d18d0e48690b9c0864af1fbea23882"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2893665,
+        "sha256": "b08ea06cc904ccd8118a14bfdcea68cd61d41dddadc965a2ce1d9b3d86b9fc12"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 50110536,
+        "sha256": "d306d432431d288dbc0c497be84460dd8b02b7d953697096df172bb10ed63be3"
+      },
+      {
+        "path": "graph.resources",
+        "size": 456043,
+        "sha256": "d8a3a96d7418b32e298b2047630cc5ed90130083469eaf1be4613d91827f2b4f"
+      },
+      {
+        "path": "graph.strings",
+        "size": 905203,
+        "sha256": "fcd4aeba946dad8f100764bd71c3635b30bf1ac95b485938d018307a944f479d"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "fd5991c1e8fb7230bc7376a5a8748c5311d848fbbebbfc3dd0e4d1fac7eb0683"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 890572,
+        "sha256": "5a39daa67e439992752128e88fe39d7aacdb6216f692980be2477a7ad6995de0"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-01",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1091104,
+        "sha256": "9b89ed48a0be261f9672df8cf729b77f4e43171fadf0896f1e073d6a1e7ed576"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2545663,
+        "sha256": "d2e0e9425ed176365e7756e761c11b359565f321bbac47d55b5428745ff60e89"
+      },
+      {
+        "path": "forward.properties",
+        "size": 924,
+        "sha256": "b7f86cdde0041c45d994cde66090cd02c06213e027e6e4de00af6cb2fb2a6286"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "5c2cbb5b1df9f12af6f6c7f7512d2e6be0a703bf2e780257b5bfd6301c337784"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4572404,
+        "sha256": "11d4a8c106d2f3b5382b92af87062283c24d76d75a275ed432aee39d02d563eb"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 60732,
+        "sha256": "31949ff8f52b5d233e46ca6a1ed05ada7e489f90f2dfab14a4a5c90ed63c226a"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 366648,
+        "sha256": "143b855c5b015d91f1ad363159f589bd01a4cc03681d3a5c5570846a5fdaa146"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 26105148,
+        "sha256": "1f1d8a11f5e83212f43cd1d4e49703fc2ae563b453fc02821b213236fbb229a7"
+      },
+      {
+        "path": "graph.labels",
+        "size": 278576,
+        "sha256": "fb20d5951ee14429b2c4fe6ea432cb1503da12f0a56f8b6ba7ba384cb8f7779a"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1835900,
+        "sha256": "de8628b34c67a0cfce481eec3ced5398011e81a275bc707b19558277ccd84fff"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 10342712,
+        "sha256": "192f6bc856f26c27cfdcf7e7718d910391dc3fb96c91c550f02530c022513a0f"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3412118,
+        "sha256": "02d31b2116f6151c534c199c40f1ad11d1282cee4c53f85227e5e365bba6eddc"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 52210296,
+        "sha256": "236da6a47e2c689c6ca5c91947efed7633b7139eefbb3a5638db159d871f1538"
+      },
+      {
+        "path": "graph.resources",
+        "size": 248918,
+        "sha256": "ecf088a7e77bdb8a532f5a1c995a105489e6da4ded7f33ede849271e119c679b"
+      },
+      {
+        "path": "graph.strings",
+        "size": 918073,
+        "sha256": "e758b1a23de277877e3a8d83b6b6514f97e46bdde81df6b9e9f433cd4c3fd936"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "b64fd5d73f7369dc17623d4ceea3bd509c89f64343590a66b7d80e81eab14c12"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1050096,
+        "sha256": "fb48af4156dce8d8fe29f6096bfe496da993e72dab9e78b4112fa20640b3e744"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-02",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1108796,
+        "sha256": "5ce6bcb3685940bd16b7271bbf86b292eb1fcb2f84430eef503c99292d215b7e"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2636415,
+        "sha256": "3c5006312690b19b5da339fd7a535f26e0897304ea18bae53d3f37f8caa5d74c"
+      },
+      {
+        "path": "forward.properties",
+        "size": 923,
+        "sha256": "de65c6071424c5548ee0fefe4eee5edbce686a58b2e8cefd8bca46e244854b60"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "ff4f3ce0470b2d84bc879fe66e38cb32ff28883f871b38da6fd9a545dd04e5fe"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4357156,
+        "sha256": "88834deb714c52034c76e9f59c95dc642b9b6b46eb0af7495e4ae1f6b3dfe302"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 59148,
+        "sha256": "2dd838a423eeef2081c6a107980d67a05854ff53f58b4d64a321c8ed101a85da"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 329080,
+        "sha256": "fba5e5a202b2303b6ec605a54537903755adc6d1e54ee00d63854f057efd2a69"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 27118920,
+        "sha256": "90906eab8662d2ec892cbecf111671263c719f3622697266b5faf28992802fac"
+      },
+      {
+        "path": "graph.labels",
+        "size": 263710,
+        "sha256": "48d41eaddb7bd43cfad1c0cd238310f08ce2228185be5f309554b11788bd4dca"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1687904,
+        "sha256": "815b91beda2ba202c8f7ec64335d2a64cc2b2bb27ba69f387cb7b62fccba0ace"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9820340,
+        "sha256": "8de96b1e127f2dbb2f09282fbd8730faa824c0272838adfafe18766251afa628"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3294767,
+        "sha256": "07c8bc086d2cb4c71748fdb0bb21f19a15a768892719f0d3ec1f952f686f5e91"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 54237840,
+        "sha256": "1878bbf9978e4c37a52fc47c812e4bf8dfa5e7b2eeb98037cd5e40e92f31244b"
+      },
+      {
+        "path": "graph.resources",
+        "size": 394356,
+        "sha256": "cb55af65cdcd70240c760d77071c12e2080ac958633581c32d8e8497fba9eb81"
+      },
+      {
+        "path": "graph.strings",
+        "size": 954477,
+        "sha256": "c0e21d15e53b0b7eb0f2ba586e68583d1bbcbe53afb58bfc2b76663bc3f95d43"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "ac044416d0e8dd303b446277ca7e1846d56e058e1e356adb9f0defbde0b2a23e"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1013988,
+        "sha256": "38bc0e730d82b06ea6036911abfc4397182f291b2539ecab47584c44b3761343"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-03",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1104796,
+        "sha256": "c50439df01df765cd0b51ab3bed74f7473aac3b469db3cc8e72bae39e73f8c9b"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2706728,
+        "sha256": "286f75c2ab6675283b74706a0f8f0b0500398c75a6570bb5aa71a95657608466"
+      },
+      {
+        "path": "forward.properties",
+        "size": 923,
+        "sha256": "5c395444ee7fd13a89ea59d5ad6ea0b4ae084a161f4c977f25c95df318c3db0d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "4e14a9983f5223d77a3552aa6ece8d39fc6b1b26e2a36ede9ce8ebae58fb52c8"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4160404,
+        "sha256": "3d21a09c99192cc78b1a0a84695d23e14ce317bc4cc4fe699da800dc98bb0ff3"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 56172,
+        "sha256": "1cb7b60fafbbb81fead72652c7b56b4f320a3ad7e92289ae47636c3848e41a69"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 317144,
+        "sha256": "80b4f85a1203c48360970951b9824fde806e2e0e559d368cb6e592f53bc63b76"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 27997720,
+        "sha256": "841e1a204cc013ac6ec2e94ef71503a1848ed3b1d557b9700f3d0e2a7ceb0b8e"
+      },
+      {
+        "path": "graph.labels",
+        "size": 231994,
+        "sha256": "3fe3edb06aa69f295039ea4a7a56668275e246bcfd6dc2bbf0739be2bd571d02"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1667404,
+        "sha256": "98e98348b2ab634709d56578fee21cbe97733134a9b5509c0d00db136267a512"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8718428,
+        "sha256": "b5fceba17fe22ab53fa9027ec415431dc9d85b0b46c1683026954f7f320fedc7"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2856108,
+        "sha256": "c6339e18b54cd76f81b034f8fcd4479c7643cd489167ff084a60df7992897ef4"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 55995440,
+        "sha256": "4eea79590d844e3c4d88047096f2b9540ce6c310300ef3909128b3a9d70ecbc0"
+      },
+      {
+        "path": "graph.resources",
+        "size": 1034565,
+        "sha256": "cdf932efb7dedd08b768109c0a46c5d70b695c05a54c69b7ded612ab93f8ebba"
+      },
+      {
+        "path": "graph.strings",
+        "size": 866289,
+        "sha256": "8611da4162e2cc76eb79a0f9b4b0f3bffebd666a8541f76a4187606797c2cb44"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "984884ee90a2ecbf74ea17ef69ee1259b5eb39df83bf7124c561c98bcb39a6dc"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 879016,
+        "sha256": "e013bf2b32a1fb97e0e415031b50cda6c9c30f079154faa0a40e27e22c3ef653"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-04",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1171335,
+        "sha256": "4df86bfd9dd625060ed3a95764966d0d063c4d5f3bd69dd6770b1c6bdd767991"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2812879,
+        "sha256": "7689d4f9e0ae0a936927e7f26dc2a3f24faf23fdfeeaf66856eae82d6ad332fb"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "75640e665ae03f69ec944cfecf26b7617815e325b90fa0d20e1c5dfa8a9911c2"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "69ef5091add4262894f5ce5cc447381b178d57d5a151095ea191beb3d0be545e"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4599764,
+        "sha256": "8229d44c8824b14de96829fa9eabb8cf8be872b97a5a4bd21ae8dd7820681c5a"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 62652,
+        "sha256": "8bb3b1305a9f99ede914478191528ff8dbbf73e9f8efa1a002ca076b10ce3408"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 336152,
+        "sha256": "f9ccfa0ecb1092d5a9d55fa9d6cec5b071a3c3e1d50523b287ac53d455187db3"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 28998128,
+        "sha256": "ca60068d351d09e314638e8204d0916c87b03b1a35be1cb1d54a052afe8e221d"
+      },
+      {
+        "path": "graph.labels",
+        "size": 267564,
+        "sha256": "f387c6e06580ef0cbc288cdebbfab35a9ac5740264225cf70309301e92a9de07"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1697016,
+        "sha256": "311bf6d691cccf96080fe6766d3d1f7f4e4d296d96b448a78dc96b0fbb19a7eb"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9871532,
+        "sha256": "8cf7be2e5e711f5710ca2c5924c5afb60e7a1aeef0f259ea165c5d35e9815738"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3251334,
+        "sha256": "a428b4617458476f88d26c413923eb04d003325177f03618411761295a08ab8a"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 57996256,
+        "sha256": "bc6a7ff05f8fe251dcb13b008cc4d9a9257a301ee48ababe3370265aef6fd9fb"
+      },
+      {
+        "path": "graph.resources",
+        "size": 106621,
+        "sha256": "b9034dee7ec6798a1e272b8ef589283d4cd6bef2a2184fe5e6d91ecce26d48a9"
+      },
+      {
+        "path": "graph.strings",
+        "size": 952253,
+        "sha256": "32f619520f92d77a1f23b888662ed081c8839102574ca81a5d28c98a3ba2f4e6"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "b3ed0a0c311eab561e57e8f0db9f470d2a855f460db52333ea31faff3e208955"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1000624,
+        "sha256": "885a968549140b153d17ddb5954189a5847e4525a9950eedacb448dfb3f7127e"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-05",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1184561,
+        "sha256": "ead46cee19079b9f244a4801e3636857dc1662ba86d1ce772e91b2c295ffeb8b"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2896499,
+        "sha256": "9a1054beace4a385f906cf32ec1d854391ce5ee78c674cf438f5d2adcd184ccb"
+      },
+      {
+        "path": "forward.properties",
+        "size": 922,
+        "sha256": "6c98c88459c221f0813a3fa95e59a88beb3d557c134a0d4841709158b73d184f"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "e7c771e918d8010648eefe3568edd81788e2b212dec022eaad6085d65fd4b233"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4375556,
+        "sha256": "b77425b92e96ed3f52d905747ff696cd17cafb4677ae2a1f023362afa3eb9a46"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 60012,
+        "sha256": "726561ab76ad5656296183174ba0db791f767c41e2af672cb2d1902ea8c9ea91"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 328920,
+        "sha256": "258dae391f9b52ce364333be05d920a6038067e2e8389ff83b137df1342697c3"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 29947640,
+        "sha256": "4f7b76453e25e85fe56931476e6223d1b8f39c56ca14b1b289209f18147e0732"
+      },
+      {
+        "path": "graph.labels",
+        "size": 249931,
+        "sha256": "57123806a7bb0f472eb911b8490ad86dd64504aa7d4064a4855b3d12f5c65f5f"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1702896,
+        "sha256": "4d303fb89f0383aab544fc53109fe3545c59a072d6950910d6996878f910a1dd"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9375436,
+        "sha256": "d7e0eb4c102dae2d02db0b2894ecd3817c11474ff7682c54a05118f0a67c97ed"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3085922,
+        "sha256": "d7ad4c14c8e5b543518ce86a7f19bd9baf2818f087fc02c0dcfa84a45ef40bc1"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 59895280,
+        "sha256": "0e544c8e52e9f6dac5ddb1f51a14a767a3514065132fc9168843030d5585af16"
+      },
+      {
+        "path": "graph.resources",
+        "size": 286205,
+        "sha256": "4a3367aa69e83fac4508b87971aec5a86de7ed82369450fdad5fc8ca32e2b00e"
+      },
+      {
+        "path": "graph.strings",
+        "size": 859845,
+        "sha256": "06ab66d58fb1750571378d452104481ed66070d5cd9d3f4ea422509043833597"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "6446087ae4ae6b4667d45427da4412b7458ec6f3bfe21efea6383b168cc87f14"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 949728,
+        "sha256": "d2a4ac0c224f82d1b418436f0706a9c4550c1f991a950d39f2d09cb378592262"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-06",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1228285,
+        "sha256": "afffbe4c335e3d237b4639b7ff645b380e87061752b6fcc6e4851d61e9722571"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 2990976,
+        "sha256": "89c31da13d90f5510542d5bbe8594213126229ace46989f6aae1687308dab09b"
+      },
+      {
+        "path": "forward.properties",
+        "size": 925,
+        "sha256": "7a28f02eea563f677ed8ff132dbd91b5292e776d577cae3f3ed2c3ed76f230e5"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "86ffcbf5ce77d93f0d4b946592e668dd4fbed0d18aa3e9efa6bebaa6225b6b28"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4367028,
+        "sha256": "02c1b38af37945307a544359abbd7be683d6bd265e9040ad38c2ed996f836c4a"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 56484,
+        "sha256": "6c60df2f209e04215e50ac3f6b0ad4640fc259471196673ed86cdada06f97eb8"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 338840,
+        "sha256": "c3ca5409c565e3ff96565a167d70482a6a8e521a22984224b7fac97a52a48cd6"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 30920612,
+        "sha256": "5d6aa027aea7ba6d221cb3a17c701079aa24bcbc3547e6567ffd2cd6a986c933"
+      },
+      {
+        "path": "graph.labels",
+        "size": 261932,
+        "sha256": "35db40e3067d1d8dc829f9b437a25c8465c13de54c56dc7efe1c9b849daf2ed1"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1744072,
+        "sha256": "3d307ab22399a8e0c64f3225441d2ba24bea4509baec080951c7eb5c8c1ea443"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9747555,
+        "sha256": "ecd0ab2c21ebfcc81aa0c1543cfc8fbcc8a98a252ddeffa1a94c7cd7672387c3"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3162167,
+        "sha256": "b63b5e12fc1e8433590d15f107688507f75180a8d3cd64dd92df0b287c84747e"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 61841224,
+        "sha256": "815e5ae95ed910971573ba1c21875f83ee9645ba9b691971ea26dd86a5c4b791"
+      },
+      {
+        "path": "graph.resources",
+        "size": 58501,
+        "sha256": "c19623421b89cc0d3dcc0f02e15b5efbce54c98f69173c2a9ac704dc595e3b3e"
+      },
+      {
+        "path": "graph.strings",
+        "size": 888189,
+        "sha256": "0c05696e663381ef9951875b827fa84240b562c9508494f815e0182ab374e9ae"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "ee71bb2dc2bd5fc2b0b203bb6da80203e4b032690c4d78f4c978e8267e5ab44b"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 973188,
+        "sha256": "e89250b66a585846251d89834d6d93adb7d2966947c6122aded92169460a956e"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-07",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1251911,
+        "sha256": "3203614e14b94c8076753d17517460ae84188c92344b12cde0f8307e82feee2f"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3080876,
+        "sha256": "9bad57caef465733859337ffd72ce14d4e40eb57c697082fdb992362473c8634"
+      },
+      {
+        "path": "forward.properties",
+        "size": 930,
+        "sha256": "a9483e910933bd4ac6bf54671184986edad9e546fd6df7a4a00f475949e9d67d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "646e0ecaf405f6224f670d145dc57bbc7f5d91713442be3e2f8d13252af54321"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4228900,
+        "sha256": "c801631725fd40ff2628ef0d0c2519e2fb34cbd08ed4cc31c44f4523418726ba"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 56964,
+        "sha256": "2151ab7d7e1169848e7722ffb8f1ccb3e6c42f8e256bd196da199b26ff827e89"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 321864,
+        "sha256": "7d831a0d3036d91211df9f6fc26358951a6a719b5fb87179650c3384807cad38"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 31890964,
+        "sha256": "f77c77fafa66c8b524a8e08362e3fb33faa8199b79f9bc18faf6fc6b09b3fcd3"
+      },
+      {
+        "path": "graph.labels",
+        "size": 255593,
+        "sha256": "12a28ce543bde9f52871f2e3e227282cd4ded1ffc3478badf0abe8b6a889dfee"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2034124,
+        "sha256": "175f9c64cc56faade79c8fac83560c5b3555ca368bbabbc1882295ba7d9894e9"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9244631,
+        "sha256": "90f9db85687a652a7ca042d4661014d4a13e841ab3636a23b5bc44038fb5bf1a"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3153652,
+        "sha256": "ef396f807ae80cec8a95c3892213fe358c7a84b9fe06f3e4dca45ae5ef88ed07"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 63781928,
+        "sha256": "495a009fb2c762feffe227177d138d3bc2fe8fc1dd60aa77092f451b4e6a5681"
+      },
+      {
+        "path": "graph.resources",
+        "size": 653536,
+        "sha256": "fdc2ad7e52b14d0462b656f52d319e3653f94c0ea1a969bdc3c6f5ab81b268e6"
+      },
+      {
+        "path": "graph.strings",
+        "size": 878711,
+        "sha256": "a1d18368d9ad4722738e13a515c9296fe24212b2e584d2321c25b35575543cb7"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "12558e78b3a36c9e485ec7a2671bee121af9d73bddf2b863655cbee4ee57e64d"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 970568,
+        "sha256": "862cdf268dcf9a10a25d4af9c2b2b91c5c7d2502f3a26aed99113fd154c123b6"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-08",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1282879,
+        "sha256": "7c17e2e2a29a58e65b39bafc9d87f407d0f1ab822eda7b2522d30c36fc65e92f"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3173691,
+        "sha256": "9191dcb3c202b28ac564f919fd68a748a21ae3cddbb17ecff5ecf0a037e044a1"
+      },
+      {
+        "path": "forward.properties",
+        "size": 921,
+        "sha256": "571a5fb5595bd8bb2dff2767cd0f67e874aeb813c763f75c1c32d46ea553f84e"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "dbf33eca82b7442f72c019eef2b1705d668a46a656cf1f460800db447c128a01"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4704356,
+        "sha256": "4bbe7a5cc8fdfa702227897b10677c778b6e89f5f254568a3ba501e24dd27381"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 60780,
+        "sha256": "c6893d36022ce8493ad172c43264e35470b19bf96eadd72a44685606ba12e568"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 359256,
+        "sha256": "d612194d3f40ee1801d0d6462393c11a039d272024369df707b440f9a0e3e410"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 32871720,
+        "sha256": "64a91e30f571256e345b3b563a81fc2d09f0d63cff5d4efdd2a30a189c0c5a62"
+      },
+      {
+        "path": "graph.labels",
+        "size": 259190,
+        "sha256": "56c4154399bcb6942f8f8d39de46bf90323357cd771f59d32ce611b6dd61d842"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1849628,
+        "sha256": "27eee2e640c9dfff523c200a7936d66a8c7deee96138aac8c76ac2d1a124e593"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9779930,
+        "sha256": "d2babb06c94aa6a771fe2e3fc1c8167a12f4f566c33b29615c94366f27e6628d"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3187465,
+        "sha256": "002a4d014645638e02e307fd4703f98bc755c5038a50411b7ac097202d6879f2"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 65743440,
+        "sha256": "eac7321cc1a8ad9de1e11721c052d5ec3f7976094fce2a54c2b12db58bd8707c"
+      },
+      {
+        "path": "graph.resources",
+        "size": 492247,
+        "sha256": "eb34f9ac42a9b4fcb388cfad5801faa6b4f493c1b22b6310afeb8eaec9d74d64"
+      },
+      {
+        "path": "graph.strings",
+        "size": 981727,
+        "sha256": "9c7d0d743fa479c92e7937f8ca7e1701ff1625d52aaeb7892f6b957836ac7e7f"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "ecac1437b2bf3dff8dd536095a63c687f74a4a8eaa0fb0b2d43990a67366aef4"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 980972,
+        "sha256": "694bb9065036ffbacaf27e2fd97ffda8a6f37d8a50fd277c22b45b6acedd5c6f"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-09",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1338527,
+        "sha256": "e384f6f879c18e7f21ead66fb44fc335f7f78c778483684b48bbd6bff6b65b09"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3276974,
+        "sha256": "5d4d5d8b99abbb3435f8dd8511c91ca5885943462582acb0ef14582d1d77732b"
+      },
+      {
+        "path": "forward.properties",
+        "size": 929,
+        "sha256": "c0ddff63488d9717aa84aeb301c4badb94e0e5a9765b259771b75b84c80ba211"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a301c973a0a7f081aa11b712efca8df673dbdc4311fb7340a4526c71c098c784"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4644372,
+        "sha256": "1a48346e824fc9939e86465fe4721eb88d7b82b93eee6820bc2fc44838260adc"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 60312,
+        "sha256": "d63c616eb0db1fa3288bb4e91795d49630601363a1ea1c16d46b17a2f745fa05"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 353448,
+        "sha256": "2e7efc71a4c76a331dfac274bc8abc0e59c45412f84d3f34d1e5e733622ef82f"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 33907432,
+        "sha256": "d4420b58f3ea38123383eb69919cc6636de9b7542031bc0bd62db063c00d305d"
+      },
+      {
+        "path": "graph.labels",
+        "size": 283433,
+        "sha256": "4d41135e98662dd60c219112b308fb6bb53baced32944524e33a851a3a5530ff"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1843252,
+        "sha256": "6cd49c1cc92972643926d255ba8ad9a5bec2b1557f3aeacbb2c1af6df3ede585"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 10293780,
+        "sha256": "c4dd24175df881fd9c2d36d932c4f221a3107be430bb8268226ae7f6b4e3f5bd"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3366072,
+        "sha256": "6e01a7ad0ff7770346ae11e8da7eb143b181bd565a2494cc206a6666250f7057"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 67814864,
+        "sha256": "e5419473f5af4534989e23f9d581e4554b7b2093d13e498410491ddba0e5d46f"
+      },
+      {
+        "path": "graph.resources",
+        "size": 629617,
+        "sha256": "b920601645b77597481841ac255bce1064db78326cd5880d5e76e38b4b21dcdd"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1076871,
+        "sha256": "0c330d90b3a5dda781dbf99c223f79f41c03ffce4c5be71411654330b7f71cd3"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "69a399991f2d318f9c59b0d23abf624d77e97922190a7bc9478769538b626fba"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1035928,
+        "sha256": "95e66975a2a9be6837c2b9f7711e060d13f5e7d11c0e8c6fbcbb660096585605"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-10",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1377239,
+        "sha256": "7b0bcedaa54213b5ce91f7ab9f1a20d08fd9578f48a620aabc129d657e7d395e"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3382455,
+        "sha256": "96482c4455f233c9316199169d53ed288cfae436dc35144567a1ef72f5326797"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "d3a08fed44871083bfd618507ef0d19dd6e40b6739012f6beb6e8e844de03635"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c69a53641c04c96673740012d3741a7c6c04b3bfd23237f35dcd86f0926d7113"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4942876,
+        "sha256": "753b09d6e8f429f40ce8526d294930df5e67c6c039bf2cf3f5d575eaaaf155ca"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 58812,
+        "sha256": "37e9557e5245e5c51739844c03350424e34c3bc87052d110b4fa99c80ce0a10f"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 370664,
+        "sha256": "b8fa30803dfd8e737b79a74b586bac117778b4b6bb588f00f656186b2b1a403e"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 34994032,
+        "sha256": "75c1cc29db2a1b7cf709bc1db960f8c1ae3fe2416cc7dc2d0c6641de2c24e257"
+      },
+      {
+        "path": "graph.labels",
+        "size": 285075,
+        "sha256": "cee529b8cd5743bb6533fdf5ada2c316456c9f2044441db5b8c7a401313ab58e"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1924720,
+        "sha256": "a01c15905e5e33d403527597e19431cc0c03db21a49e4ca514339c1400aa958f"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 10679492,
+        "sha256": "44d615e8be100f1cbce93e91789fc6dc43a93aea07a756b8878fc3514f2483d4"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3531458,
+        "sha256": "144765bd280db120a86436cf0ae6e50847040ac5c822b6e0d5b2ebe5fbf8c353"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 69988064,
+        "sha256": "c40f20e8ac3cb4b3f4d8eee76b411c1b18e8405681cef19c65f8f9b41afc5f61"
+      },
+      {
+        "path": "graph.resources",
+        "size": 52383,
+        "sha256": "473dde335bd32f9ca60e0381f6d559a2c6c78a1f9bd7e8bda0ab3152b06bc550"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1073605,
+        "sha256": "15674d944444a01e32aa2c5bab9a4a0fc290883a4eaebf5d690adc859bc2dfac"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "717d6d5709e35731d3e0ec1267b06c6b4792c89661b5f418f76f56348660a3b2"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1086816,
+        "sha256": "a0447f64bf511efd817a340698885d25e3b3ce90ef593d005c70d027f0011dfb"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-11",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1388406,
+        "sha256": "e678e6c0bdeaca43b3698c224666dd108cf9f80fdfba302e5894a83e0bb696e0"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3466770,
+        "sha256": "6d0d83f48efcf3cff4d6b9678ae5588adeff34c99675b83c570ea4ded94fef78"
+      },
+      {
+        "path": "forward.properties",
+        "size": 927,
+        "sha256": "1783d3f1c204122a4ce5c92f8480a76d530bdd62f4c3cf31221ed212855277df"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "88a08134e91082d76b99d6aa9d4f0fe7c8d3800098364dc141c79676291338fa"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4535860,
+        "sha256": "7187235211336082d95807d54fd2a2491919750245ab81c1bcfb42b285c0b626"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 60480,
+        "sha256": "4a961f36e56102ee8afaae96ebc273314c63748c125b9e78f1b030dc6c00565f"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 396472,
+        "sha256": "7ff50795d1bb8fb74a702c6564d15a6444b1c910a5db41d837a046503b13608f"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 35980320,
+        "sha256": "ebd3273b5506724a9c74ff678fedfef4c78807e3f0e1de92f4fa58443aa5b7bd"
+      },
+      {
+        "path": "graph.labels",
+        "size": 266198,
+        "sha256": "37fd00c2b33debba09edf2fa4fd4994099ed26a7613075b0d15296465b740a7c"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1956300,
+        "sha256": "753177cadf6dd1e7450d78a6b648983faf2f5af6d2047edf28ba03a15b0c9c97"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9881048,
+        "sha256": "6f9dba1261d22cfd5b3a85749aba758a104faa24bf9cfdf34b22e0812528bc17"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3205444,
+        "sha256": "de7bcae921a9e507009cf838e18ae283e73a6023df919f68b447d132c4d95ed8"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 71960640,
+        "sha256": "b1a649234280cdfed03c8a1ae4f06372ed7a1294f2631a2edd822b57448f8991"
+      },
+      {
+        "path": "graph.resources",
+        "size": 156307,
+        "sha256": "cc80f5756ba20a09536e3b1613aa87ec47a6b10efd997535ebf26001327ab76a"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1040661,
+        "sha256": "114ca2992f6963798e126236674e7be7f14e18acd2604f7e52e54cb1de0d4bd5"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "a4fd84b1b6da9525bb5a7c5c771289e66ef3eaaeb30a532522eaf9fb006a924e"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 986504,
+        "sha256": "408e6249489ffa6871ba98b8978c24973ae557f539a810cd0e71a2955164450b"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-12",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1414786,
+        "sha256": "09d16f1d90f61e24373c9fbcc5d3f68cef02fb2fbd2171ee72b60cf44f5179f1"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3559457,
+        "sha256": "230d86d6103f8e972af740d2f66f5cd1b57b82c45f1955c158df02e8020fe377"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "f0b6321195ac178a35c26c93b9d7eb283ebdc56983910afe53a632a5c3e95fde"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "3633a20a069e02be2f3674cc0caaf9c56183873c86c9e661bf0a971debc6c322"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4613932,
+        "sha256": "a13f3e50c49426892968d84075c3fd1886f2b4dc6f41f6e41023227409c69b8c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 61608,
+        "sha256": "484001380ac6237fa9f4f2c024ea56a89396de5181be36e14d14b885703f297e"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 350808,
+        "sha256": "b20bbc631eefab06e2914053d7c7cc6328cc9054e0608d92b8d048506a929b3f"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 36976224,
+        "sha256": "a55c3167072f3556ea13f41ce8fdcc8741d7243e7e9d87d20cd51d802b2ca90c"
+      },
+      {
+        "path": "graph.labels",
+        "size": 261415,
+        "sha256": "da5c3a3da31f2ab684d1a08cac2c8f32499dbfc2cc8ee9dcb376727f63eb76ec"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1900432,
+        "sha256": "8e22a13cf98fd2cb8bd906727f2c8fd0b43190dd437f9337aee960a2506f2adc"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9912508,
+        "sha256": "8593a815c85f93bcf596752a2814094df3f12d0ee14c1c842fb1c390055f1773"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3236696,
+        "sha256": "d5efa609938af42b7f1c4eb3ad55f930b6033a1895d34dac68b94bb59308b53c"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 73952448,
+        "sha256": "412fe64192446dde7dd653066b710010a07e2a09b1922379dab3e63691d902ed"
+      },
+      {
+        "path": "graph.resources",
+        "size": 90671,
+        "sha256": "577fc231d9418c0cbacb4148fab2559669bf343074ff4e063361986c29a9acf9"
+      },
+      {
+        "path": "graph.strings",
+        "size": 952737,
+        "sha256": "7325ddbb909be203358523c69ccad0cab3c21b00bdff07f1f2efe0e7d21bbf60"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f4b029f042934400f76cbfe3c7e72aab9fcea8bd1c51b9133581a33633e15818"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 996120,
+        "sha256": "f58bbcce2db27fc8c290b5d4a84b5d9e7605b6ac2cbe3b65ead89545ec09986e"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-13",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1448080,
+        "sha256": "4b87cbbc87d196edd1f281cd3e4d94a4d926052694ea08dfeeca2102f5b696ca"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3651427,
+        "sha256": "a846575aef5d3ba3a8c8261494e71b96e567d594b0cd4384ddefb265097705c3"
+      },
+      {
+        "path": "forward.properties",
+        "size": 924,
+        "sha256": "b96123110453c767ba3950f0e214d24037a75c316bc3ae27e0bf7cabcbd69ebb"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c5e377a501ff1348bbd92c72107131fe9b6f621cc3443c625d0935db558f4545"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4290212,
+        "sha256": "f8e31e96c26215acecfa7ad9ddea842b70e71eacf12f7fdda5fee265a45925d2"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 57636,
+        "sha256": "9ed30d4f8dc066dc4f735240e82aa2bd864b8739130f27687c08e34a70bd7735"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 326712,
+        "sha256": "757abaa8ce52d3aa6f7b6a7e09c67e0e77f5ec510b27e2ede969e31d4f290fa4"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 37957404,
+        "sha256": "5d51349d178dcf175b8fd45fc8e6ab3114ee4a2bf84b819507a198b2560f859d"
+      },
+      {
+        "path": "graph.labels",
+        "size": 263096,
+        "sha256": "ce97b6545083bdecf0804df52880ee747ee72a814bd6b96a94b70b439ebe67c2"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1699488,
+        "sha256": "848e486f028fbb373b628392410330345890a4f4600ca7a0c4acaab7a64bb73a"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9501672,
+        "sha256": "d7aa26103d1456376d719e1adeca50a977c73189bcd7be365f2e5978183d0866"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3188843,
+        "sha256": "a4ce7ed7970e6b2647cec86ee81a17401152468dc2ce0d35d4b758c74eece4bf"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 75914808,
+        "sha256": "3dd5a2f88effb711a491b5dbbdd0457c7524b19527d133cd3d88acf23b27ea4d"
+      },
+      {
+        "path": "graph.resources",
+        "size": 196496,
+        "sha256": "988d3e03877c09130a7437a83c4600c89754d04c9428caaa2222e891cb77b958"
+      },
+      {
+        "path": "graph.strings",
+        "size": 852353,
+        "sha256": "a21bd44ccfb25ae9d5ac2a84225c643ebd7a7cbc198622f42030900fa8fa625e"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "79915f75f6e616a0d23ad4c2051dd98a151323bfe5559b81875f6bb488fc8ed7"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 981396,
+        "sha256": "641f8674bdff1b5afc76ad3f56c9007118f449ef942627d36471032301d1e6f7"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-14",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1477200,
+        "sha256": "5e4b2f9141645dadda152389a8beb65e6e14c537e3863db5f4d01098503f381b"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3743340,
+        "sha256": "9081b5287d874885fdb9046ec3bc5ee8c439b0d8eebe5a1472e5fffead527423"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "8ceca7b9fdf3b6cd039e3a9570d2ebc34053bc4f3197d1c4798ce8df1aa8edcb"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "0c83992e1c023b5b1fdaa617e9855393f0b6d626f5a82f7048d036e17be5c87d"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4495332,
+        "sha256": "ce8ac36510f86e04361e8eb76c26c95ef63d605f7fd214b523496fd36c9cebc7"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 59220,
+        "sha256": "73be692d519c3c33cc86399da3344bd9ee07ddfec4beae5838c38a75bd796e70"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 359432,
+        "sha256": "f6f1106ef068a30693108a1fae89b5ef0e341c99472333ae6fdb16c8b176b8d9"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 38942192,
+        "sha256": "6df131ff5ce67d943cffa630bba1ebd57d718d0487a43d43fa695dd711acbe78"
+      },
+      {
+        "path": "graph.labels",
+        "size": 260626,
+        "sha256": "5d6a23a426ad873e1556f1b620877c489834c935c825516d89f87014a4bbc353"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1964004,
+        "sha256": "554d174520541d7798f177d536ab9d185b56173ee1eeda955382725dff0a69c1"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9567279,
+        "sha256": "0caf9694c8417b402eca19a89b69bd5c7764a7a3b4574084001894bbad08648c"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3200569,
+        "sha256": "4253bcfe39c61b46930e5f6179ccb9ce2107b59f4dc40eb0e90a5f0d21c4c5da"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 77884384,
+        "sha256": "a33a86c03a5420e85e4755202c76f4ea28497ea91bc340ed0447d130eb473cb7"
+      },
+      {
+        "path": "graph.resources",
+        "size": 607655,
+        "sha256": "89f0cf9a14d45351d87a2fc480087663d075b0e99614b03912884d11a2ab0308"
+      },
+      {
+        "path": "graph.strings",
+        "size": 940689,
+        "sha256": "6b804bddf048e9b7077318ceead03b435d66a4805a70792e24e61409b5c07756"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "663ca2259fd28282243c4bb9017fa6efb2e643da787c5e3c63b1de29b8a53af5"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 985004,
+        "sha256": "ed6ffd9ac0171c7498c1f20a4fc100c68d8760d334d33a5adf29074d705369e3"
+      }
+    ]
+  },
+  {
+    "id": "fixture-tika-15",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1565674,
+        "sha256": "3d13d9a4842d78337c88f3d406fce1976658317d402c76ad73e787dc344eb0c6"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 3870814,
+        "sha256": "bb4478fc5d232a4cfc8b561720bdd202e7cf30b959689bf64179b510923c6cf9"
+      },
+      {
+        "path": "forward.properties",
+        "size": 931,
+        "sha256": "893053b989e0c07b4f46a3bd1d2a7192293f28380dc00a93f0b3580e50974155"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "3de6e91953ef2e8b5516abab51e6fcd2b92e69fb68832e2b50b3797fa14eef14"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5240924,
+        "sha256": "6b25a864f50d312bf007c69deca107db6751dcbefc7d9f2da4fd1f26db030344"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 59772,
+        "sha256": "10ed831fef563f534deba1b232b211e40ffa6fe152d81cc90a0f423ee25a4d31"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 446328,
+        "sha256": "228608c1ffc5f304c7e3f8b449b30b500fb1ca5659bdde5af2ce5419a848b548"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 40112308,
+        "sha256": "f42292e6b99a5d6117a4b6ce6043dfa28d90fd87b0453d1176eac9724770f2c1"
+      },
+      {
+        "path": "graph.labels",
+        "size": 318503,
+        "sha256": "6d309aa242919b252f1af7d73e5a0b1eaf8b12d133038200791d3f69cdc8c9b0"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2042908,
+        "sha256": "34a206dcea111915cd97a1c8be5b170fee85b10d54ee5596c9ee329a519d14ef"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 11613197,
+        "sha256": "f1b66277b1f0498e45d4f0eb2e3592aa7f15179097282646d7c3675ad676848b"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3802885,
+        "sha256": "564b7f49893456525a91191f11dcf96b781697412cc2ca5cbe907221a3ae259e"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 80224616,
+        "sha256": "4306135c7cca4502545ea162bf928ab3389abc082c0ae6112a665874aaa44362"
+      },
+      {
+        "path": "graph.resources",
+        "size": 206971,
+        "sha256": "1c9f2b3709e99cf67ca2595fdbef080bc2807ff236d503c1f43b2b93db70e805"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1033787,
+        "sha256": "c6eb80bdea2b837d4b6c5ed9fa394d10220c81ba84d6c2e321bc051445815ceb"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "82476adaa2ebc9575cd726155d4110907d177d03714baa797f137c8017809d9e"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1170332,
+        "sha256": "067d86d092d31a49f6a53fcac1293c53649105c69a06751979d39db66b636c0a"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-00",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1721016,
+        "sha256": "6c9a7e0b7921bee50f44cbda53f23078d7b5d2c8984481144833eaf4903ce286"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4064515,
+        "sha256": "5c6324ff2ed93a4959f14a56a20bbece4c16177f0a34d91b837e6de851216792"
+      },
+      {
+        "path": "forward.properties",
+        "size": 939,
+        "sha256": "0ba7546c7fa11816b0fc04132ffc0db4bf243c84a917e8387c724630c57c202d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "fbc5c5619b804da4f4fd4941ccbd65e142fe242f0c6618aa706b85533cd1e4cc"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6926132,
+        "sha256": "87b6593761e80abc468154c94b5f93ed6e43827f99f813023acf07e60fcbacd5"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 90180,
+        "sha256": "e55f23d96654f3a7da9027cd1591d56bff6d95629dc36a4bbdc348f09cf9e78e"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 628968,
+        "sha256": "abd5a21da9d175abce1a6561d7004c2bc6494793911096230c8af216e4548f72"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 41774440,
+        "sha256": "cc3498bafb3d0d5b22c2b51e5297f1adb396e5221929a9e65baddb7425614b45"
+      },
+      {
+        "path": "graph.labels",
+        "size": 417820,
+        "sha256": "f628a3b8115a891d7c5a27efc0ef76826c279dd91ee70919a2440c801ec82b52"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3183816,
+        "sha256": "5910326df85ce06b183a1e9bd6c0f326ee7531d3bf516c453f999513613a7464"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 17532738,
+        "sha256": "b5fb71eb52763f248856830df7c728326a623924689933bb86f101f94bce5648"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5401937,
+        "sha256": "c67399add9785e19ae34d8c38177529b00556c4d9383725bc5f709d806aea730"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 83548880,
+        "sha256": "d2574b2a81fb505b4e897deceef88b045b373ef2f19e51ec5537fff47441d230"
+      },
+      {
+        "path": "graph.resources",
+        "size": 116092,
+        "sha256": "1b3b61d3a48cff400e5e5ea087e18f69aa49bd1c3954cd936a9c1d9e58a66d5b"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1216471,
+        "sha256": "ed0b6ede010e296c5dd2c1b5aea30badb178a09e532be6c3ec9e4d451a5d3314"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "043312452929818ddf30cfc28a5bc3b88b92401d25056ceb7b9b99dd00864d72"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1662348,
+        "sha256": "15e1d48b3ea64cc0c299aeea4ce1f12a2682368b7411744e09df3c650d55f279"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-01",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1682043,
+        "sha256": "d404135d0b0b0480e1f4122f7ea7645bf802bbb16443c22f18a70a67fb1674b9"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4161730,
+        "sha256": "401314d700bb44f1d738d0baddb43104f739789372505caea91b2fea6f365ea4"
+      },
+      {
+        "path": "forward.properties",
+        "size": 934,
+        "sha256": "c3855207e6882daa79f273daeb00db4c2676767774ea5f7a7f4c470083f765a4"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c948d57855687550f551edbbd834776b62674e1b8d0ec28eb948b0597f01f988"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5622516,
+        "sha256": "04e04689fc6a01d5e61e5c052c9965555787f5c070fcfaeb93b46ebbd2da13b8"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 83268,
+        "sha256": "e82a56901304c29a5617866375ce5f03e4d3e7bca92f9f76b82f9db673f5967f"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 498024,
+        "sha256": "099e0c414794e970351c1f1e6f584dcecb99d17a80b8cd193655a5c2d6c0e1cf"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 43110416,
+        "sha256": "770af9730f58a8ce51a8b35861f398e1371ea15e06eb6dd33dec88490301025e"
+      },
+      {
+        "path": "graph.labels",
+        "size": 334279,
+        "sha256": "74c0b23529bfd42b3d721ad1ff09813767448eb1a1e7cf10abc264cb1b13e705"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2503404,
+        "sha256": "8c3c6949675ad7f291b80fd9a6cf8a090cfaf9903ec9fc3ce8c5c3e48e98046c"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 13822866,
+        "sha256": "3e89a0cbf9714da7cb355cb0606e479c2f5e201554e6621e1a6e1ab17d236d04"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4341930,
+        "sha256": "ba61d9d25c43e9e1d21c6838bda81e3f2361c4161f4cb936fa72eda63b056b41"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 86220832,
+        "sha256": "6caa0ba9158685bcfebf1e417f7e38087c3d3906611f5af053c3e4bfe806e0f0"
+      },
+      {
+        "path": "graph.resources",
+        "size": 56630,
+        "sha256": "fe7cb8b9374957772eea463cd13fddc05f05d524acc5e9c4c7dba8a0c608ec54"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1002187,
+        "sha256": "7cad8db43f765fa4173235c05d549e1066aeb940f101b845eee5e16a42388bec"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "1487e0abe81dd3c86c55c036f3b36a7bc9c89dd3c984caab678deebec2f6e9d4"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1336192,
+        "sha256": "89da3aec5e75ccdc24e7f81937ca2255615c11dd2acddfb639662452474a2ab2"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-02",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1822661,
+        "sha256": "60d3ee4f8d4f980176ff9b7aed088c57f11333587eba2ab47ad3695eafc99311"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4344146,
+        "sha256": "b6bfe2f9f3e2aa0183c40fe76c6b69af8493bb3255709c6935a55abd94a43497"
+      },
+      {
+        "path": "forward.properties",
+        "size": 944,
+        "sha256": "d64c05e73c3c0f4249245398507912988ca49d63017a1c5aa5d4506e52b3573e"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "4f422f69e43c2240a9acec0ec4a07f99e9af4d2fc1a7d97ed528588d8942bf9a"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6585516,
+        "sha256": "b22b59840efcbac234324ade8d1781e7343f83b10c9dfd47f314d2d3b10ea84c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 90144,
+        "sha256": "fa4473213690d49f2972351ce77a515206235bbd10013686b7f73ee42888258a"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 660568,
+        "sha256": "0df86b3ad840fdfcdabc6f27a6bd2008ffa754c261ebebfa1c77b9b7f0fc29af"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 44756652,
+        "sha256": "d54cf9d34e666b1768a0c6d68adf3b2471f589c8ab3bd6688d2177d1b324eea7"
+      },
+      {
+        "path": "graph.labels",
+        "size": 432159,
+        "sha256": "ad839f5911a28953ccb7e556608f480b771028a4cb0ed7be29e9c140d97d20fd"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3389804,
+        "sha256": "3f46eec05fde1baac42894f1e9c9869a11393b3d0257ab9032ee65b6e002fe0e"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 18375714,
+        "sha256": "130da4207713d3ca06cf854dfd20b044cc8f8e8b68ea803f0e2a32fe0d575f28"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5350275,
+        "sha256": "4a80a51eedd105e30fd555a88746121edc90280e777131d05e08e803eadea08d"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 89513304,
+        "sha256": "8b56b4a0b41b582aa5aabb882fee5b2d5e12de6c6386c7b5bef673e72454bfd4"
+      },
+      {
+        "path": "graph.resources",
+        "size": 83225,
+        "sha256": "ac6ba9090e74bb58b8e49507c7ce292d44397e62b862cc9b817f69a93d8e98a8"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1180041,
+        "sha256": "f8c5ec41d8e3e21d480c0e7d584a03435b46231e6148710f231f917ad1b53dab"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "21f7f215f4d465d20e67fea71d7767fad10f1513c84ce4e2867e7db93e1273f9"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1646452,
+        "sha256": "1c472fc43ea2fae5c7c8b75e2afaf69fb529608f54be411c02fa41498787b30f"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-03",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1830686,
+        "sha256": "abd985204a91f76a7f6cada608a713d963b02cc292c6d6a0ea93f38ee591fca5"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4479696,
+        "sha256": "16169f56be5a3d81e25e0d04f450e97d3486be8da0347fa6cad08ab643a8770c"
+      },
+      {
+        "path": "forward.properties",
+        "size": 942,
+        "sha256": "267868afa79ac64b3c862db7e6fc33cfa9f5e830a5729107c944594cd9a0a697"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a7338a48ad9629381e94ed0434e5cfb3780e1161f47d27272dc61547bc163453"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6527676,
+        "sha256": "e7707a5c13b9606276eec3ab245e05b390d615e83a138df85409f71de6ea03dd"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 85392,
+        "sha256": "5f422d0cb85d8de888ad2feeaf289563fbfb3d70c33e96a46c3f1336b6ffb2d7"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 561752,
+        "sha256": "28aad344727a7a3068227aabc57ee255d7b8fb2bd6e55e45c7a3cf75cc18fe65"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 46336364,
+        "sha256": "82f0d7fdcb37d0f4a433e8fa3172b177b8f30c8bfe35003d45910c5f404d7c98"
+      },
+      {
+        "path": "graph.labels",
+        "size": 383295,
+        "sha256": "0332cb9db013cdf447a7a737ad1fd7ca542319a10556fda24e9f027ba9d22273"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2942272,
+        "sha256": "57bf64439f539fa5d14db36cf8279906728c000f625631f065c42efdf78bf568"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16287540,
+        "sha256": "c2263284b9e954d583b4dd3c47a2dc2a35874b89737cd3fd05d77c1cd8c3b027"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5134072,
+        "sha256": "2c71e0f4e05f08fba1a8d61dc915bc92c8b22c36d42da314437dedbf9953aba7"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 92672728,
+        "sha256": "c1ceb2980603b841a18dc1093d957579b4754c221e2c105cc54e66ea4eb2ea1e"
+      },
+      {
+        "path": "graph.resources",
+        "size": 17553,
+        "sha256": "71422c15d8c8317b2c45b2c93f41d898741544a2f6ea4493ea201a392acfebe3"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1090149,
+        "sha256": "868ceb04f2206c5a2d85308819cd70abaf50def493e330b678f64f6622b80980"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "197a56e44f58deaea7e5e8d7a1763dbe9f9de081a6a2e76245bf4f7aa569598f"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1579928,
+        "sha256": "abcb85f5a08085291bf30070e863e2d3e79a3a8159de5d4d168706125aeb9a90"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-04",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1868031,
+        "sha256": "9acc2430504a64e0f8f48b81f49317fd1bcb88adb9675b23b6167c8dfe60c0ed"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4615295,
+        "sha256": "5e9b1955c49870469908ce3e5bded90f0f0b93d1d09824dbe1e88b811d5a30e3"
+      },
+      {
+        "path": "forward.properties",
+        "size": 939,
+        "sha256": "518281002847d6c15564333d9271d586544928358863b57268b03beef91cc3b5"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "668875517110a4e5b621adf8a08218519cc16b42fd39d038209a4ed9600f3d24"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6017772,
+        "sha256": "0d4a7f16410879b40a0e0f381cd0aa3edb153941e3582b8a9e270c7a76c0e1ef"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 84876,
+        "sha256": "51198702c860b22f3120cacc2fe0885aff0257b7a977a59409838d4a76018c72"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 584040,
+        "sha256": "ab7c32f427a52f23a0f17611c61a850474c15f9683e19bd67ab48e94148934b1"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 47829820,
+        "sha256": "b9cc2f41c2bef8716c460c40ed3f9a6b03cae7ae4618bbfe474505f84b768206"
+      },
+      {
+        "path": "graph.labels",
+        "size": 372924,
+        "sha256": "208a7287e0187cbbd77dce96f088b691713920cfa6a36df00ad0b5245ce43e1f"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3056836,
+        "sha256": "a5186f0065c454e21441892ee7955519c4f8f18c588d53325662b0cae1ef1d2e"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15376654,
+        "sha256": "bd689b653f6439031ba35a03f55d9e43cbd76dcd257ef644d6098c9efcfa58dd"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4853740,
+        "sha256": "dde1ab083885de0dd7dba670e3dfe49aea53061e529a2a5c512bf429f14eb22d"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 95659640,
+        "sha256": "5a16e6ce1c7c09d72e0008258a68253ace7efadd03fd338877fbc70ce51ec3ab"
+      },
+      {
+        "path": "graph.resources",
+        "size": 81727,
+        "sha256": "6fbeffc572b0583432516c34a96bc503fcf304acdd2480779ce773cb4db7e532"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1072397,
+        "sha256": "5da1f30443cf221c8bcfb29c1f0eaac2cdde775dd0d6f988d5b9a4dd63704c5b"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "7f071320fa092fb38b0be9569018d719d8f488d924aa67de67588d55fc8a5e46"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1493672,
+        "sha256": "9fee11e46a9dd26e22a285ba65974b392d59ca4712910b6f787167421d1ed520"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-05",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1888294,
+        "sha256": "ed95f279eefb71a4a4e3b0c82d21ae02a1b0dc6281f6d612e563993138b9ab93"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4745254,
+        "sha256": "eeccd1b6c1a6c32b8dab17139b5614c38e1dc1675511eb1ac9aca1554fa26b4d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 933,
+        "sha256": "867f4171594aab5234fe0e78635d754496e6f12fd44de44ccbe90f1a9d0200b3"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "5cc90f60c44f6c634e08d9b7e79c1f3617ab837b3741c1bc48bccfb75c8cec59"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6038564,
+        "sha256": "9a648c7f3c9597a18ce7f3d630420333f115b0b10326dad23bcb22eacd9eadd6"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80904,
+        "sha256": "5ec1db29f38689800e088739ead6cc80a2e6ea20ab603a9ee7cddad7708e70ab"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 501928,
+        "sha256": "016db1184d824ec6618d94bee1cff68867028f99318babdf785732405ffce83b"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 49275784,
+        "sha256": "73078ec1935d53724d6af744fa5c756aaabbcaec685689da2c2d8dd1065a4d86"
+      },
+      {
+        "path": "graph.labels",
+        "size": 349563,
+        "sha256": "76eed6db62d3746faff4074dc993e7e129ff47df2a787a412a1cf7b7db0e4261"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2496976,
+        "sha256": "015109b45408a44796b6f22c68c3708f79f1e928a9afa2a84c6cd576cc31b61b"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14854124,
+        "sha256": "1c709b1932187601f9fd7ef952c12760d5261ea54c6f20becc9068986de00143"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4699391,
+        "sha256": "832e049a48210da235b21622e097763d259e4c1c34e2632e11e363cb04fa0fa5"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 98551568,
+        "sha256": "792ef54a3b97675ae6810ed2c9972b3a1706bc8a85ae97c538c7c02f7a902afe"
+      },
+      {
+        "path": "graph.resources",
+        "size": 25242,
+        "sha256": "cf34d144b54afda33c250253a970f0eb0b11624dfd4e5998b5d71b5677ddc2af"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1067517,
+        "sha256": "6aa98f4a092f1666ed18b0a96b02a5cd458004b573a769a59cd41391d7682ce8"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "6eb9ead28df835e06a036517d51407367c7fe92e1f8b48d7041e617ea3479057"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1446180,
+        "sha256": "5098fa57c945ee851878752446918b47d59d93da3f3b7c4327c642e63fc087d7"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-06",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 1948777,
+        "sha256": "df76d116b853bcde62498ae728802e76fdc8dc978cc0f93df5342c91276ced01"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 4892927,
+        "sha256": "c927081f03d097252e40b888e64947e86e6a96f6f4fef06b20acb91b8968b037"
+      },
+      {
+        "path": "forward.properties",
+        "size": 935,
+        "sha256": "2900d91360f6a7a41d59ea3ae72ca9cb94ce1720ee735acaf5c71b06affbe101"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a2c7d7364128e1b1d0e331abe4738513c0e07b70f31ffc10618dd2c76f0f6e07"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6277108,
+        "sha256": "36b6f4ffe44310182b20fe49e36426fec7005039010721acc85cc3d0cb95cb95"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 85800,
+        "sha256": "3423c7144175bcc0ba90112c6bed9e8afc5e567e72231c3dac86c829220dfb8a"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 537528,
+        "sha256": "88af328556b601fe962c5bb726411e2810a51aea5f3cc02dab1450c46d6359f0"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 50807732,
+        "sha256": "dada2d65093034aaeeabf08781f9d7a82d35a2ca6a9db4fd2d327f4bd55954b6"
+      },
+      {
+        "path": "graph.labels",
+        "size": 361305,
+        "sha256": "7c449d2a0679c1ac3937ed0e35a6d345badfadd398d28a9e908a912121d5a217"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2851080,
+        "sha256": "8354171f82a6dab60e893c56fbf60467c56a0f07b66aa2b3794407186abafbcb"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15897877,
+        "sha256": "a30d78f8e5f73c8d24a4df9537880f2e7d0d1998ddc221f16054a7d723688319"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4978839,
+        "sha256": "1385085682e32ed959caed650dfc886e47aee0f1d5491f0dbbf719ddfbd3f96d"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 101615464,
+        "sha256": "3187f6215d78b35365ebbad13d9d26878515be0426179647f06e422bd0addadd"
+      },
+      {
+        "path": "graph.resources",
+        "size": 95870,
+        "sha256": "5431813eea454b5303f50cefad2e01e2c49126dab4f76cde211ae594a30172d4"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1191707,
+        "sha256": "c58435a3b227d4f00bf1fadb478b9c86244d8563cd7e5d50ebccb07d614b3cce"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "c47b4db9f5d58b1164693af2de7e188fde521a87828842fcac1a9f364fdfeedc"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1532164,
+        "sha256": "47858253190fb0961623033eec02c58520bed96ad6f883fffba65390a963e329"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-07",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2094467,
+        "sha256": "6e2e78112d5eebcb91c81289a13965fd7ac8a8199b6847bc8bee406e3b59c00a"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5074233,
+        "sha256": "ebe3237d281d1af72e75ed4924c8e04c2b899f62eb656003dd6cb3a3794b5cb3"
+      },
+      {
+        "path": "forward.properties",
+        "size": 949,
+        "sha256": "3d589bb3b9ef734b12986af02700a18892fa294e0f1b73cb6e61fd1c1c671504"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "481b7fcf45fea67313e1d628bb12f341f984a5a7fe07b16e7d2e3147e47d4ba0"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6530436,
+        "sha256": "0d36707f7460205b0c293067c6b3ea2d4d3b19288a8364764962d9b8bb60c64a"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 87696,
+        "sha256": "99f63536e23ca181ceb2a635f6126a7be6e2937a5bc59559638226c9df07cdcc"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 715240,
+        "sha256": "b7d009b24d2336e3c296742637f9a70ee0687862b33c4afcb4d1502a50d6ed91"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 52493924,
+        "sha256": "c6d43adf1d0c5a2154b3694021154928965fe26593a5f5fd8d90b460c8d37d56"
+      },
+      {
+        "path": "graph.labels",
+        "size": 449426,
+        "sha256": "414bd351eb64d8499349d3c311ca8cc0cb22f645b104cba889993078dee539fe"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 4004800,
+        "sha256": "690deabbe22578c4e2ff82185bfd33776ed7fff442ef8e2923f382d119e70bdb"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16999565,
+        "sha256": "61e6a5d482e8231e414b99dd5f7ee60bd5c8e3e3098b8ad4bb373c3cf987d87e"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5480132,
+        "sha256": "c69fdfdb86f752cc0a359b0951b0a960882f713d18a1f2210f476689e7492ab6"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 104987848,
+        "sha256": "8ea9c2714e13b627205ac7ad6d6e3df9fb17f8bd743879aa67006f30e730ee8a"
+      },
+      {
+        "path": "graph.resources",
+        "size": 57737,
+        "sha256": "967215a8c1df04dd07265b74f4546f5f0def85bd009c02dea11c64a68c63c69a"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1357077,
+        "sha256": "e0366513d86f645f1bb35a10b8ed478ab14f5bd4e3bff4e2852279e8bc4ae0a4"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "aaeb5a7a09ead608ba0133e3c9b9d232ddf866a6f9ba720bcca185edac39f5b9"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1686408,
+        "sha256": "0aaf3df502b9b1c196037db3d89b38afa76b2e8dee0bc64fac929a29385fc0ea"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-08",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2113557,
+        "sha256": "a366238f9c5b49a83605a7a3566fc25413359deab0c40726d81b84b4a2d23139"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5227838,
+        "sha256": "7303a64dcf50e63f752b527aa3dee75468d9d9b3cb7b523705f8c3ffacecbe3b"
+      },
+      {
+        "path": "forward.properties",
+        "size": 942,
+        "sha256": "1af7fa7e5517ceb20b2f087bc297e52bb35948a2f324511cc1e4376fbc7282e1"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "5ddef5a904953cd27e5dde47126649b407a334c4e557f052fd155029164f1830"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6862052,
+        "sha256": "8e98884ab1c63c0592506775a39fe8ecef1e8c5374e466f28b9fd4b1173e9384"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 83916,
+        "sha256": "f374eb0c79f27237547f0fbc8bbd9d55bfc47ef8ebe939b508440a2e0b95fc17"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 672184,
+        "sha256": "b9815d51c9b61325a76a044e104f91a59691c44cc2c6bbbde4c2132b85acfffb"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 54179032,
+        "sha256": "a8343439e155e24e32679f2857134880cfb25e76fd5f9eefcd53f2f5db6e61a5"
+      },
+      {
+        "path": "graph.labels",
+        "size": 425423,
+        "sha256": "4a90251c51dea281221d0a5b0957e88689f1731a4ee6686afaebfe4f1195668b"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3332256,
+        "sha256": "f9a1cdf1839f2c1757ad69c24d34a867b0d52040442aec6ebae32ec5ee76afd4"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 17656518,
+        "sha256": "8412113b8bd5298c2ea29bda4f2f16434cf6f4a9a05985a55d80f197903f2110"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5476609,
+        "sha256": "0fcfd733042a87db847bb371b66c7c17a0d1c871d3f7336ae3902cc93232f176"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 108358064,
+        "sha256": "13ca53dea56e7240a49c4302833e78d023eed9747dc5973e537eec09c6734d7c"
+      },
+      {
+        "path": "graph.resources",
+        "size": 230549,
+        "sha256": "6db1c97bdc61484f6ddf14b9d5c9a68d3a93c73fb97f63f2a656f90ac238dc75"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1206465,
+        "sha256": "71e42aec16146f4ff6740eaa13732c5cad4e517c97a21eccfe72014ccae17fe6"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "2ebd6dd81bdb7e92a98c7a4efa5d25f459acd37aeacda543b1aa35d3dff0bf2d"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1685324,
+        "sha256": "28d255f49b37ff0127ce2bbf04787d8a1e75e4d593380c90fc388739cfe45c98"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-09",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2098921,
+        "sha256": "81057ebe3c47cd81d2d619bb6f255fc23476016aecaeceac0fd9121d9fd504d0"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5343811,
+        "sha256": "f87e24e2e528a3a88328b2614f20427545cbfc8e6b56c3a51d7935f1a846998a"
+      },
+      {
+        "path": "forward.properties",
+        "size": 939,
+        "sha256": "f624b4265649b5a5bacaaba8a93a84d68747bcce89de79877c84f13e9186eec3"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "cccb12d1bc12f5319cc7a3219d0f9d3e1a777061cd71fbe5801c01753cefe34c"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6406092,
+        "sha256": "9d15b5b0d7e6bd16341dece341870456e554cc517b8bb5792af7a99b6df5c912"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80820,
+        "sha256": "4c2903ac843e9396b558a2d1aaab96fe0c4b987c3247ff44b879849900eb128d"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 507048,
+        "sha256": "0e0fcc12e4e206f81543ba87ac909991915a7c3888adb92bd40bf9bc73ddfc45"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 55645748,
+        "sha256": "94194032420ee5191a37dccd3d7f4e3d70f646167859d704967321b2b6c7fc7a"
+      },
+      {
+        "path": "graph.labels",
+        "size": 359657,
+        "sha256": "055144feb2d22ace75e7782c5cf0755b333f2ef5578ab2c52062acfbfe2cf2be"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2435188,
+        "sha256": "33de619a47352d275e09e6993ca9b7356607bba680829a0887ba82073533b97c"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14851885,
+        "sha256": "741c210adc6b46ed5cf66e0d3a155fb1a824fecb21d638911386171309342cc3"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4766835,
+        "sha256": "a9b79813a3372b41afd6567ba9992ea8fa7e7f4fc84492edbd373702ea33feef"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 111291496,
+        "sha256": "5a3ea515ccb110a9f252b4143feee432a7e74003824b69f42fe163284d0cfb35"
+      },
+      {
+        "path": "graph.resources",
+        "size": 15457,
+        "sha256": "9f80c6355348d86d74e0315c7660914bebbdd8fdd58e5284b2842ce3b4468daf"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1066389,
+        "sha256": "0268d5145cce05034e4a004921e8b1ae377f33eeed80b5c3b7b05302b52f09d3"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "4aaf64049a560f7f5291428be98af2579d1896c018af04d1204cbb7f92868298"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1466932,
+        "sha256": "2785d3319ca5bda64189e5803152bee45a06b1bba90d473749caeaeac611af8f"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-10",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2114281,
+        "sha256": "70ac5a7d5088fac34af2536bf521fa292509d45bfefc0f2bfc6327530c88f51d"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5461102,
+        "sha256": "735f81dd6d75e17872d46a37deeb3c177f676d436ed611c282676eb7f719126d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 937,
+        "sha256": "7c7bbfae02adb877811ac55fe462b76d1842737bdd525eeee8d18aca29a76b3d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "fbf8228a1928993d249ccd4b5e04c01a7536b33fe802f2283664d122aec91c9e"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5798364,
+        "sha256": "dfc8aef57e524cdf6fe8fff202cfec5a3ae906f7085f44e49a81c0a2d210867c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 84816,
+        "sha256": "c713e6b9a0f52acb135ae5952a87d1deaeefd4884eacb739279e55898532f587"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 506744,
+        "sha256": "3f9deae8e8cfd8cf167ae61280a6c7c93be79d66e658a50c0e30edbb75e9ec20"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 56983040,
+        "sha256": "b5f46ed03f37b86100f6c06d4bfd58870959068b30d7e6993d24bac3fdc9d742"
+      },
+      {
+        "path": "graph.labels",
+        "size": 334127,
+        "sha256": "1a204259bf52aca7db41b2076fcbc9edc695e710a4ec5c30a16ac987b05ae4e2"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2530432,
+        "sha256": "eac27e2a324cafcbd846db8b4c445e39327c86c3969669350cb7bac2e8b50f44"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 13734807,
+        "sha256": "308ffe03d37f3e8458ed22f616e0e6d8748a22d60c14e5679177b72f4ee2ae82"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4346207,
+        "sha256": "d1af9762024e26dbd22e97aeeaa39040653dba7bd6878ab98c79f55a976f6b06"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 113966080,
+        "sha256": "35498d0e5cb23a0b5af18f3c43e7b8f569bacefa30d35e7209fa2f0e2f7f4eda"
+      },
+      {
+        "path": "graph.resources",
+        "size": 125550,
+        "sha256": "23c20b88a3ce238e6197b0ff2002bc40c2f687b119252367204eeb798f8395df"
+      },
+      {
+        "path": "graph.strings",
+        "size": 996417,
+        "sha256": "2799dfc9be987e7276d3d521a31dd451841c1129609b4f541d020117ddf0c2dc"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "d14b89f0f9fcc563a0982fda72a9ece89876c7238bfe904e8a6ca2e2fe15c033"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1337508,
+        "sha256": "f7fa3316a4409e21bde64fc9158a66b5a3156ee83b169c95d4a396dd2f08c54c"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-11",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2187625,
+        "sha256": "68ede5486a8a3e495833c47a36e3fd7eddaea099ea5577a168fa474db41cdabe"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5603779,
+        "sha256": "711377eeb926da83293938f49d1a1bca829b9f48bc219ba35807a3e691b9ac41"
+      },
+      {
+        "path": "forward.properties",
+        "size": 937,
+        "sha256": "98a2be53864ea9a988fa09f472ea043891343a09f2a6bac91f111f9d9b6afae6"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "87345bac07c9c0fec6e455d23d8ecba4d578b56501fe774f8e93be7baf77fd4f"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6262292,
+        "sha256": "883061ce2d908b012373c495f665b9833b46e843a9f4f251209246b4026298ee"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 85704,
+        "sha256": "971c8e5d23114a241572d396526e48efeecde684a39b167c3fd4e92887f4defd"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 565224,
+        "sha256": "28b720f2fcd8a4f8d7da7e5d8b37ec4cf603536274e7cb6599f304484ded6ba4"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 58393172,
+        "sha256": "a39488b3e0310fb53e3d52d8b4dac42b332bd37496b3d5e8bff587e8aeb16726"
+      },
+      {
+        "path": "graph.labels",
+        "size": 364570,
+        "sha256": "0473df8eb757a7f6a279192fea8a379e6dee848f05067487a5887f070658b295"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2712140,
+        "sha256": "01de37031bbf83c107ec2673dd71f53011105e6ba6f328505d3e616972bbd88f"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14395822,
+        "sha256": "7ebfacdd7623232d0fa7f1f455e0439843580994637136292ba2a2a77e48b690"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4582937,
+        "sha256": "3a90fdd10ddf51f517fbdbcb7895a0fde71e59b3c43e1cd004c199083c31499a"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 116786344,
+        "sha256": "7056db9e3d5ef47079dc2d05772a9a4931153187d7ed3898089348d67e037078"
+      },
+      {
+        "path": "graph.resources",
+        "size": 17355,
+        "sha256": "facac0896841fbd2b51c92b1958bd7288a4c25fc84f4fbcd111dc4c929440a27"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1060809,
+        "sha256": "00a0259afbd52292b2b81a2a387652715cd822a4599662945bb55d75e70f5cb9"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "973e5b31f659ec59d3d5bb88785c72da4db6a3d032824049863d974dc901215e"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1410348,
+        "sha256": "670f2da91f9bbc65d9aaeb7c26caf3d42b85efe9644ecac21a3b5eb0820f5707"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-12",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2275197,
+        "sha256": "d4ecccaf79a128b33cf83a887e8dd5fa1820d1b173aaa94f8f5553e022784fbe"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5763056,
+        "sha256": "54755e130ffef6efc530e963295c2269913f8b1e44e7524b060b1f579d69ebc3"
+      },
+      {
+        "path": "forward.properties",
+        "size": 944,
+        "sha256": "cdb54a8fe9efa7aa231f387d23f38e3db5883967ca6abcbbcabe671a73441dac"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "ac38e313d97630569442e9686b58638ee1b294ec76bf919b3af56c654d682b20"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6300116,
+        "sha256": "06367e53c00b5c6dd88f4c7bcfa1685c5b4ebe891df97c68f5e59aae6fd3ae29"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 84276,
+        "sha256": "84a5108a4ebc6656e9c655b119fbb79297ef05ddca2e1667722ad56bb07730bf"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 595624,
+        "sha256": "06c99f40659a35c4ac029bd0ffbe741874677a5ae7a307f7eb92d091e97717ed"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 59979984,
+        "sha256": "0b57372e85e0da587cac4033b2dc221718b97468fa6a300b25bf9fa496bd52b1"
+      },
+      {
+        "path": "graph.labels",
+        "size": 400173,
+        "sha256": "03a06bbc2fb9f2ab0284f45c45cdbfc7955d7579d50424eca4b9e7087f81fd41"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 3300584,
+        "sha256": "683ec73812fa9dc31755f46d324e4515d323f0208746e2c3ee119aca255bb582"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 16180182,
+        "sha256": "3e955d6fcba950e1a9cac624f5e7266c014ed310421b35f56f0c89b2192887b7"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 5157147,
+        "sha256": "1594b3d22a9a9d4d7ee7ef9aa11ec235c908aa7b17b937d460c1fb6a98de7489"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 119959968,
+        "sha256": "89524e4f5ea2d9c968d3b14302a80540d41a1d8519992cc84085492868c13064"
+      },
+      {
+        "path": "graph.resources",
+        "size": 180612,
+        "sha256": "ee3e909b9198cf3c2626b2c59db44983b2291e60093ff0c74c03e82094a922b4"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1262115,
+        "sha256": "d0040a406f8ad5e345f15f8a96eaafef527963c454272aab1e83534b60dca9d0"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "fa2d565dab2b5bf2ea2a86ec561c93ebe8594e466b4ca27ab1fe702851b933ee"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1587028,
+        "sha256": "886fe78149e0d41fca7e8d3b437929704dd41c8036d055bddc07422811ed0122"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-13",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2290603,
+        "sha256": "f2e96288668152ea0110e3bc2340ebaea54ed6c8fba0a80b0be03ee7b0dadd33"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 5894325,
+        "sha256": "56c9c2e3a3feeedaa8cdf901ceb7e105523a61b8501584a4290e1391f7b88ac0"
+      },
+      {
+        "path": "forward.properties",
+        "size": 940,
+        "sha256": "f08a9e773445764b8304756a3badd0588a07458f65f8792200537e586a8543f6"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c30816ed7cc41e1bef8c47e1183354b5fd1f4dfbaf42658a5ff5610843b2efd8"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6289828,
+        "sha256": "8d1d9b634d7167e097066b4f120e0d40c487f929cc0d9adc685ef4a7472d5983"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 86268,
+        "sha256": "5de9af157a82ac9272e209d90790c739bc5afbf260ca4879947877eaab00e799"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 577752,
+        "sha256": "0b91aad1c29007508ce52c2f1d652dcbcb3568c006b5d8bf1c049913a657a942"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 61455864,
+        "sha256": "8268adc8b2a365a47ec6a0712984583076f389b4d80862e0f268f9b1d2404c03"
+      },
+      {
+        "path": "graph.labels",
+        "size": 368746,
+        "sha256": "2bd1a26cbb7fa94a20f34eab81cdcbd2539636b8c506417c2ff07b1113d32de7"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2777708,
+        "sha256": "5292f610e12bb91a05d43575a9b565c2528679fb872a2e6b500ac9b77b7a1162"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14987245,
+        "sha256": "8c549ce8e99d2174ebcf13315a45b9b778d3a762c4f14230718ef6811881f33e"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4796618,
+        "sha256": "b25152e78958e0c9bca259c9917d0513cbc63bc964c9130205df5c2c9e206a87"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 122911728,
+        "sha256": "7a510ab713f7bbfcc0acca5aff17f52885b558f63320c73d35d64a5b970eca0a"
+      },
+      {
+        "path": "graph.resources",
+        "size": 31212,
+        "sha256": "7c82ad0c0847fd4f9a46f24070474fca0b6b8af0175fe26a641ec9660da67e37"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1377701,
+        "sha256": "39546e0a58b12bf60eb2a6b59dc61c4e64933f4fb6bf9e064f304d3f7a300685"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "3c2a68b57a29345e5d01aa770bc30fb54bc910af480f631a41de58b149e3bd35"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1476096,
+        "sha256": "c5a735320bc2b45cbe57c3aba9a777b0c1e69dc995cfade9a36b2f78a438e9db"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-14",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2341515,
+        "sha256": "69bbd38007307236c241397c24c3a324a5c78dd5c185a7bbc4459f8c71b20dca"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6031965,
+        "sha256": "7ec9b4e804788f24c90e7304f8acd65dddabfa5c576a75b9337a1af2d8d17d9d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 940,
+        "sha256": "0b0d048aef59f63e5cf84d7d41286a2cfdc906e0b82e710312cbf788afbf0a86"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "0346e479fa26ecf5299a20befdd3c245808d288c6f2520d267855eb87581ef8a"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6113340,
+        "sha256": "dfb8236dcc47aa64014951f90281e19ccb603c952e64163bb3619260abb7dad9"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82944,
+        "sha256": "0ac5114dd3443a2e995ddce1584689277f4a8e942113229d70fe091c3651d193"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 545288,
+        "sha256": "1d53d07ba6b76c18db45b83c48c0a330ec2ce6036bb3ceb16e0469361ccb5015"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 62886564,
+        "sha256": "581b511fbe98124fb521733c61daf8dad3d840e156f64728338c3e44712ef21f"
+      },
+      {
+        "path": "graph.labels",
+        "size": 377555,
+        "sha256": "68731f1fc43f6bcf857eb4173aaf79d0136439fc437591666a6550b98d957e49"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2685912,
+        "sha256": "176c79e6a34d5a808fd1c2af9b29edda16893195269f8442ed75f1abc76888ba"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 14429017,
+        "sha256": "d3b56453f7d7d5fdf3d3842a464320df89505424dc83a58a1a81135efc4897c8"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4649783,
+        "sha256": "f0246f9c05e6771e6ba425ef93be6814265311f38d7344f0b6b95cb379996a28"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 125773128,
+        "sha256": "2b9933fec8d49396ea966baa2699633d80c995fa62d57324b6bd220b19761556"
+      },
+      {
+        "path": "graph.resources",
+        "size": 95038,
+        "sha256": "fbdb204854a00153e5aab69cfac9f96dfcb4592d949d9041faa66b02a08bec88"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1552263,
+        "sha256": "b57b7e3416071cc79830580eed9c722222d71ef8031c42db7dfa9761781806ad"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f5ad211d7d8402d7fbd3585669ff4873c1a83aabda61f1363d9341ece8386210"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1430916,
+        "sha256": "21d074bf9eb237bf90f11238fcef32b94a2893250c1d0b11472ed5f074ae88f5"
+      }
+    ]
+  },
+  {
+    "id": "fixture-hive-15",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2378494,
+        "sha256": "539aa15acc5725e140895ea28ee93a7eb115a6b2ba3e7eac16661db74d28b3c3"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6167945,
+        "sha256": "aaecced24207d00017cdbe8c08c181a58bff2456d30aaf035c0901552af98baa"
+      },
+      {
+        "path": "forward.properties",
+        "size": 935,
+        "sha256": "821a0da0510abd3901ced175138d5e446b5403cd054ebae124cfc4ed698cf128"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "797745b9eb15eb4cda7d63c65303fd4b11085a0753ad26f7afcbd37a9638af28"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 6046236,
+        "sha256": "66f3c906a990e4088041560ed71c41b3aabb419be7923cdb72b659e1f30566c0"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82884,
+        "sha256": "596befcb28f216f785db538d3b7149c9c0783b68af7ce9dbccb30f5bdfe7e819"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 531096,
+        "sha256": "7e84dbfbd7fe24211fa163f598698e60f18962dc851a893851a3604319061231"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 64393844,
+        "sha256": "f0d427bf2f6d79743bf2feef4baac97cf7ea547fe3dfcc68d3d7adbf65391806"
+      },
+      {
+        "path": "graph.labels",
+        "size": 366855,
+        "sha256": "edac641c86ec3605da9c0e7954d170aa644c74ef0d33c8644a24d4edbf611e69"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2558652,
+        "sha256": "f08bac7b02b5c1de7cb8cc97a02068f7c4a3c10365c24abf9ef178d08b470590"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 15769157,
+        "sha256": "f95caf11b73bf01eccfe589669fa27467c911373dbab7f78699e235a227e890d"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 4898668,
+        "sha256": "0a3e4e8fc317fb1b3a29feb61bad60699985801cf0068fdfc61ca8e299a35d6d"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 128787688,
+        "sha256": "0ce3ce27b80d47e30a6344dcc6668e1dc6d79c99b98c793348a2fb851c893b84"
+      },
+      {
+        "path": "graph.resources",
+        "size": 22176,
+        "sha256": "cbc3fe7222261daaf29bce2b34168f4e85a45c0e81a332ae6b658a795ea66568"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1046149,
+        "sha256": "1577db1dc5bf2843974b451d3ae478a4e0e78d86c3e3018519a38474552e8bb5"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "76fa35e01817d427761eeabb7057e5179a746602d3c793fa3cfb3e9c43321bc3"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 1507496,
+        "sha256": "0d8fa4bbefa554f1757b2d85e191d2340e437e125e6e8d83933025accfffe69d"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-00",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2275726,
+        "sha256": "1702b931b62c38269d03ec65ca719f5b13a7f88e4adb0a44e0902509564838b1"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6203153,
+        "sha256": "83c154686daf04eee87065ee5d333b37840d26599c64a6c5f308ff4972732b34"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "93146d58f0640b9291d4b527290c2c47182f6847f669ed92fac6c17a53592a0d"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "47e9710aa3aa393d158c7fda9dbadd4960af04662b2e47e1402e457fdc55fead"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4949988,
+        "sha256": "54296e37d51050204d9919ae618d5c472ae3470ad2f5883af582dfc73981253c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 81132,
+        "sha256": "d40247a0a1130b4927f2965d8fd52adffeae5c27f06097f67f588e264ee57437"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 372440,
+        "sha256": "a2e8d4db030714c7ce3ff62b1b850a346d98c14e94c1d4b60b685435550ab4d4"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 65264332,
+        "sha256": "0e289e4519cc8dca0995ec35ac62f58d33c3378d52f319a579b5b57f0c9d0c91"
+      },
+      {
+        "path": "graph.labels",
+        "size": 233151,
+        "sha256": "75d4978300c93f509529cc2215a91dd5f9d4fafed7b29f094a85a916c532861c"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1858108,
+        "sha256": "d458efc0d6177736c307fa10618ba7e049ba0499c63d59c906621261709f8c14"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9506849,
+        "sha256": "993cf8e3dedb166938bca9548fe717630335901df775e3899a264fc3076eb831"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2829094,
+        "sha256": "8f6a1656f1489d7f16e3765d51a2eeead0cc899b8b8d8f8a069da1f70ca6d14e"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 130528664,
+        "sha256": "ab0325e074734c31643416a41041adac3f8724b5877538531c1704c7b6505558"
+      },
+      {
+        "path": "graph.resources",
+        "size": 5069,
+        "sha256": "dd3bb5ca8da25609af1148149bff3ddc464409533a0d834da10b53def5b1c622"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1020929,
+        "sha256": "0c47ccfe967b78cf7b44ceceb7ed88990f72e32479ecda20598d11df2619cfcb"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "cada9bc854d68c3563b2d742aec9ad247736e18746faa00bba2031cbe42a1600"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 870704,
+        "sha256": "944e59ba21dc898bf907b18b0d7549afe1cad3464df9cc7342edd87d9b589d5c"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-01",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2287495,
+        "sha256": "ff4c28ba92e4a0263cf611253a3045f791e84bdac71cfa5fd886f087380ad409"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6275164,
+        "sha256": "a34c482539d960089d11d380d71fb165b3d9f7950bdd31983727fc6e882d2d83"
+      },
+      {
+        "path": "forward.properties",
+        "size": 925,
+        "sha256": "803e28804a392f5d9dfa2d758be6357afcd4b79c3af78dc9bbadbed2468f13ed"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "52c048829aae638853c532f71ea08fd32ea8627e651189e14d6a522ad44e6b7d"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4728652,
+        "sha256": "fee722f973850de99389a5e0781192a25d9dbfdeed50a0de57159e776866b202"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 78276,
+        "sha256": "19becc87cacc54d7bb55d4758ce2b289c4565a9c041b8028c8ecdbb5d262a338"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 343560,
+        "sha256": "7bc124a73253625a87be3cea9cae522529dced4f088fd9fd6339def8007ccebe"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 66087352,
+        "sha256": "709fed3b7c4323c2cfa46f3238c1643f52d8e55d08c7e9cb01a2271180ce0d05"
+      },
+      {
+        "path": "graph.labels",
+        "size": 218314,
+        "sha256": "49800c68f1fc8654a7ba4e9dbc4e407fe49ae7cd0440da7b9c0e9eca42559c3e"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1725224,
+        "sha256": "2066fc1e9ab9ed1ddb50e62580f6ca42aaf6f639539f1225e8a489482d86461b"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8858334,
+        "sha256": "cb4a1a3260205b6277bab5dc4d92a6eef05dce6ec69db4d42d2289aa8d2943af"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2674823,
+        "sha256": "44a2889011691b648829bfee642bcdbe5eb16bda0b6ccbff1ec5d1fa7c577d06"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 132174704,
+        "sha256": "ce10bde8c782e354f03de42a12a361279a2ad868cf5bf5950fc6b985920c50f8"
+      },
+      {
+        "path": "graph.resources",
+        "size": 1249,
+        "sha256": "00c9d9d8937f2c45f62c9b7333924196f4d3b5f0993feb096c7ca52fa065964e"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1112807,
+        "sha256": "a7721e7a50a866f6c0fd5bab984281081a5adb0d0442488299ab4c67e01d8731"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "4566a09807ac19671531c28ae54a4a1e070b66afbc88d4d8be3e393824f76925"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 823236,
+        "sha256": "2dea6aa64b9fcd28b8b3dc8c5c70c9f1d027bf64e3912f41e1d0d7fa1fe14cdc"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-02",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2300859,
+        "sha256": "c82e0d94085de6e594225a729849c831800335f446f3427bd125560b27399938"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6343416,
+        "sha256": "f4e5254e9bda451b6f579d53163e7bc0871243156664258b7db8b7088bbfe0d8"
+      },
+      {
+        "path": "forward.properties",
+        "size": 923,
+        "sha256": "c8327f8995263311ba464ab4e587161e0ee1b915f6096ec71a2c1d6098af3709"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "0cb42d96d4bfa6b81dec4826fdea01ac56b0edd96e0fdb9bcccf3a73506dd0a1"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4649572,
+        "sha256": "0608ee3d3e686c353f3b82d6758e1fefde029f3c6d284670e6c369c10aca1b00"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 78756,
+        "sha256": "07124bc6f6e2964b922f9c5b6d3c49ef6e7923cf95d19086eba841c28126c9d5"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 330200,
+        "sha256": "be22c6e32b0510e25a29f2dbd9353e3410a73d55acb587fc268967877f4786c4"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 66859964,
+        "sha256": "2179a4a985cea64d01b094fed81dc4e529f37f563fcd53dec58f8fa181c35d78"
+      },
+      {
+        "path": "graph.labels",
+        "size": 207029,
+        "sha256": "fbc82efe40c7bc45820e693e65c67455b72fa6f1501fd41db46652ed1dbb9938"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1645860,
+        "sha256": "ee3f14b03b3f82fb2c23bf278af0f0033dea8f2a96fd64f0ba329e6c46b8e5c0"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8240257,
+        "sha256": "8d235cce3374f2e6f59b942e945180725faa9efcc0607bea1e08e344d093813b"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2510997,
+        "sha256": "68da0af300fbf4224206a5ba5416d8c773227faa4ff1a3b6fd74252e6cb9cd90"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 133719928,
+        "sha256": "5ca59149569cac2582527cd2a9972aeb7a63ed78b0c6097edec4ef8ed07aec54"
+      },
+      {
+        "path": "graph.resources",
+        "size": 5322,
+        "sha256": "a9d8df91a6381a223de8dd962c5546f59ad7a73b8e06a3c69e1197a6abae99b5"
+      },
+      {
+        "path": "graph.strings",
+        "size": 990919,
+        "sha256": "d73ed47fca1542824c4214edf2f4f7e6e8e654bdadc4897b9e56b9ffaeb0fc13"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "68e118a829212cbc110c1dc2c550cbf916cac542eacb658a1a499e8416df9d85"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 772828,
+        "sha256": "106aa6057d59edef249d53d8f16bc618c54a1ec621d87de5a5d4c241f8578e1e"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-03",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2307287,
+        "sha256": "d0aafe639eed22490ff50a5ade40aa22db9dab8242d21559bce0709de40d5712"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6404350,
+        "sha256": "69d62083cc71a292bad88d3fb6284a5e2de3e198ca54ddbd15a051c47e8597dd"
+      },
+      {
+        "path": "forward.properties",
+        "size": 918,
+        "sha256": "2d2c61acfc0d49f6944bd74bcddddeb3770ed2de3cbf06c008343ec22a67f512"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "ff0b6d868ac16a065ebf7101a3ab63cb07b11c8edb4404c5a7e76bc9adfdbaef"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4612020,
+        "sha256": "1923ecd03ee8c0f9a1a4fb110c9a918cf0371839696327d9a3f71a9034c6a3c2"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 78816,
+        "sha256": "0336ff86db2895c2c3022b900c136eb80f94643d8f722f004256f2d8f9274cb1"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 316456,
+        "sha256": "3f4c45caa1c5e5f5f0d3f83cbc1b2ae4a4f39d2ee73436c2dd6c5d9fe0b02ad7"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 67573328,
+        "sha256": "56ad1f4230a9250fc829408b28c6040cc29313242194a2a8f35e06b68e404670"
+      },
+      {
+        "path": "graph.labels",
+        "size": 191505,
+        "sha256": "6edc3dea1b913d0e72935da84bfd9319b01feb8851dcd7c793e2d7b0dcf7102c"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1516320,
+        "sha256": "cc96c51c8d8c3dc30fbdcf0124e425ee4e8883a0b0344fb88d336be5b7661ece"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 7630457,
+        "sha256": "88f4a55abc1ff09ec6216c50d4d461c74bc4798dfcd1938b845fe2a9b0920789"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2318441,
+        "sha256": "57cec7d3ea09f870889015a4eec71b961015cdb07bc693ff07537c8e03fdffff"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 135146656,
+        "sha256": "9a6c7a2f52cc1af22a9c8449b847f7c859b2003cb7671f9d63e0371648071db0"
+      },
+      {
+        "path": "graph.resources",
+        "size": 1219,
+        "sha256": "42c6e4eada885c3d8105b4a3b55fb0e20c33db167bc0e8dc7a61fba5371c8df5"
+      },
+      {
+        "path": "graph.strings",
+        "size": 961137,
+        "sha256": "0f3caafd999dd10acf4e4953ec37e8c88b8d14075e6188587429ce8fd3203bcc"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "47d809a2888126575e1c984ed5ad0ea8e2fd28bd535ddacd11a2a0855d6747ef"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 713580,
+        "sha256": "f185acca7c30235a9fa2ec52147c50eaafc03f03b35523bd4c750a5f22ceffc2"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-04",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2375457,
+        "sha256": "68a8115d2c5c63731a3950f7913c1950c84bebd008945d22fb231e5eab1b406e"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6501776,
+        "sha256": "e53014fc0e136d80964c9f1bb1b6fc116948ccb074a688a56edd2c70b8e6ad8d"
+      },
+      {
+        "path": "forward.properties",
+        "size": 925,
+        "sha256": "7257d67cde4ccf597ad2fd3ced89fd5971334bc233fb3bf7424ea8ec2854050e"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "fa15558ecab60130f48a9f594d8b33afe262a78a9a244f866f26ea6be1aa4f5c"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5144116,
+        "sha256": "3922d7345680aa9b7f924eb12ab141ea8fb1c0cfb75a4a946af84beedcd4a1f8"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 82296,
+        "sha256": "a1c313f19fbc8011fabee5578dbb932cd015ed2bc4332445940efee713c35019"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 370888,
+        "sha256": "2809ef45399dff3a5a1eb48d992b8183ab26676a13a4829d64064a4f658b258f"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 68444268,
+        "sha256": "39fb51c8787ace89dad60eda4b4ef65bbb842b6ae2ea32224da4eff48afce890"
+      },
+      {
+        "path": "graph.labels",
+        "size": 232579,
+        "sha256": "e363229c1db07ad002c25d86e13720542ccf50655dcefeee0f10ce5dc4e1a6a2"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1855732,
+        "sha256": "613c87fe7d84b52069dac3ed808d3abd7d97b33c166208059792ff661c729ead"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9392337,
+        "sha256": "7fb84f54f20ce60326c4f0bb03088416dd83601c5c9403837a2041f30348b187"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2830563,
+        "sha256": "b66df44798309d22f785b80bcac9b35ed203d3ab03c87531d8fef59dfbd79a46"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 136888536,
+        "sha256": "6605939461cc5735b9d8d2be86aae17ca9c851a715eb1e4463e2c47e94ab3bd7"
+      },
+      {
+        "path": "graph.resources",
+        "size": 819,
+        "sha256": "a88a3a0c6257e2f39aa6130b6bacb494f7bcbae2aa4283105bc735119aa789ab"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1058111,
+        "sha256": "0a464d4d93eaea44a031e7e91410bdc7bd96e89d076c3d7ae9816b0121f1fb9a"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f9c66ea980d2b1baab3c14aa51a8577d6d5ec5ff46e4b814f4db3e885a7e364e"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 871156,
+        "sha256": "710e768fd87695ce3bfef0fc4901a00cb3f7050b3d3fe99c8f9ed3a807323ee7"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-05",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2419559,
+        "sha256": "2375d9382a0080d1d70ed48b54b1e13f69eba4d84fecf63fe59867901594c112"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6591683,
+        "sha256": "59a8cdee6c2fff80a91db7e6db0bfc567dc0f18250b5f7917e394bd54143ca51"
+      },
+      {
+        "path": "forward.properties",
+        "size": 927,
+        "sha256": "dd8d7f5c4e2ea70ffeb1ace9209e944c7beadc6853a325773157c2dc62d4f532"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "109338b2fbd50223e14323454cfdd62261909817605eec07b83644de357f59e2"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5101956,
+        "sha256": "66ec0d3fb7ae63c2bd954de9cdb4e0c4275bb091f06470a838fd2c56b5fbad95"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 84228,
+        "sha256": "87d5f26cfb52012c2844d1a03c06fbd159cb9b2c22ed8eff58f6c0880a8afad5"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 412328,
+        "sha256": "faa98d928ad2902b64d3f0c5c5df00794e1307ff3669e614902904836c439c2c"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 69354908,
+        "sha256": "af13bfdb104a2c652854c5dda0fce9fff7801b0dc360cd25a4f73c5555e47cad"
+      },
+      {
+        "path": "graph.labels",
+        "size": 246353,
+        "sha256": "d0584f9f9472e545a087e6226bd9ce7618eef4d47c6048a9eee4fac6eb9a87c6"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2190788,
+        "sha256": "5cda763db21f985562731869d3101add39de403d9b708086525e317b59bcdb3c"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9915883,
+        "sha256": "bfbfa63077ac4c66c750903fcbd4eca014b5756d5776e37cbfda99ccb257d743"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2959588,
+        "sha256": "8bcf9ad6f2e6aec8c6928b43cef6e18fb539aeaa8e826c73b8dd54b62b63e05e"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 138709816,
+        "sha256": "d40ed88431a034b3d285135dcf0eb8ed6354e889e52cad0ff2cf759bed13efb5"
+      },
+      {
+        "path": "graph.resources",
+        "size": 5425,
+        "sha256": "fc2310a962f347bb7f47c1bb0e7be8ccad38b335ae752e41df38e09d56d9b836"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1048843,
+        "sha256": "7f716f2e71a0e86c785bb659ab7acdb62b718b92a2becca01007777ce7ae7bd4"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "c74df180ff78a22dc998efd5541a3683807516ec9eb304e6d1b9b6cdbb085416"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 910856,
+        "sha256": "d0041eaaf2e233688c300ee6d832794dcefa5430ee7db7e5262059bf1732c204"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-06",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2399786,
+        "sha256": "0a267bf6732cbde8ee57ad986411d69bd018661f58e891cba82c2414814c284d"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6650162,
+        "sha256": "006f3453f13e3e86e4ef56b2268183055243ec7fa9402d6c63dfda40a252a0d6"
+      },
+      {
+        "path": "forward.properties",
+        "size": 920,
+        "sha256": "ae42dfc27d402bbcd5aeecca2ad126dd2fe8094c6da35899b45682de6f5581be"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "f422eef19ff858491e193a30a3dcafadbb70883311d9a4b20feffed927bbdb93"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4666396,
+        "sha256": "7a38748a66f420c206bf6337f15f474eb0e144955363ba825c0d7da58ae651df"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 75648,
+        "sha256": "9b05752f7b44ae28872288beaec6ec00e4912917881710d0086d2d3caedd268e"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 310584,
+        "sha256": "7580af14545994114568dbf05ee79787be480afcf80f9a2a23055e6c45a08d2e"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 70129276,
+        "sha256": "15b22e2034d1b061ea845070f5d25487ef3d2c02609aa8bd9d26ff7a6f4d4418"
+      },
+      {
+        "path": "graph.labels",
+        "size": 204667,
+        "sha256": "cddeca856514bbbc6c4d4fc3c792c12068484404a7861c1b160887b50f73e292"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1640232,
+        "sha256": "e62e2caad3969699e5d7583b061ed50f1d43552dbe5ed1a109eea8850e7b4e5a"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8309639,
+        "sha256": "f76dfeb84aaa50bbaa7912443ccdf6c8159090d993bca49e012883e92b3006d8"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2516704,
+        "sha256": "550e5cf0041d76ec9ae768af3e654b627ee277261306b569cdacb6945e0cf1ac"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 140258552,
+        "sha256": "315421e9c3a2f41eb3a29b5bf6ce3abbbb0f85c04cece316b0d98e1b5241a162"
+      },
+      {
+        "path": "graph.resources",
+        "size": 9154,
+        "sha256": "dc200b385258d3345a096780b4e7f5bd7c05386c1d0f0c95d39f03def53d0610"
+      },
+      {
+        "path": "graph.strings",
+        "size": 947977,
+        "sha256": "c9f950308aa110dfe438e10925edb81ecfd86a4515a154c5331a968bc87ddac8"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "1dc30768be79427abf88ee659a71a263ce8da99d6e1e6e7e0e388f6ed913f12f"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 774584,
+        "sha256": "3a66e837b2c8a5a5554e9c8b9c408063c99b7fc624ed2d66a2491d01b6bdf158"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-07",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2436797,
+        "sha256": "2545334cda9981c270302581dc09ecacec4f17f66245e2468dc50e6cba229935"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6728230,
+        "sha256": "2555ed2d2d5071499e7196d43b9c3cf06922871afa50dfe124ad935586dd9281"
+      },
+      {
+        "path": "forward.properties",
+        "size": 923,
+        "sha256": "f091913a8310ca39553b9b2ba463d25381450e87cd7058977c5fe3e5bfe74fbc"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "0f399b28fb87d53d0b4dfae3ab001bf312fbf51b78f65721938447e0056a8a4a"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4653092,
+        "sha256": "9c1d012864f0788eb8b799f6dc2b017a5e0c40f9d44f6a25ac02926fb214f92f"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 79776,
+        "sha256": "fd00135dd55350008942f35afa04d0cf4dc27328a39427c55e62aa1477420a10"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 356168,
+        "sha256": "051114264de49a33c6d4b0a287c838fad0f407f7fb143074d2d3fef0ebc80b3b"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 70937720,
+        "sha256": "8fb8427d738f1a7063bb1e68bffc280aec51a9583a1113a75e7f54db2fb14164"
+      },
+      {
+        "path": "graph.labels",
+        "size": 215725,
+        "sha256": "1911ef89bf0baa52bc9781b8eebf80b0f510dfcf46f413523ab6f9a4501c6b17"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1731380,
+        "sha256": "007909f4280783a4fd081ed58db1c665b18ef03015bd25088061325f31b0e93e"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8689611,
+        "sha256": "3689234870b8e37b241ebe18885ea6aa5baa9ab04692b28b757276ac4a6ffc8d"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2627451,
+        "sha256": "9e60c296998f8e58939ca287840402e5b90efe402f3b9b35e4548d0a3af6847a"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 141875440,
+        "sha256": "3150d5ba713c6ae03d1b5866491de7c4629f445b0c8164f875401224e31cf503"
+      },
+      {
+        "path": "graph.resources",
+        "size": 3052,
+        "sha256": "8fca42c6f14472c7652c87d2754e1ae102b9315987934f6ce5b702797ce93b03"
+      },
+      {
+        "path": "graph.strings",
+        "size": 952865,
+        "sha256": "844842cc65f72e87a63d6c883cb76130ee9d1f4193f000e0602a55bd635af240"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "f15dc29a36e5500380e2347fca4ab5270972c5dc698890f70e9eba07cf28cb49"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 808660,
+        "sha256": "a369dd1b91841173a8f6ac21203496d124b83ba199100de9a927431453956de3"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-08",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2485468,
+        "sha256": "31f1fc7d0f2d81efa084351f2a2470a23cd3cf998eaf3101976d0a4dd2746b5d"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6819004,
+        "sha256": "383263b3493d52dea1997bdd546b28dfc49c4b75a48fa3002ceb36c18e4590ac"
+      },
+      {
+        "path": "forward.properties",
+        "size": 927,
+        "sha256": "fcb621c3848f36c6ee6870b6462380887a6231379b952fc15142c46666b92f79"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "f8f0b0e5652e12df4e2b8ca90e243680de84f6b042582738dc6261ca9f1de35d"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4970244,
+        "sha256": "239dc8e5f767b4db627087c3595adfa1ab3169689e14b5e34b68a69985d94efa"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80724,
+        "sha256": "defc067eb9206a7196ce33abd695764459005923c4342b6bd4b232713e75f710"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 383208,
+        "sha256": "6313105a642b21fc996750029050f3cbf65cc5f4ad57d36bce924a8d8b9c2fae"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 71817364,
+        "sha256": "8b9b4632532289168592c1ce6b4cab323e57f65d16f3dd82917808f4b3c32903"
+      },
+      {
+        "path": "graph.labels",
+        "size": 237038,
+        "sha256": "584a416564d823d4ee4f2f03a2891a2bb3f1909306a0a2e0f8f0dd588e158fc1"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1891180,
+        "sha256": "afccd179cbffed969fcf73945fc0271374fb7ec670c68f131c7173f46047b350"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9388794,
+        "sha256": "157ba339f469b90cd04b128df6f1bf18f164492790cf4dc71fb197f0b617c833"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2858851,
+        "sha256": "d1da2fb61b4731e7f5883b313baa8ed60990debc728fc20ad3eb4343407022a4"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 143634728,
+        "sha256": "c2f8a0df266191b0b15f2cea7d59140a9f64634575d387c53ba339595697d3e7"
+      },
+      {
+        "path": "graph.resources",
+        "size": 44704,
+        "sha256": "9bc3220d30b2b30144b071a22b58a306169a8bde9d35cb2b302345a7432c677d"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1064305,
+        "sha256": "b49e8b12675066b5b589c93cf74304cf0f58eaa1bfbfa5530f4f432813f3fe89"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "0b8626caa3067a04451995d4feb398a21f69e48d665461143435e67ccff3c4f2"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 879860,
+        "sha256": "68bf0191b9065c7fce6bfcbfbc2e0205d8aedde81c7a55611006ea493bbc58b1"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-09",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2512065,
+        "sha256": "2fc0c8387ad22f120b8f08583ce46a12c2eb95354b1502a51b0133b2f720f26c"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 6903674,
+        "sha256": "316d76d742e40ccfcabb06bb73bafabc7967c24e85447b6d85919d6f23c75c84"
+      },
+      {
+        "path": "forward.properties",
+        "size": 925,
+        "sha256": "d3b058f01b3420b92a8e7589b340d1d4df0b0f3fc0524ddaa0f9cbc6386aec35"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "45d334b59ce79b3809d59c9e2acb947e29cbf602c7e391d3aa45c69a03a4ef3f"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4823436,
+        "sha256": "cbe91cc8ad8f0f52c613485286bc108d43a1da23f032fb4d56d136f6a184d080"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 77664,
+        "sha256": "091a830543d783c438f5e482cf51891d4623b0a08c7b7072f8447163b79698ae"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 374792,
+        "sha256": "4ee2bc9f7ec5bfd60b711eb373bda43687e83af77a05351bef3b85075da51bcb"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 72717724,
+        "sha256": "f9153b27a08312b7d5bb9e3449d65f32af12105b746a5f39f8d3c6d97ab83cf5"
+      },
+      {
+        "path": "graph.labels",
+        "size": 237762,
+        "sha256": "0aa7f704fc51152b814bcb4f14652dbb5ff2cc27eb4ccad844dcc39df21a55fd"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1972844,
+        "sha256": "c4156583284c4557bf2948acd6e49556caadf3943f059cacd41d96fc0719fe3f"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 9488687,
+        "sha256": "c783b9e497597a28aa627a93ee8faf2cd0ea27a656b6eeb264ade402df5fa75e"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2926178,
+        "sha256": "ab7783c2c30fb33dfd631a3df132d2575c6a2f3fe83b63f0e75db8f13c8bf25c"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 145435448,
+        "sha256": "aa1bd2702ae690010fc9f4f4532edc03053c83be4296323498b7a75c06187497"
+      },
+      {
+        "path": "graph.resources",
+        "size": 4046,
+        "sha256": "14a8d3ddd7e519eb4495e89285bfdd853bfc94c4a3deb8cfb8cff4d5520fe2fa"
+      },
+      {
+        "path": "graph.strings",
+        "size": 987363,
+        "sha256": "65d82bcf4cf2b33b4bb7a9b00557f99e0ba82955ccda8eff88f1a8859c59dba3"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "d7aee339e696e1eb48f22f31558605a22b50a3849411b6052ca8fd9a3e22d261"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 900576,
+        "sha256": "40d5601cfa0782cedff7e6c22fda3b5e630ed8004a2c2820b815badf5aae3d7e"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-10",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2563807,
+        "sha256": "6cd465c5c872605470ebf617d4a3f1a0ccee407de1bf74d96014b71b0f050539"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7001792,
+        "sha256": "cd6cad8f4a95740799e1dc99f16fe85628cfb4d4827bbd8340d49cd5f70d26ef"
+      },
+      {
+        "path": "forward.properties",
+        "size": 925,
+        "sha256": "5890779c474dddbb5f9d5e1480b1964175773b32756cc9c9215014ef6576218f"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "b31fe2d56ae8852b381ad82ea947b0e6d9f49de41dd7efd62cd207223ee9b6d1"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5412020,
+        "sha256": "c7206c323b3b7fd3d85d14a72ee3eb6d386a8eef6985f48802f213b1b96b2173"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 83868,
+        "sha256": "e43a2b9f516c6509bb91c43a15bd6a5f2ca03658537a74c91420b6b5b422effc"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 394136,
+        "sha256": "c58787df9afd14419f1204a7b16b5a26bc866a028bec9d3424806d83abf311d9"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 73685696,
+        "sha256": "b6b629d6faa8e4e4ba90fdbc1bea04928670ae2a4cd9308c4de0be9331fecf3e"
+      },
+      {
+        "path": "graph.labels",
+        "size": 256405,
+        "sha256": "24db9b40e0ae236a80df0a686c2641e5c23d39c784811c12b7ced6776c27456d"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 2075664,
+        "sha256": "189b9a56e8bfe8ad282c84fb65fe27805a00e2075baa657f03b946cbc5dfb5f7"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 10354198,
+        "sha256": "2c903cdb25b6204b0dedf7653aebfb357dcdb6bef2fafe18ac5685dc4c1d26df"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 3145917,
+        "sha256": "78f7d8615805de07e4c5111e75bae77854e94cab275a7a7076e9cae4437d859c"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 147371392,
+        "sha256": "f3f634f4b87d56ccf16891fe9e68c939c4776217c000fbedca77b18f492873d0"
+      },
+      {
+        "path": "graph.resources",
+        "size": 12273,
+        "sha256": "307444fc7f61209f10ec5547e63b36694a1b95dd011d7891ecf5284cb81b19ed"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1203637,
+        "sha256": "ec67781f0adc7fbce55ae587fc0780cf6e467649e022505c1bb965a25a9ffc34"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "8155bd2ac801cec077d05275d29869e4fe69ca5a83e20f19e0747efc33f97877"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 968188,
+        "sha256": "939f36e7555144f0f2d8e5becdcd1f82cb36da41ad2bf91710b17920fbe76197"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-11",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2533875,
+        "sha256": "dfae417845d09d931d33e62b8f2c828ace4b62279090dd5c62f2c3db365ebdf6"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7054598,
+        "sha256": "54a60c46c0857707874402fd71b9f1ba8227541fd8cf74db2e7f3e0d6324efab"
+      },
+      {
+        "path": "forward.properties",
+        "size": 921,
+        "sha256": "8726316fa924315916d2ce771a5e7b71a7493953f4f191350a2a9a606c6080d1"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a60375fd2b8f3faa9c1d65625b651c1090953baa2d2280cae801e3321db3d75d"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4412204,
+        "sha256": "bf42c356c93c7fdce143880ec029246092f0b9b30e372375be672e1b20887d8c"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 75216,
+        "sha256": "2179d3439bb37b7905baff11f09b853043689cf680dbe3c0e514b9c41b7a3aad"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 316408,
+        "sha256": "696f8f8197de98ffb3b166a70ccca90bbd29155c9ebbf31c3e1b32f66583c625"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 74455216,
+        "sha256": "2c2085ff8c8a9beb167a6614740af915f39e5ceb6ac852d011d108208630de56"
+      },
+      {
+        "path": "graph.labels",
+        "size": 204342,
+        "sha256": "3db586910e066ad174310f5404a805c1c00e2854ebaf05b530653b85fc143e8f"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1535044,
+        "sha256": "f23eb829f4707ef60c7c03a84f5967299f45859a3bca2f8fa7a8d503a856ee8a"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8189405,
+        "sha256": "f92753973aff3c26205038ade760f38f96a440b0a7f67e65bd33e4aea0858311"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2500948,
+        "sha256": "f5c775e30b08a6d41e4697b4f3d94f6b85cd34d4f2af316036835fcb2ae6b920"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 148910432,
+        "sha256": "76d4a198432fd274693a1dc655fb9a97868bfaef30cf73bbdae19934dcb5bb2d"
+      },
+      {
+        "path": "graph.resources",
+        "size": 12987,
+        "sha256": "9bc06a5a760a284aa99be6d94ec6f40218a3516027a3506eb9ca298e91eda0e3"
+      },
+      {
+        "path": "graph.strings",
+        "size": 888895,
+        "sha256": "c84e9dced192946dac8caeaa61bc0c6401ae9521a76dbcab867c6e6e9eee4523"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "721121c3d94a593a57c9dffb6b0031c15833f907216d11a8ef785e2a289d0b63"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 769736,
+        "sha256": "6d69cc008564fb497b430b4e575ff0a5415fd4793beb1bcc3c5a4884f4ea093c"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-12",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2573385,
+        "sha256": "f4198d0f418318a14602502bddd28444cbaf14e1ac8b2a332494dd6b13049c25"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7136416,
+        "sha256": "3552e3fed5c21b86ce28970ff4f2b918e5abad72cf94d705ba7a196f737ed1d1"
+      },
+      {
+        "path": "forward.properties",
+        "size": 926,
+        "sha256": "72a2ecf537cc28921727e573e4c5e5e5f595c4689a45f08546b0ea9c51cc7a29"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "c3a22e89d904510b0cfbbe541c6c374f27e857e96b2755ad27a71f4b6904707f"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4638388,
+        "sha256": "f5279c0225acdb715425b8a1d1cab7232f69947669b64c728b17b48be1aabffc"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 75996,
+        "sha256": "6abe780f11c5a20fab3a2313109195a43d72d032f01823efa24365aac449b145"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 306376,
+        "sha256": "da7c3f098342a8b598f7a9dd91057c04c1c7dcf48b5e14b7426a9bf3f45f0493"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 75274180,
+        "sha256": "bb655a52f96da9864b5570b0561fb8650c8dcc6bef6001bc61bccd3f2ff9d192"
+      },
+      {
+        "path": "graph.labels",
+        "size": 215343,
+        "sha256": "46583c3962230613ec75f15d6f0c9e28d6ad9a0a325c3db4439352c20ef42f57"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1534504,
+        "sha256": "90fc89f880a85018d223acf018914154145856929ba72b7bb4be1eb8b59ebb4d"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8706868,
+        "sha256": "81333780b8c2bfc268f45c5ddcf22eafbac75a38997b623c306bc943a30cc533"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2661641,
+        "sha256": "5b15318a7d842b6951538dd075e75788e61f2eb6cd843871d5139fe17ea0e0e9"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 150548360,
+        "sha256": "81db36d8818376865afd6f6af61bd05f67ecae240a58b68768d327c173dbdd7e"
+      },
+      {
+        "path": "graph.resources",
+        "size": 142782,
+        "sha256": "edcd29bb0dfde76a1b80b5526f52283dea649062c7d7a3e90bc902d298b4f5a9"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1053357,
+        "sha256": "e293ccbb587a8a6aad3a76f0cb19b7166ee30a81ec8d225fb3ccabf94648ab38"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "7aabc3542f66e4d2d802ef3415320e662d101522cd10ae3829fc349474838115"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 819180,
+        "sha256": "b32d4f8985fa1da7c2a8242ba271db3f0336418fbfc165eaf8acf94c04347897"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-13",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2608621,
+        "sha256": "644f586060ae72f9f6876e8c98934f5e67dab647d58f109ad8b4301b87790916"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7217334,
+        "sha256": "31d08e84da14955159e91f97d7d7871cc334070e33e2c9352952066ec6adbb1f"
+      },
+      {
+        "path": "forward.properties",
+        "size": 924,
+        "sha256": "c1679a99f5df6e6f3e5d72319333d1f646ff1ae9c6f675aa1193a7c129b744ac"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a14f81e45f6166b943cff064eb18c44372264d22556fd6cf605944adea63a457"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 5018028,
+        "sha256": "082f86073094fb85047fc143a68ec8458bb967617bc7186da90b2c7b251c1fd5"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 85908,
+        "sha256": "7c19accff7fe1e1271dee994166e93823e70c55d00bcaf5540be0f1666115473"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 354088,
+        "sha256": "cf7ac6ed5c66098b50ed3006624d42e46649d02ed8777a55584dff3d204fbb0b"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 76106704,
+        "sha256": "67df84a9294e791e5ae5662c77c5f55fc8c0edfb6a1c5ea303cc16b623dbc456"
+      },
+      {
+        "path": "graph.labels",
+        "size": 224674,
+        "sha256": "a394d58995dc3fcecdb3a3bc7bcbf034ffd4bc6cdca8b3bbe8c1124bf598236d"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1746796,
+        "sha256": "c0aeedae56706603767706f49827f22d5c396c24369859e36c4fc8567adb8e07"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8971361,
+        "sha256": "c410f20d7a20d2312b5c9e744461a3ca33b9642a95e249058dc393275d8bd332"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2705711,
+        "sha256": "4ceab009d222bf2cc90adc844a6ccf9b13f91a5e1602b0a606875d8da7458b1a"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 152213408,
+        "sha256": "4b51257d76c050dec40ce79d5f635a7c23d1aed454ad9f4ead8235dddad5200f"
+      },
+      {
+        "path": "graph.resources",
+        "size": 299,
+        "sha256": "d5d810e5de848b7ed22f412fe3de59e4e2fda117c72526ac4c5a83cff19e27a4"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1124221,
+        "sha256": "ad1e999473629d39428cc25c443dbcea3b98c45068bc3b60183dcd7dfa241c2b"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "8c060184d5e2720ccd044cadb0cff5c5c8ea04f8011d962bc255739618d8730f"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 832740,
+        "sha256": "90cf554257bc17c8afedbd3e0cfa176c1d16ca509c9249808b0bf0eb0e8e7ee7"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-14",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2628612,
+        "sha256": "3222df696daa22bc5e95a9da627bad1903919c37a8e9343ed36f952c5386f3f6"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7290664,
+        "sha256": "4c987e25ae16ae30cca5d0a58b8a5a5c941ac5f79b10f7eae0daaf50b4e72f01"
+      },
+      {
+        "path": "forward.properties",
+        "size": 924,
+        "sha256": "ba41e71b73b915400bf24a69f9e86b82ae9e71b2e97221e841e84562843bc03c"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "a199f55b1a28ae8286af4e281d80c185cae932ab3576f9539102906e8c910de0"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4859356,
+        "sha256": "6024302b971a21c6ed41c8264dae7b985e0f63fdac37fa963c68d98b138913ad"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 80064,
+        "sha256": "45dca7f375525b18874eca0b95e4d50d29c7622a9b223e314756dab7e9502fdc"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 374440,
+        "sha256": "02c4ed33170e886a580a05886d995f6f6ec8398bffa336d46c5b2e8a58ca1f83"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 76917412,
+        "sha256": "7a9f05ad1d08736450d0ea8e42e804008cbec226d4833af64a4bc3ce7d527f82"
+      },
+      {
+        "path": "graph.labels",
+        "size": 220140,
+        "sha256": "fb865a7c339296aed16328c9323d8fab07cae9f9f94544f32d532b701855e282"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1895940,
+        "sha256": "27128f469d703ec77948e17b89b55c8e5621b10499f1445ce998c26743bea0ad"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8894824,
+        "sha256": "41cd971ebf119bffe65caf484bc7f3faa01a0fbc0e43f588ed16978e475ed3dc"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2634809,
+        "sha256": "d431135bb24cbefc63186ae2a7ad1b47f704bc92dea2bb0f43141272e4f30635"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 153834824,
+        "sha256": "ee1fec948424a16b2913517d9262ddcbeff562481efd0d572e3563c632d3c19f"
+      },
+      {
+        "path": "graph.resources",
+        "size": 309,
+        "sha256": "3834a73184b7e6686183b2ddff7188887739fb7be2be9dd976ee56e136e8cf4b"
+      },
+      {
+        "path": "graph.strings",
+        "size": 1017889,
+        "sha256": "5dce7d224999f9b866b1274a87b56b94fed3a9c0f85822f343f2592a485c79fc"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "8fb7292f757323ab0dcdad1b285fcffb3107d836ec58772067fc90b620ca8239"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 810924,
+        "sha256": "cccbae333edcf6baf4173cbf59c5c2d9f56db9e1b2d4d0e32d2ac702afed0f08"
+      }
+    ]
+  },
+  {
+    "id": "fixture-kotlin-compiler-15",
+    "files": [
+      {
+        "path": "forward.graph",
+        "size": 2645431,
+        "sha256": "93072b1b7c8387609ee6ef92d80143c2797f6dd758cfe8da5f32419b50403f48"
+      },
+      {
+        "path": "forward.offsets",
+        "size": 7364944,
+        "sha256": "268f585a4c6379535f1d00b24c90dd511de530d51e76697cfa93b7ac195ccddc"
+      },
+      {
+        "path": "forward.properties",
+        "size": 920,
+        "sha256": "a00228721f0de9e6d847047e0308ba4f40dabda447fe442dab4d7aa8280d41c5"
+      },
+      {
+        "path": "graph.callsite-string-content.identity",
+        "size": 32,
+        "sha256": "25aba5d178d53d79bdaa615059a1c5d335016b4301ac53a6fefdb0ac78b332f0"
+      },
+      {
+        "path": "graph.callsite-string-index",
+        "size": 4617724,
+        "sha256": "dc5175ce1e8eb50efa976a3a725ab6aae07bd0771b2679aea158997bb60f9ce2"
+      },
+      {
+        "path": "graph.classoverview",
+        "size": 79284,
+        "sha256": "ab91f8c536600218a49cd3f2ebc6326c98422ff819e4ef321289131283dd8b13"
+      },
+      {
+        "path": "graph.comparisons",
+        "size": 340712,
+        "sha256": "b957f32646899eb491628ac0559dd3390dc3f30fe618e93e72382aaafb57b6d2"
+      },
+      {
+        "path": "graph.labelprefix",
+        "size": 77727572,
+        "sha256": "21bbda5b3ebab0fcb36e103613937ea6301aecc7403c8243c3a00dc226ee1c71"
+      },
+      {
+        "path": "graph.labels",
+        "size": 212190,
+        "sha256": "8a761b0f7f19fce9ad54ae0e7c9f9215d2cb66c19825332ee0d20adc47ae2eaf"
+      },
+      {
+        "path": "graph.metadata",
+        "size": 1673520,
+        "sha256": "6274600a5bdd64d7c2ca6d5b75094d6f5f0273581a50fc117ce1bbb0234e80e5"
+      },
+      {
+        "path": "graph.nodedata",
+        "size": 8507199,
+        "sha256": "db21cd9b186df77428fc5d8372e12f426ac71a47dddda778ee9b781f239af380"
+      },
+      {
+        "path": "graph.nodeindex",
+        "size": 2633028,
+        "sha256": "f4f764dd9c790395d3f4c350f888624ffb40a871186d5fa63a413191d5ec5264"
+      },
+      {
+        "path": "graph.nodeoffsets",
+        "size": 155455144,
+        "sha256": "575d6de9a989c60673e809c8da104486e57248ad596ec7cbd619b1195a43c1a2"
+      },
+      {
+        "path": "graph.resources",
+        "size": 1536,
+        "sha256": "626843447b4c6f393bbe732345d5d8e6eb53d845d3ec51655438b2972799624a"
+      },
+      {
+        "path": "graph.strings",
+        "size": 969325,
+        "sha256": "026edc4ed36d2c077eef8710d95c891f0d2a9a27807e351c83cecbf393ace77f"
+      },
+      {
+        "path": "graph.strings.identity",
+        "size": 32,
+        "sha256": "99be53f0bb8f69ea2022992ced8ea135adb8ae862785249bec532d22766b7997"
+      },
+      {
+        "path": "graph.typeindex",
+        "size": 810376,
+        "sha256": "b84b42260bd07da9afa0abac0441510e213c693c3d065c79f57f170a8393382f"
+      }
+    ]
+  }
+]

@@ -1,0 +1,811 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/build-command.json",
+      "destination": "docs/profiling/attempt140/build-command.json",
+      "sha256": "ea1e597843d3eae76108104a83c9f4593c485c5a18df8f7d4ba94ca7a5bc33bc"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/build-receipt.json",
+      "destination": "docs/profiling/attempt140/build-receipt.json",
+      "sha256": "bffeb16629bb10696c4de44ebe5b2f567809006cc45abd6cd23e7c076c4b9b5b"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/build.log",
+      "destination": "docs/profiling/attempt140/build.log",
+      "sha256": "02b9d248d2c2540534d2584d0cb22835c5491070563f76d5e41d774fad6810a3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/build.py",
+      "destination": "docs/profiling/attempt140/build.py",
+      "sha256": "acb06dd23d808854bed48034662b2166dbedcb9559d6ef0a3f74e699a5b59c1f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/bytecode-receipt.json",
+      "destination": "docs/profiling/attempt140/bytecode-receipt.json",
+      "sha256": "3275add579d3b4c5e465ea382ea2250412b5bfe466c4a491d3e548be04a53a74"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/candidate-source.diff",
+      "destination": "docs/profiling/attempt140/candidate-source.diff",
+      "sha256": "8101aecc0150e7c09b1fc9c876d491134378539071d98de94acce2546013b20f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/decision.json",
+      "destination": "docs/profiling/attempt140/decision.json",
+      "sha256": "0771eb789819cf0f11214f4b41531b4f006a7770c64cb6c313557e68d92ebd27"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/handoff-receipt.json",
+      "destination": "docs/profiling/attempt140/handoff-receipt.json",
+      "sha256": "1bae0140cc607153ef4486cf3d537d2bc28529e248bfe292c96806dc6f7483c5"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/implementation-build-summary.md",
+      "destination": "docs/profiling/attempt140/implementation-build-summary.md",
+      "sha256": "653f5aaee24040987a187236df059410e778834db9c04e2226eef079ab8d217c"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-control-audit.json",
+      "destination": "docs/profiling/attempt140/independent-control-audit.json",
+      "sha256": "a6d66807a7a8f8be85cc900ee2fbb3d2d7d1ce06f89bf692652d6fd76a8f173d"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-control-audit.md",
+      "destination": "docs/profiling/attempt140/independent-control-audit.md",
+      "sha256": "8765b5c538834c2e7c43a20429418baaa7e3a2b6fc7783e13d3a2ee50c3af72a"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-control-audit.py",
+      "destination": "docs/profiling/attempt140/independent-control-audit.py",
+      "sha256": "cd9d92cfc12b772ab6f79d4f73504546889b8d72c4be8e08366e405ebf9637a4"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-final-audits-receipt.json",
+      "destination": "docs/profiling/attempt140/independent-final-audits-receipt.json",
+      "sha256": "15716f7fd141bbcf704bdc007e482635a94426ac4a3770fd259c654d0e61a033"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-old34-audit.json",
+      "destination": "docs/profiling/attempt140/independent-old34-audit.json",
+      "sha256": "fe971391a4ba79a99db9ae5cb17f82e075bcffb54da7b3091522b0a8595f3a48"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-old34-audit.md",
+      "destination": "docs/profiling/attempt140/independent-old34-audit.md",
+      "sha256": "d9ec721dd92e383efebf1d4a74de7d3096e4d6b5f3fb020597cce676e8ff011d"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-old34-audit.py",
+      "destination": "docs/profiling/attempt140/independent-old34-audit.py",
+      "sha256": "24ba31353ee683278d540f5fb0c44675f7201fd554080d0ab183570e1c18db4e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-plan-audit.json",
+      "destination": "docs/profiling/attempt140/independent-plan-audit.json",
+      "sha256": "663d6536c5f6df0d3abea1f15276fa888984b319afdc7ced5b9a473510aecfce"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-plan-audit.md",
+      "destination": "docs/profiling/attempt140/independent-plan-audit.md",
+      "sha256": "db6d6d2934a3d44b495c48df037a60ee2c7163989cf48d37081757301d9a02b4"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-plan-audit.py",
+      "destination": "docs/profiling/attempt140/independent-plan-audit.py",
+      "sha256": "98e012a34602c8ab95fd737137ed0bbdc5ef4b32f2be139fec0f07a3e664ac66"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-v3-audit.json",
+      "destination": "docs/profiling/attempt140/independent-v3-audit.json",
+      "sha256": "ed6733913d7eaa85168da21cb5e00e00d73b9f24cba933f3124d8f194dcc9280"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-v3-audit.md",
+      "destination": "docs/profiling/attempt140/independent-v3-audit.md",
+      "sha256": "fd155e0d36314f3d38f09bcc1f0d1aae9d8ded15668ba7bc95ab5377a827d789"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/independent-v3-audit.py",
+      "destination": "docs/profiling/attempt140/independent-v3-audit.py",
+      "sha256": "07777f0f6d37b101e5914977e61789307b867600c8888be48221c4e5dce619d2"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/inspect-bytecode.py",
+      "destination": "docs/profiling/attempt140/inspect-bytecode.py",
+      "sha256": "1129ff29a0403e9cb630117d36c269e558b7be619a1410a174814c4264c6db16"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/measurement-plan.json",
+      "destination": "docs/profiling/attempt140/measurement-plan.json",
+      "sha256": "b1f303e2dd428e9be2e8d749e942f7dbd41defba251e8164d22b3404d33b74f7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/node-instruction.diff",
+      "destination": "docs/profiling/attempt140/node-instruction.diff",
+      "sha256": "84999c4eb9e1650d36da270add24aae03cb306a4fe3a3aac990578ac49f743a8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-input-after-receipt.json",
+      "destination": "docs/profiling/attempt140/old34-input-after-receipt.json",
+      "sha256": "74e14567f2824c3e0866c2f149c414a1e605fa379c0fec9e593ad4797231ccf7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-1-command.json",
+      "sha256": "10f38069494a6fa9a309cec90e595823c1b177038b85ed6126e86ba43672b696"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-1.json",
+      "sha256": "a489ce9fbb9ecea3e165a7d68245342d06918a8317d6a5b1d4ebadddabe0d5b4"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-1.log",
+      "sha256": "bcf2cee01651e446cd817c7911cd7b41fe33603dcc0ba172c656c4df45cf2c81"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-1.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-1.tsv",
+      "sha256": "908f3af857cf6d751f7955d0d19b26ef867a358563da5da6995c594838c7a6fe"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-2-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-2-command.json",
+      "sha256": "927e2a38100894a591a1ec5dd90a5605bd18c147bf7a17dd9564d61b5b8d14b5"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-2.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-2.json",
+      "sha256": "880abf1787d60a1c54dcabe5091a96149ddfdadeeb0a7f100e54ab9479272b1b"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-2.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-2.log",
+      "sha256": "56e40c2c6ddc2b79ec9a0afc72c2956b0d3a12d4fd11ff7e14b470a7d08729a3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-2.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-2.tsv",
+      "sha256": "8121ee2ab1e094f9abb986744d9ad4ccdb36b1100b3ee543ec1997ddab6a67e0"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-3-command.json",
+      "sha256": "f6992f15a20ca9d04dc88660d49fd2b03d784d9a91031af65be27273a4dde48b"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-3.json",
+      "sha256": "46e3fdfbda4a47b7475a195a8541eae0df0bd1ec6f0cb3ee343fb2f5c90b330e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-3.log",
+      "sha256": "abc397d9b603e20ccafd1810f554e9f645beb3687ddefcc735ad8704f381db1a"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/base-global-wide-3.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/base-global-wide-3.tsv",
+      "sha256": "ff5e5a65bee41dc22a5b414fed85a1aa1f3d53970bafc591aa6f6c68590616e6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-1-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-1-command.json",
+      "sha256": "cd4e1bb39c6ec00adbd61639c705721492fb76518500b428d8e793e44e0af5fb"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-1.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-1.json",
+      "sha256": "ff81982856aaeee76bd38c8ae6d72251fe9ec3f986003be874dde5858e066690"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-1.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-1.log",
+      "sha256": "191299746dea4c03abfbb7eb1528b31c1de719dd549f5cdfa9e84a43f4ca6ce7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-1.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-1.tsv",
+      "sha256": "7c8823d867581d99954068723fcd27850ff9ed8f718689d70c077c5dbf0e740e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-2-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-2-command.json",
+      "sha256": "4af935e20b70a316ad279df595604b4c2d8067e91d7e7978564f26b989429b3d"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-2.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-2.json",
+      "sha256": "377b2d751b188455ab2ef0b6f78286c898466f590961178b4ea910bd5366f99e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-2.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-2.log",
+      "sha256": "c597d78af27720fa96a705174ecdee389dabd112c3cf3ec38405aaa2f0c1ba02"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-2.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-2.tsv",
+      "sha256": "6602a6a07dd9ad32014f8a5948bfe9788344100f9bbb4aa298c9953ddef9f341"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-3-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-3-command.json",
+      "sha256": "6858bff1d509a7a0097baa22748d24a64bc013b78c021dc322d2b147c8779cef"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-3.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-3.json",
+      "sha256": "bf0b7a4378c754bf0dc7d1f157f0b873e487960ddf563a332682c8c7e40cd864"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-3.log",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-3.log",
+      "sha256": "06a5e97a91cbea13f19947ca057514282dbb7f907bc3f8d30cad21a2a81c780c"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/candidate-global-wide-3.tsv",
+      "destination": "docs/profiling/attempt140/old34-pairs/candidate-global-wide-3.tsv",
+      "sha256": "41d5bf2c9e5f45e9f9b45dfaa2b96ef9aff1d6c07d03f6beb4bd3b723ac0231d"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/comparison-command.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/comparison-command.json",
+      "sha256": "cb91245b350c7526ef21f6ff048add0450ae149f72d3479450be446d1757c1a1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/global-wide-report.md",
+      "destination": "docs/profiling/attempt140/old34-pairs/global-wide-report.md",
+      "sha256": "06511baf5f161a0b3de19bb739cc445d30c8ad831c390c300652bf3b5ea63964"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/global-wide-status.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/global-wide-status.json",
+      "sha256": "8907fd866869460cb48374dd6e30d567aa2fb07a861dfa2304fa967fb4695868"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/local-progress.json",
+      "destination": "docs/profiling/attempt140/old34-pairs/local-progress.json",
+      "sha256": "8cf3f13c72792039ffc37b9ba15cf08b8914a2dcab4d24e5ccfadc9ce7642c68"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/old34-pairs/oracle.correctness",
+      "destination": "docs/profiling/attempt140/old34-pairs/oracle.correctness",
+      "sha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/prebuild-source-receipt.json",
+      "destination": "docs/profiling/attempt140/prebuild-source-receipt.json",
+      "sha256": "a59274efc71c40169c0e89da1950e0cf1e08202e3cbcdb06b88ed2839937e69f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/root-premeasurement-audit.json",
+      "destination": "docs/profiling/attempt140/root-premeasurement-audit.json",
+      "sha256": "cc0c13c36057bc6edaf4c2440d8648e20c8a7b6a6b33ff02573c4d7608e1518f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/root-v3-regression-audit.json",
+      "destination": "docs/profiling/attempt140/root-v3-regression-audit.json",
+      "sha256": "5c879ac167cdb35f06f1202f4cb4e258af45ff20479ea39d42816e1d1ae78360"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/run-old34-pairs.py",
+      "destination": "docs/profiling/attempt140/run-old34-pairs.py",
+      "sha256": "169962f4a4c2d86fba4b445f2a7f6a00055d4b960ba43a4c1376ebf6f1c2d326"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/run-v3-pairs.py",
+      "destination": "docs/profiling/attempt140/run-v3-pairs.py",
+      "sha256": "baf30b22d88faaed39b5bb400c468e94d9bcc72b6764ea6e5d3fb5c15688435e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/runner-copy-receipt.json",
+      "destination": "docs/profiling/attempt140/runner-copy-receipt.json",
+      "sha256": "d2bcfa7ec222eea4f6e4fce19fb2d83e0feb9bb66652bae747b5deeec0f5342e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "sha256": "fac24e3480c38f7b834ceb608e7172ae7b599c4189b6897c18e7f5640d933f43"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "sha256": "ca70b613e9f698431922e14b9d6d998c1c24e3a3db72a04a1513ad00b2af0d21"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "sha256": "f02cf04a7f7c363070a454aa50d7f8d46d35c7d7a9d4d7ad1ef0cc0a68188b26"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "sha256": "8680a51c736522a1c01ef19d5fdc63ed306dced0d3fe3d63f840fd6e8fe96c3e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "sha256": "0a7bdc3a87f908a26893f3124247f4f2dd6af7721870b82a0bf4c1b430089bd5"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/test-results/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "destination": "docs/profiling/attempt140/test-results/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "sha256": "766a4bc6ce144c16f909a13806d2b006f6f50c8445e5c2cec84992a1d2185a5e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control-command.json",
+      "destination": "docs/profiling/attempt140/v3-control-command.json",
+      "sha256": "04f3256ca2998518612eb490bd3b30b72444301e8a50fb9f56d56501299c3f8b"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control-summary.json",
+      "destination": "docs/profiling/attempt140/v3-control-summary.json",
+      "sha256": "b0113d8d352d7f9cc740913740c0ed9650b8fb373168f2c1a6fe934e95e37c67"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-control/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-control/compile-command.json",
+      "sha256": "49f298143ad4858b867abc86801d1b6bc57f199d7da568af64dc65a5a00eece1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/compile.log",
+      "destination": "docs/profiling/attempt140/v3-control/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-control/fork-001-command.json",
+      "sha256": "c3c86eec83c79452f879450690c0f0ca6f230e9a589e8a107bb4eabfbdf657f8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-control/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-control/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-control/fork-001.log",
+      "sha256": "0d6921fbba02ce9b0c229c5ece9f4ff0d160c234a78068a0ef4032c849481ad1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-control/fork-001.tsv",
+      "sha256": "3e1155d29ffb0faaef4e5781ff150749fd48c70f217fcca44b5a5aaba12fb78a"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-control/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-control/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/run.json",
+      "destination": "docs/profiling/attempt140/v3-control/run.json",
+      "sha256": "a6219dd84702f9a2a55f1b366ee2457833eaa27b7b8ead46b7dee349b2f29eef"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-control/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-control/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base-command.json",
+      "sha256": "995808a651572c64d74f0f12d5ba1b20ea92dd9ee54c677f5ec6de15190fffbb"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/compile-command.json",
+      "sha256": "cb339e7aced63abd618a883d387499367465d3160f7cf45f1736555b7be892ba"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/fork-001-command.json",
+      "sha256": "781cf85579a85c8461402c4b202df46f0a4f149593fe3845de6340d3c55bcce0"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/fork-001.log",
+      "sha256": "b1359316bfd5328ac19f134d8f4932d10930d9e7842196ab57f786a596cfc741"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/fork-001.tsv",
+      "sha256": "bdd45229c402f61e0052ddd434a8bda7e343880ed07319af53bb79df8f29e4e0"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/run.json",
+      "sha256": "35b4fc4c8548b9f206e8f302192e5f128dc484fc721440b1048afd283c069508"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-base/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-1-base/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate-command.json",
+      "sha256": "28a6dc67329163652a1667383cdd97af97c1ea3df1d287f7bf6d1da14a1a31b5"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/compile-command.json",
+      "sha256": "34530adf0d8b914afcf576abd3510b04fe7f6c3bfe28f138a5a9de76a26011c7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/fork-001-command.json",
+      "sha256": "c1876c3785d7a91c1fb51e7ec70443760d87c7c25a3955cdba4cd295d277a5db"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/fork-001.log",
+      "sha256": "58f23a35fba73454958448e9d5f9fc437cd5450d2faa42e1f817e95de15e889e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/fork-001.tsv",
+      "sha256": "cdfb213cdcdb3a277299a22b00383bcfabfbf5795975e8f4cb59d9029b85a0e7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/run.json",
+      "sha256": "0bbac3ebd6055a0ac9d2aa9a1a37cdb726a0fe1f3936222871585ea3c6cb9f7a"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-1-candidate/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-1-candidate/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base-command.json",
+      "sha256": "68adc55dddc13aa5bf7c36173e048e4c929df2dbef9328ea8ca99afda1b181b0"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/compile-command.json",
+      "sha256": "2b1046ba3d03ac4836dd205454741bcec0917e67fc896aa1ce16534ff5c40c21"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/fork-001-command.json",
+      "sha256": "be2dd4dfdfd46043f625a70e6b60ea33cdcf09f6dc488a6b562225abad4419d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/fork-001.log",
+      "sha256": "e6564782b3cf47c154a1a28afbb59a5d0c167de262fef732931e703a9ba66ad2"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/fork-001.tsv",
+      "sha256": "a777f3d5a02c8713181491f5438b7430fbdfbefbd4676d096f4115069d48b029"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/run.json",
+      "sha256": "cd3ca746a02a1238d3c67d02c80302a2cdc0b002b334eff04cf560b134f8a6bd"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-base/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-2-base/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate-command.json",
+      "sha256": "33692af225e826b67abc44a6d35d4b678eca94789b9363b6da3e33d905f16dbb"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/compile-command.json",
+      "sha256": "a3c94fc19adfe8c825758e6f7bac452cf0f3a6a615e29acfd661adde2582bfb7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/fork-001-command.json",
+      "sha256": "1e7e44b0ce6ba31f692576c880a01204d8349e2449221718cdb435d447cd7e62"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/fork-001.log",
+      "sha256": "30ab6cc3efdd7daf92dcd64af5e91c7fe25ca0065d35589ddf555fa27576975f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/fork-001.tsv",
+      "sha256": "d0dee01dab4f05dcc827b2dcd63e18081ab13c0c3344c61fbfc80755c61d4df7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/run.json",
+      "sha256": "cb424ab758fb4281882af21f667acfd38bd5cdd8aebbd2c499402cbe1c0f9144"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-2-candidate/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-2-candidate/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base-command.json",
+      "sha256": "5db0ff908bb023e8d0cfd9ba77e45e50cd5974c80183d4e6f3f775d1ba3603e8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/compile-command.json",
+      "sha256": "201c8dbaa625d8d830cd4625477e87ffcae65ac6477135537bae3875c53182e2"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/fork-001-command.json",
+      "sha256": "f5537bace4caa53ff730fa4b14cf2163cf8b8049e95700f23a74656243afa727"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/fork-001.log",
+      "sha256": "e3b33dcbbd32d1996ee3f0e2caa35c84c5e097fb331ed2ab41fde2010eaf587b"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/fork-001.tsv",
+      "sha256": "ccdb3055073873a61ca278101bfb264a76ed12b1b59100fa383257dbfd2f2102"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/run.json",
+      "sha256": "adc5f26c0c759eef26e652b7c54a62c3b710129786e8851aec095f2cf70038f2"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-base/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-3-base/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate-command.json",
+      "sha256": "c8636d65ab481c7178738d2aad5c9777f1774b6650b85b48cc0c12456ce649c7"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/catalog.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/compile-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/compile-command.json",
+      "sha256": "5a24805e8d12590da4723551ef92599d1c58ba2a96e4a29110a0314b0045694f"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/compile.log",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/fork-001-command.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/fork-001-command.json",
+      "sha256": "7159be2ff8843b389302d8b582d4ae62720e605496a8ad48fcede332eb086c23"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/fork-001-reference-check.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/fork-001-reference-check.json",
+      "sha256": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/fork-001-rows.jsonl",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/fork-001-rows.jsonl",
+      "sha256": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/fork-001.log",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/fork-001.log",
+      "sha256": "b921454a4ada95955b05af92b94ea49d7223e01b20d58e0dda9fa7e28fe8c064"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/fork-001.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/fork-001.tsv",
+      "sha256": "94849913117201934db8e2256c4229eb52ed3f8f9108e1d555b2542d449a35d0"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/graph-content-after.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/graph-content-after.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/graph-content-before.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/graph-content-before.json",
+      "sha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/run.json",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/run.json",
+      "sha256": "0ca7db8d592f95cef13cc1808dc9891be89cfc4565f772a2883a232fde0c7e1a"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pair-3-candidate/workloads.tsv",
+      "destination": "docs/profiling/attempt140/v3-pair-3-candidate/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pairs-receipt.json",
+      "destination": "docs/profiling/attempt140/v3-pairs-receipt.json",
+      "sha256": "11a0d8277ab672b43608a6bd513e0e7df4613dc5f7da8dd851463a2afff2be8e"
+    },
+    {
+      "source": "/private/tmp/graphite-attempt140._5jztd0a/v3-pairs/README.md",
+      "destination": "docs/profiling/attempt140/v3-pairs/README.md",
+      "sha256": "d1c79de290436e877518833465ce15e1eb3cc4a50d72d2cbf1da0bb444c3c003"
+    }
+  ],
+  "immutableJarRetainedAt": "/private/tmp/graphite-attempt140._5jztd0a/candidate-jmh.jar",
+  "classesAndJarsNotCopied": true
+}

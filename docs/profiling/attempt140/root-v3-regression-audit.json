@@ -1,0 +1,1050 @@
+{
+  "status": "complete",
+  "queries": 36,
+  "pairs": 3,
+  "observations": 216,
+  "pairwiseRows": 108,
+  "slowerPairwiseRows": 57,
+  "repeatedRegressions": {
+    "mixed-four-few-rows": [
+      {
+        "pair": 2,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 372238792,
+        "candidateLatencyNanos": 727403042,
+        "regressionFraction": 0.954130138053962,
+        "absoluteRegressionNanos": 355164250,
+        "crossesBothBounds": true
+      },
+      {
+        "pair": 3,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 223453459,
+        "candidateLatencyNanos": 297224584,
+        "regressionFraction": 0.3301408952456628,
+        "absoluteRegressionNanos": 73771125,
+        "crossesBothBounds": true
+      }
+    ]
+  },
+  "anySinglePairExceedsBothBounds": {
+    "mixed-four-few-rows": [
+      {
+        "pair": 2,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 372238792,
+        "candidateLatencyNanos": 727403042,
+        "regressionFraction": 0.954130138053962,
+        "absoluteRegressionNanos": 355164250,
+        "crossesBothBounds": true
+      },
+      {
+        "pair": 3,
+        "id": "mixed-four-few-rows",
+        "baseLatencyNanos": 223453459,
+        "candidateLatencyNanos": 297224584,
+        "regressionFraction": 0.3301408952456628,
+        "absoluteRegressionNanos": 73771125,
+        "crossesBothBounds": true
+      }
+    ],
+    "or-four-broad-rows": [
+      {
+        "pair": 2,
+        "id": "or-four-broad-rows",
+        "baseLatencyNanos": 27658792,
+        "candidateLatencyNanos": 36157666,
+        "regressionFraction": 0.30727567566942193,
+        "absoluteRegressionNanos": 8498874,
+        "crossesBothBounds": true
+      }
+    ],
+    "or-few-early-late-rows": [
+      {
+        "pair": 3,
+        "id": "or-few-early-late-rows",
+        "baseLatencyNanos": 11658459,
+        "candidateLatencyNanos": 15474917,
+        "regressionFraction": 0.3273552705378988,
+        "absoluteRegressionNanos": 3816458,
+        "crossesBothBounds": true
+      }
+    ]
+  },
+  "regressionPassed": false,
+  "notP95": true,
+  "rows": [
+    {
+      "pair": 1,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 88052042,
+      "candidateLatencyNanos": 88966458,
+      "regressionFraction": 0.010384949391633702,
+      "absoluteRegressionNanos": 914416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 284505208,
+      "candidateLatencyNanos": 262068167,
+      "regressionFraction": -0.07886337532351961,
+      "absoluteRegressionNanos": -22437041,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 38995666,
+      "candidateLatencyNanos": 39588500,
+      "regressionFraction": 0.015202561228214506,
+      "absoluteRegressionNanos": 592834,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 172767292,
+      "candidateLatencyNanos": 174192667,
+      "regressionFraction": 0.00825025954565528,
+      "absoluteRegressionNanos": 1425375,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 113059917,
+      "candidateLatencyNanos": 105544083,
+      "regressionFraction": -0.06647655685082454,
+      "absoluteRegressionNanos": -7515834,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 153974333,
+      "candidateLatencyNanos": 157623417,
+      "regressionFraction": 0.02369930058407843,
+      "absoluteRegressionNanos": 3649084,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 94410875,
+      "candidateLatencyNanos": 94567917,
+      "regressionFraction": 0.0016633888839605593,
+      "absoluteRegressionNanos": 157042,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 152697125,
+      "candidateLatencyNanos": 151615417,
+      "regressionFraction": -0.007084010258870288,
+      "absoluteRegressionNanos": -1081708,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 147170250,
+      "candidateLatencyNanos": 150573417,
+      "regressionFraction": 0.023124014534187554,
+      "absoluteRegressionNanos": 3403167,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 144355083,
+      "candidateLatencyNanos": 150828083,
+      "regressionFraction": 0.04484081797105821,
+      "absoluteRegressionNanos": 6473000,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 147896750,
+      "candidateLatencyNanos": 147603166,
+      "regressionFraction": -0.0019850605236423347,
+      "absoluteRegressionNanos": -293584,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 146690458,
+      "candidateLatencyNanos": 134736875,
+      "regressionFraction": -0.08148848372945972,
+      "absoluteRegressionNanos": -11953583,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 15370542,
+      "candidateLatencyNanos": 15196042,
+      "regressionFraction": -0.011352885278866576,
+      "absoluteRegressionNanos": -174500,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 145554750,
+      "candidateLatencyNanos": 148019875,
+      "regressionFraction": 0.016936067012584655,
+      "absoluteRegressionNanos": 2465125,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 13999541,
+      "candidateLatencyNanos": 15345875,
+      "regressionFraction": 0.09616986728350585,
+      "absoluteRegressionNanos": 1346334,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 136939625,
+      "candidateLatencyNanos": 146239041,
+      "regressionFraction": 0.06790887590060213,
+      "absoluteRegressionNanos": 9299416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 4929791,
+      "candidateLatencyNanos": 4833375,
+      "regressionFraction": -0.019557827096523983,
+      "absoluteRegressionNanos": -96416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 184519500,
+      "candidateLatencyNanos": 183088291,
+      "regressionFraction": -0.007756410569072614,
+      "absoluteRegressionNanos": -1431209,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 20458584,
+      "candidateLatencyNanos": 21678042,
+      "regressionFraction": 0.05960617802287782,
+      "absoluteRegressionNanos": 1219458,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 1027710125,
+      "candidateLatencyNanos": 986815250,
+      "regressionFraction": -0.03979222740459043,
+      "absoluteRegressionNanos": -40894875,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 351063167,
+      "candidateLatencyNanos": 271282708,
+      "regressionFraction": -0.22725385770817708,
+      "absoluteRegressionNanos": -79780459,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 38930371917,
+      "candidateLatencyNanos": 39225589041,
+      "regressionFraction": 0.007583208417053067,
+      "absoluteRegressionNanos": 295217124,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 146477667,
+      "candidateLatencyNanos": 136376292,
+      "regressionFraction": -0.06896187799058817,
+      "absoluteRegressionNanos": -10101375,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 143498583,
+      "candidateLatencyNanos": 148320250,
+      "regressionFraction": 0.033600798692207334,
+      "absoluteRegressionNanos": 4821667,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 35688000,
+      "candidateLatencyNanos": 24977125,
+      "regressionFraction": -0.3001253922887245,
+      "absoluteRegressionNanos": -10710875,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 152545875,
+      "candidateLatencyNanos": 148876667,
+      "regressionFraction": -0.02405314466877584,
+      "absoluteRegressionNanos": -3669208,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 15065459,
+      "candidateLatencyNanos": 16685417,
+      "regressionFraction": 0.10752795517215907,
+      "absoluteRegressionNanos": 1619958,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 150831583,
+      "candidateLatencyNanos": 147853125,
+      "regressionFraction": -0.01974691202438683,
+      "absoluteRegressionNanos": -2978458,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 91256375,
+      "candidateLatencyNanos": 88133292,
+      "regressionFraction": -0.03422317618906079,
+      "absoluteRegressionNanos": -3123083,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 143571792,
+      "candidateLatencyNanos": 137699625,
+      "regressionFraction": -0.04090056213827853,
+      "absoluteRegressionNanos": -5872167,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 148273750,
+      "candidateLatencyNanos": 148909958,
+      "regressionFraction": 0.004290766234751553,
+      "absoluteRegressionNanos": 636208,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 151396333,
+      "candidateLatencyNanos": 147557709,
+      "regressionFraction": -0.025354801691266804,
+      "absoluteRegressionNanos": -3838624,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 16239375,
+      "candidateLatencyNanos": 15263208,
+      "regressionFraction": -0.06011111880845166,
+      "absoluteRegressionNanos": -976167,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 150508708,
+      "candidateLatencyNanos": 145088208,
+      "regressionFraction": -0.036014527478370195,
+      "absoluteRegressionNanos": -5420500,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 16037666,
+      "candidateLatencyNanos": 13136167,
+      "regressionFraction": -0.18091778442075046,
+      "absoluteRegressionNanos": -2901499,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 1,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 180024334,
+      "candidateLatencyNanos": 181368041,
+      "regressionFraction": 0.007464029834988839,
+      "absoluteRegressionNanos": 1343707,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 90210167,
+      "candidateLatencyNanos": 88543000,
+      "regressionFraction": -0.018480921335618405,
+      "absoluteRegressionNanos": -1667167,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 281194166,
+      "candidateLatencyNanos": 248388875,
+      "regressionFraction": -0.11666419494634894,
+      "absoluteRegressionNanos": -32805291,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 36398541,
+      "candidateLatencyNanos": 37185709,
+      "regressionFraction": 0.02162636134234064,
+      "absoluteRegressionNanos": 787168,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 167924833,
+      "candidateLatencyNanos": 170489125,
+      "regressionFraction": 0.01527047521315672,
+      "absoluteRegressionNanos": 2564292,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 104224083,
+      "candidateLatencyNanos": 107736875,
+      "regressionFraction": 0.03370422553873653,
+      "absoluteRegressionNanos": 3512792,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 153428416,
+      "candidateLatencyNanos": 160451792,
+      "regressionFraction": 0.04577624004147962,
+      "absoluteRegressionNanos": 7023376,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 91570959,
+      "candidateLatencyNanos": 94953292,
+      "regressionFraction": 0.03693674323100615,
+      "absoluteRegressionNanos": 3382333,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 152492917,
+      "candidateLatencyNanos": 154868875,
+      "regressionFraction": 0.015580776122211537,
+      "absoluteRegressionNanos": 2375958,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 147149625,
+      "candidateLatencyNanos": 142661042,
+      "regressionFraction": -0.030503529995404288,
+      "absoluteRegressionNanos": -4488583,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 145545959,
+      "candidateLatencyNanos": 146606042,
+      "regressionFraction": 0.007283493181696743,
+      "absoluteRegressionNanos": 1060083,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 147188625,
+      "candidateLatencyNanos": 148136750,
+      "regressionFraction": 0.006441564353223628,
+      "absoluteRegressionNanos": 948125,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 149482041,
+      "candidateLatencyNanos": 149104500,
+      "regressionFraction": -0.0025256612598699713,
+      "absoluteRegressionNanos": -377541,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 14768458,
+      "candidateLatencyNanos": 15541208,
+      "regressionFraction": 0.05232435234606081,
+      "absoluteRegressionNanos": 772750,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 148322875,
+      "candidateLatencyNanos": 145297584,
+      "regressionFraction": -0.020396658303717508,
+      "absoluteRegressionNanos": -3025291,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 13069875,
+      "candidateLatencyNanos": 14432375,
+      "regressionFraction": 0.1042473627330025,
+      "absoluteRegressionNanos": 1362500,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 148716208,
+      "candidateLatencyNanos": 149998292,
+      "regressionFraction": 0.008621010562614773,
+      "absoluteRegressionNanos": 1282084,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 5134875,
+      "candidateLatencyNanos": 4905375,
+      "regressionFraction": -0.04469436938581761,
+      "absoluteRegressionNanos": -229500,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 185469417,
+      "candidateLatencyNanos": 184507083,
+      "regressionFraction": -0.005188639806852913,
+      "absoluteRegressionNanos": -962334,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 20441250,
+      "candidateLatencyNanos": 21012459,
+      "regressionFraction": 0.027943936892313337,
+      "absoluteRegressionNanos": 571209,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 987213583,
+      "candidateLatencyNanos": 977545125,
+      "regressionFraction": -0.009793684129242752,
+      "absoluteRegressionNanos": -9668458,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 372238792,
+      "candidateLatencyNanos": 727403042,
+      "regressionFraction": 0.954130138053962,
+      "absoluteRegressionNanos": 355164250,
+      "crossesBothBounds": true
+    },
+    {
+      "pair": 2,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 39256033208,
+      "candidateLatencyNanos": 38688882709,
+      "regressionFraction": -0.014447473487576468,
+      "absoluteRegressionNanos": -567150499,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 146348458,
+      "candidateLatencyNanos": 149631791,
+      "regressionFraction": 0.02243503652084944,
+      "absoluteRegressionNanos": 3283333,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 146158250,
+      "candidateLatencyNanos": 146661666,
+      "regressionFraction": 0.0034443214803132616,
+      "absoluteRegressionNanos": 503416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 27658792,
+      "candidateLatencyNanos": 36157666,
+      "regressionFraction": 0.30727567566942193,
+      "absoluteRegressionNanos": 8498874,
+      "crossesBothBounds": true
+    },
+    {
+      "pair": 2,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 150397208,
+      "candidateLatencyNanos": 152193541,
+      "regressionFraction": 0.011943925182440918,
+      "absoluteRegressionNanos": 1796333,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 13929750,
+      "candidateLatencyNanos": 12899208,
+      "regressionFraction": -0.07398137080708556,
+      "absoluteRegressionNanos": -1030542,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 149691791,
+      "candidateLatencyNanos": 148818125,
+      "regressionFraction": -0.005836432273029546,
+      "absoluteRegressionNanos": -873666,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 92352041,
+      "candidateLatencyNanos": 92545417,
+      "regressionFraction": 0.0020939006643068137,
+      "absoluteRegressionNanos": 193376,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 149322542,
+      "candidateLatencyNanos": 149978250,
+      "regressionFraction": 0.004391219110105871,
+      "absoluteRegressionNanos": 655708,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 146800417,
+      "candidateLatencyNanos": 149793875,
+      "regressionFraction": 0.0203913453461102,
+      "absoluteRegressionNanos": 2993458,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 146673208,
+      "candidateLatencyNanos": 150829958,
+      "regressionFraction": 0.0283402132992141,
+      "absoluteRegressionNanos": 4156750,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 14058959,
+      "candidateLatencyNanos": 14864916,
+      "regressionFraction": 0.05732693295428204,
+      "absoluteRegressionNanos": 805957,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 147748458,
+      "candidateLatencyNanos": 149540500,
+      "regressionFraction": 0.012129006449596913,
+      "absoluteRegressionNanos": 1792042,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 15327000,
+      "candidateLatencyNanos": 14927541,
+      "regressionFraction": -0.02606243883343118,
+      "absoluteRegressionNanos": -399459,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 2,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 178674667,
+      "candidateLatencyNanos": 183875917,
+      "regressionFraction": 0.029110170385821865,
+      "absoluteRegressionNanos": 5201250,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-early-rows",
+      "baseLatencyNanos": 88718000,
+      "candidateLatencyNanos": 101634792,
+      "regressionFraction": 0.14559381410762184,
+      "absoluteRegressionNanos": 12916792,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-early-distinct",
+      "baseLatencyNanos": 276075292,
+      "candidateLatencyNanos": 252435958,
+      "regressionFraction": -0.08562640223522788,
+      "absoluteRegressionNanos": -23639334,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-early-rows",
+      "baseLatencyNanos": 37899292,
+      "candidateLatencyNanos": 39019583,
+      "regressionFraction": 0.029559681484287337,
+      "absoluteRegressionNanos": 1120291,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-early-distinct",
+      "baseLatencyNanos": 167583833,
+      "candidateLatencyNanos": 192696250,
+      "regressionFraction": 0.1498498784187614,
+      "absoluteRegressionNanos": 25112417,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-middle-rows",
+      "baseLatencyNanos": 106337084,
+      "candidateLatencyNanos": 108952459,
+      "regressionFraction": 0.02459513559728599,
+      "absoluteRegressionNanos": 2615375,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-middle-distinct",
+      "baseLatencyNanos": 150565000,
+      "candidateLatencyNanos": 158430833,
+      "regressionFraction": 0.05224210805964202,
+      "absoluteRegressionNanos": 7865833,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-middle-rows",
+      "baseLatencyNanos": 95583250,
+      "candidateLatencyNanos": 93310583,
+      "regressionFraction": -0.023776833284074317,
+      "absoluteRegressionNanos": -2272667,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-middle-distinct",
+      "baseLatencyNanos": 152215958,
+      "candidateLatencyNanos": 143350375,
+      "regressionFraction": -0.05824345302875533,
+      "absoluteRegressionNanos": -8865583,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-late-rows",
+      "baseLatencyNanos": 148967250,
+      "candidateLatencyNanos": 148614208,
+      "regressionFraction": -0.002369930303472767,
+      "absoluteRegressionNanos": -353042,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-single-late-distinct",
+      "baseLatencyNanos": 143141125,
+      "candidateLatencyNanos": 143167541,
+      "regressionFraction": 0.0001845451473152515,
+      "absoluteRegressionNanos": 26416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-late-rows",
+      "baseLatencyNanos": 147974541,
+      "candidateLatencyNanos": 147004583,
+      "regressionFraction": -0.006554897845569285,
+      "absoluteRegressionNanos": -969958,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-single-late-distinct",
+      "baseLatencyNanos": 147670083,
+      "candidateLatencyNanos": 146610625,
+      "regressionFraction": -0.007174493157154904,
+      "absoluteRegressionNanos": -1059458,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-late-rows",
+      "baseLatencyNanos": 11658459,
+      "candidateLatencyNanos": 15474917,
+      "regressionFraction": 0.3273552705378988,
+      "absoluteRegressionNanos": 3816458,
+      "crossesBothBounds": true
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-late-distinct",
+      "baseLatencyNanos": 146777667,
+      "candidateLatencyNanos": 146081500,
+      "regressionFraction": -0.004743003579693039,
+      "absoluteRegressionNanos": -696167,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-middle-rows",
+      "baseLatencyNanos": 13511417,
+      "candidateLatencyNanos": 13245125,
+      "regressionFraction": -0.019708665641804957,
+      "absoluteRegressionNanos": -266292,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-few-early-middle-distinct",
+      "baseLatencyNanos": 147269416,
+      "candidateLatencyNanos": 145653209,
+      "regressionFraction": -0.010974491811660325,
+      "absoluteRegressionNanos": -1616207,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-broad-all-rows",
+      "baseLatencyNanos": 4488625,
+      "candidateLatencyNanos": 4579583,
+      "regressionFraction": 0.02026411206104317,
+      "absoluteRegressionNanos": 90958,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-broad-all-distinct",
+      "baseLatencyNanos": 186036416,
+      "candidateLatencyNanos": 185571750,
+      "regressionFraction": -0.002497715286022273,
+      "absoluteRegressionNanos": -464666,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-broad-all-rows",
+      "baseLatencyNanos": 19628333,
+      "candidateLatencyNanos": 18549917,
+      "regressionFraction": -0.054941802750136715,
+      "absoluteRegressionNanos": -1078416,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-broad-all-distinct",
+      "baseLatencyNanos": 998504666,
+      "candidateLatencyNanos": 935270166,
+      "regressionFraction": -0.06332919830341588,
+      "absoluteRegressionNanos": -63234500,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "mixed-four-few-rows",
+      "baseLatencyNanos": 223453459,
+      "candidateLatencyNanos": 297224584,
+      "regressionFraction": 0.3301408952456628,
+      "absoluteRegressionNanos": 73771125,
+      "crossesBothBounds": true
+    },
+    {
+      "pair": 3,
+      "id": "mixed-four-few-distinct",
+      "baseLatencyNanos": 39972483250,
+      "candidateLatencyNanos": 37155943125,
+      "regressionFraction": -0.07046197523892894,
+      "absoluteRegressionNanos": -2816540125,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-zero-disjoint-graphs-rows",
+      "baseLatencyNanos": 143654625,
+      "candidateLatencyNanos": 146034542,
+      "regressionFraction": 0.01656693614981064,
+      "absoluteRegressionNanos": 2379917,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "and-zero-disjoint-graphs-distinct",
+      "baseLatencyNanos": 134775500,
+      "candidateLatencyNanos": 144712125,
+      "regressionFraction": 0.07372723529128078,
+      "absoluteRegressionNanos": 9936625,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-broad-rows",
+      "baseLatencyNanos": 32379083,
+      "candidateLatencyNanos": 33510875,
+      "regressionFraction": 0.03495441794939036,
+      "absoluteRegressionNanos": 1131792,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-broad-distinct",
+      "baseLatencyNanos": 154944292,
+      "candidateLatencyNanos": 149188833,
+      "regressionFraction": -0.03714534382460499,
+      "absoluteRegressionNanos": -5755459,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-early-rows",
+      "baseLatencyNanos": 15736334,
+      "candidateLatencyNanos": 13546541,
+      "regressionFraction": -0.1391552187440861,
+      "absoluteRegressionNanos": -2189793,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-early-distinct",
+      "baseLatencyNanos": 153842625,
+      "candidateLatencyNanos": 148709667,
+      "regressionFraction": -0.033364992309511066,
+      "absoluteRegressionNanos": -5132958,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-middle-rows",
+      "baseLatencyNanos": 93046791,
+      "candidateLatencyNanos": 92851334,
+      "regressionFraction": -0.0021006312834582763,
+      "absoluteRegressionNanos": -195457,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-middle-distinct",
+      "baseLatencyNanos": 149163916,
+      "candidateLatencyNanos": 150133959,
+      "regressionFraction": 0.006503201484734378,
+      "absoluteRegressionNanos": 970043,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-late-rows",
+      "baseLatencyNanos": 149950959,
+      "candidateLatencyNanos": 152920500,
+      "regressionFraction": 0.019803414528345886,
+      "absoluteRegressionNanos": 2969541,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-single-late-distinct",
+      "baseLatencyNanos": 150617750,
+      "candidateLatencyNanos": 145348666,
+      "regressionFraction": -0.034983154375895276,
+      "absoluteRegressionNanos": -5269084,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-few-early-late-rows",
+      "baseLatencyNanos": 14918125,
+      "candidateLatencyNanos": 15917333,
+      "regressionFraction": 0.06697946290167156,
+      "absoluteRegressionNanos": 999208,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-few-early-late-distinct",
+      "baseLatencyNanos": 147631792,
+      "candidateLatencyNanos": 145818083,
+      "regressionFraction": -0.0122853551760721,
+      "absoluteRegressionNanos": -1813709,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-all-rows",
+      "baseLatencyNanos": 15551958,
+      "candidateLatencyNanos": 16163750,
+      "regressionFraction": 0.039338583604713984,
+      "absoluteRegressionNanos": 611792,
+      "crossesBothBounds": false
+    },
+    {
+      "pair": 3,
+      "id": "or-four-all-distinct",
+      "baseLatencyNanos": 177941667,
+      "candidateLatencyNanos": 181258542,
+      "regressionFraction": 0.01864023787076241,
+      "absoluteRegressionNanos": 3316875,
+      "crossesBothBounds": false
+    }
+  ]
+}

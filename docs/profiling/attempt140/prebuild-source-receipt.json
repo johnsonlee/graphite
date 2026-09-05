@@ -1,0 +1,60 @@
+{
+  "attempt": 140,
+  "repo": "/private/tmp/graphite-attempt140._5jztd0a/repo",
+  "parent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "normalCloneGitDirectory": true,
+  "mainAndJmhFilesBeforeChangeByteEqualFrozenMain": 130,
+  "unchangedTestFiles": 168,
+  "onlyChangedProductionFile": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "sourceBeforeSha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "sourceAfterSha256": "120d23247d266e4b9a57c7a53644154307725b32156531ce62822f914dfb98ba",
+  "exactReplacement": {
+    "old": "        val predicatePropertyIndexes = predicates.map { predicate ->\n            requiredCallSiteStringPropertyIndex(predicate.property)\n        }",
+    "new": "        val predicatePropertyIndexes = IntArray(predicates.size) { index ->\n            requiredCallSiteStringPropertyIndex(predicates[index].property)\n        }"
+  },
+  "workspace": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite",
+  "unrelatedUntrackedSnapshot": {
+    "1.853B": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788406978705181628
+    },
+    "12,442": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788290322470776728
+    },
+    "12,743": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788290322471473095
+    },
+    "1928.2": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788406978703109489
+    },
+    "6.280B": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788406978703829896
+    },
+    "7,797": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788290322472124457
+    },
+    "8,003": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788290322472731939
+    },
+    "993,095,680": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtimeNs": 1788406978704506679
+    }
+  },
+  "noPerformanceRun": true
+}

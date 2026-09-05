@@ -1,0 +1,57 @@
+{
+  "newRecordings": 0,
+  "offlineOnly": true,
+  "compileCommand": [
+    "/opt/homebrew/opt/openjdk@17/bin/javac",
+    "-cp",
+    "/private/tmp/graphite-main-raw-frame-sensitivity",
+    "/private/tmp/graphite-main-raw-frame-sensitivity/RawFrameSensitivity.java"
+  ],
+  "sourceSha256": "01876cbdfbe63965f49dc32539c35002b52d4802487e17285f58f7aefe23ac1b",
+  "profileWindowsSourceSha256": "e69970ae896839fee24bfbceaec18209750cc938ee6cc4255b4be39a50e9a650",
+  "profileWindowsClassSha256": "f19155ea702a453cecf1127d514c86e60c6b9d47ec6fc314608462bdeeb6663d",
+  "exports": [
+    {
+      "recording": 3,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-frame-sensitivity",
+        "RawFrameSensitivity",
+        "/private/tmp/graphite-main-profiling-n50joikp/cpu-3.jfr",
+        "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-3.json"
+      ],
+      "exitCode": 0,
+      "jfrSha256BeforeAndAfter": "50aea41e4c0b1ebf727c6d28b03b1675a47773fbeb7837717462ee7611c88320",
+      "outputSha256": "26a7f609693d7763372370bf8ff70f6d11a976c66bd0ab5809b5764b93fda402"
+    },
+    {
+      "recording": 4,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-frame-sensitivity",
+        "RawFrameSensitivity",
+        "/private/tmp/graphite-main-profiling-n50joikp/cpu-4.jfr",
+        "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-4.json"
+      ],
+      "exitCode": 0,
+      "jfrSha256BeforeAndAfter": "bad876c91b587bed4fe1fc1b689c0b6044b41b47c4acb24b8dd424e664f25944",
+      "outputSha256": "53d9423b9501ae1343bf0476526f760dbd00627be4f84f3d96aff299aa3c6c06"
+    },
+    {
+      "recording": 5,
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-cp",
+        "/private/tmp/graphite-main-raw-frame-sensitivity",
+        "RawFrameSensitivity",
+        "/private/tmp/graphite-main-profiling-n50joikp/cpu-5.jfr",
+        "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-5.json"
+      ],
+      "exitCode": 0,
+      "jfrSha256BeforeAndAfter": "0f171d870b59d2a815deff5af402e8bad835f816f2ef49fba98cbfd3bfd006d8",
+      "outputSha256": "3be2ad9e863d8529014627c6a66c03d5909f183ef93e9b35a7c18e65d2b44d9c"
+    }
+  ]
+}

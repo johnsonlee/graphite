@@ -1,0 +1,2094 @@
+{
+  "result": "pass",
+  "scope": "Offline analysis of earlier outer-execute-only traces, not an unprofiled control or causal experiment. Whole-query node leaf compared with whole-query node leaf, preserving phase-traced initial+provenance for dense.",
+  "newRecordings": 0,
+  "noMeasuredJarOrProductionChanges": true,
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "jarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+  "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+  "catalogSha256": "dd786d6912b518eff1719da9253bd8827bf37153d6e303ac0b3fb359d53e4dae",
+  "inputs": [
+    {
+      "recording": 3,
+      "jfr": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3.jfr",
+      "jfrSha256": "50aea41e4c0b1ebf727c6d28b03b1675a47773fbeb7837717462ee7611c88320",
+      "tsvSha256": "6fdc948001d50b3af646b2cadbb31a8c15e1196ca9bf3824dd4e295bd8f03e95",
+      "originalAnalysisSha256": "8a16200719a94950468172504112f597a4589b69e52d4f6475206776550b1180",
+      "captureCommandPath": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-command.json",
+      "captureCommandSha256": "9ce485570377b5334f2061bc62f0ab23bd1508a3912d28d807d866841d0e9413",
+      "jmhLogSha256": "0dc0a322a40154a9c3db7222ba1f22fb8b61b9773eba35ff41d6d39d18fdd7c8",
+      "jmhVmOptionsMatchCommandExactly": true,
+      "rawEvents": 118,
+      "rawEventsAssignedExactlyOnce": 118,
+      "allCpuEvents": 10721,
+      "originalWindowCpuSamplesConserved": 1262,
+      "exactOuterTraces": 34
+    },
+    {
+      "recording": 4,
+      "jfr": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4.jfr",
+      "jfrSha256": "bad876c91b587bed4fe1fc1b689c0b6044b41b47c4acb24b8dd424e664f25944",
+      "tsvSha256": "e6bd8a75e7b3358e9188bb3f9436f963b05801be91e7042c94c8b7d69fa99470",
+      "originalAnalysisSha256": "b0de29c3b6ce605c52c2b0fbee581a28b24b872c0abc7e31d53659933d35b682",
+      "captureCommandPath": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-command.json",
+      "captureCommandSha256": "683f84e3304167df8d06ab7f5bc5b1b0131ccedab9d53aefee1ce9881f977ef4",
+      "jmhLogSha256": "ec629f6d40e413e1d67e3f57eda4b46ff50c558322ab14dfa5233972838024c7",
+      "jmhVmOptionsMatchCommandExactly": true,
+      "rawEvents": 225,
+      "rawEventsAssignedExactlyOnce": 225,
+      "allCpuEvents": 10679,
+      "originalWindowCpuSamplesConserved": 1467,
+      "exactOuterTraces": 34
+    },
+    {
+      "recording": 5,
+      "jfr": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5.jfr",
+      "jfrSha256": "0f171d870b59d2a815deff5af402e8bad835f816f2ef49fba98cbfd3bfd006d8",
+      "tsvSha256": "0381c92120bdb5ef21fac1f040afa92945d324a2bfa04660ee20016bbae42e3d",
+      "originalAnalysisSha256": "f2b306f7716286a14a48b5743ce72a37bf64c9b23f4f7fcddff01e3caf7385aa",
+      "captureCommandPath": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-command.json",
+      "captureCommandSha256": "1adc9e7627b7dcea54a3df3b95e27d0023273c98b15fccfafecff2daddec6ed1",
+      "jmhLogSha256": "de2e69bda8f4b6dcf0cace043222cf3f9ab1f9ff4e5ae03b3dd18e137335a923",
+      "jmhVmOptionsMatchCommandExactly": true,
+      "rawEvents": 180,
+      "rawEventsAssignedExactlyOnce": 180,
+      "allCpuEvents": 10690,
+      "originalWindowCpuSamplesConserved": 1343,
+      "exactOuterTraces": 34
+    }
+  ],
+  "queryWindowsVerified": 102,
+  "fullRawEventsVerified": 523,
+  "rows": [
+    {
+      "recording": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 136,
+      "applicationCpuSamples": 73,
+      "rawInclusiveCpuSamples": 64,
+      "applicationRawInclusiveCpuSamples": 64,
+      "applicationNodeLeafSamples": 34,
+      "frameTypeCounts": {
+        "Interpreted": 25,
+        "C1 compiled": 9
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 566,
+          "bytecodeIndex": 0,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 578,
+          "bytecodeIndex": 199,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 4
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 611,
+          "bytecodeIndex": 776,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3634,
+          "bytecodeIndex": 80,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 105,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3640,
+          "bytecodeIndex": 150,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 5
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 243,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 6
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 2
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 196,
+      "applicationCpuSamples": 105,
+      "rawInclusiveCpuSamples": 54,
+      "applicationRawInclusiveCpuSamples": 54,
+      "applicationNodeLeafSamples": 16,
+      "frameTypeCounts": {
+        "C1 compiled": 16
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 317,
+          "frameType": "C1 compiled",
+          "samples": 2
+        },
+        {
+          "lineNumber": 598,
+          "bytecodeIndex": 475,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3639,
+          "bytecodeIndex": 140,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 5
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 455,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3647,
+          "bytecodeIndex": 525,
+          "frameType": "C1 compiled",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3648,
+          "bytecodeIndex": 585,
+          "frameType": "C1 compiled",
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "recording": 4,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 295,
+      "applicationCpuSamples": 161,
+      "rawInclusiveCpuSamples": 156,
+      "applicationRawInclusiveCpuSamples": 156,
+      "applicationNodeLeafSamples": 66,
+      "frameTypeCounts": {
+        "Interpreted": 50,
+        "C1 compiled": 16
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 572,
+          "bytecodeIndex": 66,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 202,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 6
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 288,
+          "frameType": "C1 compiled",
+          "samples": 2
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 6
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 294,
+          "frameType": "C1 compiled",
+          "samples": 2
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 300,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 317,
+          "frameType": "C1 compiled",
+          "samples": 2
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 611,
+          "bytecodeIndex": 776,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3634,
+          "bytecodeIndex": 80,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3634,
+          "bytecodeIndex": 85,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 105,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3639,
+          "bytecodeIndex": 133,
+          "frameType": "Interpreted",
+          "samples": 4
+        },
+        {
+          "lineNumber": 3640,
+          "bytecodeIndex": 145,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 155,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 9
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 257,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 4
+        }
+      ]
+    },
+    {
+      "recording": 4,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 252,
+      "applicationCpuSamples": 136,
+      "rawInclusiveCpuSamples": 69,
+      "applicationRawInclusiveCpuSamples": 69,
+      "applicationNodeLeafSamples": 45,
+      "frameTypeCounts": {
+        "Interpreted": 45
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 572,
+          "bytecodeIndex": 66,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 600,
+          "bytecodeIndex": 573,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3634,
+          "bytecodeIndex": 85,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 105,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3639,
+          "bytecodeIndex": 133,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3639,
+          "bytecodeIndex": 140,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3640,
+          "bytecodeIndex": 145,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3640,
+          "bytecodeIndex": 150,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 155,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 7
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 4
+        },
+        {
+          "lineNumber": 3646,
+          "bytecodeIndex": 503,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3647,
+          "bytecodeIndex": 525,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3647,
+          "bytecodeIndex": 535,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3648,
+          "bytecodeIndex": 579,
+          "frameType": "Interpreted",
+          "samples": 2
+        }
+      ]
+    },
+    {
+      "recording": 5,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 176,
+      "applicationCpuSamples": 93,
+      "rawInclusiveCpuSamples": 90,
+      "applicationRawInclusiveCpuSamples": 90,
+      "applicationNodeLeafSamples": 51,
+      "frameTypeCounts": {
+        "Interpreted": 48,
+        "C1 compiled": 3
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 202,
+          "frameType": "C1 compiled",
+          "samples": 1
+        },
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 6
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 5
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 5
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3634,
+          "bytecodeIndex": 85,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 97,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 105,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 123,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3640,
+          "bytecodeIndex": 150,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 243,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 6
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 8
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 455,
+          "frameType": "C1 compiled",
+          "samples": 2
+        }
+      ]
+    },
+    {
+      "recording": 5,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "scope": "whole outer query, not phase",
+      "allThreadCpuSamples": 334,
+      "applicationCpuSamples": 178,
+      "rawInclusiveCpuSamples": 90,
+      "applicationRawInclusiveCpuSamples": 90,
+      "applicationNodeLeafSamples": 57,
+      "frameTypeCounts": {
+        "Interpreted": 57
+      },
+      "unknownLineSamples": 0,
+      "unknownBciSamples": 0,
+      "nodeLeafDistribution": [
+        {
+          "lineNumber": 572,
+          "bytecodeIndex": 66,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 9
+        },
+        {
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 7
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 4
+        },
+        {
+          "lineNumber": 611,
+          "bytecodeIndex": 776,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3635,
+          "bytecodeIndex": 97,
+          "frameType": "Interpreted",
+          "samples": 3
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 123,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3639,
+          "bytecodeIndex": 133,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 155,
+          "frameType": "Interpreted",
+          "samples": 2
+        },
+        {
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 5
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 243,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 9
+        },
+        {
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 5
+        },
+        {
+          "lineNumber": 3647,
+          "bytecodeIndex": 525,
+          "frameType": "Interpreted",
+          "samples": 1
+        },
+        {
+          "lineNumber": 3647,
+          "bytecodeIndex": 535,
+          "frameType": "Interpreted",
+          "samples": 2
+        }
+      ]
+    }
+  ],
+  "outerOnlyAggregate": {
+    "targeted": {
+      "applicationCpuSamples": 327,
+      "rawInclusive": 310,
+      "nodeLeaf": 151,
+      "frameTypes": {
+        "Interpreted": 123,
+        "C1 compiled": 28
+      }
+    },
+    "dense": {
+      "applicationCpuSamples": 419,
+      "rawInclusive": 213,
+      "nodeLeaf": 118,
+      "frameTypes": {
+        "C1 compiled": 16,
+        "Interpreted": 102
+      }
+    }
+  },
+  "phaseTraceWholeQueryAggregate": {
+    "targeted": {
+      "nodeLeaf": 98,
+      "frameTypes": {
+        "Interpreted": 63,
+        "C1 compiled": 35
+      }
+    },
+    "dense": {
+      "nodeLeaf": 50,
+      "frameTypes": {
+        "C1 compiled": 42,
+        "Interpreted": 8
+      }
+    }
+  },
+  "windows": [
+    {
+      "recording": 3,
+      "ordinal": 1,
+      "id": "global-wide-four-properties-zero",
+      "start": "2026-09-05T14:11:11.524306917Z",
+      "end": "2026-09-05T14:11:11.785377417Z",
+      "traceDurationNanos": 261070500,
+      "tsvLatencyNanos": 268860750,
+      "latencyGapNanos": 7790250,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 2,
+      "id": "global-wide-four-properties-targeted",
+      "start": "2026-09-05T14:11:11.790926084Z",
+      "end": "2026-09-05T14:11:11.801513334Z",
+      "traceDurationNanos": 10587250,
+      "tsvLatencyNanos": 10652584,
+      "latencyGapNanos": 65334,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 3,
+      "id": "global-wide-four-properties-dense",
+      "start": "2026-09-05T14:11:11.805293584Z",
+      "end": "2026-09-05T14:11:11.809468709Z",
+      "traceDurationNanos": 4175125,
+      "tsvLatencyNanos": 4233458,
+      "latencyGapNanos": 58333,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 4,
+      "id": "global-wide-class-pair-zero",
+      "start": "2026-09-05T14:11:11.819246959Z",
+      "end": "2026-09-05T14:11:11.821044125Z",
+      "traceDurationNanos": 1797166,
+      "tsvLatencyNanos": 1857666,
+      "latencyGapNanos": 60500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 5,
+      "id": "global-wide-class-pair-targeted",
+      "start": "2026-09-05T14:11:11.823125667Z",
+      "end": "2026-09-05T14:11:11.827207834Z",
+      "traceDurationNanos": 4082167,
+      "tsvLatencyNanos": 4152083,
+      "latencyGapNanos": 69916,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 6,
+      "id": "global-wide-class-pair-dense",
+      "start": "2026-09-05T14:11:11.829727292Z",
+      "end": "2026-09-05T14:11:11.830564334Z",
+      "traceDurationNanos": 837042,
+      "tsvLatencyNanos": 891750,
+      "latencyGapNanos": 54708,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 7,
+      "id": "global-wide-name-pair-zero",
+      "start": "2026-09-05T14:11:11.834667458Z",
+      "end": "2026-09-05T14:11:11.836554167Z",
+      "traceDurationNanos": 1886709,
+      "tsvLatencyNanos": 1955542,
+      "latencyGapNanos": 68833,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 8,
+      "id": "global-wide-name-pair-targeted",
+      "start": "2026-09-05T14:11:11.838349209Z",
+      "end": "2026-09-05T14:11:11.843115334Z",
+      "traceDurationNanos": 4766125,
+      "tsvLatencyNanos": 4816666,
+      "latencyGapNanos": 50541,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 9,
+      "id": "global-wide-name-pair-dense",
+      "start": "2026-09-05T14:11:11.845277Z",
+      "end": "2026-09-05T14:11:11.846021542Z",
+      "traceDurationNanos": 744542,
+      "tsvLatencyNanos": 827834,
+      "latencyGapNanos": 83292,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 10,
+      "id": "global-wide-caller-class-zero",
+      "start": "2026-09-05T14:11:11.849505292Z",
+      "end": "2026-09-05T14:11:11.850936792Z",
+      "traceDurationNanos": 1431500,
+      "tsvLatencyNanos": 1488584,
+      "latencyGapNanos": 57084,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 11,
+      "id": "global-wide-caller-class-targeted",
+      "start": "2026-09-05T14:11:11.852722125Z",
+      "end": "2026-09-05T14:11:11.855798584Z",
+      "traceDurationNanos": 3076459,
+      "tsvLatencyNanos": 3126833,
+      "latencyGapNanos": 50374,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 12,
+      "id": "global-wide-caller-class-dense",
+      "start": "2026-09-05T14:11:11.857545167Z",
+      "end": "2026-09-05T14:11:11.858007875Z",
+      "traceDurationNanos": 462708,
+      "tsvLatencyNanos": 502542,
+      "latencyGapNanos": 39834,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 13,
+      "id": "global-wide-callee-class-zero",
+      "start": "2026-09-05T14:11:11.860931625Z",
+      "end": "2026-09-05T14:11:11.862276959Z",
+      "traceDurationNanos": 1345334,
+      "tsvLatencyNanos": 1390584,
+      "latencyGapNanos": 45250,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 14,
+      "id": "global-wide-callee-class-targeted",
+      "start": "2026-09-05T14:11:11.863963750Z",
+      "end": "2026-09-05T14:11:11.866144584Z",
+      "traceDurationNanos": 2180834,
+      "tsvLatencyNanos": 2227083,
+      "latencyGapNanos": 46249,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 15,
+      "id": "global-wide-callee-class-dense",
+      "start": "2026-09-05T14:11:11.868196459Z",
+      "end": "2026-09-05T14:11:11.868634Z",
+      "traceDurationNanos": 437541,
+      "tsvLatencyNanos": 489125,
+      "latencyGapNanos": 51584,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 16,
+      "id": "global-wide-provenance-zero",
+      "start": "2026-09-05T14:11:11.871426709Z",
+      "end": "2026-09-05T14:11:11.872836167Z",
+      "traceDurationNanos": 1409458,
+      "tsvLatencyNanos": 1459500,
+      "latencyGapNanos": 50042,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 17,
+      "id": "global-wide-provenance-targeted",
+      "start": "2026-09-05T14:11:11.875351167Z",
+      "end": "2026-09-05T14:11:11.878621167Z",
+      "traceDurationNanos": 3270000,
+      "tsvLatencyNanos": 3316125,
+      "latencyGapNanos": 46125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 18,
+      "id": "global-wide-provenance-dense",
+      "start": "2026-09-05T14:11:11.880433417Z",
+      "end": "2026-09-05T14:11:11.881281292Z",
+      "traceDurationNanos": 847875,
+      "tsvLatencyNanos": 886292,
+      "latencyGapNanos": 38417,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 19,
+      "id": "global-wide-aliased-zero",
+      "start": "2026-09-05T14:11:11.884730792Z",
+      "end": "2026-09-05T14:11:11.885737167Z",
+      "traceDurationNanos": 1006375,
+      "tsvLatencyNanos": 1049959,
+      "latencyGapNanos": 43584,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 20,
+      "id": "global-wide-aliased-targeted",
+      "start": "2026-09-05T14:11:11.887390584Z",
+      "end": "2026-09-05T14:11:11.890836209Z",
+      "traceDurationNanos": 3445625,
+      "tsvLatencyNanos": 3480750,
+      "latencyGapNanos": 35125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 21,
+      "id": "global-wide-aliased-dense",
+      "start": "2026-09-05T14:11:11.893202293Z",
+      "end": "2026-09-05T14:11:11.893962459Z",
+      "traceDurationNanos": 760166,
+      "tsvLatencyNanos": 802459,
+      "latencyGapNanos": 42293,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 22,
+      "id": "global-wide-parameterized-zero",
+      "start": "2026-09-05T14:11:11.897459417Z",
+      "end": "2026-09-05T14:11:11.898567334Z",
+      "traceDurationNanos": 1107917,
+      "tsvLatencyNanos": 1147167,
+      "latencyGapNanos": 39250,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 23,
+      "id": "global-wide-parameterized-targeted",
+      "start": "2026-09-05T14:11:11.900333750Z",
+      "end": "2026-09-05T14:11:11.902645500Z",
+      "traceDurationNanos": 2311750,
+      "tsvLatencyNanos": 2362292,
+      "latencyGapNanos": 50542,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 24,
+      "id": "global-wide-parameterized-dense",
+      "start": "2026-09-05T14:11:11.904429625Z",
+      "end": "2026-09-05T14:11:11.905174125Z",
+      "traceDurationNanos": 744500,
+      "tsvLatencyNanos": 788084,
+      "latencyGapNanos": 43584,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 25,
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "start": "2026-09-05T14:11:11.908483251Z",
+      "end": "2026-09-05T14:11:11.909613209Z",
+      "traceDurationNanos": 1129958,
+      "tsvLatencyNanos": 1163750,
+      "latencyGapNanos": 33792,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 26,
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "start": "2026-09-05T14:11:11.911313667Z",
+      "end": "2026-09-05T14:11:11.913658542Z",
+      "traceDurationNanos": 2344875,
+      "tsvLatencyNanos": 2380500,
+      "latencyGapNanos": 35625,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 27,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "start": "2026-09-05T14:11:11.915677125Z",
+      "end": "2026-09-05T14:11:11.917049209Z",
+      "traceDurationNanos": 1372084,
+      "tsvLatencyNanos": 1417041,
+      "latencyGapNanos": 44957,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 28,
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "start": "2026-09-05T14:11:11.920226750Z",
+      "end": "2026-09-05T14:11:11.923372209Z",
+      "traceDurationNanos": 3145459,
+      "tsvLatencyNanos": 3208750,
+      "latencyGapNanos": 63291,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 29,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "start": "2026-09-05T14:11:11.925223375Z",
+      "end": "2026-09-05T14:11:11.953382792Z",
+      "traceDurationNanos": 28159417,
+      "tsvLatencyNanos": 28209500,
+      "latencyGapNanos": 50083,
+      "rawCpuEvents": 64,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 30,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "start": "2026-09-05T14:11:11.955415042Z",
+      "end": "2026-09-05T14:11:11.998609750Z",
+      "traceDurationNanos": 43194708,
+      "tsvLatencyNanos": 43256375,
+      "latencyGapNanos": 61667,
+      "rawCpuEvents": 54,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 31,
+      "id": "global-wide-distribution-broad-all-64",
+      "start": "2026-09-05T14:11:12.002286084Z",
+      "end": "2026-09-05T14:11:12.003000750Z",
+      "traceDurationNanos": 714666,
+      "tsvLatencyNanos": 758917,
+      "latencyGapNanos": 44251,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 32,
+      "id": "global-wide-distribution-localized-early",
+      "start": "2026-09-05T14:11:12.006409167Z",
+      "end": "2026-09-05T14:11:12.007600792Z",
+      "traceDurationNanos": 1191625,
+      "tsvLatencyNanos": 1227750,
+      "latencyGapNanos": 36125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 33,
+      "id": "global-wide-distribution-localized-late",
+      "start": "2026-09-05T14:11:12.010964792Z",
+      "end": "2026-09-05T14:11:12.014977875Z",
+      "traceDurationNanos": 4013083,
+      "tsvLatencyNanos": 4056375,
+      "latencyGapNanos": 43292,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 3,
+      "ordinal": 34,
+      "id": "global-wide-distribution-localized-middle",
+      "start": "2026-09-05T14:11:12.018608500Z",
+      "end": "2026-09-05T14:11:12.021439542Z",
+      "traceDurationNanos": 2831042,
+      "tsvLatencyNanos": 2868041,
+      "latencyGapNanos": 36999,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 1,
+      "id": "global-wide-four-properties-zero",
+      "start": "2026-09-05T14:11:28.841539542Z",
+      "end": "2026-09-05T14:11:29.100978209Z",
+      "traceDurationNanos": 259438667,
+      "tsvLatencyNanos": 266868583,
+      "latencyGapNanos": 7429916,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 2,
+      "id": "global-wide-four-properties-targeted",
+      "start": "2026-09-05T14:11:29.106277167Z",
+      "end": "2026-09-05T14:11:29.115816917Z",
+      "traceDurationNanos": 9539750,
+      "tsvLatencyNanos": 9595167,
+      "latencyGapNanos": 55417,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 3,
+      "id": "global-wide-four-properties-dense",
+      "start": "2026-09-05T14:11:29.119677709Z",
+      "end": "2026-09-05T14:11:29.123816917Z",
+      "traceDurationNanos": 4139208,
+      "tsvLatencyNanos": 4192500,
+      "latencyGapNanos": 53292,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 4,
+      "id": "global-wide-class-pair-zero",
+      "start": "2026-09-05T14:11:29.134343667Z",
+      "end": "2026-09-05T14:11:29.136334334Z",
+      "traceDurationNanos": 1990667,
+      "tsvLatencyNanos": 2078666,
+      "latencyGapNanos": 87999,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 5,
+      "id": "global-wide-class-pair-targeted",
+      "start": "2026-09-05T14:11:29.138775042Z",
+      "end": "2026-09-05T14:11:29.143642209Z",
+      "traceDurationNanos": 4867167,
+      "tsvLatencyNanos": 4943958,
+      "latencyGapNanos": 76791,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 6,
+      "id": "global-wide-class-pair-dense",
+      "start": "2026-09-05T14:11:29.146539125Z",
+      "end": "2026-09-05T14:11:29.147409625Z",
+      "traceDurationNanos": 870500,
+      "tsvLatencyNanos": 922833,
+      "latencyGapNanos": 52333,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 7,
+      "id": "global-wide-name-pair-zero",
+      "start": "2026-09-05T14:11:29.151573709Z",
+      "end": "2026-09-05T14:11:29.153427084Z",
+      "traceDurationNanos": 1853375,
+      "tsvLatencyNanos": 1937416,
+      "latencyGapNanos": 84041,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 8,
+      "id": "global-wide-name-pair-targeted",
+      "start": "2026-09-05T14:11:29.155317209Z",
+      "end": "2026-09-05T14:11:29.159658584Z",
+      "traceDurationNanos": 4341375,
+      "tsvLatencyNanos": 4434542,
+      "latencyGapNanos": 93167,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 9,
+      "id": "global-wide-name-pair-dense",
+      "start": "2026-09-05T14:11:29.161677542Z",
+      "end": "2026-09-05T14:11:29.162358542Z",
+      "traceDurationNanos": 681000,
+      "tsvLatencyNanos": 734958,
+      "latencyGapNanos": 53958,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 10,
+      "id": "global-wide-caller-class-zero",
+      "start": "2026-09-05T14:11:29.166255667Z",
+      "end": "2026-09-05T14:11:29.167944875Z",
+      "traceDurationNanos": 1689208,
+      "tsvLatencyNanos": 1747166,
+      "latencyGapNanos": 57958,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 11,
+      "id": "global-wide-caller-class-targeted",
+      "start": "2026-09-05T14:11:29.169744834Z",
+      "end": "2026-09-05T14:11:29.172628750Z",
+      "traceDurationNanos": 2883916,
+      "tsvLatencyNanos": 2940667,
+      "latencyGapNanos": 56751,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 12,
+      "id": "global-wide-caller-class-dense",
+      "start": "2026-09-05T14:11:29.174454542Z",
+      "end": "2026-09-05T14:11:29.175043459Z",
+      "traceDurationNanos": 588917,
+      "tsvLatencyNanos": 636250,
+      "latencyGapNanos": 47333,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 13,
+      "id": "global-wide-callee-class-zero",
+      "start": "2026-09-05T14:11:29.177985959Z",
+      "end": "2026-09-05T14:11:29.179378709Z",
+      "traceDurationNanos": 1392750,
+      "tsvLatencyNanos": 1437458,
+      "latencyGapNanos": 44708,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 14,
+      "id": "global-wide-callee-class-targeted",
+      "start": "2026-09-05T14:11:29.181097625Z",
+      "end": "2026-09-05T14:11:29.183241125Z",
+      "traceDurationNanos": 2143500,
+      "tsvLatencyNanos": 2196875,
+      "latencyGapNanos": 53375,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 15,
+      "id": "global-wide-callee-class-dense",
+      "start": "2026-09-05T14:11:29.185375625Z",
+      "end": "2026-09-05T14:11:29.185871792Z",
+      "traceDurationNanos": 496167,
+      "tsvLatencyNanos": 552959,
+      "latencyGapNanos": 56792,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 16,
+      "id": "global-wide-provenance-zero",
+      "start": "2026-09-05T14:11:29.188866875Z",
+      "end": "2026-09-05T14:11:29.190181542Z",
+      "traceDurationNanos": 1314667,
+      "tsvLatencyNanos": 1351209,
+      "latencyGapNanos": 36542,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 17,
+      "id": "global-wide-provenance-targeted",
+      "start": "2026-09-05T14:11:29.192436375Z",
+      "end": "2026-09-05T14:11:29.195382917Z",
+      "traceDurationNanos": 2946542,
+      "tsvLatencyNanos": 2990792,
+      "latencyGapNanos": 44250,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 18,
+      "id": "global-wide-provenance-dense",
+      "start": "2026-09-05T14:11:29.197219584Z",
+      "end": "2026-09-05T14:11:29.198039459Z",
+      "traceDurationNanos": 819875,
+      "tsvLatencyNanos": 861042,
+      "latencyGapNanos": 41167,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 19,
+      "id": "global-wide-aliased-zero",
+      "start": "2026-09-05T14:11:29.201730375Z",
+      "end": "2026-09-05T14:11:29.202605125Z",
+      "traceDurationNanos": 874750,
+      "tsvLatencyNanos": 916500,
+      "latencyGapNanos": 41750,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 20,
+      "id": "global-wide-aliased-targeted",
+      "start": "2026-09-05T14:11:29.204339500Z",
+      "end": "2026-09-05T14:11:29.207846209Z",
+      "traceDurationNanos": 3506709,
+      "tsvLatencyNanos": 3544875,
+      "latencyGapNanos": 38166,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 21,
+      "id": "global-wide-aliased-dense",
+      "start": "2026-09-05T14:11:29.210383417Z",
+      "end": "2026-09-05T14:11:29.211268209Z",
+      "traceDurationNanos": 884792,
+      "tsvLatencyNanos": 941458,
+      "latencyGapNanos": 56666,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 22,
+      "id": "global-wide-parameterized-zero",
+      "start": "2026-09-05T14:11:29.214933334Z",
+      "end": "2026-09-05T14:11:29.215969042Z",
+      "traceDurationNanos": 1035708,
+      "tsvLatencyNanos": 1077916,
+      "latencyGapNanos": 42208,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 23,
+      "id": "global-wide-parameterized-targeted",
+      "start": "2026-09-05T14:11:29.217670084Z",
+      "end": "2026-09-05T14:11:29.220012667Z",
+      "traceDurationNanos": 2342583,
+      "tsvLatencyNanos": 2387833,
+      "latencyGapNanos": 45250,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 24,
+      "id": "global-wide-parameterized-dense",
+      "start": "2026-09-05T14:11:29.221812209Z",
+      "end": "2026-09-05T14:11:29.222565459Z",
+      "traceDurationNanos": 753250,
+      "tsvLatencyNanos": 789750,
+      "latencyGapNanos": 36500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 25,
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "start": "2026-09-05T14:11:29.225893584Z",
+      "end": "2026-09-05T14:11:29.226973042Z",
+      "traceDurationNanos": 1079458,
+      "tsvLatencyNanos": 1115333,
+      "latencyGapNanos": 35875,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 26,
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "start": "2026-09-05T14:11:29.228659667Z",
+      "end": "2026-09-05T14:11:29.231078209Z",
+      "traceDurationNanos": 2418542,
+      "tsvLatencyNanos": 2459209,
+      "latencyGapNanos": 40667,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 27,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "start": "2026-09-05T14:11:29.232928875Z",
+      "end": "2026-09-05T14:11:29.234349667Z",
+      "traceDurationNanos": 1420792,
+      "tsvLatencyNanos": 1468084,
+      "latencyGapNanos": 47292,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 28,
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "start": "2026-09-05T14:11:29.237750417Z",
+      "end": "2026-09-05T14:11:29.240851709Z",
+      "traceDurationNanos": 3101292,
+      "tsvLatencyNanos": 3142917,
+      "latencyGapNanos": 41625,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 29,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "start": "2026-09-05T14:11:29.242564375Z",
+      "end": "2026-09-05T14:11:29.300372584Z",
+      "traceDurationNanos": 57808209,
+      "tsvLatencyNanos": 57878542,
+      "latencyGapNanos": 70333,
+      "rawCpuEvents": 156,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 30,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "start": "2026-09-05T14:11:29.302308417Z",
+      "end": "2026-09-05T14:11:29.354989667Z",
+      "traceDurationNanos": 52681250,
+      "tsvLatencyNanos": 52745000,
+      "latencyGapNanos": 63750,
+      "rawCpuEvents": 69,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 31,
+      "id": "global-wide-distribution-broad-all-64",
+      "start": "2026-09-05T14:11:29.358837709Z",
+      "end": "2026-09-05T14:11:29.359619584Z",
+      "traceDurationNanos": 781875,
+      "tsvLatencyNanos": 830708,
+      "latencyGapNanos": 48833,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 32,
+      "id": "global-wide-distribution-localized-early",
+      "start": "2026-09-05T14:11:29.363070792Z",
+      "end": "2026-09-05T14:11:29.364259875Z",
+      "traceDurationNanos": 1189083,
+      "tsvLatencyNanos": 1236875,
+      "latencyGapNanos": 47792,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 33,
+      "id": "global-wide-distribution-localized-late",
+      "start": "2026-09-05T14:11:29.367743084Z",
+      "end": "2026-09-05T14:11:29.371743875Z",
+      "traceDurationNanos": 4000791,
+      "tsvLatencyNanos": 4033459,
+      "latencyGapNanos": 32668,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 4,
+      "ordinal": 34,
+      "id": "global-wide-distribution-localized-middle",
+      "start": "2026-09-05T14:11:29.375328334Z",
+      "end": "2026-09-05T14:11:29.378022250Z",
+      "traceDurationNanos": 2693916,
+      "tsvLatencyNanos": 2730625,
+      "latencyGapNanos": 36709,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 1,
+      "id": "global-wide-four-properties-zero",
+      "start": "2026-09-05T14:11:46.370091542Z",
+      "end": "2026-09-05T14:11:46.619841042Z",
+      "traceDurationNanos": 249749500,
+      "tsvLatencyNanos": 257486125,
+      "latencyGapNanos": 7736625,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 2,
+      "id": "global-wide-four-properties-targeted",
+      "start": "2026-09-05T14:11:46.624931875Z",
+      "end": "2026-09-05T14:11:46.634775334Z",
+      "traceDurationNanos": 9843459,
+      "tsvLatencyNanos": 9898667,
+      "latencyGapNanos": 55208,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 3,
+      "id": "global-wide-four-properties-dense",
+      "start": "2026-09-05T14:11:46.637913Z",
+      "end": "2026-09-05T14:11:46.642154667Z",
+      "traceDurationNanos": 4241667,
+      "tsvLatencyNanos": 4289708,
+      "latencyGapNanos": 48041,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 4,
+      "id": "global-wide-class-pair-zero",
+      "start": "2026-09-05T14:11:46.651691209Z",
+      "end": "2026-09-05T14:11:46.653694417Z",
+      "traceDurationNanos": 2003208,
+      "tsvLatencyNanos": 2054625,
+      "latencyGapNanos": 51417,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 5,
+      "id": "global-wide-class-pair-targeted",
+      "start": "2026-09-05T14:11:46.655186334Z",
+      "end": "2026-09-05T14:11:46.659580167Z",
+      "traceDurationNanos": 4393833,
+      "tsvLatencyNanos": 4446583,
+      "latencyGapNanos": 52750,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 6,
+      "id": "global-wide-class-pair-dense",
+      "start": "2026-09-05T14:11:46.661566542Z",
+      "end": "2026-09-05T14:11:46.662370417Z",
+      "traceDurationNanos": 803875,
+      "tsvLatencyNanos": 852000,
+      "latencyGapNanos": 48125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 7,
+      "id": "global-wide-name-pair-zero",
+      "start": "2026-09-05T14:11:46.665965168Z",
+      "end": "2026-09-05T14:11:46.667748959Z",
+      "traceDurationNanos": 1783791,
+      "tsvLatencyNanos": 1844541,
+      "latencyGapNanos": 60750,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 8,
+      "id": "global-wide-name-pair-targeted",
+      "start": "2026-09-05T14:11:46.669038042Z",
+      "end": "2026-09-05T14:11:46.673903542Z",
+      "traceDurationNanos": 4865500,
+      "tsvLatencyNanos": 4926084,
+      "latencyGapNanos": 60584,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 9,
+      "id": "global-wide-name-pair-dense",
+      "start": "2026-09-05T14:11:46.675377959Z",
+      "end": "2026-09-05T14:11:46.676095042Z",
+      "traceDurationNanos": 717083,
+      "tsvLatencyNanos": 788834,
+      "latencyGapNanos": 71751,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 10,
+      "id": "global-wide-caller-class-zero",
+      "start": "2026-09-05T14:11:46.678960292Z",
+      "end": "2026-09-05T14:11:46.680511167Z",
+      "traceDurationNanos": 1550875,
+      "tsvLatencyNanos": 1598000,
+      "latencyGapNanos": 47125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 11,
+      "id": "global-wide-caller-class-targeted",
+      "start": "2026-09-05T14:11:46.681729584Z",
+      "end": "2026-09-05T14:11:46.684388167Z",
+      "traceDurationNanos": 2658583,
+      "tsvLatencyNanos": 2710542,
+      "latencyGapNanos": 51959,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 12,
+      "id": "global-wide-caller-class-dense",
+      "start": "2026-09-05T14:11:46.685692209Z",
+      "end": "2026-09-05T14:11:46.686194542Z",
+      "traceDurationNanos": 502333,
+      "tsvLatencyNanos": 571083,
+      "latencyGapNanos": 68750,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 13,
+      "id": "global-wide-callee-class-zero",
+      "start": "2026-09-05T14:11:46.688714458Z",
+      "end": "2026-09-05T14:11:46.690376500Z",
+      "traceDurationNanos": 1662042,
+      "tsvLatencyNanos": 1728542,
+      "latencyGapNanos": 66500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 14,
+      "id": "global-wide-callee-class-targeted",
+      "start": "2026-09-05T14:11:46.691643250Z",
+      "end": "2026-09-05T14:11:46.694303500Z",
+      "traceDurationNanos": 2660250,
+      "tsvLatencyNanos": 2715542,
+      "latencyGapNanos": 55292,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 15,
+      "id": "global-wide-callee-class-dense",
+      "start": "2026-09-05T14:11:46.695808125Z",
+      "end": "2026-09-05T14:11:46.696257709Z",
+      "traceDurationNanos": 449584,
+      "tsvLatencyNanos": 490084,
+      "latencyGapNanos": 40500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 16,
+      "id": "global-wide-provenance-zero",
+      "start": "2026-09-05T14:11:46.698897500Z",
+      "end": "2026-09-05T14:11:46.700255250Z",
+      "traceDurationNanos": 1357750,
+      "tsvLatencyNanos": 1399209,
+      "latencyGapNanos": 41459,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 17,
+      "id": "global-wide-provenance-targeted",
+      "start": "2026-09-05T14:11:46.702005126Z",
+      "end": "2026-09-05T14:11:46.705185834Z",
+      "traceDurationNanos": 3180708,
+      "tsvLatencyNanos": 3225583,
+      "latencyGapNanos": 44875,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 18,
+      "id": "global-wide-provenance-dense",
+      "start": "2026-09-05T14:11:46.706569250Z",
+      "end": "2026-09-05T14:11:46.707364875Z",
+      "traceDurationNanos": 795625,
+      "tsvLatencyNanos": 839500,
+      "latencyGapNanos": 43875,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 19,
+      "id": "global-wide-aliased-zero",
+      "start": "2026-09-05T14:11:46.710266959Z",
+      "end": "2026-09-05T14:11:46.711349375Z",
+      "traceDurationNanos": 1082416,
+      "tsvLatencyNanos": 1125875,
+      "latencyGapNanos": 43459,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 20,
+      "id": "global-wide-aliased-targeted",
+      "start": "2026-09-05T14:11:46.712557334Z",
+      "end": "2026-09-05T14:11:46.716153250Z",
+      "traceDurationNanos": 3595916,
+      "tsvLatencyNanos": 3648875,
+      "latencyGapNanos": 52959,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 21,
+      "id": "global-wide-aliased-dense",
+      "start": "2026-09-05T14:11:46.717929792Z",
+      "end": "2026-09-05T14:11:46.718654042Z",
+      "traceDurationNanos": 724250,
+      "tsvLatencyNanos": 761750,
+      "latencyGapNanos": 37500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 22,
+      "id": "global-wide-parameterized-zero",
+      "start": "2026-09-05T14:11:46.721362Z",
+      "end": "2026-09-05T14:11:46.722316750Z",
+      "traceDurationNanos": 954750,
+      "tsvLatencyNanos": 992416,
+      "latencyGapNanos": 37666,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 23,
+      "id": "global-wide-parameterized-targeted",
+      "start": "2026-09-05T14:11:46.723490167Z",
+      "end": "2026-09-05T14:11:46.725753292Z",
+      "traceDurationNanos": 2263125,
+      "tsvLatencyNanos": 2305250,
+      "latencyGapNanos": 42125,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 24,
+      "id": "global-wide-parameterized-dense",
+      "start": "2026-09-05T14:11:46.726975875Z",
+      "end": "2026-09-05T14:11:46.727662334Z",
+      "traceDurationNanos": 686459,
+      "tsvLatencyNanos": 730250,
+      "latencyGapNanos": 43791,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 25,
+      "id": "global-wide-wrapped-case-insensitive-zero",
+      "start": "2026-09-05T14:11:46.730361334Z",
+      "end": "2026-09-05T14:11:46.731434459Z",
+      "traceDurationNanos": 1073125,
+      "tsvLatencyNanos": 1146541,
+      "latencyGapNanos": 73416,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 26,
+      "id": "global-wide-wrapped-case-insensitive-targeted",
+      "start": "2026-09-05T14:11:46.732582084Z",
+      "end": "2026-09-05T14:11:46.734972209Z",
+      "traceDurationNanos": 2390125,
+      "tsvLatencyNanos": 2430625,
+      "latencyGapNanos": 40500,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 27,
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "start": "2026-09-05T14:11:46.736237750Z",
+      "end": "2026-09-05T14:11:46.737623375Z",
+      "traceDurationNanos": 1385625,
+      "tsvLatencyNanos": 1433167,
+      "latencyGapNanos": 47542,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 28,
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "start": "2026-09-05T14:11:46.740571209Z",
+      "end": "2026-09-05T14:11:46.743676Z",
+      "traceDurationNanos": 3104791,
+      "tsvLatencyNanos": 3149958,
+      "latencyGapNanos": 45167,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 29,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "start": "2026-09-05T14:11:46.744910500Z",
+      "end": "2026-09-05T14:11:46.779687875Z",
+      "traceDurationNanos": 34777375,
+      "tsvLatencyNanos": 34870167,
+      "latencyGapNanos": 92792,
+      "rawCpuEvents": 90,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 30,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "start": "2026-09-05T14:11:46.781147917Z",
+      "end": "2026-09-05T14:11:46.850685042Z",
+      "traceDurationNanos": 69537125,
+      "tsvLatencyNanos": 69594833,
+      "latencyGapNanos": 57708,
+      "rawCpuEvents": 90,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 31,
+      "id": "global-wide-distribution-broad-all-64",
+      "start": "2026-09-05T14:11:46.853727292Z",
+      "end": "2026-09-05T14:11:46.854475209Z",
+      "traceDurationNanos": 747917,
+      "tsvLatencyNanos": 818667,
+      "latencyGapNanos": 70750,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 32,
+      "id": "global-wide-distribution-localized-early",
+      "start": "2026-09-05T14:11:46.857927209Z",
+      "end": "2026-09-05T14:11:46.859270375Z",
+      "traceDurationNanos": 1343166,
+      "tsvLatencyNanos": 1397292,
+      "latencyGapNanos": 54126,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 33,
+      "id": "global-wide-distribution-localized-late",
+      "start": "2026-09-05T14:11:46.862504167Z",
+      "end": "2026-09-05T14:11:46.866514709Z",
+      "traceDurationNanos": 4010542,
+      "tsvLatencyNanos": 4047542,
+      "latencyGapNanos": 37000,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    },
+    {
+      "recording": 5,
+      "ordinal": 34,
+      "id": "global-wide-distribution-localized-middle",
+      "start": "2026-09-05T14:11:46.870107625Z",
+      "end": "2026-09-05T14:11:46.872920667Z",
+      "traceDurationNanos": 2813042,
+      "tsvLatencyNanos": 2853625,
+      "latencyGapNanos": 40583,
+      "rawCpuEvents": 0,
+      "rawFullThreadMethodStacksMatch": true
+    }
+  ],
+  "bindingLimit": "Existing per-recording command paths plus frozen catalog JAR hash and current matching JAR/class establish retained input identity. JFR itself does not cryptographically embed the application JAR hash; no independent per-recording before/after JAR receipt was found for cpu-3/4/5.",
+  "interpretation": "Interpreted/C1 labels also occur in older outer-only recordings; added projectSource/provenance tracing is not necessary for their presence. The recordings differ in time/JIT history and are not paired trace-on/off controls, so no causal overhead or unprofiled compilation-state conclusion follows.",
+  "limitations": [
+    "macOS native CPU recording ActiveSetting event=cpu, engine=wall; not Linux hardware cycles.",
+    "Leaf frame labels and BCI are reported metadata, not exclusive instruction timing.",
+    "C2 label absence from sampled node leaves does not prove no C2 execution or compilation.",
+    "Full raw events exported; non-raw CPU recording count verified and original full collapsed-window totals preserved, not re-exported with frame metadata."
+  ]
+}

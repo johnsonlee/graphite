@@ -72,3 +72,26 @@ helper 不能被当作免费可用的 mapped 功能。选段必须在返回 LIMI
 
 [源码 API、回退路径和语义边界审计](source-work-audit.md) 逐项列出完整索引校验、
 选段顺序校验、源顺序、LIMIT、重复／空投影、完整来源及预算取消约束。
+
+## 回退 139 后补齐的节点与并发定位
+
+本轮只分析冻结 main 的既有录制，没有新候选或新测量。
+[逐节点审计](raw-node-audit/README.md) 核实 raw 循环没有逐节点 Node 解码，
+已有 selected 字符串/属性缓存，且 exact set 在循环外构建。
+[图级调用重叠审计](graph-call-overlap/README.md) 独立复算 576 个调用：
+targeted 初始阶段约 97% 的有调用区间仅存在一个图级调用；dense 来源补全
+约 95–97% 存在两个。图内 segment 工作不包含在这个并发数中，不能推算删池收益。
+
+[源码行和 BCI 定位](raw-source-lines/README.md) 从原 JFR 恢复此前丢弃的
+frame 元数据，并绑定到冻结 JAR 的精确 class、行表及 Kotlin SMAP。
+原来只能落到大节点 lambda 的 targeted 98 个叶样本，现在可区分 42 个遍历
+控制、18 个谓词属性索引读取/拆箱、17 个 raw 寻址/读取、13 个 exact set
+选择/检查以及 8 个其他位置。它们是记录位置，不能当作独占耗时。
+其中 63 个标记 Interpreted、35 个 C1 compiled；索引已热不等于 JIT 已稳态。
+136 的遍历改动与 138 的 posting 改动仍保持拒绝；此诊断不启动 140。
+
+[早期 outer-only 录制交叉检查](raw-frame-sensitivity/README.md) 另核对 102 个
+旧窗口、523 个 raw CPU 事件，同样有 Interpreted/C1 节点叶样本。比较 dense
+时双方都取 whole-query，不能拿后期 provenance-only 的 43 当作整条查询。
+两批不是 tracing 开关的配对实验；早期也缺少逐份采集前后的 JAR hash 收据，
+因此不能用该观察证明无 profiler 的编译状态或 tracing 的因果成本。

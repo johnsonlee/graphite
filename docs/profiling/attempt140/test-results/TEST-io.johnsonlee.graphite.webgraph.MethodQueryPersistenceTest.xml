@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:02:27.154Z" hostname="johnsonlee.local" time="1.397">
+  <properties/>
+  <testcase name="general mapped Method queries stream without initializing full metadata" classname="io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest" time="0.73"/>
+  <testcase name="persisted and mapped graphs expose indexed-only methods through Cypher" classname="io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest" time="0.019"/>
+  <testcase name="large mapped method scans ignore graph work budgets but honor cancellation" classname="io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest" time="0.636"/>
+  <testcase name="mapped method index preserves pattern order limits and cancellation scans" classname="io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

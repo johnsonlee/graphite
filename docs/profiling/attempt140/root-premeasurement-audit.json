@@ -1,0 +1,16 @@
+{
+  "sourceReversalExactlyEqualsFrozenMain": true,
+  "mainAndJmhCompared": 130,
+  "onlyChangedFile": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "sourceSha256": "120d23247d266e4b9a57c7a53644154307725b32156531ce62822f914dfb98ba",
+  "candidateJarSha256": "fb58d962d349a5c526bec229b996f08d94800702688ed202c1e7e771c3e4e357",
+  "xmlCounts": {
+    "tests": 187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suiteCount": 6,
+  "liveJavaProcessesBeforeControl": [],
+  "accepted": false
+}

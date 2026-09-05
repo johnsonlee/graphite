@@ -1,0 +1,18 @@
+{
+  "command": [
+    "git",
+    "show",
+    "aede4c82f66a925ba9df3fc8588c6e1399c17f61:.github/scripts/benchmark-gate.mjs"
+  ],
+  "sha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+  "matchesRecordedComparatorHash": true,
+  "readOnly": true,
+  "gate": "graph-id P95 candidate <= max(base * 1.15, base + 250000 ns); minimumSpeedup field is legacy report metadata, not the active regression gate.",
+  "widthGate": {
+    "p50Limit": "max(base * 1.15, base + 250000 ns)",
+    "p95Limit": "max(base * 1.15, base + 1000000 ns)",
+    "widthScaling": "next normalized candidate P95 <= previous * 1.5",
+    "failureEffect": "errors.push; final passed requires errors.length === 0",
+    "excerpt": "comparator-gate-excerpt.txt"
+  }
+}

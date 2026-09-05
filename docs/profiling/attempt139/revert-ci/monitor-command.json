@@ -1,0 +1,13 @@
+{
+  "readOnly": true,
+  "head": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "runs": {
+    "unit": 33992947613,
+    "benchmark": 33992947567
+  },
+  "pollIntervalSeconds": 55,
+  "actions": [
+    "gh run view <id> --json databaseId,headSha,status,conclusion,url,jobs"
+  ],
+  "neverRerunOrPush": true
+}

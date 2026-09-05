@@ -1,0 +1,34 @@
+{
+  "artifact": {
+    "id": 9977227518,
+    "node_id": "MDg6QXJ0aWZhY3Q5OTc3MjI3NTE4",
+    "name": "benchmark-method-compatibility-shard-4-string-116-1",
+    "size_in_bytes": 23024,
+    "url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9977227518",
+    "archive_download_url": "https://api.github.com/repos/johnsonlee/graphite/actions/artifacts/9977227518/zip",
+    "expired": false,
+    "digest": "sha256:7e70d76de715a8ca46b0f9e05e08adfc53c7f1569e4e034dd9d4097136fcf568",
+    "created_at": "2026-09-05T21:28:14Z",
+    "updated_at": "2026-09-05T21:28:14Z",
+    "expires_at": "2026-09-19T21:28:12Z",
+    "workflow_run": {
+      "id": 33992947567,
+      "repository_id": 1141070800,
+      "head_repository_id": 1141070800,
+      "head_branch": "codex/main-global-query-p95-10x",
+      "head_sha": "aede4c82f66a925ba9df3fc8588c6e1399c17f61"
+    }
+  },
+  "command": [
+    "gh",
+    "run",
+    "download",
+    "33992947567",
+    "--name",
+    "benchmark-method-compatibility-shard-4-string-116-1",
+    "--dir",
+    "/private/tmp/graphite-attempt139._p0bc7zf/revert-ci/method4-string"
+  ],
+  "exitCode": 0,
+  "stderr": ""
+}
