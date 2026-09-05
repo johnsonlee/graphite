@@ -576,22 +576,27 @@ internal class MappedWebGraphBackedGraph(
                                 stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
                                 stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
                                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
-                                matched = predicates.indices.any { index ->
+                                var index = 0
+                                while (index < predicates.size && !matched) {
                                     val stringId = stringIds[predicatePropertyIndexes[index]]
-                                    exactMatchSets?.let { sets -> return@any stringId in sets[index] }
-                                    val states = matchStates[index]
-                                    when (states[stringId]) {
-                                        RAW_STRING_MATCH -> true
-                                        RAW_STRING_MISS -> false
-                                        else -> stringMatches(
-                                            stringTable.get(stringId),
-                                            predicates[index].transform,
-                                            predicates[index].mode,
-                                            predicates[index].expected
-                                        ).also { result ->
-                                            states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                                    matched = if (exactMatchSets != null) {
+                                        stringId in exactMatchSets[index]
+                                    } else {
+                                        val states = matchStates[index]
+                                        when (states[stringId]) {
+                                            RAW_STRING_MATCH -> true
+                                            RAW_STRING_MISS -> false
+                                            else -> stringMatches(
+                                                stringTable.get(stringId),
+                                                predicates[index].transform,
+                                                predicates[index].mode,
+                                                predicates[index].expected
+                                            ).also { result ->
+                                                states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS
+                                            }
                                         }
                                     }
+                                    index++
                                 }
                             }
                             if (matched) {

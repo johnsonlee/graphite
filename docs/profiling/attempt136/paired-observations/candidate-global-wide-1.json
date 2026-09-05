@@ -1,0 +1,2167 @@
+[
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries",
+        "mode" : "ss",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+            "-Xmx8g",
+            "-XX:ActiveProcessorCount=4",
+            "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+            "-Dgraphite.broad.pressure.correctness.mode=verify",
+            "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+            "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-1.tsv"
+        ],
+        "jdkVersion" : "17.0.18",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.18+0",
+        "warmupIterations" : 0,
+        "warmupTime" : "single-shot",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "single-shot",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "coverageFamily" : "global-wide",
+            "graphCount" : "64",
+            "indexState" : "cold",
+            "timeoutMillis" : "300000"
+        },
+        "primaryMetric" : {
+            "score" : 0.513259791,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.513259791,
+                "50.0" : 0.513259791,
+                "90.0" : 0.513259791,
+                "95.0" : 0.513259791,
+                "99.0" : 0.513259791,
+                "99.9" : 0.513259791,
+                "99.99" : 0.513259791,
+                "99.999" : 0.513259791,
+                "99.9999" : 0.513259791,
+                "100.0" : 0.513259791
+            },
+            "scoreUnit" : "s/op",
+            "rawData" : [
+                [
+                    0.513259791
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+            "accessedGraphCount" : {
+                "score" : 1452.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1452.0,
+                    1452.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1452.0,
+                    "50.0" : 1452.0,
+                    "90.0" : 1452.0,
+                    "95.0" : 1452.0,
+                    "99.0" : 1452.0,
+                    "99.9" : 1452.0,
+                    "99.99" : 1452.0,
+                    "99.999" : 1452.0,
+                    "99.9999" : 1452.0,
+                    "100.0" : 1452.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1452.0
+                    ]
+                ]
+            },
+            "aggregationP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "availableProcessors" : {
+                "score" : 4.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.0,
+                    4.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.0,
+                    "50.0" : 4.0,
+                    "90.0" : 4.0,
+                    "95.0" : 4.0,
+                    "99.0" : 4.0,
+                    "99.9" : 4.0,
+                    "99.99" : 4.0,
+                    "99.999" : 4.0,
+                    "99.9999" : 4.0,
+                    "100.0" : 4.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.0
+                    ]
+                ]
+            },
+            "booleanP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteIndexAdmittedGraphs" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteIndexRetainedBytes" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteParallelScanCount" : {
+                "score" : 4.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.0,
+                    4.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.0,
+                    "50.0" : 4.0,
+                    "90.0" : 4.0,
+                    "95.0" : 4.0,
+                    "99.0" : 4.0,
+                    "99.9" : 4.0,
+                    "99.99" : 4.0,
+                    "99.999" : 4.0,
+                    "99.9999" : 4.0,
+                    "100.0" : 4.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.0
+                    ]
+                ]
+            },
+            "callSiteParallelScanGraphCount" : {
+                "score" : 4.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.0,
+                    4.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.0,
+                    "50.0" : 4.0,
+                    "90.0" : 4.0,
+                    "95.0" : 4.0,
+                    "99.0" : 4.0,
+                    "99.9" : 4.0,
+                    "99.99" : 4.0,
+                    "99.999" : 4.0,
+                    "99.9999" : 4.0,
+                    "100.0" : 4.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.0
+                    ]
+                ]
+            },
+            "callSiteScanPeakActiveWorkers" : {
+                "score" : 3.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.0,
+                    3.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.0,
+                    "50.0" : 3.0,
+                    "90.0" : 3.0,
+                    "95.0" : 3.0,
+                    "99.0" : 3.0,
+                    "99.9" : 3.0,
+                    "99.99" : 3.0,
+                    "99.999" : 3.0,
+                    "99.9999" : 3.0,
+                    "100.0" : 3.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.0
+                    ]
+                ]
+            },
+            "callSiteStringIndexLookupCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteStringIndexLookupGraphCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteStringIndexLookupMaxPerGraph" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteStringIndexLookupMinPerGraph" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "callSiteTrigramIndexedGraphs" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "containsP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "coverageBoundaryCount" : {
+                "score" : 3.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.0,
+                    3.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.0,
+                    "50.0" : 3.0,
+                    "90.0" : 3.0,
+                    "95.0" : 3.0,
+                    "99.0" : 3.0,
+                    "99.9" : 3.0,
+                    "99.99" : 3.0,
+                    "99.999" : 3.0,
+                    "99.9999" : 3.0,
+                    "100.0" : 3.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.0
+                    ]
+                ]
+            },
+            "coverageFamilyCount" : {
+                "score" : 1.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1.0,
+                    1.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1.0,
+                    "50.0" : 1.0,
+                    "90.0" : 1.0,
+                    "95.0" : 1.0,
+                    "99.0" : 1.0,
+                    "99.9" : 1.0,
+                    "99.99" : 1.0,
+                    "99.999" : 1.0,
+                    "99.9999" : 1.0,
+                    "100.0" : 1.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1.0
+                    ]
+                ]
+            },
+            "coverageOperatorCount" : {
+                "score" : 2.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.0,
+                    2.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.0,
+                    "50.0" : 2.0,
+                    "90.0" : 2.0,
+                    "95.0" : 2.0,
+                    "99.0" : 2.0,
+                    "99.9" : 2.0,
+                    "99.99" : 2.0,
+                    "99.999" : 2.0,
+                    "99.9999" : 2.0,
+                    "100.0" : 2.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.0
+                    ]
+                ]
+            },
+            "coverageProjectionCount" : {
+                "score" : 8.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    8.0,
+                    8.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 8.0,
+                    "50.0" : 8.0,
+                    "90.0" : 8.0,
+                    "95.0" : 8.0,
+                    "99.0" : 8.0,
+                    "99.9" : 8.0,
+                    "99.99" : 8.0,
+                    "99.999" : 8.0,
+                    "99.9999" : 8.0,
+                    "100.0" : 8.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        8.0
+                    ]
+                ]
+            },
+            "coverageSelectivityCount" : {
+                "score" : 3.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.0,
+                    3.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.0,
+                    "50.0" : 3.0,
+                    "90.0" : 3.0,
+                    "95.0" : 3.0,
+                    "99.0" : 3.0,
+                    "99.9" : 3.0,
+                    "99.99" : 3.0,
+                    "99.999" : 3.0,
+                    "99.9999" : 3.0,
+                    "100.0" : 3.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.0
+                    ]
+                ]
+            },
+            "coverageShapeCount" : {
+                "score" : 14.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    14.0,
+                    14.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 14.0,
+                    "50.0" : 14.0,
+                    "90.0" : 14.0,
+                    "95.0" : 14.0,
+                    "99.0" : 14.0,
+                    "99.9" : 14.0,
+                    "99.99" : 14.0,
+                    "99.999" : 14.0,
+                    "99.9999" : 14.0,
+                    "100.0" : 14.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        14.0
+                    ]
+                ]
+            },
+            "cpuCoreUtilizationPermille" : {
+                "score" : 3129.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3129.0,
+                    3129.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3129.0,
+                    "50.0" : 3129.0,
+                    "90.0" : 3129.0,
+                    "95.0" : 3129.0,
+                    "99.0" : 3129.0,
+                    "99.9" : 3129.0,
+                    "99.99" : 3129.0,
+                    "99.999" : 3129.0,
+                    "99.9999" : 3129.0,
+                    "100.0" : 3129.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3129.0
+                    ]
+                ]
+            },
+            "cypherGraphIdPredicateQueryCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "denseP50LatencyNanos" : {
+                "score" : 818750.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    818750.0,
+                    818750.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 818750.0,
+                    "50.0" : 818750.0,
+                    "90.0" : 818750.0,
+                    "95.0" : 818750.0,
+                    "99.0" : 818750.0,
+                    "99.9" : 818750.0,
+                    "99.99" : 818750.0,
+                    "99.999" : 818750.0,
+                    "99.9999" : 818750.0,
+                    "100.0" : 818750.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        818750.0
+                    ]
+                ]
+            },
+            "denseP95LatencyNanos" : {
+                "score" : 5.041925E7,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    5.041925E7,
+                    5.041925E7
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 5.041925E7,
+                    "50.0" : 5.041925E7,
+                    "90.0" : 5.041925E7,
+                    "95.0" : 5.041925E7,
+                    "99.0" : 5.041925E7,
+                    "99.9" : 5.041925E7,
+                    "99.99" : 5.041925E7,
+                    "99.999" : 5.041925E7,
+                    "99.9999" : 5.041925E7,
+                    "100.0" : 5.041925E7
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        5.041925E7
+                    ]
+                ]
+            },
+            "distinctGraphPathCount" : {
+                "score" : 64.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    64.0,
+                    64.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 64.0,
+                    "50.0" : 64.0,
+                    "90.0" : 64.0,
+                    "95.0" : 64.0,
+                    "99.0" : 64.0,
+                    "99.9" : 64.0,
+                    "99.99" : 64.0,
+                    "99.999" : 64.0,
+                    "99.9999" : 64.0,
+                    "100.0" : 64.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        64.0
+                    ]
+                ]
+            },
+            "exactP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "failureCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "filteredNodeLimitFastPathExecutions" : {
+                "score" : 34.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    34.0,
+                    34.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 34.0,
+                    "50.0" : 34.0,
+                    "90.0" : 34.0,
+                    "95.0" : 34.0,
+                    "99.0" : 34.0,
+                    "99.9" : 34.0,
+                    "99.99" : 34.0,
+                    "99.999" : 34.0,
+                    "99.9999" : 34.0,
+                    "100.0" : 34.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        34.0
+                    ]
+                ]
+            },
+            "gc.alloc.rate" : {
+                "score" : 580.4152771263582,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    "NaN",
+                    "NaN"
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 580.4152771263582,
+                    "50.0" : 580.4152771263582,
+                    "90.0" : 580.4152771263582,
+                    "95.0" : 580.4152771263582,
+                    "99.0" : 580.4152771263582,
+                    "99.9" : 580.4152771263582,
+                    "99.99" : 580.4152771263582,
+                    "99.999" : 580.4152771263582,
+                    "99.9999" : 580.4152771263582,
+                    "100.0" : 580.4152771263582
+                },
+                "scoreUnit" : "MB/sec",
+                "rawData" : [
+                    [
+                        580.4152771263582
+                    ]
+                ]
+            },
+            "gc.alloc.rate.norm" : {
+                "score" : 4.801637792E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    "NaN",
+                    "NaN"
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.801637792E9,
+                    "50.0" : 4.801637792E9,
+                    "90.0" : 4.801637792E9,
+                    "95.0" : 4.801637792E9,
+                    "99.0" : 4.801637792E9,
+                    "99.9" : 4.801637792E9,
+                    "99.99" : 4.801637792E9,
+                    "99.999" : 4.801637792E9,
+                    "99.9999" : 4.801637792E9,
+                    "100.0" : 4.801637792E9
+                },
+                "scoreUnit" : "B/op",
+                "rawData" : [
+                    [
+                        4.801637792E9
+                    ]
+                ]
+            },
+            "gc.count" : {
+                "score" : 21.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    21.0,
+                    21.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 21.0,
+                    "50.0" : 21.0,
+                    "90.0" : 21.0,
+                    "95.0" : 21.0,
+                    "99.0" : 21.0,
+                    "99.9" : 21.0,
+                    "99.99" : 21.0,
+                    "99.999" : 21.0,
+                    "99.9999" : 21.0,
+                    "100.0" : 21.0
+                },
+                "scoreUnit" : "counts",
+                "rawData" : [
+                    [
+                        21.0
+                    ]
+                ]
+            },
+            "gc.time" : {
+                "score" : 39.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    39.0,
+                    39.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 39.0,
+                    "50.0" : 39.0,
+                    "90.0" : 39.0,
+                    "95.0" : 39.0,
+                    "99.0" : 39.0,
+                    "99.9" : 39.0,
+                    "99.99" : 39.0,
+                    "99.999" : 39.0,
+                    "99.9999" : 39.0,
+                    "100.0" : 39.0
+                },
+                "scoreUnit" : "ms",
+                "rawData" : [
+                    [
+                        39.0
+                    ]
+                ]
+            },
+            "gcCount" : {
+                "score" : 1.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1.0,
+                    1.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1.0,
+                    "50.0" : 1.0,
+                    "90.0" : 1.0,
+                    "95.0" : 1.0,
+                    "99.0" : 1.0,
+                    "99.9" : 1.0,
+                    "99.99" : 1.0,
+                    "99.999" : 1.0,
+                    "99.9999" : 1.0,
+                    "100.0" : 1.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1.0
+                    ]
+                ]
+            },
+            "gcMillis" : {
+                "score" : 1.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1.0,
+                    1.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1.0,
+                    "50.0" : 1.0,
+                    "90.0" : 1.0,
+                    "95.0" : 1.0,
+                    "99.0" : 1.0,
+                    "99.9" : 1.0,
+                    "99.99" : 1.0,
+                    "99.999" : 1.0,
+                    "99.9999" : 1.0,
+                    "100.0" : 1.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1.0
+                    ]
+                ]
+            },
+            "generalFallbackExecutions" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "globalP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphCount" : {
+                "score" : 64.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    64.0,
+                    64.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 64.0,
+                    "50.0" : 64.0,
+                    "90.0" : 64.0,
+                    "95.0" : 64.0,
+                    "99.0" : 64.0,
+                    "99.9" : 64.0,
+                    "99.99" : 64.0,
+                    "99.999" : 64.0,
+                    "99.9999" : 64.0,
+                    "100.0" : 64.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        64.0
+                    ]
+                ]
+            },
+            "graphIdP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphIdSetP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphIdSourcePruningExecutions" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphIdSourceSelections" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphIdSourcesPruned" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphIdTargetCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphParameterP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphParameterTargetCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "graphScanPeakActiveWorkers" : {
+                "score" : 2.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.0,
+                    2.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.0,
+                    "50.0" : 2.0,
+                    "90.0" : 2.0,
+                    "95.0" : 2.0,
+                    "99.0" : 2.0,
+                    "99.9" : 2.0,
+                    "99.99" : 2.0,
+                    "99.999" : 2.0,
+                    "99.9999" : 2.0,
+                    "100.0" : 2.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.0
+                    ]
+                ]
+            },
+            "graphWorkUnits" : {
+                "score" : 5.8071626E7,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    5.8071626E7,
+                    5.8071626E7
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 5.8071626E7,
+                    "50.0" : 5.8071626E7,
+                    "90.0" : 5.8071626E7,
+                    "95.0" : 5.8071626E7,
+                    "99.0" : 5.8071626E7,
+                    "99.9" : 5.8071626E7,
+                    "99.99" : 5.8071626E7,
+                    "99.999" : 5.8071626E7,
+                    "99.9999" : 5.8071626E7,
+                    "100.0" : 5.8071626E7
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        5.8071626E7
+                    ]
+                ]
+            },
+            "graphWorkerCount" : {
+                "score" : 2.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.0,
+                    2.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.0,
+                    "50.0" : 2.0,
+                    "90.0" : 2.0,
+                    "95.0" : 2.0,
+                    "99.0" : 2.0,
+                    "99.9" : 2.0,
+                    "99.99" : 2.0,
+                    "99.999" : 2.0,
+                    "99.9999" : 2.0,
+                    "100.0" : 2.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.0
+                    ]
+                ]
+            },
+            "inputSourceCount" : {
+                "score" : 2176.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2176.0,
+                    2176.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2176.0,
+                    "50.0" : 2176.0,
+                    "90.0" : 2176.0,
+                    "95.0" : 2176.0,
+                    "99.0" : 2176.0,
+                    "99.9" : 2176.0,
+                    "99.99" : 2176.0,
+                    "99.999" : 2176.0,
+                    "99.9999" : 2176.0,
+                    "100.0" : 2176.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2176.0
+                    ]
+                ]
+            },
+            "maxHeapBytes" : {
+                "score" : 8.589934592E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    8.589934592E9,
+                    8.589934592E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 8.589934592E9,
+                    "50.0" : 8.589934592E9,
+                    "90.0" : 8.589934592E9,
+                    "95.0" : 8.589934592E9,
+                    "99.0" : 8.589934592E9,
+                    "99.9" : 8.589934592E9,
+                    "99.99" : 8.589934592E9,
+                    "99.999" : 8.589934592E9,
+                    "99.9999" : 8.589934592E9,
+                    "100.0" : 8.589934592E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        8.589934592E9
+                    ]
+                ]
+            },
+            "maxLatencyNanos" : {
+                "score" : 2.55740709E8,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.55740709E8,
+                    2.55740709E8
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.55740709E8,
+                    "50.0" : 2.55740709E8,
+                    "90.0" : 2.55740709E8,
+                    "95.0" : 2.55740709E8,
+                    "99.0" : 2.55740709E8,
+                    "99.9" : 2.55740709E8,
+                    "99.99" : 2.55740709E8,
+                    "99.999" : 2.55740709E8,
+                    "99.9999" : 2.55740709E8,
+                    "100.0" : 2.55740709E8
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.55740709E8
+                    ]
+                ]
+            },
+            "nonTargetGraphAccessCount" : {
+                "score" : 1452.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1452.0,
+                    1452.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1452.0,
+                    "50.0" : 1452.0,
+                    "90.0" : 1452.0,
+                    "95.0" : 1452.0,
+                    "99.0" : 1452.0,
+                    "99.9" : 1452.0,
+                    "99.99" : 1452.0,
+                    "99.999" : 1452.0,
+                    "99.9999" : 1452.0,
+                    "100.0" : 1452.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1452.0
+                    ]
+                ]
+            },
+            "p50LatencyNanos" : {
+                "score" : 1818208.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1818208.0,
+                    1818208.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1818208.0,
+                    "50.0" : 1818208.0,
+                    "90.0" : 1818208.0,
+                    "95.0" : 1818208.0,
+                    "99.0" : 1818208.0,
+                    "99.9" : 1818208.0,
+                    "99.99" : 1818208.0,
+                    "99.999" : 1818208.0,
+                    "99.9999" : 1818208.0,
+                    "100.0" : 1818208.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1818208.0
+                    ]
+                ]
+            },
+            "p95LatencyNanos" : {
+                "score" : 5.041925E7,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    5.041925E7,
+                    5.041925E7
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 5.041925E7,
+                    "50.0" : 5.041925E7,
+                    "90.0" : 5.041925E7,
+                    "95.0" : 5.041925E7,
+                    "99.0" : 5.041925E7,
+                    "99.9" : 5.041925E7,
+                    "99.99" : 5.041925E7,
+                    "99.999" : 5.041925E7,
+                    "99.9999" : 5.041925E7,
+                    "100.0" : 5.041925E7
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        5.041925E7
+                    ]
+                ]
+            },
+            "peakCommittedHeapBytes" : {
+                "score" : 5.817499648E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    5.817499648E9,
+                    5.817499648E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 5.817499648E9,
+                    "50.0" : 5.817499648E9,
+                    "90.0" : 5.817499648E9,
+                    "95.0" : 5.817499648E9,
+                    "99.0" : 5.817499648E9,
+                    "99.9" : 5.817499648E9,
+                    "99.99" : 5.817499648E9,
+                    "99.999" : 5.817499648E9,
+                    "99.9999" : 5.817499648E9,
+                    "100.0" : 5.817499648E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        5.817499648E9
+                    ]
+                ]
+            },
+            "peakProcessCpuLoadPermille" : {
+                "score" : 1992.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1992.0,
+                    1992.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1992.0,
+                    "50.0" : 1992.0,
+                    "90.0" : 1992.0,
+                    "95.0" : 1992.0,
+                    "99.0" : 1992.0,
+                    "99.9" : 1992.0,
+                    "99.99" : 1992.0,
+                    "99.999" : 1992.0,
+                    "99.9999" : 1992.0,
+                    "100.0" : 1992.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1992.0
+                    ]
+                ]
+            },
+            "peakResidentSetBytes" : {
+                "score" : 4.861919232E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.861919232E9,
+                    4.861919232E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.861919232E9,
+                    "50.0" : 4.861919232E9,
+                    "90.0" : 4.861919232E9,
+                    "95.0" : 4.861919232E9,
+                    "99.0" : 4.861919232E9,
+                    "99.9" : 4.861919232E9,
+                    "99.99" : 4.861919232E9,
+                    "99.999" : 4.861919232E9,
+                    "99.9999" : 4.861919232E9,
+                    "100.0" : 4.861919232E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.861919232E9
+                    ]
+                ]
+            },
+            "peakUsedHeapBytes" : {
+                "score" : 4.32571972E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.32571972E9,
+                    4.32571972E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.32571972E9,
+                    "50.0" : 4.32571972E9,
+                    "90.0" : 4.32571972E9,
+                    "95.0" : 4.32571972E9,
+                    "99.0" : 4.32571972E9,
+                    "99.9" : 4.32571972E9,
+                    "99.99" : 4.32571972E9,
+                    "99.999" : 4.32571972E9,
+                    "99.9999" : 4.32571972E9,
+                    "100.0" : 4.32571972E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.32571972E9
+                    ]
+                ]
+            },
+            "processCpuNanos" : {
+                "score" : 1.552886E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1.552886E9,
+                    1.552886E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1.552886E9,
+                    "50.0" : 1.552886E9,
+                    "90.0" : 1.552886E9,
+                    "95.0" : 1.552886E9,
+                    "99.0" : 1.552886E9,
+                    "99.9" : 1.552886E9,
+                    "99.99" : 1.552886E9,
+                    "99.999" : 1.552886E9,
+                    "99.9999" : 1.552886E9,
+                    "100.0" : 1.552886E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1.552886E9
+                    ]
+                ]
+            },
+            "projectionP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "queryCount" : {
+                "score" : 34.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    34.0,
+                    34.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 34.0,
+                    "50.0" : 34.0,
+                    "90.0" : 34.0,
+                    "95.0" : 34.0,
+                    "99.0" : 34.0,
+                    "99.9" : 34.0,
+                    "99.99" : 34.0,
+                    "99.999" : 34.0,
+                    "99.9999" : 34.0,
+                    "100.0" : 34.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        34.0
+                    ]
+                ]
+            },
+            "rawStringMatchStateBytes" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "regexP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "requestSelectedSourceQueryCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "residentSetAfterBytes" : {
+                "score" : 4.863131648E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.863131648E9,
+                    4.863131648E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.863131648E9,
+                    "50.0" : 4.863131648E9,
+                    "90.0" : 4.863131648E9,
+                    "95.0" : 4.863131648E9,
+                    "99.0" : 4.863131648E9,
+                    "99.9" : 4.863131648E9,
+                    "99.99" : 4.863131648E9,
+                    "99.999" : 4.863131648E9,
+                    "99.9999" : 4.863131648E9,
+                    "100.0" : 4.863131648E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.863131648E9
+                    ]
+                ]
+            },
+            "residentSetBeforeBytes" : {
+                "score" : 3.541057536E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.541057536E9,
+                    3.541057536E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.541057536E9,
+                    "50.0" : 3.541057536E9,
+                    "90.0" : 3.541057536E9,
+                    "95.0" : 3.541057536E9,
+                    "99.0" : 3.541057536E9,
+                    "99.9" : 3.541057536E9,
+                    "99.99" : 3.541057536E9,
+                    "99.999" : 3.541057536E9,
+                    "99.9999" : 3.541057536E9,
+                    "100.0" : 3.541057536E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.541057536E9
+                    ]
+                ]
+            },
+            "segmentScanPeakActiveWorkers" : {
+                "score" : 2.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.0,
+                    2.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.0,
+                    "50.0" : 2.0,
+                    "90.0" : 2.0,
+                    "95.0" : 2.0,
+                    "99.0" : 2.0,
+                    "99.9" : 2.0,
+                    "99.99" : 2.0,
+                    "99.999" : 2.0,
+                    "99.9999" : 2.0,
+                    "100.0" : 2.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.0
+                    ]
+                ]
+            },
+            "segmentWorkerCount" : {
+                "score" : 2.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.0,
+                    2.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.0,
+                    "50.0" : 2.0,
+                    "90.0" : 2.0,
+                    "95.0" : 2.0,
+                    "99.0" : 2.0,
+                    "99.9" : 2.0,
+                    "99.99" : 2.0,
+                    "99.999" : 2.0,
+                    "99.9999" : 2.0,
+                    "100.0" : 2.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.0
+                    ]
+                ]
+            },
+            "successCount" : {
+                "score" : 34.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    34.0,
+                    34.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 34.0,
+                    "50.0" : 34.0,
+                    "90.0" : 34.0,
+                    "95.0" : 34.0,
+                    "99.0" : 34.0,
+                    "99.9" : 34.0,
+                    "99.99" : 34.0,
+                    "99.999" : 34.0,
+                    "99.9999" : 34.0,
+                    "100.0" : 34.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        34.0
+                    ]
+                ]
+            },
+            "targetGraphAccessCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "targetedP50LatencyNanos" : {
+                "score" : 3087459.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3087459.0,
+                    3087459.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3087459.0,
+                    "50.0" : 3087459.0,
+                    "90.0" : 3087459.0,
+                    "95.0" : 3087459.0,
+                    "99.0" : 3087459.0,
+                    "99.9" : 3087459.0,
+                    "99.99" : 3087459.0,
+                    "99.999" : 3087459.0,
+                    "99.9999" : 3087459.0,
+                    "100.0" : 3087459.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3087459.0
+                    ]
+                ]
+            },
+            "targetedP95LatencyNanos" : {
+                "score" : 3.8935916E7,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.8935916E7,
+                    3.8935916E7
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.8935916E7,
+                    "50.0" : 3.8935916E7,
+                    "90.0" : 3.8935916E7,
+                    "95.0" : 3.8935916E7,
+                    "99.0" : 3.8935916E7,
+                    "99.9" : 3.8935916E7,
+                    "99.99" : 3.8935916E7,
+                    "99.999" : 3.8935916E7,
+                    "99.9999" : 3.8935916E7,
+                    "100.0" : 3.8935916E7
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.8935916E7
+                    ]
+                ]
+            },
+            "timeoutCount" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "totalRows" : {
+                "score" : 2925.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2925.0,
+                    2925.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2925.0,
+                    "50.0" : 2925.0,
+                    "90.0" : 2925.0,
+                    "95.0" : 2925.0,
+                    "99.0" : 2925.0,
+                    "99.9" : 2925.0,
+                    "99.99" : 2925.0,
+                    "99.999" : 2925.0,
+                    "99.9999" : 2925.0,
+                    "100.0" : 2925.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2925.0
+                    ]
+                ]
+            },
+            "usedHeapAfterBytes" : {
+                "score" : 4.32571972E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.32571972E9,
+                    4.32571972E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.32571972E9,
+                    "50.0" : 4.32571972E9,
+                    "90.0" : 4.32571972E9,
+                    "95.0" : 4.32571972E9,
+                    "99.0" : 4.32571972E9,
+                    "99.9" : 4.32571972E9,
+                    "99.99" : 4.32571972E9,
+                    "99.999" : 4.32571972E9,
+                    "99.9999" : 4.32571972E9,
+                    "100.0" : 4.32571972E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.32571972E9
+                    ]
+                ]
+            },
+            "usedHeapBeforeBytes" : {
+                "score" : 3.431793848E9,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    3.431793848E9,
+                    3.431793848E9
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 3.431793848E9,
+                    "50.0" : 3.431793848E9,
+                    "90.0" : 3.431793848E9,
+                    "95.0" : 3.431793848E9,
+                    "99.0" : 3.431793848E9,
+                    "99.9" : 3.431793848E9,
+                    "99.99" : 3.431793848E9,
+                    "99.999" : 3.431793848E9,
+                    "99.9999" : 3.431793848E9,
+                    "100.0" : 3.431793848E9
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        3.431793848E9
+                    ]
+                ]
+            },
+            "wallNanos" : {
+                "score" : 4.96182916E8,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    4.96182916E8,
+                    4.96182916E8
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 4.96182916E8,
+                    "50.0" : 4.96182916E8,
+                    "90.0" : 4.96182916E8,
+                    "95.0" : 4.96182916E8,
+                    "99.0" : 4.96182916E8,
+                    "99.9" : 4.96182916E8,
+                    "99.99" : 4.96182916E8,
+                    "99.999" : 4.96182916E8,
+                    "99.9999" : 4.96182916E8,
+                    "100.0" : 4.96182916E8
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        4.96182916E8
+                    ]
+                ]
+            },
+            "wrappedP95LatencyNanos" : {
+                "score" : 0.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    0.0,
+                    0.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 0.0,
+                    "50.0" : 0.0,
+                    "90.0" : 0.0,
+                    "95.0" : 0.0,
+                    "99.0" : 0.0,
+                    "99.9" : 0.0,
+                    "99.99" : 0.0,
+                    "99.999" : 0.0,
+                    "99.9999" : 0.0,
+                    "100.0" : 0.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        0.0
+                    ]
+                ]
+            },
+            "zeroP50LatencyNanos" : {
+                "score" : 1406792.0,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    1406792.0,
+                    1406792.0
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 1406792.0,
+                    "50.0" : 1406792.0,
+                    "90.0" : 1406792.0,
+                    "95.0" : 1406792.0,
+                    "99.0" : 1406792.0,
+                    "99.9" : 1406792.0,
+                    "99.99" : 1406792.0,
+                    "99.999" : 1406792.0,
+                    "99.9999" : 1406792.0,
+                    "100.0" : 1406792.0
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        1406792.0
+                    ]
+                ]
+            },
+            "zeroP95LatencyNanos" : {
+                "score" : 2.55740709E8,
+                "scoreError" : "NaN",
+                "scoreConfidence" : [
+                    2.55740709E8,
+                    2.55740709E8
+                ],
+                "scorePercentiles" : {
+                    "0.0" : 2.55740709E8,
+                    "50.0" : 2.55740709E8,
+                    "90.0" : 2.55740709E8,
+                    "95.0" : 2.55740709E8,
+                    "99.0" : 2.55740709E8,
+                    "99.9" : 2.55740709E8,
+                    "99.99" : 2.55740709E8,
+                    "99.999" : 2.55740709E8,
+                    "99.9999" : 2.55740709E8,
+                    "100.0" : 2.55740709E8
+                },
+                "scoreUnit" : "#",
+                "rawData" : [
+                    [
+                        2.55740709E8
+                    ]
+                ]
+            }
+        }
+    }
+]

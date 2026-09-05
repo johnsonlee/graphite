@@ -4851,3 +4851,109 @@ CallSite pools remain and the 10x target remains active.
 
 
 **Explicit revert:** rejected experiment `40e1d401e5d8086464a673cfaedc96cccac4029e` is followed by a production/test revert. Profiling/reference evidence and the failed comparison remain. Revert-head CI is pending; this does not constitute acceptance.
+
+
+**Revert CI terminal result (`34b45bf798cbe26932e46ab42d6635b534e7fa3e`):**
+unit workflow [33982902935](https://github.com/johnsonlee/graphite/actions/runs/33982902935)
+passed; required benchmark workflow
+[33982902934](https://github.com/johnsonlee/graphite/actions/runs/33982902934) failed.
+Method 4-graph count process CPU was 0.560→0.750 s, confirmed in reverse order
+0.550→0.780 s. Method 36-graph OR process CPU was 3.600→4.710 s, confirmed
+3.580→4.740 s. Capacity, Method 17 aggregate, method-level, large-corpus and
+routing checks passed. The global-wide gate failed repeated aligned row bounds;
+P95 main/candidate was 121.156/130.316, 133.683/111.038 and 129.179/150.562 ms.
+Its recorded base/candidate canonical JAR content hashes are both
+`ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275`.
+All production/JMH source files had already been independently verified identical
+to frozen main. This does not isolate runtime causes or waive any failures.
+No optimization is accepted. Artifacts are retained at
+`/private/tmp/graphite-attempt135-revert-ci/`; the full
+[global-wide status](profiling/attempt135-revert-ci-global-wide-status.json) is retained.
+
+Subsequent paired profile diagnostics of the rejected candidate found no new
+exclusive callback hotspot and did not reproduce the original targeted DISTINCT
+latency difference. The main/candidate raw per-node and worker instruction listings
+are identical after normalizing constant-pool references and generated lambda
+numbers. These diagnostics do not reverse the original rejection; see the
+[bounded independent comparison](profiling/attempt135-targeted-diagnostic/independent-targeted-comparison.zh.md).
+A separate [Method measurement boundary audit](profiling/method-gate-measurement-boundaries.md)
+finds timed reference-result work and whole-JVM CPU accounting. Six subsequent
+frozen-main local profiles place reference construction at 31–33% of CPU samples
+for 4-count and 41–51% for 36-or; [independent sample audit](profiling/method-gate-samples/independent-method-sample-summary.zh.md).
+Input graph files and JAR hashes match before/after capture. This does not
+explain the hosted Linux failures or authorize changing the acceptance gate.
+
+
+### 2026-09-06 - Attempt 136: Remove range and iterator construction from raw DISTINCT OR
+
+**Hypothesis:** the existing `parallelRawDistinctCallSiteStringProjection` node
+loop constructs `predicates.indices` and traverses its iterator for each inspected
+CallSite. Replace only this traversal with a primitive while loop, retaining
+predicate order, first-match short circuit, exact candidate membership and lazy
+string match-state semantics. This is a different loop from Attempt 130's bounded
+raw-leading projection; no historical speedup is transferred to this attempt.
+
+Three frozen-main dense DISTINCT allocation profiles (`cpu-3/4/5`) contain
+`getIndices` leaf weights of 1,572,864 / 1,572,864 / 1,310,720 bytes and
+`IntProgression.iterator` leaf weights of 2,621,440 bytes each in this method.
+These are sampled TLAB weights, not precise allocations or promised savings.
+Existing bytecode uses primitive `nextInt` and inlines `any`; the candidate does
+not eliminate index boxing or a predicate-lambda object. The selected tuple
+`Integer.valueOf` path remains unchanged. Index preparation, projection,
+parallelism, cancellation and work accounting remain at their original positions.
+
+**Inputs and validation plan:** frozen main
+`4e328b0109e13c896b74004823fb049fcb19251a` versus candidate parent
+`34b45bf798cbe26932e46ab42d6635b534e7fa3e`, using the existing real 64 persisted
+class shards of Android 14, Tika 2.9.2, Hive 4 and Kotlin compiler 2.0.21 (not
+64 independent applications). Fixture manifest SHA256
+`fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`.
+The candidate JAR SHA256 is
+`8bb7c9a0f507d37b23289209e4c846ad1b2335e508464449deba66ecbf18f433`.
+Artifacts and exact commands are retained at
+`/private/tmp/graphite-attempt136.zr21l653`.
+
+All 187 webgraph tests, detekt and JMH test-exclusion checks passed. The four new
+pure-OR correctness tests also pass frozen main and do not establish performance.
+The prespecified sequence is one v3 36-query real correctness control, then three
+alternating unchanged old34 pairs; only a nonregressing candidate with strict
+P95 progress in every pair proceeds to three v3 pairs and required CI. No
+performance acceptance is established yet.
+
+
+**Measured outcome: reject for insufficient progress.** All 36 real v3 control
+queries and all 204 old34 paired observations passed independent correctness
+checks. The candidate's graph content hashes match before/after the v3 run.
+Base/candidate JAR hashes match before/after all six old34 runs.
+
+| Pair/order | Main P95 → candidate P95 | Process CPU | Peak heap | Peak RSS |
+|---|---:|---:|---:|---:|
+| 1 candidate/base | 47.074708 → 50.419250 ms | 1.499329 → 1.552886 s | 4.38 → 4.03 GiB | 4.89 → 4.53 GiB |
+| 2 base/candidate | 65.733291 → 55.483833 ms | 1.659594 → 1.511979 s | 4.06 → 3.95 GiB | 4.68 → 4.44 GiB |
+| 3 candidate/base | 47.527125 → 41.615750 ms | 1.590953 → 1.491688 s | 4.38 → 4.37 GiB | 4.91 → 4.90 GiB |
+
+The unchanged regression-only comparison passes its bounds, but the first pair
+has P95 speedup 0.934x. Strict progress in every pair is false, and the 10x target
+is false. A non-regression PASS is not an accepted optimization. The aggregate
+P95 is still the old34 mix of distinct queries, not a repeated per-query P95.
+[Full generated comparison](profiling/attempt136/global-wide-report.md),
+[status](profiling/attempt136/global-wide-status.json),
+[explicit decision](profiling/attempt136/local-progress.json),
+[build receipt](profiling/attempt136/build-receipt.json) and
+[independent source review](profiling/attempt136/preimplementation-audit.md).
+
+Per the prespecified plan, stop candidate measurement here; additional v3 timing
+pairs and hosted method/end-to-end candidate comparisons are unavailable, not
+passing. Record this one-direction attempt, then revert its production loop.
+Keep the pure-OR correctness coverage, which independently passes frozen main,
+and profiling evidence. No optimization is accepted; CallSite pools and the
+unmet 10x objective remain.
+
+Independent [result audit](profiling/attempt136/independent-results-audit.md)
+recomputed rank-33 P95 from all six TSVs, matched all 204 ordered 14-field
+correctness signatures to the unchanged oracle, and reconciled every resource
+metric. Every paired query's work, hit/accessed graph IDs and parallel scan count
+match; each replay charges 58,071,626 total work units. Dense DISTINCT is P95
+in every run. Targeted DISTINCT also slows in pair 1 (24.229000→38.935916 ms),
+then improves in pairs 2/3; it does not trigger the repeated-row regression rule.
+The first-pair aggregate failure is sufficient to reject this attempt.

@@ -1,0 +1,148 @@
+{
+  "attempt": 136,
+  "auditType": "read-only actual diff review before acceptance; filename requested by parent",
+  "clone": "/private/tmp/graphite-attempt136.zr21l653/repo",
+  "head": "34b45bf798cbe26932e46ab42d6635b534e7fa3e",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "baselineSourceByteEqualFrozen": true,
+  "productionPath": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+  "baselineSourceSha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+  "candidateSourceSha256": "d313dc9654354f0cdbbce79901aaad0840241bd88097557703bf65012fd4b002",
+  "patchSha256": "6c62b56b6416475048f52ba32bdbe8b6e20c420008eb98f3887e07ebb2870be5",
+  "patch": "diff --git a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt\nindex 5298ad7a..2d4953a4 100644\n--- a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt\n+++ b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt\n@@ -576,22 +576,27 @@ internal class MappedWebGraphBackedGraph(\n                                 stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName\n                                 stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass\n                                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName\n-                                matched = predicates.indices.any { index ->\n+                                var index = 0\n+                                while (index < predicates.size && !matched) {\n                                     val stringId = stringIds[predicatePropertyIndexes[index]]\n-                                    exactMatchSets?.let { sets -> return@any stringId in sets[index] }\n-                                    val states = matchStates[index]\n-                                    when (states[stringId]) {\n-                                        RAW_STRING_MATCH -> true\n-                                        RAW_STRING_MISS -> false\n-                                        else -> stringMatches(\n-                                            stringTable.get(stringId),\n-                                            predicates[index].transform,\n-                                            predicates[index].mode,\n-                                            predicates[index].expected\n-                                        ).also { result ->\n-                                            states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS\n+                                    matched = if (exactMatchSets != null) {\n+                                        stringId in exactMatchSets[index]\n+                                    } else {\n+                                        val states = matchStates[index]\n+                                        when (states[stringId]) {\n+                                            RAW_STRING_MATCH -> true\n+                                            RAW_STRING_MISS -> false\n+                                            else -> stringMatches(\n+                                                stringTable.get(stringId),\n+                                                predicates[index].transform,\n+                                                predicates[index].mode,\n+                                                predicates[index].expected\n+                                            ).also { result ->\n+                                                states[stringId] = if (result) RAW_STRING_MATCH else RAW_STRING_MISS\n+                                            }\n                                         }\n                                     }\n+                                    index++\n                                 }\n                             }\n                             if (matched) {\n",
+  "testPath": "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ParallelDistinctDisjunctionTest.kt",
+  "testSha256": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b",
+  "reviewChecks": [
+    {
+      "name": "scope",
+      "assessment": "The only tracked diff replaces predicates.indices.any inside parallelRawDistinctCallSiteStringProjection; no outer routing, tasks or other loop changes."
+    },
+    {
+      "name": "initial_state",
+      "assessment": "matched remains initialized false for each node, and index starts at zero."
+    },
+    {
+      "name": "exact_sets",
+      "assessment": "Non-null exactMatchSets uses the same property string ID and same indexed set membership; it does not access matchStates."
+    },
+    {
+      "name": "state_cache",
+      "assessment": "Null exactMatchSets uses the same indexed state buffer; cached MATCH/MISS and uncached stringMatches plus state write are unchanged."
+    },
+    {
+      "name": "short_circuit",
+      "assessment": "For stable predicate lists, conditions visit predicates in original index order and stop after the first match; no later predicate is evaluated."
+    },
+    {
+      "name": "exceptions",
+      "assessment": "No new catch, finally, swallow, or replacement is introduced; member access, string decoding, matcher, and state-write exceptions still escape."
+    },
+    {
+      "name": "budget_cancel",
+      "assessment": "Per-node accounting.consume and interruption/abort polling remain before the predicate loop; chunk flushing, joining and cancellation code remain outside the diff."
+    },
+    {
+      "name": "order_selection",
+      "assessment": "Node traversal, mapped encounter offsets, selected ID filtering, tuple creation, DISTINCT deduplication, merge ordering and LIMIT are unchanged."
+    }
+  ],
+  "sampleEvidence": [
+    {
+      "query": "targeted",
+      "recording": 3,
+      "getIndicesSampledBytes": 1310720,
+      "iteratorSampledBytes": 2097152,
+      "perNodeLambdaCpuLeafSamples": 34,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed"
+    },
+    {
+      "query": "targeted",
+      "recording": 4,
+      "getIndicesSampledBytes": 1572864,
+      "iteratorSampledBytes": 3407872,
+      "perNodeLambdaCpuLeafSamples": 66,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed"
+    },
+    {
+      "query": "targeted",
+      "recording": 5,
+      "getIndicesSampledBytes": 2359296,
+      "iteratorSampledBytes": 4456448,
+      "perNodeLambdaCpuLeafSamples": 51,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/29-global-wide-wrapped-case-insensitive-distinct-targeted.cpuSamples.collapsed"
+    },
+    {
+      "query": "dense",
+      "recording": 3,
+      "getIndicesSampledBytes": 1572864,
+      "iteratorSampledBytes": 2621440,
+      "perNodeLambdaCpuLeafSamples": 16,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-3-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed"
+    },
+    {
+      "query": "dense",
+      "recording": 4,
+      "getIndicesSampledBytes": 1572864,
+      "iteratorSampledBytes": 2621440,
+      "perNodeLambdaCpuLeafSamples": 45,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-4-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed"
+    },
+    {
+      "query": "dense",
+      "recording": 5,
+      "getIndicesSampledBytes": 1310720,
+      "iteratorSampledBytes": 2621440,
+      "perNodeLambdaCpuLeafSamples": 57,
+      "allocationCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.allocationSampledBytes.collapsed",
+      "cpuCollapsed": "/private/tmp/graphite-main-profiling-n50joikp/cpu-5-analysis-v1/collapsed/30-global-wide-wrapped-case-insensitive-distinct-dense.cpuSamples.collapsed"
+    }
+  ],
+  "existingBytecodeEvidence": {
+    "path": "/private/tmp/graphite-attempt135.tkrgxwsr/targeted-diagnostic/base-javap.txt",
+    "method": "parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30",
+    "instructions": {
+      "205": "CollectionsKt.getIndices",
+      "243": "Iterable.iterator",
+      "265": "IntIterator.nextInt",
+      "573": "Integer.valueOf in later selected tuple List<Int> construction"
+    },
+    "qualification": "Read previously generated frozen-main javap output; no Java or javap launched by this audit."
+  },
+  "priorAttempt": {
+    "number": 130,
+    "commit": "f0dbeb6ce492c993acfb6595a1ba5dfe1d5a7a4b",
+    "function": "rawCallSiteStringProjection",
+    "distinctFromCurrentFunction": true
+  },
+  "tests": {
+    "necessaryAdditionalTestIdentified": false,
+    "covered": [
+      "four distinct keywords across four properties (16 predicates), exclusive terms, overlap and duplicate tuples",
+      "stored traversal and LIMIT, selected/non-selected, mapped exact sets and non-persisted state path",
+      "mixed raw/lowercase transform, same transform different terms, reversed predicates, complete miss",
+      "existing GraphStoreTest split projection failure/cancellation/join coverage"
+    ],
+    "limits": [
+      "Does not exhaust all 16 keyword/property exclusive placements.",
+      "Does not count skipped predicate reads; no additional observable short-circuit defect identified."
+    ],
+    "execution": "No build/test executed by this auditor; parent owns running correctness build."
+  },
+  "risks": [
+    "New while reads predicates.size per condition, whereas indices creates its range once per node. Equivalence assumes stable predicate lists, as required by the aligned derived lists/sets; concurrent or side-effectful custom-list mutation is not validated.",
+    "Sampled allocation weights are not exact allocated bytes or predicted savings; JIT may change surviving allocations and code shape.",
+    "The existing index iterator already uses nextInt; do not claim removal of per-index Integer boxing or a per-node any closure allocation.",
+    "Dense Integer.valueOf samples belong to the later selected tuple construction and are not removed by this diff.",
+    "No measured performance benefit or acceptance is asserted."
+  ],
+  "matchedCaptureAudit": {
+    "source": "withRawCallSiteStringIds is private inline; action is directly invoked, not noinline or escaping. matched is declared inside the per-node lambda.",
+    "existingMainBytecode": "No BooleanRef in the per-node method; any result stored via istore 15 at offset 463 and loaded with iload 15 at 468. Ref$IntRef in the method signature represents inspected, not matched.",
+    "assessment": "No source-based reason to introduce predicateMatched to avoid captured BooleanRef writes; keep current implementation. This review did not regenerate candidate bytecode."
+  }
+}
