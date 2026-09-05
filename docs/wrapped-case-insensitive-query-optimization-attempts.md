@@ -6153,9 +6153,10 @@ state.
   confirmation). This remains a separate hosted failure; the attempt does not modify Method-node
   execution or combine that follow-up with the global-wide root cause.
 
-**Conclusion:** retain. The exact hosted gate removed the repeated wrapped-dense error without
-breaking graph-routing, so CI—not the local preflight—accepts this hypothesis. The separate new
-global-wide and Method failures keep PR #114 not ready to merge, and no merge is authorized.
+**Conclusion:** provisionally retain from this exact run. It removed the repeated wrapped-dense
+error without breaking graph-routing, but the next Attempt 163 run repeated that same error in all
+three pairs. Attempt 164 therefore removes only the unproven initial-scan decoder while retaining
+the cached replay decoder. PR #114 remains not ready to merge, and no merge is authorized.
 
 ### 2026-09-05 - Attempt 163: Reuse decoded strings in mapped DISTINCT projection
 
@@ -6192,11 +6193,59 @@ order, limits, graph scheduling, or work accounting.
   production/test file bytes passed that focused test, full `:webgraph:test`,
   `:webgraph:detekt`, and `git diff --check` in a normal clone. These are correctness/static
   preflights only.
-- The current hosted Method failure is separately confirmed at
-  `method-compatibility-4-string/suffix`: CPU is `+54.5%` initially and `+17.4%` in reverse-order
-  confirmation against a 15% limit. This attempt does not modify that Method-node path or any
-  benchmark threshold, so it remains an independent future CI-guided attempt.
+- Exact pushed candidate `4fc0a08f95d31bef65623e31d96f698637893529` ran in GitHub Actions
+  benchmark run `33951668071`. The hypothesis passed: goal P95 speedup was
+  `14.310x/12.779x/17.611x`, above 10x in every independent fork, while DISTINCT dense candidate
+  latency was `64.534/71.326/67.800 ms` with unchanged 200 rows, 64 lookups, and 22,465 work units.
+  The previous third-fork observation was `84.328 ms`, so the exact targeted tail fell by 19.6%.
+- Unit, graph-routing, all 12 Method compatibility shards and their aggregate gate, Cypher
+  capacity, wrapped-query latency/resources, and all remaining benchmark jobs passed. In
+  particular, the prior `method-compatibility-4-string/suffix` CPU failure did not reproduce.
+  Global-wide remained the sole substantive failed job: wrapped non-DISTINCT dense repeated a
+  v2.4.7 material regression in all three pairs, while current-main repeated `class-pair/zero`,
+  `name-pair/targeted`, and `distribution-localized-early/dense` in two pairs. Global report/status
+  SHA-256 is `294bb7c89d1dd840fb890ce8ffdcb536b091b1633b0045b4395e85f8726368f8` /
+  `a9a77c2df206641604bdc6bd8b9aa08740766269c8386c96b545f07f810f17cf`.
 
-**Conclusion:** submit only this mapped DISTINCT decode-reuse hypothesis to the hosted
-dual-baseline gate. Retain or revert it from the next exact-head CI result; local execution proves
-only correctness. PR #114 remains not ready to merge, and no merge is authorized.
+**Conclusion:** retain. Hosted CI moved the targeted DISTINCT dense tail down, restored the 10x
+floor in all three forks, and left every non-global gate green. The independent wrapped
+non-DISTINCT and current-main rows keep PR #114 not ready to merge; no merge is authorized.
+
+### 2026-09-05 - Attempt 164: Restore direct decoding in the cold raw projection
+
+**Hypothesis:** Attempt 163's exact hosted result leaves only one frozen-v2.4.7 goal failure:
+`global-wide-wrapped-case-insensitive/dense`. Candidate/base aligned latency is
+`4.932/2.071`, `3.686/2.528`, and `4.680/2.104 ms`, repeating materially in all three pairs even
+though each candidate observation returns the same 200 rows from source zero at exactly 665 work
+units. The initial raw projection added a 512-slot decoder allocation and four cache probes per
+output row in Attempt 162; current main's accepted implementation decodes those bounded cold rows
+directly. Restore direct decode only in this initial pass. Keep decoder reuse in cached-node replay
+and in the now-hosted-accepted mapped DISTINCT path.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 163
+  `4fc0a08f95d31bef65623e31d96f698637893529`; frozen goal/current references remain v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. The production/test candidate before this record is
+  `5629c8a5b63a76c61ee8be1f4b1903057d500d94`; its patch SHA-256 is
+  `eb0f78589a39e4e58f21fb2a7f95f95e82e7fd9b97c4188aba53cd793bfdaa3b`.
+- The sole performance input is GitHub Actions run `33951668071`, global-wide job
+  `101268524408`. Its 3/3 repeated wrapped-dense failure, identical work and result identity, and
+  the accepted current-main direct-decode code shape isolate request-local projection overhead
+  rather than graph fanout, predicate work, ordering, or correctness.
+- The production delta removes one decoder instance and its lookup from only the first bounded raw
+  scan. It does not change predicate matching, the 665 inspected work units, selected node IDs,
+  projection order, LIMIT proof, cancellation, match-prefix caching, threads, or index lifecycle.
+  Cached replay still reuses decoded strings, and Attempt 163's mapped DISTINCT loop is byte-for-byte
+  unchanged.
+- The raw focused test still proves exact results, work charging, bounded match-prefix caching,
+  different-property replay, retained-index precedence, and no mapped/heap index initialization;
+  string-identity reuse is now asserted on the cached replay where the decoder remains. The mapped
+  DISTINCT focused test separately remains green. The exact production/test bytes passed both
+  focused tests, full `:webgraph:test`, `:webgraph:detekt`, and `git diff --check` in a normal
+  clone. These are correctness/static preflights only; no local benchmark is used.
+
+**Conclusion:** submit only the initial raw direct-decode restoration to hosted CI. Retain or
+revert it from the next exact-head global-wide result. All gates except global-wide were green on
+the attempt base, but PR #114 remains not ready to merge and no merge is authorized.

@@ -1313,7 +1313,6 @@ class GraphStoreTest {
                 assertTrue(first.all { row ->
                     row.values.first()?.startsWith("example.NeedleCaller") == true
                 })
-                assertSame(first.first().values.last(), first.last().values.last())
                 assertEquals(2L, firstWork.get())
                 assertEquals(1, graph.rawProjectionMatchCount())
                 assertEquals(2L, graph.callSiteStringProjectionLookupCount())
@@ -1324,14 +1323,13 @@ class GraphStoreTest {
                 val cached = graph.projectStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
-                    listOf("callee_class"),
+                    listOf("callee_name"),
                     2,
                     PreferredRawGraphWorkBatchConsumer(cachedWork::addAndGet)
                 )
                 assertEquals(2, cached?.size)
-                assertTrue(cached.orEmpty().all { row ->
-                    row.values.single()?.startsWith("example.Target") == true
-                })
+                assertTrue(cached.orEmpty().all { row -> row.values.single() == "invoke" })
+                assertSame(cached?.first()?.values?.single(), cached?.last()?.values?.single())
                 assertEquals(2L, cachedWork.get())
                 assertEquals(1, graph.rawProjectionMatchCount())
                 assertEquals(3L, graph.callSiteStringProjectionLookupCount())

@@ -697,7 +697,6 @@ internal class MappedWebGraphBackedGraph(
         val rows = ArrayList<StringPropertyProjectionRow>(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
         val matchedNodeIds = IntArray(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
-        val projectedStrings = RawProjectionStringDecoder(stringTable)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val nodeIds = nodeTypeIndex.idIterator(CallSiteNode::class.java)
         val maxInspected = maxOf(
@@ -733,7 +732,7 @@ internal class MappedWebGraphBackedGraph(
                 if (!matched) continue
                 matchedNodeIds[rows.size] = nodeId
                 rows += StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
-                    projectedStrings.decode(stringIds[propertyIndex])
+                    stringTable.get(stringIds[propertyIndex]).toString()
                 })
                 if (rows.size >= limit) break
             }
