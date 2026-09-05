@@ -1817,6 +1817,9 @@ class QueryPipeline private constructor(
             limit,
             workConsumer
         ) ?: return null
+        if (storageProjectedProperties.size == projectedProperties.size) {
+            return DirectProjectionResultCache.createUncached(projectedRows, columns, source.id).rows
+        }
         val provenance = setOf(source.id)
         return projectedRows.map { raw ->
             LinkedHashMap<String, Any?>(columns.size + 1).apply {

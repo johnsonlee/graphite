@@ -71,6 +71,19 @@ internal object DirectProjectionResultCache {
         return result
     }
 
+    /**
+     * Builds the final immutable public result without retaining it in the cross-query LRU.
+     *
+     * Cold raw-leading projections are request-local, so their storage row list is not a stable
+     * cache-generation token. They can still skip the generic second materialization pass by
+     * returning the same public row representation used by cached mapped projections.
+     */
+    fun createUncached(
+        projectedRows: List<StringPropertyProjectionRow>,
+        columns: List<String>,
+        graphId: String
+    ): CypherResult = immutableResult(projectedRows, columns, graphId)
+
     internal fun clear() = synchronized(results) {
         results.clear()
         retainedBytes = 0L

@@ -48,6 +48,26 @@ class DirectProjectionResultCacheTest {
     }
 
     @Test
+    fun `uncached result uses final immutable rows without entering the global lru`() {
+        val columns = listOf("caller", "callee")
+        val projectedRows = listOf(StringPropertyProjectionRow(listOf("example.Caller", "example.Callee")))
+
+        val result = DirectProjectionResultCache.createUncached(projectedRows, columns, "graph-a")
+
+        assertTrue(result.rows.single() is DirectProjectionCypherRow)
+        assertEquals("example.Caller", result.rows.single()["caller"])
+        assertEquals(
+            mapOf(RESULT_GRAPH_IDS_KEY to listOf("graph-a")),
+            result.rows.single()[RESULT_METADATA_KEY]
+        )
+        assertFailsWith<UnsupportedOperationException> {
+            @Suppress("UNCHECKED_CAST")
+            (result.rows as MutableList<Map<String, Any?>>).add(emptyMap())
+        }
+        assertEquals(0, DirectProjectionResultCache.entryCount())
+    }
+
+    @Test
     fun `cache stays within global entry and heap derived byte bounds`() {
         val columns = listOf("caller", "callee")
         repeat(64) { index ->

@@ -6245,7 +6245,75 @@ and in the now-hosted-accepted mapped DISTINCT path.
   DISTINCT focused test separately remains green. The exact production/test bytes passed both
   focused tests, full `:webgraph:test`, `:webgraph:detekt`, and `git diff --check` in a normal
   clone. These are correctness/static preflights only; no local benchmark is used.
+- Exact pushed candidate `cd038cf3d09c08d1be622922a7cc1ede9272aef3` ran in GitHub Actions
+  workflow `33953119806`. The first workflow attempt did not execute either pressure gate because
+  the shared-fixture job timed out downloading the Gradle distribution. Failed-only workflow
+  attempt 2 then completed on the same SHA. Its frozen-v2.4.7 aggregate P95 speedups were
+  `14.131x/14.616x/13.873x`, and wrapped dense measured `3.136/2.741/2.608 ms` versus
+  `2.667/1.552/2.149 ms`; the repeated-pair rule passed. This was one hosted observation, not a
+  final PR-wide proof. Global report/status SHA-256 is
+  `e2bf36f332f2cfc9c0030b645e96ec21cc028d3c671998a428124f5577445bc4` /
+  `6a081e7f4820076e43fa1da446bc97b4f9140f72b2935082152cd0eb433426df`.
+- The same-SHA failed-only workflow attempt 3 is the retention verdict. Aggregate P95 still clears
+  the requested goal in every fork at `15.630x/11.222x/15.127x`, and mapped DISTINCT remains the
+  accepted tail path, but wrapped dense repeats the frozen-base material regression in all three
+  pairs: candidate/base is `3.969/1.933`, `4.446/2.135`, and `4.068/1.985 ms`. Every candidate row
+  remains 200 rows from source zero at exactly 665 work units. Current-main comparison also repeats
+  `distribution-localized-early/dense` in all three pairs at `5.980/3.358`, `7.408/3.624`, and
+  `6.030/3.979 ms`. Global report/status SHA-256 is
+  `8a216d539ba70ae574911ff4904b32ccabb0f1fc58b46b79f2d286468c115094` /
+  `3fb835abee03a29fcfdf3a60b9677ac4423fa212c39b9afc52c53b9e381bb1e5`.
+- Graph routing independently failed on workflow attempts 2 and 3. The repeatable cold K=64
+  residual is P50 `0.358/0.638 ms` and P95 `2.507/3.251 ms` on the final rerun, with warm K=64
+  additionally at `0.189/0.525 ms` and `0.225/0.641 ms`; startup-prepared passes and the first cold
+  request remains inside its explicit allowance. Report/status SHA-256 is
+  `e85ae148fa1da9b9e22570c993604435c568bb3a2ebba6a44ff5e2471858f1da` /
+  `3d8426fb8f65184d8ba7bfdf0c62f051a89be49814612fcc4e7f521afca330e6`.
 
-**Conclusion:** submit only the initial raw direct-decode restoration to hosted CI. Retain or
-revert it from the next exact-head global-wide result. All gates except global-wide were green on
-the attempt base, but PR #114 remains not ready to merge and no merge is authorized.
+**Conclusion:** retain as a partial simplification, not as a gate fix. Removing the request-local
+decoder is lower overhead in the clean hosted attempt-2 sample and lowers the median of the final
+attempt-3 samples relative to Attempt 163, but the exact gate still reproduces the wrapped-dense
+failure 3/3. The next attempt targets the remaining duplicate public-row materialization only.
+Graph-routing's independently repeated K=64 failure remains a separate later commit. PR #114 is
+not ready to merge and no merge is authorized.
+
+### 2026-09-05 - Attempt 165: Materialize cold raw projection rows once
+
+**Hypothesis:** Attempt 164's final same-SHA hosted rerun proves the remaining frozen-v2.4.7
+wrapped-dense failure is fixed per-result overhead after storage has already selected the correct
+bounded prefix: every candidate returns the same 200 rows from source zero with zero index lookups
+and exactly 665 work units, yet takes `3.969/4.446/4.068 ms` versus
+`1.933/2.135/1.985 ms`. The cold raw storage projection currently builds 200 internal
+`LinkedHashMap` rows with provenance, after which `CypherExecutor` copies all 200 into a second set
+of public maps with metadata. Build the existing immutable `DirectProjectionCypherRow` public form
+once for pure string projections and let the materializer pass it through. Do not retain the
+request-local rows in the cross-query LRU.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 164
+  `cd038cf3d09c08d1be622922a7cc1ede9272aef3`; frozen goal/current references remain v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. GitHub Actions workflow `33953119806`, attempt 3,
+  global-wide job `101276944471` is the sole performance input for this hypothesis. No local timing
+  is used. The production/test diff SHA-256 is
+  `b8ac237d9adec8c3721f19353958b9b93fa5145d225ca6a865afd3a83a49d9a0`.
+- `DirectProjectionResultCache.createUncached` shares only the existing final immutable row
+  representation; it does not insert an entry, reserve cache bytes, or make a request-local storage
+  list a cross-query identity token. `projectRawLeadingRows` uses it only when every returned column
+  comes directly from the storage string projection. Queries that inject `graphId`, partial leading
+  results, unsupported projections, and every retained/mapped/raw fallback keep their existing
+  semantics.
+- Correctness tests prove the uncached builder produces exact values and explicit graph provenance,
+  remains immutable, leaves the global LRU empty, and makes the unscoped raw-leading route return
+  the final row representation directly. The adjacent route test still proves scoped retained and
+  unscoped raw projection are mutually exclusive and return identical public rows. The exact
+  production/test bytes pass the focused tests, full `:cypher:test`, `:cypher:detekt`, and
+  `git diff --check` in a normal clone. These are correctness/static preflights only.
+- The graph-routing K=64 cache-capacity hypothesis is deliberately excluded. This attempt changes
+  only the unscoped raw-leading result conversion; it does not change graph selection, query-cache
+  capacity, any index, work accounting, executor, worker count, or thread pool.
+
+**Conclusion:** submit this single duplicate-materialization removal to hosted CI. Retain or revert
+it solely from the next exact-head frozen-v2.4.7 wrapped-dense result. PR #114 remains not ready to
+merge and no merge is authorized.

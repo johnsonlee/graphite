@@ -348,6 +348,7 @@ class CrossGraphCypherExecutorTest {
         assertEquals(0, retainedChecks.get())
         assertEquals(listOf(0 to true), projectionCalls)
         assertEquals(scoped.rows, unscoped.rows)
+        assertTrue(unscoped.rows.all { row -> row is DirectProjectionCypherRow })
     }
 
     @Test
