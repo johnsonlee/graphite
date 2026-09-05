@@ -269,8 +269,13 @@ No external URL, Gist, or author-published commit status is accepted as executio
 Unscoped 64-graph wide queries have a separate required component,
 `global-wide-pressure-evidence`. It requires
 three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
+`candidate/base`). Each iteration must pass correctness and non-regression checks against current
+main and the latest CI-green first-parent ancestor of the same PR. The final target is measured
+directly against frozen starting main `4e328b0109e13c896b74004823fb049fcb19251a`: at least 10x
+P95 speedup in every independent fork. Ratios from separate attempts are never multiplied.
+Only an exact ancestor with successful latest pull-request unit and benchmark workflow attempts
+can become the accepted reference; failed, canceled, stale, push-only, or other-PR runs cannot.
+The ten core
 query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
@@ -291,8 +296,19 @@ four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` a
 DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
 query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
 fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
-every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
+requirement, each wrapped case-insensitive form must independently reach the same final 10x target
+in every paired fork, so faster raw cases cannot hide a failure in either motivating query shape.
+During iteration, repeated aggregate or wrapped P95 increases above both 15% and 1 ms fail,
+alongside the existing aligned-query and resource checks. No failed numerical comparison is
+waived merely because the revisions have identical source.
+
+`benchmark-global-iteration.mjs` executes each distinct reference once and retains all raw
+observations, reports, and provenance, including failures. It exposes `regressionPassed` and
+`targetAchieved` separately. Draft PRs require all regression checks plus lower aggregate P95 in every paired fork
+against the last accepted reference. A 1x control or any non-improving fork fails the iteration.
+Reports expose `progressAchieved` separately and explicitly show an unmet final target. A PR that is ready for review also requires `targetAchieved`, and
+`ready_for_review` triggers a fresh exact-head workflow. Reaching 10x does not authorize merging.
+CallSite pool removal remains a separate final requirement that the implementation must prove.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:
@@ -304,7 +320,7 @@ derives the correctness oracle itself:
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
 
-Run the unscoped global-wide gate against the same verified manifest and fixture JARs:
+Run the strict 10x unscoped global-wide comparison against the same verified manifest and fixture JARs:
 
 ```bash
 .github/scripts/run-real64-global-wide.sh \
@@ -312,6 +328,12 @@ Run the unscoped global-wide gate against the same verified manifest and fixture
   graphite-webgraph/build/benchmark-fixtures \
   "$BASE_SHA" "$CANDIDATE_SHA"
 ```
+
+For iteration, CI resolves references with `benchmark-optimization-references.mjs` and invokes
+`benchmark-global-iteration.mjs`. The underlying driver accepts
+`GRAPHITE_PRESSURE_REGRESSION_ONLY=true` only with evidence publication disabled; a regression-only
+result can never publish the legacy strict-target success context. Its minimum target remains 10x
+in either mode. The full current-main method, end-to-end, routing and resource gates remain mandatory.
 
 The driver verifies both SHAs against GitHub, creates independent clones at those exact commits,
 copies the candidate-reviewed pressure harness byte-for-byte into the base worktree, and builds both

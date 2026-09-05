@@ -4300,3 +4300,147 @@ benchmark work after the reproduced regressions establish rejection. Shared
 fixture64 preparation was still running when cancellation was requested, so
 64-graph global P95, routing, and 10x evidence are unavailable. No next optimization
 is included in the revert. No merge or tag operation is authorized.
+
+**Revert verification follow-up (not another optimization):** exact revert
+`6c81f15d9d152abc455cd2ea48c0b705ae673e99` has the same production, tests, and
+benchmark controls as starting main. Its five wrapped-query latency shards pass.
+The unit build passes, but hosted Cypher coverage is 97.9975% (6215/6342).
+An untouched main clone reproduces exactly that value at four available CPUs,
+versus 98.0132% (6216/6342) at the local default CPU count. XML comparison isolates
+one scheduling-dependent line: releasing the completion latch when a queued fixed
+worker is canceled before its runnable starts.
+
+A single deterministic correctness regression now saturates the shared pool,
+interrupts another prepared request, and verifies that the request finishes before
+the blocking query releases the pool. It checks the interruption cause, no queued
+suffix scans, and the blocking query's exact final count and source provenance.
+No production code or threshold changes accompany this test. Fresh four-CPU
+validation passes 1,232 tests, detekt, and 98.0132% coverage; the adjusted fixture
+also passes the focused test and detekt at 20 CPUs. Hosted acceptance is pending.
+
+The revert's Method CPU checks also fail despite equivalent benchmark binaries:
+both Explorer JARs contain the same 34,820 ordered entry payloads, including
+resources and duplicates, with normalized payload SHA-256
+`e6b7ef9fcfeae4eb2cac1b62fc6b8579df2f1a9a3c71e88e2b460eccdc3dd387`.
+Fixtures, JVM settings, correctness manifests, and response sizes match. Existing
+artifacts do not attribute the CPU difference to a specific runtime component;
+these gate failures are neither waived nor evidence of retained production
+changes. The separate global-wide rule still demands another 5x against the PR
+base, including for a revert identical to main. Clarification of per-attempt
+acceptance versus final 10x attainment is pending; the rule remains unchanged.
+
+The unchanged-code hosted revert comparison finished with failure in
+[run 33965223437](https://github.com/johnsonlee/graphite/actions/runs/33965223437).
+Its three real64 global P95 pairs were:
+
+| Paired fork | Starting main P95 | Revert P95 | Ratio |
+| --- | ---: | ---: | ---: |
+| 1, candidate then base | 135.968 ms | 127.100 ms | 1.070x |
+| 2, base then candidate | 150.105 ms | 124.789 ms | 1.203x |
+| 3, candidate then base | 124.562 ms | 215.274 ms | 0.579x |
+
+All three fail the existing 5x requirement. The report additionally flags pair
+three CPU (3.45 to 4.19 s) and repeated aligned-row latency differences for five
+query shapes; those failures must not be described as target-only failures.
+Routing warm and startup-prepared states pass, while cold k64 P95 differs from
+2.561 to 5.484 ms and fails its latency guard. Correctness, source-access and
+fixture validation report no error in either pressure comparator. These are
+restored-main control measurements, not optimization gains. No threshold or
+failure has been waived. The test-only coverage repair is held locally pending
+resolution of the acceptance contract, rather than restarting a known-unmet
+mandatory speedup gate with unchanged production code.
+
+
+### 2026-09-05 - Attempt 133: Locate selected CallSite tuples through existing postings
+
+**Acceptance clarification:** the user resolved the pending policy question after
+Attempt 132. Each iteration must retain correctness and existing performance,
+reduce global P95 against the last accepted iteration, and pass all exact-head CI
+checks before another optimization starts. A non-improving iteration is rejected.
+The final PR must directly reach 10x against starting main
+`4e328b0109e13c896b74004823fb049fcb19251a`, remove the CallSite pools, and remain
+mergeable; merging is not authorized. The accompanying acceptance plumbing is
+verification work, not an optimization or evidence of progress. It retains all
+existing numerical regression failures, distinguishes incremental progress from
+final target attainment, and requires the final target for a ready-for-review PR.
+
+**Hypothesis:** after selecting DISTINCT tuples, provenance completion need not
+repeat predicate-wide discovery and a raw scan of each remaining graph. Resolve
+each complete selected tuple through the shortest existing mapped property posting,
+then compare all four physical CallSite string IDs to find its first occurrence.
+This is one storage lookup change. Scheduling, thread pools, initial result
+selection, indexes, persisted formats, and caches remain unchanged.
+
+**Scope and correctness:** the specialization requires the existing preferred
+mapped-view consumer and a complete four-property projection. It preserves
+repeated/null columns, the original predicate, encounter ordering before LIMIT,
+source provenance, budget accounting, and cancellation. Unsupported projections
+and invalid posting order retain the original fallback. The complete selected
+posting is validated before an early hit. Five persisted-graph test cases cover
+these contracts, including recombined strings that must not count as a tuple and
+checksum-valid late posting corruption. All 188 WebGraph tests and detekt pass.
+Independent code review found no concrete correctness defect. The deterministic
+queued-worker regression described above is also retained as verification only.
+
+**Real-data experiment:** baseline is exact starting main `4e328b01`. The candidate
+is this attempt's production source; the two file SHA-256 values are
+`7674863b090811f24471e7d94a2a0d10cca9a32ebc39140aae7e1c75a0118347`
+(`MappedCallSiteStringIndexView.kt`) and
+`a2b1db0becebbb7f7c1696cbbe87f0c90fe9e4f7324e0120621c606e24a706c2`
+(`MappedWebGraphBackedGraph.kt`). Candidate and baseline pressure harnesses are
+byte-identical. Both execute the same independently reverified fixture64 manifest,
+with 16 persisted sources each from Android 14, Tika 2.9.2, Hive 4.0.0, and Kotlin
+compiler 2.0.21. No synthetic performance data is used.
+
+Command for each fresh JVM, with baseline first recording a 34-row oracle and all
+six timed runs verifying against it:
+
+```bash
+java -jar "$JMH_JAR" \
+  io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries \
+  -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold \
+  -p timeoutMillis=300000 -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc \
+  -rf json -rff "$PREFIX.json" \
+  -jvmArgs "-Xmx8g -XX:ActiveProcessorCount=4 \
+    -Dgraphite.broad.pressure.graphs=$MANIFEST \
+    -Dgraphite.broad.pressure.correctness.mode=verify \
+    -Dgraphite.broad.pressure.correctness.oracle=$ORACLE \
+    -Dgraphite.broad.pressure.observations.output=$PREFIX.tsv"
+```
+
+Environment: macOS arm64, OpenJDK 17.0.18, four JVM-visible processors, 8 GiB heap.
+No Gradle or test JVMs run during the six timed processes. Local artifacts, exact
+commands, source hashes, JSON, TSV, and comparison reports are retained in
+`/private/tmp/graphite-mapped-tuple-evidence.t2461mo1`; the verified manifest is
+`/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv`.
+
+| Paired fork | Main P95 | Candidate P95 | Ratio | CPU main / candidate | Peak heap main / candidate | Peak RSS main / candidate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1, candidate-base | 72.111 ms | 57.049 ms | 1.2640x | 1.515 / 1.378 s | 4.105 / 3.981 GiB | 4.602 / 4.473 GiB |
+| 2, base-candidate | 61.736 ms | 61.360 ms | 1.0061x | 1.408 / 1.515 s | 4.031 / 4.411 GiB | 4.505 / 4.902 GiB |
+| 3, candidate-base | 96.511 ms | 63.982 ms | 1.5084x | 1.609 / 1.456 s | 4.071 / 3.985 GiB | 4.543 / 4.464 GiB |
+
+All 34 observations in each of the six forks match the baseline correctness
+oracle, including results and source provenance. The global-wide comparator finds
+no correctness, access, fixture, repeated aligned-latency, CPU, heap, or RSS
+regression. Aggregate P95 decreases in all three pairs, but the second pair's
+0.61% improvement is small and does not establish a stable gain on its own.
+Wrapped DISTINCT dense source work falls from 283,544 to 30,652 units in each pair;
+that counter is mechanism evidence, not a substitute for measured latency.
+The non-DISTINCT wrapped ratios are 0.9733x, 0.9692x, and 1.0679x. The 10x target
+is unmet, and CallSite pools remain present.
+
+**Combined verification:** `./gradlew check koverLog --no-daemon` also passes
+with Java 17 and `JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=4`. The real Hive,
+Kotlin compiler, and Tika build/save/mapped-load/query lifecycle checks pass.
+All six reported module line coverages exceed 98%, including Cypher 98.0132%
+and WebGraph 98.1435%. These local lifecycle bounds do not replace the hosted
+paired method-level and end-to-end regression comparisons. All 179 benchmark
+script tests pass; workflow YAML parsing, shell syntax, and diff whitespace checks
+pass. The iteration wrapper independently accepts the recorded local measurements
+as progress while rejecting final target attainment.
+
+**Decision:** retain only for exact-head hosted validation. Local results satisfy
+the incremental global check, not final acceptance. Method-level, full end-to-end,
+routing, resource, coverage, and all required CI checks remain mandatory. Do not
+start another optimization until this commit is entirely green; revert if it fails.

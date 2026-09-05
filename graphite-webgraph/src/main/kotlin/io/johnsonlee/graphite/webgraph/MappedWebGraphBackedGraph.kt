@@ -395,6 +395,27 @@ internal class MappedWebGraphBackedGraph(
             null
         }
         val mappedView = if (retainedIndex == null) mappedCallSiteStringIndexView(workConsumer) else null
+        if (selectedValues != null && mappedView != null &&
+            workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        ) {
+            mappedView.selectedProjectionHits(
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues,
+                workConsumer
+            ) { nodeId, ids ->
+                withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+                    ids[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+                    ids[CALLER_NAME_PROPERTY_INDEX] = callerName
+                    ids[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+                    ids[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+                }
+            }?.let { rows ->
+                callSiteStringProjectionLookupCount.incrementAndGet()
+                return rows
+            }
+        }
         val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
             retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
                 ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)

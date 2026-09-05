@@ -3,6 +3,7 @@ name: Benchmark regression
 on:
   pull_request:
     branches: ['*']
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -18,10 +19,10 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 97c5f0be36d2531de0e10aa2766aa4f33aa3c3bf9f3e14990910403d113f4775
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  BENCHMARK_REPORT_TRANSITION_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4095d5756d5985b0f6fcf4ef56caaf7a14a699bef117e985dec3a6ec78848f51
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
+  BENCHMARK_REPORT_TRANSITION_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 8ff5f47c264b4502589b40630039003424b75383ab4349e7080ac5f8619d0739
   JMH_ISOLATION_INIT_SHA256: 4d4f310a6f1c70894cdc4bc66c85ce189430a3af4f9e7661ac23a88b1fbd652f
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
@@ -2468,6 +2469,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
+      actions: read
 
     steps:
     - name: Checkout exact candidate benchmark implementation
@@ -2475,7 +2477,20 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
+        fetch-depth: 0
         persist-credentials: false
+
+    - name: Resolve frozen target and last accepted iteration
+      working-directory: candidate
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p ../benchmark-results
+        node .github/scripts/benchmark-optimization-references.mjs \
+          --repo "${{ github.repository }}" --pr "${{ github.event.pull_request.number }}" \
+          --head "${{ github.event.pull_request.head.sha }}" \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          > ../benchmark-results/optimization-references.json
 
     - name: Set up Java
       uses: actions/setup-java@v5
@@ -2509,16 +2524,18 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
         GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false
+        REQUIRE_TARGET: ${{ !github.event.pull_request.draft }}
         GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT: ../shared-fixture64/fixture-reproducibility.json
       run: |
         cd candidate
-        .github/scripts/run-real64-global-wide.sh \
-          ../shared-fixture64/graphs/graphs.tsv \
-          graphite-webgraph/build/benchmark-fixtures \
-          "${{ github.event.pull_request.base.sha }}" \
-          "${{ github.event.pull_request.head.sha }}" \
-          "${{ github.repository }}" \
-          ../benchmark-results
+        TARGET_OPTIONS=()
+        if [[ "${REQUIRE_TARGET}" == true ]]; then TARGET_OPTIONS+=(--require-target); fi
+        node .github/scripts/benchmark-global-iteration.mjs \
+          --references ../benchmark-results/optimization-references.json \
+          --manifest ../shared-fixture64/graphs/graphs.tsv \
+          --fixtures graphite-webgraph/build/benchmark-fixtures \
+          --repository "${{ github.repository }}" \
+          --output ../benchmark-results "${TARGET_OPTIONS[@]}"
 
     - name: Upload trusted global-wide result
       if: always()
@@ -2683,7 +2700,7 @@ jobs:
           --run-orders candidate-base,base-candidate,candidate-base \
           --graph-manifest "${E}/graphs.tsv" \
           --correctness-oracle "${E}/base-global-wide-oracle-seed.correctness" \
-          --minimum-speedup 5 --report benchmark-results/global-wide-report.md \
+          --minimum-speedup 10 --report benchmark-results/global-wide-report.md \
           --status benchmark-results/global-wide-status.json
         cmp benchmark-results/global-wide-report.md "${E}/global-wide-report.md"
         cmp benchmark-results/global-wide-status.json "${E}/global-wide-status.json"
