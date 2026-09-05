@@ -1,0 +1,23 @@
+{
+  "parent": "8be10a5913951d5f2275e287151492da42920b15",
+  "sourceHashes": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "c26895b75b4fd5abc3af9098380b05ae991568d1e34bcbc2ffe688212f704884",
+    "graphite-webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/SelectedProjectionFeasibilityTest.kt": "a968b6a98092a2afa6220798da93dd6421ac53d7dee4b7bbb33ebe3fda6e89f9"
+  },
+  "jarSha256": "b3d29878dd13c04578f1947951eed8da23b38862b633994e5c998b09783db496",
+  "command": [
+    "./gradlew",
+    ":webgraph:test",
+    ":webgraph:detekt",
+    ":webgraph:verifyJmhJarExcludesTests",
+    "--no-daemon"
+  ],
+  "JAVA_HOME": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+  "tests": {
+    "tests": 192,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "exitCode": 0
+}

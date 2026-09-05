@@ -4730,3 +4730,121 @@ experiment history and archived receipts, not left failing against reverted main
 The 57 profiling/oracle Python tests are also wired into the existing candidate
 gate test job; no numerical acceptance threshold is relaxed. Revert CI is pending
 at the time of this record; this is not an accepted optimization.
+
+
+**Revert CI terminal result (head `8be10a5913951d5f2275e287151492da42920b15`):**
+unit workflow [33980691186](https://github.com/johnsonlee/graphite/actions/runs/33980691186)
+passed; benchmark workflow [33980691202](https://github.com/johnsonlee/graphite/actions/runs/33980691202)
+failed. Capacity CPU increased 22.19% and tail latency 15.25%; Method 17 aggregate
+order CPU increased 40.8%, with reverse-order confirmation 20.4%. Global-wide
+P95 main/candidate was 98.842/129.746, 113.220/137.226 and 110.489/113.691 ms;
+all original 34 query results matched in all six runs. The candidate gate tests,
+method-level, large-corpus end-to-end, routing and other resource/compatibility
+shards passed, but the required aggregate remains failed.
+
+Production and JMH source trees match frozen main. Independent comparison of the
+downloaded base/candidate Explorer JARs found identical names and bytes for all
+34,820 entries, including duplicate names. Both canonical content hashes are
+`a78e19f19dc03d05aa800fa3b8395f002b4363ad2b21d9161a51951a8fa1d2a2`.
+This excludes a difference in these JAR contents, but does not isolate runtime
+causes or justify accepting the relative failures. No rerun or waiver was used;
+no optimization has been accepted. Raw CI artifacts and comparison receipt are
+retained at `/private/tmp/graphite-attempt134-revert-ci/`.
+
+
+### 2026-09-06 - Attempt 135: Check selected tuple feasibility before predicate discovery
+
+**Decision: reject and revert.** This attempt tests one ordering change in
+`MappedWebGraphBackedGraph.distinctStringPropertyDisjunction`: defer predicate
+string discovery until the existing selected-tuple necessary-condition check
+inside the eligible parallel raw projection has succeeded. It adds no tuple
+index, posting selection policy or pool change. Small-graph/unbounded-limit
+fallbacks retain discovery and empty-candidate checks; a nullable deferred result
+retains the original fallback. The lazy result is evaluated on the caller before
+worker creation and is cached, including null. Index loading, identity and CRC
+validation remain before the early return. Unsupported predicates may incur an
+additional feasibility check before fallback; exact work counts are not claimed
+identical for all inputs.
+
+**Profiling basis:** three frozen-main dense-query CPU recordings put 94.3–96.6%
+of application samples in predicate discovery plus raw DISTINCT projection.
+The independently authenticated fixture64 export proves the first 200 selected
+`get` tuples are impossible in 62 graphs using existing corresponding-property
+membership checks. All four values independently present is only a necessary
+condition; same-node checking remains mandatory. See
+[the complete 64-graph feasibility evidence](profiling/dense-selected-feasibility/README.md).
+This targets redundant candidate discovery, unlike rejected Attempt 133's direct
+selected-tuple posting lookup.
+
+**Source and build:** parent `8be10a5913951d5f2275e287151492da42920b15`, frozen
+comparison main `4e328b0109e13c896b74004823fb049fcb19251a`. Only one production
+file changes. Its SHA256 is
+`c26895b75b4fd5abc3af9098380b05ae991568d1e34bcbc2ffe688212f704884`;
+immutable candidate JAR SHA256 is
+`b3d29878dd13c04578f1947951eed8da23b38862b633994e5c998b09783db496`.
+The unchanged trusted main JAR SHA256 is
+`a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe`.
+A fresh normal clone at `/private/tmp/graphite-attempt135.tkrgxwsr/repo` passed
+`./gradlew :webgraph:test :webgraph:detekt :webgraph:verifyJmhJarExcludesTests --no-daemon`
+with Java 17: all 192 tests, lint and JMH test-exclusion validation passed.
+Two preliminary test runs exposed an incorrect builder-ID ordering assumption;
+final expected values use independent mapped-node physical traversal, matching
+the storage contract. Production code was not changed to accommodate that test.
+
+Nine new correctness/mechanism tests cover corresponding-property rejection for
+mapped and retained indexes, independently present but absent combined tuples,
+null/duplicate projection columns, empty selection, budgeting/cancellation and
+recovery, validation before early return, small/unbounded fallback, nullable
+provider fallback and no-selection values/order. They use synthetic persisted
+graphs only for correctness and deterministic work assertions, never performance.
+An independently verified frozen-main clone passes five compatibility tests and
+fails four new early-rejection expectations at eager predicate-discovery work.
+The old budget/cancellation/CRC propagation assertions themselves pass; these
+failures are not evidence of broken baseline cancellation. Final test SHA256:
+`a968b6a98092a2afa6220798da93dd6421ac53d7dee4b7bbb33ebe3fda6e89f9`.
+[Build receipt](profiling/attempt135-build-receipt.json) and
+[baseline counterexamples](profiling/attempt135-baseline-counterexample.json)
+retain exact commands and hashes.
+
+**Real-data validation:** the same 64 persisted Android/Tika/Hive/Kotlin shards,
+manifest SHA256 `fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+are used without concurrent local builds/tests/profilers. macOS arm64, Java 17,
+four JVM-visible CPUs, 8 GiB heap, fresh JVMs. The v3 control completes all 36
+queries, including pure four-term OR across single/multiple/all graphs; complete
+values, order and source provenance match the independent oracle, and graph
+content hashes match before/after. This is one observation per query, not P95.
+[Control receipt](profiling/attempt135-v3-control-summary.json).
+
+The prespecified original 34-query comparison uses three alternating pairs,
+index cold-on-replay, the unchanged frozen correctness oracle and numeric gates.
+All 204 results match. Exact commands are in
+`/private/tmp/graphite-attempt135.tkrgxwsr/old34-pairs/*-command.json`;
+the command template is the original Attempt 133 invocation above, with this
+immutable candidate JAR and new output prefixes. `run-old34-pairs.py` and
+`control-v3-command.json` preserve the full commands in the attempt directory.
+
+| Pair | Main / candidate old-34 P95 | Main / candidate process CPU | Main / candidate peak heap | Main / candidate peak RSS |
+| --- | ---: | ---: | ---: | ---: |
+| 1 candidate-base | 43.854 / 33.787 ms | 1.486 / 1.413 s | 4.707 / 4.403 GB | 5.265 / 4.940 GB |
+| 2 base-candidate | 47.670 / 31.796 ms | 1.481 / 1.444 s | 4.710 / 4.706 GB | 5.269 / 5.281 GB |
+| 3 candidate-base | 60.723 / 29.107 ms | 1.659 / 1.396 s | 4.423 / 4.320 GB | 5.111 / 4.844 GB |
+
+Dense DISTINCT itself improves 43.854→27.759, 47.670→29.935 and
+60.723→29.107 ms; counted work falls 283,544→67,505 in every pair.
+However targeted DISTINCT is 21.970→33.787, 20.937→31.796 and
+41.593→23.679 ms, exceeding the unchanged 15% and 1 ms bound in two pairs.
+Its counted work remains 106,706; equal work does not establish equal runtime
+cost or identify the cause of the observed regression. Thus strict aggregate
+P95 progress passes (1.30x, 1.50x, 2.09x), but non-regression fails and the final
+10x target is unmet. CPU/heap/RSS remain within their existing bounds.
+[Complete comparison](profiling/attempt135-old34-global-wide-report.md),
+[status](profiling/attempt135-old34-global-wide-status.json) and
+[progress decision](profiling/attempt135-old34-local-progress.json).
+
+Per the prespecified plan, no extra v3 timing pairs or candidate hosted
+method/end-to-end performance jobs are run after local rejection. Those candidate
+comparisons are unavailable, not passing. Existing synthetic CypherBenchmark
+timings are not real-data performance proof. The production change and its nine
+candidate-only tests are recorded in one attempt commit, then explicitly reverted.
+No failure is waived or retried until green. No optimization has been accepted;
+CallSite pools remain and the 10x target remains active.

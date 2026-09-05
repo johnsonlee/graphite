@@ -1,0 +1,3413 @@
+[
+  {
+    "ordinal": 0,
+    "values": [
+      "org.ccil.cowan.tagsoup.Schema",
+      "attribute",
+      "org.ccil.cowan.tagsoup.Schema",
+      "getElementType"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 8
+    }
+  },
+  {
+    "ordinal": 1,
+    "values": [
+      "org.ccil.cowan.tagsoup.Schema",
+      "parent",
+      "org.ccil.cowan.tagsoup.Schema",
+      "getElementType"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 17
+    }
+  },
+  {
+    "ordinal": 2,
+    "values": [
+      "org.ccil.cowan.tagsoup.Schema",
+      "getElementType",
+      "java.lang.String",
+      "toLowerCase"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 36
+    }
+  },
+  {
+    "ordinal": 3,
+    "values": [
+      "org.ccil.cowan.tagsoup.Schema",
+      "getElementType",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 37
+    }
+  },
+  {
+    "ordinal": 4,
+    "values": [
+      "org.ccil.cowan.tagsoup.Schema",
+      "getEntity",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 38
+    }
+  },
+  {
+    "ordinal": 5,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "anonymize",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getLength"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 52
+    }
+  },
+  {
+    "ordinal": 6,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "anonymize",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getType"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 53
+    }
+  },
+  {
+    "ordinal": 7,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "anonymize",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getQName"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 55
+    }
+  },
+  {
+    "ordinal": 8,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "clean",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getLength"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 58
+    }
+  },
+  {
+    "ordinal": 9,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "clean",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getLocalName"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 59
+    }
+  },
+  {
+    "ordinal": 10,
+    "values": [
+      "org.ccil.cowan.tagsoup.Element",
+      "clean",
+      "org.ccil.cowan.tagsoup.AttributesImpl",
+      "getValue"
+    ],
+    "graphIds": [
+      "fixture-android-00",
+      "fixture-tika-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 60
+    }
+  },
+  {
+    "ordinal": 11,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "verify",
+      "javax.net.ssl.SSLSocket",
+      "getSession"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 65
+    }
+  },
+  {
+    "ordinal": 12,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "verify",
+      "javax.net.ssl.SSLSession",
+      "getPeerCertificates"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 66
+    }
+  },
+  {
+    "ordinal": 13,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "verify",
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 70
+    }
+  },
+  {
+    "ordinal": 14,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "verify",
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 71
+    }
+  },
+  {
+    "ordinal": 15,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "java.security.cert.X509Certificate",
+      "getSubjectX500Principal"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 115
+    }
+  },
+  {
+    "ordinal": 16,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 116
+    }
+  },
+  {
+    "ordinal": 17,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+      "getAllMostSpecificFirst"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 117
+    }
+  },
+  {
+    "ordinal": 18,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "java.util.List",
+      "isEmpty"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 118
+    }
+  },
+  {
+    "ordinal": 19,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "java.util.List",
+      "size"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 119
+    }
+  },
+  {
+    "ordinal": 20,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getCNs",
+      "java.util.List",
+      "toArray"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 120
+    }
+  },
+  {
+    "ordinal": 21,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.LinkedList",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 121
+    }
+  },
+  {
+    "ordinal": 22,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.security.cert.X509Certificate",
+      "getSubjectAlternativeNames"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 122
+    }
+  },
+  {
+    "ordinal": 23,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 123
+    }
+  },
+  {
+    "ordinal": 24,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.logging.Logger",
+      "getLogger"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 124
+    }
+  },
+  {
+    "ordinal": 25,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.logging.Logger",
+      "log"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 125
+    }
+  },
+  {
+    "ordinal": 26,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.Collection",
+      "iterator"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 126
+    }
+  },
+  {
+    "ordinal": 27,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.Iterator",
+      "hasNext"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 127
+    }
+  },
+  {
+    "ordinal": 28,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.Iterator",
+      "next"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 128
+    }
+  },
+  {
+    "ordinal": 29,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.List",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 129
+    }
+  },
+  {
+    "ordinal": 30,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.LinkedList",
+      "add"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 131
+    }
+  },
+  {
+    "ordinal": 31,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.LinkedList",
+      "isEmpty"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 132
+    }
+  },
+  {
+    "ordinal": 32,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.LinkedList",
+      "size"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 133
+    }
+  },
+  {
+    "ordinal": 33,
+    "values": [
+      "org.apache.http.conn.ssl.AbstractVerifier",
+      "getDNSSubjectAlts",
+      "java.util.LinkedList",
+      "toArray"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 134
+    }
+  },
+  {
+    "ordinal": 34,
+    "values": [
+      "libcore.util.CollectionUtils$1$1",
+      "computeNext",
+      "java.lang.ref.Reference",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 146
+    }
+  },
+  {
+    "ordinal": 35,
+    "values": [
+      "libcore.reflect.Types",
+      "getTypeArray",
+      "libcore.reflect.ListOfTypes",
+      "length"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 154
+    }
+  },
+  {
+    "ordinal": 36,
+    "values": [
+      "libcore.reflect.Types",
+      "getTypeArray",
+      "libcore.reflect.ListOfTypes",
+      "getResolvedTypes"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 155
+    }
+  },
+  {
+    "ordinal": 37,
+    "values": [
+      "libcore.reflect.Types",
+      "getTypeArray",
+      "java.lang.Object",
+      "clone"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 156
+    }
+  },
+  {
+    "ordinal": 38,
+    "values": [
+      "libcore.reflect.Types",
+      "getType",
+      "libcore.reflect.ParameterizedTypeImpl",
+      "getResolvedType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 157
+    }
+  },
+  {
+    "ordinal": 39,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.util.Map",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 158
+    }
+  },
+  {
+    "ordinal": 40,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.Class",
+      "isArray"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 159
+    }
+  },
+  {
+    "ordinal": 41,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 160
+    }
+  },
+  {
+    "ordinal": 42,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 161
+    }
+  },
+  {
+    "ordinal": 43,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.Class",
+      "getComponentType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 162
+    }
+  },
+  {
+    "ordinal": 44,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "libcore.reflect.Types",
+      "getSignature"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 163
+    }
+  },
+  {
+    "ordinal": 45,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 165
+    }
+  },
+  {
+    "ordinal": 46,
+    "values": [
+      "libcore.reflect.Types",
+      "getSignature",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 168
+    }
+  },
+  {
+    "ordinal": 47,
+    "values": [
+      "libcore.reflect.Types",
+      "appendTypeName",
+      "java.lang.Class",
+      "getComponentType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 178
+    }
+  },
+  {
+    "ordinal": 48,
+    "values": [
+      "libcore.reflect.Types",
+      "appendTypeName",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 179
+    }
+  },
+  {
+    "ordinal": 49,
+    "values": [
+      "libcore.reflect.Types",
+      "appendGenericType",
+      "java.lang.reflect.TypeVariable",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 185
+    }
+  },
+  {
+    "ordinal": 50,
+    "values": [
+      "libcore.reflect.Types",
+      "appendGenericType",
+      "java.lang.reflect.GenericArrayType",
+      "getGenericComponentType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 189
+    }
+  },
+  {
+    "ordinal": 51,
+    "values": [
+      "libcore.reflect.Types",
+      "appendGenericType",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 193
+    }
+  },
+  {
+    "ordinal": 52,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "newInstance",
+      "java.lang.Thread",
+      "getContextClassLoader"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 230
+    }
+  },
+  {
+    "ordinal": 53,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "newInstance",
+      "java.lang.Class",
+      "getClassLoader"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 231
+    }
+  },
+  {
+    "ordinal": 54,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "getFeature",
+      "java.lang.NullPointerException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 247
+    }
+  },
+  {
+    "ordinal": 55,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "getFeature",
+      "org.xml.sax.SAXNotRecognizedException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 248
+    }
+  },
+  {
+    "ordinal": 56,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "getProperty",
+      "java.lang.NullPointerException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 253
+    }
+  },
+  {
+    "ordinal": 57,
+    "values": [
+      "javax.xml.validation.SchemaFactory",
+      "getProperty",
+      "org.xml.sax.SAXNotRecognizedException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 254
+    }
+  },
+  {
+    "ordinal": 58,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getXMLSchemaType",
+      "javax.xml.datatype.Duration",
+      "isSet"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 262
+    }
+  },
+  {
+    "ordinal": 59,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getXMLSchemaType",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 268
+    }
+  },
+  {
+    "ordinal": 60,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getXMLSchemaType",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 269
+    }
+  },
+  {
+    "ordinal": 61,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getXMLSchemaType",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 281
+    }
+  },
+  {
+    "ordinal": 62,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getXMLSchemaType",
+      "java.lang.IllegalStateException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 282
+    }
+  },
+  {
+    "ordinal": 63,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getYears",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 283
+    }
+  },
+  {
+    "ordinal": 64,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getMonths",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 284
+    }
+  },
+  {
+    "ordinal": 65,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getDays",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 285
+    }
+  },
+  {
+    "ordinal": 66,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getHours",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 286
+    }
+  },
+  {
+    "ordinal": 67,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getMinutes",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 287
+    }
+  },
+  {
+    "ordinal": 68,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getSeconds",
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 288
+    }
+  },
+  {
+    "ordinal": 69,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "java.util.Calendar",
+      "clone"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 289
+    }
+  },
+  {
+    "ordinal": 70,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "javax.xml.datatype.Duration",
+      "addTo"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 290
+    }
+  },
+  {
+    "ordinal": 71,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "javax.xml.datatype.Duration",
+      "getCalendarTimeInMillis"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 291
+    }
+  },
+  {
+    "ordinal": 72,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "java.util.GregorianCalendar",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 293
+    }
+  },
+  {
+    "ordinal": 73,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "java.util.Calendar",
+      "setTime"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 294
+    }
+  },
+  {
+    "ordinal": 74,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getTimeInMillis",
+      "java.util.Date",
+      "getTime"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 297
+    }
+  },
+  {
+    "ordinal": 75,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt",
+      "javax.xml.datatype.Duration",
+      "getField"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 298
+    }
+  },
+  {
+    "ordinal": 76,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getFieldValueAsInt",
+      "java.lang.Number",
+      "intValue"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 299
+    }
+  },
+  {
+    "ordinal": 77,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "addTo",
+      "javax.xml.datatype.Duration",
+      "getCalendarTimeInMillis"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 304
+    }
+  },
+  {
+    "ordinal": 78,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "toString",
+      "javax.xml.datatype.Duration",
+      "getSign"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 314
+    }
+  },
+  {
+    "ordinal": 79,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "toString",
+      "javax.xml.datatype.Duration",
+      "getField"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 317
+    }
+  },
+  {
+    "ordinal": 80,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getCalendarTimeInMillis",
+      "java.util.Calendar",
+      "getTime"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 354
+    }
+  },
+  {
+    "ordinal": 81,
+    "values": [
+      "javax.xml.datatype.Duration",
+      "getCalendarTimeInMillis",
+      "java.util.Date",
+      "getTime"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 355
+    }
+  },
+  {
+    "ordinal": 82,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "java.lang.String",
+      "indexOf"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 357
+    }
+  },
+  {
+    "ordinal": 83,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "java.lang.String",
+      "substring"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 358
+    }
+  },
+  {
+    "ordinal": 84,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "java.lang.String",
+      "endsWith"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 359
+    }
+  },
+  {
+    "ordinal": 85,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "java.lang.String",
+      "lastIndexOf"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 360
+    }
+  },
+  {
+    "ordinal": 86,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "libcore.content.type.MimeMap",
+      "getDefault"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 362
+    }
+  },
+  {
+    "ordinal": 87,
+    "values": [
+      "java.net.DefaultFileNameMap",
+      "getContentTypeFor",
+      "libcore.content.type.MimeMap",
+      "guessMimeTypeFromExtension"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 364
+    }
+  },
+  {
+    "ordinal": 88,
+    "values": [
+      "dalvik.system.ApplicationRuntime",
+      "getBaseApkOptimizationInfo",
+      "dalvik.system.VMRuntime",
+      "getBaseApkOptimizationInfo"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 367
+    }
+  },
+  {
+    "ordinal": 89,
+    "values": [
+      "com.ibm.icu.impl.CalendarAstronomer$3",
+      "eval",
+      "com.ibm.icu.impl.CalendarAstronomer",
+      "getMoonAge"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 369
+    }
+  },
+  {
+    "ordinal": 90,
+    "values": [
+      "com.google.android.util.SmileyResources",
+      "getSmileyRes",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 375
+    }
+  },
+  {
+    "ordinal": 91,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getInfo",
+      "com.google.android.util.AbstractMessageParser$Token",
+      "getInfo"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 381
+    }
+  },
+  {
+    "ordinal": 92,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getInfo",
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getRssUrl"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 382
+    }
+  },
+  {
+    "ordinal": 93,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getInfo",
+      "java.util.List",
+      "add"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 383
+    }
+  },
+  {
+    "ordinal": 94,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getInfo",
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 384
+    }
+  },
+  {
+    "ordinal": 95,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getRssUrl",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 386
+    }
+  },
+  {
+    "ordinal": 96,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getRssUrl",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 387
+    }
+  },
+  {
+    "ordinal": 97,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getRssUrl",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 389
+    }
+  },
+  {
+    "ordinal": 98,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL",
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 390
+    }
+  },
+  {
+    "ordinal": 99,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL",
+      "java.lang.String",
+      "length"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 391
+    }
+  },
+  {
+    "ordinal": 100,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 392
+    }
+  },
+  {
+    "ordinal": 101,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 393
+    }
+  },
+  {
+    "ordinal": 102,
+    "values": [
+      "com.google.android.util.AbstractMessageParser$Video",
+      "getURL",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 395
+    }
+  },
+  {
+    "ordinal": 103,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "getInstance",
+      "com.google.android.mms.util.PduCache",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 407
+    }
+  },
+  {
+    "ordinal": 104,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "put",
+      "com.google.android.mms.util.PduCacheEntry",
+      "getMessageBox"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 408
+    }
+  },
+  {
+    "ordinal": 105,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "put",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 409
+    }
+  },
+  {
+    "ordinal": 106,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "put",
+      "com.google.android.mms.util.PduCacheEntry",
+      "getThreadId"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 412
+    }
+  },
+  {
+    "ordinal": 107,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "purge",
+      "android.net.Uri",
+      "getLastPathSegment"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 428
+    }
+  },
+  {
+    "ordinal": 108,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "purge",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 431
+    }
+  },
+  {
+    "ordinal": 109,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "normalizeKey",
+      "android.net.Uri",
+      "getLastPathSegment"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 443
+    }
+  },
+  {
+    "ordinal": 110,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "removeFromThreads",
+      "com.google.android.mms.util.PduCacheEntry",
+      "getThreadId"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 452
+    }
+  },
+  {
+    "ordinal": 111,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "removeFromThreads",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 453
+    }
+  },
+  {
+    "ordinal": 112,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "removeFromMessageBoxes",
+      "com.google.android.mms.util.PduCacheEntry",
+      "getMessageBox"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 462
+    }
+  },
+  {
+    "ordinal": 113,
+    "values": [
+      "com.google.android.mms.util.PduCache",
+      "removeFromMessageBoxes",
+      "java.util.HashMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 463
+    }
+  },
+  {
+    "ordinal": 114,
+    "values": [
+      "com.google.android.mms.pdu.NotifyRespInd",
+      "<init>",
+      "com.google.android.mms.pdu.NotifyRespInd",
+      "setMessageType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 486
+    }
+  },
+  {
+    "ordinal": 115,
+    "values": [
+      "com.google.android.mms.pdu.NotifyRespInd",
+      "getReportAllowed",
+      "com.google.android.mms.pdu.PduHeaders",
+      "getOctet"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 491
+    }
+  },
+  {
+    "ordinal": 116,
+    "values": [
+      "com.google.android.mms.pdu.NotifyRespInd",
+      "getStatus",
+      "com.google.android.mms.pdu.PduHeaders",
+      "getOctet"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 494
+    }
+  },
+  {
+    "ordinal": 117,
+    "values": [
+      "com.google.android.mms.pdu.NotifyRespInd",
+      "getTransactionId",
+      "com.google.android.mms.pdu.PduHeaders",
+      "getTextString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 495
+    }
+  },
+  {
+    "ordinal": 118,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "selectBestRoute",
+      "android.net.RouteInfo",
+      "getDestination"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 501
+    }
+  },
+  {
+    "ordinal": 119,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "selectBestRoute",
+      "android.net.IpPrefix",
+      "getAddress"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 502
+    }
+  },
+  {
+    "ordinal": 120,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "selectBestRoute",
+      "android.net.IpPrefix",
+      "getPrefixLength"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 505
+    }
+  },
+  {
+    "ordinal": 121,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "selectBestRoute",
+      "android.net.RouteInfo",
+      "getType"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 509
+    }
+  },
+  {
+    "ordinal": 122,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.net.InetAddress",
+      "getAddress"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 510
+    }
+  },
+  {
+    "ordinal": 123,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "maskRawAddress"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 511
+    }
+  },
+  {
+    "ordinal": 124,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.net.InetAddress",
+      "getByAddress"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 512
+    }
+  },
+  {
+    "ordinal": 125,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 513
+    }
+  },
+  {
+    "ordinal": 126,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 514
+    }
+  },
+  {
+    "ordinal": 127,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.net.UnknownHostException",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 515
+    }
+  },
+  {
+    "ordinal": 128,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 517
+    }
+  },
+  {
+    "ordinal": 129,
+    "values": [
+      "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "getNetworkPart",
+      "java.lang.RuntimeException",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 518
+    }
+  },
+  {
+    "ordinal": 130,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.State",
+      "getName",
+      "java.lang.Object",
+      "getClass"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 527
+    }
+  },
+  {
+    "ordinal": 131,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.State",
+      "getName",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 528
+    }
+  },
+  {
+    "ordinal": 132,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.State",
+      "getName",
+      "java.lang.String",
+      "lastIndexOf"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 529
+    }
+  },
+  {
+    "ordinal": 133,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.State",
+      "getName",
+      "java.lang.String",
+      "substring"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 530
+    }
+  },
+  {
+    "ordinal": 134,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "onBind",
+      "android.os.Messenger",
+      "getBinder"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 541
+    }
+  },
+  {
+    "ordinal": 135,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "connect",
+      "java.lang.Class",
+      "getPackage"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 556
+    }
+  },
+  {
+    "ordinal": 136,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "connect",
+      "java.lang.Package",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 557
+    }
+  },
+  {
+    "ordinal": 137,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "connect",
+      "java.lang.Class",
+      "getName"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 558
+    }
+  },
+  {
+    "ordinal": 138,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "connect",
+      "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "getHandler"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 565
+    }
+  },
+  {
+    "ordinal": 139,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "disconnect",
+      "android.os.Messenger",
+      "getBinder"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 571
+    }
+  },
+  {
+    "ordinal": 140,
+    "values": [
+      "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "linkToDeathMonitor",
+      "android.os.Messenger",
+      "getBinder"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 617
+    }
+  },
+  {
+    "ordinal": 141,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "getCommands",
+      "java.util.Queue",
+      "size"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 637
+    }
+  },
+  {
+    "ordinal": 142,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "getCommands",
+      "java.util.Queue",
+      "toArray"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 638
+    }
+  },
+  {
+    "ordinal": 143,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "addStateHandler",
+      "android.util.SparseArray",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 639
+    }
+  },
+  {
+    "ordinal": 144,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "handle",
+      "android.util.SparseArray",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 641
+    }
+  },
+  {
+    "ordinal": 145,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "enter",
+      "android.util.SparseArray",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 644
+    }
+  },
+  {
+    "ordinal": 146,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "exit",
+      "android.util.SparseArray",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 647
+    }
+  },
+  {
+    "ordinal": 147,
+    "values": [
+      "com.android.server.wm.utils.StateMachine",
+      "transit",
+      "android.util.IntArray",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 664
+    }
+  },
+  {
+    "ordinal": 148,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "<init>",
+      "com.android.server.wm.WindowState",
+      "getSurfaceControl"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 680
+    }
+  },
+  {
+    "ordinal": 149,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "<init>",
+      "com.android.server.wm.WindowState",
+      "getAttrs"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 689
+    }
+  },
+  {
+    "ordinal": 150,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "hideSurface",
+      "com.android.server.wm.WindowState",
+      "getDisplayContent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 699
+    }
+  },
+  {
+    "ordinal": 151,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "hideSurface",
+      "com.android.server.wm.WallpaperController",
+      "getWallpaperTarget"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 700
+    }
+  },
+  {
+    "ordinal": 152,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "destroy",
+      "android.os.Debug",
+      "getCallers"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 709
+    }
+  },
+  {
+    "ordinal": 153,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "setOpaque",
+      "android.view.SurfaceControl",
+      "getGlobalTransaction"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 739
+    }
+  },
+  {
+    "ordinal": 154,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "setSecure",
+      "android.view.SurfaceControl",
+      "getGlobalTransaction"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 746
+    }
+  },
+  {
+    "ordinal": 155,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "showRobustly",
+      "com.android.server.wm.WindowState",
+      "getDisplayContent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 759
+    }
+  },
+  {
+    "ordinal": 156,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "showRobustly",
+      "com.android.server.wm.WallpaperController",
+      "getWallpaperTarget"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 760
+    }
+  },
+  {
+    "ordinal": 157,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "getWindowContentFrameStats",
+      "android.view.SurfaceControl",
+      "getContentFrameStats"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 764
+    }
+  },
+  {
+    "ordinal": 158,
+    "values": [
+      "com.android.server.wm.WindowSurfaceController",
+      "getSurfaceControl",
+      "android.view.SurfaceControl",
+      "copyFrom"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 765
+    }
+  },
+  {
+    "ordinal": 159,
+    "values": [
+      "com.android.server.wm.WindowContainer$1",
+      "onMergedOverrideConfigurationChanged",
+      "com.android.server.wm.WindowContainer",
+      "getRequestedOverrideConfiguration"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 801
+    }
+  },
+  {
+    "ordinal": 160,
+    "values": [
+      "com.android.server.wm.WindowContainer$1",
+      "onMergedOverrideConfigurationChanged",
+      "com.android.server.wm.WindowContainer",
+      "getConfiguration"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 803
+    }
+  },
+  {
+    "ordinal": 161,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "java.lang.StringBuilder",
+      "<init>"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 810
+    }
+  },
+  {
+    "ordinal": 162,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "android.util.ArrayMap",
+      "size"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 811
+    }
+  },
+  {
+    "ordinal": 163,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "java.lang.StringBuilder",
+      "append"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 812
+    }
+  },
+  {
+    "ordinal": 164,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "android.util.ArrayMap",
+      "keyAt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 813
+    }
+  },
+  {
+    "ordinal": 165,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "android.util.ArrayMap",
+      "valueAt"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 816
+    }
+  },
+  {
+    "ordinal": 166,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "getDebugMessage",
+      "java.lang.StringBuilder",
+      "toString"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 819
+    }
+  },
+  {
+    "ordinal": 167,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "notifyAppResumedFinished",
+      "android.util.ArrayMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 824
+    }
+  },
+  {
+    "ordinal": 168,
+    "values": [
+      "com.android.server.wm.UnknownAppVisibilityController",
+      "notifyRelayouted",
+      "android.util.ArrayMap",
+      "get"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 827
+    }
+  },
+  {
+    "ordinal": 169,
+    "values": [
+      "com.android.server.wm.Task",
+      "<init>",
+      "com.android.server.wm.ActivityTaskManagerService",
+      "getTaskChangeNotificationController"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 872
+    }
+  },
+  {
+    "ordinal": 170,
+    "values": [
+      "com.android.server.wm.Task",
+      "<init>",
+      "android.app.ActivityManagerInternal",
+      "getCurrentUserId"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 875
+    }
+  },
+  {
+    "ordinal": 171,
+    "values": [
+      "com.android.server.wm.Task",
+      "reuseAsLeafTask",
+      "com.android.server.wm.ActivityTaskManagerService",
+      "getTaskChangeNotificationController"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 882
+    }
+  },
+  {
+    "ordinal": 172,
+    "values": [
+      "com.android.server.wm.Task",
+      "cleanUpResourcesForDestroy",
+      "com.android.server.wm.WindowContainer",
+      "getDisplayContent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 885
+    }
+  },
+  {
+    "ordinal": 173,
+    "values": [
+      "com.android.server.wm.Task",
+      "removeIfPossible",
+      "com.android.server.wm.ActivityTaskManagerService",
+      "getLockTaskController"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 893
+    }
+  },
+  {
+    "ordinal": 174,
+    "values": [
+      "com.android.server.wm.Task",
+      "removeIfPossible",
+      "com.android.server.wm.ActivityTaskManagerService",
+      "getTaskChangeNotificationController"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 898
+    }
+  },
+  {
+    "ordinal": 175,
+    "values": [
+      "com.android.server.wm.Task",
+      "removeIfPossible",
+      "com.android.server.wm.Task",
+      "getDisplayArea"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 900
+    }
+  },
+  {
+    "ordinal": 176,
+    "values": [
+      "com.android.server.wm.Task",
+      "resize",
+      "com.android.server.wm.Task",
+      "getParent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 907
+    }
+  },
+  {
+    "ordinal": 177,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.Task",
+      "getRootTask"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 936
+    }
+  },
+  {
+    "ordinal": 178,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.ActivityTaskSupervisor",
+      "getReparentTargetRootTask"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 937
+    }
+  },
+  {
+    "ordinal": 179,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.Task",
+      "getDisplayId"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 938
+    }
+  },
+  {
+    "ordinal": 180,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.Task",
+      "getTopNonFinishingActivity"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 940
+    }
+  },
+  {
+    "ordinal": 181,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.RootWindowContainer",
+      "getTopResumedActivity"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 952
+    }
+  },
+  {
+    "ordinal": 182,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.Task",
+      "getWindowingMode"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 958
+    }
+  },
+  {
+    "ordinal": 183,
+    "values": [
+      "com.android.server.wm.Task",
+      "reparent",
+      "com.android.server.wm.RootWindowContainer",
+      "getDefaultTaskDisplayArea"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 959
+    }
+  },
+  {
+    "ordinal": 184,
+    "values": [
+      "com.android.server.wm.Task",
+      "getInactiveDuration",
+      "android.os.SystemClock",
+      "elapsedRealtime"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 962
+    }
+  },
+  {
+    "ordinal": 185,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.content.Intent",
+      "getSelector"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 968
+    }
+  },
+  {
+    "ordinal": 186,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.content.Intent",
+      "getSourceBounds"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 969
+    }
+  },
+  {
+    "ordinal": 187,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.content.Intent",
+      "getComponent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 976
+    }
+  },
+  {
+    "ordinal": 188,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.content.Intent",
+      "getFlags"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 986
+    }
+  },
+  {
+    "ordinal": 189,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.os.UserHandle",
+      "getUserId"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 987
+    }
+  },
+  {
+    "ordinal": 190,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.content.Context",
+      "getContentResolver"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 988
+    }
+  },
+  {
+    "ordinal": 191,
+    "values": [
+      "com.android.server.wm.Task",
+      "setIntent",
+      "android.provider.Settings$Secure",
+      "getIntForUser"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 989
+    }
+  },
+  {
+    "ordinal": 192,
+    "values": [
+      "com.android.server.wm.Task",
+      "isSameIntentFilter",
+      "android.content.Intent",
+      "getComponent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 996
+    }
+  },
+  {
+    "ordinal": 193,
+    "values": [
+      "com.android.server.wm.Task",
+      "isSameIntentFilter",
+      "android.content.Intent",
+      "getPackage"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 998
+    }
+  },
+  {
+    "ordinal": 194,
+    "values": [
+      "com.android.server.wm.Task",
+      "returnsToHomeRootTask",
+      "android.content.Intent",
+      "getFlags"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1003
+    }
+  },
+  {
+    "ordinal": 195,
+    "values": [
+      "com.android.server.wm.Task",
+      "returnsToHomeRootTask",
+      "com.android.server.wm.Task",
+      "getDisplayArea"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1004
+    }
+  },
+  {
+    "ordinal": 196,
+    "values": [
+      "com.android.server.wm.Task",
+      "returnsToHomeRootTask",
+      "com.android.server.wm.TaskDisplayArea",
+      "getRootHomeTask"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1006
+    }
+  },
+  {
+    "ordinal": 197,
+    "values": [
+      "com.android.server.wm.Task",
+      "returnsToHomeRootTask",
+      "com.android.server.wm.ActivityTaskManagerService",
+      "getLockTaskController"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1007
+    }
+  },
+  {
+    "ordinal": 198,
+    "values": [
+      "com.android.server.wm.Task",
+      "returnsToHomeRootTask",
+      "com.android.server.wm.Task",
+      "getBottomMostTask"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1009
+    }
+  },
+  {
+    "ordinal": 199,
+    "values": [
+      "com.android.server.wm.Task",
+      "onParentChanged",
+      "com.android.server.wm.WindowContainer",
+      "getDisplayContent"
+    ],
+    "graphIds": [
+      "fixture-android-00"
+    ],
+    "firstEncounter": {
+      "graphPosition": 0,
+      "graphId": "fixture-android-00",
+      "callSiteOrdinalInGraph": 1011
+    }
+  }
+]
