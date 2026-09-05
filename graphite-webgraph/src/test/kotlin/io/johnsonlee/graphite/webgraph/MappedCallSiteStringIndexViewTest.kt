@@ -402,22 +402,27 @@ class MappedCallSiteStringIndexViewTest {
             DefaultGraph.Builder()
                 .addNode(callSite(0, "example.TargetCaller", "alpha", "example.Dependency", "invoke"))
                 .addNode(callSite(1, "example.OtherCaller", "beta", "example.Dependency", "dispatch"))
+                .addNode(callSite(2, "example.TargetCallerTwo", "gamma", "example.Dependency", "invoke"))
                 .build()
         ) { dir ->
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 val sparse = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     targetPredicates(),
-                    listOf("caller_class", "caller_name", "graphId"),
+                    listOf("caller_class", "caller_name", "callee_name", "graphId"),
                     limit = 10,
                     selectedValues = null,
                     workConsumer = SerialGraphWorkBatchConsumer { }
                 )
 
                 assertEquals(
-                    listOf(listOf("example.TargetCaller", "alpha", null)),
+                    listOf(
+                        listOf("example.TargetCaller", "alpha", "invoke", null),
+                        listOf("example.TargetCallerTwo", "gamma", "invoke", null)
+                    ),
                     sparse?.map { row -> row.values }
                 )
+                assertSame(sparse?.first()?.values?.get(2), sparse?.last()?.values?.get(2))
                 assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(1L, loaded.callSiteStringIndexLookupCount())

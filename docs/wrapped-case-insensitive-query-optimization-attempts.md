@@ -6135,10 +6135,68 @@ state.
   bytes passed the focused `GraphStoreTest`, full `:webgraph:test`, `:webgraph:detekt`, and
   `git diff --check`. These are correctness/static preflights only; no local latency number is used
   as evidence.
-- Method-4 `contains` CPU and Method-17 `or` RSS remain separate hosted failures. This attempt does
-  not modify Method execution and deliberately does not combine either follow-up with the
-  global-wide root cause.
+- Exact pushed candidate `471149c8b9d0b35aa0650bd5842abca116fac806` ran on GitHub Actions in
+  benchmark run `33950144135`. The targeted wrapped-dense error disappeared from both hosted
+  baselines: candidate/v2.4.7 aligned latency was `3.032/3.027`, `4.029/1.982`, and
+  `3.838/2.940 ms`; candidate/current-main was `4.161/4.044`, `4.300/5.100`, and
+  `3.174/5.623 ms`. Only one v2.4.7 pair had a material increase, so the required repeated-pair
+  rule passed. Every observation still returned 200 rows from the first source at exactly 665 work
+  units. The independent graph-routing job `101264290423` also remained green.
+- The hosted result does not make the PR green. Global-wide job `101264290404` failed because the
+  third frozen-v2.4.7 fork reached only `9.982x` aggregate P95 speedup, and current-main repeated
+  non-regressions for `caller-class/zero`, `provenance/targeted`, and
+  `distribution-localized-early/dense`. Its report/status SHA-256 is
+  `2b51aab06c6bfa994b03c681fbaec5efc10637ba89084ccb6e21ac1e4c66ff77` /
+  `92fb716cc404b4f04fb20f04d94b64efad537f06e71ae96f5d2a82ccf550f8fd`.
+- The same exact-head run's only confirmed Method failure is now
+  `method-compatibility-4-string/suffix` CPU (`+54.5%` initially and `+17.4%` on reverse-order
+  confirmation). This remains a separate hosted failure; the attempt does not modify Method-node
+  execution or combine that follow-up with the global-wide root cause.
 
-**Conclusion:** submit this single raw-projection hypothesis to the same hosted dual-baseline gate.
-Retain it only if the repeated wrapped-dense error disappears without creating another hard
-regression. PR #114 remains not ready to merge, and no merge is authorized.
+**Conclusion:** retain. The exact hosted gate removed the repeated wrapped-dense error without
+breaking graph-routing, so CI—not the local preflight—accepts this hypothesis. The separate new
+global-wide and Method failures keep PR #114 not ready to merge, and no merge is authorized.
+
+### 2026-09-05 - Attempt 163: Reuse decoded strings in mapped DISTINCT projection
+
+**Hypothesis:** Attempt 162's exact hosted third fork places aggregate P95 at
+`global-wide-wrapped-case-insensitive-distinct-dense`: `84.328 ms` for 200 final rows after 64
+mapped-index lookups and 22,465 charged work units. The mapped DISTINCT loop decodes every projected
+front-coded string for every matched node before it can reject duplicate tuples. Reuse the same
+bounded per-invocation decoder introduced by Attempt 162 in this exact loop. This should reduce the
+dominant DISTINCT CPU/allocation work without changing matched node IDs, tuple equality, encounter
+order, limits, graph scheduling, or work accounting.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 162
+  `471149c8b9d0b35aa0650bd5842abca116fac806`; frozen goal/current references remain v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. The production/test candidate before this record is
+  `0941b47ed38860adeb46c14057daa546c9836122`; its patch SHA-256 is
+  `5a75eaa3a9ba658aadf504cd911cf045cbee9d752905509c225283cb3b0d80cd`.
+- GitHub Actions run `33950144135`, job `101264290404`, is the sole performance input. In its third
+  independent goal fork, the DISTINCT dense row is the 95th-percentile observation at
+  `84.328 ms`; the v2.4.7 P95 is `841.796 ms`, leaving the aggregate at `9.982x` rather than the
+  required `10.000x`. The same candidate row is `65.884/73.644/84.328 ms` across the three forks,
+  always with 200 rows, 64 mapped-index lookups, and 22,465 work units. No local timing is used to
+  select or support this change.
+- The production delta adds no new cache type, retained state, or thread. Each graph allocates the
+  existing 512-slot direct-mapped decoder only for one mapped DISTINCT projection invocation. A hit
+  reuses an immutable decoded `String`; a slot collision performs the original decode again. It
+  cannot skip a candidate, change a distinct key, survive the request, or affect memory-budget
+  accounting.
+- The focused mapped-view test now returns two distinct ordered tuples sharing one projected
+  `callee_name`, proves that decoded value is reused, and continues to require `graphId=null`, one
+  mapped-index lookup, zero raw scans, and the separate dense-limit raw fallback. The exact
+  production/test file bytes passed that focused test, full `:webgraph:test`,
+  `:webgraph:detekt`, and `git diff --check` in a normal clone. These are correctness/static
+  preflights only.
+- The current hosted Method failure is separately confirmed at
+  `method-compatibility-4-string/suffix`: CPU is `+54.5%` initially and `+17.4%` in reverse-order
+  confirmation against a 15% limit. This attempt does not modify that Method-node path or any
+  benchmark threshold, so it remains an independent future CI-guided attempt.
+
+**Conclusion:** submit only this mapped DISTINCT decode-reuse hypothesis to the hosted
+dual-baseline gate. Retain or revert it from the next exact-head CI result; local execution proves
+only correctness. PR #114 remains not ready to merge, and no merge is authorized.

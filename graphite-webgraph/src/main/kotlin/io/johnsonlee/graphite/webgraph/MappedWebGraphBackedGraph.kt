@@ -543,6 +543,7 @@ internal class MappedWebGraphBackedGraph(
         val rows = ArrayList<StringPropertyDistinctRow>()
         val seenValues = HashSet<List<String?>>()
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val projectedStrings = RawProjectionStringDecoder(stringTable)
         for (nodeId in matchedNodeIds) {
             withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
                 stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
@@ -551,7 +552,7 @@ internal class MappedWebGraphBackedGraph(
                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
             }
             val values = projectedPropertyIndexes.map { propertyIndex ->
-                if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex]).toString()
+                if (propertyIndex < 0) null else projectedStrings.decode(stringIds[propertyIndex])
             }
             if (!seenValues.add(values)) continue
             rows += StringPropertyDistinctRow(nodeOffsets.offset(nodeId), values)
