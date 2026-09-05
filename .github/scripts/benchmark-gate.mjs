@@ -894,14 +894,6 @@ export function compareGraphIdPressure(
     }));
     const baseResources = resourceSnapshot(baseResult, "base");
     const candidateResources = resourceSnapshot(candidateResult, "candidate");
-    const callerThreadExecution = pressureMetric(candidateResult, "callSiteCallerThreadExecution");
-    if (callerThreadExecution !== 1) {
-        errors.push(`candidate: callSiteCallerThreadExecution=${callerThreadExecution}; expected 1`);
-    }
-    if (candidateResources.callSiteScanPeakActiveWorkers !== 0) {
-        errors.push(`candidate: callSiteScanPeakActiveWorkers=${candidateResources.callSiteScanPeakActiveWorkers}; ` +
-            "expected 0 for caller-thread execution");
-    }
     if (candidateIndexState === "startup-prepared") {
         if (baseResources.callSiteIndexAdmittedGraphs !== 64 ||
             baseResources.callSiteTrigramIndexedGraphs !== 64 ||
@@ -930,14 +922,14 @@ export function compareGraphIdPressure(
     if (candidateIndexState === "cold") {
         const rawBuildLifecycle = candidateResources.callSiteParallelScanCount === 64 &&
             candidateResources.callSiteParallelScanGraphCount === 64 &&
-            callerThreadExecution === 1 && candidateResources.callSiteScanPeakActiveWorkers === 0;
+            candidateResources.callSiteScanPeakActiveWorkers >= 2;
         const persistedLoadLifecycle = candidateResources.callSiteParallelScanCount === 0 &&
             candidateResources.callSiteParallelScanGraphCount === 0 &&
             candidateResources.callSiteScanPeakActiveWorkers === 0 &&
             candidateResources.callSiteIndexAdmittedGraphs === 64 &&
             candidateResources.callSiteTrigramIndexedGraphs === 64;
         if (!rawBuildLifecycle && !persistedLoadLifecycle) {
-            errors.push("candidate: cold selected-graph workload must either build one caller-thread index per graph " +
+            errors.push("candidate: cold selected-graph workload must either build one parallel index per graph " +
                 "or restore all 64 persisted sidecars; " +
                 `scans=${candidateResources.callSiteParallelScanCount}, ` +
                 `graphs=${candidateResources.callSiteParallelScanGraphCount}, ` +
@@ -1696,7 +1688,7 @@ export function compareGlobalWidePressure(
     const manifest = parseGlobalWideGraphManifest(graphManifestContents, errors);
     const expectedBenchmark =
         "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
-    const selectResult = (results, revision, requireCallerThread) => {
+    const selectResult = (results, revision, requireNcpuSplit) => {
         const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
             result.params?.graphCount === "64" && result.params?.coverageFamily === "global-wide" &&
             result.params?.indexState === "cold");
@@ -1720,20 +1712,19 @@ export function compareGlobalWidePressure(
         const segmentWorkers = pressureMetric(result, "segmentWorkerCount");
         if (processors === null || processors < 1 || !Number.isInteger(processors)) {
             errors.push(`${revision}: availableProcessors=${processors}; expected a positive integer`);
-        }
-        if (requireCallerThread) {
-            const callerThreadExecution = pressureMetric(result, "callSiteCallerThreadExecution");
-            if (callerThreadExecution !== 1) {
-                errors.push(`${revision}: callSiteCallerThreadExecution=${callerThreadExecution}; expected 1`);
-            }
-            if (graphWorkers !== 1 || segmentWorkers !== 0) {
-                errors.push(`${revision}: caller-thread plan ${graphWorkers}+${segmentWorkers}; expected 1+0`);
+        } else if (requireNcpuSplit) {
+            const expectedGraphWorkers = processors === 1 ? 1 : Math.floor(processors / 2);
+            const expectedSegmentWorkers = processors === 1 ? 0 : processors - expectedGraphWorkers;
+            if (graphWorkers !== expectedGraphWorkers || segmentWorkers !== expectedSegmentWorkers) {
+                errors.push(`${revision}: NCPU split ${processors} -> ${graphWorkers}+${segmentWorkers}; ` +
+                    `expected ${expectedGraphWorkers}+${expectedSegmentWorkers}`);
             }
             const graphPeak = pressureMetric(result, "graphScanPeakActiveWorkers");
             const segmentPeak = pressureMetric(result, "segmentScanPeakActiveWorkers");
-            if (graphPeak !== 0 || segmentPeak !== 0) {
+            const expectedGraphPeak = processors === 1 ? 0 : expectedGraphWorkers;
+            if (graphPeak !== expectedGraphPeak || segmentPeak !== expectedSegmentWorkers) {
                 errors.push(`${revision}: observed graph/segment worker peaks ${graphPeak}+${segmentPeak}; ` +
-                    "expected 0+0 for caller-thread execution");
+                    `expected ${expectedGraphPeak}+${expectedSegmentWorkers}`);
             }
         }
         for (const metric of [

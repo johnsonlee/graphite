@@ -425,10 +425,8 @@ open class LargeBroadQueryPressureBenchmark {
     ) {
         val latencies = samples.map(BroadQuerySample::latencyNanos).sorted()
         val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-        val callerThreadExecution = reflectedCallSiteRunsOnCallerThread()
-        val split = if (callerThreadExecution) 1 to 0 else reflectedGraphScanParallelism(processors)
+        val split = reflectedGraphScanParallelism(processors)
         counters.availableProcessors = processors.toLong()
-        counters.callSiteCallerThreadExecution = if (callerThreadExecution) 1L else 0L
         counters.graphWorkerCount = split?.first?.toLong() ?: 0L
         counters.segmentWorkerCount = split?.second?.toLong() ?: 0L
         counters.graphCount = graphCount.toLong()
@@ -735,7 +733,6 @@ open class LargeBroadQueryPressureBenchmark {
 @AuxCounters(AuxCounters.Type.EVENTS)
 open class LargeBroadQueryPressureCounters {
     @JvmField var availableProcessors: Long = 0
-    @JvmField var callSiteCallerThreadExecution: Long = 0
     @JvmField var graphWorkerCount: Long = 0
     @JvmField var segmentWorkerCount: Long = 0
     @JvmField var graphCount: Long = 0
@@ -791,7 +788,6 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var callSiteIndexAdmittedGraphs: Long = 0
     @JvmField var callSiteIndexRetainedBytes: Long = 0
     @JvmField var callSiteTrigramIndexedGraphs: Long = 0
-    // Legacy metric name: actual raw/index preparation scans, independent of execution threads.
     @JvmField var callSiteParallelScanCount: Long = 0
     @JvmField var callSiteParallelScanGraphCount: Long = 0
     @JvmField var callSiteStringIndexLookupCount: Long = 0
@@ -813,14 +809,6 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var graphIdSourcesPruned: Long = 0
     @JvmField var filteredNodeLimitFastPathExecutions: Long = 0
     @JvmField var generalFallbackExecutions: Long = 0
-}
-
-private fun reflectedCallSiteRunsOnCallerThread(): Boolean {
-    val pipeline = Class.forName("io.johnsonlee.graphite.cypher.QueryPipelineKt")
-    val capability = pipeline.methods.singleOrNull { method ->
-        method.name == "callSiteRunsOnCallerThread" && method.parameterCount == 0
-    } ?: return false
-    return capability.invoke(null) as Boolean
 }
 
 private fun reflectedGraphScanParallelism(processors: Int): Pair<Int, Int>? = runCatching {

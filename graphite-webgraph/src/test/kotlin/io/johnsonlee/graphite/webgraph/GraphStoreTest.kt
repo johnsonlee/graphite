@@ -86,8 +86,11 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.CRC32
@@ -107,58 +110,156 @@ import kotlin.test.assertTrue
 class GraphStoreTest {
 
     @Test
-    fun `CallSite candidate tasks execute in order on their caller`() {
-        val caller = Thread.currentThread()
-        val visited = mutableListOf<Int>()
-        val result = executeSplitCallSiteCandidateTasks(
-            (1..3).map { value ->
-                Callable {
-                    assertSame(caller, Thread.currentThread())
-                    visited += value
-                    intArrayOf(value)
-                }
-            },
-            backgroundParallelism = 2
-        )
-        assertContentEquals(intArrayOf(1, 2, 3), result)
-        assertEquals(listOf(1, 2, 3), visited)
-        assertEquals(0, splitCallSitePeakActiveWorkers())
+    fun `split worker metrics can reset immediately after every completed execution`() {
+        repeat(100) {
+            resetSplitCallSiteWorkerMetrics()
+            assertContentEquals(
+                intArrayOf(1, 2),
+                executeSplitCallSiteCandidateTasks(
+                    listOf(Callable { intArrayOf(1) }, Callable { intArrayOf(2) }),
+                    backgroundParallelism = 1
+                )
+            )
+            assertEquals(1, splitCallSitePeakActiveWorkers())
+        }
         resetSplitCallSiteWorkerMetrics()
     }
 
     @Test
-    fun `CallSite candidate failure stops before subsequent work`() {
-        val failure = IllegalStateException("caller failed")
-        var laterWork = false
-        val actual = assertFailsWith<IllegalStateException> {
-            executeSplitCallSiteCandidateTasks(
-                listOf(Callable { throw failure }, Callable { laterWork = true; intArrayOf(2) }),
-                backgroundParallelism = 1
-            )
-        }
-        assertSame(failure, actual)
-        assertFalse(laterWork)
-        assertEquals(0, splitCallSitePeakActiveWorkers())
-    }
-
-    @Test
-    fun `CallSite candidate interruption preserves caller interrupt and stops subsequent work`() {
-        var laterWork = false
+    fun `split candidate failure joins an interrupted background worker before returning`() {
+        val backgroundStarted = CountDownLatch(1)
+        val interruptionObserved = CountDownLatch(1)
+        val releaseBackground = CountDownLatch(1)
+        val callerFailure = IllegalStateException("caller failed")
+        val runner = Executors.newSingleThreadExecutor()
         try {
-            val failure = assertFailsWith<CancellationException> {
+            val execution = runner.submit<IntArray> {
                 executeSplitCallSiteCandidateTasks(
                     listOf(
-                        Callable { throw InterruptedException("request interrupted") },
-                        Callable { laterWork = true; intArrayOf(2) }
+                        Callable {
+                            check(backgroundStarted.await(5, TimeUnit.SECONDS))
+                            throw callerFailure
+                        },
+                        Callable {
+                            backgroundStarted.countDown()
+                            try {
+                                releaseBackground.await()
+                            } catch (_: InterruptedException) {
+                                interruptionObserved.countDown()
+                                releaseBackground.await()
+                            }
+                            IntArray(0)
+                        }
                     ),
                     backgroundParallelism = 1
                 )
             }
-            assertEquals("CallSite string candidate match interrupted", failure.message)
-            assertTrue(Thread.currentThread().isInterrupted)
-            assertFalse(laterWork)
+            assertTrue(interruptionObserved.await(5, TimeUnit.SECONDS))
+            assertFalse(execution.isDone)
+            releaseBackground.countDown()
+            val failure = assertFailsWith<ExecutionException> { execution.get(5, TimeUnit.SECONDS) }
+            assertEquals(callerFailure, failure.cause)
         } finally {
-            Thread.interrupted()
+            releaseBackground.countDown()
+            runner.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `split candidate interruption cancels and joins the background worker`() {
+        val backgroundStarted = CountDownLatch(1)
+        val backgroundInterrupted = CountDownLatch(1)
+        val failure = AtomicReference<Throwable>()
+        val interruptedFlag = AtomicBoolean()
+        val request = Thread {
+            try {
+                executeSplitCallSiteCandidateTasks(
+                    listOf(
+                        Callable { IntArray(0) },
+                        Callable {
+                            backgroundStarted.countDown()
+                            try {
+                                Thread.sleep(TimeUnit.SECONDS.toMillis(5))
+                            } catch (interrupted: InterruptedException) {
+                                backgroundInterrupted.countDown()
+                                throw interrupted
+                            }
+                            IntArray(0)
+                        }
+                    ),
+                    backgroundParallelism = 1
+                )
+                failure.set(AssertionError("Interrupted split candidate work completed normally"))
+            } catch (error: Throwable) {
+                failure.set(error)
+                interruptedFlag.set(Thread.currentThread().isInterrupted)
+            }
+        }
+        request.start()
+        assertTrue(backgroundStarted.await(5, TimeUnit.SECONDS))
+        request.interrupt()
+        request.join(5_000)
+
+        assertFalse(request.isAlive)
+        assertTrue(failure.get() is CancellationException)
+        assertEquals("CallSite string candidate match interrupted", failure.get().message)
+        assertTrue(interruptedFlag.get())
+        assertTrue(backgroundInterrupted.await(5, TimeUnit.SECONDS))
+    }
+
+    @Test
+    fun `split candidate executor enforces one shared background budget across graph callers`() {
+        val graphCallers = Executors.newFixedThreadPool(4)
+        val releaseBackground = CountDownLatch(1)
+        val backgroundStarted = CountDownLatch(2)
+        val activeBackground = AtomicInteger()
+        val peakBackground = AtomicInteger()
+        val threads = ConcurrentHashMap.newKeySet<String>()
+        try {
+            val executions = List(4) {
+                graphCallers.submit<IntArray> {
+                    executeSplitCallSiteCandidateTasks(
+                        listOf(
+                            Callable { IntArray(0) },
+                            Callable {
+                                threads += Thread.currentThread().name
+                                val active = activeBackground.incrementAndGet()
+                                peakBackground.accumulateAndGet(active, ::maxOf)
+                                backgroundStarted.countDown()
+                                try {
+                                    check(releaseBackground.await(5, TimeUnit.SECONDS))
+                                    IntArray(0)
+                                } finally {
+                                    activeBackground.decrementAndGet()
+                                }
+                            },
+                            Callable {
+                                threads += Thread.currentThread().name
+                                val active = activeBackground.incrementAndGet()
+                                peakBackground.accumulateAndGet(active, ::maxOf)
+                                backgroundStarted.countDown()
+                                try {
+                                    check(releaseBackground.await(5, TimeUnit.SECONDS))
+                                    IntArray(0)
+                                } finally {
+                                    activeBackground.decrementAndGet()
+                                }
+                            }
+                        ),
+                        backgroundParallelism = 2
+                    )
+                }
+            }
+            assertTrue(backgroundStarted.await(5, TimeUnit.SECONDS))
+            assertEquals(2, activeBackground.get())
+            assertEquals(2, peakBackground.get())
+            assertTrue(threads.all { thread -> thread.startsWith("graphite-callsite-segment-") })
+            releaseBackground.countDown()
+            executions.forEach { execution -> assertContentEquals(IntArray(0), execution.get(5, TimeUnit.SECONDS)) }
+            assertEquals(0, activeBackground.get())
+        } finally {
+            releaseBackground.countDown()
+            graphCallers.shutdownNow()
         }
     }
 
@@ -736,6 +837,7 @@ class GraphStoreTest {
                 val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
                 return loaded.use {
                     val scanThreads = ConcurrentHashMap.newKeySet<String>()
+                    val scanWorkersStarted = CountDownLatch(3)
                     val ids = loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
@@ -744,13 +846,18 @@ class GraphStoreTest {
                             override val segmentWorkerCount: Int = 2
                             override fun consume(workUnits: Long) {
                                 work.addAndGet(workUnits)
-                                scanThreads.add(Thread.currentThread().name)
+                                if (loaded.callSiteScanActiveWorkers() > 0 &&
+                                    scanThreads.add(Thread.currentThread().name)
+                                ) {
+                                    scanWorkersStarted.countDown()
+                                    assertTrue(scanWorkersStarted.await(5, TimeUnit.SECONDS))
+                                }
                             }
                         }
                     ).orEmpty().map { node -> node.id.value }.toList()
                     assertEquals(1L, loaded.callSiteParallelScanCount())
-                    assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
-                    assertEquals(setOf(Thread.currentThread().name), scanThreads)
+                    assertEquals(3, loaded.callSiteScanPeakActiveWorkers())
+                    assertEquals(3, scanThreads.size)
                     assertEquals(0, loaded.callSiteScanActiveWorkers())
                     assertEquals(expectPersistedIndex, loaded.isCallSiteStringIndexLoadedFromPersistence())
                     ids to work.get()
@@ -1117,6 +1224,7 @@ class GraphStoreTest {
                 assertTrue(loaded.prepareCallSiteStringIndex())
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
                 val threads = ConcurrentHashMap.newKeySet<String>()
+                val workersStarted = CountDownLatch(4)
                 val result = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf("caller_class", "caller_name", "callee_class", "callee_name").map { property ->
@@ -1128,13 +1236,15 @@ class GraphStoreTest {
                         override val segmentWorkerCount: Int = 3
 
                         override fun consume(workUnits: Long) {
-                            threads.add(Thread.currentThread().name)
+                            if (threads.add(Thread.currentThread().name)) workersStarted.countDown()
+                            check(workersStarted.await(5, TimeUnit.SECONDS))
                         }
                     }
                 )
 
                 assertTrue(result.orEmpty().isEmpty())
-                assertEquals(setOf(Thread.currentThread().name), threads)
+                assertEquals(4, threads.size)
+                assertTrue(threads.count { thread -> thread.startsWith("graphite-callsite-segment-") } == 3)
                 assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
             }
         } finally {
@@ -1280,7 +1390,7 @@ class GraphStoreTest {
                 )
                 assertEquals(listOf(listOf(null)), selectedGraphId?.map { row -> row.values })
                 assertTrue(splitWork.get() >= 4_096L)
-                assertEquals(0, loaded.callSiteSegmentPeakActiveWorkers())
+                assertTrue(loaded.callSiteSegmentPeakActiveWorkers() >= 1)
                 assertTrue(loaded.hasExactCallSiteProjectionTupleIndex())
 
                 val nonMatchingTuple = setOf(selectedValues.first())
@@ -2775,8 +2885,8 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `large trigram posting sort runs on caller and stops when request is interrupted`() {
-        val expectedWorkers = 1
+    fun `large trigram posting sort stays on bounded workers and stops when request is interrupted`() {
+        val expectedWorkers = callSiteScanParallelism
         val postings = LongArray((1 shl 20) + 1) { index ->
             index.toLong() * -7_046_029_254_386_353_131L xor (index.toLong() shl 21)
         }
@@ -2804,7 +2914,7 @@ class GraphStoreTest {
         request.start()
         assertTrue(workersStarted.await(5, TimeUnit.SECONDS))
         assertEquals(expectedWorkers, workerThreads.size)
-        assertEquals(setOf(request.name), workerThreads)
+        assertTrue(workerThreads.all { name -> name.startsWith("graphite-callsite-scan-") })
         request.interrupt()
         releaseWorkers.countDown()
         request.join(500)
@@ -3480,6 +3590,8 @@ class GraphStoreTest {
                 assertEquals(1L, loaded.callSiteStringPreflightCount())
 
                 val workerThreads = ConcurrentHashMap.newKeySet<String>()
+                val expectedParallelWorkers = minOf(callSiteScanParallelism, 32_768)
+                val parallelWorkersStarted = CountDownLatch(expectedParallelWorkers)
                 val ids = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -3492,18 +3604,26 @@ class GraphStoreTest {
                     ),
                     limit = 1,
                     workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                        workerThreads.add(Thread.currentThread().name)
+                        if (workerThreads.add(Thread.currentThread().name)) {
+                            parallelWorkersStarted.countDown()
+                        }
+                        check(parallelWorkersStarted.await(5, TimeUnit.SECONDS))
                     }
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(0), ids)
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(setOf(Thread.currentThread().name), workerThreads)
+                assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-callsite-scan-") })
                 assertEquals(1L, loaded.callSiteParallelScanCount())
+                if (expectedParallelWorkers > 1) {
+                    assertEquals(expectedParallelWorkers, workerThreads.size)
+                    assertTrue(loaded.callSiteScanPeakActiveWorkers() > 1)
+                }
 
                 loaded.resetCallSiteScanMetrics()
                 assertEquals(0L, loaded.callSiteStringPreflightCount())
                 val splitWorkerThreads = ConcurrentHashMap.newKeySet<String>()
+                val splitWorkersStarted = CountDownLatch(2)
                 val splitIds = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -3520,18 +3640,22 @@ class GraphStoreTest {
 
                         override fun consume(workUnits: Long) {
                             splitWorkerThreads += Thread.currentThread().name
+                            splitWorkersStarted.countDown()
+                            check(splitWorkersStarted.await(5, TimeUnit.SECONDS))
                         }
                     }
                 ).orEmpty().map { it.id.value }.toList()
 
                 assertEquals(listOf(0), splitIds)
-                assertEquals(setOf(Thread.currentThread().name), splitWorkerThreads)
-                assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
+                assertTrue(splitWorkerThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
+                assertTrue(splitWorkerThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
+                assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
 
                 loaded.resetCallSiteScanMetrics()
                 val splitProjectionThreads = ConcurrentHashMap.newKeySet<String>()
+                val splitProjectionWorkersStarted = CountDownLatch(2)
                 val splitProjection = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -3549,13 +3673,16 @@ class GraphStoreTest {
 
                         override fun consume(workUnits: Long) {
                             splitProjectionThreads += Thread.currentThread().name
+                            splitProjectionWorkersStarted.countDown()
+                            check(splitProjectionWorkersStarted.await(5, TimeUnit.SECONDS))
                         }
                     }
                 )
                 assertEquals(expectedRawProjection, splitProjection?.map { row -> row.values })
+                assertTrue(splitProjectionThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
+                assertTrue(splitProjectionThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
                 assertEquals(1L, loaded.callSiteParallelScanCount())
-                assertEquals(setOf(Thread.currentThread().name), splitProjectionThreads)
-                assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
+                assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
 
@@ -3637,7 +3764,7 @@ class GraphStoreTest {
                 }
                 assertEquals("parallel projection budget failure", projectionFailure.message)
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
-                assertEquals(0L, loaded.callSiteScanAbortedWorkers())
+                assertTrue(loaded.callSiteScanAbortedWorkers() >= 1L)
 
                 loaded.resetCallSiteScanMetrics()
                 val projectionBackgroundStarted = CountDownLatch(1)
@@ -3662,7 +3789,7 @@ class GraphStoreTest {
                                 override val segmentWorkerCount: Int = 1
 
                                 override fun consume(workUnits: Long) {
-                                    if (Thread.currentThread().name == "projection-interruption-test") {
+                                    if (Thread.currentThread().name.startsWith("graphite-callsite-segment-")) {
                                         projectionBackgroundStarted.countDown()
                                         check(releaseProjectionBackground.await(5, TimeUnit.SECONDS))
                                     }
@@ -3712,7 +3839,9 @@ class GraphStoreTest {
 
                 if (Runtime.getRuntime().availableProcessors() > 1) {
                     loaded.resetCallSiteScanMetrics()
-                    val expectedWorkers = 1
+                    val expectedWorkers = callSiteScanParallelism
+                    val firstBatchReached = CountDownLatch(expectedWorkers)
+                    val failureClaimed = AtomicBoolean()
                     val consumedWork = AtomicLong()
                     val failure = assertFailsWith<IllegalStateException> {
                         loaded.nodesByStringPropertyDisjunction(
@@ -3728,13 +3857,19 @@ class GraphStoreTest {
                             limit = 1,
                             workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
                                 consumedWork.addAndGet(workUnits)
-                                error("parallel scan budget failure")
+                                val failThisWorker = failureClaimed.compareAndSet(false, true)
+                                firstBatchReached.countDown()
+                                check(firstBatchReached.await(5, TimeUnit.SECONDS))
+                                if (failThisWorker) error("parallel scan budget failure")
+                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
+                                    Thread.onSpinWait()
+                                }
                             }
                         ).orEmpty().toList()
                     }
                     assertEquals("parallel scan budget failure", failure.message)
                     assertEquals(expectedWorkers * 1_024L, consumedWork.get())
-                    assertEquals(0L, loaded.callSiteScanAbortedWorkers())
+                    assertEquals(expectedWorkers - 1L, loaded.callSiteScanAbortedWorkers())
 
                     loaded.resetCallSiteScanMetrics()
                     val interruptionBatchReached = CountDownLatch(expectedWorkers)
@@ -3777,7 +3912,7 @@ class GraphStoreTest {
                     assertTrue(interruptedFailure.get() is CancellationException)
                     assertEquals("Mapped string-property scan interrupted", interruptedFailure.get().message)
                     assertTrue(interruptedFlag.get())
-                    assertEquals(0L, loaded.callSiteScanAbortedWorkers())
+                    assertTrue(loaded.callSiteScanAbortedWorkers() in 1L..expectedWorkers.toLong())
                 }
 
                 loaded.clearStringPropertyIndexes()
@@ -4025,11 +4160,19 @@ class GraphStoreTest {
 
                 if (Runtime.getRuntime().availableProcessors() > 1) {
                     loaded.resetCallSiteScanMetrics()
-                    val expectedWorkers = 1
+                    val expectedWorkers = callSiteScanParallelism
+                    val firstPreparationBatchReached = CountDownLatch(expectedWorkers)
+                    val preparationFailureClaimed = AtomicBoolean()
                     val preparationFailure = assertFailsWith<IllegalStateException> {
                         loaded.prepareCallSiteStringIndex(
                             ParallelGraphWorkBatchConsumer {
-                                error("parallel preparation budget failure")
+                                val failThisWorker = preparationFailureClaimed.compareAndSet(false, true)
+                                firstPreparationBatchReached.countDown()
+                                check(firstPreparationBatchReached.await(5, TimeUnit.SECONDS))
+                                if (failThisWorker) error("parallel preparation budget failure")
+                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
+                                    Thread.onSpinWait()
+                                }
                             }
                         )
                     }

@@ -4251,21 +4251,52 @@ format, or query-specific result shortcut is introduced.
   CPU, heap, RSS, and fixture acceptance rules are preserved.
 - The combined source snapshot passes `./gradlew check :webgraph:jmhJar --no-daemon`
   in a normal local clone using OpenJDK 17.0.18 on macOS arm64. This includes all
-  module tests/lint/coverage checks and the Hive, Kotlin compiler, and Tika
+  module tests/lint and the Hive, Kotlin compiler, and Tika
   `LargeCorpusPerformanceGateTest` lifecycle checks. The combined build executes
   46 tasks and restores 29 from Gradle cache; focused changed-module suites also
   execute their test tasks. Restored benchmark logic and JMH compilation pass.
 
-**Performance evidence required:** exact-head hosted CI must compare this commit
-with main using the same runner and 64 distinct persisted graphs generated from
-pinned Android, Tika, Hive, and Kotlin compiler JARs. The three paired JVM forks,
-independent correctness oracle, budgets, fixture identities, and resource limits
-remain unchanged. The standard CI report supplies method-level `CypherBenchmark`,
-end-to-end, routing, and global-wide comparisons. No paired P95, CPU, heap, or RSS
-result is available yet; local correctness/lifecycle completion does not establish
-10x or no regression.
+**Hosted outcome:** rejected. Candidate
+`1882efe41756583d34ebabf3150b75e91f351ed2` was compared with main
+`4e328b0109e13c896b74004823fb049fcb19251a` in benchmark run
+[33964500201](https://github.com/johnsonlee/graphite/actions/runs/33964500201).
+The workflow ran its pinned persisted real Android/Tika/Hive/Kotlin fixtures on
+GitHub Ubuntu runners with Java 17, using the checked-in JMH commands and
+base-owned harnesses. The standard benchmark artifacts retain the exact commands,
+JVM options, fixture identities, and raw observations. Reverse-order confirmation
+reproduced the following failures against main:
 
-**Decision:** pending exact-head CI. Keep this single experiment unchanged while
-it runs. All required checks must be green to retain it; a failed optimization
-must be reverted before trying another direction. No merge or tag operation is
-authorized.
+| Real-data benchmark | Main | Caller thread | Change |
+| --- | ---: | ---: | ---: |
+| `denseDistributedMethodContainsCaseInsensitiveDiscovery` | 0.9553 s/op | 2.0711 s/op | +116.79% latency |
+| `zeroHitBroadContainsCaseInsensitiveDiscovery` | 0.2355 s/op | 0.4236 s/op | +79.88% latency |
+| `broadlyDistributedClassPrefixCaseInsensitiveDiscovery` | 1.0090 s/op | 2.1041 s/op | +108.54% latency |
+| `firstLastGraphBimodalClassPrefixCaseInsensitiveDiscovery` | 1.2164 s/op | 2.2271 s/op | +83.09% latency |
+| `zeroHitBroadContainsAcrossThirtySixRealGraphs` | 1.8251 s/op | 3.5729 s/op | +95.77% latency |
+| Method compatibility, 4 graphs, contains | 1.05 s CPU | 1.28 s CPU | +21.90% CPU |
+| Method compatibility, 4 graphs, OR | 1.01 s CPU | 1.49 s CPU | +47.52% CPU |
+| Method compatibility, 17 graphs, regex | 2.22 s CPU | 3.40 s CPU | +53.15% CPU |
+
+The capacity gate also failed its 15% CPU bound: normalized process CPU rose from
+4.9533 s to 6.3333 s (+27.86%). Wall time rose from 1667.89 ms to 1870.91 ms
+(+12.17%), tail from 1.5896 s to 1.7997 s (+13.22%), and RSS after the run from
+946,342,571 to 1,014,797,653 bytes (+7.23%). Its concurrency, budget-exhaustion,
+cancellation, rejection, and recovery counters remained correct. This capacity
+gate has no reverse-order confirmation; the independently confirmed latency and
+Method failures already suffice to reject the attempt.
+
+Method-level JMH and the large-corpus end-to-end job passed, but the Method
+compatibility CPU checks and wrapped-query latency checks show regressions.
+The unit workflow
+[33964500204](https://github.com/johnsonlee/graphite/actions/runs/33964500204)
+failed the Cypher coverage threshold: 96.902% versus the required 98%. Local
+`check` success did not enforce that workflow threshold and must not be reported
+as coverage acceptance. No assertion failure was reported by the executed unit
+suites.
+
+**Decision:** revert the entire scheduling experiment, including its tests and
+benchmark contract changes, retaining this failure record only. Stop the remaining
+benchmark work after the reproduced regressions establish rejection. Shared
+fixture64 preparation was still running when cancellation was requested, so
+64-graph global P95, routing, and 10x evidence are unavailable. No next optimization
+is included in the revert. No merge or tag operation is authorized.

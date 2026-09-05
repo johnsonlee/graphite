@@ -71,9 +71,15 @@ import java.security.MessageDigest
 import java.util.LinkedHashMap
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutorCompletionService
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
+private val callSiteScanWorkerNumber = AtomicInteger()
 internal val callSiteScanParallelism: Int by lazy {
     val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     System.getProperty(CALL_SITE_SCAN_PARALLELISM_PROPERTY)
@@ -81,6 +87,14 @@ internal val callSiteScanParallelism: Int by lazy {
         ?.coerceIn(1, processors)
         ?: processors
 }
+internal val callSiteScanExecutor by lazy {
+    Executors.newFixedThreadPool(callSiteScanParallelism) { runnable ->
+        Thread(runnable, "graphite-callsite-scan-${callSiteScanWorkerNumber.incrementAndGet()}").apply {
+            isDaemon = true
+        }
+    }
+}
+
 private data class ParallelCallSiteScanResult(
     val workerIndex: Int,
     val matches: IntArray,
@@ -214,11 +228,14 @@ internal class MappedWebGraphBackedGraph(
         }
         return digest.digest()
     }
-    private val callSiteRawScanCount = AtomicLong()
+    private val callSiteParallelScanCount = AtomicLong()
     private val callSiteStringLookupEntryCount = AtomicLong()
     private val callSiteStringIndexLookupCount = AtomicLong()
     private val callSiteStringPreflightCount = AtomicLong()
     private val callSiteStringProjectionLookupCount = AtomicLong()
+    private val callSiteScanActiveWorkers = AtomicInteger()
+    private val callSiteScanPeakActiveWorkers = AtomicInteger()
+    private val callSiteScanAbortedWorkers = AtomicLong()
     private val stringPropertyIndexes = object : LinkedHashMap<StringPropertyKey, MappedStringPropertyIndex>(
         MAX_STRING_PROPERTY_INDEXES + 1,
         STRING_PROPERTY_INDEX_LOAD_FACTOR,
@@ -525,11 +542,19 @@ internal class MappedWebGraphBackedGraph(
         val exactMatchSets = exactMatchingStringIds?.map(::IntOpenHashSet)
         val targetSize = minOf(limit, selectedValues?.size ?: limit)
         val abort = AtomicBoolean()
+        val scanExecutor = if (backgroundWorkerCount > 0) {
+            splitCallSiteExecutor(workConsumer.segmentWorkerCount)
+        } else {
+            callSiteScanExecutor
+        }
+        val completion = ExecutorCompletionService<ParallelCallSiteProjectionResult>(scanExecutor)
         val tasks = (0 until workerCount).mapNotNull { workerIndex ->
             val start = (workerIndex * chunkSize).toInt()
             val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
             if (start >= end) return@mapNotNull null
             Callable {
+                val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
+                callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
                     val rows = ArrayList<StringPropertyDistinctRow>(targetSize)
                     val seenValues = HashSet<List<String?>>()
@@ -541,7 +566,7 @@ internal class MappedWebGraphBackedGraph(
                             if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                                 (abort.get() || Thread.currentThread().isInterrupted)
                             ) {
-
+                                if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
                                 throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                             }
                             accounting.consume()
@@ -592,11 +617,50 @@ internal class MappedWebGraphBackedGraph(
                 } catch (error: Throwable) {
                     abort.set(true)
                     throw error
+                } finally {
+                    callSiteScanActiveWorkers.decrementAndGet()
                 }
             }
         }
-        callSiteRawScanCount.incrementAndGet()
-        val results = tasks.map { task -> callCallSiteTask(task) }
+        callSiteParallelScanCount.incrementAndGet()
+        val inlineTask = tasks.first()
+        tasks.drop(1).map(::trackedSplitCallSiteTask).forEach(completion::submit)
+        val results = arrayOfNulls<ParallelCallSiteProjectionResult>(tasks.size)
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        fun recordFailure(error: Throwable) {
+            abort.set(true)
+            if (failure == null || failure is CancellationException && error !is CancellationException) {
+                failure = error
+            }
+        }
+        try {
+            val result = inlineTask.call()
+            results[result.workerIndex] = result
+        } catch (error: Throwable) {
+            recordFailure(error)
+        } finally {
+            received++
+        }
+        while (received < tasks.size) {
+            try {
+                val result = completion.take().get()
+                results[result.workerIndex] = result
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                recordFailure(error.cause ?: error)
+                received++
+            }
+        }
+        interruption?.let { error ->
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        failure?.let { error -> throw error }
         val rows = ArrayList<StringPropertyDistinctRow>(targetSize)
         val seenValues = HashSet<List<String?>>()
         results.filterNotNull().sortedBy(ParallelCallSiteProjectionResult::workerIndex).forEach { result ->
@@ -1082,8 +1146,16 @@ internal class MappedWebGraphBackedGraph(
             null
         }
         val abort = AtomicBoolean()
+        val scanExecutor = if (splitWork != null && backgroundWorkerCount > 0) {
+            splitCallSiteExecutor(splitWork.segmentWorkerCount)
+        } else {
+            callSiteScanExecutor
+        }
+        val completion = ExecutorCompletionService<ParallelCallSiteScanResult>(scanExecutor)
         val tasks = scanRanges.map { (workerIndex, start, end) ->
             Callable {
+                val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
+                callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
                     val expectedCount = end - start
                     val matches = IntArrayList(minOf(limit, end - start))
@@ -1098,7 +1170,7 @@ internal class MappedWebGraphBackedGraph(
                             if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
                                 (abort.get() || Thread.currentThread().isInterrupted)
                             ) {
-
+                                if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
                                 throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
                             }
                             accounting.consume()
@@ -1156,27 +1228,67 @@ internal class MappedWebGraphBackedGraph(
                 } catch (error: Throwable) {
                     abort.set(true)
                     throw error
+                } finally {
+                    callSiteScanActiveWorkers.decrementAndGet()
                 }
             }
         }
-        callSiteRawScanCount.incrementAndGet()
+        callSiteParallelScanCount.incrementAndGet()
         val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
         var executedTasks = 0
-        try {
-            var waveStart = 0
-            var orderedPrefixComplete = false
-            while (waveStart < tasks.size && !orderedPrefixComplete) {
-                val wave = tasks.subList(waveStart, minOf(tasks.size, waveStart + workerCount))
-                wave.forEach { task ->
-                    val result = callCallSiteTask(task)
-                    results[result.workerIndex] = result
-                }
-                executedTasks += wave.size
-                orderedPrefixComplete = orderedPrefixWaves && results.asSequence().take(executedTasks)
-                    .filterNotNull().sumOf { result -> result.matches.size } >= limit
-                waveStart += wave.size
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        fun recordFailure(error: Throwable) {
+            abort.set(true)
+            if (failure == null || failure is CancellationException && error !is CancellationException) {
+                failure = error
             }
-        } catch (error: Throwable) {
+        }
+        var waveStart = 0
+        var orderedPrefixComplete = false
+        while (waveStart < tasks.size && failure == null && interruption == null && !orderedPrefixComplete) {
+            val wave = tasks.subList(waveStart, minOf(tasks.size, waveStart + workerCount))
+            val inlineTask = wave.firstOrNull().takeIf { splitWork != null }
+            val backgroundTasks = if (inlineTask == null) wave else wave.drop(1)
+            backgroundTasks.map { task ->
+                if (splitWork == null) task else trackedSplitCallSiteTask(task)
+            }.forEach(completion::submit)
+            var received = 0
+            inlineTask?.let { task ->
+                try {
+                    val workerResult = task.call()
+                    results[workerResult.workerIndex] = workerResult
+                } catch (error: Throwable) {
+                    recordFailure(error)
+                } finally {
+                    received++
+                }
+            }
+            while (received < wave.size) {
+                try {
+                    val workerResult = completion.take().get()
+                    results[workerResult.workerIndex] = workerResult
+                    received++
+                } catch (error: InterruptedException) {
+                    abort.set(true)
+                    if (interruption == null) interruption = error
+                } catch (error: ExecutionException) {
+                    recordFailure(error.cause ?: error)
+                    received++
+                }
+            }
+            executedTasks += wave.size
+            orderedPrefixComplete = orderedPrefixWaves && results.asSequence().take(executedTasks)
+                .filterNotNull().sumOf { result -> result.matches.size } >= limit
+            waveStart += wave.size
+        }
+        interruption?.let { error ->
+            indexReservation?.close()
+            indexReservation = null
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        failure?.let { error ->
             indexReservation?.close()
             indexReservation = null
             throw error
@@ -1215,7 +1327,7 @@ internal class MappedWebGraphBackedGraph(
             val stringCount = stringTable.size()
             val endsByStringId = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(stringCount) }
             val uniqueCounts = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
-            forEachCallSiteStringProperty() { propertyIndex, abort ->
+            forEachCallSiteStringProperty(workConsumer) { propertyIndex, abort ->
                 val countAccounting = BufferedGraphWorkConsumer(
                     workConsumer.takeIf { propertyIndex == 0 }
                 )
@@ -1254,7 +1366,7 @@ internal class MappedWebGraphBackedGraph(
                 IntArray(uniqueCounts[propertyIndex])
             }
             val postings = Array(CALL_SITE_STRING_PROPERTY_COUNT) { IntArray(capacity) }
-            forEachCallSiteStringProperty() { propertyIndex, abort ->
+            forEachCallSiteStringProperty(workConsumer) { propertyIndex, abort ->
                 val ends = endsByStringId[propertyIndex]
                 val used = usedStringIds[propertyIndex]
                 var usedIndex = 0
@@ -1358,11 +1470,14 @@ internal class MappedWebGraphBackedGraph(
         val workerCount = minOf(callSiteScanParallelism, nodeCount.toInt())
         val chunkSize = (nodeCount + workerCount - 1L) / workerCount
         val abort = AtomicBoolean()
+        val completion = ExecutorCompletionService<ParallelCallSiteScanResult>(callSiteScanExecutor)
         val tasks = (0 until workerCount).mapNotNull { workerIndex ->
             val start = (workerIndex * chunkSize).toInt()
             val end = minOf(nodeCount, (workerIndex + 1L) * chunkSize).toInt()
             if (start >= end) return@mapNotNull null
             Callable {
+                val activeWorkers = callSiteScanActiveWorkers.incrementAndGet()
+                callSiteScanPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
                 try {
                     val expectedCount = end - start
                     val nodeIds = IntArray(expectedCount)
@@ -1397,13 +1512,40 @@ internal class MappedWebGraphBackedGraph(
                 } catch (error: Throwable) {
                     abort.set(true)
                     throw error
+                } finally {
+                    callSiteScanActiveWorkers.decrementAndGet()
                 }
             }
         }
-        callSiteRawScanCount.incrementAndGet()
-        val results = try {
-            tasks.map { task -> callCallSiteTask(task) }
-        } catch (error: Throwable) {
+        callSiteParallelScanCount.incrementAndGet()
+        tasks.forEach(completion::submit)
+        val results = arrayOfNulls<ParallelCallSiteScanResult>(tasks.size)
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < tasks.size) {
+            try {
+                val result = completion.take().get()
+                results[result.workerIndex] = result
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
+                received++
+            }
+        }
+        interruption?.let { error ->
+            reservation.close()
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        failure?.let { error ->
             reservation.close()
             throw error
         }
@@ -1416,21 +1558,55 @@ internal class MappedWebGraphBackedGraph(
         return callSiteStringIndex != null
     }
 
-    private fun <T> callCallSiteTask(task: Callable<T>): T = try {
-        if (Thread.currentThread().isInterrupted) throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
-        task.call()
-    } catch (error: InterruptedException) {
-        Thread.currentThread().interrupt()
-        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
-    }
-
+    @Suppress("CyclomaticComplexMethod", "InstanceOfCheckForException", "ThrowsCount", "TooGenericExceptionCaught")
     private fun forEachCallSiteStringProperty(
+        workConsumer: GraphWorkConsumer?,
         action: (propertyIndex: Int, abort: AtomicBoolean) -> Unit
     ) {
         val abort = AtomicBoolean()
-        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
-            callCallSiteTask(Callable { action(propertyIndex, abort) })
+        if (workConsumer !is ParallelGraphWorkBatchConsumer || callSiteScanParallelism <= 1) {
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex -> action(propertyIndex, abort) }
+            return
         }
+        val completion = ExecutorCompletionService<Unit>(callSiteScanExecutor)
+        val primaryFailure = AtomicReference<Throwable>()
+        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+            completion.submit(Callable {
+                try {
+                    action(propertyIndex, abort)
+                } catch (error: Throwable) {
+                    if (abort.compareAndSet(false, true) || error !is CancellationException) {
+                        primaryFailure.compareAndSet(null, error)
+                    }
+                    throw error
+                }
+            })
+        }
+        var received = 0
+        var failure: Throwable? = null
+        var interruption: InterruptedException? = null
+        while (received < CALL_SITE_STRING_PROPERTY_COUNT) {
+            try {
+                completion.take().get()
+                received++
+            } catch (error: InterruptedException) {
+                abort.set(true)
+                if (interruption == null) interruption = error
+            } catch (error: ExecutionException) {
+                abort.set(true)
+                val cause = error.cause ?: error
+                if (failure == null || failure is CancellationException && cause !is CancellationException) {
+                    failure = cause
+                }
+                received++
+            }
+        }
+        interruption?.let { error ->
+            Thread.currentThread().interrupt()
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
+        }
+        primaryFailure.get()?.let { throw it }
+        failure?.let { throw it }
     }
 
     private fun checkCallSiteIndexBuildWorker(index: Int, abort: AtomicBoolean) {
@@ -1963,8 +2139,7 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
-    // Legacy benchmark name: counts segmented raw scans and index builds, including caller execution.
-    internal fun callSiteParallelScanCount(): Long = callSiteRawScanCount.get()
+    internal fun callSiteParallelScanCount(): Long = callSiteParallelScanCount.get()
 
     internal fun callSiteStringLookupEntryCount(): Long = callSiteStringLookupEntryCount.get()
 
@@ -1974,27 +2149,24 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun callSiteStringProjectionLookupCount(): Long = callSiteStringProjectionLookupCount.get()
 
-    // Retained for benchmark readers; CallSite work has no background workers.
-    @Suppress("FunctionOnlyReturningConstant")
-    internal fun callSiteScanPeakActiveWorkers(): Int = 0
+    internal fun callSiteScanPeakActiveWorkers(): Int = callSiteScanPeakActiveWorkers.get()
 
     internal fun callSiteSegmentPeakActiveWorkers(): Int = splitCallSitePeakActiveWorkers()
 
-    // Retained for benchmark readers; CallSite work has no background workers.
-    @Suppress("FunctionOnlyReturningConstant")
-    internal fun callSiteScanActiveWorkers(): Int = 0
+    internal fun callSiteScanActiveWorkers(): Int = callSiteScanActiveWorkers.get()
 
-    // Retained for benchmark readers; CallSite work has no background workers.
-    @Suppress("FunctionOnlyReturningConstant")
-    internal fun callSiteScanAbortedWorkers(): Long = 0L
+    internal fun callSiteScanAbortedWorkers(): Long = callSiteScanAbortedWorkers.get()
 
     internal fun resetCallSiteScanMetrics() {
-        callSiteRawScanCount.set(0L)
+        check(callSiteScanActiveWorkers.get() == 0) { "Cannot reset active CallSite scan metrics" }
         resetSplitCallSiteWorkerMetrics()
+        callSiteParallelScanCount.set(0L)
         callSiteStringLookupEntryCount.set(0L)
         callSiteStringIndexLookupCount.set(0L)
         callSiteStringPreflightCount.set(0L)
         callSiteStringProjectionLookupCount.set(0L)
+        callSiteScanPeakActiveWorkers.set(0)
+        callSiteScanAbortedWorkers.set(0L)
     }
 
     internal fun stringPropertyIndexCount(
