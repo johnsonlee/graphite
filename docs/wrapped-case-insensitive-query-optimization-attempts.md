@@ -4957,3 +4957,9 @@ match; each replay charges 58,071,626 total work units. Dense DISTINCT is P95
 in every run. Targeted DISTINCT also slows in pair 1 (24.229000→38.935916 ms),
 then improves in pairs 2/3; it does not trigger the repeated-row regression rule.
 The first-pair aggregate failure is sufficient to reject this attempt.
+
+**Explicit production revert:** rejected attempt `bd942197c14d8febd8ea1118d85616444f4e3834` is followed by a
+production-only revert. All 130 production/JMH source files now match frozen
+main byte-for-byte; [verification](profiling/attempt136/revert-source-verification.json).
+The pure-OR correctness tests and diagnostic artifacts remain. Revert-head CI is
+pending; no acceptance or goal completion is claimed.
