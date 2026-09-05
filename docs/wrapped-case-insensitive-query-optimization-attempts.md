@@ -4444,3 +4444,46 @@ as progress while rejecting final target attainment.
 the incremental global check, not final acceptance. Method-level, full end-to-end,
 routing, resource, coverage, and all required CI checks remain mandatory. Do not
 start another optimization until this commit is entirely green; revert if it fails.
+
+
+**Hosted outcome:** rejected. Exact candidate
+`2b98f6929893be2cd572a250d884ba1701efb1dc` fails benchmark run
+[33969545333](https://github.com/johnsonlee/graphite/actions/runs/33969545333).
+The Method compatibility 17-graph position shard reports a process-CPU regression
+for `MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=17,scenario=zero]`:
+
+| Measurement order | Main process CPU | Candidate process CPU | Change |
+| --- | ---: | ---: | ---: |
+| Initial baseline then candidate | 1.020 s | 1.450 s | +42.16% |
+| Reverse-order confirmation | 0.930 s | 1.110 s | +19.35% |
+
+Both exceed the existing 15% bound. All three scenario correctness manifests
+match in initial and confirmation runs, and that shard's wall/RSS checks pass.
+The other eleven Method shards, all five wrapped-query latency shards and their
+aggregate, the capacity gate, method-level JMH, and large-corpus end-to-end paired
+benchmarks pass. Thus the method-level JMH and end-to-end comparisons indicate no
+regression, while the separate Method compatibility CPU check rejects the attempt.
+Unit run [33969545329](https://github.com/johnsonlee/graphite/actions/runs/33969545329)
+passes all checks including coverage. Neither local P95 progress nor these passing
+checks override the reproduced CPU failure. No numerical failure is waived or
+rerun until green.
+
+**Revert decision:** remove the entire selected-tuple lookup specialization and
+its tests. All production sources return to exact starting main. Retain the
+user-authorized acceptance plumbing, deterministic queued-worker coverage test,
+and chronological evidence as verification work; these are not an accepted
+optimization iteration. No further optimization has started.
+
+
+The remaining hosted global-wide and routing pressure jobs were canceled after
+the confirmed CPU failure established rejection. At cancellation, both were still
+executing their trusted benchmark steps without a result artifact. Hosted global
+P95 and routing evidence for this candidate are therefore unavailable; the local
+three-pair measurements above must not be described as hosted acceptance.
+
+**Revert verification:** a fresh, uncached Java 17 / four-CPU run of
+`:webgraph:test :webgraph:detekt :webgraph:koverLog --rerun-tasks --no-build-cache`
+passes 183 tests with no failures or skips, detekt, and 98.1199% line coverage.
+All three reverted files match frozen main byte-for-byte in both the workspace
+and verification clone. The exact revert still requires hosted CI; no claim of
+an accepted optimization or final target completion is made.
