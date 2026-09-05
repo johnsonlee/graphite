@@ -28,15 +28,7 @@ import java.util.Collections
 import java.util.concurrent.Callable
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorCompletionService
-import java.util.concurrent.Future
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.CRC32
 
 /** Compact CSR indexes for the four strings searched by broad CallSite queries. */
@@ -1904,56 +1896,6 @@ private data class CallSiteTrigramPostingRange(
         get() = end - start
 }
 
-private class SplitCallSiteTask<T>(private val task: Callable<T>) {
-    private val state = AtomicInteger(NEW)
-    private val exited = CountDownLatch(1)
-    lateinit var future: Future<T>
-
-    val callable = Callable {
-        if (!state.compareAndSet(NEW, RUNNING)) throw CancellationException()
-        try {
-            task.call()
-        } finally {
-            state.set(FINISHED)
-            exited.countDown()
-        }
-    }
-
-    fun cancel() {
-        future.cancel(true)
-        if (state.compareAndSet(NEW, FINISHED)) exited.countDown()
-    }
-
-    fun awaitExit(): InterruptedException? {
-        var interruption: InterruptedException? = null
-        while (true) {
-            try {
-                exited.await()
-                return interruption
-            } catch (error: InterruptedException) {
-                if (interruption == null) interruption = error
-            }
-        }
-    }
-
-    private companion object {
-        const val NEW = 0
-        const val RUNNING = 1
-        const val FINISHED = 2
-    }
-}
-
-private fun <T> cancelAndJoinSplitCallSiteTasks(
-    tasks: List<SplitCallSiteTask<T>>
-): InterruptedException? {
-    tasks.forEach { task -> task.cancel() }
-    var interruption: InterruptedException? = null
-    tasks.forEach { task ->
-        task.awaitExit()?.let { error -> if (interruption == null) interruption = error }
-    }
-    return interruption
-}
-
 @Suppress("ThrowsCount", "TooGenericExceptionCaught")
 internal fun executeSplitCallSiteCandidateTasks(
     tasks: List<Callable<IntArray>>,
@@ -1970,48 +1912,12 @@ internal fun executeSplitCallSiteCandidateTasks(
     return combined
 }
 
-private val splitCallSiteWorkerNumber = AtomicInteger()
-private val splitCallSiteActiveWorkers = AtomicInteger()
-private val splitCallSitePeakActiveWorkers = AtomicInteger()
-private val splitCallSiteExecutors = ConcurrentHashMap<Int, ThreadPoolExecutor>()
+// Retained for benchmark readers; CallSite work runs on its caller.
+@Suppress("FunctionOnlyReturningConstant")
+internal fun splitCallSitePeakActiveWorkers(): Int = 0
 
-internal fun splitCallSitePeakActiveWorkers(): Int = splitCallSitePeakActiveWorkers.get()
+internal fun resetSplitCallSiteWorkerMetrics() = Unit
 
-internal fun resetSplitCallSiteWorkerMetrics() {
-    check(splitCallSiteActiveWorkers.get() == 0) { "Cannot reset active split CallSite worker metrics" }
-    splitCallSitePeakActiveWorkers.set(0)
-}
-
-internal fun splitCallSiteExecutor(backgroundParallelism: Int) =
-    splitCallSiteExecutors.computeIfAbsent(backgroundParallelism) { parallelism ->
-        ThreadPoolExecutor(
-            parallelism,
-            parallelism,
-            0L,
-            TimeUnit.MILLISECONDS,
-            LinkedBlockingQueue(),
-            { runnable ->
-                Thread(
-                    runnable,
-                    "graphite-callsite-segment-${splitCallSiteWorkerNumber.incrementAndGet()}"
-                ).apply { isDaemon = true }
-            }
-        )
-    }
-
-internal fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Callable {
-    val activeWorkers = splitCallSiteActiveWorkers.incrementAndGet()
-    splitCallSitePeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-    try {
-        task.call()
-    } finally {
-        // Keep teardown inside the Future's callable. Future.get() must not return while this
-        // worker is still counted active; ThreadPoolExecutor.afterExecute runs too late for that.
-        splitCallSiteActiveWorkers.decrementAndGet()
-    }
-}
-
-@Suppress("ThrowsCount", "TooGenericExceptionCaught")
 private fun <T> executeSplitCallSiteTasks(
     tasks: List<Callable<T>>,
     backgroundParallelism: Int
@@ -2019,33 +1925,15 @@ private fun <T> executeSplitCallSiteTasks(
     require(tasks.isNotEmpty())
     require(backgroundParallelism >= 0)
     require(tasks.size <= backgroundParallelism + 1)
-    if (tasks.size == 1) return listOf(tasks.single().call())
-    val executor = splitCallSiteExecutor(backgroundParallelism)
-    val backgroundTasks = tasks.drop(1).map { task -> SplitCallSiteTask(task) }
-    backgroundTasks.forEach { task -> task.future = executor.submit(trackedSplitCallSiteTask(task.callable)) }
-    val results = arrayOfNulls<Any?>(tasks.size)
-    try {
-        results[0] = tasks.first().call()
-        backgroundTasks.forEachIndexed { index, task -> results[index + 1] = task.future.get() }
-    } catch (error: InterruptedException) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)
-        Thread.currentThread().interrupt()
-        throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(error) }
-    } catch (error: ExecutionException) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)?.let { interruption ->
+    return tasks.map { task ->
+        checkCallSiteIndexInterrupted()
+        try {
+            task.call()
+        } catch (error: InterruptedException) {
             Thread.currentThread().interrupt()
-            throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(interruption) }
+            throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(error) }
         }
-        throw error.cause ?: error
-    } catch (error: Throwable) {
-        cancelAndJoinSplitCallSiteTasks(backgroundTasks)?.let { interruption ->
-            Thread.currentThread().interrupt()
-            throw CancellationException(CALL_SITE_STRING_MATCH_INTERRUPTED).apply { initCause(interruption) }
-        }
-        throw error
     }
-    @Suppress("UNCHECKED_CAST")
-    return results.map { result -> result as T }
 }
 
 internal data class CallSitePredicateKey(
@@ -2577,37 +2465,17 @@ private fun checkCallSiteTrigramWorker(index: Int, abort: AtomicBoolean) {
     checkCallSiteIndexInterrupted()
 }
 
-@Suppress("CyclomaticComplexMethod", "NestedBlockDepth", "ThrowsCount")
-private fun <T> awaitCallSiteTrigramTasks(tasks: List<Callable<T>>, abort: AtomicBoolean): List<T> {
-    val completion = ExecutorCompletionService<T>(callSiteScanExecutor)
-    tasks.forEach(completion::submit)
-    val results = ArrayList<T>(tasks.size)
-    var received = 0
-    var failure: Throwable? = null
-    var interruption: InterruptedException? = null
-    while (received < tasks.size) {
+private fun <T> awaitCallSiteTrigramTasks(tasks: List<Callable<T>>, abort: AtomicBoolean): List<T> =
+    tasks.map { task ->
+        checkCallSiteIndexInterrupted()
         try {
-            results += completion.take().get()
-            received++
+            task.call()
         } catch (error: InterruptedException) {
             abort.set(true)
-            if (interruption == null) interruption = error
-        } catch (error: ExecutionException) {
-            abort.set(true)
-            val cause = error.cause ?: error
-            if (failure == null || failure is CancellationException && cause !is CancellationException) {
-                failure = cause
-            }
-            received++
+            Thread.currentThread().interrupt()
+            throw CancellationException(CALL_SITE_TRIGRAM_BUILD_INTERRUPTED).apply { initCause(error) }
         }
     }
-    interruption?.let { error ->
-        Thread.currentThread().interrupt()
-        throw CancellationException(CALL_SITE_TRIGRAM_BUILD_INTERRUPTED).apply { initCause(error) }
-    }
-    failure?.let { throw it }
-    return results
-}
 
 private fun populateCallSiteTrigramMetadata(
     target: LongArray,

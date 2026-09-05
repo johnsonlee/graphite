@@ -165,21 +165,15 @@ graph. The production CLI and fixture64 builder persist the combined CallSite CS
 `loadMapped` restores it lazily on the first relevant query, so unrelated Method queries retain no
 CallSite-index heap. Legacy or invalid graph files rebuild it once and atomically persist it when
 the complete index is released or the mapped graph closes. If index admission is denied, the graph retains the
-correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
-`graphite-callsite-scan-N` workers. The default fallback background-worker count is the segment
-half of the additive NCPU plan (`NCPU - floor(NCPU / 2)`), overridable with
-`-Dgraphite.webgraph.callSiteScanParallelism=N`. `graphite-cypher-scan-N` names the separate
-cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
-parallelism.
+correct raw-scan fallback, which scans the mapped CallSite type index on the query caller.
+CallSite source scans, raw string scans, and index preparation use no dedicated background pool.
 
-During a real run, verify actual use in JFR/VisualVM by filtering for
-`graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
-during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
-ratio is the numeric utilization baseline; thread count alone is not sufficient.
-The harness also records the number of bounded intra-graph scans and the peak number of workers
-simultaneously inside one scan. The fixture64 comparator fails closed unless the candidate executes at
-exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
-creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
+The harness records `callSiteCallerThreadExecution=1` for the candidate and requires zero observed
+CallSite workers. Its legacy metric name `callSiteParallelScanCount` counts actual raw/index
+preparation scan invocations; it does not imply background execution. The cold fixture64 comparator
+requires exactly one such scan on each of 64 graphs, or a verified persisted-sidecar restore on all
+64 graphs with no raw scans. It also counts retained-index lookups per graph. Process CPU time,
+wall time, and the effective-core ratio remain measured alongside latency.
 Before loading graphs, the harness sets
 `graphite.webgraph.prepareCallSiteStringIndexOnLoad=lazy` for cold and warm forks. This disables
 load-time preparation without disabling production's lazy persisted-sidecar restore. The property
@@ -269,12 +263,18 @@ No external URL, Gist, or author-published commit status is accepted as executio
 Unscoped 64-graph wide queries have a separate required component,
 `global-wide-pressure-evidence`. It requires
 three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
+`candidate/base`) and requires a P95 speedup of at least 10x against the PR main baseline in
+every independent fork. The ten core
 query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
 shortcuts, and a base-first page-cache bias from satisfying the gate.
+
+The candidate must report `callSiteCallerThreadExecution=1`, an effective execution plan of one
+caller and zero segment workers (`graphWorkerCount=1`, `segmentWorkerCount=0`), and zero observed
+graph and segment worker peaks. The capability is read reflectively so the same harness preserves
+the main baseline's existing balanced-plan metrics and records capability zero when the API is
+absent. This topology contract does not alter the timing, correctness, source-access, or resource gates.
 
 Four additional fixture-derived cases pin limit-filling behavior to a localized hit in the first,
 middle, or last graph and to a dense term that occurs in all 64 graphs. Their terms and exact hit
@@ -291,7 +291,7 @@ four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` a
 DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
 query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
 fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
+requirement, each wrapped case-insensitive form must independently reach the same 10x target in
 every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and

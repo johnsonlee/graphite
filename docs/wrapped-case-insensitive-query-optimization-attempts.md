@@ -4214,3 +4214,58 @@ file, format, magic, version, writer, or configuration. It deliberately does not
 separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
 pass before completion. This commit is not authorization to merge or tag; either action requires a
 new explicit user instruction.
+
+### 2026-09-05 - Attempt 132: Execute CallSite work on the requesting thread
+
+**Hypothesis:** CallSite graph/segment dispatch, Future allocation, and worker
+coordination add overhead to bounded global queries. Execute the existing ordered
+work on its caller to remove that overhead while retaining the current index and
+projection algorithms. This is one scheduling experiment, based directly on main
+`4e328b0109e13c896b74004823fb049fcb19251a`; the rollback and PR #114 experiments
+are excluded. The updated user objective explicitly requires removing CallSite
+thread pools and reaching a 10x global-query P95 improvement from main.
+
+**Change:** remove the dedicated `graphite-callsite-scan-*` pool and per-size
+`graphite-callsite-segment-*` pools. Raw scans, projection, index preparation, and
+trigram work invoke their existing ordered tasks directly. CallSite and unlabeled
+Cypher graph tasks also run inline. The generic graph pool remains available to
+non-CallSite string queries. Public scheduling/capability types remain linkable;
+legacy planning hints still select the same mapped/raw/retained storage paths.
+Actual raw/index-build invocation counts remain recorded under their legacy metric
+names, while background worker metrics are zero. No new index, cache, persisted
+format, or query-specific result shortcut is introduced.
+
+**Correctness and static evidence:**
+
+- Cypher: 1,232 tests and detekt pass, including direct caller identity, exact rows,
+  encounter order, DISTINCT provenance, graph selection, counts, ORDER BY,
+  shared-budget exhaustion, real request cancellation, checked failures, and
+  retained non-CallSite Annotation worker tests.
+- WebGraph: 182 tests and detekt pass with caller identity, exact projection and
+  lookup values, index admission, legacy raw-scan counts, cancellation, and zero
+  background worker checks.
+- All 115 benchmark logic tests pass. The topology contract now requires the
+  caller capability, effective 1+0 plan, and observed zero graph/segment workers;
+  routing retains exact raw/index lifecycle and lookup checks. The global-wide
+  driver requires 10x rather than 5x. Result, source-access, per-query regression,
+  CPU, heap, RSS, and fixture acceptance rules are preserved.
+- The combined source snapshot passes `./gradlew check :webgraph:jmhJar --no-daemon`
+  in a normal local clone using OpenJDK 17.0.18 on macOS arm64. This includes all
+  module tests/lint/coverage checks and the Hive, Kotlin compiler, and Tika
+  `LargeCorpusPerformanceGateTest` lifecycle checks. The combined build executes
+  46 tasks and restores 29 from Gradle cache; focused changed-module suites also
+  execute their test tasks. Restored benchmark logic and JMH compilation pass.
+
+**Performance evidence required:** exact-head hosted CI must compare this commit
+with main using the same runner and 64 distinct persisted graphs generated from
+pinned Android, Tika, Hive, and Kotlin compiler JARs. The three paired JVM forks,
+independent correctness oracle, budgets, fixture identities, and resource limits
+remain unchanged. The standard CI report supplies method-level `CypherBenchmark`,
+end-to-end, routing, and global-wide comparisons. No paired P95, CPU, heap, or RSS
+result is available yet; local correctness/lifecycle completion does not establish
+10x or no regression.
+
+**Decision:** pending exact-head CI. Keep this single experiment unchanged while
+it runs. All required checks must be green to retain it; a failed optimization
+must be reverted before trying another direction. No merge or tag operation is
+authorized.

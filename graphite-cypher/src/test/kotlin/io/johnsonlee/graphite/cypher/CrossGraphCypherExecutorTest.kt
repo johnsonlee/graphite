@@ -126,7 +126,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `legacy wide query executor runs the full selected graph worker wave`() {
+    fun `non CallSite legacy wide query executor runs the full selected graph worker wave`() {
         val graphCount = 36
         val plannedWorkers = resolveDirectStringGraphParallelism(graphCount)
         if (plannedWorkers < 2) return
@@ -136,7 +136,7 @@ class CrossGraphCypherExecutorTest {
         val graphs = List(graphCount) { graphIndex ->
             CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
                 override fun nodeCount(type: Class<out Node>): Long? =
-                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+                    if (type == AnnotationNode::class.java) 10_000L else empty.nodeCount(type)
 
                 override fun <T : Node> nodesByStringPropertyDisjunction(
                     type: Class<T>,
@@ -164,7 +164,7 @@ class CrossGraphCypherExecutorTest {
         }
 
         val result = CrossGraphCypherExecutor(graphs).execute(
-            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+            "MATCH (n:AnnotationNode) WHERE n.caller_class CONTAINS 'absent' " +
                 "RETURN n.caller_class LIMIT 1"
         )
 
@@ -236,10 +236,8 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `full graph id set parallelizes cold scans within the cpu budget`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
-        if (plannedWorkers < 2) return
-        val firstParallelWave = CountDownLatch(plannedWorkers)
+    fun `full graph id set scans cold CallSites on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
@@ -265,13 +263,7 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
-                        if (graphIndex in 1..plannedWorkers) {
-                            firstParallelWave.countDown()
-                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
-                                "planned $plannedWorkers graph workers but only " +
-                                    "${plannedWorkers - firstParallelWave.count} entered"
-                            }
-                        }
+                        assertTrue(Thread.currentThread() === callerThread)
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -295,7 +287,7 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(graphIds.indices.toSet(), storageConsumers.keys)
-        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
@@ -305,10 +297,8 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `externally selected full graph set parallelizes without a graph id predicate`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
-        if (plannedWorkers < 2) return
-        val firstParallelWave = CountDownLatch(plannedWorkers)
+    fun `externally selected full graph set scans CallSites on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
@@ -334,13 +324,7 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
-                        if (graphIndex in 1..plannedWorkers) {
-                            firstParallelWave.countDown()
-                            check(firstParallelWave.await(5, TimeUnit.SECONDS)) {
-                                "planned $plannedWorkers graph workers but only " +
-                                    "${plannedWorkers - firstParallelWave.count} entered"
-                            }
-                        }
+                        assertTrue(Thread.currentThread() === callerThread)
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -363,7 +347,7 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
-        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
@@ -457,11 +441,8 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `mixed retained selected graph set keeps its cold suffix parallel`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
-        if (plannedWorkers < 2) return
-        val firstParallelWave = CountDownLatch(plannedWorkers)
-        val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+    fun `mixed retained selected graph set scans its cold suffix on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val empty = graph()
@@ -493,10 +474,7 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
-                        if (graphIndex in 1..plannedWorkers && startedGraphs.add(graphIndex)) {
-                            firstParallelWave.countDown()
-                            check(firstParallelWave.await(5, TimeUnit.SECONDS))
-                        }
+                        assertTrue(Thread.currentThread() === callerThread)
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -516,16 +494,13 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertTrue(result.rows.isEmpty())
-        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
     }
 
     @Test
-    fun `unlabeled selected graph set requires every applicable type to be retained`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
-        if (plannedWorkers < 2) return
-        val firstParallelWave = CountDownLatch(plannedWorkers)
-        val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
+    fun `unlabeled selected graph set scans all applicable types on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val empty = graph()
@@ -559,10 +534,7 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
-                        if (graphIndex in 1..plannedWorkers && startedGraphs.add(graphIndex)) {
-                            firstParallelWave.countDown()
-                            check(firstParallelWave.await(5, TimeUnit.SECONDS))
-                        }
+                        assertTrue(Thread.currentThread() === callerThread)
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -582,17 +554,13 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertTrue(result.rows.isEmpty())
-        assertEquals(plannedWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
     }
 
     @Test
-    fun `startup prepared global wide set reuses the balanced graph workers`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
-        if (plannedWorkers < 2) return
-        val batchWorkers = minOf(plannedWorkers, 63)
-        val firstParallelBatch = CountDownLatch(batchWorkers)
-        val batchStarts = (1..batchWorkers).toSet()
+    fun `startup prepared global wide set scans CallSites on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val activeGraphWorkers = AtomicInteger()
         val peakGraphWorkers = AtomicInteger()
         val storageConsumers = java.util.concurrent.ConcurrentHashMap<Int, GraphWorkConsumer>()
@@ -626,13 +594,7 @@ class CrossGraphCypherExecutorTest {
                     val active = activeGraphWorkers.incrementAndGet()
                     peakGraphWorkers.accumulateAndGet(active, ::maxOf)
                     try {
-                        if (graphIndex in batchStarts) {
-                            firstParallelBatch.countDown()
-                            check(firstParallelBatch.await(5, TimeUnit.SECONDS)) {
-                                "planned $batchWorkers graph batches but only " +
-                                    "${batchWorkers - firstParallelBatch.count} entered"
-                            }
-                        }
+                        assertTrue(Thread.currentThread() === callerThread)
                         workConsumer.consume()
                         return emptySequence()
                     } finally {
@@ -655,7 +617,7 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(selectedGraphs.indices.toSet(), storageConsumers.keys)
-        assertEquals(batchWorkers, peakGraphWorkers.get())
+        assertEquals(1, peakGraphWorkers.get())
         assertEquals(0, activeGraphWorkers.get())
         assertTrue(storageConsumers.values.all { consumer ->
             consumer is SplitGraphWorkBatchConsumer && consumer.segmentWorkerCount ==
@@ -732,8 +694,9 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     @Suppress("UNCHECKED_CAST")
-    fun `prepared global wide limit stops the fixed workers in source order`() {
-        val distantLookups = AtomicInteger()
+    fun `prepared global wide limit stops caller thread scans in source order`() {
+        val callerThread = Thread.currentThread()
+        val accessedGraphs = mutableListOf<Int>()
         val empty = graph()
         val returnType = TypeDescriptor("void")
         val hit = CallSiteNode(
@@ -769,7 +732,8 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
-                    if (graphIndex > resolveDirectStringGraphParallelism(64)) distantLookups.incrementAndGet()
+                    assertTrue(Thread.currentThread() === callerThread)
+                    accessedGraphs += graphIndex
                     workConsumer.consume()
                     return if (graphIndex == 1) sequenceOf(hit as T) else emptySequence()
                 }
@@ -785,11 +749,13 @@ class CrossGraphCypherExecutorTest {
         assertEquals("graph-1", row["graph"])
         assertEquals("example.Target", row["caller"])
         assertEquals(listOf("graph-1"), graphIds(row))
-        assertEquals(0, distantLookups.get())
+        assertEquals(listOf(0, 1), accessedGraphs)
     }
 
     @Test
-    fun `prepared global wide worker failure is propagated after joining workers`() {
+    fun `prepared global wide failure stops caller thread scans before later sources`() {
+        val callerThread = Thread.currentThread()
+        val accessedGraphs = mutableListOf<Int>()
         val empty = graph()
         val graphs = List(64) { graphIndex ->
             CypherGraph("graph-$graphIndex", object :
@@ -816,7 +782,9 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
-                    if (graphIndex == 1) error("prepared worker failed")
+                    assertTrue(Thread.currentThread() === callerThread)
+                    accessedGraphs += graphIndex
+                    if (graphIndex == 1) error("prepared scan failed")
                     workConsumer.consume()
                     return emptySequence()
                 }
@@ -830,14 +798,18 @@ class CrossGraphCypherExecutorTest {
             )
         }
 
-        assertEquals("prepared worker failed", failure.message)
+        assertEquals("prepared scan failed", failure.message)
+        assertEquals(listOf(0, 1), accessedGraphs)
     }
 
     @Test
-    fun `prepared global wide interrupted worker publishes cancellation and joins peers`() {
-        val workerCount = resolveDirectStringGraphParallelism(64)
-        val peerStarted = CountDownLatch(1)
-        val peerInterrupted = CountDownLatch(1)
+    fun `prepared global wide caller cancellation stops before visiting later sources`() {
+        val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        val cancellation = CypherQueryCancelledException("request cancelled during caller scan")
+        val scanStarted = CountDownLatch(1)
+        val releaseScan = CountDownLatch(1)
+        val accessedGraphs = mutableListOf<Int>()
+        val queryCaller = java.util.concurrent.atomic.AtomicReference<Thread>()
         val empty = graph()
         val graphs = List(64) { graphIndex ->
             CypherGraph("graph-$graphIndex", object :
@@ -864,21 +836,11 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
-                    when (graphIndex) {
-                        1 -> {
-                            if (workerCount > 1) check(peerStarted.await(2, TimeUnit.SECONDS))
-                            Thread.currentThread().interrupt()
-                            throw CypherQueryCancelledException("prepared worker interrupted")
-                        }
-                        2 -> if (workerCount > 1) {
-                            peerStarted.countDown()
-                            try {
-                                Thread.sleep(TimeUnit.SECONDS.toMillis(5))
-                            } catch (interrupted: InterruptedException) {
-                                peerInterrupted.countDown()
-                                throw interrupted
-                            }
-                        }
+                    assertTrue(Thread.currentThread() === queryCaller.get())
+                    accessedGraphs += graphIndex
+                    if (graphIndex == 1) {
+                        scanStarted.countDown()
+                        check(releaseScan.await(5, TimeUnit.SECONDS))
                     }
                     workConsumer.consume()
                     return emptySequence()
@@ -888,12 +850,16 @@ class CrossGraphCypherExecutorTest {
 
         val queryThread = Executors.newSingleThreadExecutor()
         val future = queryThread.submit<CypherResult> {
-            CrossGraphCypherExecutor(graphs).execute(
+            queryCaller.set(Thread.currentThread())
+            CrossGraphCypherExecutor(graphs, context).execute(
                 "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
                     "RETURN n.caller_class LIMIT 1"
             )
         }
         try {
+            assertTrue(scanStarted.await(2, TimeUnit.SECONDS))
+            context.cancellationSignal.cancel(cancellation)
+            releaseScan.countDown()
             val failure = assertFailsWith<java.util.concurrent.ExecutionException> {
                 future.get(2, TimeUnit.SECONDS)
             }
@@ -901,17 +867,17 @@ class CrossGraphCypherExecutorTest {
                 failure.cause is CypherQueryCancelledException,
                 "unexpected query failure: ${failure.cause}"
             )
-            assertEquals("prepared worker interrupted", failure.cause?.message)
-            if (workerCount > 1) {
-                assertTrue(peerInterrupted.await(2, TimeUnit.SECONDS), "peer worker was not interrupted and joined")
-            }
+            assertTrue(failure.cause === cancellation)
+            assertEquals(listOf(0, 1), accessedGraphs)
         } finally {
+            releaseScan.countDown()
             queryThread.shutdownNow()
         }
     }
 
     @Test
-    fun `prepared global wide workers shut down after exhausting the shared queue`() {
+    fun `prepared global wide caller thread scans complete every source`() {
+        val callerThread = Thread.currentThread()
         val activeLookups = AtomicInteger()
         val completedLookups = AtomicInteger()
         val empty = graph()
@@ -940,6 +906,7 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
+                    assertTrue(Thread.currentThread() === callerThread)
                     activeLookups.incrementAndGet()
                     try {
                         workConsumer.consume()
@@ -963,7 +930,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `prepared global wide checked worker failure is wrapped after joining workers`() {
+    fun `prepared global wide checked failure preserves its wrapper on the caller thread`() {
         val activeLookups = AtomicInteger()
         val failure = object : Throwable("checked prepared worker failure") {}
         val empty = graph()
@@ -1017,11 +984,10 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `work tracked global wide query probes the leading graph then executes the balanced plan`() {
+    fun `work tracked global wide query scans leading and remaining CallSites on the caller thread`() {
         val plan = resolveDirectStringParallelismPlan()
-        if (plan.graphWorkerCount < 2) return
         val graphCount = 40
-        val firstWaveEntered = CountDownLatch(plan.graphWorkerCount)
+        val callerThread = Thread.currentThread()
         val firstWaveSegments = java.util.concurrent.ConcurrentHashMap<Int, Pair<String, Int>>()
         val leadingSegments = AtomicInteger(-1)
         val empty = graph()
@@ -1042,21 +1008,13 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer
                 ): Sequence<T> {
+                    assertTrue(Thread.currentThread() === callerThread)
                     if (graphIndex == 0) {
                         leadingSegments.set((workConsumer as SplitGraphWorkBatchConsumer).segmentWorkerCount)
                         return emptySequence()
                     }
                     val split = workConsumer as SplitGraphWorkBatchConsumer
-                    if (graphIndex in 1..plan.graphWorkerCount) {
-                        if (firstWaveSegments.putIfAbsent(
-                                graphIndex,
-                                Thread.currentThread().name to split.segmentWorkerCount
-                            ) == null
-                        ) {
-                            firstWaveEntered.countDown()
-                        }
-                        check(firstWaveEntered.await(5, TimeUnit.SECONDS))
-                    }
+                    firstWaveSegments[graphIndex] = Thread.currentThread().name to split.segmentWorkerCount
                     workConsumer.consume()
                     return emptySequence()
                 }
@@ -1074,8 +1032,8 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(plan.segmentWorkerCount, leadingSegments.get())
-        assertEquals(plan.graphWorkerCount, firstWaveSegments.size)
-        assertEquals(plan.graphWorkerCount, firstWaveSegments.values.map { it.first }.toSet().size)
+        assertEquals(graphCount - 1, firstWaveSegments.size)
+        assertEquals(setOf(callerThread.name), firstWaveSegments.values.map { it.first }.toSet())
         assertTrue(firstWaveSegments.values.all { it.second == plan.segmentWorkerCount })
     }
 
@@ -1127,6 +1085,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `bounded dense global query projects the leading raw scan without materializing nodes`() {
+        val callerThread = Thread.currentThread()
         val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
         val empty = graph()
         val graphs = List(40) { sourceIndex ->
@@ -1169,6 +1128,7 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer?
                 ): List<StringPropertyProjectionRow>? {
+                    assertTrue(Thread.currentThread() === callerThread)
                     projectedSources += sourceIndex
                     assertTrue(workConsumer is PreferredRawGraphWorkBatchConsumer)
                     check(sourceIndex == 0)
@@ -1229,6 +1189,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `long global query projects the initialized mapped leading graph without materializing nodes`() {
+        val callerThread = Thread.currentThread()
         val projectedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
         val empty = graph()
         val graphs = List(40) { sourceIndex ->
@@ -1259,6 +1220,7 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer?
                 ): List<StringPropertyProjectionRow>? {
+                    assertTrue(Thread.currentThread() === callerThread)
                     projectedSources += sourceIndex
                     assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
                     check(sourceIndex == 0)
@@ -1286,6 +1248,7 @@ class CrossGraphCypherExecutorTest {
     @Test
     @Suppress("UNCHECKED_CAST")
     fun `partial mapped leading projection continues from the second graph`() {
+        val callerThread = Thread.currentThread()
         val returnType = TypeDescriptor("void")
         val laterHit = CallSiteNode(
             NodeId(1),
@@ -1329,6 +1292,7 @@ class CrossGraphCypherExecutorTest {
                     limit: Int,
                     workConsumer: GraphWorkConsumer?
                 ): List<StringPropertyProjectionRow>? {
+                    assertTrue(Thread.currentThread() === callerThread)
                     projectedSources += sourceIndex
                     assertTrue(workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer)
                     check(sourceIndex == 0)
@@ -1496,7 +1460,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `balanced row scan does not wait for a whole graph wave before scheduling later sources`() {
+    fun `non CallSite balanced row scan does not wait for a whole graph wave before scheduling later sources`() {
         val plan = resolveDirectStringParallelismPlan()
         if (plan.graphWorkerCount < 2) return
         val graphCount = 40
@@ -1506,7 +1470,7 @@ class CrossGraphCypherExecutorTest {
         val graphs = List(graphCount) { graphIndex ->
             CypherGraph("graph-$graphIndex", object : Graph by empty, WorkAwareStringPropertyDisjunctionLookup {
                 override fun nodeCount(type: Class<out Node>): Long? =
-                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+                    if (type == AnnotationNode::class.java) 10_000L else empty.nodeCount(type)
 
                 override fun <T : Node> nodesByStringPropertyDisjunction(
                     type: Class<T>,
@@ -1532,7 +1496,7 @@ class CrossGraphCypherExecutorTest {
         }
 
         val result = CrossGraphCypherExecutor(graphs).execute(
-            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+            "MATCH (n:AnnotationNode) WHERE n.caller_class CONTAINS 'absent' " +
                 "RETURN n.caller_class LIMIT 1"
         )
 
@@ -1662,6 +1626,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `selected graph projects bounded CallSite strings without materializing nodes`() {
+        val callerThread = Thread.currentThread()
         val projectedRows = listOf(
             StringPropertyProjectionRow(listOf("example.FeatureCaller", "invoke"))
         )
@@ -2536,6 +2501,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `balanced distinct projection probes only the leading graph before provenance`() {
+        val callerThread = Thread.currentThread()
         val graphCount = 64
         val initialCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
         val selectedCalls = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
@@ -2568,6 +2534,7 @@ class CrossGraphCypherExecutorTest {
                     selectedValues: Set<List<String?>>?,
                     workConsumer: GraphWorkConsumer?
                 ): List<StringPropertyDistinctRow>? {
+                    assertTrue(Thread.currentThread() === callerThread)
                     if (selectedValues == null) {
                         initialCalls += sourceIndex
                         if (sourceIndex == 0 && workConsumer is SplitGraphWorkBatchConsumer) {
@@ -2657,11 +2624,10 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `non distinct broad discovery scans graphs concurrently and preserves source rows`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+    fun `non distinct broad discovery scans graphs on the caller thread and preserves source rows`() {
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
-        val workersReady = CyclicBarrier(2)
+        val callerThread = Thread.currentThread()
         val returnType = TypeDescriptor("void")
 
         fun backingGraph(graphId: String): Graph = DefaultGraph.Builder().apply {
@@ -2696,7 +2662,7 @@ class CrossGraphCypherExecutorTest {
                     val now = active.incrementAndGet()
                     maximumActive.accumulateAndGet(now, ::maxOf)
                     try {
-                        workersReady.await(2, TimeUnit.SECONDS)
+                        assertTrue(Thread.currentThread() === callerThread)
                         @Suppress("UNCHECKED_CAST")
                         for (node in backing.nodes(CallSiteNode::class.java).take(limit)) yield(node as T)
                     } finally {
@@ -2718,7 +2684,7 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("orders", "orders", "billing"), result.rows.map { it["graph"] })
         assertEquals(listOf("call0", "call1", "call0"), result.rows.map { it["caller"] })
         assertEquals(listOf(listOf("orders"), listOf("orders"), listOf("billing")), result.rows.map(::graphIds))
-        assertEquals(2, maximumActive.get())
+        assertEquals(1, maximumActive.get())
 
         val serialResult = executor("catalog" to backingGraph("catalog")).execute(
             "MATCH (n:CallSiteNode) WHERE " +
@@ -2731,8 +2697,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `parallel residual string predicates keep graph local bindings`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+    fun `caller thread residual string predicates keep graph local bindings`() {
         val returnType = TypeDescriptor("void")
         val sources = (0 until 8).map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -3049,11 +3014,9 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `parallel string scans preserve source order limit and complete provenance`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val barrier = CyclicBarrier(2)
-        val active = AtomicInteger()
-        val maximumActive = AtomicInteger()
+    fun `caller thread string scans preserve source order limit and complete provenance`() {
+        val callerThread = Thread.currentThread()
+        val lookupThreads = mutableSetOf<Thread>()
         val returnType = TypeDescriptor("void")
 
         fun parallelGraph(vararg callerClasses: String): Graph {
@@ -3081,14 +3044,9 @@ class CrossGraphCypherExecutorTest {
                     @Suppress("UNCHECKED_CAST")
                     val nodes = backing.nodes(CallSiteNode::class.java) as Sequence<T>
                     return sequence<T> {
-                        val now = active.incrementAndGet()
-                        maximumActive.accumulateAndGet(now, ::maxOf)
-                        try {
-                            barrier.await(2, TimeUnit.SECONDS)
-                            for (node in nodes.take(limit)) yield(node)
-                        } finally {
-                            active.decrementAndGet()
-                        }
+                        lookupThreads += Thread.currentThread()
+                        assertTrue(Thread.currentThread() === callerThread)
+                        for (node in nodes.take(limit)) yield(node)
                     }
                 }
             }
@@ -3106,14 +3064,12 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("example.TargetA", "example.TargetB"), result.rows.map { it["caller"] })
         assertEquals(listOf("billing", "orders"), graphIds(result.rows.first()))
         assertEquals(listOf("orders"), graphIds(result.rows.last()))
-        assertEquals(2, maximumActive.get())
+        assertEquals(setOf(callerThread), lookupThreads)
     }
 
     @Test
-    fun `parallel row scanners forward bounded limits while residual filters keep complete candidates`() {
-        if (Runtime.getRuntime().availableProcessors() < 2 ||
-            System.getProperty("graphite.cypher.directStringParallelism") != null
-        ) return
+    fun `caller thread row scanners forward bounded limits while residual filters keep complete candidates`() {
+        val callerThread = Thread.currentThread()
         val lookupLimits = List(2) { java.util.concurrent.ConcurrentLinkedQueue<Int>() }
         val returnType = TypeDescriptor("void")
 
@@ -3148,6 +3104,7 @@ class CrossGraphCypherExecutorTest {
                     predicates: List<StringPropertyPredicate>,
                     limit: Int
                 ): Sequence<T> {
+                    assertTrue(Thread.currentThread() === callerThread)
                     lookupLimits[graphIndex] += limit
                     @Suppress("UNCHECKED_CAST")
                     return backing.nodes(CallSiteNode::class.java).take(limit) as Sequence<T>
@@ -3185,9 +3142,8 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `filtered string counts aggregate graph-local scans in parallel`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val barrier = CyclicBarrier(2)
+    fun `filtered string counts aggregate graph-local scans on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
         val returnType = TypeDescriptor("void")
@@ -3220,7 +3176,7 @@ class CrossGraphCypherExecutorTest {
                         val now = active.incrementAndGet()
                         maximumActive.accumulateAndGet(now, ::maxOf)
                         try {
-                            barrier.await(2, TimeUnit.SECONDS)
+                            assertTrue(Thread.currentThread() === callerThread)
                             yieldAll(nodes.take(limit))
                         } finally {
                             active.decrementAndGet()
@@ -3244,13 +3200,12 @@ class CrossGraphCypherExecutorTest {
         assertEquals(3L, distinct.rows.single()["total"])
         assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
         assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
-        assertEquals(2, maximumActive.get())
+        assertEquals(1, maximumActive.get())
     }
 
     @Test
-    fun `untracked filtered counts use storage aggregation and expose worker metrics`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val barrier = CyclicBarrier(2)
+    fun `untracked filtered counts use storage aggregation and leave graph worker metrics at zero`() {
+        val callerThread = Thread.currentThread()
         val aggregateCalls = AtomicInteger()
 
         fun aggregatingGraph(vararg callerClasses: String): Graph {
@@ -3264,7 +3219,7 @@ class CrossGraphCypherExecutorTest {
                     assertEquals(CallSiteNode::class.java, type)
                     assertTrue(predicates.any { it.property == "caller_class" })
                     aggregateCalls.incrementAndGet()
-                    barrier.await(2, TimeUnit.SECONDS)
+                    assertTrue(Thread.currentThread() === callerThread)
                     return StringPropertyDisjunctionAggregate(
                         callerClasses.size.toLong(),
                         distinctProperty?.let { callerClasses.toSet() }
@@ -3289,15 +3244,61 @@ class CrossGraphCypherExecutorTest {
         assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
         assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
         assertEquals(4, aggregateCalls.get())
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+        resetDirectStringGraphWorkerMetrics()
+        assertEquals(0, directStringGraphPeakActiveWorkers())
+    }
+
+    @Test
+    fun `non CallSite filtered counts retain concurrent storage aggregation`() {
+        if (Runtime.getRuntime().availableProcessors() < 2) return
+        val barrier = CyclicBarrier(2)
+        val aggregateCalls = AtomicInteger()
+
+        fun aggregatingGraph(vararg callerClasses: String): Graph {
+            val backing = graph()
+            return object : Graph by backing, StringPropertyDisjunctionAggregation {
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?
+                ): StringPropertyDisjunctionAggregate? {
+                    assertEquals(AnnotationNode::class.java, type)
+                    assertTrue(predicates.any { it.property == "caller_class" })
+                    aggregateCalls.incrementAndGet()
+                    barrier.await(2, TimeUnit.SECONDS)
+                    return StringPropertyDisjunctionAggregate(
+                        callerClasses.size.toLong(),
+                        distinctProperty?.let { callerClasses.toSet() }
+                    )
+                }
+            }
+        }
+
+        resetDirectStringGraphWorkerMetrics()
+        val executor = executor(
+            "orders" to aggregatingGraph("example.TargetA", "example.TargetB"),
+            "billing" to aggregatingGraph("example.TargetA", "example.TargetC")
+        )
+        val predicate = "n.caller_class CONTAINS 'Target' OR n.callee_class CONTAINS 'Target'"
+        val count = executor.execute("MATCH (n:AnnotationNode) WHERE $predicate RETURN count(*) AS total")
+        val distinct = executor.execute(
+            "MATCH (n:AnnotationNode) WHERE $predicate RETURN count(DISTINCT n.caller_class) AS total"
+        )
+
+        assertEquals(4L, count.rows.single()["total"])
+        assertEquals(3L, distinct.rows.single()["total"])
+        assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
+        assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
+        assertEquals(4, aggregateCalls.get())
         assertEquals(2, directStringGraphPeakActiveWorkers())
         resetDirectStringGraphWorkerMetrics()
         assertEquals(0, directStringGraphPeakActiveWorkers())
     }
 
     @Test
-    fun `work tracked filtered counts use budget aware storage aggregation in parallel`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val barrier = CyclicBarrier(2)
+    fun `work tracked filtered counts use budget aware storage aggregation on the caller thread`() {
+        val callerThread = Thread.currentThread()
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
         val untrackedCalls = AtomicInteger()
@@ -3324,7 +3325,7 @@ class CrossGraphCypherExecutorTest {
                     val now = active.incrementAndGet()
                     maximumActive.accumulateAndGet(now, ::maxOf)
                     return try {
-                        barrier.await(2, TimeUnit.SECONDS)
+                        assertTrue(Thread.currentThread() === callerThread)
                         callerClasses.forEach { _ -> workConsumer.consume() }
                         StringPropertyDisjunctionAggregate(
                             callerClasses.size.toLong(),
@@ -3351,8 +3352,15 @@ class CrossGraphCypherExecutorTest {
 
         assertEquals(4L, count.rows.single()["total"])
         assertEquals(3L, distinct.rows.single()["total"])
-        assertEquals(2, maximumActive.get())
+        assertEquals(1, maximumActive.get())
         assertEquals(0, untrackedCalls.get())
+        assertEquals(listOf("billing", "orders"), graphIds(count.rows.single()))
+        assertEquals(listOf("billing", "orders"), graphIds(distinct.rows.single()))
+        assertFailsWith<CypherBudgetExceededException> {
+            CrossGraphCypherExecutor(sources, CypherExecutionBudget(maxWorkUnits = 3)).execute(
+                "MATCH (n:CallSiteNode) WHERE $predicate RETURN count(*) AS total"
+            )
+        }
     }
 
     @Test
@@ -3416,9 +3424,8 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `ordered filtered rows scan graphs in parallel and preserve global order and skip`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val barrier = CyclicBarrier(2)
+    fun `ordered filtered rows scan graphs on the caller thread and preserve global order and skip`() {
+        val callerThread = Thread.currentThread()
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
         val returnType = TypeDescriptor("void")
@@ -3444,7 +3451,7 @@ class CrossGraphCypherExecutorTest {
                     val now = active.incrementAndGet()
                     maximumActive.accumulateAndGet(now, ::maxOf)
                     try {
-                        barrier.await(2, TimeUnit.SECONDS)
+                        assertTrue(Thread.currentThread() === callerThread)
                         @Suppress("UNCHECKED_CAST")
                         yieldAll(nodes.asSequence().take(limit) as Sequence<T>)
                     } finally {
@@ -3465,15 +3472,13 @@ class CrossGraphCypherExecutorTest {
         )
 
         assertEquals(listOf("example.TargetB", "example.TargetC"), result.rows.map { it["caller"] })
-        assertEquals(2, maximumActive.get())
+        assertEquals(1, maximumActive.get())
     }
 
     @Test
-    fun `provenance scans keep workers busy across more graphs than workers`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
-        val releaseSlowGraph = CountDownLatch(1)
-        val slowGraphStarted = CountDownLatch(1)
-        val thirdGraphStarted = CountDownLatch(1)
+    fun `caller thread provenance scans visit later contributors after reaching the row limit`() {
+        val callerThread = Thread.currentThread()
+        val completedSources = mutableListOf<String>()
         val returnType = TypeDescriptor("void")
 
         fun scheduledGraph(callerClass: String, afterFirst: (() -> Unit)? = null): Graph {
@@ -3494,6 +3499,7 @@ class CrossGraphCypherExecutorTest {
                 ): Sequence<T> {
                     @Suppress("UNCHECKED_CAST")
                     return sequence {
+                        assertTrue(Thread.currentThread() === callerThread)
                         yield(node as T)
                         afterFirst?.invoke()
                     }
@@ -3501,37 +3507,24 @@ class CrossGraphCypherExecutorTest {
             }
         }
 
-        val queryThread = Executors.newSingleThreadExecutor()
-        val future = queryThread.submit<CypherResult> {
-            executor(
-                "slow" to scheduledGraph("example.TargetA") {
-                    slowGraphStarted.countDown()
-                    check(releaseSlowGraph.await(5, TimeUnit.SECONDS))
-                },
-                "quick" to scheduledGraph("example.TargetB"),
-                "third" to scheduledGraph("example.TargetA") { thirdGraphStarted.countDown() }
-            ).execute(
-                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' OR " +
-                    "n.callee_class CONTAINS 'Target' " +
-                    "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
-            )
-        }
-        try {
-            assertTrue(slowGraphStarted.await(5, TimeUnit.SECONDS))
-            assertTrue(thirdGraphStarted.await(2, TimeUnit.SECONDS))
-            releaseSlowGraph.countDown()
-            val result = future.get(5, TimeUnit.SECONDS)
-            assertEquals(listOf("example.TargetA"), result.rows.map { it["caller"] })
-            assertEquals(listOf("slow", "third"), graphIds(result.rows.single()))
-        } finally {
-            releaseSlowGraph.countDown()
-            queryThread.shutdownNow()
-        }
+        val result = executor(
+            "slow" to scheduledGraph("example.TargetA") { completedSources += "slow" },
+            "quick" to scheduledGraph("example.TargetB") { completedSources += "quick" },
+            "third" to scheduledGraph("example.TargetA") { completedSources += "third" }
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Target' OR " +
+                "n.callee_class CONTAINS 'Target' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("example.TargetA"), result.rows.map { it["caller"] })
+        assertEquals(listOf("slow", "third"), graphIds(result.rows.single()))
+        assertEquals(listOf("slow", "quick", "third"), completedSources)
     }
 
     @Test
-    fun `parallel scan callbacks can execute nested cross graph queries without deadlock`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+    fun `caller thread scan callbacks can execute nested cross graph queries`() {
+        val callerThread = Thread.currentThread()
         val returnType = TypeDescriptor("void")
         val nested = executor(
             "nested-a" to graph(
@@ -3555,7 +3548,6 @@ class CrossGraphCypherExecutorTest {
                 )
             )
         )
-        val outerWorkersReady = CyclicBarrier(2)
 
         fun reentrantGraph(callerClass: String): Graph {
             val node = CallSiteNode(
@@ -3576,43 +3568,35 @@ class CrossGraphCypherExecutorTest {
                     if (type != CallSiteNode::class.java) return emptySequence()
                     @Suppress("UNCHECKED_CAST")
                     return sequence {
-                        outerWorkersReady.await(2, TimeUnit.SECONDS)
+                        assertTrue(Thread.currentThread() === callerThread)
                         val nestedResult = nested.execute(
                             "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Nested' OR " +
                                 "n.callee_class CONTAINS 'Nested' " +
                                 "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
                         )
-                        check(nestedResult.rows.single()["caller"].toString().startsWith("example.Nested"))
+                        assertEquals("example.NestedA", nestedResult.rows.single()["caller"])
+                        assertEquals(listOf("nested-a"), graphIds(nestedResult.rows.single()))
                         yield(node as T)
                     }
                 }
             }
         }
 
-        val queryThread = Executors.newSingleThreadExecutor()
-        val future = queryThread.submit<CypherResult> {
-            executor(
-                "outer-a" to reentrantGraph("example.OuterA"),
-                "outer-b" to reentrantGraph("example.OuterB")
-            ).execute(
-                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Outer' OR " +
-                    "n.callee_class CONTAINS 'Outer' " +
-                    "RETURN DISTINCT n.caller_class AS caller LIMIT 2"
-            )
-        }
-        try {
-            assertEquals(
-                listOf("example.OuterA", "example.OuterB"),
-                future.get(5, TimeUnit.SECONDS).rows.map { it["caller"] }
-            )
-        } finally {
-            queryThread.shutdownNow()
-        }
+        val result = executor(
+            "outer-a" to reentrantGraph("example.OuterA"),
+            "outer-b" to reentrantGraph("example.OuterB")
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Outer' OR " +
+                "n.callee_class CONTAINS 'Outer' " +
+                "RETURN DISTINCT n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("example.OuterA", "example.OuterB"), result.rows.map { it["caller"] })
+        assertEquals(listOf(listOf("outer-a"), listOf("outer-b")), result.rows.map(::graphIds))
     }
 
     @Test
-    fun `parallel scan failure interrupts peer tasks`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+    fun `caller thread provenance scan propagates storage failure`() {
         val returnType = TypeDescriptor("void")
         val sharedGraph = graph(
             CallSiteNode(
@@ -3631,8 +3615,7 @@ class CrossGraphCypherExecutorTest {
                 predicates: List<StringPropertyPredicate>,
                 limit: Int
             ): Sequence<T> = sequence {
-                Thread.sleep(250)
-                error("intentional parallel scan failure")
+                error("intentional caller scan failure")
             }
         }
         val queryThread = Executors.newSingleThreadExecutor()
@@ -3648,14 +3631,14 @@ class CrossGraphCypherExecutorTest {
                 future.get(2, TimeUnit.SECONDS)
             }
             assertTrue(failure.cause is IllegalStateException)
-            assertEquals("intentional parallel scan failure", failure.cause?.message)
+            assertEquals("intentional caller scan failure", failure.cause?.message)
         } finally {
             queryThread.shutdownNow()
         }
     }
 
     @Test
-    fun `balanced ordered scan wraps non runtime failure and joins interrupted peers`() {
+    fun `non CallSite balanced ordered scan wraps non runtime failure and joins interrupted peers`() {
         val graphWorkers = resolveDirectStringGraphParallelism(40)
         if (graphWorkers < 2) return
         val peerStarted = CountDownLatch(1)
@@ -3665,7 +3648,7 @@ class CrossGraphCypherExecutorTest {
 
         fun lookupGraph(scan: () -> Unit): Graph = object : Graph by empty, StringPropertyDisjunctionLookup {
             override fun nodeCount(type: Class<out Node>): Long? =
-                if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+                if (type == AnnotationNode::class.java) 10_000L else empty.nodeCount(type)
 
             override fun <T : Node> nodesByStringPropertyDisjunction(
                 type: Class<T>,
@@ -3699,7 +3682,7 @@ class CrossGraphCypherExecutorTest {
         resetDirectStringGraphWorkerMetrics()
         val thrown = assertFailsWith<IllegalStateException> {
             CrossGraphCypherExecutor(sources).execute(
-                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' OR " +
+                "MATCH (n:AnnotationNode) WHERE n.caller_class CONTAINS 'absent' OR " +
                     "n.callee_class CONTAINS 'absent' RETURN n.caller_class LIMIT 1"
             )
         }

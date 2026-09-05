@@ -104,6 +104,10 @@ private val directStringWorkerActive = ThreadLocal.withInitial { false }
 private val directStringActiveWorkers = AtomicInteger()
 private val directStringPeakActiveWorkers = AtomicInteger()
 
+/** CallSite graph and storage work executes synchronously; legacy plans remain ABI-compatible hints. */
+@Suppress("FunctionOnlyReturningConstant")
+internal fun callSiteRunsOnCallerThread(): Boolean = true
+
 internal fun directStringGraphPeakActiveWorkers(): Int = directStringPeakActiveWorkers.get()
 
 internal fun resetDirectStringGraphWorkerMetrics() {
@@ -153,6 +157,8 @@ private val configuredDirectStringParallelism by lazy { System.getProperty(DIREC
 private val directStringExecutorParallelism: Int by lazy {
     resolveDirectStringExecutorParallelism(configuredGraphWorkers = configuredDirectStringParallelism)
 }
+// CallSite and unlabeled scans stay on their caller. This pool remains for independent
+// non-CallSite string queries so removing CallSite workers does not serialize those queries.
 private val directStringExecutor by lazy {
     Executors.newFixedThreadPool(directStringExecutorParallelism) { runnable ->
         Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
@@ -1113,7 +1119,7 @@ class QueryPipeline private constructor(
                         sharedWorkTracker
                     )
                 }
-            }, graphParallelism)
+            }, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java))
         } else {
             candidateSources.map { source ->
                 filteredStringCountPartial(
@@ -1804,9 +1810,13 @@ class QueryPipeline private constructor(
                 rows.size >= limit
             }
             if (batchedPreparedStorage) {
-                runDirectStringTasksWithFixedWorkersInOrderUntil(graphTasks, graphParallelism, mergeBatch)
+                runDirectStringTasksWithFixedWorkersInOrderUntil(
+                    graphTasks, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java), mergeBatch
+                )
             } else {
-                runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { sourceRows ->
+                runDirectStringTasksInOrderUntil(
+                    graphTasks, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java)
+                ) { sourceRows ->
                     val remaining = limit - rows.size
                     if (remaining > 0) rows += sourceRows.take(remaining)
                     rows.size >= limit
@@ -1818,7 +1828,7 @@ class QueryPipeline private constructor(
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val batches = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextRows(limit) }
-            }, graphParallelism)
+            }, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java))
             batches.forEach { batch ->
                 val remaining = limit - rows.size
                 if (remaining > 0) rows += batch.take(remaining)
@@ -2111,7 +2121,7 @@ class QueryPipeline private constructor(
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val initial = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextDistinctRows(limit) }
-            }, graphParallelism)
+            }, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java))
             for (index in wave.indices) {
                 var batch = initial[index]
                 mergeDirectStringBatch(rows, batch.rows, limit)
@@ -2128,7 +2138,7 @@ class QueryPipeline private constructor(
             val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
             val hits = runDirectStringTasks(scanners.map { scanner ->
                 { scanner.collectRemainingSelectedRows(selectedMatcher) }
-            }, directStringGraphParallelism(candidateSources.size))
+            }, directStringGraphParallelism(candidateSources.size), nodeClass.isAssignableFrom(CallSiteNode::class.java))
             hits.forEachIndexed { index, visibleRows ->
                 val graphId = scanners[index].source.id
                 visibleRows.forEach { visible ->
@@ -2251,7 +2261,8 @@ class QueryPipeline private constructor(
             if (rows.size < limit) {
                 runDirectStringTasksInOrderUntil(candidateSources.indices.drop(waveStart).map { sourceIndex ->
                     { projectSource(sourceIndex) }
-                }, directStringGraphParallelism(candidateSources.size), ::mergeSource)
+                }, directStringGraphParallelism(candidateSources.size),
+                    nodeClass.isAssignableFrom(CallSiteNode::class.java), ::mergeSource)
             }
             waveStart = candidateSources.size
         }
@@ -2260,7 +2271,7 @@ class QueryPipeline private constructor(
             val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
             val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
                 { projectSource(sourceIndex) }
-            }, graphParallelism)
+            }, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java))
             localRows.forEach(::mergeSource)
             waveStart = waveEnd
         }
@@ -2322,7 +2333,7 @@ class QueryPipeline private constructor(
                 }
                 rawHits
             }
-        }, directStringGraphParallelism(candidateSources.size))
+        }, directStringGraphParallelism(candidateSources.size), nodeClass.isAssignableFrom(CallSiteNode::class.java))
         hits.forEachIndexed { hitIndex, visibleRows ->
             val sourceIndex = provenanceSourceIndexes[hitIndex]
             val graphId = candidateSources[sourceIndex].id
@@ -2406,11 +2417,25 @@ class QueryPipeline private constructor(
     }
 
     @Suppress("TooGenericExceptionCaught", "ThrowsCount")
+    private fun <T> runDirectStringTaskOnCaller(task: () -> T): T = try {
+        checkCancelled()
+        task()
+    } catch (error: Throwable) {
+        when (error) {
+            is RuntimeException -> throw error
+            is Error -> throw error
+            else -> throw IllegalStateException("Parallel graph scan failed", error)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
     private fun <T> runDirectStringTasks(
         tasks: List<() -> T>,
-        parallelism: Int
+        parallelism: Int,
+        callerThread: Boolean
     ): List<T> {
         if (tasks.size == 1) return listOf(tasks.single().invoke())
+        if (callerThread) return tasks.map(::runDirectStringTaskOnCaller)
         val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
         val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
         val completions = arrayOfNulls<CountDownLatch>(tasks.size)
@@ -2479,8 +2504,15 @@ class QueryPipeline private constructor(
     private fun <T> runDirectStringTasksInOrderUntil(
         tasks: List<() -> T>,
         parallelism: Int,
+        callerThread: Boolean,
         stopAfter: (T) -> Boolean
     ) {
+        if (callerThread) {
+            for (task in tasks) {
+                if (stopAfter(runDirectStringTaskOnCaller(task))) break
+            }
+            return
+        }
         if (tasks.isEmpty()) return
         data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
 
@@ -2572,8 +2604,15 @@ class QueryPipeline private constructor(
     private fun <T> runDirectStringTasksWithFixedWorkersInOrderUntil(
         tasks: List<() -> T>,
         parallelism: Int,
+        callerThread: Boolean,
         stopAfter: (T) -> Boolean
     ) {
+        if (callerThread) {
+            for (task in tasks) {
+                if (stopAfter(runDirectStringTaskOnCaller(task))) break
+            }
+            return
+        }
         if (tasks.isEmpty()) return
         data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
 
@@ -3507,7 +3546,7 @@ class QueryPipeline private constructor(
                     }
                     localTopRows.toList()
                 }
-            }, graphParallelism)
+            }, graphParallelism, nodeClass.isAssignableFrom(CallSiteNode::class.java))
             localRows.forEach { rows ->
                 rows.forEach { ranked -> addOrderedTopRow(topRows, ranked, retainedCount, comparator) }
             }

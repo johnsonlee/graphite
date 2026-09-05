@@ -92,6 +92,7 @@ test("canonical correctness comparison is order-insensitive and rejects incomple
 function graphIdPressureResult(overrides = {}, indexState = "cold") {
     const warm = indexState === "warm" || indexState === "startup-prepared";
     const values = {
+        callSiteCallerThreadExecution: 1,
         graphCount: 64,
         distinctGraphPathCount: 64,
         queryCount: 1137,
@@ -117,7 +118,7 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteStringIndexLookupGraphCount: 64,
         callSiteStringIndexLookupMinPerGraph: warm ? 30 : 29,
         callSiteStringIndexLookupMaxPerGraph: warm ? 39 : 38,
-        callSiteScanPeakActiveWorkers: warm ? 0 : 8,
+        callSiteScanPeakActiveWorkers: 0,
         ...overrides
     };
     return jmhResult({
@@ -136,10 +137,11 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
 function globalWidePressureResult(p95LatencyNanos, overrides = {}) {
     const values = {
         availableProcessors: 16,
-        graphWorkerCount: 8,
-        segmentWorkerCount: 8,
-        graphScanPeakActiveWorkers: 8,
-        segmentScanPeakActiveWorkers: 8,
+        callSiteCallerThreadExecution: 1,
+        graphWorkerCount: 1,
+        segmentWorkerCount: 0,
+        graphScanPeakActiveWorkers: 0,
+        segmentScanPeakActiveWorkers: 0,
         graphCount: 64,
         distinctGraphPathCount: 64,
         queryCount: 34,
@@ -499,9 +501,13 @@ function graphParameterReferenceManifest() {
 
 test("fixture64 global wide-query pressure requires 10x in both paired run orders", () => {
     const evidence = globalWideEvidence();
-    const baseRuns = Array.from({ length: 3 }, () => [
-        globalWidePressureResult(400_000_000, { graphWorkerCount: 0, segmentWorkerCount: 0 })
-    ]);
+    const baseRuns = Array.from({ length: 3 }, () => [globalWidePressureResult(400_000_000, {
+        callSiteCallerThreadExecution: 0,
+        graphWorkerCount: 8,
+        segmentWorkerCount: 8,
+        graphScanPeakActiveWorkers: 8,
+        segmentScanPeakActiveWorkers: 8
+    })]);
     const baseObservations = Array.from(
         { length: 3 }, () => withoutGlobalWideAccessTelemetry(globalWideEvidence(400_000_000).observations));
     const comparison = compareGlobalWidePressure(
@@ -535,7 +541,7 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
     assert.match(unstable.errors.join("\n"), /pair-2: P95 speedup/);
 });
 
-test("fixture64 global wide-query pressure verifies NCPU split and correctness", () => {
+test("fixture64 global wide-query pressure verifies caller-thread execution and correctness", () => {
     const evidence = globalWideEvidence();
     const baseRuns = Array.from({ length: 3 }, () => [
         globalWidePressureResult(400_000_000, { graphWorkerCount: 0, segmentWorkerCount: 0 })
@@ -558,7 +564,7 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /NCPU split 16 -> 16\+8; expected 8\+8/);
+    assert.match(comparison.errors.join("\n"), /caller-thread plan 16\+8; expected 1\+0/);
     assert.match(comparison.errors.join("\n"), /family differs from correctness oracle/);
 
     const wrongObservedPeak = globalWidePressureResult(35_000_000, {
@@ -576,7 +582,7 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(overcommitted.passed, false);
-    assert.match(overcommitted.errors.join("\n"), /observed graph\/segment worker peaks 8\+16; expected 8\+8/);
+    assert.match(overcommitted.errors.join("\n"), /observed graph\/segment worker peaks 8\+16; expected 0\+0/);
 
     const skippedGraphs = globalWideEvidence();
     skippedGraphs.observations = skippedGraphs.observations.replace(
@@ -627,6 +633,44 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
     );
     assert.equal(nonLocalized.passed, false);
     assert.match(nonLocalized.errors.join("\n"), /localized-early must be globally localized/);
+});
+
+test("fixture64 global wide-query pressure rejects missing caller capability or any background worker", () => {
+    const evidence = globalWideEvidence();
+    const baseRuns = Array.from({ length: 3 }, () => [globalWidePressureResult(400_000_000, {
+        callSiteCallerThreadExecution: 0,
+        graphWorkerCount: 8,
+        segmentWorkerCount: 8,
+        graphScanPeakActiveWorkers: 8,
+        segmentScanPeakActiveWorkers: 8
+    })]);
+    const baseObservations = Array.from({ length: 3 }, () =>
+        withoutGlobalWideAccessTelemetry(globalWideEvidence(400_000_000).observations));
+    for (const [overrides, missingMetric, expectedError] of [
+        [{ callSiteCallerThreadExecution: 0 }, null, /callSiteCallerThreadExecution=0; expected 1/],
+        [{}, "callSiteCallerThreadExecution", /callSiteCallerThreadExecution=null; expected 1/],
+        [{ graphWorkerCount: 2 }, null, /caller-thread plan 2\+0; expected 1\+0/],
+        [{ segmentWorkerCount: 1 }, null, /caller-thread plan 1\+1; expected 1\+0/],
+        [{ graphScanPeakActiveWorkers: 1 }, null, /worker peaks 1\+0; expected 0\+0/],
+        [{ segmentScanPeakActiveWorkers: 1 }, null, /worker peaks 0\+1; expected 0\+0/],
+        [{}, "graphScanPeakActiveWorkers", /worker peaks null\+0; expected 0\+0/],
+        [{}, "segmentScanPeakActiveWorkers", /worker peaks 0\+null; expected 0\+0/]
+    ]) {
+        const invalid = globalWidePressureResult(35_000_000, overrides);
+        if (missingMetric) delete invalid.secondaryMetrics[missingMetric];
+        const comparison = compareGlobalWidePressure(
+            baseRuns,
+            [[invalid], [globalWidePressureResult(35_000_000)], [globalWidePressureResult(35_000_000)]],
+            baseObservations,
+            Array.from({ length: 3 }, () => evidence.observations),
+            evidence.oracle,
+            10,
+            ["candidate-base", "base-candidate", "candidate-base"],
+            evidence.manifest
+        );
+        assert.equal(comparison.passed, false);
+        assert.match(comparison.errors.join("\n"), expectedError);
+    }
 });
 
 test("fixture64 global wide-query pressure requires the wrapped case-insensitive shape and its 10x P95", () => {
@@ -831,7 +875,7 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /test-fixture64-reproducibility\.sh|REPRODUCIBILITY_SCRIPT_PATH/);
     assert.match(driver, /if \(\( RUN % 2 == 1 \)\); then run_candidate; run_base;/);
     assert.match(driver, /--bases "\$\{BASE_JSON_LIST\}"/);
-    assert.match(driver, /--minimum-speedup 5/);
+    assert.match(driver, /--minimum-speedup 10/);
     assert.match(driver, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE/);
     assert.match(driver, /if \[\[ "\$\{PUBLISH_EVIDENCE\}" == false \]\]/);
     assert.match(driver, /graphite\/fixture64-global-wide/);
@@ -891,7 +935,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(serialCandidate.passed, false);
-    assert.match(serialCandidate.errors.join("\n"), /build one parallel index per graph or restore all 64/);
+    assert.match(serialCandidate.errors.join("\n"), /build one caller-thread index per graph or restore all 64/);
 
     const sidecarCandidate = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -907,6 +951,27 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
+});
+
+test("fixture64 graph routing requires caller-thread execution and exact raw scan lifecycle", () => {
+    for (const [overrides, missingFlag, expectedError] of [
+        [{ callSiteCallerThreadExecution: 0 }, false, /callSiteCallerThreadExecution=0; expected 1/],
+        [{}, true, /callSiteCallerThreadExecution=null; expected 1/],
+        [{ callSiteScanPeakActiveWorkers: 1 }, false, /callSiteScanPeakActiveWorkers=1; expected 0/],
+        [{ callSiteParallelScanCount: 63 }, false, /build one caller-thread index per graph/],
+        [{ callSiteParallelScanGraphCount: 63 }, false, /build one caller-thread index per graph/]
+    ]) {
+        const candidate = graphIdPressureResult(overrides);
+        if (missingFlag) delete candidate.secondaryMetrics.callSiteCallerThreadExecution;
+        const comparison = compareGraphIdPressure(
+            [graphIdPressureResult({ callSiteCallerThreadExecution: 0, callSiteScanPeakActiveWorkers: 8 })],
+            [candidate],
+            graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+            graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+        );
+        assert.equal(comparison.passed, false);
+        assert.match(comparison.errors.join("\n"), expectedError);
+    }
 });
 
 test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
