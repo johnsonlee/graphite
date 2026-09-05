@@ -69,76 +69,6 @@ interface GraphWorkBatchConsumer : GraphWorkConsumer {
     override fun consume() = consume(1L)
 }
 
-/**
- * A thread-safe batch consumer that explicitly permits one storage lookup to invoke it
- * concurrently from multiple scan workers.
- */
-fun interface ParallelGraphWorkBatchConsumer : GraphWorkBatchConsumer
-
-/**
- * A thread-safe batch consumer for a cross-graph lookup that splits one process-wide CPU budget
- * between graph workers and a shared background segment pool. The calling graph worker participates
- * in the scan; [segmentWorkerCount] is the maximum number of additional workers that this lookup may
- * request from that shared pool. Concurrent graph lookups share the same pool, so this value is not
- * multiplied by the number of graph workers.
- */
-interface SplitGraphWorkBatchConsumer : ParallelGraphWorkBatchConsumer {
-    val segmentWorkerCount: Int
-}
-
-/**
- * Requests the existing persisted string index through a read-only mapped view while preserving
- * the additive graph/segment worker split. This is intended for unscoped broad scans: explicitly
- * selected graph sets keep their retained-index lifecycle and telemetry.
- */
-interface PreferredMappedStringIndexViewGraphWorkBatchConsumer : SplitGraphWorkBatchConsumer
-
-/** Additive graph/segment worker allocation used by broad cross-graph scans. */
-data class GraphScanParallelismPlan(
-    val graphWorkerCount: Int,
-    val segmentWorkerCount: Int
-) {
-    init {
-        require(graphWorkerCount > 0) { "graphWorkerCount must be positive" }
-        require(segmentWorkerCount >= 0) { "segmentWorkerCount must not be negative" }
-    }
-
-    companion object {
-        /** Splits NCPU evenly; the segment side receives the spare CPU when NCPU is odd. */
-        fun balanced(processors: Int = Runtime.getRuntime().availableProcessors()): GraphScanParallelismPlan {
-            val available = processors.coerceAtLeast(1)
-            if (available == 1) return GraphScanParallelismPlan(1, 0)
-            val graphWorkers = available / 2
-            return GraphScanParallelismPlan(graphWorkers, available - graphWorkers)
-        }
-
-        /** Applies a graph-worker override while keeping graph plus segment workers within NCPU. */
-        fun withGraphWorkers(
-            processors: Int = Runtime.getRuntime().availableProcessors(),
-            graphWorkers: Int
-        ): GraphScanParallelismPlan {
-            val available = processors.coerceAtLeast(1)
-            val boundedGraphWorkers = graphWorkers.coerceIn(1, available)
-            return GraphScanParallelismPlan(boundedGraphWorkers, available - boundedGraphWorkers)
-        }
-    }
-}
-
-/**
- * A batch consumer that explicitly requests one storage lookup to stay serial because its caller
- * already parallelizes independent graph sources. This avoids nested scan pools while preserving
- * the same shared work and cancellation accounting.
- */
-fun interface SerialGraphWorkBatchConsumer : GraphWorkBatchConsumer
-
-/** Requests a bounded serial lookup to prefer raw storage so it can stop as soon as LIMIT is full. */
-fun interface PreferredRawGraphWorkBatchConsumer : SerialGraphWorkBatchConsumer
-
-/** Permits one parallel raw build, then requests retained string-index lookups without segment fanout. */
-fun interface PreferredPersistedStringIndexGraphWorkBatchConsumer :
-    SerialGraphWorkBatchConsumer,
-    ParallelGraphWorkBatchConsumer
-
 /** Polls request cancellation while a storage backend scans method metadata. */
 fun interface MethodMetadataScanConsumer {
     fun inspect()
@@ -277,6 +207,37 @@ data class StringPropertyDistinctRow(
 )
 
 /**
+ * Immutable set of projected tuples shared by every source of one provenance recheck. Column
+ * groupings are computed once and cached, so a storage backend can reject every tuple that shares
+ * an absent value with a single dictionary lookup instead of one lookup per tuple per source.
+ */
+class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<List<String?>>() {
+    private val ordered: List<List<String?>> = LinkedHashSet(tuples).toList()
+    private val members: Set<List<String?>> = ordered.toHashSet()
+    private val groupings = arrayOfNulls<Map<String?, List<List<String?>>>>(
+        ordered.firstOrNull()?.size ?: 0
+    )
+
+    override val size: Int
+        get() = ordered.size
+
+    override fun iterator(): Iterator<List<String?>> = ordered.iterator()
+
+    override fun contains(element: List<String?>): Boolean = element in members
+
+    /** Tuples grouped by their value in [column], in first-seen order; tuples shorter than the column are skipped. */
+    fun groupedBy(column: Int): Map<String?, List<List<String?>>> {
+        if (column !in groupings.indices) return emptyMap()
+        return groupings[column] ?: LinkedHashMap<String?, MutableList<List<String?>>>().also { grouped ->
+            ordered.forEach { tuple ->
+                if (column < tuple.size) grouped.getOrPut(tuple[column]) { ArrayList(1) } += tuple
+            }
+            groupings[column] = grouped
+        }
+    }
+}
+
+/**
  * Optional storage capability for DISTINCT string-property projections. When [selectedValues] is
  * non-null, implementations return only selected tuples that occur anywhere in the match set.
  */
@@ -298,30 +259,6 @@ interface StringPropertyDisjunctionDistinctProjection {
  */
 interface ReleasableStringPropertyDisjunctionCache {
     fun releaseStringPropertyDisjunctionCache()
-}
-
-/** Optional planning hint for avoiding worker overhead once a mapped lookup is warm. */
-interface StringPropertyDisjunctionLookupStrategy {
-    fun prefersSerialStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
-}
-
-/** Optional planning hint that a persisted lookup can be restored without building a raw index. */
-interface PreparedStringPropertyDisjunctionLookup {
-    fun hasPreparedStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
-}
-
-/** Optional planning hint that a complete disjunction index is already retained in process memory. */
-interface RetainedStringPropertyDisjunctionLookup {
-    fun hasRetainedStringPropertyDisjunction(
-        type: Class<out Node>,
-        predicates: List<StringPropertyPredicate>
-    ): Boolean
 }
 
 /**

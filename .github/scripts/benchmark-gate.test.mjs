@@ -118,6 +118,10 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteStringIndexLookupMinPerGraph: warm ? 30 : 29,
         callSiteStringIndexLookupMaxPerGraph: warm ? 39 : 38,
         callSiteScanPeakActiveWorkers: warm ? 0 : 8,
+        callSiteMappedViewLookupCount: 0,
+        callSiteMappedViewLookupGraphCount: 0,
+        callSiteMappedViewLookupMinPerGraph: 0,
+        callSiteMappedViewLookupMaxPerGraph: 0,
         ...overrides
     };
     return jmhResult({
@@ -133,13 +137,34 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
     });
 }
 
+/** A candidate that serves every cold or warm selected-graph access from the mapped sidecar view. */
+function mappedViewPressureResult(overrides = {}, indexState = "cold") {
+    return graphIdPressureResult({
+        callSiteIndexAdmittedGraphs: 0,
+        callSiteIndexRetainedBytes: 0,
+        callSiteTrigramIndexedGraphs: 0,
+        callSiteParallelScanCount: 0,
+        callSiteParallelScanGraphCount: 0,
+        callSiteScanPeakActiveWorkers: 0,
+        callSiteStringIndexLookupCount: 0,
+        callSiteStringIndexLookupGraphCount: 0,
+        callSiteStringIndexLookupMinPerGraph: 0,
+        callSiteStringIndexLookupMaxPerGraph: 0,
+        callSiteMappedViewLookupCount: 2043,
+        callSiteMappedViewLookupGraphCount: 64,
+        callSiteMappedViewLookupMinPerGraph: 30,
+        callSiteMappedViewLookupMaxPerGraph: 39,
+        ...overrides
+    }, indexState);
+}
+
 function globalWidePressureResult(p95LatencyNanos, overrides = {}) {
     const values = {
         availableProcessors: 16,
-        graphWorkerCount: 8,
-        segmentWorkerCount: 8,
-        graphScanPeakActiveWorkers: 8,
-        segmentScanPeakActiveWorkers: 8,
+        graphWorkerCount: 0,
+        segmentWorkerCount: 0,
+        graphScanPeakActiveWorkers: 0,
+        segmentScanPeakActiveWorkers: 0,
         graphCount: 64,
         distinctGraphPathCount: 64,
         queryCount: 34,
@@ -535,10 +560,10 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
     assert.match(unstable.errors.join("\n"), /pair-2: P95 speedup/);
 });
 
-test("fixture64 global wide-query pressure verifies NCPU split and correctness", () => {
+test("fixture64 global wide-query pressure verifies the serial scan contract and correctness", () => {
     const evidence = globalWideEvidence();
     const baseRuns = Array.from({ length: 3 }, () => [
-        globalWidePressureResult(400_000_000, { graphWorkerCount: 0, segmentWorkerCount: 0 })
+        globalWidePressureResult(400_000_000, { graphWorkerCount: 8, segmentWorkerCount: 8 })
     ]);
     const baseObservations = Array.from(
         { length: 3 }, () => withoutGlobalWideAccessTelemetry(globalWideEvidence(400_000_000).observations));
@@ -558,12 +583,12 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(comparison.passed, false);
-    assert.match(comparison.errors.join("\n"), /NCPU split 16 -> 16\+8; expected 8\+8/);
+    assert.match(comparison.errors.join("\n"), /CallSite worker plan 16 -> 16\+8; expected the serial 0\+0 contract/);
     assert.match(comparison.errors.join("\n"), /family differs from correctness oracle/);
 
     const wrongObservedPeak = globalWidePressureResult(35_000_000, {
-        graphScanPeakActiveWorkers: 8,
-        segmentScanPeakActiveWorkers: 16
+        graphScanPeakActiveWorkers: 1,
+        segmentScanPeakActiveWorkers: 2
     });
     const overcommitted = compareGlobalWidePressure(
         baseRuns,
@@ -576,7 +601,7 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(overcommitted.passed, false);
-    assert.match(overcommitted.errors.join("\n"), /observed graph\/segment worker peaks 8\+16; expected 8\+8/);
+    assert.match(overcommitted.errors.join("\n"), /observed graph\/segment worker peaks 1\+2; expected 0\+0 on the serial contract/);
 
     const skippedGraphs = globalWideEvidence();
     skippedGraphs.observations = skippedGraphs.observations.replace(
@@ -831,7 +856,7 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /test-fixture64-reproducibility\.sh|REPRODUCIBILITY_SCRIPT_PATH/);
     assert.match(driver, /if \(\( RUN % 2 == 1 \)\); then run_candidate; run_base;/);
     assert.match(driver, /--bases "\$\{BASE_JSON_LIST\}"/);
-    assert.match(driver, /--minimum-speedup 5/);
+    assert.match(driver, /--minimum-speedup 10/);
     assert.match(driver, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE/);
     assert.match(driver, /if \[\[ "\$\{PUBLISH_EVIDENCE\}" == false \]\]/);
     assert.match(driver, /graphite\/fixture64-global-wide/);
@@ -880,20 +905,17 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
     assert.equal(materiallyRegressed.p50Speedup, 0.5);
     assert.equal(materiallyRegressed.p95Speedup, 0.5);
 
-    const serialCandidate = compareGraphIdPressure(
+    const rawBuildCandidate = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult({
-            callSiteParallelScanCount: 0,
-            callSiteParallelScanGraphCount: 0,
-            callSiteScanPeakActiveWorkers: 1
-        })],
+        [graphIdPressureResult()],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(serialCandidate.passed, false);
-    assert.match(serialCandidate.errors.join("\n"), /build one parallel index per graph or restore all 64/);
+    assert.equal(rawBuildCandidate.passed, false);
+    assert.match(rawBuildCandidate.errors.join("\n"), /cold selected-graph workload must not fall back to raw scans/);
+    assert.match(rawBuildCandidate.errors.join("\n"), /scans=64, graphs=64, peak=8/);
 
-    const sidecarCandidate = compareGraphIdPressure(
+    const retainedSidecarCandidate = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult({
             callSiteIndexAdmittedGraphs: 64,
@@ -906,13 +928,60 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(sidecarCandidate.passed, true, sidecarCandidate.errors.join("\n"));
+    assert.equal(retainedSidecarCandidate.passed, false);
+    assert.match(
+        retainedSidecarCandidate.errors.join("\n"),
+        /mapped CallSite index view without retaining a heap index; admitted=64, trigram=64, retainedLookups=1979/
+    );
+
+    const mappedViewCandidate = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(mappedViewCandidate.passed, true, mappedViewCandidate.errors.join("\n"));
+    assert.equal(mappedViewCandidate.resources.base.callSiteMappedViewLookupCount, 0);
+    assert.equal(mappedViewCandidate.resources.candidate.callSiteMappedViewLookupCount, 2043);
+    assert.match(
+        renderGraphIdPressureReport(mappedViewCandidate),
+        /Candidate mapped-view lookups: \*\*2043\*\*; graphs covered: \*\*64\*\*; per graph: \*\*30\.\.39\*\*/
+    );
+
+    const baseWithoutMappedViewCounters = graphIdPressureResult();
+    for (const name of [
+        "callSiteMappedViewLookupCount", "callSiteMappedViewLookupGraphCount",
+        "callSiteMappedViewLookupMinPerGraph", "callSiteMappedViewLookupMaxPerGraph"
+    ]) {
+        delete baseWithoutMappedViewCounters.secondaryMetrics[name];
+    }
+    const legacyBase = compareGraphIdPressure(
+        [baseWithoutMappedViewCounters],
+        [mappedViewPressureResult()],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(legacyBase.passed, true, legacyBase.errors.join("\n"));
+
+    const candidateWithoutMappedViewCounters = mappedViewPressureResult();
+    delete candidateWithoutMappedViewCounters.secondaryMetrics.callSiteMappedViewLookupCount;
+    const unreportedCandidate = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [candidateWithoutMappedViewCounters],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(unreportedCandidate.passed, false);
+    assert.match(
+        unreportedCandidate.errors.join("\n"),
+        /candidate: callSiteMappedViewLookupCount requires a non-negative finite value/
+    );
 });
 
 test("fixture64 cold graphId pressure uses a micro-latency regression guard instead of a 10x target", () => {
     const stable = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(1_100_000, "success", 1_100_000)
     );
@@ -921,7 +990,7 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
 
     const materialRegression = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(1_000_000, "success", 1_000_000),
         graphIdObservations(2_000_000, "success", 2_000_000)
     );
@@ -935,7 +1004,7 @@ test("fixture64 cold graphId pressure uses a micro-latency regression guard inst
     candidateRows[1] = first.join("\t");
     const hiddenFirstRequestRegression = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         base,
         `${candidateRows.join("\n")}\n`
     );
@@ -949,7 +1018,7 @@ test("fixture64 scorer rejects detached and correlated-rotation latency rows", (
     const baseCorrectness = correctnessFromObservations(base);
     const semanticOracle = correctnessFromObservations(candidate);
     const withoutEvidence = compareGraphIdPressureRaw(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, candidate
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, candidate
     );
     assert.equal(withoutEvidence.passed, false);
     assert.match(withoutEvidence.errors.join("\n"), /independent correctness evidence is required/);
@@ -959,7 +1028,7 @@ test("fixture64 scorer rejects detached and correlated-rotation latency rows", (
         "spoof-query-target-00-unbound"
     ).replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t");
     const detached = compareGraphIdPressureRaw(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, spoofed,
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, spoofed,
         baseCorrectness, semanticOracle
     );
     assert.equal(detached.passed, false);
@@ -982,60 +1051,49 @@ test("fixture64 scorer rejects detached and correlated-rotation latency rows", (
         return columns.join("\t");
     })].join("\n") + "\n";
     const correlatedRotation = compareGraphIdPressureRaw(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, rotated,
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, rotated,
         baseCorrectness, semanticOracle
     );
     assert.equal(correlatedRotation.passed, false);
     assert.match(correlatedRotation.errors.join("\n"), /differs from independent correctness record/);
 });
 
-test("fixture64 warm pressure proves the trigram path instead of requiring a raw scan", () => {
+test("fixture64 warm pressure proves the mapped-view path instead of a retained index or raw scan", () => {
     const warmBase = graphIdPressureResult({}, "warm");
-    const warmCandidate = graphIdPressureResult({
-        callSiteIndexAdmittedGraphs: 64,
-        callSiteIndexRetainedBytes: 1024,
-        callSiteTrigramIndexedGraphs: 64,
-        callSiteParallelScanCount: 0
-    }, "warm");
+    const warmCandidate = mappedViewPressureResult({}, "warm");
     const passed = compareGraphIdPressure(
         [warmBase],
         [warmCandidate],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(passed.passed, true);
+    assert.equal(passed.passed, true, passed.errors.join("\n"));
     assert.equal(passed.indexState, "warm");
     assert.match(renderGraphIdPressureReport(passed), /Index state: \*\*warm\*\*/);
-    assert.match(renderGraphIdPressureReport(passed), /Trigram-indexed graphs: \*\*0 → 64\*\*/);
+    assert.match(renderGraphIdPressureReport(passed), /Trigram-indexed graphs: \*\*0 → 0\*\*/);
+    assert.match(renderGraphIdPressureReport(passed), /Candidate mapped-view lookups: \*\*2043\*\*/);
 
-    const missingTrigram = compareGraphIdPressure(
-        [warmBase],
-        [graphIdPressureResult({}, "warm")],
-        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
-        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
-    );
-    assert.equal(missingTrigram.passed, false);
-    assert.match(missingTrigram.errors.join("\n"), /all 64 graphs/);
-
-    const partialWarmCoverage = compareGraphIdPressure(
+    const retainedWarmCandidate = compareGraphIdPressure(
         [warmBase],
         [graphIdPressureResult({
-            callSiteIndexAdmittedGraphs: 63,
+            callSiteIndexAdmittedGraphs: 64,
             callSiteIndexRetainedBytes: 1024,
-            callSiteTrigramIndexedGraphs: 63,
+            callSiteTrigramIndexedGraphs: 64,
             callSiteParallelScanCount: 0
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(partialWarmCoverage.passed, false);
-    assert.match(partialWarmCoverage.errors.join("\n"), /admitted=63, trigram=63/);
+    assert.equal(retainedWarmCandidate.passed, false);
+    assert.match(
+        retainedWarmCandidate.errors.join("\n"),
+        /warm selected-graph workload must serve every graph from its mapped CallSite index view/
+    );
+    assert.match(retainedWarmCandidate.errors.join("\n"), /exactly 2,043 mapped-view lookups/);
 
     const hiddenWarmScan = compareGraphIdPressure(
         [warmBase],
-        [graphIdPressureResult({
-            callSiteIndexAdmittedGraphs: 64,
-            callSiteTrigramIndexedGraphs: 64,
+        [mappedViewPressureResult({
             callSiteParallelScanCount: 1,
             callSiteParallelScanGraphCount: 1,
             callSiteScanPeakActiveWorkers: 8
@@ -1044,41 +1102,37 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(hiddenWarmScan.passed, false);
-    assert.match(hiddenWarmScan.errors.join("\n"), /must not fall back to raw scans/);
+    assert.match(hiddenWarmScan.errors.join("\n"), /must not fall back to raw scans; scans=1, graphs=1, peak=8/);
 
     const partialIndexUse = compareGraphIdPressure(
         [warmBase],
-        [graphIdPressureResult({
-            callSiteIndexAdmittedGraphs: 64,
-            callSiteTrigramIndexedGraphs: 64,
-            callSiteStringIndexLookupCount: 2042,
-            callSiteStringIndexLookupGraphCount: 63
+        [mappedViewPressureResult({
+            callSiteMappedViewLookupCount: 2042,
+            callSiteMappedViewLookupGraphCount: 63
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(partialIndexUse.passed, false);
-    assert.match(partialIndexUse.errors.join("\n"), /exactly 2,043 retained-index lookups/);
+    assert.match(partialIndexUse.errors.join("\n"), /exactly 2,043 mapped-view lookups distributed 30\.\.39 per graph/);
 
     const imbalancedColdIndexUse = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult({
-            callSiteStringIndexLookupMinPerGraph: 1,
-            callSiteStringIndexLookupMaxPerGraph: 641
+        [mappedViewPressureResult({
+            callSiteMappedViewLookupMinPerGraph: 1,
+            callSiteMappedViewLookupMaxPerGraph: 641
         })],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(imbalancedColdIndexUse.passed, false);
-    assert.match(imbalancedColdIndexUse.errors.join("\n"), /perGraph=1\.\.641/);
+    assert.match(imbalancedColdIndexUse.errors.join("\n"), /mapped-view lookups distributed 30\.\.39 per graph.*perGraph=1\.\.641/);
 
     const imbalancedWarmIndexUse = compareGraphIdPressure(
         [warmBase],
-        [graphIdPressureResult({
-            callSiteIndexAdmittedGraphs: 64,
-            callSiteTrigramIndexedGraphs: 64,
-            callSiteStringIndexLookupMinPerGraph: 1,
-            callSiteStringIndexLookupMaxPerGraph: 2044
+        [mappedViewPressureResult({
+            callSiteMappedViewLookupMinPerGraph: 1,
+            callSiteMappedViewLookupMaxPerGraph: 2044
         }, "warm")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
@@ -1123,6 +1177,23 @@ test("fixture64 startup-prepared pressure measures load-time readiness without q
     );
     assert.equal(lazyScanRegression.passed, false);
     assert.match(lazyScanRegression.errors.join("\n"), /must use the retained index without raw scans/);
+
+    const mappedViewFallback = compareGraphIdPressure(
+        [base],
+        [graphIdPressureResult({
+            callSiteIndexAdmittedGraphs: 64,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 64,
+            callSiteMappedViewLookupCount: 3,
+            callSiteMappedViewLookupGraphCount: 1,
+            callSiteMappedViewLookupMinPerGraph: 3,
+            callSiteMappedViewLookupMaxPerGraph: 3
+        }, "startup-prepared")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(mappedViewFallback.passed, false);
+    assert.match(mappedViewFallback.errors.join("\n"), /no mapped-view lookups; .*mappedViewLookups=3/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
@@ -1144,7 +1215,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
     const wrongDigest = correct.replace(targetedDigest, "f".repeat(64));
     const incorrect = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         wrongDigest
     );
@@ -1153,7 +1224,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
 
     const regressed = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 2_000_000_000)
     );
@@ -1165,7 +1236,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
 
     const routingOnly = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
@@ -1175,7 +1246,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
 
     const acceptableRequestSelectionRegression = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 1_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_100_000_000)
     );
@@ -1201,7 +1272,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
 
     const fakeDistribution = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000, true),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000, true)
     );
@@ -1217,7 +1288,7 @@ test("graphId pressure requires every target graph and all three graphId spellin
     );
     const comparison = compareGraphIdPressure(
         [graphIdPressureResult()],
-        [graphIdPressureResult()],
+        [mappedViewPressureResult()],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         missingSpelling
     );
@@ -1248,7 +1319,7 @@ test("graphId set routing proves K-source access and 64-K pruning against its re
         nonTargetGraphAccessCount: "1"
     });
     const accessFailure = compareGraphIdPressure(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, touchedExtraSource
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, touchedExtraSource
     );
     assert.equal(accessFailure.passed, false);
     assert.match(accessFailure.errors.join("\n"), /selected-graph isolation failed/);
@@ -1259,7 +1330,7 @@ test("graphId set routing proves K-source access and 64-K pruning against its re
         graphIdSourcesPruned: "63"
     });
     const pruningFailure = compareGraphIdPressure(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, fakeK64Pruning
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, fakeK64Pruning
     );
     assert.equal(pruningFailure.passed, false);
     assert.match(pruningFailure.errors.join("\n"), /do not prove 1\/0\/0/);
@@ -1290,7 +1361,7 @@ test("K64 graph-set tolerates sub-0.25ms P50 and sub-1ms P95 single-shot jitter"
         [358_000, 358_000, 358_000, 358_000, 1_800_000, 1_800_000]
     );
     const comparison = compareGraphIdPressure(
-        [graphIdPressureResult()], [graphIdPressureResult()], base, candidate
+        [graphIdPressureResult()], [mappedViewPressureResult()], base, candidate
     );
     assert.equal(comparison.passed, true, comparison.errors.join("\n"));
     const k64 = comparison.graphSetLatencyByWidth.find((summary) => summary.width === 64);

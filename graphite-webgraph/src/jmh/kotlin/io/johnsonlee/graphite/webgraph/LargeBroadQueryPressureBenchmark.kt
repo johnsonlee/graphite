@@ -27,9 +27,11 @@ import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import java.io.Closeable
 import java.lang.management.ManagementFactory
+import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.util.Optional
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
@@ -326,6 +328,7 @@ open class LargeBroadQueryPressureBenchmark {
                 stringLookupEntries = optionalInternalLong(graph, "callSiteStringLookupEntryCount"),
                 parallelScans = requiredInternalLong(graph, "callSiteParallelScanCount"),
                 indexLookups = requiredInternalLong(graph, "callSiteStringIndexLookupCount"),
+                mappedViewLookups = optionalInternalLong(graph, "callSiteMappedViewLookupCount"),
                 preflightChecks = optionalInternalLong(graph, "callSiteStringPreflightCount"),
                 projectionLookups = optionalInternalLong(graph, "callSiteStringProjectionLookupCount"),
                 peakActiveWorkers = requiredInternalLong(graph, "callSiteScanPeakActiveWorkers")
@@ -342,6 +345,7 @@ open class LargeBroadQueryPressureBenchmark {
                 .filter { access -> access.parallelScans > 0L }
                 .mapTo(linkedSetOf(), BroadQueryGraphAccess::graphId),
             indexLookupsByGraph = perGraph.associate { access -> access.graphId to access.indexLookups },
+            mappedViewLookupsByGraph = perGraph.associate { access -> access.graphId to access.mappedViewLookups },
             targetGraphAccessCount = accessed.count { access -> access.graphId in targets }.toLong(),
             nonTargetGraphAccessCount = accessed.count { access -> access.graphId !in targets }.toLong(),
             parallelScanCount = perGraph.sumOf(BroadQueryGraphAccess::parallelScans),
@@ -363,12 +367,11 @@ open class LargeBroadQueryPressureBenchmark {
 
     /** Candidate-only planner counters are read reflectively so the same harness still compiles on base. */
     private fun plannerDiagnostics(context: CypherExecutionContext): BroadQueryPlannerDiagnostics {
-        val diagnostics = context.javaClass.methods.singleOrNull { method ->
-            method.name == "getDiagnostics" && method.parameterCount == 0
-        }?.invoke(context) ?: return BroadQueryPlannerDiagnostics.EMPTY
-        fun metric(getter: String): Long = checkNotNull(diagnostics.javaClass.methods.singleOrNull { method ->
-            method.name == getter && method.parameterCount == 0
-        }?.invoke(diagnostics) as? Number) {
+        val diagnostics = publicAccessor(context.javaClass, "getDiagnostics")
+            ?.invoke(context) ?: return BroadQueryPlannerDiagnostics.EMPTY
+        fun metric(getter: String): Long = checkNotNull(
+            publicAccessor(diagnostics.javaClass, getter)?.invoke(diagnostics) as? Number
+        ) {
             "Cypher execution diagnostic $getter is unavailable"
         }.toLong()
         return BroadQueryPlannerDiagnostics(
@@ -540,6 +543,13 @@ open class LargeBroadQueryPressureBenchmark {
         counters.callSiteStringIndexLookupGraphCount = indexLookupCounts.count { count -> count > 0L }.toLong()
         counters.callSiteStringIndexLookupMinPerGraph = indexLookupCounts.minOrNull() ?: 0L
         counters.callSiteStringIndexLookupMaxPerGraph = indexLookupCounts.maxOrNull() ?: 0L
+        val mappedViewLookupCounts = sources.map { source ->
+            samples.sumOf { sample -> sample.execution.mappedViewLookupsByGraph.getValue(source.id) }
+        }
+        counters.callSiteMappedViewLookupCount = mappedViewLookupCounts.sum()
+        counters.callSiteMappedViewLookupGraphCount = mappedViewLookupCounts.count { count -> count > 0L }.toLong()
+        counters.callSiteMappedViewLookupMinPerGraph = mappedViewLookupCounts.minOrNull() ?: 0L
+        counters.callSiteMappedViewLookupMaxPerGraph = mappedViewLookupCounts.maxOrNull() ?: 0L
         counters.callSiteScanPeakActiveWorkers = samples.maxOfOrNull {
             sample -> sample.execution.peakActiveWorkers
         } ?: 0L
@@ -587,21 +597,34 @@ open class LargeBroadQueryPressureBenchmark {
 
     private fun graphWorkerMetric(prefix: String): Long = runCatching {
         val owner = Class.forName("io.johnsonlee.graphite.cypher.QueryPipelineKt")
-        val method = owner.declaredMethods.firstOrNull { candidate ->
-            candidate.parameterCount == 0 && candidate.name.startsWith(prefix)
-        } ?: return@runCatching 0L
-        method.isAccessible = true
+        val method = reflectiveMetricAccessor(owner, prefix) ?: return@runCatching 0L
         (method.invoke(null) as? Number)?.toLong() ?: 0L
     }.getOrDefault(0L)
 
     private fun invokeInternalMetric(graph: MappedWebGraphBackedGraph, prefix: String): Any? = runCatching {
-        graph.javaClass.declaredMethods.firstOrNull { method ->
-            method.parameterCount == 0 && method.name.startsWith(prefix)
-        }?.let { method ->
-            method.isAccessible = true
-            method.invoke(graph)
-        }
+        reflectiveMetricAccessor(graph.javaClass, prefix)?.invoke(graph)
     }.getOrNull()
+
+    private fun publicAccessor(owner: Class<*>, name: String): Method? =
+        reflectiveMetricAccessors.computeIfAbsent(owner.name + "=" + name) {
+            Optional.ofNullable(
+                owner.methods.singleOrNull { method -> method.name == name && method.parameterCount == 0 }
+            )
+        }.orElse(null)
+
+    /**
+     * Metric accessors are resolved once per class: enumerating declared methods copies every
+     * `Method` object, and doing that per graph per query allocated enough between queries to
+     * trigger a young collection inside a later query's latency window.
+     */
+    private fun reflectiveMetricAccessor(owner: Class<*>, prefix: String): Method? =
+        reflectiveMetricAccessors.computeIfAbsent(owner.name + "#" + prefix) {
+            Optional.ofNullable(
+                owner.declaredMethods.firstOrNull { method ->
+                    method.parameterCount == 0 && method.name.startsWith(prefix)
+                }?.also { method -> method.isAccessible = true }
+            )
+        }.orElse(null)
 
     private fun writeCorrectnessManifest(samples: List<BroadQuerySample>) {
         val configured = System.getProperty(OUTPUT_PROPERTY) ?: return
@@ -794,6 +817,10 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var callSiteStringIndexLookupGraphCount: Long = 0
     @JvmField var callSiteStringIndexLookupMinPerGraph: Long = 0
     @JvmField var callSiteStringIndexLookupMaxPerGraph: Long = 0
+    @JvmField var callSiteMappedViewLookupCount: Long = 0
+    @JvmField var callSiteMappedViewLookupGraphCount: Long = 0
+    @JvmField var callSiteMappedViewLookupMinPerGraph: Long = 0
+    @JvmField var callSiteMappedViewLookupMaxPerGraph: Long = 0
     @JvmField var callSiteScanPeakActiveWorkers: Long = 0
     @JvmField var graphScanPeakActiveWorkers: Long = 0
     @JvmField var segmentScanPeakActiveWorkers: Long = 0
@@ -878,6 +905,7 @@ private data class BroadQueryExecutionMetrics(
     val accessedGraphIds: Set<String>,
     val parallelScanGraphIds: Set<String>,
     val indexLookupsByGraph: Map<String, Long>,
+    val mappedViewLookupsByGraph: Map<String, Long>,
     val targetGraphAccessCount: Long,
     val nonTargetGraphAccessCount: Long,
     val parallelScanCount: Long,
@@ -910,12 +938,13 @@ private data class BroadQueryGraphAccess(
     val stringLookupEntries: Long,
     val parallelScans: Long,
     val indexLookups: Long,
+    val mappedViewLookups: Long,
     val preflightChecks: Long,
     val projectionLookups: Long,
     val peakActiveWorkers: Long
 ) {
     fun wasAccessed(): Boolean = stringLookupEntries > 0L || parallelScans > 0L || indexLookups > 0L ||
-        preflightChecks > 0L ||
+        mappedViewLookups > 0L || preflightChecks > 0L ||
         projectionLookups > 0L
 }
 
@@ -1082,10 +1111,12 @@ private fun processCpuLoadPermille(): Long {
 private fun residentSetBytes(): Long {
     val status = Path.of("/proc/self/status")
     if (Files.isRegularFile(status)) {
-        val kibibytes = Files.readAllLines(status)
-            .firstOrNull { line -> line.startsWith("VmRSS:") }
-            ?.split(Regex("\\s+"))
-            ?.firstNotNullOfOrNull(String::toLongOrNull)
+        val kibibytes = Files.newBufferedReader(status).use { reader ->
+            generateSequence(reader::readLine)
+                .firstOrNull { line -> line.startsWith("VmRSS:") }
+                ?.split(Regex("\\s+"))
+                ?.firstNotNullOfOrNull(String::toLongOrNull)
+        }
         if (kibibytes != null) return kibibytes * BYTES_PER_KIBIBYTE
     }
     val process = ProcessBuilder(
@@ -2154,6 +2185,7 @@ private const val MAX_EIGHT_GIB_HEAP_BYTES = 8L * 1_024L * 1_024L * 1_024L
 private const val BYTES_PER_KIBIBYTE = 1_024L
 private const val PS_TIMEOUT_SECONDS = 2L
 private const val SAMPLER_INTERVAL_NANOS = 1_000_000L
+private val reflectiveMetricAccessors = java.util.concurrent.ConcurrentHashMap<String, Optional<Method>>()
 private const val RSS_SAMPLE_DIVISOR = 250
 private const val SAMPLER_JOIN_MILLIS = 5_000L
 private val SHA_256_IDENTITY = Regex("[0-9a-f]{64}")

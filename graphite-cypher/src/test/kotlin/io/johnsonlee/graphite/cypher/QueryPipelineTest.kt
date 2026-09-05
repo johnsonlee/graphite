@@ -25,7 +25,6 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
-import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
@@ -152,6 +151,10 @@ class QueryPipelineTest {
     private fun variable(name: String) = CypherExpr.Variable(name)
     private fun prop(expr: CypherExpr, name: String) = CypherExpr.Property(expr, name)
     private fun returnItem(expr: CypherExpr, alias: String? = null) = ReturnItem(expr, alias)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun provenance(row: Map<String, Any?>): List<String> =
+        (row.getValue(RESULT_METADATA_KEY) as Map<String, Any?>).getValue(RESULT_GRAPH_IDS_KEY) as List<String>
 
     // ========================================================================
     // MATCH - 1. Match all nodes
@@ -560,7 +563,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `empty parallel distinct waves release rebuildable storage caches`() {
+    fun `empty distinct projections release rebuildable storage caches`() {
         class EmptyIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
             StringPropertyDisjunctionDistinctProjection,
@@ -600,7 +603,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `targeted parallel distinct waves release only zero hit source caches`() {
+    fun `distinct projections release only zero hit source caches`() {
         class IndexedGraph(
             private val delegate: Graph,
             private val values: List<StringPropertyDistinctRow>
@@ -644,7 +647,7 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `selected provenance pass does not rebuild a released zero hit cache`() {
+    fun `leading distinct hit defers later sources to the selected provenance pass`() {
         class RebuildTrackingIndexedGraph(
             private val delegate: Graph,
             private val values: List<StringPropertyDistinctRow>
@@ -654,6 +657,7 @@ class QueryPipelineTest {
             ReleasableStringPropertyDisjunctionCache {
             var cacheBuilds = 0
             var projectionCalls = 0
+            val selectedLookups = mutableListOf<Set<List<String?>>>()
             var releases = 0
             private var cacheRetained = false
 
@@ -666,6 +670,7 @@ class QueryPipelineTest {
                 workConsumer: GraphWorkConsumer?
             ): List<StringPropertyDistinctRow> {
                 projectionCalls++
+                selectedValues?.let(selectedLookups::add)
                 if (!cacheRetained) {
                     cacheBuilds++
                     cacheRetained = true
@@ -697,12 +702,15 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
+        assertEquals(listOf("hit"), provenance(result.rows.single()))
         assertEquals(1, hit.projectionCalls)
+        assertTrue(hit.selectedLookups.isEmpty())
         assertEquals(1, hit.cacheBuilds)
         assertEquals(0, hit.releases)
         assertEquals(1, miss.projectionCalls)
+        assertEquals(listOf<Set<List<String?>>>(setOf(listOf("com.example.Service"))), miss.selectedLookups)
         assertEquals(1, miss.cacheBuilds)
-        assertEquals(1, miss.releases)
+        assertEquals(0, miss.releases)
     }
 
     @Test
@@ -796,12 +804,13 @@ class QueryPipelineTest {
     }
 
     @Test
-    fun `parallel indexed distinct projection reuses known rows from every graph`() {
+    fun `leading distinct projection fills the limit and later sources only verify provenance`() {
         class SelectedIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
             StringPropertyDisjunctionDistinctProjection,
             StringPropertyLookupOrder {
-            var selectedLookups = 0
+            var initialLookups = 0
+            val selectedLookups = mutableListOf<Set<List<String?>>>()
 
             override fun distinctStringPropertyDisjunction(
                 type: Class<out Node>,
@@ -813,9 +822,10 @@ class QueryPipelineTest {
             ): List<StringPropertyDistinctRow> {
                 val values = listOf("com.example.Service")
                 if (selectedValues != null) {
-                    selectedLookups++
+                    selectedLookups += selectedValues
                     return listOf(StringPropertyDistinctRow(0, values)).takeIf { values in selectedValues }.orEmpty()
                 }
+                initialLookups++
                 return listOf(StringPropertyDistinctRow(0, values))
             }
 
@@ -833,16 +843,20 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertEquals(0, first.selectedLookups)
-        assertEquals(0, second.selectedLookups)
+        assertEquals(listOf("first", "second"), provenance(result.rows.single()))
+        assertEquals(1, first.initialLookups)
+        assertTrue(first.selectedLookups.isEmpty())
+        assertEquals(0, second.initialLookups)
+        assertEquals(listOf<Set<List<String?>>>(setOf(listOf("com.example.Service"))), second.selectedLookups)
     }
 
     @Test
-    fun `parallel indexed distinct projection injects and verifies graph ids`() {
+    fun `distinct graph id projection injects graph ids without a provenance recheck`() {
         class GraphIdIndexedGraph(private val delegate: Graph) :
             Graph by delegate,
             StringPropertyDisjunctionDistinctProjection,
             StringPropertyLookupOrder {
+            val limits = mutableListOf<Int>()
             var selectedLookups = 0
 
             override fun distinctStringPropertyDisjunction(
@@ -853,12 +867,10 @@ class QueryPipelineTest {
                 selectedValues: Set<List<String?>>?,
                 workConsumer: GraphWorkConsumer?
             ): List<StringPropertyDistinctRow> {
-                assertEquals(listOf("graphId"), projectedProperties)
-                if (selectedValues != null) {
-                    selectedLookups++
-                    assertEquals(setOf(listOf(null)), selectedValues)
-                }
-                return listOf(StringPropertyDistinctRow(0, listOf(null))).take(limit)
+                assertEquals(emptyList<String>(), projectedProperties)
+                if (selectedValues != null) selectedLookups++
+                limits += limit
+                return listOf(StringPropertyDistinctRow(0, emptyList())).take(limit)
             }
 
             override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
@@ -875,8 +887,11 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("first", "second"), result.rows.map { it["graphId"] })
-        assertEquals(1, first.selectedLookups)
-        assertEquals(1, second.selectedLookups)
+        assertEquals(listOf(listOf("first"), listOf("second")), result.rows.map(::provenance))
+        assertEquals(listOf(2), first.limits)
+        assertEquals(listOf(2), second.limits)
+        assertEquals(0, first.selectedLookups)
+        assertEquals(0, second.selectedLookups)
 
         val skipped = CrossGraphCypherExecutor(
             listOf(CypherGraph("first", first), CypherGraph("second", second))
@@ -887,58 +902,11 @@ class QueryPipelineTest {
         )
 
         assertEquals(listOf("second"), skipped.rows.map { it["graphId"] })
-        assertEquals(2, first.selectedLookups)
-        assertEquals(2, second.selectedLookups)
-    }
-
-    @Test
-    fun `prepared indexes retain the indexed distinct projection path`() {
-        class PreparedIndexedGraph(private val delegate: Graph) :
-            Graph by delegate,
-            PreparedStringPropertyDisjunctionLookup,
-            StringPropertyDisjunctionDistinctProjection,
-            StringPropertyLookupOrder {
-            var projectionCalls = 0
-
-            override fun nodeCount(type: Class<out Node>): Long? =
-                if (type == CallSiteNode::class.java) 10_000L else delegate.nodeCount(type)
-
-            override fun hasPreparedStringPropertyDisjunction(
-                type: Class<out Node>,
-                predicates: List<StringPropertyPredicate>
-            ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
-
-            override fun distinctStringPropertyDisjunction(
-                type: Class<out Node>,
-                predicates: List<StringPropertyPredicate>,
-                projectedProperties: List<String>,
-                limit: Int,
-                selectedValues: Set<List<String?>>?,
-                workConsumer: GraphWorkConsumer?
-            ): List<StringPropertyDistinctRow> {
-                projectionCalls++
-                val values = listOf("com.example.Service")
-                return listOf(StringPropertyDistinctRow(0, values))
-                    .takeIf { selectedValues == null || values in selectedValues }
-                    .orEmpty()
-                    .take(limit)
-            }
-
-            override fun stringPropertyNodeOrder(node: Node): Long = node.id.value.toLong()
-        }
-
-        val first = PreparedIndexedGraph(DefaultGraph.Builder().build())
-        val second = PreparedIndexedGraph(DefaultGraph.Builder().build())
-        val result = CrossGraphCypherExecutor(
-            listOf(CypherGraph("first", first), CypherGraph("second", second))
-        ).execute(
-            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'example' " +
-                "RETURN DISTINCT n.caller_class AS caller LIMIT 1"
-        )
-
-        assertEquals(listOf("com.example.Service"), result.rows.map { it["caller"] })
-        assertTrue(first.projectionCalls > 0)
-        assertTrue(second.projectionCalls > 0)
+        assertEquals(listOf("second"), provenance(skipped.rows.single()))
+        assertEquals(listOf(2, 2), first.limits)
+        assertEquals(listOf(2, 2), second.limits)
+        assertEquals(0, first.selectedLookups)
+        assertEquals(0, second.selectedLookups)
     }
 
     @Test

@@ -25,25 +25,17 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
+import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
-import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreparedStringPropertyDisjunctionLookup
 import io.johnsonlee.graphite.graph.ReleasableStringPropertyDisjunctionCache
-import io.johnsonlee.graphite.graph.RetainedStringPropertyDisjunctionLookup
-import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyTupleSet
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringValueTransform
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
@@ -53,12 +45,12 @@ import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.util.concurrent.Callable
+import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -76,7 +68,6 @@ private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
 private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relationshipMatchState"
 private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
-private val noOpParallelGraphWorkConsumer = ParallelGraphWorkBatchConsumer { }
 
 private data class MatchedPathSegment(
     val tail: List<Any>,
@@ -88,10 +79,10 @@ private data class RelationshipMatchState(
     val used: Set<QualifiedEdge>
 )
 private const val DIRECT_STRING_PARALLELISM_PROPERTY = "graphite.cypher.directStringParallelism"
-private const val BALANCED_STRING_SCAN_MIN_SOURCE_COUNT = 40
-private const val LEGACY_DIRECT_STRING_GRAPH_PARALLELISM = 8
-private const val RAW_LEADING_MAX_TERM_LENGTH = 4
-private const val RAW_LEADING_MAX_LIMIT = 200
+private const val DEFAULT_DIRECT_STRING_GRAPH_PARALLELISM = 8
+private const val GRAPH_ID_COLUMN = -1
+private const val NULL_COLUMN = -2
+private const val DIRECT_ROW_INITIAL_CAPACITY = 1_024
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
 private typealias DirectNodePredicateFactory = (CypherGraph) -> (Node) -> Boolean
 
@@ -111,42 +102,18 @@ internal fun resetDirectStringGraphWorkerMetrics() {
     directStringPeakActiveWorkers.set(0)
 }
 
-internal fun resolveDirectStringParallelismPlan(
-    processors: Int = Runtime.getRuntime().availableProcessors(),
-    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
-): GraphScanParallelismPlan {
-    val available = processors.coerceAtLeast(1)
-    val override = configuredGraphWorkers
-        ?.toIntOrNull()
-        ?.coerceIn(1, available)
-    return override?.let { GraphScanParallelismPlan.withGraphWorkers(available, it) }
-        ?: GraphScanParallelismPlan.balanced(available)
-}
-
-internal fun resolveDirectStringGraphParallelism(
-    sourceCount: Int,
-    processors: Int = Runtime.getRuntime().availableProcessors(),
-    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
-    graphScoped: Boolean = false
-): Int {
-    val available = processors.coerceAtLeast(1)
-    val candidates = sourceCount.coerceAtLeast(1)
-    if (configuredGraphWorkers == null && (graphScoped || sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT)) {
-        return minOf(candidates, available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM)
-    }
-    val plan = resolveDirectStringParallelismPlan(processors, configuredGraphWorkers)
-    return minOf(candidates, plan.graphWorkerCount)
-}
-
+/**
+ * Graph-level workers for cross-graph scans of node types without a storage index. CallSite
+ * string queries never use this pool: they answer serially from each graph's index on the
+ * requesting thread.
+ */
 internal fun resolveDirectStringExecutorParallelism(
     processors: Int = Runtime.getRuntime().availableProcessors(),
     configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
 ): Int {
     val available = processors.coerceAtLeast(1)
-    return maxOf(
-        minOf(available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM),
-        resolveDirectStringParallelismPlan(available, configuredGraphWorkers).graphWorkerCount
-    )
+    return configuredGraphWorkers?.toIntOrNull()?.coerceIn(1, available)
+        ?: minOf(available, DEFAULT_DIRECT_STRING_GRAPH_PARALLELISM)
 }
 
 private val configuredDirectStringParallelism by lazy { System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY) }
@@ -161,77 +128,11 @@ private val directStringExecutor by lazy {
     }
 }
 
-private fun directStringGraphParallelism(sourceCount: Int, graphScoped: Boolean = false): Int =
-    resolveDirectStringGraphParallelism(
-        sourceCount,
-        configuredGraphWorkers = configuredDirectStringParallelism,
-        graphScoped = graphScoped
-    )
+private fun directStringGraphParallelism(sourceCount: Int): Int =
+    minOf(sourceCount.coerceAtLeast(1), directStringExecutorParallelism)
 
-private fun usesBalancedStringSplit(sourceCount: Int): Boolean =
-    configuredDirectStringParallelism != null || sourceCount >= BALANCED_STRING_SCAN_MIN_SOURCE_COUNT
-
-private class SplitStringGraphWorkConsumer(
-    override val segmentWorkerCount: Int,
-    private val consumeBatch: (Long) -> Unit
-) : SplitGraphWorkBatchConsumer {
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private class PreferredMappedStringIndexViewGraphWorkConsumer(
-    override val segmentWorkerCount: Int,
-    private val consumeBatch: (Long) -> Unit
-) : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private class SerialStringGraphWorkConsumer(
-    private val consumeBatch: (Long) -> Unit
-) : SerialGraphWorkBatchConsumer {
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private class PreferredPersistedStringIndexGraphWorkConsumer(
-    private val consumeBatch: (Long) -> Unit
-) : PreferredPersistedStringIndexGraphWorkBatchConsumer {
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private class PreferredRawStringGraphWorkConsumer(
-    private val consumeBatch: (Long) -> Unit
-) : PreferredRawGraphWorkBatchConsumer {
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private val noOpSerialStringGraphWorkConsumer = SerialStringGraphWorkConsumer { }
-private val noOpPreferredPersistedStringIndexGraphWorkConsumer =
-    PreferredPersistedStringIndexGraphWorkConsumer { }
-private val noOpPreferredRawStringGraphWorkConsumer = PreferredRawStringGraphWorkConsumer { }
-
-internal fun directStringStorageWorkConsumer(
-    sourceCount: Int,
-    processors: Int = Runtime.getRuntime().availableProcessors(),
-    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY),
-    forceSerial: Boolean = false,
-    preferRaw: Boolean = false,
-    preferMappedView: Boolean = false,
-    consumeBatch: ((Long) -> Unit)? = null
-): GraphWorkConsumer = if (preferRaw) {
-    consumeBatch?.let(::PreferredRawStringGraphWorkConsumer) ?: noOpPreferredRawStringGraphWorkConsumer
-} else if (forceSerial) {
-    consumeBatch?.let(::PreferredPersistedStringIndexGraphWorkConsumer)
-        ?: noOpPreferredPersistedStringIndexGraphWorkConsumer
-} else if (sourceCount == 1) {
-    consumeBatch?.let { consume -> ParallelGraphWorkBatchConsumer(consume) } ?: noOpParallelGraphWorkConsumer
-} else if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
-    consumeBatch?.let(::SerialStringGraphWorkConsumer) ?: noOpSerialStringGraphWorkConsumer
-} else {
-    val segmentWorkers = resolveDirectStringParallelismPlan(processors, configuredGraphWorkers).segmentWorkerCount
-    if (preferMappedView) {
-        PreferredMappedStringIndexViewGraphWorkConsumer(segmentWorkers, consumeBatch ?: { _ -> })
-    } else {
-        SplitStringGraphWorkConsumer(segmentWorkers, consumeBatch ?: { _ -> })
-    }
+private val noOpGraphWorkConsumer: GraphWorkBatchConsumer = object : GraphWorkBatchConsumer {
+    override fun consume(workUnits: Long) = Unit
 }
 
 private class WorkTrackingSequence<T>(
@@ -273,7 +174,16 @@ private val CALL_SITE_DIRECT_STRING_PROPERTIES = setOf(
     "callee_class",
     "callee_name"
 )
-private val CALL_SITE_NULL_STRING_PROPERTIES = setOf("class", "name")
+/** CallSite properties whose values need a materialized node; every other unknown name is null. */
+private val CALL_SITE_MATERIALIZED_PROPERTIES = setOf(
+    "id",
+    "callee_signature",
+    "caller_signature",
+    "line",
+    "type",
+    ELEMENT_ID_PROPERTY,
+    QUALIFIED_ID_PROPERTY
+)
 
 /**
  * Executes a sequence of [CypherClause] elements against a [Graph],
@@ -1322,9 +1232,6 @@ class QueryPipeline private constructor(
             ?.takeUnless { graphRoute.conflicting }
             ?.let { graphRoute.residual }
             ?: where.condition
-        val graphScoped = graphSourceScopeApplied || preselectedSources != null || routedGraphIds != null
-        val preferPersistedStorage = graphScoped
-        val preferMappedView = usesBalancedStringSplit(candidateSources.size)
         val stringParameters = activeParameters.get().orEmpty()
         val directStringFilter = DirectStringFilter.compile(filterCondition, variable, stringParameters)
         if (!ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1336,7 +1243,6 @@ class QueryPipeline private constructor(
                 columns,
                 limitCount,
                 candidateSources,
-                preferPersistedStorage
             )
         }
         if (ret.distinct && directStringFilter != null && nodePattern.labels.size <= 1 &&
@@ -1350,7 +1256,6 @@ class QueryPipeline private constructor(
                 columns,
                 limitCount,
                 candidateSources = candidateSources,
-                preferMappedView = preferMappedView
             )
         }
         if (nodePattern.labels.size <= 1 && nodePattern.properties.isEmpty()) {
@@ -1369,7 +1274,6 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         candidateSources = candidateSources,
-                        preferMappedView = preferMappedView
                     )
                 } else {
                     executeDirectStringDisjunctionRows(
@@ -1380,7 +1284,6 @@ class QueryPipeline private constructor(
                         columns,
                         limitCount,
                         candidateSources = candidateSources,
-                        preferPersistedStorage = preferPersistedStorage
                     )
                 }
             }
@@ -1404,7 +1307,6 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        preferMappedView = preferMappedView
                     )
                 } else {
                     executeDirectStringDisjunctionRows(
@@ -1416,7 +1318,6 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        preferPersistedStorage
                     )
                 }
             }
@@ -1452,7 +1353,6 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        preferMappedView = preferMappedView
                     )
                 } else {
                     executeDirectStringDisjunctionRows(
@@ -1464,7 +1364,6 @@ class QueryPipeline private constructor(
                         limitCount,
                         predicateFactory,
                         candidateSources,
-                        preferPersistedStorage
                     )
                 }
             }
@@ -1544,7 +1443,6 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         candidateSources: List<CypherGraph>,
-        preferPersistedStorage: Boolean
     ): CypherResult {
         val hasTypedCandidate = hasTypedDirectStringCandidate(nodeClass, filter)
         if (hasTypedCandidate) {
@@ -1556,7 +1454,6 @@ class QueryPipeline private constructor(
                 columns,
                 limit,
                 candidateSources = candidateSources,
-                preferPersistedStorage = preferPersistedStorage
             )
         }
 
@@ -1595,20 +1492,11 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
-        candidateSources: List<CypherGraph> = sources,
-        preferMappedView: Boolean = false
+        candidateSources: List<CypherGraph> = sources
     ): CypherResult {
         if (nodePredicateFactory == null) {
-            executeIndexedDistinctStringProjection(
-                nodeClass,
-                variable,
-                filter,
-                items,
-                columns,
-                limit,
-                candidateSources,
-                preferMappedView
-            )?.let { return it }
+            executeMappedCallSiteDistinct(nodeClass, variable, filter, items, columns, limit, candidateSources)
+                ?.let { return it }
         }
         if (canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)) {
             return executeDirectStringDisjunctionInParallel(
@@ -1619,8 +1507,7 @@ class QueryPipeline private constructor(
                 columns,
                 limit,
                 nodePredicateFactory,
-                candidateSources,
-                preferMappedView
+                candidateSources
             )
         }
         return executeDirectStringDisjunctionSerial(
@@ -1631,8 +1518,7 @@ class QueryPipeline private constructor(
             columns,
             limit,
             nodePredicateFactory,
-            candidateSources,
-            preferMappedView
+            candidateSources
         )
     }
 
@@ -1645,75 +1531,18 @@ class QueryPipeline private constructor(
         columns: List<String>,
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
-        candidateSources: List<CypherGraph> = sources,
-        preferPersistedStorage: Boolean = false
+        candidateSources: List<CypherGraph> = sources
     ): CypherResult {
         if (candidateSources.isEmpty()) return CypherResult(columns, emptyList())
-        executeIndexedStringProjectionRows(
-            nodeClass,
-            variable,
-            filter,
-            items,
-            columns,
-            limit,
-            nodePredicateFactory,
-            candidateSources,
-            preferPersistedStorage
-        )?.let { return it }
-        val balanced = usesBalancedStringSplit(candidateSources.size)
-        val rawLeadingStorage = balanced && !preferPersistedStorage &&
-            nodePredicateFactory == null && filter.prefersBoundedRawLeadingProbe(limit)
+        if (nodePredicateFactory == null) {
+            executeMappedCallSiteRows(nodeClass, variable, filter, items, columns, limit, candidateSources)
+                ?.let { return it }
+        }
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val leadingProjection = if (rawLeadingStorage) {
-            projectLeadingRows(
-                nodeClass,
-                variable,
-                filter,
-                items,
-                columns,
-                limit,
-                candidateSources,
-                tracker,
-                preferRaw = true
-            )
-        } else if (balanced && nodePredicateFactory == null) {
-            projectLeadingRows(
-                nodeClass,
-                variable,
-                filter,
-                items,
-                columns,
-                limit,
-                candidateSources,
-                tracker,
-                preferRaw = false
-            )
-        } else {
-            null
-        }
-        if (leadingProjection != null && leadingProjection.size >= limit) {
-            return CypherResult(columns, leadingProjection.take(limit))
-        }
-        val parallelStringScan = canExecuteDirectStringDisjunctionInParallel(
-            nodeClass,
-            variable,
-            filter,
-            items,
-            candidateSources
-        )
-        val scopedRetainedStorage = balanced && preferPersistedStorage &&
-            nodePredicateFactory == null &&
-            hasRetainedStringDisjunction(nodeClass, filter, candidateSources)
-        val leadingRetainedStorage = balanced && nodePredicateFactory == null &&
-            hasRetainedStringDisjunction(nodeClass, filter, candidateSources.take(1))
-        val mayBatchPreparedStorage = balanced && nodePredicateFactory == null &&
-            (!preferPersistedStorage || parallelStringScan)
-        // Retained graph-scoped lookups are cheaper than dispatching graph tasks, so keep their
-        // source loop serial. Cold graph-scoped and global-wide raw scans retain the additive
-        // graph/segment split; prepared global-wide scans reuse fixed half-budget graph workers.
-        if (scopedRetainedStorage ||
-            !rawLeadingStorage && !mayBatchPreparedStorage && !parallelStringScan ||
-            workTrackingEnabled && !balanced
+        // Budgeted executions stay serial so a shared budget is charged for the rows that reach
+        // the result instead of for every graph of a speculative wave.
+        if (workTrackingEnabled ||
+            !canExecuteDirectStringDisjunctionInParallel(nodeClass, variable, filter, items, candidateSources)
         ) {
             val rows = mutableListOf<Map<String, Any?>>()
             for (source in candidateSources) {
@@ -1722,12 +1551,8 @@ class QueryPipeline private constructor(
                     source.graph,
                     nodeClass,
                     filter,
-                    limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
-                    storageSourceCount = candidateSources.size,
-                    serialStorage = preferPersistedStorage,
-                    mappedView = balanced
-                )
-                    .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
+                    limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE
+                ).let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
                     val candidate = nodeValue(source, node)
                     val bindings = mutableMapOf<String, Any?>(variable to candidate)
@@ -1740,7 +1565,7 @@ class QueryPipeline private constructor(
         }
 
         val graphParallelism = directStringGraphParallelism(candidateSources.size)
-        val scanners = candidateSources.mapIndexed { sourceIndex, source ->
+        val scanners = candidateSources.map { source ->
             DirectStringSourceScanner(
                 source,
                 nodeClass,
@@ -1749,71 +1574,11 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 tracker,
-                nodePredicateFactory,
-                candidateSources.size,
-                serialStorage = preferPersistedStorage && !balanced ||
-                    rawLeadingStorage && balanced && sourceIndex == 0,
-                mappedView = balanced
+                nodePredicateFactory
             )
         }
         val rows = mutableListOf<Map<String, Any?>>()
-        // Preserve source order without eagerly paying the fixed index/range cost for an entire
-        // graph wave when the leading graph alone satisfies LIMIT. Sparse and zero-hit queries
-        // continue with the remaining graphs in parallel after this bounded leading probe.
         var waveStart = 0
-        if (balanced) {
-            if (leadingProjection == null) {
-                val source = candidateSources.first()
-                val nodePredicate = nodePredicateFactory?.invoke(source)
-                val candidates = directStringCandidates(
-                    source.graph,
-                    nodeClass,
-                    filter,
-                    tracker,
-                    limit = if (nodePredicate == null) limit else Int.MAX_VALUE,
-                    storageSourceCount = candidateSources.size,
-                    serialStorage = rawLeadingStorage || leadingRetainedStorage,
-                    mappedView = balanced
-                ).let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
-                for (node in candidates) {
-                    val candidate = nodeValue(source, node)
-                    val bindings = mutableMapOf<String, Any?>(variable to candidate)
-                    addProvenance(bindings, candidate)
-                    rows += projectRow(items, columns, bindings)
-                    if (rows.size >= limit) break
-                }
-            } else {
-                rows += leadingProjection
-            }
-            if (rows.size >= limit) return CypherResult(columns, rows.take(limit))
-            waveStart = 1
-
-            // Do not probe every prepared sidecar until the leading source proves the query must
-            // continue. Dense/localized LIMIT queries should retain the single-source fast path.
-            val batchedPreparedStorage = mayBatchPreparedStorage &&
-                hasPreparedWideStringDisjunction(nodeClass, filter, candidateSources)
-
-            // Keep a bounded rolling window of graph scans. Advancing it as soon as the next
-            // source-ordered result is merged removes the synchronization barrier between tiny
-            // retained-index waves without initializing every later graph speculatively.
-            val remainingScanners = scanners.drop(waveStart)
-            val graphTasks = remainingScanners.map { scanner -> { scanner.nextRows(limit) } }
-            val mergeBatch: (List<Map<String, Any?>>) -> Boolean = { sourceRows ->
-                val remaining = limit - rows.size
-                if (remaining > 0) rows += sourceRows.take(remaining)
-                rows.size >= limit
-            }
-            if (batchedPreparedStorage) {
-                runDirectStringTasksWithFixedWorkersInOrderUntil(graphTasks, graphParallelism, mergeBatch)
-            } else {
-                runDirectStringTasksInOrderUntil(graphTasks, graphParallelism) { sourceRows ->
-                    val remaining = limit - rows.size
-                    if (remaining > 0) rows += sourceRows.take(remaining)
-                    rows.size >= limit
-                }
-            }
-            return CypherResult(columns, rows)
-        }
         while (waveStart < scanners.size && rows.size < limit) {
             val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + graphParallelism))
             val batches = runDirectStringTasks(wave.map { scanner ->
@@ -1828,126 +1593,240 @@ class QueryPipeline private constructor(
         return CypherResult(columns, rows)
     }
 
-    @Suppress("LongParameterList", "ReturnCount")
-    private fun projectLeadingRows(
-        nodeClass: Class<out Node>,
-        variable: String,
-        filter: DirectStringDisjunction,
-        items: List<ReturnItem>,
-        columns: List<String>,
-        limit: Int,
-        candidateSources: List<CypherGraph>,
-        tracker: CypherWorkTracker?,
-        preferRaw: Boolean
-    ): List<Map<String, Any?>>? {
-        if (nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) return null
-        val source = candidateSources.first()
-        if (nodeClass == Node::class.java && source.graph.nodeCount(AnnotationNode::class.java) != 0L) return null
-        val projectedProperties = items.map { item ->
-            val property = item.expression as? CypherExpr.Property ?: return null
-            if (property.expression != CypherExpr.Variable(variable) ||
-                property.propertyName != GRAPH_ID_PROPERTY &&
-                property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES
-            ) return null
-            property.propertyName
+    /**
+     * Column plan for storage-direct CallSite projections. Each column is a stored string property
+     * (index into [storageProperties]), the owning graph id, or a property that is always null on a
+     * CallSite node. Columns that need node materialization decline the plan.
+     */
+    private class CallSiteProjectionPlan(
+        val kinds: IntArray,
+        val storageProperties: List<String>
+    ) {
+        val hasGraphId: Boolean = kinds.any { kind -> kind == GRAPH_ID_COLUMN }
+
+        /** Every column is one distinct storage property in projection order. */
+        val identity: Boolean = kinds.size == storageProperties.size && kinds.indices.all { index -> kinds[index] == index }
+
+        fun storageValues(values: List<Any?>): List<String?> = List(storageProperties.size) { index ->
+            values[kinds.indexOf(index)] as? String
         }
-        val storageProjectedProperties = projectedProperties.filter { property ->
-            property != GRAPH_ID_PROPERTY
-        }
-        val predicates = filter.filters.map { candidate ->
-            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
-            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
-        }
-        val projection = source.graph as? StringPropertyDisjunctionProjection ?: return null
-        val projectedRows = projection.projectStringPropertyDisjunction(
-            CallSiteNode::class.java,
-            predicates,
-            storageProjectedProperties,
-            limit,
-            stringStorageWorkConsumer(
-                candidateSources.size,
-                tracker,
-                preferRaw = preferRaw,
-                preferMappedView = !preferRaw
-            )
-        ) ?: return null
-        val provenance = setOf(source.id)
-        return projectedRows.map { raw ->
-            LinkedHashMap<String, Any?>(columns.size + 1).apply {
-                var storageIndex = 0
-                columns.indices.forEach { index ->
-                    this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
-                        source.id
-                    } else {
-                        raw.values[storageIndex++]
-                    }
-                }
-                put(INTERNAL_PROVENANCE_KEY, provenance)
+
+        fun visibleValues(storageValues: List<String?>, graphId: String): List<Any?> = List(kinds.size) { index ->
+            when (val kind = kinds[index]) {
+                GRAPH_ID_COLUMN -> graphId
+                NULL_COLUMN -> null
+                else -> storageValues[kind]
             }
         }
     }
 
+    private fun compileCallSiteProjection(items: List<ReturnItem>, variable: String): CallSiteProjectionPlan? {
+        val storageProperties = ArrayList<String>(CALL_SITE_DIRECT_STRING_PROPERTIES.size)
+        val kinds = IntArray(items.size) { index ->
+            val property = items[index].expression as? CypherExpr.Property ?: return null
+            if (property.expression != CypherExpr.Variable(variable)) return null
+            val name = property.propertyName
+            when {
+                name in CALL_SITE_DIRECT_STRING_PROPERTIES -> {
+                    val existing = storageProperties.indexOf(name)
+                    if (existing >= 0) {
+                        existing
+                    } else {
+                        storageProperties += name
+                        storageProperties.lastIndex
+                    }
+                }
+                name == GRAPH_ID_PROPERTY -> GRAPH_ID_COLUMN
+                name in CALL_SITE_MATERIALIZED_PROPERTIES -> return null
+                else -> NULL_COLUMN
+            }
+        }
+        return CallSiteProjectionPlan(kinds, storageProperties)
+    }
+
+    private fun callSitePredicates(filter: DirectStringDisjunction): List<StringPropertyPredicate>? =
+        filter.filters.map { candidate ->
+            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
+            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
+        }
+
+    private fun callSiteProjectionSources(nodeClass: Class<out Node>, candidateSources: List<CypherGraph>): Boolean {
+        if (nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) return false
+        if (nodeClass == Node::class.java &&
+            candidateSources.any { source -> source.graph.nodeCount(AnnotationNode::class.java) != 0L }
+        ) return false
+        return candidateSources.isNotEmpty()
+    }
+
+    /**
+     * Serial storage-direct projection across the selected sources in catalog order. Every graph
+     * answers on the requesting thread from its retained or mapped CallSite index (or a bounded raw
+     * prefix), so later graphs are never touched once the global LIMIT is full. A source that cannot
+     * serve the projection directly declines the whole fast path before any row is returned.
+     */
     @Suppress("LongParameterList", "ReturnCount")
-    private fun executeIndexedStringProjectionRows(
+    private fun executeMappedCallSiteRows(
         nodeClass: Class<out Node>,
         variable: String,
         filter: DirectStringDisjunction,
         items: List<ReturnItem>,
         columns: List<String>,
         limit: Int,
-        nodePredicateFactory: DirectNodePredicateFactory?,
-        candidateSources: List<CypherGraph>,
-        preferPersistedStorage: Boolean
+        candidateSources: List<CypherGraph>
     ): CypherResult? {
-        if ((nodeClass != CallSiteNode::class.java && nodeClass != Node::class.java) ||
-            nodePredicateFactory != null || candidateSources.size > 1 && !preferPersistedStorage
-        ) {
-            return null
-        }
-        if (nodeClass == Node::class.java && candidateSources.any { source ->
-                source.graph.nodeCount(AnnotationNode::class.java) != 0L
-            }
-        ) return null
-        val projectedProperties = items.map { item ->
-            val property = item.expression as? CypherExpr.Property ?: return null
-            if (property.expression != CypherExpr.Variable(variable) ||
-                property.propertyName !in CALL_SITE_DIRECT_STRING_PROPERTIES
-            ) {
-                return null
-            }
-            property.propertyName
-        }
-        val predicates = filter.filters.map { candidate ->
-            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return null
-            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
-        }
+        if (!callSiteProjectionSources(nodeClass, candidateSources)) return null
+        val projection = compileCallSiteProjection(items, variable) ?: return null
+        val predicates = callSitePredicates(filter) ?: return null
         val projections = candidateSources.map { source ->
             source.graph as? StringPropertyDisjunctionProjection ?: return null
         }
-        if (candidateSources.size > 1 && candidateSources.indices.any { index ->
-                val retained = candidateSources[index].graph as? RetainedStringPropertyDisjunctionLookup
-                    ?: return@any true
-                !retained.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, predicates)
-            }
-        ) return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val rows = mutableListOf<Map<String, Any?>>()
-        candidateSources.indices.forEach { index ->
+        val rows = ArrayList<Map<String, Any?>>(minOf(limit, DIRECT_ROW_INITIAL_CAPACITY))
+        val sharedRows = qualified && projection.identity
+        for (index in candidateSources.indices) {
+            if (rows.size >= limit) break
+            tracker?.checkCancelled()
             val source = candidateSources[index]
-            val projectedRows = projections[index].projectStringPropertyDisjunction(
+            val projected = projections[index].projectStringPropertyDisjunction(
                 CallSiteNode::class.java,
                 predicates,
-                projectedProperties,
+                projection.storageProperties,
                 limit - rows.size,
                 tracker
             ) ?: return null
-            val projected = DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
-            if (candidateSources.size == 1) return projected
-            rows.addAll(projected.rows.take(limit - rows.size))
-            if (rows.size >= limit) return CypherResult(columns, rows)
+            // Zero-hit sources keep their rebuildable caches: a routed request usually revisits
+            // the same graphs, and only the DISTINCT provenance pass releases them.
+            if (projected.isEmpty()) continue
+            if (sharedRows) {
+                // A storage projection the graph serves from its cache keeps its identity, so the
+                // public rows built for it are shared across requests instead of rebuilt per row.
+                val cached = DirectProjectionResultCache.getOrCreate(projected, columns, source.id)
+                if (rows.isEmpty() && cached.rows.size <= limit) {
+                    if (index == candidateSources.lastIndex || cached.rows.size == limit) return cached
+                }
+                rows += cached.rows.take(limit - rows.size)
+                continue
+            }
+            val graphIds = if (qualified) Collections.singleton(source.id) else emptySet()
+            val metadata = Collections.singletonMap<String, Any?>(
+                RESULT_GRAPH_IDS_KEY,
+                Collections.singletonList(source.id)
+            )
+            for (raw in projected) {
+                val values = LinkedHashMap<String, Any?>(columns.size * 2 + 1)
+                val visible = projection.visibleValues(raw.values, source.id)
+                columns.forEachIndexed { columnIndex, column -> values[column] = visible[columnIndex] }
+                if (qualified) values[RESULT_METADATA_KEY] = metadata
+                rows += DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+                if (rows.size >= limit) break
+            }
         }
         return CypherResult(columns, rows)
     }
+
+    /**
+     * Serial storage-direct DISTINCT projection. The leading sources supply distinct tuples in
+     * encounter order until LIMIT; every remaining or partially scanned source then reports which
+     * selected tuples it also contains so provenance stays complete without materializing nodes.
+     */
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "LongParameterList", "NestedBlockDepth", "ReturnCount")
+    private fun executeMappedCallSiteDistinct(
+        nodeClass: Class<out Node>,
+        variable: String,
+        filter: DirectStringDisjunction,
+        items: List<ReturnItem>,
+        columns: List<String>,
+        limit: Int,
+        candidateSources: List<CypherGraph>
+    ): CypherResult? {
+        if (!callSiteProjectionSources(nodeClass, candidateSources)) return null
+        val projection = compileCallSiteProjection(items, variable) ?: return null
+        val predicates = callSitePredicates(filter) ?: return null
+        val projections = candidateSources.map { source ->
+            source.graph as? StringPropertyDisjunctionDistinctProjection ?: return null
+        }
+        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
+        val rows = LinkedHashMap<List<Any?>, MutableSet<String>>()
+        val knownBySource = arrayOfNulls<HashSet<List<Any?>>>(candidateSources.size)
+        val completeSources = BooleanArray(candidateSources.size)
+        var scannedSources = 0
+        for (index in candidateSources.indices) {
+            if (rows.size >= limit) break
+            tracker?.checkCancelled()
+            val source = candidateSources[index]
+            val projected = projections[index].distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                projection.storageProperties,
+                limit,
+                selectedValues = null,
+                workConsumer = tracker
+            ) ?: return null
+            scannedSources = index + 1
+            completeSources[index] = projected.size < limit
+            if (projected.isEmpty()) {
+                if (candidateSources.size > 1) {
+                    (source.graph as? ReleasableStringPropertyDisjunctionCache)?.releaseStringPropertyDisjunctionCache()
+                }
+                continue
+            }
+            val known = HashSet<List<Any?>>(projected.size * 2)
+            knownBySource[index] = known
+            for (raw in projected) {
+                val visible = projection.visibleValues(raw.values, source.id)
+                known += visible
+                val existing = rows[visible]
+                if (existing != null) {
+                    if (qualified) existing += source.id
+                } else if (rows.size < limit) {
+                    rows[visible] = if (qualified) linkedSetOf(source.id) else LinkedHashSet(0)
+                }
+            }
+        }
+        if (qualified && rows.isNotEmpty() && !projection.hasGraphId && candidateSources.size > 1) {
+            // Sources the leading scan never reached all need every selected tuple, so the tuple
+            // set is materialized once for all of them instead of once per source.
+            val allSelected = StringPropertyTupleSet(rows.keys.map { visible -> projection.storageValues(visible) })
+            for (index in candidateSources.indices) {
+                val known = knownBySource[index]
+                if (index < scannedSources && completeSources[index]) continue
+                val selected = if (known == null) {
+                    allSelected
+                } else {
+                    StringPropertyTupleSet(
+                        rows.keys.filter { visible -> visible !in known }.map { visible -> projection.storageValues(visible) }
+                    )
+                }
+                if (selected.isEmpty()) continue
+                tracker?.checkCancelled()
+                val source = candidateSources[index]
+                val hits = projections[index].distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    projection.storageProperties,
+                    selected.size,
+                    selected,
+                    tracker
+                ) ?: return null
+                hits.forEach { hit ->
+                    rows[projection.visibleValues(hit.values, source.id)]?.add(source.id)
+                }
+            }
+        }
+        val result = ArrayList<Map<String, Any?>>(rows.size)
+        rows.forEach { (visible, graphIds) ->
+            val values = LinkedHashMap<String, Any?>(columns.size * 2 + 1)
+            columns.forEachIndexed { columnIndex, column -> values[column] = visible[columnIndex] }
+            if (qualified) {
+                values[RESULT_METADATA_KEY] = Collections.singletonMap<String, Any?>(RESULT_GRAPH_IDS_KEY, graphIds.sorted())
+            }
+            result += DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+        }
+        return CypherResult(columns, result)
+    }
+
+
+
 
     @Suppress("LongParameterList")
     private fun executeDirectStringDisjunctionSerial(
@@ -1959,7 +1838,6 @@ class QueryPipeline private constructor(
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory?,
         candidateSources: List<CypherGraph>,
-        preferMappedView: Boolean
     ): CypherResult {
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
         for (source in candidateSources) {
@@ -1968,8 +1846,6 @@ class QueryPipeline private constructor(
                 source.graph,
                 nodeClass,
                 filter,
-                storageSourceCount = candidateSources.size,
-                mappedView = preferMappedView
             )
                 .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             for (node in candidates) {
@@ -2005,69 +1881,9 @@ class QueryPipeline private constructor(
         filter: DirectStringDisjunction,
         candidateSources: List<CypherGraph> = sources
     ): Boolean = DIRECT_STRING_NODE_PROPERTIES.any { (candidateType, properties) ->
-        if (!nodeClass.isAssignableFrom(candidateType)) return@any false
-        val predicates = filter.filters
-            .filter { it.property in properties }
-            .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
-        predicates.isNotEmpty() && candidateSources.any { source ->
-            if (source.graph.nodeCount(candidateType) == 0L) return@any false
-            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
-            when (strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates)) {
-                true -> false
-                false -> true
-                null -> {
-                    val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup
-                    prepared?.hasPreparedStringPropertyDisjunction(candidateType, predicates) != true
-                }
-            }
-        }
-    }
-
-    private fun hasPreparedWideStringDisjunction(
-        nodeClass: Class<out Node>,
-        filter: DirectStringDisjunction,
-        candidateSources: List<CypherGraph>
-    ): Boolean {
-        if (!usesBalancedStringSplit(candidateSources.size)) return false
-        val candidates = DIRECT_STRING_NODE_PROPERTIES.mapNotNull { (candidateType, properties) ->
-            if (!nodeClass.isAssignableFrom(candidateType)) return@mapNotNull null
-            val predicates = filter.filters
-                .filter { it.property in properties }
-                .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
-            (candidateType to predicates).takeIf { predicates.isNotEmpty() }
-        }
-        if (candidates.isEmpty()) return false
-        return candidateSources.all { source ->
-            val prepared = source.graph as? PreparedStringPropertyDisjunctionLookup ?: return@all false
-            val strategy = source.graph as? StringPropertyDisjunctionLookupStrategy
-            candidates.all { (candidateType, predicates) ->
-                source.graph.nodeCount(candidateType) == 0L ||
-                    strategy?.prefersSerialStringPropertyDisjunction(candidateType, predicates) == true ||
-                    prepared.hasPreparedStringPropertyDisjunction(candidateType, predicates)
-            }
-        }
-    }
-
-    private fun hasRetainedStringDisjunction(
-        nodeClass: Class<out Node>,
-        filter: DirectStringDisjunction,
-        candidateSources: List<CypherGraph>
-    ): Boolean {
-        val candidates = DIRECT_STRING_NODE_PROPERTIES.mapNotNull { (candidateType, properties) ->
-            if (!nodeClass.isAssignableFrom(candidateType)) return@mapNotNull null
-            val predicates = filter.filters
-                .filter { it.property in properties }
-                .map { StringPropertyPredicate(it.property, it.transform, it.mode, it.expected) }
-            (candidateType to predicates).takeIf { predicates.isNotEmpty() }
-        }
-        if (candidates.isEmpty()) return false
-        return candidateSources.all { source ->
-            val retained = source.graph as? RetainedStringPropertyDisjunctionLookup ?: return@all false
-            candidates.all { (candidateType, predicates) ->
-                source.graph.nodeCount(candidateType) == 0L ||
-                    retained.hasRetainedStringPropertyDisjunction(candidateType, predicates)
-            }
-        }
+        nodeClass.isAssignableFrom(candidateType) &&
+            filter.filters.any { it.property in properties } &&
+            candidateSources.any { source -> source.graph.nodeCount(candidateType) != 0L }
     }
 
     /**
@@ -2087,7 +1903,6 @@ class QueryPipeline private constructor(
         limit: Int,
         nodePredicateFactory: DirectNodePredicateFactory?,
         candidateSources: List<CypherGraph>,
-        preferMappedView: Boolean
     ): CypherResult {
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val scanners = candidateSources.map { source ->
@@ -2099,9 +1914,7 @@ class QueryPipeline private constructor(
                 items,
                 columns,
                 tracker,
-                nodePredicateFactory,
-                candidateSources.size,
-                mappedView = preferMappedView
+                nodePredicateFactory
             )
         }
         val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
@@ -2141,261 +1954,6 @@ class QueryPipeline private constructor(
         }
         return CypherResult(columns, rows.values.toList())
     }
-
-    @Suppress("LongMethod", "LongParameterList", "NestedBlockDepth", "ReturnCount")
-    private fun executeIndexedDistinctStringProjection(
-        nodeClass: Class<out Node>,
-        variable: String,
-        filter: DirectStringDisjunction,
-        items: List<ReturnItem>,
-        columns: List<String>,
-        limit: Int,
-        candidateSources: List<CypherGraph> = sources,
-        preferMappedView: Boolean = false
-    ): CypherResult? {
-        if (!nodeClass.isAssignableFrom(CallSiteNode::class.java)) return null
-        val projectedProperties = items.map { item ->
-            val property = item.expression as? CypherExpr.Property ?: return null
-            if (property.expression != CypherExpr.Variable(variable)) return null
-            property.propertyName
-        }
-        if (projectedProperties.any { property ->
-                property != GRAPH_ID_PROPERTY && property !in CALL_SITE_DIRECT_STRING_PROPERTIES &&
-                    property !in CALL_SITE_NULL_STRING_PROPERTIES
-            }
-        ) return null
-        val callSiteFilters = filter.filters.filter { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
-        if (callSiteFilters.isEmpty()) return null
-        val predicates = callSiteFilters.map { candidate ->
-            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
-        }
-        val projections = candidateSources.map { source ->
-            source.graph as? StringPropertyDisjunctionDistinctProjection ?: return null
-        }
-        val orders = candidateSources.map { source -> source.graph as? StringPropertyLookupOrder ?: return null }
-        val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
-        val rows = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-        val zeroHitSources = BooleanArray(candidateSources.size)
-        val projectedRowsBySource = arrayOfNulls<List<OrderedProjectedRow>>(candidateSources.size)
-        fun projectSource(sourceIndex: Int): IndexedProjectedRows {
-            val source = candidateSources[sourceIndex]
-            val forceSerialStorage = candidateSources.size == 1 &&
-                (source.graph as? PreparedStringPropertyDisjunctionLookup)
-                    ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
-            val storageWorkConsumer = stringStorageWorkConsumer(
-                candidateSources.size,
-                tracker,
-                forceSerial = forceSerialStorage,
-                preferMappedView = preferMappedView
-            )
-            val projected = projections[sourceIndex].distinctStringPropertyDisjunction(
-                CallSiteNode::class.java,
-                predicates,
-                projectedProperties,
-                limit,
-                selectedValues = null,
-                workConsumer = storageWorkConsumer
-            ) ?: error("Distinct projection capability became unavailable")
-            val sourceRows = projected.map { raw ->
-                OrderedProjectedRow(
-                    raw.encounterOrder,
-                    rawProjectionRow(raw.values, projectedProperties, columns, source.id)
-                )
-            }.toMutableList()
-
-            val seenGeneric = HashSet<Map<String, Any?>>()
-            for (node in directStringCandidates(
-                source.graph,
-                nodeClass,
-                filter,
-                tracker,
-                excludedTypes = setOf(CallSiteNode::class.java)
-            )) {
-                val row = projectedNodeRow(source, node, projectedProperties, columns)
-                val visible = visibleRow(row)
-                if (seenGeneric.add(visible)) {
-                    sourceRows += OrderedProjectedRow(orders[sourceIndex].stringPropertyNodeOrder(node), row)
-                    if (seenGeneric.size >= limit) break
-                }
-            }
-            val distinct = LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>()
-            sourceRows.sortedBy(OrderedProjectedRow::encounterOrder).forEach { ordered ->
-                addDistinctRow(distinct, ordered.row, limit)
-            }
-            return IndexedProjectedRows(
-                sourceIndex,
-                distinct.values.mapIndexed { index, row -> OrderedProjectedRow(index.toLong(), row) }
-            )
-        }
-        fun mergeSource(projected: IndexedProjectedRows): Boolean {
-            projectedRowsBySource[projected.sourceIndex] = projected.rows
-            if (projected.rows.isEmpty()) {
-                zeroHitSources[projected.sourceIndex] = true
-                if (candidateSources.size > 1) {
-                    (candidateSources[projected.sourceIndex].graph as? ReleasableStringPropertyDisjunctionCache)
-                        ?.releaseStringPropertyDisjunctionCache()
-                }
-            }
-            projected.rows.forEach { ordered -> addDistinctRow(rows, ordered.row, limit) }
-            return rows.size >= limit
-        }
-
-        val balanced = usesBalancedStringSplit(candidateSources.size)
-        var waveStart = 0
-        if (balanced) {
-            // Probe the leading graph with the storage half of the NCPU budget. If it fills LIMIT,
-            // avoid initializing an entire speculative graph wave; all graphs are still checked
-            // below for complete DISTINCT provenance of the selected tuples.
-            mergeSource(projectSource(0))
-            waveStart = 1
-            if (rows.size < limit) {
-                runDirectStringTasksInOrderUntil(candidateSources.indices.drop(waveStart).map { sourceIndex ->
-                    { projectSource(sourceIndex) }
-                }, directStringGraphParallelism(candidateSources.size), ::mergeSource)
-            }
-            waveStart = candidateSources.size
-        }
-        while (waveStart < candidateSources.size && rows.size < limit) {
-            val graphParallelism = directStringGraphParallelism(candidateSources.size)
-            val waveEnd = minOf(candidateSources.size, waveStart + graphParallelism)
-            val localRows = runDirectStringTasks((waveStart until waveEnd).map { sourceIndex ->
-                { projectSource(sourceIndex) }
-            }, graphParallelism)
-            localRows.forEach(::mergeSource)
-            waveStart = waveEnd
-        }
-        if (rows.size < limit) return CypherResult(columns, rows.values.toList())
-
-        val selected = rows.keys.toSet()
-        val selectedValues = selected.mapNotNullTo(linkedSetOf()) { row ->
-            val values = columns.map(row::get)
-            if (values.all { value -> value == null || value is String }) {
-                @Suppress("UNCHECKED_CAST")
-                values as List<String?>
-            } else {
-                null
-            }
-        }
-        val selectedMatcher = DirectStringSelectedRowMatcher(selected, items, columns)
-        val knownRowsBySource = projectedRowsBySource.map { projectedRows ->
-            projectedRows?.mapTo(hashSetOf()) { ordered -> visibleRow(ordered.row) }
-        }
-        val provenanceSourceIndexes = candidateSources.indices.filter { sourceIndex ->
-            !zeroHitSources[sourceIndex] && knownRowsBySource[sourceIndex]?.containsAll(selected) != true
-        }
-        val hits = runDirectStringTasks(provenanceSourceIndexes.map { sourceIndex ->
-            {
-                val source = candidateSources[sourceIndex]
-                val forceSerialStorage = candidateSources.size == 1 &&
-                    (source.graph as? PreparedStringPropertyDisjunctionLookup)
-                        ?.hasPreparedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
-                val storageWorkConsumer = stringStorageWorkConsumer(
-                    candidateSources.size,
-                    tracker,
-                    forceSerial = forceSerialStorage,
-                    preferMappedView = preferMappedView
-                )
-                val sourceSelectedValues = storageSelectedValues(selectedValues, projectedProperties, source.id)
-                val rawHits = mutableSetOf<Map<String, Any?>>()
-                if (sourceSelectedValues.isNotEmpty()) {
-                    projections[sourceIndex].distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        predicates,
-                        projectedProperties,
-                        sourceSelectedValues.size,
-                        sourceSelectedValues,
-                        storageWorkConsumer
-                    ).orEmpty().mapTo(rawHits) { hit ->
-                        visibleRow(rawProjectionRow(hit.values, projectedProperties, columns, source.id))
-                    }
-                }
-                val matcher = selectedMatcher.cursor(source)
-                for (node in directStringCandidates(
-                    source.graph,
-                    nodeClass,
-                    filter,
-                    tracker,
-                    excludedTypes = setOf(CallSiteNode::class.java)
-                )) {
-                    matcher.match(node)?.let(rawHits::add)
-                    if (rawHits.size >= selected.size) break
-                }
-                rawHits
-            }
-        }, directStringGraphParallelism(candidateSources.size))
-        hits.forEachIndexed { hitIndex, visibleRows ->
-            val sourceIndex = provenanceSourceIndexes[hitIndex]
-            val graphId = candidateSources[sourceIndex].id
-            visibleRows.forEach { visible ->
-                val row = rows.getValue(visible)
-                @Suppress("UNCHECKED_CAST")
-                val provenance = row[INTERNAL_PROVENANCE_KEY] as? Set<String> ?: emptySet()
-                row[INTERNAL_PROVENANCE_KEY] = provenance + graphId
-            }
-        }
-        return CypherResult(columns, rows.values.toList())
-    }
-
-    private fun rawProjectionRow(
-        values: List<String?>,
-        projectedProperties: List<String>,
-        columns: List<String>,
-        graphId: String
-    ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
-        columns.indices.forEach { index ->
-            this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) graphId else values[index]
-        }
-        put(INTERNAL_PROVENANCE_KEY, setOf(graphId))
-    }
-
-    private fun storageSelectedValues(
-        selectedValues: Set<List<String?>>,
-        projectedProperties: List<String>,
-        graphId: String
-    ): Set<List<String?>> {
-        val graphIdIndexes = projectedProperties.indices.filter { index ->
-            projectedProperties[index] == GRAPH_ID_PROPERTY
-        }
-        if (graphIdIndexes.isEmpty()) return selectedValues
-        return selectedValues.mapNotNullTo(linkedSetOf()) { values ->
-            if (graphIdIndexes.any { index -> values[index] != graphId }) {
-                null
-            } else {
-                values.mapIndexed { index, value ->
-                    if (index in graphIdIndexes) null else value
-                }
-            }
-        }
-    }
-
-    private fun projectedNodeRow(
-        source: CypherGraph,
-        node: Node,
-        projectedProperties: List<String>,
-        columns: List<String>
-    ): MutableMap<String, Any?> = linkedMapOf<String, Any?>().apply {
-        columns.indices.forEach { index ->
-            this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
-                source.id
-            } else {
-                NodePropertyAccessor.getProperty(node, projectedProperties[index])
-            }
-        }
-        put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
-    }
-
-    private fun visibleRow(row: Map<String, Any?>): Map<String, Any?> =
-        row.filterKeys { key -> key != INTERNAL_PROVENANCE_KEY }
-
-    private data class OrderedProjectedRow(
-        val encounterOrder: Long,
-        val row: MutableMap<String, Any?>
-    )
-
-    private data class IndexedProjectedRows(
-        val sourceIndex: Int,
-        val rows: List<OrderedProjectedRow>
-    )
 
     private fun mergeDirectStringBatch(
         target: LinkedHashMap<Map<String, Any?>, MutableMap<String, Any?>>,
@@ -2470,196 +2028,7 @@ class QueryPipeline private constructor(
         }
     }
 
-    /**
-     * Runs a source-ordered rolling window without waiting for every task in the current window.
-     * At most [parallelism] tasks are submitted ahead of the next result to merge. Returning true
-     * from [stopAfter] cancels and joins that bounded speculative suffix.
-     */
-    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-    private fun <T> runDirectStringTasksInOrderUntil(
-        tasks: List<() -> T>,
-        parallelism: Int,
-        stopAfter: (T) -> Boolean
-    ) {
-        if (tasks.isEmpty()) return
-        data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
 
-        val completionService = ExecutorCompletionService<Outcome<T>>(directStringExecutor)
-        val futures = arrayOfNulls<Future<Outcome<T>>>(tasks.size)
-        val completions = arrayOfNulls<CountDownLatch>(tasks.size)
-        val started = arrayOfNulls<AtomicBoolean>(tasks.size)
-        fun submit(index: Int) {
-            val completion = CountDownLatch(1)
-            val taskStarted = AtomicBoolean()
-            completions[index] = completion
-            started[index] = taskStarted
-            futures[index] = completionService.submit(Callable {
-                if (!taskStarted.compareAndSet(false, true)) {
-                    throw java.util.concurrent.CancellationException()
-                }
-                val previouslyActive = directStringWorkerActive.get()
-                directStringWorkerActive.set(true)
-                val activeWorkers = directStringActiveWorkers.incrementAndGet()
-                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                try {
-                    try {
-                        Outcome(index, value = tasks[index]())
-                    } catch (error: Throwable) {
-                        Outcome(index, error = error)
-                    }
-                } finally {
-                    directStringActiveWorkers.decrementAndGet()
-                    if (previouslyActive) {
-                        directStringWorkerActive.set(true)
-                    } else {
-                        directStringWorkerActive.remove()
-                    }
-                    completion.countDown()
-                }
-            })
-        }
-        fun cancelAndJoin() {
-            futures.forEachIndexed { index, future ->
-                val taskStarted = started[index]
-                val completion = completions[index]
-                if (future != null && taskStarted != null && completion != null) {
-                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
-                }
-            }
-            awaitDirectStringTasks(completions.filterNotNull())
-        }
-
-        var nextTask = 0
-        repeat(minOf(tasks.size, parallelism.coerceAtLeast(1))) { submit(nextTask++) }
-        try {
-            val completed = arrayOfNulls<Outcome<T>>(tasks.size)
-            var nextResult = 0
-            while (nextResult < tasks.size) {
-                val outcome = completionService.take().get()
-                completed[outcome.index] = outcome
-                while (nextResult < tasks.size) {
-                    val ordered = completed[nextResult] ?: break
-                    ordered.error?.let { throw it }
-                    @Suppress("UNCHECKED_CAST")
-                    if (stopAfter(ordered.value as T)) {
-                        cancelAndJoin()
-                        return
-                    }
-                    nextResult++
-                    // Replenish only as the contiguous source prefix advances. This keeps the
-                    // speculative suffix bounded, so a distant source cannot fail a query whose
-                    // earlier source already satisfies LIMIT.
-                    if (nextTask < tasks.size) submit(nextTask++)
-                }
-            }
-        } catch (error: Throwable) {
-            cancelAndJoin()
-            val cause = (error as? ExecutionException)?.cause ?: error
-            when (cause) {
-                is RuntimeException -> throw cause
-                is Error -> throw cause
-                else -> throw IllegalStateException("Parallel graph scan failed", cause)
-            }
-        }
-    }
-
-    /**
-     * Reuses a fixed set of graph workers for a source-ordered rolling window. Prepared index
-     * lookups are too small to justify one Future per graph, but still benefit from independent
-     * graph progress. Only the fixed worker count may be ahead of the merged source prefix.
-     */
-    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-    private fun <T> runDirectStringTasksWithFixedWorkersInOrderUntil(
-        tasks: List<() -> T>,
-        parallelism: Int,
-        stopAfter: (T) -> Boolean
-    ) {
-        if (tasks.isEmpty()) return
-        data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
-
-        val workerCount = minOf(tasks.size, parallelism.coerceAtLeast(1))
-        val taskIndexes = LinkedBlockingQueue<Int>()
-        val outcomes = LinkedBlockingQueue<Outcome<T>>()
-        val completions = List(workerCount) { CountDownLatch(1) }
-        val started = List(workerCount) { AtomicBoolean() }
-        val futures = completions.mapIndexed { index, completion ->
-            val taskStarted = started[index]
-            directStringExecutor.submit {
-                if (!taskStarted.compareAndSet(false, true)) return@submit
-                val previouslyActive = directStringWorkerActive.get()
-                directStringWorkerActive.set(true)
-                val activeWorkers = directStringActiveWorkers.incrementAndGet()
-                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                try {
-                    while (true) {
-                        val taskIndex = taskIndexes.take()
-                        if (taskIndex < 0) break
-                        val outcome = try {
-                            Outcome(taskIndex, value = tasks[taskIndex]())
-                        } catch (error: Throwable) {
-                            Outcome(taskIndex, error = error)
-                        }
-                        // The storage call may preserve the worker's interrupted status while
-                        // throwing cancellation. Publishing to this unbounded queue must therefore
-                        // be non-interruptible, or the coordinator can wait forever for this index.
-                        outcomes.add(outcome)
-                        if (outcome.error != null) return@submit
-                    }
-                } finally {
-                    directStringActiveWorkers.decrementAndGet()
-                    if (previouslyActive) {
-                        directStringWorkerActive.set(true)
-                    } else {
-                        directStringWorkerActive.remove()
-                    }
-                    completion.countDown()
-                }
-            }
-        }
-        fun stopWorkers(cancel: Boolean) {
-            if (cancel) {
-                futures.forEachIndexed { index, future ->
-                    if (future.cancel(true) && started[index].compareAndSet(false, true)) {
-                        completions[index].countDown()
-                    }
-                }
-            } else {
-                repeat(workerCount) { taskIndexes.add(-1) }
-            }
-            awaitDirectStringTasks(completions)
-        }
-
-        var nextTask = 0
-        repeat(workerCount) { taskIndexes.add(nextTask++) }
-        try {
-            val completed = arrayOfNulls<Outcome<T>>(tasks.size)
-            var nextResult = 0
-            while (nextResult < tasks.size) {
-                val outcome = outcomes.take()
-                completed[outcome.index] = outcome
-                while (nextResult < tasks.size) {
-                    val ordered = completed[nextResult] ?: break
-                    ordered.error?.let { throw it }
-                    @Suppress("UNCHECKED_CAST")
-                    if (stopAfter(ordered.value as T)) {
-                        stopWorkers(cancel = true)
-                        return
-                    }
-                    nextResult++
-                    if (nextTask < tasks.size) taskIndexes.add(nextTask++)
-                }
-            }
-            stopWorkers(cancel = false)
-        } catch (error: Throwable) {
-            stopWorkers(cancel = true)
-            val cause = (error as? ExecutionException)?.cause ?: error
-            when (cause) {
-                is RuntimeException -> throw cause
-                is Error -> throw cause
-                else -> throw IllegalStateException("Parallel graph scan failed", cause)
-            }
-        }
-    }
 
     private fun awaitDirectStringTasks(completions: List<CountDownLatch>) {
         var interrupted = false
@@ -2686,10 +2055,6 @@ class QueryPipeline private constructor(
         private val columns: List<String>,
         private val tracker: CypherWorkTracker?,
         nodePredicateFactory: DirectNodePredicateFactory? = null,
-        private val storageSourceCount: Int = sources.size,
-        private val serialStorage: Boolean = false,
-        private val rawStorage: Boolean = false,
-        private val mappedView: Boolean = false
     ) {
         private val nodePredicate = nodePredicateFactory?.invoke(source)
         private val localRows = HashSet<Map<String, Any?>>()
@@ -2702,10 +2067,6 @@ class QueryPipeline private constructor(
                 filter,
                 tracker,
                 limit = limit,
-                storageSourceCount = storageSourceCount,
-                serialStorage = serialStorage,
-                rawStorage = rawStorage,
-                mappedView = mappedView
             )
             .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
             .iterator()
@@ -2842,10 +2203,6 @@ class QueryPipeline private constructor(
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
         excludedTypes: Set<Class<out Node>> = emptySet(),
         limit: Int = Int.MAX_VALUE,
-        storageSourceCount: Int = sources.size,
-        serialStorage: Boolean = false,
-        rawStorage: Boolean = false,
-        mappedView: Boolean = false
     ): Sequence<Node> {
         if (limit <= 0) return emptySequence()
         val candidateSequences = mutableListOf<Sequence<Node>>()
@@ -2866,10 +2223,6 @@ class QueryPipeline private constructor(
                 candidateFilter.predicates,
                 completeScanLimit,
                 tracker,
-                storageSourceCount,
-                serialStorage,
-                rawStorage,
-                mappedView
             )
             if (fused != null) {
                 candidateSequences += fused
@@ -3356,13 +2709,14 @@ class QueryPipeline private constructor(
                     activeParameters.get().orEmpty()
                 )
                 if (nodeClass != null && disjunction != null) {
-                    executeIndexedDistinctStringProjection(
+                    executeMappedCallSiteDistinct(
                         nodeClass,
                         variable,
                         disjunction,
                         ret.items,
                         columns,
-                        retainedCount.toInt()
+                        retainedCount.toInt(),
+                        sources
                     )?.let { indexed ->
                         return CypherResult(columns, indexed.rows.drop(skipCount))
                     }
@@ -4657,18 +4011,8 @@ class QueryPipeline private constructor(
         predicates: List<StringPropertyPredicate>,
         limit: Int,
         tracker: CypherWorkTracker? = if (workTrackingEnabled) activeWorkTracker.get() else null,
-        sourceCount: Int = sources.size,
-        serialStorage: Boolean = false,
-        rawStorage: Boolean = false,
-        mappedView: Boolean = false
     ): Sequence<T>? {
-        val storageWorkConsumer = stringStorageWorkConsumer(
-            sourceCount,
-            tracker,
-            serialStorage,
-            rawStorage,
-            mappedView
-        )
+        val storageWorkConsumer: GraphWorkConsumer = tracker ?: noOpGraphWorkConsumer
         val workAware = graph.nodesByStringPropertyDisjunction(type, predicates, limit, storageWorkConsumer)
         return if (workAware != null || tracker != null) {
             workAware
@@ -4677,28 +4021,6 @@ class QueryPipeline private constructor(
         }
     }
 
-    private fun stringStorageWorkConsumer(
-        sourceCount: Int,
-        tracker: CypherWorkTracker?,
-        forceSerial: Boolean = false,
-        preferRaw: Boolean = false,
-        preferMappedView: Boolean = false
-    ): GraphWorkConsumer = directStringStorageWorkConsumer(
-        sourceCount,
-        configuredGraphWorkers = configuredDirectStringParallelism,
-        forceSerial = forceSerial,
-        preferRaw = preferRaw,
-        preferMappedView = preferMappedView,
-        consumeBatch = tracker?.let { activeTracker ->
-            { workUnits -> activeTracker.consume(workUnits) }
-        }
-    )
-
-    private fun DirectStringDisjunction.prefersBoundedRawLeadingProbe(limit: Int): Boolean =
-        limit in 1..RAW_LEADING_MAX_LIMIT && filters.isNotEmpty() && filters.all { filter ->
-            filter.mode == StringMatchMode.CONTAINS &&
-                filter.expected.length in 1..RAW_LEADING_MAX_TERM_LENGTH
-        }
 
     private fun nodeCursor(value: Any?): NodeCursor? = when (value) {
         is QualifiedNode -> NodeCursor(CypherGraph(value.graphId, value.graph), value.node, value)

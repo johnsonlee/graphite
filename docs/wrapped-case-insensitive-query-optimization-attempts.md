@@ -4214,3 +4214,59 @@ file, format, magic, version, writer, or configuration. It deliberately does not
 separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
 pass before completion. This commit is not authorization to merge or tag; either action requires a
 new explicit user instruction.
+
+### 2026-09-05 - Attempt 132: Serve every CallSite string query from the mapped view on the requesting thread
+
+**Hypothesis:** the remaining global-wide cold P95 is dominated by per-graph retained-index builds
+and by the graph/segment worker pools that schedule them, not by the string work itself. Every
+CallSite string projection can instead be answered serially on the requesting thread from the
+persisted `graph.callsite-string-index` sidecar: a lazy planner probes trigram postings through an
+in-heap trigram directory, verifies only the rarest span, validates only the selected posting ranges,
+and answers dense terms from a bounded raw storage prefix. A graph without a sidecar builds its index
+once, persists it, and then serves the same view. No `graphite-callsite-scan-N` worker, intra-graph
+segment split, or `callSiteScanParallelism` property remains; the cross-graph `graphite-cypher-scan-N`
+pool is never consulted for CallSite projections.
+
+**Evidence:**
+
+- Base is exact `main` head `4e328b0109e13c896b74004823fb049fcb19251a`. Local replays use the
+  existing 64 distinct persisted fixture64 graphs generated from the four pinned Android, Tika,
+  Hive, and Kotlin fixture JARs, the independent 34-case oracle, an 8 GiB heap, and four available
+  CPUs. Synthetic graphs are used only by focused correctness and path tests.
+- Three fresh-JVM cold global-wide base replays report P95 `213.604/210.790/211.872 ms`; three
+  candidate replays on the final jar report `18.36/20.11/21.59 ms` (median `20.11 ms`, `10.6x`)
+  with `34/34` oracle matches in every process. The local paired comparator over three alternating
+  base/candidate forks reports order-median P95 speedups of `10.94x` and `11.81x` with a worst
+  individual pair of `10.71x`; the wrapped case-insensitive shapes that do not carry the base P95
+  improve `4.2x..5.4x` and are gated by the separate `--minimum-wrapped-speedup` rule.
+- Every candidate process plans `0 graph + 0 segment` workers, observes both worker peaks at zero,
+  and reports zero parallel scans on every row. Cold routing resources move from `1.76` to `2.88`
+  effective cores (JIT compilation now overlaps a much shorter replay), peak used heap from `5.82`
+  to `4.23 GiB`, peak RSS from `6.59` to `4.67 GiB`, and query-window GC from `11 / 216 ms` to
+  `1 / 8 ms`; no retained CallSite index or trigram index survives a cold or warm request.
+- Graph routing keeps its per-graph accounting: cold and warm forks execute exactly `2,043`
+  mapped-view lookups distributed `30..39` per graph with zero retained-index lookups, and the
+  startup-prepared fork keeps the retained index with `2,043` retained lookups and zero mapped-view
+  lookups. Three regressions found on the way are retained as fixes: the non-DISTINCT fast path no
+  longer releases a zero-hit graph's rebuildable caches (startup-prepared dense rows rebuilt
+  `17,783` units per shape); dense raw probes inspect up to `32x LIMIT` nodes but stop at the first
+  checkpoint whose running match rate cannot fill LIMIT inside the budget (the localized-middle
+  graph has no match in its first `7,252` nodes, every routing graph fills `200` matches within
+  `413..3,683`); repeated bounded projections answer from a per-graph row cache, a plan-level
+  posting-count cache, and a remembered absent term, and single-source public rows are shared through
+  the existing `DirectProjectionResultCache`, so a routed dense hit costs `0.04 ms` steady state on
+  both revisions instead of `1.3 ms`.
+- Query-level graphId P95 improves `26..35x` in the cold fork (first K64 request `843 -> 411 ms`).
+  Request-selected P50 is at parity; its P95 and the six-sample K64 rows sit inside the
+  `15% / 0.25 ms` jitter rule on roughly half of the local runs, with `1..3 ms` single-row spikes
+  on rows charging one work unit, so the hosted paired gate remains the authoritative reading.
+- Focused WebGraph, Cypher, and core tests cover the planner probe kinds, selected-tuple provenance,
+  legacy build-and-persist, the block-aware string-table search, and the tuple set grouping; the
+  gate comparator's 87 node tests cover the serial worker contract, the mapped-view lifecycle, and
+  the raised `10x` minimum.
+
+**Conclusion:** keep for exact-head hosted validation. The change removes the CallSite worker
+pools, keeps the persisted sidecar format, and raises the global-wide gate to `10x` relative to
+main. Full CI, both hosted real64 pressure gates, and every review thread must pass before
+completion. This commit is not authorization to merge or tag; either action requires a new explicit
+user instruction.

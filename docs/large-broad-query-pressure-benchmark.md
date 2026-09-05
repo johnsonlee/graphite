@@ -162,46 +162,44 @@ comparator reports P50/P95 separately by set width; these rows do not enter the 
 
 For this finite-limit shape, the query layer passes the remaining `LIMIT` into the selected mapped
 graph. The production CLI and fixture64 builder persist the combined CallSite CSR/trigram index;
-`loadMapped` restores it lazily on the first relevant query, so unrelated Method queries retain no
-CallSite-index heap. Legacy or invalid graph files rebuild it once and atomically persist it when
-the complete index is released or the mapped graph closes. If index admission is denied, the graph retains the
-correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
-`graphite-callsite-scan-N` workers. The default fallback background-worker count is the segment
-half of the additive NCPU plan (`NCPU - floor(NCPU / 2)`), overridable with
-`-Dgraphite.webgraph.callSiteScanParallelism=N`. `graphite-cypher-scan-N` names the separate
-cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
-parallelism.
+`loadMapped` serves it lazily on the first relevant query through an integrity-checked mapped view
+of the sidecar, so unrelated Method queries retain no CallSite-index heap and a cold wide query
+never materializes the complete index. A legacy graph without a sidecar builds the index once on
+the requesting thread, persists it atomically inside that first request, releases the heap copy,
+and serves that and every later request from the mapped view. If persistence is disabled or index
+admission is denied, the graph keeps the correct raw-scan fallback on the requesting thread.
 
-During a real run, verify actual use in JFR/VisualVM by filtering for
-`graphite-callsite-scan-` and checking that multiple workers are simultaneously runnable/on-CPU
-during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
-ratio is the numeric utilization baseline; thread count alone is not sufficient.
-The harness also records the number of bounded intra-graph scans and the peak number of workers
-simultaneously inside one scan. The fixture64 comparator fails closed unless the candidate executes at
-exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
-creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
+No CallSite scan uses a thread pool: there are no `graphite-callsite-scan-N` workers, no
+intra-graph segment split, and no `callSiteScanParallelism` property. `graphite-cypher-scan-N`
+names the separate cross-graph source pool used by non-CallSite string scans and is never
+consulted for CallSite projections. The harness still records the bounded intra-graph scan count
+and the peak number of workers inside one scan; the fixture64 comparators fail closed unless the
+candidate reports zero parallel scans and a zero worker peak on every graph, and they count
+retained-index and mapped-view lookups per graph.
 Before loading graphs, the harness sets
 `graphite.webgraph.prepareCallSiteStringIndexOnLoad=lazy` for cold and warm forks. This disables
 load-time preparation without disabling production's lazy persisted-sidecar restore. The property
 is restored after the trial. `startup-prepared` explicitly uses the `true` load-time preparation path.
 
-The candidate cold fork must report 64 scans followed by exactly 1,979 index lookups, distributed
-29..38 per graph because dense queries stop at the global limit. After warmup metrics are reset, the
-warm fork must report zero scans and exactly 2,043 index lookups, distributed 30..39 per graph, with
-all 64 graphs represented in both cases. The `startup-prepared` fork
-performs no query warmup: main must retain its one lazy-build scan per graph, while the candidate
-must restore all 64 persisted indexes and execute 2,043 indexed lookups with zero scans. Main has no
-set routing in the comparison revision, so startup-prepared exposes 64 lazy-build scans plus 14,139
-lookups, distributed 181..266 per graph. Aggregate totals alone
-cannot hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens
-to meet the percentile target while routing only part of the workload or silently falling back to
-raw scans.
+The candidate cold and warm forks must report zero scans, a zero worker peak, no admitted or
+trigram-retained heap index, zero retained-index lookups, and exactly 2,043 mapped-view lookups
+distributed 30..39 per graph with all 64 graphs represented: every selected-graph access, including
+the first cold access that opens a graph's persisted sidecar view, is one serial lookup on the
+requesting thread, and dense queries stop at the global limit. The base revision predates the
+mapped-view counters, so a missing counter there reads as zero while the candidate harness must
+report all four. The `startup-prepared` fork performs no query warmup: main must retain its one
+lazy-build scan per graph, while the candidate must restore all 64 persisted indexes and execute
+2,043 retained-index lookups with zero scans and zero mapped-view lookups. Main has no set routing
+in the comparison revision, so startup-prepared exposes 64 lazy-build scans plus 14,139 lookups,
+distributed 181..266 per graph. Aggregate totals alone cannot hide a distribution such as
+`[641, 1, ..., 1]`. This rejects an implementation that happens to meet the percentile target while
+routing only part of the workload, silently falling back to raw scans, or rebuilding a heap index
+per graph.
 
-When a bounded scan reaches the end of the selected graph, the candidate reuses the already-read
-node and string ids to publish the combined CallSite CSR index instead of discarding them and later
-performing two more mapped-file passes. Subsequent routing queries for that graph use the retained
-index. The global CallSite-index budget defaults to half of `-Xmx` (4 GiB under this gate's 8 GiB
-heap) and can be overridden with `-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
+A graph without a persisted sidecar builds its CallSite index once on the requesting thread,
+persists it, and then serves the mapped view like every other graph, so no retained heap index
+outlives the request. The global CallSite-index budget defaults to half of `-Xmx` (4 GiB under this
+gate's 8 GiB heap) and can be overridden with `-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
 
 The Cypher boundary also reuses immutable materialized rows for repeated bounded projections. This
 is a process-wide LRU keyed by the storage projection generation, column layout, and graph id, so
@@ -269,8 +267,9 @@ No external URL, Gist, or author-published commit status is accepted as executio
 Unscoped 64-graph wide queries have a separate required component,
 `global-wide-pressure-evidence`. It requires
 three paired base/candidate JVM forks in alternating order (`candidate/base`, `base/candidate`,
-`candidate/base`) and currently gates the first incremental milestone at a P95 speedup of at least
-5x in every independent fork. The cumulative target remains 10x. The ten core
+`candidate/base`) and gates the cumulative milestone at a P95 speedup of at least 10x in every
+independent fork. The candidate must also declare the serial CallSite contract: a `0+0`
+graph/segment worker plan and `0+0` observed worker peaks. The ten core
 query shapes are placed across the 64-graph manifest, and each targeted result is
 bound to that graph's fixture-derived workload identity. Every zero-hit observation must prove that
 all 64 distinct graph ids were accessed. This prevents first-graph-only coverage, empty-result
@@ -291,8 +290,11 @@ four-property `CONTAINS` projection/boundary variants plus both non-`DISTINCT` a
 DISTINCT` forms of the original case-insensitive `toLower(coalesce(...)) CONTAINS ... OR ...`
 query. Those ten shapes run at zero, targeted, and dense selectivity, followed by the four
 fixture-distribution cases, for 34 correctness and latency rows. In addition to the aggregate P95
-requirement, each wrapped case-insensitive form must independently reach the same 5x milestone in
-every paired fork, so faster raw cases cannot hide a regression in either motivating query shape.
+requirement, each wrapped case-insensitive form must independently improve in every paired fork,
+so faster raw cases cannot hide a regression in either motivating query shape: the wrapped form
+that carries the base P95 owes the full 10x, and the other wrapped form, whose slowest row already
+sits near the fixed per-request floor of a 64-graph query, owes the separate
+`--minimum-wrapped-speedup` (default 2x).
 
 Run the repository-owned driver with the generated fixture64 manifest; it builds both revisions and
 derives the correctness oracle itself:

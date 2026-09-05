@@ -36,21 +36,93 @@ internal class StringTable private constructor(
     fun indexOf(s: String): Int = indexMap?.get(s) ?: -1
 
     /** Finds an id in both builder and loaded tables; persisted tables remain sorted. */
-    @Suppress("ReturnCount")
     internal fun findId(s: String): Int {
         indexMap?.get(s)?.let { return it }
-        var low = 0
-        var high = list.size - 1
-        while (low <= high) {
-            val middle = (low + high).ushr(1)
-            val comparison = list.get(middle).toString().compareTo(s)
-            when {
-                comparison < 0 -> low = middle + 1
-                comparison > 0 -> high = middle - 1
-                else -> return middle
-            }
+        return findId(s, 0, list.size)
+    }
+
+    /** Finds the id of [s] within the sorted id range `[fromIndex, toIndex)`, or -1. */
+    internal fun findId(s: String, fromIndex: Int, toIndex: Int): Int {
+        val reusable = MutableString()
+        val index = lowerBoundSorted(s, reusable, null, fromIndex, toIndex)
+        if (index >= toIndex) return -1
+        list.get(index, reusable)
+        return if (reusable.toString() == s) index else -1
+    }
+
+    /** First index whose string is not lexicographically smaller than [value]; sorted tables only. */
+    internal fun lowerBound(value: String, workConsumer: GraphWorkConsumer? = null): Int =
+        lowerBoundSorted(value, MutableString(), workConsumer, 0, list.size)
+
+    /** True when the string at [index] starts with [prefix]. */
+    internal fun startsWithAt(index: Int, prefix: String): Boolean {
+        if (index !in 0 until list.size) return false
+        val reusable = MutableString()
+        list.get(index, reusable)
+        return reusable.toString().startsWith(prefix)
+    }
+
+    /**
+     * Front-coded blocks store their first string in full, so a search over block heads decodes
+     * one string per probe. Only the winning block is then walked in order, which keeps a lookup
+     * at roughly `log2(size / ratio) + ratio` decodes instead of `log2(size)` prefix chains.
+     * Decoded strings are compared through the JDK's own comparison so a cold request never
+     * interprets a character loop of its own.
+     */
+    @Suppress("LongParameterList")
+    private fun lowerBoundSorted(
+        value: String,
+        reusable: MutableString,
+        workConsumer: GraphWorkConsumer?,
+        fromIndex: Int,
+        toIndex: Int
+    ): Int {
+        if (fromIndex >= toIndex) return fromIndex
+        val ratio = list.ratio()
+        var probes = 0L
+        // Block heads strictly inside the range; the range start acts as the head of its own block.
+        var low = fromIndex / ratio
+        var high = (toIndex - 1) / ratio
+        while (low < high) {
+            probes++
+            val middle = (low + high + 1).ushr(1)
+            list.get(middle * ratio, reusable)
+            if (reusable.toString().compareTo(value) < 0) low = middle else high = middle - 1
         }
-        return -1
+        var index = maxOf(low * ratio, fromIndex)
+        val end = minOf((low + 1) * ratio, toIndex)
+        while (index < end) {
+            probes++
+            list.get(index, reusable)
+            if (reusable.toString().compareTo(value) >= 0) break
+            index++
+        }
+        consumeGraphWork(workConsumer, probes)
+        return index
+    }
+
+    /**
+     * The contiguous id range of every string starting with [prefix] in a sorted table, or an empty
+     * range. Strings sharing a prefix are adjacent because the table is sorted by code unit.
+     */
+    internal fun prefixRange(prefix: String, workConsumer: GraphWorkConsumer? = null): IntRange {
+        if (prefix.isEmpty()) return 0 until list.size
+        val start = lowerBound(prefix, workConsumer)
+        val last = prefix[prefix.length - 1]
+        val end = if (last == Char.MAX_VALUE) {
+            val reusable = MutableString()
+            var index = start
+            while (index < list.size) {
+                list.get(index, reusable)
+                if (!reusable.startsWith(prefix)) break
+                index++
+            }
+            consumeGraphWork(workConsumer, (index - start).toLong())
+            index
+        } else {
+            lowerBound(prefix.substring(0, prefix.length - 1) + (last + 1), workConsumer)
+        }
+        return start until end
     }
 
     /**

@@ -50,12 +50,6 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredMappedStringIndexViewGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredPersistedStringIndexGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.PreferredRawGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.SerialGraphWorkBatchConsumer
-import io.johnsonlee.graphite.graph.SplitGraphWorkBatchConsumer
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
@@ -82,15 +76,11 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.CRC32
@@ -108,160 +98,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class GraphStoreTest {
-
-    @Test
-    fun `split worker metrics can reset immediately after every completed execution`() {
-        repeat(100) {
-            resetSplitCallSiteWorkerMetrics()
-            assertContentEquals(
-                intArrayOf(1, 2),
-                executeSplitCallSiteCandidateTasks(
-                    listOf(Callable { intArrayOf(1) }, Callable { intArrayOf(2) }),
-                    backgroundParallelism = 1
-                )
-            )
-            assertEquals(1, splitCallSitePeakActiveWorkers())
-        }
-        resetSplitCallSiteWorkerMetrics()
-    }
-
-    @Test
-    fun `split candidate failure joins an interrupted background worker before returning`() {
-        val backgroundStarted = CountDownLatch(1)
-        val interruptionObserved = CountDownLatch(1)
-        val releaseBackground = CountDownLatch(1)
-        val callerFailure = IllegalStateException("caller failed")
-        val runner = Executors.newSingleThreadExecutor()
-        try {
-            val execution = runner.submit<IntArray> {
-                executeSplitCallSiteCandidateTasks(
-                    listOf(
-                        Callable {
-                            check(backgroundStarted.await(5, TimeUnit.SECONDS))
-                            throw callerFailure
-                        },
-                        Callable {
-                            backgroundStarted.countDown()
-                            try {
-                                releaseBackground.await()
-                            } catch (_: InterruptedException) {
-                                interruptionObserved.countDown()
-                                releaseBackground.await()
-                            }
-                            IntArray(0)
-                        }
-                    ),
-                    backgroundParallelism = 1
-                )
-            }
-            assertTrue(interruptionObserved.await(5, TimeUnit.SECONDS))
-            assertFalse(execution.isDone)
-            releaseBackground.countDown()
-            val failure = assertFailsWith<ExecutionException> { execution.get(5, TimeUnit.SECONDS) }
-            assertEquals(callerFailure, failure.cause)
-        } finally {
-            releaseBackground.countDown()
-            runner.shutdownNow()
-        }
-    }
-
-    @Test
-    fun `split candidate interruption cancels and joins the background worker`() {
-        val backgroundStarted = CountDownLatch(1)
-        val backgroundInterrupted = CountDownLatch(1)
-        val failure = AtomicReference<Throwable>()
-        val interruptedFlag = AtomicBoolean()
-        val request = Thread {
-            try {
-                executeSplitCallSiteCandidateTasks(
-                    listOf(
-                        Callable { IntArray(0) },
-                        Callable {
-                            backgroundStarted.countDown()
-                            try {
-                                Thread.sleep(TimeUnit.SECONDS.toMillis(5))
-                            } catch (interrupted: InterruptedException) {
-                                backgroundInterrupted.countDown()
-                                throw interrupted
-                            }
-                            IntArray(0)
-                        }
-                    ),
-                    backgroundParallelism = 1
-                )
-                failure.set(AssertionError("Interrupted split candidate work completed normally"))
-            } catch (error: Throwable) {
-                failure.set(error)
-                interruptedFlag.set(Thread.currentThread().isInterrupted)
-            }
-        }
-        request.start()
-        assertTrue(backgroundStarted.await(5, TimeUnit.SECONDS))
-        request.interrupt()
-        request.join(5_000)
-
-        assertFalse(request.isAlive)
-        assertTrue(failure.get() is CancellationException)
-        assertEquals("CallSite string candidate match interrupted", failure.get().message)
-        assertTrue(interruptedFlag.get())
-        assertTrue(backgroundInterrupted.await(5, TimeUnit.SECONDS))
-    }
-
-    @Test
-    fun `split candidate executor enforces one shared background budget across graph callers`() {
-        val graphCallers = Executors.newFixedThreadPool(4)
-        val releaseBackground = CountDownLatch(1)
-        val backgroundStarted = CountDownLatch(2)
-        val activeBackground = AtomicInteger()
-        val peakBackground = AtomicInteger()
-        val threads = ConcurrentHashMap.newKeySet<String>()
-        try {
-            val executions = List(4) {
-                graphCallers.submit<IntArray> {
-                    executeSplitCallSiteCandidateTasks(
-                        listOf(
-                            Callable { IntArray(0) },
-                            Callable {
-                                threads += Thread.currentThread().name
-                                val active = activeBackground.incrementAndGet()
-                                peakBackground.accumulateAndGet(active, ::maxOf)
-                                backgroundStarted.countDown()
-                                try {
-                                    check(releaseBackground.await(5, TimeUnit.SECONDS))
-                                    IntArray(0)
-                                } finally {
-                                    activeBackground.decrementAndGet()
-                                }
-                            },
-                            Callable {
-                                threads += Thread.currentThread().name
-                                val active = activeBackground.incrementAndGet()
-                                peakBackground.accumulateAndGet(active, ::maxOf)
-                                backgroundStarted.countDown()
-                                try {
-                                    check(releaseBackground.await(5, TimeUnit.SECONDS))
-                                    IntArray(0)
-                                } finally {
-                                    activeBackground.decrementAndGet()
-                                }
-                            }
-                        ),
-                        backgroundParallelism = 2
-                    )
-                }
-            }
-            assertTrue(backgroundStarted.await(5, TimeUnit.SECONDS))
-            assertEquals(2, activeBackground.get())
-            assertEquals(2, peakBackground.get())
-            assertTrue(threads.all { thread -> thread.startsWith("graphite-callsite-segment-") })
-            releaseBackground.countDown()
-            executions.forEach { execution -> assertContentEquals(IntArray(0), execution.get(5, TimeUnit.SECONDS)) }
-            assertEquals(0, activeBackground.get())
-        } finally {
-            releaseBackground.countDown()
-            graphCallers.shutdownNow()
-        }
-    }
 
     @Test
     fun `save preserves its published three argument JVM descriptor`() {
@@ -299,7 +135,7 @@ class GraphStoreTest {
 
     @Test
     @Suppress("LongMethod")
-    fun `split raw scans reuse exact matches from the existing persisted index`() {
+    fun `mapped view serves persisted CallSite queries until the retained index is prepared`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { nodeId ->
@@ -327,15 +163,14 @@ class GraphStoreTest {
             StringMatchMode.CONTAINS,
             "target"
         )
-        val split = object : SplitGraphWorkBatchConsumer {
-            override val segmentWorkerCount: Int = 1
+        val mixedPredicates = listOf(
+            predicate,
+            predicate.copy(property = CALLER_NAME_PROPERTY, expected = "targetonly")
+        )
+        val noWork = object : GraphWorkBatchConsumer {
             override fun consume(workUnits: Long) = Unit
         }
-        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
-            override val segmentWorkerCount: Int = 1
-            override fun consume(workUnits: Long) = Unit
-        }
-        val dir = Files.createTempDirectory("webgraph-existing-callsite-index-split")
+        val dir = Files.createTempDirectory("webgraph-existing-callsite-index-view")
         try {
             System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
             GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
@@ -343,38 +178,40 @@ class GraphStoreTest {
             assertTrue(Files.isRegularFile(indexFile))
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertNull(
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
                     loaded.projectStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
                         projectedProperties = listOf(CALLER_CLASS_PROPERTY),
                         limit = 1,
-                        workConsumer = mappedSplit
-                    )
+                        workConsumer = noWork
+                    )?.map { row -> row.values }
                 )
-                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(0),
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(0, 2),
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate, predicate.copy(property = CALLER_NAME_PROPERTY)),
                         limit = 2,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(
                         listOf("example.TargetCaller", "call0"),
@@ -386,13 +223,8 @@ class GraphStoreTest {
                         listOf(predicate, predicate.copy(property = CALLER_NAME_PROPERTY)),
                         projectedProperties = listOf(CALLER_CLASS_PROPERTY, CALLER_NAME_PROPERTY),
                         limit = 3,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     )?.map { row -> row.values }
-                )
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                val mixedPredicates = listOf(
-                    predicate,
-                    predicate.copy(property = CALLER_NAME_PROPERTY, expected = "targetonly")
                 )
                 assertEquals(
                     listOf(0, 2),
@@ -400,7 +232,7 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         mixedPredicates,
                         limit = 2,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertEquals(
@@ -409,59 +241,8 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         mixedPredicates,
                         limit = 4,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                assertEquals(2L, loaded.callSiteParallelScanCount())
-                assertEquals(
-                    listOf(listOf("example.TargetCaller")),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
-                        limit = 1,
-                        selectedValues = setOf(listOf("example.TargetCaller")),
-                        workConsumer = mappedSplit
-                    )?.map { row -> row.values }
-                )
-                assertEquals(
-                    emptyList(),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
-                        limit = 1,
-                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
-                        workConsumer = mappedSplit
-                    )
-                )
-                loaded.releaseStringPropertyDisjunctionCache()
-                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
-                loaded.clearStringPropertyIndexes()
-                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
-            }
-
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(
-                    listOf(0),
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = split
-                    ).orEmpty().map { node -> node.id.value }.toList()
-                )
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
-                assertEquals(
-                    listOf(listOf("example.TargetCaller")),
-                    loaded.distinctStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
-                        limit = 1,
-                        workConsumer = split
-                    )?.map { row -> row.values }
                 )
                 assertEquals(
                     listOf(listOf("example.TargetCaller")),
@@ -471,7 +252,7 @@ class GraphStoreTest {
                         projectedProperties = listOf(CALLER_CLASS_PROPERTY),
                         limit = 1,
                         selectedValues = setOf(listOf("example.TargetCaller")),
-                        workConsumer = split
+                        workConsumer = noWork
                     )?.map { row -> row.values }
                 )
                 assertEquals(
@@ -483,7 +264,117 @@ class GraphStoreTest {
                         limit = 1,
                         // The value exists in the dictionary but not in caller_class postings.
                         selectedValues = setOf(listOf("targetOnlyInCallerName")),
-                        workConsumer = split
+                        workConsumer = noWork
+                    )
+                )
+                assertEquals(
+                    listOf(listOf("example.TargetCaller", null)),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY, "graphId"),
+                        limit = 3,
+                        selectedValues = linkedSetOf(
+                            listOf("example.TargetCaller", "other-graph"),
+                            listOf("invalid", null),
+                            listOf("example.TargetCaller", null)
+                        ),
+                        workConsumer = noWork
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    listOf(listOf("example.TargetCaller", null)),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY, "graphId"),
+                        limit = 1,
+                        workConsumer = noWork
+                    )?.map { row -> row.values }
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(expected = "definitely-not-present")),
+                        limit = 1,
+                        workConsumer = noWork
+                    ).orEmpty().none()
+                )
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(property = CALLEE_NAME_PROPERTY)),
+                        limit = 1,
+                        workConsumer = noWork
+                    ).orEmpty().none()
+                )
+                assertEquals(12L, loaded.callSiteStringLookupEntryCount())
+                assertEquals(12L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteStringProjectionLookupCount())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                loaded.releaseStringPropertyDisjunctionCache()
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                loaded.clearStringPropertyIndexes()
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+            }
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertTrue(loaded.prepareCallSiteStringIndex())
+                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(
+                    listOf(0),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        limit = 1,
+                        workConsumer = noWork
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                // A retained index takes precedence over the sidecar view for every query.
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteMappedViewLookupCount())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(
+                    listOf(0, 2, 1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        mixedPredicates,
+                        limit = 4,
+                        workConsumer = noWork
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        workConsumer = noWork
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    listOf(listOf("example.TargetCaller")),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        selectedValues = setOf(listOf("example.TargetCaller")),
+                        workConsumer = noWork
+                    )?.map { row -> row.values }
+                )
+                assertEquals(
+                    emptyList(),
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        projectedProperties = listOf(CALLER_CLASS_PROPERTY),
+                        limit = 1,
+                        selectedValues = setOf(listOf("targetOnlyInCallerName")),
+                        workConsumer = noWork
                     )
                 )
                 assertEquals(
@@ -494,7 +385,7 @@ class GraphStoreTest {
                         projectedProperties = listOf("graphId"),
                         limit = 3,
                         selectedValues = linkedSetOf(emptyList(), listOf("invalid"), listOf(null)),
-                        workConsumer = SerialGraphWorkBatchConsumer { }
+                        workConsumer = noWork
                     )?.map { row -> row.values }
                 )
                 assertEquals(
@@ -505,7 +396,7 @@ class GraphStoreTest {
                         projectedProperties = listOf("graphId"),
                         limit = 1,
                         selectedValues = setOf(listOf(null)),
-                        workConsumer = SerialGraphWorkBatchConsumer { }
+                        workConsumer = noWork
                     )?.map { row -> row.values }
                 )
                 assertTrue(
@@ -513,7 +404,7 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate.copy(expected = "definitely-not-present")),
                         limit = 1,
-                        workConsumer = split
+                        workConsumer = noWork
                     ).orEmpty().none()
                 )
                 assertTrue(
@@ -521,9 +412,13 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate.copy(property = CALLEE_NAME_PROPERTY)),
                         limit = 1,
-                        workConsumer = split
+                        workConsumer = noWork
                     ).orEmpty().none()
                 )
+                assertEquals(4L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(5L, loaded.callSiteStringProjectionLookupCount())
+                assertEquals(0L, loaded.callSiteMappedViewLookupCount())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
             }
 
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { rejected ->
@@ -533,14 +428,14 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 1
+                        workConsumer = object : GraphWorkBatchConsumer {
                             override fun consume(workUnits: Long) = throw rejection
                         }
                     )?.toList()
                 }
                 assertSame(rejection, failure)
                 assertFalse(rejected.isCallSiteStringIndexInitialized())
+                assertFalse(rejected.isMappedCallSiteStringIndexViewInitialized())
             }
 
             val originalIndex = Files.readAllBytes(indexFile)
@@ -554,13 +449,20 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
+                // A corrupt sidecar is rejected by the mapped view and the persisted reader alike,
+                // so the query rebuilt the retained index serially on the calling thread.
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(0L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
             }
+            // Graph close persisted the rebuilt index atomically over the corrupt sidecar.
+            assertFalse(corruptIndex.contentEquals(Files.readAllBytes(indexFile)))
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
                 assertEquals(
                     listOf(0),
@@ -568,11 +470,12 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = split
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
-                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -602,8 +505,7 @@ class GraphStoreTest {
             StringMatchMode.CONTAINS,
             "target"
         )
-        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
-            override val segmentWorkerCount: Int = 1
+        val noWork = object : GraphWorkBatchConsumer {
             override fun consume(workUnits: Long) = Unit
         }
         val dir = Files.createTempDirectory("webgraph-out-of-order-mapped-posting")
@@ -633,10 +535,16 @@ class GraphStoreTest {
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
+                // The mapped view planned the query but refused the out-of-order posting range, so
+                // the retained index answered on the same thread and now takes precedence.
                 assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(
                     listOf(listOf("example.TargetCaller")),
                     loaded.projectStringPropertyDisjunction(
@@ -644,9 +552,11 @@ class GraphStoreTest {
                         listOf(predicate),
                         projectedProperties = listOf(CALLER_CLASS_PROPERTY),
                         limit = 1,
-                        workConsumer = mappedSplit
+                        workConsumer = noWork
                     )?.map { row -> row.values }
                 )
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(2L, loaded.callSiteStringIndexLookupCount())
                 assertTrue(loaded.isCallSiteStringIndexInitialized())
             }
         } finally {
@@ -678,8 +588,7 @@ class GraphStoreTest {
                 )
             }
         }.build()
-        val mappedSplit = object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
-            override val segmentWorkerCount: Int = 1
+        val noWork = object : GraphWorkBatchConsumer {
             override fun consume(workUnits: Long) = Unit
         }
         val dir = Files.createTempDirectory("webgraph-bounded-mapped-posting-validation")
@@ -719,7 +628,7 @@ class GraphStoreTest {
                                     )
                                 ),
                                 limit = 1,
-                                workConsumer = mappedSplit
+                                workConsumer = noWork
                             ).orEmpty().map { node -> node.id.value }.toList()
                         )
                     }
@@ -768,7 +677,7 @@ class GraphStoreTest {
                                 )
                             ),
                             limit = 1,
-                            workConsumer = mappedSplit
+                            workConsumer = noWork
                         ).orEmpty().map { node -> node.id.value }.toList()
                     )
                 }
@@ -794,7 +703,8 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `dense mapped matches scan ordered prefix waves and corrupt counts fall back`() {
+    @Suppress("LongMethod")
+    fun `mapped view answers sparse and dense matches and corrupt counts fall back to a rebuilt index`() {
         val returnType = TypeDescriptor("void")
         val firstMatch = 11_000
         val matchCount = 200
@@ -803,7 +713,7 @@ class GraphStoreTest {
                 val callerClass = if (nodeId in firstMatch until firstMatch + matchCount) {
                     "example.LocalizedNeedleCaller"
                 } else {
-                    "example.OtherCaller"
+                    "example.OtherCaller$nodeId"
                 }
                 addNode(
                     CallSiteNode(
@@ -821,53 +731,75 @@ class GraphStoreTest {
             override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
                 graph.nodes(type).sortedBy { node -> node.id.value }
         }
-        val predicate = StringPropertyPredicate(
+        // One shared dictionary string: the rarest trigram bounds verification to a single entry.
+        val sparse = StringPropertyPredicate(
             CALLER_CLASS_PROPERTY,
             StringValueTransform.LOWERCASE,
             StringMatchMode.CONTAINS,
             "localizedneedle"
+        )
+        // Tens of thousands of dictionary strings share every trigram: a bounded raw prefix probe
+        // answers before any posting is decoded.
+        val dense = StringPropertyPredicate(
+            CALLER_CLASS_PROPERTY,
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "othercaller"
         )
         val dir = Files.createTempDirectory("webgraph-dense-prefix-waves")
         try {
             System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
             GraphStore.save(orderedGraph, dir, prepareCallSiteStringIndex = true)
 
-            fun queryWork(expectPersistedIndex: Boolean): Pair<List<Int>, Long> {
+            class MeasuredQueries(
+                val sparseIds: List<Int>,
+                val denseIds: List<Int>,
+                val coldWork: Long,
+                val warmWork: Long
+            )
+
+            fun queryWork(expectMappedView: Boolean): MeasuredQueries {
                 val work = AtomicLong()
+                val consumer = object : GraphWorkBatchConsumer {
+                    override fun consume(workUnits: Long) {
+                        work.addAndGet(workUnits)
+                    }
+                }
                 val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
                 return loaded.use {
-                    val scanThreads = ConcurrentHashMap.newKeySet<String>()
-                    val scanWorkersStarted = CountDownLatch(3)
-                    val ids = loaded.nodesByStringPropertyDisjunction(
+                    fun ids(predicate: StringPropertyPredicate): List<Int> = loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = matchCount,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 2
-                            override fun consume(workUnits: Long) {
-                                work.addAndGet(workUnits)
-                                if (loaded.callSiteScanActiveWorkers() > 0 &&
-                                    scanThreads.add(Thread.currentThread().name)
-                                ) {
-                                    scanWorkersStarted.countDown()
-                                    assertTrue(scanWorkersStarted.await(5, TimeUnit.SECONDS))
-                                }
-                            }
-                        }
+                        workConsumer = consumer
                     ).orEmpty().map { node -> node.id.value }.toList()
-                    assertEquals(1L, loaded.callSiteParallelScanCount())
-                    assertEquals(3, loaded.callSiteScanPeakActiveWorkers())
-                    assertEquals(3, scanThreads.size)
-                    assertEquals(0, loaded.callSiteScanActiveWorkers())
-                    assertEquals(expectPersistedIndex, loaded.isCallSiteStringIndexLoadedFromPersistence())
-                    ids to work.get()
+
+                    val sparseIds = ids(sparse)
+                    val denseIds = ids(dense)
+                    val coldWork = work.getAndSet(0L)
+                    assertEquals(sparseIds, ids(sparse))
+                    assertEquals(denseIds, ids(dense))
+                    val warmWork = work.get()
+                    assertEquals(0L, loaded.callSiteParallelScanCount())
+                    assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
+                    assertEquals(0, loaded.callSiteSegmentPeakActiveWorkers())
+                    assertEquals(expectMappedView, loaded.isMappedCallSiteStringIndexViewInitialized())
+                    assertEquals(!expectMappedView, loaded.isCallSiteStringIndexInitialized())
+                    assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                    assertEquals(if (expectMappedView) 4L else 0L, loaded.callSiteMappedViewLookupCount())
+                    assertEquals(if (expectMappedView) 0L else 4L, loaded.callSiteStringIndexLookupCount())
+                    assertEquals(if (expectMappedView) 1 else 0, loaded.rawProjectionMatchCount())
+                    MeasuredQueries(sparseIds, denseIds, coldWork, warmWork)
                 }
             }
 
-            val expected = (firstMatch until firstMatch + matchCount).toSet()
-            val (prefixIds, prefixWork) = queryWork(expectPersistedIndex = true)
-            assertEquals(expected, prefixIds.toSet())
-            assertEquals(matchCount, prefixIds.size)
+            val served = queryWork(expectMappedView = true)
+            assertEquals((firstMatch until firstMatch + matchCount).toList(), served.sparseIds)
+            assertEquals((0 until matchCount).toList(), served.denseIds)
+            // The first sidecar query pays the one-time file validation; warm view answers never
+            // inspect a full raw pass over the 32,768 call sites.
+            assertTrue(served.coldWork > served.warmWork, "cold=${served.coldWork} warm=${served.warmWork}")
+            assertTrue(served.warmWork in 1L until 32_768L, "warm view work=${served.warmWork}")
 
             val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             val corruptIndex = Files.readAllBytes(indexFile)
@@ -881,17 +813,21 @@ class GraphStoreTest {
             }
             Files.write(indexFile, corruptIndex)
 
-            val (fallbackIds, fallbackWork) = queryWork(expectPersistedIndex = false)
-            assertEquals(prefixIds, fallbackIds)
-            assertTrue(prefixWork > 0L)
-            assertTrue(fallbackWork > 0L)
+            val rebuilt = queryWork(expectMappedView = false)
+            assertEquals(served.sparseIds, rebuilt.sparseIds)
+            assertEquals(served.denseIds, rebuilt.denseIds)
+            // Rebuilding the retained index charges at least two raw passes over every call site;
+            // the retained index then answers repeated queries far below that.
+            assertTrue(rebuilt.coldWork >= 2L * 32_768L, "rebuild work=${rebuilt.coldWork}")
+            assertTrue(rebuilt.warmWork in 1L until 32_768L, "warm index work=${rebuilt.warmWork}")
         } finally {
             dir.toFile().deleteRecursively()
         }
     }
 
     @Test
-    fun `mapped load restores persisted CallSite index lazily and can opt in to eager preparation`() {
+    @Suppress("LongMethod")
+    fun `mapped load serves the persisted CallSite sidecar lazily and can opt in to eager preparation`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(3) { index ->
@@ -928,53 +864,57 @@ class GraphStoreTest {
             val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
             assertTrue(Files.isRegularFile(indexFile))
             val persistedModificationTime = Files.getLastModifiedTime(indexFile)
-            val projectionRestored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val projectionServed = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertFalse(projectionRestored.isCallSiteStringIndexInitialized())
-                val projection = projectionRestored.distinctStringPropertyDisjunction(
+                assertFalse(projectionServed.isCallSiteStringIndexInitialized())
+                assertFalse(projectionServed.isMappedCallSiteStringIndexViewInitialized())
+                val projection = projectionServed.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(predicate.copy(mode = StringMatchMode.EQUALS, expected = "example.targetcaller")),
                     projectedProperties = listOf("caller_class", "graphId"),
                     limit = 2,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
+                    workConsumer = object : GraphWorkBatchConsumer {
                         override fun consume(workUnits: Long) = Unit
                     }
                 )
                 assertEquals(listOf(listOf("example.TargetCaller", null)), projection?.map { it.values })
-                assertTrue(projectionRestored.isCallSiteStringIndexInitialized())
-                assertTrue(projectionRestored.isCallSiteStringIndexLoadedFromPersistence())
-                assertEquals(0L, projectionRestored.callSiteParallelScanCount())
-                assertEquals(0L, projectionRestored.callSiteStringIndexLookupCount())
-                assertEquals(1L, projectionRestored.callSiteStringProjectionLookupCount())
-                projectionRestored.releaseStringPropertyDisjunctionCache()
-                assertTrue(projectionRestored.isCallSiteStringIndexInitialized())
+                assertTrue(projectionServed.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(projectionServed.isCallSiteStringIndexInitialized())
+                assertEquals(0L, projectionServed.callSiteParallelScanCount())
+                assertEquals(1L, projectionServed.callSiteMappedViewLookupCount())
+                assertEquals(0L, projectionServed.callSiteStringIndexLookupCount())
+                assertEquals(0L, projectionServed.callSiteStringProjectionLookupCount())
+                projectionServed.releaseStringPropertyDisjunctionCache()
+                assertTrue(projectionServed.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(projectionServed.isCallSiteStringIndexInitialized())
             } finally {
-                projectionRestored.close()
+                projectionServed.close()
             }
             System.clearProperty(property)
-            val lazyRestored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            val lazyServed = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
-                assertEquals(3, lazyRestored.nodes(CallSiteNode::class.java).count())
-                assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
+                assertFalse(lazyServed.isCallSiteStringIndexInitialized())
+                assertEquals(3, lazyServed.nodes(CallSiteNode::class.java).count())
+                assertFalse(lazyServed.isMappedCallSiteStringIndexViewInitialized())
                 assertEquals(
                     listOf(1),
-                    lazyRestored.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                    lazyServed.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertSerialProjectionRestoresPersistedSidecar(lazyRestored)
-                assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
-                lazyRestored.clearStringPropertyIndexes()
-                assertFalse(lazyRestored.isCallSiteStringIndexInitialized())
+                assertMappedViewServesPersistedSidecar(lazyServed)
+                assertLazyAggregateRestoresPersistedSidecar(lazyServed, predicate)
+                lazyServed.clearStringPropertyIndexes()
+                assertFalse(lazyServed.isCallSiteStringIndexInitialized())
+                assertFalse(lazyServed.isMappedCallSiteStringIndexViewInitialized())
                 assertEquals(
                     listOf(1),
-                    lazyRestored.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                    lazyServed.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertTrue(lazyRestored.isCallSiteStringIndexLoadedFromPersistence())
+                assertTrue(lazyServed.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(lazyServed.isCallSiteStringIndexInitialized())
             } finally {
-                lazyRestored.close()
+                lazyServed.close()
             }
             assertEquals(persistedModificationTime, Files.getLastModifiedTime(indexFile))
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
@@ -985,6 +925,13 @@ class GraphStoreTest {
                 assertTrue(eager.isCallSiteStringIndexInitialized())
                 assertTrue(eager.isCallSiteTrigramIndexInitialized())
                 assertTrue(eager.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(
+                    listOf(1),
+                    eager.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(1L, eager.callSiteStringIndexLookupCount())
+                assertFalse(eager.isMappedCallSiteStringIndexViewInitialized())
             } finally {
                 eager.close()
             }
@@ -999,6 +946,10 @@ class GraphStoreTest {
                     lazy.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
+                // "false" disables the persisted sidecar entirely, so the query built a legacy index.
+                assertFalse(lazy.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(0L, lazy.callSiteMappedViewLookupCount())
+                assertEquals(1L, lazy.callSiteStringIndexLookupCount())
                 assertTrue(lazy.isCallSiteStringIndexInitialized())
                 assertTrue(lazy.isCallSiteTrigramIndexInitialized())
                 assertFalse(lazy.isCallSiteStringIndexLoadedFromPersistence())
@@ -1012,12 +963,15 @@ class GraphStoreTest {
         }
     }
 
-    private fun assertSerialProjectionRestoresPersistedSidecar(graph: MappedWebGraphBackedGraph) {
-        assertTrue(graph.isCallSiteStringIndexInitialized())
-        assertTrue(graph.isCallSiteTrigramIndexInitialized())
-        assertTrue(graph.isCallSiteStringIndexLoadedFromPersistence())
-        graph.releaseStringPropertyDisjunctionCache()
+    private fun assertMappedViewServesPersistedSidecar(graph: MappedWebGraphBackedGraph) {
+        val noWork = object : GraphWorkBatchConsumer {
+            override fun consume(workUnits: Long) = Unit
+        }
+        assertTrue(graph.isMappedCallSiteStringIndexViewInitialized())
         assertFalse(graph.isCallSiteStringIndexInitialized())
+        assertFalse(graph.isCallSiteStringIndexLoadedFromPersistence())
+        graph.releaseStringPropertyDisjunctionCache()
+        assertTrue(graph.isMappedCallSiteStringIndexViewInitialized())
         graph.resetCallSiteScanMetrics()
         val projection = graph.distinctStringPropertyDisjunction(
             CallSiteNode::class.java,
@@ -1031,13 +985,12 @@ class GraphStoreTest {
             ),
             projectedProperties = listOf("caller_class"),
             limit = 2,
-            workConsumer = SerialGraphWorkBatchConsumer { }
+            workConsumer = noWork
         )
-        assertTrue(projection.orEmpty().isEmpty())
-        assertEquals(1L, graph.callSiteStringProjectionLookupCount())
-        assertTrue(graph.isCallSiteStringIndexInitialized())
-        assertTrue(graph.isCallSiteStringIndexLoadedFromPersistence())
-        graph.releaseStringPropertyDisjunctionCache()
+        assertEquals(emptyList(), projection)
+        assertEquals(1L, graph.callSiteStringLookupEntryCount())
+        assertEquals(1L, graph.callSiteMappedViewLookupCount())
+        assertEquals(0L, graph.callSiteStringProjectionLookupCount())
         assertFalse(graph.isCallSiteStringIndexInitialized())
         graph.resetCallSiteScanMetrics()
         val rawIds = graph.nodesByStringPropertyDisjunction(
@@ -1051,10 +1004,11 @@ class GraphStoreTest {
                 )
             ),
             limit = 2,
-            workConsumer = PreferredRawGraphWorkBatchConsumer { }
+            workConsumer = noWork
         ).orEmpty().map { node -> node.id.value }.toList()
         assertEquals(listOf(0, 1), rawIds)
         assertEquals(1L, graph.callSiteStringLookupEntryCount())
+        assertEquals(1L, graph.callSiteMappedViewLookupCount())
         assertFalse(graph.isCallSiteStringIndexInitialized())
         graph.resetCallSiteScanMetrics()
         val rawProjection = graph.projectStringPropertyDisjunction(
@@ -1069,17 +1023,54 @@ class GraphStoreTest {
             ),
             projectedProperties = listOf("callee_name"),
             limit = 2,
-            workConsumer = PreferredRawGraphWorkBatchConsumer { }
+            workConsumer = noWork
         )
         assertEquals(listOf(listOf("invoke"), listOf("invoke")), rawProjection?.map { row -> row.values })
         assertEquals(1L, graph.callSiteStringLookupEntryCount())
+        assertEquals(1L, graph.callSiteMappedViewLookupCount())
+        assertEquals(0L, graph.callSiteStringIndexLookupCount())
         assertEquals(0L, graph.callSiteStringProjectionLookupCount())
         assertFalse(graph.isCallSiteStringIndexInitialized())
     }
 
+    /** Distinct-value aggregation bypasses the mapped view and restores the persisted heap index. */
+    private fun assertLazyAggregateRestoresPersistedSidecar(
+        graph: MappedWebGraphBackedGraph,
+        predicate: StringPropertyPredicate
+    ) {
+        graph.resetCallSiteScanMetrics()
+        assertEquals(
+            StringPropertyDisjunctionAggregate(1L, setOf("example.TargetCaller")),
+            graph.aggregateStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                listOf(predicate),
+                distinctProperty = "caller_class"
+            )
+        )
+        assertTrue(graph.isCallSiteStringIndexInitialized())
+        assertTrue(graph.isCallSiteStringIndexLoadedFromPersistence())
+        assertEquals(1L, graph.callSiteStringIndexLookupCount())
+        assertEquals(0L, graph.callSiteMappedViewLookupCount())
+        graph.resetCallSiteScanMetrics()
+        // The restored index now takes precedence over the mapped view.
+        assertEquals(
+            listOf(1),
+            graph.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                .orEmpty().map { node -> node.id.value }.toList()
+        )
+        assertEquals(1L, graph.callSiteStringIndexLookupCount())
+        assertEquals(0L, graph.callSiteMappedViewLookupCount())
+        graph.releaseStringPropertyDisjunctionCache()
+        // A persisted index restored on demand stays retained across requests.
+        assertTrue(graph.isCallSiteStringIndexInitialized())
+        assertTrue(graph.isCallSiteStringIndexLoadedFromPersistence())
+    }
+
     @Test
-    fun `bounded raw projection reuses matches even when the persisted index is loaded`() {
+    fun `bounded raw projection reuses matches until the retained index is prepared`() {
         val dir = Files.createTempDirectory("graph-store-raw-projection-cache")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        var blocker: Closeable? = null
         try {
             val returnType = TypeDescriptor("void")
             val source = DefaultGraph.Builder().apply {
@@ -1107,149 +1098,90 @@ class GraphStoreTest {
                 }
             }.build()
             GraphStore.save(source, dir)
+            // Without a sidecar and with the index budget denied, bounded projections probe raw
+            // storage on the calling thread and cache the filled prefix per graph.
+            blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+                MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+            )
+            assertNotNull(blocker)
             val graph = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
-            val predicates = listOf(
-                StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Needle")
-            )
-            val firstWork = AtomicLong()
-            val first = graph.projectStringPropertyDisjunction(
-                CallSiteNode::class.java,
-                predicates,
-                listOf("caller_class"),
-                2,
-                PreferredRawGraphWorkBatchConsumer(firstWork::addAndGet)
-            )
-            assertEquals(2, first?.size)
-            assertTrue(first.orEmpty().all { row -> row.values.single()?.startsWith("example.NeedleCaller") == true })
-            assertEquals(2L, firstWork.get())
-            assertEquals(1, graph.rawProjectionMatchCount())
-
-            val cachedWork = AtomicLong()
-            val cached = graph.projectStringPropertyDisjunction(
-                CallSiteNode::class.java,
-                predicates,
-                listOf("callee_class"),
-                2,
-                PreferredRawGraphWorkBatchConsumer(cachedWork::addAndGet)
-            )
-            assertEquals(2, cached?.size)
-            assertTrue(cached.orEmpty().all { row -> row.values.single()?.startsWith("example.Target") == true })
-            assertEquals(2L, cachedWork.get())
-            assertEquals(1, graph.rawProjectionMatchCount())
-            assertFalse(graph.isCallSiteStringIndexInitialized())
-
-            val missWork = AtomicLong()
-            val inconclusive = graph.projectStringPropertyDisjunction(
-                CallSiteNode::class.java,
-                listOf(StringPropertyPredicate("caller_name", null, StringMatchMode.CONTAINS, "absent")),
-                listOf("caller_class"),
-                200,
-                PreferredRawGraphWorkBatchConsumer(missWork::addAndGet)
-            )
-            assertNull(inconclusive)
-            assertEquals(800L, missWork.get())
-            assertFalse(graph.isCallSiteStringIndexInitialized())
-
-            assertTrue(graph.prepareCallSiteStringIndex())
-            graph.resetCallSiteScanMetrics()
-            val retainedRaw = graph.projectStringPropertyDisjunction(
-                CallSiteNode::class.java,
-                predicates,
-                listOf("caller_class"),
-                2,
-                PreferredRawGraphWorkBatchConsumer { }
-            )
-            assertEquals(first, retainedRaw)
-            assertEquals(0L, graph.callSiteStringIndexLookupCount())
-            assertTrue(graph.isCallSiteStringIndexInitialized())
-            graph.close()
-        } finally {
-            dir.toFile().deleteRecursively()
-        }
-    }
-
-    @Test
-    fun `persisted raw disjunction scans properties through the shared segment pool`() {
-        val returnType = TypeDescriptor("void")
-        val graph = DefaultGraph.Builder().apply {
-            repeat(3) { index ->
-                addNode(
-                    CallSiteNode(
-                        NodeId(index),
-                        MethodDescriptor(
-                            TypeDescriptor("example.Caller$index"),
-                            "call$index",
-                            emptyList(),
-                            returnType
-                        ),
-                        MethodDescriptor(
-                            TypeDescriptor("example.Dependency$index"),
-                            "invoke$index",
-                            emptyList(),
-                            returnType
-                        ),
-                        index,
-                        null,
-                        emptyList()
-                    )
+            try {
+                val predicates = listOf(
+                    StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Needle")
                 )
-            }
-        }.build()
-        val dir = Files.createTempDirectory("webgraph-split-raw-index")
-        try {
-            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
-            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
-            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
-            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                val restoredIds = loaded.nodesByStringPropertyDisjunction(
+                val firstWork = AtomicLong()
+                val first = graph.projectStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.EQUALS,
-                            "example.Caller1"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
+                    predicates,
+                    listOf("caller_class"),
+                    2,
+                    GraphWorkConsumer { firstWork.incrementAndGet() }
+                )
+                assertEquals(2, first?.size)
+                assertTrue(
+                    first.orEmpty().all { row -> row.values.single()?.startsWith("example.NeedleCaller") == true }
+                )
+                assertEquals(2L, firstWork.get())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertFalse(graph.isCallSiteStringIndexInitialized())
+                assertFalse(graph.isMappedCallSiteStringIndexViewInitialized())
 
-                        override fun consume(workUnits: Long) = Unit
-                    }
-                ).orEmpty().map { node -> node.id.value }.toList()
-                assertEquals(listOf(1), restoredIds)
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
-                assertTrue(loaded.prepareCallSiteStringIndex())
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
-                val threads = ConcurrentHashMap.newKeySet<String>()
-                val workersStarted = CountDownLatch(4)
-                val result = loaded.distinctStringPropertyDisjunction(
+                val cachedWork = AtomicLong()
+                val cached = graph.projectStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    listOf("caller_class", "caller_name", "callee_class", "callee_name").map { property ->
-                        StringPropertyPredicate(property, null, StringMatchMode.CONTAINS, "qz")
-                    },
-                    projectedProperties = listOf("caller_class"),
-                    limit = 1,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 3
-
+                    predicates,
+                    listOf("callee_class"),
+                    2,
+                    object : GraphWorkBatchConsumer {
                         override fun consume(workUnits: Long) {
-                            if (threads.add(Thread.currentThread().name)) workersStarted.countDown()
-                            check(workersStarted.await(5, TimeUnit.SECONDS))
+                            cachedWork.addAndGet(workUnits)
                         }
                     }
                 )
+                assertEquals(2, cached?.size)
+                assertTrue(cached.orEmpty().all { row -> row.values.single()?.startsWith("example.Target") == true })
+                assertEquals(2L, cachedWork.get())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertFalse(graph.isCallSiteStringIndexInitialized())
 
-                assertTrue(result.orEmpty().isEmpty())
-                assertEquals(4, threads.size)
-                assertTrue(threads.count { thread -> thread.startsWith("graphite-callsite-segment-") } == 3)
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                val missWork = AtomicLong()
+                val inconclusive = graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(StringPropertyPredicate("caller_name", null, StringMatchMode.CONTAINS, "absent")),
+                    listOf("caller_class"),
+                    200,
+                    GraphWorkConsumer { missWork.incrementAndGet() }
+                )
+                assertNull(inconclusive)
+                assertEquals(800L, missWork.get())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertFalse(graph.isCallSiteStringIndexInitialized())
+                assertFalse(graph.prepareCallSiteStringIndex())
+
+                blocker.close()
+                blocker = null
+                assertTrue(graph.prepareCallSiteStringIndex())
+                graph.resetCallSiteScanMetrics()
+                val retained = graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    listOf("caller_class"),
+                    2,
+                    GraphWorkConsumer { }
+                )
+                assertEquals(first, retained)
+                // The retained index answers first; the raw prefix cache is left untouched.
+                assertEquals(1L, graph.callSiteStringIndexLookupCount())
+                assertEquals(1, graph.rawProjectionMatchCount())
+                assertTrue(graph.isCallSiteStringIndexInitialized())
+            } finally {
+                graph.close()
             }
         } finally {
+            blocker?.close()
             dir.toFile().deleteRecursively()
         }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test
@@ -1366,7 +1298,7 @@ class GraphStoreTest {
                 assertEquals(50, indexed?.size)
                 assertTrue(loaded.hasExactCallSiteProjectionTupleIndex())
 
-                val splitWork = AtomicLong()
+                val graphIdWork = AtomicLong()
                 val selectedGraphId = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
@@ -1380,17 +1312,16 @@ class GraphStoreTest {
                     projectedProperties = listOf("graphId"),
                     limit = 1,
                     selectedValues = setOf(listOf(null)),
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
-
+                    workConsumer = object : GraphWorkBatchConsumer {
                         override fun consume(workUnits: Long) {
-                            splitWork.addAndGet(workUnits)
+                            graphIdWork.addAndGet(workUnits)
                         }
                     }
                 )
                 assertEquals(listOf(listOf(null)), selectedGraphId?.map { row -> row.values })
-                assertTrue(splitWork.get() >= 4_096L)
-                assertTrue(loaded.callSiteSegmentPeakActiveWorkers() >= 1)
+                assertTrue(graphIdWork.get() >= 4_096L)
+                assertEquals(0, loaded.callSiteSegmentPeakActiveWorkers())
+                assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
                 assertTrue(loaded.hasExactCallSiteProjectionTupleIndex())
 
                 val nonMatchingTuple = setOf(selectedValues.first())
@@ -1568,9 +1499,12 @@ class GraphStoreTest {
                         null
                     )?.count
                 )
-                assertTrue(migrated.isCallSiteTrigramIndexInitialized())
+                // A graph without a sidecar builds its index once on the requesting thread,
+                // persists it immediately, and serves the mapped view from then on.
+                assertTrue(Files.isRegularFile(indexFile))
+                assertTrue(migrated.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(migrated.isCallSiteStringIndexInitialized())
                 assertFalse(migrated.isCallSiteStringIndexLoadedFromPersistence())
-                assertFalse(Files.exists(indexFile))
             } finally {
                 migrated.close()
             }
@@ -1580,24 +1514,26 @@ class GraphStoreTest {
             val restored = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
                 assertFalse(restored.isCallSiteStringIndexInitialized())
-                assertTrue(
-                    restored.hasPreparedStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate)
-                    )
-                )
+                assertFalse(restored.isMappedCallSiteStringIndexViewInitialized())
                 assertEquals(
-                    1,
+                    listOf(0),
                     restored.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
                         1,
-                        PreferredPersistedStringIndexGraphWorkBatchConsumer { }
-                    ).orEmpty().count()
+                        object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long) = Unit
+                        }
+                    ).orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertTrue(restored.isCallSiteStringIndexLoadedFromPersistence())
+                // The persisted sidecar answers through its read-only mapped view; the heap index
+                // is not restored unless a caller prepares it explicitly.
+                assertTrue(restored.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(restored.isCallSiteStringIndexInitialized())
+                assertFalse(restored.isCallSiteStringIndexLoadedFromPersistence())
                 assertEquals(0L, restored.callSiteParallelScanCount())
-                assertEquals(1L, restored.callSiteStringIndexLookupCount())
+                assertEquals(1L, restored.callSiteMappedViewLookupCount())
+                assertEquals(0L, restored.callSiteStringIndexLookupCount())
             } finally {
                 restored.close()
             }
@@ -1609,7 +1545,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `preferred persisted lookup builds once in parallel then reuses the retained index`() {
+    fun `legacy lookup builds the retained index once serially then reuses it`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { index ->
@@ -1629,37 +1565,58 @@ class GraphStoreTest {
             "caller_class",
             StringValueTransform.LOWERCASE,
             StringMatchMode.CONTAINS,
-            "definitely-absent"
+            "absent"
         )
-        val dir = Files.createTempDirectory("webgraph-preferred-persisted-callsite-index")
+        val dir = Files.createTempDirectory("webgraph-legacy-callsite-index-build-once")
         val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
         try {
             GraphStore.save(graph, dir)
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
-                val consumer = PreferredPersistedStringIndexGraphWorkBatchConsumer { }
-
-                assertTrue(
+                val firstWork = AtomicLong()
+                assertEquals(
+                    emptyList(),
                     loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(predicate),
                         limit = 1,
-                        workConsumer = consumer
-                    ).orEmpty().toList().isEmpty()
+                        workConsumer = object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long) {
+                                firstWork.addAndGet(workUnits)
+                            }
+                        }
+                    ).orEmpty().toList()
                 )
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-
-                assertTrue(
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(predicate),
-                        limit = 1,
-                        workConsumer = consumer
-                    ).orEmpty().toList().isEmpty()
-                )
-                assertEquals(1L, loaded.callSiteParallelScanCount())
+                // No sidecar exists, so the first query built the retained index on this thread.
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(0L, loaded.callSiteMappedViewLookupCount())
                 assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(firstWork.get() >= 2L * 4_096L, "build work=${firstWork.get()}")
+                val retainedBytes = loaded.callSiteStringIndexBytes()
+                assertTrue(retainedBytes > 0L)
+
+                val secondWork = AtomicLong()
+                assertEquals(
+                    listOf(1),
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate.copy(mode = StringMatchMode.EQUALS, expected = "example.caller1")),
+                        limit = 1,
+                        workConsumer = object : GraphWorkBatchConsumer {
+                            override fun consume(workUnits: Long) {
+                                secondWork.addAndGet(workUnits)
+                            }
+                        }
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                )
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertEquals(2L, loaded.callSiteStringIndexLookupCount())
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                // The same retained index answered; only its bounded query cache may have grown.
+                assertTrue(loaded.callSiteStringIndexBytes() >= retainedBytes)
+                assertTrue(secondWork.get() in 1L until firstWork.get(), "reuse work=${secondWork.get()}")
             }
         } finally {
             dir.toFile().deleteRecursively()
@@ -1697,27 +1654,27 @@ class GraphStoreTest {
         try {
             System.clearProperty(property)
             GraphStore.save(graph, dir)
-            // Forty sources select the balanced graph/segment planner. LIMIT equals the graph size,
-            // forcing the query-built structural index lifecycle instead of the bounded raw scan.
-            val loadedGraphs = List(40) { GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph }
+            // Several sources exercise the multi-source cache release between graphs. LIMIT equals
+            // the graph size, forcing the query-built structural index lifecycle.
+            val loadedGraphs = List(4) { GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph }
             try {
                 val executor = CrossGraphCypherExecutor(
                     loadedGraphs.mapIndexed { index, loaded -> CypherGraph("legacy-$index", loaded) }
                 )
                 assertTrue(executor.execute(query).rows.isEmpty())
+                // The first source builds and persists the sidecar on the requesting thread; every
+                // source then serves the read-only mapped view and retains no heap index.
+                assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
                 loadedGraphs.forEach { loaded ->
-                    assertTrue(loaded.isCallSiteStringIndexInitialized())
-                    assertTrue(loaded.isCallSiteTrigramIndexInitialized())
+                    assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    assertEquals(0L, loaded.callSiteStringIndexBytes())
                 }
                 val retainedAfterFirstQuery = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
-                assertTrue(retainedAfterFirstQuery > retainedBefore)
-                val structuralBytes = loadedGraphs.map { loaded -> loaded.callSiteStringIndexBytes() }
-                assertTrue(structuralBytes.all { bytes -> bytes > 1024L * 1024L })
-                assertFalse(Files.exists(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
 
                 repeat(3) {
                     assertTrue(executor.execute(query).rows.isEmpty())
-                    assertEquals(structuralBytes, loadedGraphs.map { loaded -> loaded.callSiteStringIndexBytes() })
+                    assertTrue(loadedGraphs.all { loaded -> loaded.callSiteStringIndexBytes() == 0L })
                     assertEquals(retainedAfterFirstQuery, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 }
             } finally {
@@ -1729,7 +1686,11 @@ class GraphStoreTest {
             (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { repaired ->
                 val executor = CrossGraphCypherExecutor(listOf(CypherGraph("legacy", repaired)))
                 assertTrue(executor.execute(query).rows.isEmpty())
-                assertTrue(repaired.isCallSiteStringIndexLoadedFromPersistence())
+                // The repaired sidecar now answers through its mapped view without a heap index.
+                assertTrue(repaired.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(repaired.isCallSiteStringIndexInitialized())
+                assertEquals(1L, repaired.callSiteMappedViewLookupCount())
+                assertEquals(0L, repaired.callSiteStringProjectionLookupCount())
             }
             assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
         } finally {
@@ -1976,17 +1937,42 @@ class GraphStoreTest {
             }
 
             System.clearProperty(property)
-            val lazilyRestored = GraphStore.loadMapped(graphBDir) as MappedWebGraphBackedGraph
+            val lazilyServed = GraphStore.loadMapped(graphBDir) as MappedWebGraphBackedGraph
             try {
-                assertFalse(lazilyRestored.isCallSiteStringIndexInitialized())
+                assertFalse(lazilyServed.isCallSiteStringIndexInitialized())
                 assertEquals(
                     listOf(1),
-                    lazilyRestored.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                    lazilyServed.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertTrue(lazilyRestored.isCallSiteStringIndexLoadedFromPersistence())
+                // The rebuilt sidecar now belongs to graph B and is served through its mapped view.
+                assertTrue(lazilyServed.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(lazilyServed.isCallSiteStringIndexInitialized())
+                assertEquals(1L, lazilyServed.callSiteMappedViewLookupCount())
             } finally {
-                lazilyRestored.close()
+                lazilyServed.close()
+            }
+            val rejectedAgain = GraphStore.loadMapped(graphADir) as MappedWebGraphBackedGraph
+            try {
+                Files.copy(
+                    graphBDir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
+                    graphADir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                )
+                assertEquals(
+                    listOf(0),
+                    rejectedAgain.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
+                        .orEmpty().map { node -> node.id.value }.toList()
+                )
+                // A foreign sidecar fails identity validation for the mapped view as well, so the
+                // query rebuilt the retained index instead of trusting graph B's postings.
+                assertFalse(rejectedAgain.isMappedCallSiteStringIndexViewInitialized())
+                assertTrue(rejectedAgain.isCallSiteStringIndexInitialized())
+                assertFalse(rejectedAgain.isCallSiteStringIndexLoadedFromPersistence())
+                assertEquals(0L, rejectedAgain.callSiteMappedViewLookupCount())
+                assertEquals(1L, rejectedAgain.callSiteStringIndexLookupCount())
+            } finally {
+                rejectedAgain.close()
             }
         } finally {
             if (previous == null) System.clearProperty(property) else System.setProperty(property, previous)
@@ -1996,7 +1982,7 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `first lazy persisted CallSite restore charges graph identity validation to query work`() {
+    fun `first mapped sidecar query charges graph identity validation to query work`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
             repeat(4_096) { index ->
@@ -2045,6 +2031,7 @@ class GraphStoreTest {
                     }
                     assertFalse(loaded.isCallSiteStringIndexInitialized())
                     assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                    assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 }
                 assertEquals(2L, deniedIdentityBatches.get())
 
@@ -2056,7 +2043,10 @@ class GraphStoreTest {
                         distinctProperty = null
                     )?.count
                 )
-                assertTrue(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                // Once identity validation is paid, the sidecar answers through the mapped view.
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
             } finally {
                 loaded.close()
             }
@@ -2232,6 +2222,18 @@ class GraphStoreTest {
                 assertTrue(interruptedFlag.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
+                // The interrupted validation is not remembered as an unavailable sidecar.
+                assertEquals(
+                    0L,
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(predicate),
+                        distinctProperty = null
+                    )?.count
+                )
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
             } finally {
                 loaded.close()
             }
@@ -2286,6 +2288,10 @@ class GraphStoreTest {
                     ).orEmpty().map { node -> node.id.value }.toList()
                 )
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
+                // The mapped view serves without its optional caches while the budget is exhausted.
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(1L, loaded.callSiteMappedViewLookupCount())
+                assertEquals(0, loaded.mappedPostingRangeValidationCount())
             } finally {
                 loaded.close()
             }
@@ -2785,7 +2791,6 @@ class GraphStoreTest {
                 assertEquals(3L, denseAggregate?.count)
                 assertEquals(setOf("invoke0", "invoke1", "invoke2"), denseAggregate?.distinctValues)
                 assertTrue(denseAggregateWork >= 6)
-                assertTrue(loaded.prefersSerialStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 val projectedValues = listOf("example.VoucherCaller1", "create1", null)
                 val projected = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
@@ -2885,23 +2890,18 @@ class GraphStoreTest {
     }
 
     @Test
-    fun `large trigram posting sort stays on bounded workers and stops when request is interrupted`() {
-        val expectedWorkers = callSiteScanParallelism
+    fun `large trigram posting sort runs on the calling thread and stops when the request is interrupted`() {
         val postings = LongArray((1 shl 20) + 1) { index ->
             index.toLong() * -7_046_029_254_386_353_131L xor (index.toLong() shl 21)
         }
-        val workersStarted = CountDownLatch(expectedWorkers)
-        val releaseWorkers = CountDownLatch(1)
-        val workerThreads = ConcurrentHashMap.newKeySet<String>()
+        val original = postings.copyOf()
         val failure = AtomicReference<Throwable>()
         val interruptedFlag = AtomicBoolean()
+        val sortThreads = ConcurrentHashMap.newKeySet<String>()
         val request = Thread {
+            Thread.currentThread().interrupt()
             try {
-                sortCallSiteTrigramPostings(postings) {
-                    workerThreads += Thread.currentThread().name
-                    workersStarted.countDown()
-                    check(releaseWorkers.await(5, TimeUnit.SECONDS))
-                }
+                sortCallSiteTrigramPostings(postings)
             } catch (error: Throwable) {
                 failure.set(error)
                 interruptedFlag.set(Thread.currentThread().isInterrupted)
@@ -2912,21 +2912,25 @@ class GraphStoreTest {
         }
 
         request.start()
-        assertTrue(workersStarted.await(5, TimeUnit.SECONDS))
-        assertEquals(expectedWorkers, workerThreads.size)
-        assertTrue(workerThreads.all { name -> name.startsWith("graphite-callsite-scan-") })
-        request.interrupt()
-        releaseWorkers.countDown()
-        request.join(500)
-        val stoppedPromptly = !request.isAlive
-        if (!stoppedPromptly) {
-            request.interrupt()
-            request.join(5_000)
-        }
+        request.join(5_000)
 
-        assertTrue(stoppedPromptly)
+        assertFalse(request.isAlive)
         assertTrue(failure.get() is CancellationException)
+        assertEquals("Mapped CallSite string index work interrupted", failure.get().message)
         assertTrue(interruptedFlag.get())
+        // The interrupted sort never touched the postings.
+        assertContentEquals(original, postings)
+
+        val sorted = Thread {
+            sortThreads += Thread.currentThread().name
+            assertTrue(sortCallSiteTrigramPostings(postings))
+        }.apply { name = "trigram-sort-serial-test" }
+        sorted.start()
+        sorted.join(30_000)
+        assertFalse(sorted.isAlive)
+        assertEquals(setOf("trigram-sort-serial-test"), sortThreads)
+        assertTrue((1 until postings.size).all { index -> postings[index - 1] <= postings[index] })
+        assertEquals(original.sorted(), postings.toList())
     }
 
     @Test
@@ -3388,13 +3392,13 @@ class GraphStoreTest {
     }
 
     @Test
-    @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
-    fun `bounded mapped CallSite scan uses ordered intra graph workers before index admission`() {
+    @Suppress("LongMethod")
+    fun `bounded CallSite scans fall back to serial raw storage when the index budget is denied`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {
-            repeat(32_768) { index ->
+            repeat(8_192) { index ->
                 val marker = if (index == 100 || index % 512 == 0) "Target" else "Feature"
-                val callerName = if (index == 32_767) "ÜnicodeCall" else "call$index"
+                val callerName = if (index == 8_191) "ÜnicodeCall" else "call$index"
                 addNode(
                     CallSiteNode(
                         NodeId(index),
@@ -3412,33 +3416,45 @@ class GraphStoreTest {
                 )
             }
         }.build()
-        val dir = Files.createTempDirectory("webgraph-parallel-callsite-scan")
+        val orderedGraph = object : Graph by graph {
+            override fun <T : Node> nodes(type: Class<T>): Sequence<T> =
+                graph.nodes(type).sortedBy { node -> node.id.value }
+        }
+        val target = StringPropertyPredicate("caller_class", null, StringMatchMode.CONTAINS, "Target")
+        val expectedTargets = (0 until 8_192).filter { index -> index == 100 || index % 512 == 0 }
+        val noWork = object : GraphWorkBatchConsumer {
+            override fun consume(workUnits: Long) = Unit
+        }
+        fun tracking(work: AtomicLong) = object : GraphWorkBatchConsumer {
+            override fun consume(workUnits: Long) {
+                work.addAndGet(workUnits)
+            }
+        }
+        val dir = Files.createTempDirectory("webgraph-serial-raw-callsite-scan")
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        val blocker = MappedCallSiteStringIndexMemoryBudget.tryReserve(
+            MappedCallSiteStringIndexMemoryBudget.maxBytes - retainedBefore
+        )
+        assertNotNull(blocker)
         try {
-            GraphStore.save(graph, dir)
+            GraphStore.save(orderedGraph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                val serialWork = AtomicLong()
-                val serialNodes = loaded.nodesByStringPropertyDisjunction(
+                val firstWork = AtomicLong()
+                val firstNodes = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
+                    listOf(target),
                     limit = 1,
-                    workConsumer = SerialGraphWorkBatchConsumer(serialWork::addAndGet)
+                    workConsumer = tracking(firstWork)
                 ).orEmpty()
-                assertEquals(0L, serialWork.get())
-                val serialIds = serialNodes.map { it.id.value }.toList()
-                assertEquals(listOf(0), serialIds)
-                assertEquals(1L, serialWork.get())
+                assertEquals(0L, firstWork.get())
+                assertEquals(listOf(0), firstNodes.map { node -> node.id.value }.toList())
+                assertEquals(1L, firstWork.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
 
-                val serialLateWork = AtomicLong()
-                val serialLateIds = loaded.nodesByStringPropertyDisjunction(
+                val lateWork = AtomicLong()
+                val lateIds = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
                         StringPropertyPredicate(
@@ -3455,13 +3471,12 @@ class GraphStoreTest {
                         )
                     ),
                     limit = 1,
-                    workConsumer = SerialGraphWorkBatchConsumer(serialLateWork::addAndGet)
-                ).orEmpty().map { it.id.value }.toList()
-                assertEquals(listOf(32_767), serialLateIds)
-                assertTrue(serialLateWork.get() in 2L..32_768L)
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    workConsumer = tracking(lateWork)
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(listOf(8_191), lateIds)
+                assertEquals(8_192L, lateWork.get())
 
-                val serialCalleeIds = loaded.nodesByStringPropertyDisjunction(
+                val calleeIds = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
                         StringPropertyPredicate(
@@ -3470,17 +3485,23 @@ class GraphStoreTest {
                             StringMatchMode.CONTAINS,
                             "definitely-missing-callee"
                         ),
-                        StringPropertyPredicate(
-                            "callee_name",
-                            null,
-                            StringMatchMode.ENDS_WITH,
-                            "invoke32767"
-                        )
+                        StringPropertyPredicate("callee_name", null, StringMatchMode.ENDS_WITH, "invoke8191")
                     ),
                     limit = 1,
-                    workConsumer = SerialGraphWorkBatchConsumer { }
-                ).orEmpty().map { it.id.value }.toList()
-                assertEquals(listOf(32_767), serialCalleeIds)
+                    workConsumer = noWork
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(listOf(8_191), calleeIds)
+
+                val boundedWork = AtomicLong()
+                val boundedIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(target),
+                    limit = expectedTargets.size,
+                    workConsumer = tracking(boundedWork)
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(expectedTargets, boundedIds)
+                // The scan stops right after the last match fills LIMIT.
+                assertEquals(expectedTargets.last() + 1L, boundedWork.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
 
                 Thread.currentThread().interrupt()
@@ -3488,336 +3509,127 @@ class GraphStoreTest {
                     assertFailsWith<CancellationException> {
                         loaded.nodesByStringPropertyDisjunction(
                             CallSiteNode::class.java,
-                            listOf(
-                                StringPropertyPredicate(
-                                    "caller_class",
-                                    null,
-                                    StringMatchMode.CONTAINS,
-                                    "Target"
-                                )
-                            ),
+                            listOf(target),
                             limit = 1,
-                            workConsumer = SerialGraphWorkBatchConsumer { }
+                            workConsumer = noWork
                         ).orEmpty().toList()
                     }
                 } finally {
                     Thread.interrupted()
                 }
-
                 Thread.currentThread().interrupt()
                 try {
                     assertFailsWith<CancellationException> {
                         loaded.distinctStringPropertyDisjunction(
                             CallSiteNode::class.java,
-                            listOf(
-                                StringPropertyPredicate(
-                                    "caller_class",
-                                    null,
-                                    StringMatchMode.CONTAINS,
-                                    "Target"
-                                )
-                            ),
+                            listOf(target),
                             projectedProperties = listOf("caller_class"),
                             limit = 1,
-                            workConsumer = SerialGraphWorkBatchConsumer { }
+                            workConsumer = noWork
                         )
                     }
                 } finally {
                     Thread.interrupted()
                 }
 
-                val serialMissWork = AtomicLong()
-                val serialMissIds = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_name",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "definitely-missing-serial-value"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = SerialGraphWorkBatchConsumer(serialMissWork::addAndGet)
-                ).orEmpty().map { it.id.value }.toList()
-                assertTrue(serialMissIds.isEmpty())
-                assertEquals(32_768L, serialMissWork.get())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-
-                val rawProjectionWork = AtomicLong()
-                val rawProjection = loaded.distinctStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
-                    projectedProperties = listOf("caller_class", "graphId"),
-                    limit = 2,
-                    workConsumer = SerialGraphWorkBatchConsumer(rawProjectionWork::addAndGet)
-                )
-                val expectedRawProjection = loaded.nodes(CallSiteNode::class.java)
-                    .filter { node -> "Target" in node.caller.declaringClass.className }
-                    .take(2)
-                    .map { node -> listOf(node.caller.declaringClass.className, null) }
-                    .toList()
-                assertEquals(
-                    expectedRawProjection,
-                    rawProjection?.map { row -> row.values }
-                )
-                assertTrue(rawProjectionWork.get() in 1L..32_768L)
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertEquals(0L, loaded.callSiteStringPreflightCount())
+                val preflightWork = AtomicLong()
                 assertTrue(
-                    loaded.distinctStringPropertyDisjunction(
+                    loaded.nodesByStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         listOf(
                             StringPropertyPredicate(
-                                "caller_class",
-                                null,
+                                "caller_name",
+                                StringValueTransform.LOWERCASE,
                                 StringMatchMode.CONTAINS,
-                                "definitely-missing-preflight-value"
+                                "definitely-missing-serial-value"
                             )
                         ),
-                        projectedProperties = listOf("caller_class"),
-                        limit = 2,
-                        workConsumer = SerialGraphWorkBatchConsumer { }
-                    ).orEmpty().isEmpty()
+                        limit = 1,
+                        workConsumer = tracking(preflightWork)
+                    ).orEmpty().none()
+                )
+                // A long CONTAINS term is refuted by one dictionary pass instead of a node scan: four
+                // unique strings per call site plus the shared "void" return type.
+                assertEquals(1L, loaded.callSiteStringPreflightCount())
+                assertEquals(4L * 8_192L + 1L, preflightWork.get())
+                val missWork = AtomicLong()
+                assertTrue(
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(
+                            StringPropertyPredicate(
+                                "caller_name",
+                                StringValueTransform.LOWERCASE,
+                                StringMatchMode.CONTAINS,
+                                "zzz"
+                            )
+                        ),
+                        limit = 1,
+                        workConsumer = tracking(missWork)
+                    ).orEmpty().none()
                 )
                 assertEquals(1L, loaded.callSiteStringPreflightCount())
+                assertEquals(8_192L, missWork.get())
 
-                val workerThreads = ConcurrentHashMap.newKeySet<String>()
-                val expectedParallelWorkers = minOf(callSiteScanParallelism, 32_768)
-                val parallelWorkersStarted = CountDownLatch(expectedParallelWorkers)
-                val ids = loaded.nodesByStringPropertyDisjunction(
+                val projectionWork = AtomicLong()
+                val rawProjection = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                        if (workerThreads.add(Thread.currentThread().name)) {
-                            parallelWorkersStarted.countDown()
-                        }
-                        check(parallelWorkersStarted.await(5, TimeUnit.SECONDS))
-                    }
-                ).orEmpty().map { it.id.value }.toList()
-
-                assertEquals(listOf(0), ids)
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-callsite-scan-") })
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-                if (expectedParallelWorkers > 1) {
-                    assertEquals(expectedParallelWorkers, workerThreads.size)
-                    assertTrue(loaded.callSiteScanPeakActiveWorkers() > 1)
-                }
-
-                loaded.resetCallSiteScanMetrics()
-                assertEquals(0L, loaded.callSiteStringPreflightCount())
-                val splitWorkerThreads = ConcurrentHashMap.newKeySet<String>()
-                val splitWorkersStarted = CountDownLatch(2)
-                val splitIds = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
-
-                        override fun consume(workUnits: Long) {
-                            splitWorkerThreads += Thread.currentThread().name
-                            splitWorkersStarted.countDown()
-                            check(splitWorkersStarted.await(5, TimeUnit.SECONDS))
-                        }
-                    }
-                ).orEmpty().map { it.id.value }.toList()
-
-                assertEquals(listOf(0), splitIds)
-                assertTrue(splitWorkerThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
-                assertTrue(splitWorkerThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
-                assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
-                assertEquals(0, loaded.callSiteScanActiveWorkers())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-
-                loaded.resetCallSiteScanMetrics()
-                val splitProjectionThreads = ConcurrentHashMap.newKeySet<String>()
-                val splitProjectionWorkersStarted = CountDownLatch(2)
-                val splitProjection = loaded.distinctStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
+                    listOf(target),
                     projectedProperties = listOf("caller_class", "graphId"),
                     limit = 2,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
-
-                        override fun consume(workUnits: Long) {
-                            splitProjectionThreads += Thread.currentThread().name
-                            splitProjectionWorkersStarted.countDown()
-                            check(splitProjectionWorkersStarted.await(5, TimeUnit.SECONDS))
-                        }
-                    }
+                    workConsumer = tracking(projectionWork)
                 )
-                assertEquals(expectedRawProjection, splitProjection?.map { row -> row.values })
-                assertTrue(splitProjectionThreads.any { thread -> thread.startsWith("graphite-callsite-segment-") })
-                assertTrue(splitProjectionThreads.any { thread -> !thread.startsWith("graphite-callsite-segment-") })
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-                assertEquals(2, loaded.callSiteScanPeakActiveWorkers())
-                assertEquals(0, loaded.callSiteScanActiveWorkers())
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-
-                val incompleteSelectedProjection = loaded.distinctStringPropertyDisjunction(
+                assertEquals(
+                    listOf(listOf("example.TargetCaller0", null), listOf("example.TargetCaller100", null)),
+                    rawProjection?.map { row -> row.values }
+                )
+                assertEquals(101L, projectionWork.get())
+                val selectedProjection = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
+                    listOf(target),
                     projectedProperties = listOf("caller_class"),
                     limit = 2,
                     selectedValues = setOf(
                         listOf("example.TargetCaller0"),
                         listOf("example.TargetCallerMissing")
                     ),
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
-
-                        override fun consume(workUnits: Long) = Unit
-                    }
+                    workConsumer = noWork
                 )
-                assertEquals(
-                    listOf(listOf("example.TargetCaller0")),
-                    incompleteSelectedProjection?.map { row -> row.values }
-                )
-
-                val inlineOnlyProjection = loaded.distinctStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            null,
-                            StringMatchMode.CONTAINS,
-                            "Target"
-                        )
-                    ),
-                    projectedProperties = listOf("caller_class"),
-                    limit = 2,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 0
-
-                        override fun consume(workUnits: Long) = Unit
-                    }
-                )
-                assertEquals(
-                    expectedRawProjection.map { values -> values.take(1) },
-                    inlineOnlyProjection?.map { row -> row.values }
-                )
-
-                loaded.resetCallSiteScanMetrics()
-                val projectionFailureClaimed = AtomicBoolean()
-                val projectionFailure = assertFailsWith<IllegalStateException> {
-                    loaded.distinctStringPropertyDisjunction(
+                assertEquals(listOf(listOf("example.TargetCaller0")), selectedProjection?.map { row -> row.values })
+                // A duplicate-preserving projection probes a bounded raw prefix: 64 nodes cannot
+                // reach the second match at node 100, so the probe is inconclusive and returns null.
+                val inconclusiveWork = AtomicLong()
+                assertNull(
+                    loaded.projectStringPropertyDisjunction(
                         CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                null,
-                                StringMatchMode.CONTAINS,
-                                "Target"
-                            )
-                        ),
-                        projectedProperties = listOf("caller_class"),
+                        listOf(target),
+                        projectedProperties = listOf("caller_name"),
                         limit = 2,
-                        workConsumer = object : SplitGraphWorkBatchConsumer {
-                            override val segmentWorkerCount: Int = 1
-
-                            override fun consume(workUnits: Long) {
-                                if (projectionFailureClaimed.compareAndSet(false, true)) {
-                                    error("parallel projection budget failure")
-                                }
-                            }
-                        }
+                        workConsumer = tracking(inconclusiveWork)
                     )
-                }
-                assertEquals("parallel projection budget failure", projectionFailure.message)
-                assertEquals(0, loaded.callSiteScanActiveWorkers())
-                assertTrue(loaded.callSiteScanAbortedWorkers() >= 1L)
+                )
+                assertEquals(64L, inconclusiveWork.get())
+                assertEquals(0, loaded.rawProjectionMatchCount())
+                val rawRowsWork = AtomicLong()
+                val rawRows = loaded.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(target),
+                    projectedProperties = listOf("caller_name"),
+                    limit = 1,
+                    workConsumer = tracking(rawRowsWork)
+                )
+                assertEquals(listOf(listOf("call0")), rawRows?.map { row -> row.values })
+                assertEquals(1L, rawRowsWork.get())
+                assertEquals(1, loaded.rawProjectionMatchCount())
+                assertNull(
+                    loaded.aggregateStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(target),
+                        distinctProperty = null
+                    )
+                )
 
-                loaded.resetCallSiteScanMetrics()
-                val projectionBackgroundStarted = CountDownLatch(1)
-                val releaseProjectionBackground = CountDownLatch(1)
-                val interruptedProjectionFailure = AtomicReference<Throwable>()
-                val interruptedProjectionFlag = AtomicBoolean()
-                val interruptedProjection = Thread({
-                    try {
-                        loaded.distinctStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(
-                                StringPropertyPredicate(
-                                    "caller_class",
-                                    null,
-                                    StringMatchMode.CONTAINS,
-                                    "Target"
-                                )
-                            ),
-                            projectedProperties = listOf("caller_class"),
-                            limit = 2,
-                            workConsumer = object : SplitGraphWorkBatchConsumer {
-                                override val segmentWorkerCount: Int = 1
-
-                                override fun consume(workUnits: Long) {
-                                    if (Thread.currentThread().name.startsWith("graphite-callsite-segment-")) {
-                                        projectionBackgroundStarted.countDown()
-                                        check(releaseProjectionBackground.await(5, TimeUnit.SECONDS))
-                                    }
-                                }
-                            }
-                        )
-                        interruptedProjectionFailure.set(
-                            AssertionError("Interrupted projection completed normally")
-                        )
-                    } catch (error: Throwable) {
-                        interruptedProjectionFailure.set(error)
-                        interruptedProjectionFlag.set(Thread.currentThread().isInterrupted)
-                    }
-                }, "projection-interruption-test")
-                interruptedProjection.start()
-                try {
-                    assertTrue(projectionBackgroundStarted.await(5, TimeUnit.SECONDS))
-                    interruptedProjection.interrupt()
-                } finally {
-                    releaseProjectionBackground.countDown()
-                }
-                interruptedProjection.join(5_000)
-                assertFalse(interruptedProjection.isAlive)
-                assertTrue(interruptedProjectionFailure.get() is CancellationException)
-                assertTrue(interruptedProjectionFlag.get())
-                assertEquals(0, loaded.callSiteScanActiveWorkers())
-
-                loaded.resetCallSiteScanMetrics()
                 val qualified = CrossGraphCypherExecutor(
                     listOf(CypherGraph("selected", loaded)),
                     CypherExecutionBudget(maxWorkUnits = 100_000)
@@ -3835,403 +3647,20 @@ class GraphStoreTest {
                 )
                 assertEquals(listOf("selected"), qualified.rows.map { row -> row["graph"] })
                 assertEquals(listOf("example.TargetCaller0"), qualified.rows.map { row -> row["caller"] })
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-
-                if (Runtime.getRuntime().availableProcessors() > 1) {
-                    loaded.resetCallSiteScanMetrics()
-                    val expectedWorkers = callSiteScanParallelism
-                    val firstBatchReached = CountDownLatch(expectedWorkers)
-                    val failureClaimed = AtomicBoolean()
-                    val consumedWork = AtomicLong()
-                    val failure = assertFailsWith<IllegalStateException> {
-                        loaded.nodesByStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(
-                                StringPropertyPredicate(
-                                    "caller_class",
-                                    null,
-                                    StringMatchMode.CONTAINS,
-                                    "NeverMatches"
-                                )
-                            ),
-                            limit = 1,
-                            workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                                consumedWork.addAndGet(workUnits)
-                                val failThisWorker = failureClaimed.compareAndSet(false, true)
-                                firstBatchReached.countDown()
-                                check(firstBatchReached.await(5, TimeUnit.SECONDS))
-                                if (failThisWorker) error("parallel scan budget failure")
-                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
-                                    Thread.onSpinWait()
-                                }
-                            }
-                        ).orEmpty().toList()
-                    }
-                    assertEquals("parallel scan budget failure", failure.message)
-                    assertEquals(expectedWorkers * 1_024L, consumedWork.get())
-                    assertEquals(expectedWorkers - 1L, loaded.callSiteScanAbortedWorkers())
-
-                    loaded.resetCallSiteScanMetrics()
-                    val interruptionBatchReached = CountDownLatch(expectedWorkers)
-                    val releaseInterruptedWorkers = CountDownLatch(1)
-                    val interruptedFailure = AtomicReference<Throwable>()
-                    val interruptedFlag = AtomicBoolean()
-                    val interruptedRequest = Thread {
-                        try {
-                            loaded.nodesByStringPropertyDisjunction(
-                                CallSiteNode::class.java,
-                                listOf(
-                                    StringPropertyPredicate(
-                                        "caller_class",
-                                        null,
-                                        StringMatchMode.CONTAINS,
-                                        "NeverMatches"
-                                    )
-                                ),
-                                limit = 1,
-                                workConsumer = ParallelGraphWorkBatchConsumer {
-                                    interruptionBatchReached.countDown()
-                                    check(releaseInterruptedWorkers.await(5, TimeUnit.SECONDS))
-                                }
-                            ).orEmpty().toList()
-                            interruptedFailure.set(AssertionError("Interrupted scan completed normally"))
-                        } catch (error: Throwable) {
-                            interruptedFailure.set(error)
-                            interruptedFlag.set(Thread.currentThread().isInterrupted)
-                        }
-                    }
-                    interruptedRequest.start()
-                    try {
-                        assertTrue(interruptionBatchReached.await(5, TimeUnit.SECONDS))
-                        interruptedRequest.interrupt()
-                    } finally {
-                        releaseInterruptedWorkers.countDown()
-                    }
-                    interruptedRequest.join(5_000)
-                    assertFalse(interruptedRequest.isAlive)
-                    assertTrue(interruptedFailure.get() is CancellationException)
-                    assertEquals("Mapped string-property scan interrupted", interruptedFailure.get().message)
-                    assertTrue(interruptedFlag.get())
-                    assertTrue(loaded.callSiteScanAbortedWorkers() in 1L..expectedWorkers.toLong())
-                }
-
-                loaded.clearStringPropertyIndexes()
-                loaded.resetCallSiteScanMetrics()
-                val coldZero = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "definitely-absent"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { }
-                ).orEmpty().toList()
-                assertTrue(coldZero.isEmpty())
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-                assertEquals(0L, loaded.callSiteStringIndexLookupCount())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
-
-                val metadataWork = AtomicLong()
-                val metadataFailureClaimed = AtomicBoolean()
-                val metadataFailure = assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                StringValueTransform.LOWERCASE,
-                                StringMatchMode.CONTAINS,
-                                "target"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                            metadataWork.addAndGet(workUnits)
-                            if (metadataFailureClaimed.compareAndSet(false, true)) {
-                                error("trigram metadata budget failure")
-                            }
-                        }
-                    ).orEmpty().toList()
-                }
-                assertEquals("trigram metadata budget failure", metadataFailure.message)
-                assertTrue(metadataWork.get() >= 1_024L)
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
-
-                val warm = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "target"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { }
-                ).orEmpty().map { it.id.value }.toList()
-                assertEquals(listOf(0), warm)
-                assertEquals(1L, loaded.callSiteParallelScanCount())
-                assertEquals(2L, loaded.callSiteStringIndexLookupCount())
-                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
-
-                loaded.clearStringPropertyIndexes()
-                val secondColdZero = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "definitely-absent"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { }
-                ).orEmpty().toList()
-                assertTrue(secondColdZero.isEmpty())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
-
-                val metadataBatchReached = CountDownLatch(1)
-                val releaseMetadataWorkers = CountDownLatch(1)
-                val metadataInterruption = AtomicReference<Throwable>()
-                val metadataInterruptedFlag = AtomicBoolean()
-                val metadataInterruptedRequest = Thread {
-                    try {
-                        loaded.nodesByStringPropertyDisjunction(
-                            CallSiteNode::class.java,
-                            listOf(
-                                StringPropertyPredicate(
-                                    "caller_class",
-                                    StringValueTransform.LOWERCASE,
-                                    StringMatchMode.CONTAINS,
-                                    "target"
-                                )
-                            ),
-                            limit = 1,
-                            workConsumer = ParallelGraphWorkBatchConsumer {
-                                metadataBatchReached.countDown()
-                                check(releaseMetadataWorkers.await(5, TimeUnit.SECONDS))
-                            }
-                        ).orEmpty().toList()
-                        metadataInterruption.set(AssertionError("Interrupted trigram metadata build completed normally"))
-                    } catch (error: Throwable) {
-                        metadataInterruption.set(error)
-                        metadataInterruptedFlag.set(Thread.currentThread().isInterrupted)
-                    }
-                }
-                metadataInterruptedRequest.start()
-                try {
-                    assertTrue(metadataBatchReached.await(5, TimeUnit.SECONDS))
-                    metadataInterruptedRequest.interrupt()
-                } finally {
-                    releaseMetadataWorkers.countDown()
-                }
-                metadataInterruptedRequest.join(5_000)
-                assertFalse(metadataInterruptedRequest.isAlive)
-                assertTrue(metadataInterruption.get() is CancellationException)
-                assertEquals("CallSite trigram metadata build interrupted", metadataInterruption.get().message)
-                assertTrue(metadataInterruptedFlag.get())
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
-
-                val metadataStringCount = 32_768L * CALL_SITE_STRING_PROPERTY_COUNT
-                val postingWork = AtomicLong()
-                val postingFailureClaimed = AtomicBoolean()
-                val postingFailure = assertFailsWith<IllegalStateException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                StringValueTransform.LOWERCASE,
-                                StringMatchMode.CONTAINS,
-                                "target"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                            val total = postingWork.addAndGet(workUnits)
-                            if (total > metadataStringCount && postingFailureClaimed.compareAndSet(false, true)) {
-                                error("trigram posting budget failure")
-                            }
-                        }
-                    ).orEmpty().toList()
-                }
-                assertEquals("trigram posting budget failure", postingFailure.message)
-                assertTrue(postingWork.get() > metadataStringCount)
-                assertTrue(loaded.isCallSiteStringIndexInitialized())
-                assertFalse(loaded.isCallSiteTrigramIndexInitialized())
-
-                val postingRetry = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "target"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { }
-                ).orEmpty().map { it.id.value }.toList()
-                assertEquals(listOf(0), postingRetry)
-                assertTrue(loaded.isCallSiteTrigramIndexInitialized())
-
-                loaded.clearStringPropertyIndexes()
-                val budgetBeforeFailedHandoff = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
-                val scanWork = 32_768L
-                val failedHandoffWork = AtomicLong()
-                val handoffResult = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "definitely-absent"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                        check(failedHandoffWork.addAndGet(workUnits) <= scanWork) {
-                            "fused index budget failure"
-                        }
-                    }
-                ).orEmpty().toList()
-                assertTrue(handoffResult.isEmpty())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
-
-                val handoffWorkLimit = 40_000L
-                val consumedWork = AtomicLong()
-                val budgetedHandoffResult = loaded.nodesByStringPropertyDisjunction(
-                    CallSiteNode::class.java,
-                    listOf(
-                        StringPropertyPredicate(
-                            "caller_class",
-                            StringValueTransform.LOWERCASE,
-                            StringMatchMode.CONTAINS,
-                            "definitely-absent"
-                        )
-                    ),
-                    limit = 1,
-                    workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                        val total = consumedWork.addAndGet(workUnits)
-                        check(total <= handoffWorkLimit) { "fused index exceeded request budget" }
-                    }
-                ).orEmpty().toList()
-                assertTrue(budgetedHandoffResult.isEmpty())
-                assertTrue(consumedWork.get() in (scanWork + 1)..(scanWork * 3))
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
-
-                val cancellationWork = AtomicLong()
-                val handoffCancellation = assertFailsWith<CancellationException> {
-                    loaded.nodesByStringPropertyDisjunction(
-                        CallSiteNode::class.java,
-                        listOf(
-                            StringPropertyPredicate(
-                                "caller_class",
-                                StringValueTransform.LOWERCASE,
-                                StringMatchMode.CONTAINS,
-                                "definitely-absent"
-                            )
-                        ),
-                        limit = 1,
-                        workConsumer = ParallelGraphWorkBatchConsumer { workUnits ->
-                            if (cancellationWork.addAndGet(workUnits) > scanWork) {
-                                throw CancellationException("cancelled during optional cache handoff")
-                            }
-                        }
-                    ).orEmpty().toList()
-                }
-                assertEquals("cancelled during optional cache handoff", handoffCancellation.message)
-                assertFalse(loaded.isCallSiteStringIndexInitialized())
-                assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
-
-                if (Runtime.getRuntime().availableProcessors() > 1) {
-                    loaded.resetCallSiteScanMetrics()
-                    val expectedWorkers = callSiteScanParallelism
-                    val firstPreparationBatchReached = CountDownLatch(expectedWorkers)
-                    val preparationFailureClaimed = AtomicBoolean()
-                    val preparationFailure = assertFailsWith<IllegalStateException> {
-                        loaded.prepareCallSiteStringIndex(
-                            ParallelGraphWorkBatchConsumer {
-                                val failThisWorker = preparationFailureClaimed.compareAndSet(false, true)
-                                firstPreparationBatchReached.countDown()
-                                check(firstPreparationBatchReached.await(5, TimeUnit.SECONDS))
-                                if (failThisWorker) error("parallel preparation budget failure")
-                                while (loaded.callSiteScanActiveWorkers() == expectedWorkers) {
-                                    Thread.onSpinWait()
-                                }
-                            }
-                        )
-                    }
-                    assertEquals("parallel preparation budget failure", preparationFailure.message)
-                    assertEquals(0, loaded.callSiteScanActiveWorkers())
-                    assertFalse(loaded.isCallSiteStringIndexInitialized())
-                    assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
-
-                    loaded.resetCallSiteScanMetrics()
-                    val interruptedPreparationBatchReached = CountDownLatch(expectedWorkers)
-                    val releaseInterruptedPreparation = CountDownLatch(1)
-                    val interruptedPreparationFailure = AtomicReference<Throwable>()
-                    val interruptedPreparationFlag = AtomicBoolean()
-                    val interruptedPreparation = Thread {
-                        try {
-                            loaded.prepareCallSiteStringIndex(
-                                ParallelGraphWorkBatchConsumer {
-                                    interruptedPreparationBatchReached.countDown()
-                                    check(releaseInterruptedPreparation.await(5, TimeUnit.SECONDS))
-                                }
-                            )
-                            interruptedPreparationFailure.set(
-                                AssertionError("Interrupted CallSite preparation completed normally")
-                            )
-                        } catch (error: Throwable) {
-                            interruptedPreparationFailure.set(error)
-                            interruptedPreparationFlag.set(Thread.currentThread().isInterrupted)
-                        }
-                    }
-                    interruptedPreparation.start()
-                    try {
-                        assertTrue(interruptedPreparationBatchReached.await(5, TimeUnit.SECONDS))
-                        interruptedPreparation.interrupt()
-                    } finally {
-                        releaseInterruptedPreparation.countDown()
-                    }
-                    interruptedPreparation.join(5_000)
-                    assertFalse(interruptedPreparation.isAlive)
-                    assertTrue(interruptedPreparationFailure.get() is CancellationException)
-                    assertTrue(interruptedPreparationFlag.get())
-                    assertEquals(0, loaded.callSiteScanActiveWorkers())
-
-                    assertTrue(loaded.prepareCallSiteStringIndex())
-                    assertTrue(loaded.isCallSiteStringIndexInitialized())
-                    assertTrue(loaded.isCallSiteTrigramIndexInitialized())
-                    loaded.clearStringPropertyIndexes()
-                }
-
-                loaded.resetCallSiteScanMetrics()
+                assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
                 assertEquals(0L, loaded.callSiteParallelScanCount())
                 assertEquals(0L, loaded.callSiteStringIndexLookupCount())
                 assertEquals(0, loaded.callSiteScanPeakActiveWorkers())
-                assertEquals(0L, loaded.callSiteScanAbortedWorkers())
+                assertEquals(0, loaded.callSiteSegmentPeakActiveWorkers())
             } finally {
                 loaded.close()
             }
         } finally {
+            blocker.close()
             dir.toFile().deleteRecursively()
         }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test
@@ -4642,7 +4071,7 @@ class GraphStoreTest {
             GraphStore.save(graph, dir)
             val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                val smallSplitProjection = loaded.distinctStringPropertyDisjunction(
+                val smallProjection = loaded.distinctStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     listOf(
                         StringPropertyPredicate(
@@ -4654,13 +4083,13 @@ class GraphStoreTest {
                     ),
                     projectedProperties = listOf("caller_class"),
                     limit = 4,
-                    workConsumer = object : SplitGraphWorkBatchConsumer {
-                        override val segmentWorkerCount: Int = 1
-
+                    workConsumer = object : GraphWorkBatchConsumer {
                         override fun consume(workUnits: Long) = Unit
                     }
                 )
-                assertEquals(listOf(listOf("Example.Alpha")), smallSplitProjection?.map { row -> row.values })
+                assertEquals(listOf(listOf("Example.Alpha")), smallProjection?.map { row -> row.values })
+                assertTrue(loaded.isCallSiteStringIndexInitialized())
+                assertEquals(1L, loaded.callSiteStringProjectionLookupCount())
 
                 fun ids(
                     property: String,
@@ -5291,14 +4720,20 @@ class GraphStoreTest {
                         distinctProperty = "caller_class"
                     )
                 )
-                assertNull(
+                // A denied index budget projects DISTINCT rows from raw storage on the same thread.
+                var projectionWork = 0
+                assertEquals(
+                    listOf(listOf("example.Caller1")),
                     loaded.distinctStringPropertyDisjunction(
                         CallSiteNode::class.java,
                         predicates,
                         listOf("caller_class"),
-                        limit = 10
-                    )
+                        limit = 10,
+                        workConsumer = GraphWorkConsumer { projectionWork++ }
+                    )?.map { row -> row.values }
                 )
+                assertEquals(3, projectionWork)
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertNull(
                     loaded.aggregateStringPropertyDisjunction(
                         StringConstant::class.java,
