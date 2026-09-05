@@ -6313,7 +6313,68 @@ request-local rows in the cross-query LRU.
 - The graph-routing K=64 cache-capacity hypothesis is deliberately excluded. This attempt changes
   only the unscoped raw-leading result conversion; it does not change graph selection, query-cache
   capacity, any index, work accounting, executor, worker count, or thread pool.
+- Exact pushed candidate `19bae795bafd28be2b556dd1c5b939f45dd62bb7` ran in GitHub Actions
+  workflow `33956264093`, global-wide job `101281235057`. The one-materialization hypothesis has a
+  consistent hosted effect: wrapped-dense candidate/base ratios fall from Attempt 164's
+  `2.05x/2.08x/2.05x` to `1.74x/1.49x/1.38x`. Candidate latency is
+  `3.411/3.607/2.950 ms` versus v2.4.7's `1.960/2.421/2.140 ms`; the third pair clears, but the
+  first two still exceed both the 15% and 1 ms thresholds, so the frozen gate correctly remains
+  red. Aggregate P95 speedup remains above 10x in every fork at
+  `14.276x/13.294x/14.265x`, and wrapped-family P95 speedup is
+  `18.605x/20.406x/19.988x`. Global report/status SHA-256 is
+  `ec7453fcfd8d03e9a431e9f0cadca777ac670059116ecdb6a378d579c24abb4d` /
+  `cad6a6266c76bd397a4b92003d2589709f0c35c653fa6718a0e3ba845ab9ddf8`.
+- That exact gate exposes the next independent global root instead of licensing a broader rewrite.
+  `global-wide-provenance/dense`, which injects `graphId` and was deliberately excluded here,
+  repeats against frozen v2.4.7 in two pairs at candidate/base
+  `6.934/2.202` and `3.745/2.179 ms`, and against current main in all three pairs at
+  `4.198/2.454`, `4.216/3.127`, and `3.556/1.885 ms`. All observations return the same 200 rows;
+  candidate work is exactly 200 units.
+- Graph routing remains independently red only for cold K=64: P50 is
+  `0.427/0.775 ms` and P95 `3.028/4.045 ms`. The exact parameter-targeted pair is
+  `0.427/0.905 ms` after the bottom mapped projection has already fallen from the literal form's
+  1,539 work units to 73. Its report/status SHA-256 is
+  `efc2e8cfa9c7b4a75470d08936104da9bb5814daad8930550296b3e99c3d67b8` /
+  `661af9f875099172a857d9ca7d7397eda1f62812eb8d8685c9a2436f18cba3c4`.
 
-**Conclusion:** submit this single duplicate-materialization removal to hosted CI. Retain or revert
-it solely from the next exact-head frozen-v2.4.7 wrapped-dense result. PR #114 remains not ready to
-merge and no merge is authorized.
+**Conclusion:** retain as a measured partial improvement, not as a passed gate. On hosted CI it
+reduces the targeted candidate/base ratio in all three pairs, but two pairs still fail. The next
+commit follows the new exact gate feedback by extending the same final-row representation only to
+the graphId-injected provenance branch. The remaining wrapped-dense, localized-early,
+graph-routing, and Method samples stay separate. PR #114 is not ready to merge and no merge is
+authorized.
+
+### 2026-09-05 - Attempt 166: Materialize graphId-injected raw rows once
+
+**Hypothesis:** Attempt 165's exact hosted run makes `global-wide-provenance/dense` the only row
+that repeats against both baselines and maps directly to an intentionally excluded code branch.
+The storage projection returns only string columns, so `projectRawLeadingRows` currently injects
+`graphId` into an internal `LinkedHashMap` for each of 200 rows and `CypherExecutor` then copies
+those rows again to attach identical public provenance metadata. Let the uncached final-row builder
+inject graphId while consuming the storage values once. This should remove the same duplicate
+materialization without changing the separate pure-string wrapped path or any graph-routing state.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 165
+  `19bae795bafd28be2b556dd1c5b939f45dd62bb7`; frozen goal/current references remain v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. Workflow `33956264093`, global-wide job
+  `101281235057`, is the sole performance input. No local timing is used. The production/test diff
+  SHA-256 is `0140d57c02e9a55d8b95bb5b69523791a327c827287a86fb8f8eadeba7bdf107`.
+- The new uncached overload validates that projected-property width matches output-column width,
+  counts only non-graphId storage values, injects the source graph id at each graphId column, and
+  checks that it consumes the exact storage row width. It reuses the existing immutable public row
+  and metadata representation but never admits an LRU entry or reserves cache bytes.
+- The focused unit test verifies aliased graphId and string columns, exact values, explicit graph
+  provenance, immutability, and zero LRU admission. Existing integration tests continue to prove
+  partial raw-leading duplicate/order/limit/provenance behavior and reject a storage row wider than
+  the requested string columns with the same fail-closed diagnostic. Focused tests and
+  `:cypher:detekt` pass in the normal verification clone; full module verification follows before
+  push. These are correctness/static checks only.
+- Wrapped string decode, mapped projection caches, the 32-entry public result LRU, graph selection,
+  executors, worker counts, and thread pools are byte-for-byte unchanged in this attempt.
+
+**Conclusion:** submit only graphId-injected one-time materialization to hosted CI. Its retention
+depends on the next exact-head provenance-dense rows; no other gate is claimed fixed. PR #114
+remains not ready to merge and no merge is authorized.

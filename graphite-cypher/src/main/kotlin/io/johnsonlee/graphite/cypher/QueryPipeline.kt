@@ -1817,26 +1817,12 @@ class QueryPipeline private constructor(
             limit,
             workConsumer
         ) ?: return null
-        if (storageProjectedProperties.size == projectedProperties.size) {
-            return DirectProjectionResultCache.createUncached(projectedRows, columns, source.id).rows
-        }
-        val provenance = setOf(source.id)
-        return projectedRows.map { raw ->
-            LinkedHashMap<String, Any?>(columns.size + 1).apply {
-                var storageIndex = 0
-                columns.indices.forEach { index ->
-                    this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
-                        source.id
-                    } else {
-                        raw.values[storageIndex++]
-                    }
-                }
-                check(storageIndex == raw.values.size) {
-                    "Storage projection width ${raw.values.size} does not match $storageIndex string columns"
-                }
-                put(INTERNAL_PROVENANCE_KEY, provenance)
-            }
-        }
+        return DirectProjectionResultCache.createUncached(
+            projectedRows,
+            projectedProperties,
+            columns,
+            source.id
+        ).rows
     }
 
     @Suppress("LongParameterList", "ReturnCount")

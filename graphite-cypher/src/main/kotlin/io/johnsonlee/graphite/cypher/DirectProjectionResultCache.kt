@@ -84,6 +84,20 @@ internal object DirectProjectionResultCache {
         graphId: String
     ): CypherResult = immutableResult(projectedRows, columns, graphId)
 
+    /** Builds an uncached public result while injecting graphId columns absent from storage rows. */
+    fun createUncached(
+        projectedRows: List<StringPropertyProjectionRow>,
+        projectedProperties: List<String>,
+        columns: List<String>,
+        graphId: String
+    ): CypherResult {
+        check(projectedProperties.size == columns.size) {
+            "Projected property width ${projectedProperties.size} does not match ${columns.size} columns"
+        }
+        val storageColumnCount = projectedProperties.count { property -> property != GRAPH_ID_PROPERTY }
+        return immutableResult(projectedRows, columns, graphId, projectedProperties, storageColumnCount)
+    }
+
     internal fun clear() = synchronized(results) {
         results.clear()
         retainedBytes = 0L
@@ -98,7 +112,9 @@ internal object DirectProjectionResultCache {
     private fun immutableResult(
         projectedRows: List<StringPropertyProjectionRow>,
         columns: List<String>,
-        graphId: String
+        graphId: String,
+        projectedProperties: List<String>? = null,
+        storageColumnCount: Int = columns.size
     ): CypherResult {
         val immutableColumns = Collections.unmodifiableList(columns.toList())
         val graphIds = Collections.singleton(graphId)
@@ -107,11 +123,22 @@ internal object DirectProjectionResultCache {
             Collections.singletonList(graphId)
         )
         val rows = projectedRows.map { projected ->
-            check(projected.values.size == immutableColumns.size) {
-                "Storage projection width ${projected.values.size} does not match ${immutableColumns.size} columns"
+            check(projected.values.size == storageColumnCount) {
+                "Storage projection width ${projected.values.size} does not match $storageColumnCount " +
+                    if (projectedProperties == null) "columns" else "string columns"
             }
             val values = LinkedHashMap<String, Any?>(immutableColumns.size * 2 + 1)
-            immutableColumns.forEachIndexed { index, column -> values[column] = projected.values[index] }
+            var storageIndex = 0
+            immutableColumns.forEachIndexed { index, column ->
+                values[column] = if (projectedProperties?.get(index) == GRAPH_ID_PROPERTY) {
+                    graphId
+                } else {
+                    projected.values[storageIndex++]
+                }
+            }
+            check(storageIndex == projected.values.size) {
+                "Storage projection consumed $storageIndex of ${projected.values.size} string columns"
+            }
             values[RESULT_METADATA_KEY] = metadata
             DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
         }

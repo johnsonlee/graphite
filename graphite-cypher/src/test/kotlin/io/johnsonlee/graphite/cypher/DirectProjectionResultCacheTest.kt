@@ -64,6 +64,22 @@ class DirectProjectionResultCacheTest {
             @Suppress("UNCHECKED_CAST")
             (result.rows as MutableList<Map<String, Any?>>).add(emptyMap())
         }
+
+        val withGraphId = DirectProjectionResultCache.createUncached(
+            projectedRows,
+            listOf(GRAPH_ID_PROPERTY, "caller_class", "callee_class"),
+            listOf("graph", "caller", "callee"),
+            "graph-a"
+        )
+        assertEquals(
+            mapOf(
+                "graph" to "graph-a",
+                "caller" to "example.Caller",
+                "callee" to "example.Callee",
+                RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to listOf("graph-a"))
+            ),
+            withGraphId.rows.single()
+        )
         assertEquals(0, DirectProjectionResultCache.entryCount())
     }
 
