@@ -43,7 +43,7 @@ Three alternating fresh-JVM pairs; indexes reset before each query. JIT/OS cache
 
 No query exceeds the original aligned-row scale (>15% and >1 ms) in two pairs. One pair does: pair 2 `or-broad-all-rows`, 4.570417 → 5.663708 ms. This is a diagnostic comparison, not a new acceptance gate. Pure four-OR has one smaller slowdown: pair 3 `or-four-all-rows`, 11.771583 → 12.676041 ms. Do not claim every row improves.
 
-Candidate acceptance remains pending exact-head method, end-to-end, routing and global CI. The 10x goal is unmet and CallSite pools remain. Raw output rows and complete graph-file receipts remain under the recorded temporary artifact root; this report, six run summaries, TSVs, exact commands and independent audit are persisted here. Text copies normalize trailing newlines only; numeric values are unchanged.
+Candidate was subsequently rejected and reverted after repeated Method4 count/middle CPU failures in exact-head CI. The 10x goal is unmet and CallSite pools remain. Raw output rows and complete graph-file receipts remain under the recorded temporary artifact root; this report, six run summaries, TSVs, exact commands and independent audit are persisted here. Text copies normalize trailing newlines only; numeric values are unchanged.
 
 Unlike old34, v3 work counters are not invariant: mixed-four-few rows are
 227190→100227, 304905→105233, 304631→276591; pair 3 pure four-OR middle rows

@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "errors": [],
+  "thresholdOnly": true,
+  "allowZeroBase": true,
+  "rows": [
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=early]",
+      "baseScore": 850000000,
+      "candidateScore": 1050000000,
+      "unit": "#",
+      "delta": 23.529411764705888,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": true
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]",
+      "baseScore": 860000000,
+      "candidateScore": 1130000000,
+      "unit": "#",
+      "delta": 31.39534883720929,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": true
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=zero]",
+      "baseScore": 530000000,
+      "candidateScore": 620000000,
+      "unit": "#",
+      "delta": 16.981132075471695,
+      "threshold": 15,
+      "aboveThreshold": true,
+      "confidenceSeparated": true,
+      "blocked": true
+    }
+  ]
+}

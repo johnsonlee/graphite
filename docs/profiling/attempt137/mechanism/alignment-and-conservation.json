@@ -1,0 +1,2598 @@
+[
+  {
+    "revision": "base",
+    "validation": {
+      "passed": true,
+      "queryCount": 80,
+      "expectedCount": 80,
+      "catalogOrderChecked": true,
+      "allTsvOutcomesSuccess": true,
+      "nonoverlapping": true,
+      "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+      "durationToleranceNanos": 1000000,
+      "minLatencyGapNanos": 70292,
+      "maxLatencyGapNanos": 7947166,
+      "totalLatencyGapNanos": 17574755
+    },
+    "metricConservationChecks": [
+      {
+        "id": "or-four-broad-rows-00",
+        "metric": "cpuSamples",
+        "events": 360,
+        "weight": 360,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-00",
+        "metric": "allocationSampledBytes",
+        "events": 106,
+        "weight": 28573712,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-00",
+        "metric": "cpuSamples",
+        "events": 815,
+        "weight": 815,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-00",
+        "metric": "allocationSampledBytes",
+        "events": 4393,
+        "weight": 1198785472,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-01",
+        "metric": "cpuSamples",
+        "events": 111,
+        "weight": 111,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-01",
+        "metric": "allocationSampledBytes",
+        "events": 103,
+        "weight": 27787280,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-01",
+        "metric": "cpuSamples",
+        "events": 548,
+        "weight": 548,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-01",
+        "metric": "allocationSampledBytes",
+        "events": 4495,
+        "weight": 1223951264,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-02",
+        "metric": "cpuSamples",
+        "events": 27,
+        "weight": 27,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-02",
+        "metric": "allocationSampledBytes",
+        "events": 101,
+        "weight": 27262992,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-02",
+        "metric": "cpuSamples",
+        "events": 363,
+        "weight": 363,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-02",
+        "metric": "allocationSampledBytes",
+        "events": 4512,
+        "weight": 1230767056,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-03",
+        "metric": "cpuSamples",
+        "events": 24,
+        "weight": 24,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-03",
+        "metric": "allocationSampledBytes",
+        "events": 88,
+        "weight": 23855120,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-03",
+        "metric": "cpuSamples",
+        "events": 358,
+        "weight": 358,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-03",
+        "metric": "allocationSampledBytes",
+        "events": 4543,
+        "weight": 1239679968,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-04",
+        "metric": "cpuSamples",
+        "events": 23,
+        "weight": 23,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-04",
+        "metric": "allocationSampledBytes",
+        "events": 84,
+        "weight": 22806544,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-04",
+        "metric": "cpuSamples",
+        "events": 349,
+        "weight": 349,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-04",
+        "metric": "allocationSampledBytes",
+        "events": 4517,
+        "weight": 1233650672,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-05",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-05",
+        "metric": "allocationSampledBytes",
+        "events": 103,
+        "weight": 27787280,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-05",
+        "metric": "cpuSamples",
+        "events": 380,
+        "weight": 380,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-05",
+        "metric": "allocationSampledBytes",
+        "events": 4574,
+        "weight": 1247806432,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-06",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-06",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 25427984,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-06",
+        "metric": "cpuSamples",
+        "events": 395,
+        "weight": 395,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-06",
+        "metric": "allocationSampledBytes",
+        "events": 4542,
+        "weight": 1237844928,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-07",
+        "metric": "cpuSamples",
+        "events": 14,
+        "weight": 14,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-07",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-07",
+        "metric": "cpuSamples",
+        "events": 324,
+        "weight": 324,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-07",
+        "metric": "allocationSampledBytes",
+        "events": 4599,
+        "weight": 1255146480,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-08",
+        "metric": "cpuSamples",
+        "events": 24,
+        "weight": 24,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-08",
+        "metric": "allocationSampledBytes",
+        "events": 95,
+        "weight": 25690128,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-08",
+        "metric": "cpuSamples",
+        "events": 422,
+        "weight": 422,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-08",
+        "metric": "allocationSampledBytes",
+        "events": 4520,
+        "weight": 1233650656,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-09",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-09",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-09",
+        "metric": "cpuSamples",
+        "events": 333,
+        "weight": 333,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-09",
+        "metric": "allocationSampledBytes",
+        "events": 4455,
+        "weight": 1217397744,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-10",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-10",
+        "metric": "allocationSampledBytes",
+        "events": 110,
+        "weight": 29622288,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-10",
+        "metric": "cpuSamples",
+        "events": 318,
+        "weight": 318,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-10",
+        "metric": "allocationSampledBytes",
+        "events": 4473,
+        "weight": 1220543440,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-11",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-11",
+        "metric": "allocationSampledBytes",
+        "events": 89,
+        "weight": 24117264,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-11",
+        "metric": "cpuSamples",
+        "events": 321,
+        "weight": 321,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-11",
+        "metric": "allocationSampledBytes",
+        "events": 4578,
+        "weight": 1246495664,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-12",
+        "metric": "cpuSamples",
+        "events": 15,
+        "weight": 15,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-12",
+        "metric": "allocationSampledBytes",
+        "events": 90,
+        "weight": 24379408,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-12",
+        "metric": "cpuSamples",
+        "events": 307,
+        "weight": 307,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-12",
+        "metric": "allocationSampledBytes",
+        "events": 4515,
+        "weight": 1231553488,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-13",
+        "metric": "cpuSamples",
+        "events": 20,
+        "weight": 20,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-13",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-13",
+        "metric": "cpuSamples",
+        "events": 401,
+        "weight": 401,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-13",
+        "metric": "allocationSampledBytes",
+        "events": 4619,
+        "weight": 1259602912,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-14",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-14",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-14",
+        "metric": "cpuSamples",
+        "events": 310,
+        "weight": 310,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-14",
+        "metric": "allocationSampledBytes",
+        "events": 4564,
+        "weight": 1245971440,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-15",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-15",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-15",
+        "metric": "cpuSamples",
+        "events": 346,
+        "weight": 346,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-15",
+        "metric": "allocationSampledBytes",
+        "events": 4610,
+        "weight": 1254884272,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-16",
+        "metric": "cpuSamples",
+        "events": 20,
+        "weight": 20,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-16",
+        "metric": "allocationSampledBytes",
+        "events": 83,
+        "weight": 22544400,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-16",
+        "metric": "cpuSamples",
+        "events": 357,
+        "weight": 357,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-16",
+        "metric": "allocationSampledBytes",
+        "events": 4561,
+        "weight": 1241252768,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-17",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-17",
+        "metric": "allocationSampledBytes",
+        "events": 78,
+        "weight": 21233680,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-17",
+        "metric": "cpuSamples",
+        "events": 307,
+        "weight": 307,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-17",
+        "metric": "allocationSampledBytes",
+        "events": 4518,
+        "weight": 1232339920,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-18",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-18",
+        "metric": "allocationSampledBytes",
+        "events": 114,
+        "weight": 30670864,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-18",
+        "metric": "cpuSamples",
+        "events": 308,
+        "weight": 308,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-18",
+        "metric": "allocationSampledBytes",
+        "events": 4546,
+        "weight": 1238107056,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-19",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-19",
+        "metric": "allocationSampledBytes",
+        "events": 78,
+        "weight": 21233680,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-19",
+        "metric": "cpuSamples",
+        "events": 314,
+        "weight": 314,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-19",
+        "metric": "allocationSampledBytes",
+        "events": 4516,
+        "weight": 1231029184,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-20",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-20",
+        "metric": "allocationSampledBytes",
+        "events": 87,
+        "weight": 23592976,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-20",
+        "metric": "cpuSamples",
+        "events": 296,
+        "weight": 296,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-20",
+        "metric": "allocationSampledBytes",
+        "events": 4457,
+        "weight": 1217135584,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-21",
+        "metric": "cpuSamples",
+        "events": 23,
+        "weight": 23,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-21",
+        "metric": "allocationSampledBytes",
+        "events": 88,
+        "weight": 23855120,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-21",
+        "metric": "cpuSamples",
+        "events": 332,
+        "weight": 332,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-21",
+        "metric": "allocationSampledBytes",
+        "events": 4668,
+        "weight": 1270875072,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-22",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-22",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 23068688,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-22",
+        "metric": "cpuSamples",
+        "events": 312,
+        "weight": 312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-22",
+        "metric": "allocationSampledBytes",
+        "events": 4538,
+        "weight": 1238369248,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-23",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-23",
+        "metric": "allocationSampledBytes",
+        "events": 84,
+        "weight": 22806544,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-23",
+        "metric": "cpuSamples",
+        "events": 312,
+        "weight": 312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-23",
+        "metric": "allocationSampledBytes",
+        "events": 4523,
+        "weight": 1231291296,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-24",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-24",
+        "metric": "allocationSampledBytes",
+        "events": 84,
+        "weight": 22806544,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-24",
+        "metric": "cpuSamples",
+        "events": 316,
+        "weight": 316,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-24",
+        "metric": "allocationSampledBytes",
+        "events": 4538,
+        "weight": 1236009904,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-25",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-25",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 25427984,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-25",
+        "metric": "cpuSamples",
+        "events": 320,
+        "weight": 320,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-25",
+        "metric": "allocationSampledBytes",
+        "events": 4412,
+        "weight": 1205339104,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-26",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-26",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 23068688,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-26",
+        "metric": "cpuSamples",
+        "events": 323,
+        "weight": 323,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-26",
+        "metric": "allocationSampledBytes",
+        "events": 4536,
+        "weight": 1237844960,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-27",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-27",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 23068688,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-27",
+        "metric": "cpuSamples",
+        "events": 326,
+        "weight": 326,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-27",
+        "metric": "allocationSampledBytes",
+        "events": 4540,
+        "weight": 1239679984,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-28",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-28",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 25427984,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-28",
+        "metric": "cpuSamples",
+        "events": 316,
+        "weight": 316,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-28",
+        "metric": "allocationSampledBytes",
+        "events": 4498,
+        "weight": 1229456384,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-29",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-29",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 23068688,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-29",
+        "metric": "cpuSamples",
+        "events": 312,
+        "weight": 312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-29",
+        "metric": "allocationSampledBytes",
+        "events": 4529,
+        "weight": 1235223504,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-30",
+        "metric": "cpuSamples",
+        "events": 14,
+        "weight": 14,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-30",
+        "metric": "allocationSampledBytes",
+        "events": 84,
+        "weight": 22806544,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-30",
+        "metric": "cpuSamples",
+        "events": 321,
+        "weight": 321,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-30",
+        "metric": "allocationSampledBytes",
+        "events": 4475,
+        "weight": 1221854176,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-31",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-31",
+        "metric": "allocationSampledBytes",
+        "events": 89,
+        "weight": 24117264,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-31",
+        "metric": "cpuSamples",
+        "events": 312,
+        "weight": 312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-31",
+        "metric": "allocationSampledBytes",
+        "events": 4614,
+        "weight": 1258292192,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-32",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-32",
+        "metric": "allocationSampledBytes",
+        "events": 86,
+        "weight": 23330832,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-32",
+        "metric": "cpuSamples",
+        "events": 308,
+        "weight": 308,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-32",
+        "metric": "allocationSampledBytes",
+        "events": 4610,
+        "weight": 1258030064,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-33",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-33",
+        "metric": "allocationSampledBytes",
+        "events": 91,
+        "weight": 24641552,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-33",
+        "metric": "cpuSamples",
+        "events": 313,
+        "weight": 313,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-33",
+        "metric": "allocationSampledBytes",
+        "events": 4471,
+        "weight": 1220019152,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-34",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-34",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-34",
+        "metric": "cpuSamples",
+        "events": 391,
+        "weight": 391,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-34",
+        "metric": "allocationSampledBytes",
+        "events": 4477,
+        "weight": 1221592016,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-35",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-35",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 23068688,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-35",
+        "metric": "cpuSamples",
+        "events": 307,
+        "weight": 307,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-35",
+        "metric": "allocationSampledBytes",
+        "events": 4476,
+        "weight": 1220543424,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-36",
+        "metric": "cpuSamples",
+        "events": 25,
+        "weight": 25,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-36",
+        "metric": "allocationSampledBytes",
+        "events": 91,
+        "weight": 24641552,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-36",
+        "metric": "cpuSamples",
+        "events": 279,
+        "weight": 279,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-36",
+        "metric": "allocationSampledBytes",
+        "events": 4475,
+        "weight": 1219494832,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-37",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-37",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-37",
+        "metric": "cpuSamples",
+        "events": 285,
+        "weight": 285,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-37",
+        "metric": "allocationSampledBytes",
+        "events": 4598,
+        "weight": 1253311440,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-38",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-38",
+        "metric": "allocationSampledBytes",
+        "events": 114,
+        "weight": 30670864,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-38",
+        "metric": "cpuSamples",
+        "events": 267,
+        "weight": 267,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-38",
+        "metric": "allocationSampledBytes",
+        "events": 4597,
+        "weight": 1252262848,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-39",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-39",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 24903696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-39",
+        "metric": "cpuSamples",
+        "events": 306,
+        "weight": 306,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-39",
+        "metric": "allocationSampledBytes",
+        "events": 4433,
+        "weight": 1210057680,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      }
+    ]
+  },
+  {
+    "revision": "candidate",
+    "validation": {
+      "passed": true,
+      "queryCount": 80,
+      "expectedCount": 80,
+      "catalogOrderChecked": true,
+      "allTsvOutcomesSuccess": true,
+      "nonoverlapping": true,
+      "binding": "chronological exact-signature MethodTrace windows paired ordinally with sequential replay TSV; JFR does not contain query IDs",
+      "durationToleranceNanos": 1000000,
+      "minLatencyGapNanos": 63125,
+      "maxLatencyGapNanos": 5172375,
+      "totalLatencyGapNanos": 14877788
+    },
+    "metricConservationChecks": [
+      {
+        "id": "or-four-broad-rows-00",
+        "metric": "cpuSamples",
+        "events": 296,
+        "weight": 296,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-00",
+        "metric": "allocationSampledBytes",
+        "events": 21,
+        "weight": 6291472,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-00",
+        "metric": "cpuSamples",
+        "events": 629,
+        "weight": 629,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-00",
+        "metric": "allocationSampledBytes",
+        "events": 104,
+        "weight": 74449856,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-01",
+        "metric": "cpuSamples",
+        "events": 93,
+        "weight": 93,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-01",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-01",
+        "metric": "cpuSamples",
+        "events": 364,
+        "weight": 364,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-01",
+        "metric": "allocationSampledBytes",
+        "events": 112,
+        "weight": 78906352,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-02",
+        "metric": "cpuSamples",
+        "events": 38,
+        "weight": 38,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-02",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-02",
+        "metric": "cpuSamples",
+        "events": 263,
+        "weight": 263,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-02",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 74187760,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-03",
+        "metric": "cpuSamples",
+        "events": 27,
+        "weight": 27,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-03",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-03",
+        "metric": "cpuSamples",
+        "events": 252,
+        "weight": 252,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-03",
+        "metric": "allocationSampledBytes",
+        "events": 102,
+        "weight": 74712016,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-04",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-04",
+        "metric": "allocationSampledBytes",
+        "events": 3,
+        "weight": 1572880,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-04",
+        "metric": "cpuSamples",
+        "events": 232,
+        "weight": 232,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-04",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 73663472,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-05",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-05",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-05",
+        "metric": "cpuSamples",
+        "events": 277,
+        "weight": 277,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-05",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 72352720,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-06",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-06",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-06",
+        "metric": "cpuSamples",
+        "events": 258,
+        "weight": 258,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-06",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 72352720,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-07",
+        "metric": "cpuSamples",
+        "events": 15,
+        "weight": 15,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-07",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-07",
+        "metric": "cpuSamples",
+        "events": 229,
+        "weight": 229,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-07",
+        "metric": "allocationSampledBytes",
+        "events": 97,
+        "weight": 74187744,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-08",
+        "metric": "cpuSamples",
+        "events": 20,
+        "weight": 20,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-08",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-08",
+        "metric": "cpuSamples",
+        "events": 297,
+        "weight": 297,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-08",
+        "metric": "allocationSampledBytes",
+        "events": 96,
+        "weight": 73925600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-09",
+        "metric": "cpuSamples",
+        "events": 14,
+        "weight": 14,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-09",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-09",
+        "metric": "cpuSamples",
+        "events": 216,
+        "weight": 216,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-09",
+        "metric": "allocationSampledBytes",
+        "events": 95,
+        "weight": 74449904,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-10",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-10",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-10",
+        "metric": "cpuSamples",
+        "events": 211,
+        "weight": 211,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-10",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 74974208,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-11",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-11",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-11",
+        "metric": "cpuSamples",
+        "events": 232,
+        "weight": 232,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-11",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 73401312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-12",
+        "metric": "cpuSamples",
+        "events": 14,
+        "weight": 14,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-12",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-12",
+        "metric": "cpuSamples",
+        "events": 245,
+        "weight": 245,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-12",
+        "metric": "allocationSampledBytes",
+        "events": 96,
+        "weight": 75498496,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-13",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-13",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-13",
+        "metric": "cpuSamples",
+        "events": 207,
+        "weight": 207,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-13",
+        "metric": "allocationSampledBytes",
+        "events": 97,
+        "weight": 73401296,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-14",
+        "metric": "cpuSamples",
+        "events": 22,
+        "weight": 22,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-14",
+        "metric": "allocationSampledBytes",
+        "events": 9,
+        "weight": 3145744,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-14",
+        "metric": "cpuSamples",
+        "events": 198,
+        "weight": 198,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-14",
+        "metric": "allocationSampledBytes",
+        "events": 97,
+        "weight": 75760640,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-15",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-15",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-15",
+        "metric": "cpuSamples",
+        "events": 211,
+        "weight": 211,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-15",
+        "metric": "allocationSampledBytes",
+        "events": 90,
+        "weight": 73925632,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-16",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-16",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-16",
+        "metric": "cpuSamples",
+        "events": 252,
+        "weight": 252,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-16",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 73663472,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-17",
+        "metric": "cpuSamples",
+        "events": 20,
+        "weight": 20,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-17",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-17",
+        "metric": "cpuSamples",
+        "events": 217,
+        "weight": 217,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-17",
+        "metric": "allocationSampledBytes",
+        "events": 89,
+        "weight": 72877040,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-18",
+        "metric": "cpuSamples",
+        "events": 20,
+        "weight": 20,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-18",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-18",
+        "metric": "cpuSamples",
+        "events": 205,
+        "weight": 205,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-18",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 73139168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-19",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-19",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-19",
+        "metric": "cpuSamples",
+        "events": 206,
+        "weight": 206,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-19",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 73139168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-20",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-20",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-20",
+        "metric": "cpuSamples",
+        "events": 214,
+        "weight": 214,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-20",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 71566272,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-21",
+        "metric": "cpuSamples",
+        "events": 19,
+        "weight": 19,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-21",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-21",
+        "metric": "cpuSamples",
+        "events": 222,
+        "weight": 222,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-21",
+        "metric": "allocationSampledBytes",
+        "events": 96,
+        "weight": 75498496,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-22",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-22",
+        "metric": "allocationSampledBytes",
+        "events": 6,
+        "weight": 2359312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-22",
+        "metric": "cpuSamples",
+        "events": 214,
+        "weight": 214,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-22",
+        "metric": "allocationSampledBytes",
+        "events": 96,
+        "weight": 73925600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-23",
+        "metric": "cpuSamples",
+        "events": 21,
+        "weight": 21,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-23",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-23",
+        "metric": "cpuSamples",
+        "events": 214,
+        "weight": 214,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-23",
+        "metric": "allocationSampledBytes",
+        "events": 95,
+        "weight": 73663456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-24",
+        "metric": "cpuSamples",
+        "events": 23,
+        "weight": 23,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-24",
+        "metric": "allocationSampledBytes",
+        "events": 8,
+        "weight": 2883600,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-24",
+        "metric": "cpuSamples",
+        "events": 214,
+        "weight": 214,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-24",
+        "metric": "allocationSampledBytes",
+        "events": 85,
+        "weight": 72614912,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-25",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-25",
+        "metric": "allocationSampledBytes",
+        "events": 6,
+        "weight": 2359312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-25",
+        "metric": "cpuSamples",
+        "events": 223,
+        "weight": 223,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-25",
+        "metric": "allocationSampledBytes",
+        "events": 95,
+        "weight": 74449904,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-26",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-26",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-26",
+        "metric": "cpuSamples",
+        "events": 224,
+        "weight": 224,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-26",
+        "metric": "allocationSampledBytes",
+        "events": 93,
+        "weight": 73139168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-27",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-27",
+        "metric": "allocationSampledBytes",
+        "events": 6,
+        "weight": 2359312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-27",
+        "metric": "cpuSamples",
+        "events": 224,
+        "weight": 224,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-27",
+        "metric": "allocationSampledBytes",
+        "events": 95,
+        "weight": 74449904,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-28",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-28",
+        "metric": "allocationSampledBytes",
+        "events": 9,
+        "weight": 3145744,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-28",
+        "metric": "cpuSamples",
+        "events": 220,
+        "weight": 220,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-28",
+        "metric": "allocationSampledBytes",
+        "events": 99,
+        "weight": 75498480,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-29",
+        "metric": "cpuSamples",
+        "events": 15,
+        "weight": 15,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-29",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-29",
+        "metric": "cpuSamples",
+        "events": 204,
+        "weight": 204,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-29",
+        "metric": "allocationSampledBytes",
+        "events": 94,
+        "weight": 73401312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-30",
+        "metric": "cpuSamples",
+        "events": 15,
+        "weight": 15,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-30",
+        "metric": "allocationSampledBytes",
+        "events": 7,
+        "weight": 2621456,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-30",
+        "metric": "cpuSamples",
+        "events": 199,
+        "weight": 199,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-30",
+        "metric": "allocationSampledBytes",
+        "events": 86,
+        "weight": 72877056,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-31",
+        "metric": "cpuSamples",
+        "events": 26,
+        "weight": 26,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-31",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-31",
+        "metric": "cpuSamples",
+        "events": 200,
+        "weight": 200,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-31",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 71304128,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-32",
+        "metric": "cpuSamples",
+        "events": 14,
+        "weight": 14,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-32",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-32",
+        "metric": "cpuSamples",
+        "events": 201,
+        "weight": 201,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-32",
+        "metric": "allocationSampledBytes",
+        "events": 89,
+        "weight": 70517696,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-33",
+        "metric": "cpuSamples",
+        "events": 10,
+        "weight": 10,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-33",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-33",
+        "metric": "cpuSamples",
+        "events": 248,
+        "weight": 248,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-33",
+        "metric": "allocationSampledBytes",
+        "events": 92,
+        "weight": 72877024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-34",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-34",
+        "metric": "allocationSampledBytes",
+        "events": 6,
+        "weight": 2359312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-34",
+        "metric": "cpuSamples",
+        "events": 151,
+        "weight": 151,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-34",
+        "metric": "allocationSampledBytes",
+        "events": 99,
+        "weight": 74712032,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-35",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-35",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-35",
+        "metric": "cpuSamples",
+        "events": 165,
+        "weight": 165,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-35",
+        "metric": "allocationSampledBytes",
+        "events": 91,
+        "weight": 73401328,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-36",
+        "metric": "cpuSamples",
+        "events": 18,
+        "weight": 18,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-36",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-36",
+        "metric": "cpuSamples",
+        "events": 162,
+        "weight": 162,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-36",
+        "metric": "allocationSampledBytes",
+        "events": 90,
+        "weight": 73139184,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-37",
+        "metric": "cpuSamples",
+        "events": 16,
+        "weight": 16,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-37",
+        "metric": "allocationSampledBytes",
+        "events": 5,
+        "weight": 2097168,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-37",
+        "metric": "cpuSamples",
+        "events": 165,
+        "weight": 165,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-37",
+        "metric": "allocationSampledBytes",
+        "events": 98,
+        "weight": 74449888,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-38",
+        "metric": "cpuSamples",
+        "events": 17,
+        "weight": 17,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-38",
+        "metric": "allocationSampledBytes",
+        "events": 4,
+        "weight": 1835024,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-38",
+        "metric": "cpuSamples",
+        "events": 130,
+        "weight": 130,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-38",
+        "metric": "allocationSampledBytes",
+        "events": 91,
+        "weight": 73401328,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-39",
+        "metric": "cpuSamples",
+        "events": 12,
+        "weight": 12,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-rows-39",
+        "metric": "allocationSampledBytes",
+        "events": 6,
+        "weight": 2359312,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-39",
+        "metric": "cpuSamples",
+        "events": 174,
+        "weight": 174,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      },
+      {
+        "id": "or-four-broad-distinct-39",
+        "metric": "allocationSampledBytes",
+        "events": 98,
+        "weight": 74449888,
+        "missingStacks": 0,
+        "truncatedStacks": 0
+      }
+    ]
+  }
+]

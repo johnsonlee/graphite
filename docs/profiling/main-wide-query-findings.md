@@ -1,6 +1,6 @@
 # main 宽查询：已测到的优化机会
 
-当前正在验证 Attempt 137：纯四关键词 OR 冷索引查询的完整索引校验存在装箱开销，改成原始类型回调后三组 DISTINCT 观测约下降 23%–30%。[完整 36 条配对结果](attempt137/v3-pairs/README.md) 已保存在仓库。候选尚待 CI，未接受；下面保留基线 profiling、其它已拒绝实验和覆盖范围。
+Attempt 137 已拒绝并回退：纯四关键词 OR 冷索引校验改成原始类型回调后，局部 DISTINCT 观测约下降 23%–30%，但 CI 的 Method4 count／middle CPU 均连续两次超过 15% 门槛。[完整配对结果](attempt137/v3-pairs/README.md) 和失败报告均保留；没有接受生产优化。下面保留 profiling 与覆盖范围。
 
 最明确的机会是让混合布尔条件使用已有字符串候选筛选，减少全图节点上的通用表达式求值。
 Attempt 134 已验证这项局部收益：三组真实数据配对中，混合 DISTINCT 约从 38–39 秒降到 211–215 ms。但旧 34 条查询出现重复延迟差异及 CPU 超限，本轮被拒绝并回退；没有接受任何生产优化，也未证明整体 P95 达到 10x。详见 [失败比较](attempt134-old34-global-wide-report.md) 和 [混合查询配对数据](attempt134-v3-paired-latencies.json)。
@@ -158,4 +158,7 @@ Attempt 135 的旧 34 条 P95 分别改善 1.30×、1.50×、2.09×，但这不�
 进一步的 [初始选择／来源补全阶段诊断](distinct-phase-boundaries/README.md) 用三份冻结 main 记录区分两条慢路径：密集 DISTINCT 的来源补全区间约 31–48 ms，定向 DISTINCT 没有该阶段，其初始选择约 25–30 ms。独立真实导出显示定向条件只有 12 个匹配节点，而命中两图合计 104,566 个 CallSite 仍被 raw 扫描。旧 133 的三组、135 的前两组候选 P95 已移到定向查询，因此不能只优化密集查询。线程池全部入口和不能丢失的语义见 [调用图](callsite-executor-map.md)。这些新增诊断没有形成生产候选或已接受收益。
 
 
-Attempt 137 只把持久索引完整校验的逐元素回调改为 `IntConsumer`／`LongConsumer`，保留全部校验、CRC、取消检查及工作量计数。字节码确认移除了该回调边界的装箱。真实四关键词 OR 冷索引 DISTINCT 三组配对中，单图／两图约 143–151 ms → 101–108 ms，全 64 图约 175–183 ms → 134–136 ms；这不是 P95。原 34 条 gate 本地三组 P95 约改善 2.61×、1.02×、1.22×，第二组仅 0.88 ms 且定向查询单次变慢。见 [完整 36 条配对表](attempt137/v3-pairs/README.md) 与 [原 gate 审计](attempt137/independent-old34-audit.md)。候选尚待完整 CI，未接受，10x 与线程池移除目标均未完成。
+Attempt 137 只把持久索引完整校验的逐元素回调改为 `IntConsumer`／`LongConsumer`，保留全部校验、CRC、取消检查及工作量计数。字节码确认移除了该回调边界的装箱。真实四关键词 OR 冷索引 DISTINCT 三组配对中，单图／两图约 143–151 ms → 101–108 ms，全 64 图约 175–183 ms → 134–136 ms；这不是 P95。原 34 条 gate 本地三组 P95 约改善 2.61×、1.02×、1.22×，第二组仅 0.88 ms 且定向查询单次变慢。见 [完整 36 条配对表](attempt137/v3-pairs/README.md) 与 [原 gate 审计](attempt137/independent-old34-audit.md)。随后完整 CI 出现 Method4 count／middle CPU 双次退化，这轮已拒绝并回退；10x 与线程池移除目标均未完成。
+
+
+[Attempt 137 机制复核](attempt137/mechanism/README.md) 确认校验逐元素回调的装箱热点大幅减少，但 [Method4 count](attempt137/ci/method4-aggregate/method-compatibility-4-aggregate-cpu-report.md) 和 [middle](attempt137/ci/method4-position/method-compatibility-4-position-cpu-report.md) 的重复 CPU 退化阻止验收。局部热点改善没有成为可保留的整体优化。

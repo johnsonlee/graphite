@@ -5092,3 +5092,43 @@ The v3 audit also retains smaller repeated slowdowns in broad AND DISTINCT
 and mixed-four DISTINCT. Unlike old34, four v3 work-counter pairs differ;
 there is no claim of invariant v3 work or universal latency improvement.
 See the complete paired table and independent v3 audit for the exact values.
+
+
+**Post-submission mechanism diagnostic (not an acceptance rerun):** one new
+CPU/allocation recording per revision, 40 repetitions each of the same pure
+four-OR rows/DISTINCT queries per JVM, confirms the expected sampled change.
+Within 40 DISTINCT windows, validator-boxed leaf allocation weight falls from
+46,526,889,984 to 2,097,152 bytes; remaining samples are the separate graph-work
+consumer, not the changed element callbacks. All allocation sample weight is
+49,397,143,680→2,952,305,632 bytes. These are sampled TLAB weights, not exact
+allocation or latency evidence. All 160 complete query outputs pass; JAR and
+real graph input hashes remain unchanged. No additional production change is
+included and exact-head CI still decides acceptance.
+[Mechanism evidence](profiling/attempt137/mechanism/README.md).
+
+
+**Final decision: rejected and production-only reverted.** Candidate commit
+`536f585aab37da0888dd021cf9355d73dad1c545` fails required exact-head CI run
+[33988242513](https://github.com/johnsonlee/graphite/actions/runs/33988242513).
+Method 4 aggregate count process CPU is 0.67→0.89 s (+32.8358%), with reverse
+confirmation 0.89→1.05 s (+17.9775%). Method 4 position middle CPU is
+0.86→1.13 s (+31.3953%), confirmed 0.84→1.04 s (+23.8095%). Both exceed the
+unchanged 15% bound twice. These are real compatibility workload process CPU
+metrics, not callback-only CPU. No cause is inferred solely from the failure.
+Method4 early/zero initial overruns do not repeat above threshold; they are not
+reported as independently blocking failures. Wall and RSS-after comparisons
+for these two shards do not block.
+[Aggregate CPU report](profiling/attempt137/ci/method4-aggregate/method-compatibility-4-aggregate-cpu-report.md),
+[position CPU report](profiling/attempt137/ci/method4-position/method-compatibility-4-position-cpu-report.md).
+
+The production change is explicitly restored to parent d14bc; all 130 tracked
+main/JMH files again match frozen main byte-for-byte. Correctness tests, local
+paired results, mechanism evidence and this rejection log are retained.
+There is no accepted improvement, thread pools remain and 10x is unmet. No gate
+is relaxed or workflow rerun to reverse this outcome. Some candidate CI jobs
+are still active at rejection; a superseding revert push may cancel them under
+the existing concurrency policy. Incomplete checks are not passes. Full
+method compatibility is a regression; end-to-end and hosted global/routing
+conclusions remain unavailable until their own authoritative results exist.
+
+[Independent CI failure audit](profiling/attempt137/ci/ci-audit.md) confirms the original JMH CPU scores, reverse confirmations and ten matching scenario signatures.
