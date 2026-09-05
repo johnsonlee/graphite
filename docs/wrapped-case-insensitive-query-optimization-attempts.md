@@ -4963,3 +4963,132 @@ production-only revert. All 130 production/JMH source files now match frozen
 main byte-for-byte; [verification](profiling/attempt136/revert-source-verification.json).
 The pure-OR correctness tests and diagnostic artifacts remain. Revert-head CI is
 pending; no acceptance or goal completion is claimed.
+
+**Further frozen-main phase diagnosis:** three fresh-JVM original-34 recordings
+trace the initial DISTINCT projectSource and selected-tuple provenance calls
+inside the exact execute windows. All 102 correctness signatures match. Dense
+queries have one initial call and 63 provenance calls; targeted queries have
+64 initial calls and zero provenance calls. Phase interval unions, event counts
+and all CPU/allocation thread partitions independently conserve original totals.
+These instrumented times do not reopen Attempt 136 or change acceptance.
+[Phase report](profiling/distinct-phase-boundaries/README.md). A separate authenticated
+full CallSite-export census finds only 12 targeted hits among 104,566 CallSites
+in the two hit graphs, explaining why scanning all their nodes deserves review.
+The [complete CallSite executor map](profiling/callsite-executor-map.md) also shows
+that a Serial consumer alone does not remove the large-trigram-sort pool entry.
+No new production optimization has started while revert CI remains running.
+
+**Revert 136 CI terminal result:** unit workflow
+[33986202091](https://github.com/johnsonlee/graphite/actions/runs/33986202091)
+passes, benchmark workflow
+[33986202016](https://github.com/johnsonlee/graphite/actions/runs/33986202016)
+fails. Method 17/order CPU is 1.740→2.130 s (+22.4%), confirmed in reverse order
+1.940→3.230 s (+66.5%). Routing cold K64 P50 is 0.278150→1.524298 ms and P95
+2.319441→3.077890 ms; the K64 P50 bound fails, while that P95 delta does not
+independently trigger its bound. Global P95 pairs are
+194.765887→100.719754, 103.967619→97.493250, and 126.274819→238.913798 ms.
+The global comparator reports a repeated aligned DISTINCT-zero latency failure.
+All checks are terminal; no retry or failure waiver is performed.
+[Global status](profiling/attempt136/revert-ci/global-wide-status.json),
+[routing status](profiling/attempt136/revert-ci/routing-status.json),
+[Method CPU report](profiling/attempt136/revert-ci/method17-cpu-report.md).
+The source-equal revert is still not accepted; no retained optimization or 10x
+goal completion is claimed.
+
+[Independent revert-CI audit](profiling/attempt136/revert-ci/independent-ci-audit.md)
+checks 51 evidence-manifest file hashes, 204 paired global signatures plus the
+34-row seed, and all 6,822 routing signatures with provenance. It confirms the
+reported performance failures; source/JAR content equality does not identify
+their runtime causes or waive them.
+
+
+### 2026-09-06 - Attempt 137: Keep mapped-view validation callbacks primitive
+
+**Hypothesis:** full persisted mapped-view validation invokes generic Kotlin
+Function1 callbacks for every Int/Long element. Existing cold pure-four-OR
+DISTINCT profiles place 80.86% of all CPU samples in validation; Integer/Long
+boxing leaves account for 94.24% of sampled allocation weight. Change only the
+callback boundary to Java IntConsumer/LongConsumer and accept, preserving the
+validation closures, default no-op callbacks, loop order, buffer operations,
+original checksum bytes, work accounting and interruption boundaries.
+[Existing source and sampling evidence](profiling/cold-four-or-index-validation.md).
+No posting planner, tuple strategy, scratch buffer, CRC policy, cache, or thread
+pool change is included.
+
+The private validator's callback signature is internal. Its full view identity,
+dimensions, property IDs, posting bounds, trigram order and CRC checks must remain;
+selected posting physical order must still be validated completely before any
+LIMIT output. Primitive consumers must receive the same values at the same point
+as before. This is not the rejected Attempt 098 CRC batching change.
+
+Candidate parent is full production revert
+`d14bc77f625c515c2e5416728e1b07e0554aa67a`; comparison remains frozen main
+`4e328b0109e13c896b74004823fb049fcb19251a`. Real input is the unchanged fixture64
+manifest SHA256
+`fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`,
+64 class shards from the four pinned corpus families, not synthetic graphs.
+Artifacts and exact commands are at `/private/tmp/graphite-attempt137.dcywsuq7`.
+
+The prespecified plan requires module tests, lint/JMH packaging and independent
+source/bytecode verification, one real v3 36-query correctness control, then
+three unchanged old34 alternating pairs. Only nonregression plus strict P95
+progress in every pair proceeds to three additional v3 pairs and mandatory CI.
+Old34 warm dense-query profiles have zero validator samples: no warm speedup is
+asserted from cold profiling, nor is a cold/warm comparison an optimization gain.
+The following results record execution of that plan; acceptance is not established.
+
+**Correctness and mechanism verification:** all 187 webgraph tests, detekt and
+JMH test-exclusion checks pass. The immutable candidate JAR SHA256 is
+`b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7`;
+production source SHA256 is
+`8a803b81cfd2b9c455276c33640cafff9963a11673eed3a504b59fa5a63b6672`.
+An independent mechanical reversal of the six added/four removed lines yields
+byte-identical frozen-main source. Actual javap output shows primitive
+`IntConsumer.accept(I)V` and `LongConsumer.accept(J)V`; the validator's prior
+two Function1 calls and Integer.valueOf/Long.valueOf sites are absent. This
+verifies the callback bytecode, not its machine-code optimization or measured
+benefit. [Build/bytecode receipt](profiling/attempt137/build-receipt.json),
+[independent source review](profiling/attempt137/preimplementation-audit.md).
+
+**Original-34 local paired result:** all 204 signatures pass. The unchanged
+regression-only gate passes, and all three P95 values improve. This permits the
+prespecified v3 pairs and CI evaluation, not acceptance.
+
+| Pair/order | Main → candidate P95 (ms) | Main → candidate CPU (s) | Peak heap (GiB) | Peak RSS (GiB) |
+|---|---:|---:|---:|---:|
+| 1 candidate-base | 137.409167 → 52.732459 | 1.687700 → 1.430862 | 4.386 → 3.571 | 4.890 → 4.073 |
+| 2 base-candidate | 49.278375 → 48.396208 | 1.544348 → 1.415953 | 4.022 → 3.583 | 4.523 → 4.091 |
+| 3 candidate-base | 49.659250 → 40.778083 | 1.702896 → 1.282096 | 4.390 → 3.583 | 4.907 → 4.058 |
+
+Pair 2 P95 improves only 0.882167 ms (~1.02x). That pair's targeted
+DISTINCT row slows from 32.371084 to 42.323250 ms; it is not a repeated
+aligned-row failure under the unchanged rule. Do not describe every row in
+every pair as nonregressing or infer stable warm-query gains from this screen.
+All work/access/path counters are unchanged. Final 10x is false.
+[Full comparison](profiling/attempt137/global-wide-report.md),
+[status](profiling/attempt137/global-wide-status.json),
+[local decision](profiling/attempt137/local-progress.json).
+
+
+**Additional v3 paired diagnostic:** all 216 observations across three alternating
+pairs pass full output/order/provenance correctness. Pure four-OR covers single
+hit graphs at the first/middle/last positions, two hit graphs, 55 graphs and all
+64 graphs, in both rows and DISTINCT forms. DISTINCT single/two graph cases
+fall from 142.850–151.336 ms to 100.694–108.240 ms, and all-64 from
+175.412–183.115 ms to 133.764–135.707 ms. These are individual paired observations,
+not a per-query P95. No query exceeds >15% and >1 ms in two pairs; pair 2
+two-term broad rows has a single 4.570417→5.663708 ms regression, and pair 3
+pure four-OR all-graph rows has a smaller 11.771583→12.676041 ms slowdown.
+No blanket claim of every-row improvement is made.
+[All 36 paired results and commands](profiling/attempt137/v3-pairs/README.md),
+[old34 independent audit](profiling/attempt137/independent-old34-audit.md).
+
+**Decision:** local evidence permits submission to exact-head required CI only.
+Method-level, end-to-end, routing and hosted global comparisons remain pending;
+there is no accepted optimization, no 10x result, and no CallSite pool removal.
+The original gates are unchanged. A failed candidate will be explicitly reverted.
+
+The v3 audit also retains smaller repeated slowdowns in broad AND DISTINCT
+and mixed-four DISTINCT. Unlike old34, four v3 work-counter pairs differ;
+there is no claim of invariant v3 work or universal latency improvement.
+See the complete paired table and independent v3 audit for the exact values.

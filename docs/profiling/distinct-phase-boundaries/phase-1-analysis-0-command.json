@@ -1,0 +1,11 @@
+[
+  "/opt/homebrew/opt/openjdk@17/bin/java",
+  "-cp",
+  "/private/tmp/graphite-main-profiling-n50joikp",
+  "ProfileWindows",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-1.jfr",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-1.tsv",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/phase-1-analysis",
+  "--catalog",
+  "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/expected-query-ids.txt"
+]

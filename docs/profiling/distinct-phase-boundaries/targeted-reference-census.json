@@ -1,0 +1,870 @@
+{
+  "referenceOnly": true,
+  "queryId": "global-wide-wrapped-case-insensitive-distinct-targeted",
+  "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+  "querySha256": "c571ed79b35fe4dba10956fb08c7fa73ea9ca10b69c85fdd42c99822d8aca0f1",
+  "exportSha256": "63a571dfc4aca0fa24315ba59032a1c5a2145e3cfc7bf32a1bcf0f5eafe037ca",
+  "manifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "provenanceSha256": "86b13a58b2837fbaa317d70fe486fc552b38bfcdd4f615b8bf125c9992b01a1d",
+  "totalCallSites": 5046935,
+  "matchingNodeCount": 12,
+  "distinctTupleCount": 12,
+  "hitGraphIds": [
+    "fixture-kotlin-compiler-11",
+    "fixture-kotlin-compiler-15"
+  ],
+  "callSitesInHitGraphs": 104566,
+  "graphs": [
+    {
+      "graphId": "fixture-android-00",
+      "callSiteCount": 100606,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-01",
+      "callSiteCount": 110875,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-02",
+      "callSiteCount": 102233,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-03",
+      "callSiteCount": 108305,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-04",
+      "callSiteCount": 102157,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-05",
+      "callSiteCount": 98095,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-06",
+      "callSiteCount": 114190,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-07",
+      "callSiteCount": 108587,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-08",
+      "callSiteCount": 111032,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-09",
+      "callSiteCount": 110050,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-10",
+      "callSiteCount": 103391,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-11",
+      "callSiteCount": 94712,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-12",
+      "callSiteCount": 121945,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-13",
+      "callSiteCount": 117348,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-14",
+      "callSiteCount": 108560,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-android-15",
+      "callSiteCount": 94748,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-00",
+      "callSiteCount": 55707,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-01",
+      "callSiteCount": 67073,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-02",
+      "callSiteCount": 60764,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-03",
+      "callSiteCount": 54516,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-04",
+      "callSiteCount": 65357,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-05",
+      "callSiteCount": 59823,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-06",
+      "callSiteCount": 58836,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-07",
+      "callSiteCount": 57832,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-08",
+      "callSiteCount": 63677,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-09",
+      "callSiteCount": 66311,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-10",
+      "callSiteCount": 68948,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-11",
+      "callSiteCount": 62554,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-12",
+      "callSiteCount": 62181,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-13",
+      "callSiteCount": 59606,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-14",
+      "callSiteCount": 59770,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-tika-15",
+      "callSiteCount": 79133,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-00",
+      "callSiteCount": 102295,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-01",
+      "callSiteCount": 81185,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-02",
+      "callSiteCount": 96064,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-03",
+      "callSiteCount": 94421,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-04",
+      "callSiteCount": 86012,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-05",
+      "callSiteCount": 82642,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-06",
+      "callSiteCount": 86251,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-07",
+      "callSiteCount": 102028,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-08",
+      "callSiteCount": 99087,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-09",
+      "callSiteCount": 82759,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-10",
+      "callSiteCount": 79356,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-11",
+      "callSiteCount": 89373,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-12",
+      "callSiteCount": 93578,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-13",
+      "callSiteCount": 86013,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-14",
+      "callSiteCount": 88637,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-hive-15",
+      "callSiteCount": 87946,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-00",
+      "callSiteCount": 59257,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-01",
+      "callSiteCount": 55092,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-02",
+      "callSiteCount": 52094,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-03",
+      "callSiteCount": 48917,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-04",
+      "callSiteCount": 59098,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-05",
+      "callSiteCount": 62560,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-06",
+      "callSiteCount": 52417,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-07",
+      "callSiteCount": 54757,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-08",
+      "callSiteCount": 59877,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-09",
+      "callSiteCount": 59459,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-10",
+      "callSiteCount": 64023,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-11",
+      "callSiteCount": 51565,
+      "matchingNodeCount": 11,
+      "matchingDistinctTupleCount": 11,
+      "matchingPerPropertyCounts": [
+        11,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": [
+        51436,
+        51437,
+        51438,
+        51439,
+        51440,
+        51441,
+        51442,
+        51443,
+        51444,
+        51445,
+        51446
+      ]
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-12",
+      "callSiteCount": 54287,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-13",
+      "callSiteCount": 57490,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-14",
+      "callSiteCount": 56472,
+      "matchingNodeCount": 0,
+      "matchingDistinctTupleCount": 0,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "matchingPhysicalOrdinals": []
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-15",
+      "callSiteCount": 53001,
+      "matchingNodeCount": 1,
+      "matchingDistinctTupleCount": 1,
+      "matchingPerPropertyCounts": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "matchingPhysicalOrdinals": [
+        52694
+      ]
+    }
+  ],
+  "limits": [
+    "Independent existing export only; no graph engine execution or timing.",
+    "Matching property posting union may identify these nodes only after the existing index integrity and physical-order validation requirements.",
+    "Logical node counts do not measure lookup work, latency, or select an accepted optimization."
+  ]
+}

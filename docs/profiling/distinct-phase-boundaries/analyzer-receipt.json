@@ -1,0 +1,16 @@
+{
+  "sourceSha256": "1c07b50a6bef07a5af678a61bdc31b3b5a1ee45d92229b7edb58fb1eb0d06b05",
+  "originalAnalyzerSourceSha256": "e69970ae896839fee24bfbceaec18209750cc938ee6cc4255b4be39a50e9a650",
+  "compileCommand": [
+    "/opt/homebrew/opt/openjdk@17/bin/javac",
+    "-cp",
+    "/private/tmp/graphite-main-profiling-n50joikp",
+    "/private/tmp/graphite-distinct-phase-profiling.by0z0asb/DistinctPhaseWindows.java"
+  ],
+  "alignment": "Exact original outer trace signature and request thread, chronological 34-row catalog binding. Phase owner and method names from frozen-JAR javap; three current recordings independently assert 192 calls and per-query 64/0 or 1/63 counts.",
+  "developmentCorrections": [
+    "Initial catalog extraction incorrectly treated pipe-delimited oracle signatures as TSV; catalog validator rejected it before analysis. The corrected IDs are extracted before the first pipe. No capture rerun.",
+    "An initial extra positive-gap <1ms assertion rejected the first raw query; final rule matches original ProfileWindows: reject outer trace exceeding TSV beyond 1ms, explicitly report positive untraced TSV time. The first query has 7.7\u20138ms untraced time; dense/targeted have 52\u201370us. Phase fractions only describe the traced window."
+  ],
+  "candidate": false
+}

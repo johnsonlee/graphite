@@ -1,0 +1,40 @@
+{
+  "auditPassed": true,
+  "kind": "preimplementation source/coverage audit, not runtime/bytecode/performance proof",
+  "candidateRepository": "/private/tmp/graphite-attempt137.dcywsuq7/repo",
+  "cloneHead": "d14bc77f625c515c2e5416728e1b07e0554aa67a",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "changedTrackedFiles": [
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt"
+  ],
+  "candidateSourceSha256": "8a803b81cfd2b9c455276c33640cafff9963a11673eed3a504b59fa5a63b6672",
+  "frozenSourceSha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+  "mechanicalNormalizationEqualsFrozen": true,
+  "normalizationOnly": [
+    "remove two java.util.function imports",
+    "restore two callback type/default declarations",
+    "restore two validate invocation expressions"
+  ],
+  "semantics": {
+    "primitiveAPI": "Expected Java IntConsumer.accept(I)V and LongConsumer.accept(J)V; parent will inspect actual compiled bytecode. No Java or javap executed by auditor.",
+    "defaultCallback": "Default empty consumer remains passed and invoked for each element, including signature long section and offset/count int overload. This does not assume zero per-call SAM allocation.",
+    "ordering": "Per chunk: interrupt check, scratch.clear, per element read with index increment, callback, reverseBytes/put, bulk CRC, work charge. All loops and callback bodies exactly unchanged.",
+    "exceptions": "Same require callbacks and cancellation checks; Java Consumer does not swallow or wrap errors. Existing load catch policy unchanged. Work callback exceptions remain at same chunk boundary.",
+    "captures": "previousStringId/previousEnd/previousPosting retain same mutation/order/ownership; replacing parameter ABI does not remove captured Ref or scratch allocations.",
+    "scope": "private class, file-local call sites only; no public GraphWorkConsumer API, index format, query planner, pool, selected tuple or cache changes."
+  },
+  "coverage": {
+    "mappedSuccessAndCorruptCRC": "GraphStoreTest.kt:302 split raw scans reuse exact matches from the existing persisted index; preferred mapped subsections at352-441 and corrupted CRC fallback at547-564.",
+    "mappedPostingOrderLimit": "GraphStoreTest.kt:583 mapped posting merge falls back before limit when a checksum-valid range is out of order; swaps first two posting IDs, repairs CRC, asserts LIMIT1 result and fallback. Protects selected-range ordering outside changed helper, not exhaustive validator branch coverage.",
+    "mappedMemory": "GraphStoreTest.kt:659 mapped posting validation stays bounded when complete index memory is unavailable; successful view path with limited/no range-cache memory and release.",
+    "querySemantics": "ParallelDistinctDisjunctionTest.kt:21 and44 run with persisted index and require mapped view initialized, compare full values/order and selected tuples to independent graph.nodes oracle.",
+    "relatedRetainedRestore": "GraphStoreTest.kt:2070 lazy persisted CallSite restore charges sidecar read validation and checksum work; :2172 interrupted lazy persisted CallSite restore escapes without publishing the sidecar. These exercise retained restore, not a dedicated mapped validator chunk-injection test.",
+    "gaps": "No dedicated test for every property-end/string-id/trigram ordering boundary or budget/interruption at each primitive validator chunk; no new mirrored private implementation tests recommended for this mechanical ABI-only change. Existing module regressions plus equality audit and actual bytecode check provide appropriate evidence, without claiming exhaustive branch coverage."
+  },
+  "performanceBoundary": {
+    "coldEvidence": "Prior cold four-OR recording: validator inclusive CPU 11183/13830 all CPU=80.86%, 11183/12243 application=91.34%; 94.24% all allocation sampled weight is boxed Integer/Long leaf (small amount outside validator). 40 query windows in one recording, not 40 independent JVMs.",
+    "hypothesis": "Remove primitive argument boxing at generic Function1 invocation boundary while preserving all validation work. Allocation/CPU outcome depends on generated adapters and JIT; actual accept(I/J)V call and absence of valueOf/invoke bridge at that boundary must be verified.",
+    "nonGoals": "No CRC batching, skipped callback/default loop, posting/rank index, cache or scheduling change. Old34 dense prior validator sampled CPU/alloc=0; benefit to old34 P95 and final10x remains unproven."
+  },
+  "execution": "No Java/build/test/profiler launched; only two audit files written outside repository."
+}

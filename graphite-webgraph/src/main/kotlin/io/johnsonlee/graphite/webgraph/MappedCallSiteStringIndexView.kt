@@ -20,6 +20,8 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
+import java.util.function.IntConsumer
+import java.util.function.LongConsumer
 import java.util.zip.CRC32
 
 internal interface CallSiteStringIdMembership {
@@ -462,7 +464,7 @@ private class PersistentIndexViewValidator(
         consumeGraphWork(workConsumer, values.size.toLong())
     }
 
-    fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
+    fun updateInts(values: IntBuffer, validate: IntConsumer = IntConsumer {}) {
         var index = 0
         while (index < values.limit()) {
             checkViewInterrupted()
@@ -471,7 +473,7 @@ private class PersistentIndexViewValidator(
             val end = minOf(values.limit(), index + scratch.capacity() / Int.SIZE_BYTES)
             while (index < end) {
                 val value = values.get(index++)
-                validate(value)
+                validate.accept(value)
                 scratch.putInt(Integer.reverseBytes(value))
             }
             checksum.update(scratch.array(), 0, scratch.position())
@@ -483,7 +485,7 @@ private class PersistentIndexViewValidator(
         updateInts(mappedSlice(offset, count, Int.SIZE_BYTES).asIntBuffer())
     }
 
-    fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {
+    fun updateLongs(offset: Long, count: Int, validate: LongConsumer = LongConsumer {}) {
         val values = mappedSlice(offset, count, Long.SIZE_BYTES).asLongBuffer()
         var index = 0
         while (index < values.limit()) {
@@ -493,7 +495,7 @@ private class PersistentIndexViewValidator(
             val end = minOf(values.limit(), index + scratch.capacity() / Long.SIZE_BYTES)
             while (index < end) {
                 val value = values.get(index++)
-                validate(value)
+                validate.accept(value)
                 scratch.putLong(java.lang.Long.reverseBytes(value))
             }
             checksum.update(scratch.array(), 0, scratch.position())

@@ -1,0 +1,2209 @@
+{
+  "auditPassed": true,
+  "candidateAccepted": false,
+  "performanceGate": false,
+  "notP95": true,
+  "scope": "Independent Python reads of six complete run receipts, actual rows, TSV/query hashes, catalog and small input hashes; no Java/new measurement/retry. Three fixed-order paired observations per query are descriptive diagnostics, not percentile/stability estimates or replacements for CI.",
+  "verifiedQueryResults": 216,
+  "returnedRowsVerified": 37026,
+  "orders": [
+    "candidate-base",
+    "base-candidate",
+    "candidate-base"
+  ],
+  "resetMode": "per-query-cold; indexes reset each query, JIT/OS page cache not reset",
+  "runReceipts": [
+    {
+      "pair": 1,
+      "side": "base",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    {
+      "pair": 1,
+      "side": "candidate",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7"
+    },
+    {
+      "pair": 2,
+      "side": "base",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    {
+      "pair": 2,
+      "side": "candidate",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7"
+    },
+    {
+      "pair": 3,
+      "side": "base",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    {
+      "pair": 3,
+      "side": "candidate",
+      "run": "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/run.json",
+      "verifiedFullQueryResults": 36,
+      "returnedRowsVerified": 6171,
+      "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+      "runtimeJarSha256": "b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7"
+    }
+  ],
+  "pureFourOrCatalog": {
+    "or-four-broad": {
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "recycle",
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "visitstatementcontainer"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        54,
+        55,
+        56,
+        57,
+        58,
+        62,
+        63
+      ],
+      "totalMatches": 50461,
+      "totalDistinctMatches": 18915,
+      "termExclusiveMatchCounts": [
+        473,
+        49431,
+        260,
+        68
+      ]
+    },
+    "or-four-single-early": {
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3",
+        "com.android.internal.org.bouncycastle.jcajce.provider.asymmetric.dsa.algorithmparametergeneratorspi",
+        "android.media.internal.guava_common.util.concurrent.closingfuture$combiner$asynccombiningcallable"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        0
+      ],
+      "totalMatches": 704,
+      "totalDistinctMatches": 444,
+      "termExclusiveMatchCounts": [
+        673,
+        6,
+        24,
+        1
+      ]
+    },
+    "or-four-single-middle": {
+      "terms": [
+        "org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl",
+        "net.bytebuddy.dynamic.scaffold.typewriter$default$forinlining$withfullprocessing$initializationhandler$appending$framewriter$expanding",
+        "net.bytebuddy.dynamic.classfilelocator$forinstrumentation$classloadingdelegate$fordelegatingclassloader$dispatcher$creationaction",
+        "net.bytebuddy.agent.builder.agentbuilder$lambdainstrumentationstrategy$lambdametafactoryfactory$loader$usingmethodhandlelookup"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        31
+      ],
+      "totalMatches": 2646,
+      "totalDistinctMatches": 2356,
+      "termExclusiveMatchCounts": [
+        2547,
+        6,
+        9,
+        84
+      ]
+    },
+    "or-four-single-late": {
+      "terms": [
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1",
+        "org.jetbrains.kotlin.ir.backend.js.export.exportmodelgeneratorkt$isallowedfakeoverriddendeclaration$$inlined$filterisinstance$1",
+        "org.jetbrains.kotlin.ir.backend.js.lower.booleanpropertyinexternallowering$externalbooleanpropertyprocessor$whenmappings"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        63
+      ],
+      "totalMatches": 299,
+      "totalDistinctMatches": 206,
+      "termExclusiveMatchCounts": [
+        289,
+        4,
+        3,
+        3
+      ]
+    },
+    "or-four-few-early-late": {
+      "terms": [
+        "com.android.internal.app.iappopsservice$stub$proxy",
+        "com.android.server.permission.jarjar.kotlin.io.path.pathskt__pathrecursivefunctionskt$copytorecursively$3",
+        "org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1",
+        "org.jetbrains.kotlin.fir.backend.generators.fir2irlazyfakeoverridegenerator$choosemostspecificoverridden$lambda$7$lambda$6$$inlined$anyoverriddenof$1"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        0,
+        63
+      ],
+      "totalMatches": 972,
+      "totalDistinctMatches": 626,
+      "termExclusiveMatchCounts": [
+        673,
+        6,
+        289,
+        4
+      ]
+    },
+    "or-four-all": {
+      "terms": [
+        "get",
+        "set",
+        "read",
+        "write"
+      ],
+      "ast": [
+        "or",
+        0,
+        1,
+        2,
+        3
+      ],
+      "advertisedHitGraphPositions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63
+      ],
+      "totalMatches": 2455554,
+      "totalDistinctMatches": 1771173,
+      "termExclusiveMatchCounts": [
+        1215977,
+        438686,
+        210146,
+        236328
+      ]
+    }
+  },
+  "queries": [
+    {
+      "id": "or-single-early-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 90172375,
+          "candidateNanos": 74092625,
+          "deltaNanos": -16079750,
+          "candidateOverBase": 0.8216776479492749,
+          "speedup": 1.217022274484134,
+          "baseWorkUnits": 1158842,
+          "candidateWorkUnits": 1158842,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 103908250,
+          "candidateNanos": 79709000,
+          "deltaNanos": -24199250,
+          "candidateOverBase": 0.7671094451114324,
+          "speedup": 1.3035949516365781,
+          "baseWorkUnits": 1158842,
+          "candidateWorkUnits": 1158842,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 100734416,
+          "candidateNanos": 87634334,
+          "deltaNanos": -13100082,
+          "candidateOverBase": 0.869954256745778,
+          "speedup": 1.1494857255376643,
+          "baseWorkUnits": 1158842,
+          "candidateWorkUnits": 1158842,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-single-early-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 281540625,
+          "candidateNanos": 159784917,
+          "deltaNanos": -121755708,
+          "candidateOverBase": 0.567537693716493,
+          "speedup": 1.761997504432787,
+          "baseWorkUnits": 57725462,
+          "candidateWorkUnits": 57725462,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 259270458,
+          "candidateNanos": 155418334,
+          "deltaNanos": -103852124,
+          "candidateOverBase": 0.5994448237523459,
+          "speedup": 1.6682102511792463,
+          "baseWorkUnits": 57725462,
+          "candidateWorkUnits": 57725462,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 293242375,
+          "candidateNanos": 141938708,
+          "deltaNanos": -151303667,
+          "candidateOverBase": 0.4840320502792272,
+          "speedup": 2.065978894213973,
+          "baseWorkUnits": 57725462,
+          "candidateWorkUnits": 57725462,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-early-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 37771500,
+          "candidateNanos": 33385541,
+          "deltaNanos": -4385959,
+          "candidateOverBase": 0.8838817891796725,
+          "speedup": 1.131373009651094,
+          "baseWorkUnits": 1115413,
+          "candidateWorkUnits": 1115413,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 39773750,
+          "candidateNanos": 34700167,
+          "deltaNanos": -5073583,
+          "candidateOverBase": 0.8724389075709482,
+          "speedup": 1.1462120628987174,
+          "baseWorkUnits": 1115413,
+          "candidateWorkUnits": 1115413,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 39818959,
+          "candidateNanos": 34196417,
+          "deltaNanos": -5622542,
+          "candidateOverBase": 0.8587973633363946,
+          "speedup": 1.1644190384039357,
+          "baseWorkUnits": 1115413,
+          "candidateWorkUnits": 1115413,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-early-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 162521166,
+          "candidateNanos": 112287250,
+          "deltaNanos": -50233916,
+          "candidateOverBase": 0.690908469115955,
+          "speedup": 1.4473697236329146,
+          "baseWorkUnits": 57645747,
+          "candidateWorkUnits": 57645747,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 193517000,
+          "candidateNanos": 108321083,
+          "deltaNanos": -85195917,
+          "candidateOverBase": 0.5597497015766056,
+          "speedup": 1.7865127880968472,
+          "baseWorkUnits": 57645747,
+          "candidateWorkUnits": 57645747,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 150148084,
+          "candidateNanos": 109202417,
+          "deltaNanos": -40945667,
+          "candidateOverBase": 0.7272981052492151,
+          "speedup": 1.374952021437401,
+          "baseWorkUnits": 57645747,
+          "candidateWorkUnits": 57645747,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-single-middle-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 111097458,
+          "candidateNanos": 84584792,
+          "deltaNanos": -26512666,
+          "candidateOverBase": 0.7613566819863691,
+          "speedup": 1.3134448329671367,
+          "baseWorkUnits": 31181868,
+          "candidateWorkUnits": 31181868,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 104080875,
+          "candidateNanos": 82284875,
+          "deltaNanos": -21796000,
+          "candidateOverBase": 0.7905859265691223,
+          "speedup": 1.2648846461758616,
+          "baseWorkUnits": 31181868,
+          "candidateWorkUnits": 31181868,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 100824417,
+          "candidateNanos": 83750375,
+          "deltaNanos": -17074042,
+          "candidateOverBase": 0.8306556833351191,
+          "speedup": 1.2038682453660656,
+          "baseWorkUnits": 31181868,
+          "candidateWorkUnits": 31181868,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 149631875,
+          "candidateNanos": 119061791,
+          "deltaNanos": -30570084,
+          "candidateOverBase": 0.7956980489618272,
+          "speedup": 1.2567581399812808,
+          "baseWorkUnits": 57706193,
+          "candidateWorkUnits": 57706193,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 152603708,
+          "candidateNanos": 117267875,
+          "deltaNanos": -35335833,
+          "candidateOverBase": 0.7684470877994656,
+          "speedup": 1.301325772296974,
+          "baseWorkUnits": 57706193,
+          "candidateWorkUnits": 57706193,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 152733250,
+          "candidateNanos": 117199125,
+          "deltaNanos": -35534125,
+          "candidateOverBase": 0.7673451916985987,
+          "speedup": 1.3031944564432543,
+          "baseWorkUnits": 57706193,
+          "candidateWorkUnits": 57706193,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-middle-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 93669459,
+          "candidateNanos": 55364833,
+          "deltaNanos": -38304626,
+          "candidateOverBase": 0.5910660058365449,
+          "speedup": 1.6918584221142687,
+          "baseWorkUnits": 31149593,
+          "candidateWorkUnits": 31149593,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 78130750,
+          "candidateNanos": 66151041,
+          "deltaNanos": -11979709,
+          "candidateOverBase": 0.8466710098136777,
+          "speedup": 1.1810963035336057,
+          "baseWorkUnits": 31149593,
+          "candidateWorkUnits": 31149593,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 93479875,
+          "candidateNanos": 67235917,
+          "deltaNanos": -26243958,
+          "candidateOverBase": 0.7192555295992854,
+          "speedup": 1.3903264679204121,
+          "baseWorkUnits": 31149593,
+          "candidateWorkUnits": 31149593,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 150575583,
+          "candidateNanos": 109211250,
+          "deltaNanos": -41364333,
+          "candidateOverBase": 0.7252918954330065,
+          "speedup": 1.3787552381279402,
+          "baseWorkUnits": 57648990,
+          "candidateWorkUnits": 57648990,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 137599791,
+          "candidateNanos": 108013083,
+          "deltaNanos": -29586708,
+          "candidateOverBase": 0.7849799931745536,
+          "speedup": 1.2739178178998927,
+          "baseWorkUnits": 57648990,
+          "candidateWorkUnits": 57648990,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 153515458,
+          "candidateNanos": 107723417,
+          "deltaNanos": -45792041,
+          "candidateOverBase": 0.7017105534740352,
+          "speedup": 1.4250890129116496,
+          "baseWorkUnits": 57648990,
+          "candidateWorkUnits": 57648990,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-single-late-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 150250959,
+          "candidateNanos": 104365292,
+          "deltaNanos": -45885667,
+          "candidateOverBase": 0.6946064949908239,
+          "speedup": 1.439664050381807,
+          "baseWorkUnits": 57694678,
+          "candidateWorkUnits": 57694678,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 133399958,
+          "candidateNanos": 104330167,
+          "deltaNanos": -29069791,
+          "candidateOverBase": 0.7820854561288543,
+          "speedup": 1.2786326508995236,
+          "baseWorkUnits": 57694678,
+          "candidateWorkUnits": 57694678,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 147827833,
+          "candidateNanos": 103590500,
+          "deltaNanos": -44237333,
+          "candidateOverBase": 0.7007509878062002,
+          "speedup": 1.4270404428977561,
+          "baseWorkUnits": 57694678,
+          "candidateWorkUnits": 57694678,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-single-late-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 146184750,
+          "candidateNanos": 102026792,
+          "deltaNanos": -44157958,
+          "candidateOverBase": 0.6979304749640438,
+          "speedup": 1.4328074727665652,
+          "baseWorkUnits": 57699420,
+          "candidateWorkUnits": 57699420,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 129145708,
+          "candidateNanos": 99122000,
+          "deltaNanos": -30023708,
+          "candidateOverBase": 0.7675206674309301,
+          "speedup": 1.302896511369827,
+          "baseWorkUnits": 57699420,
+          "candidateWorkUnits": 57699420,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 145348709,
+          "candidateNanos": 104006375,
+          "deltaNanos": -41342334,
+          "candidateOverBase": 0.7155644911851264,
+          "speedup": 1.397498076440026,
+          "baseWorkUnits": 57699420,
+          "candidateWorkUnits": 57699420,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-late-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 147276500,
+          "candidateNanos": 99645750,
+          "deltaNanos": -47630750,
+          "candidateOverBase": 0.6765896120562344,
+          "speedup": 1.4780008178974016,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 130886542,
+          "candidateNanos": 99123958,
+          "deltaNanos": -31762584,
+          "candidateOverBase": 0.7573273499730782,
+          "speedup": 1.3204329673760606,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 147144750,
+          "candidateNanos": 100909458,
+          "deltaNanos": -46235292,
+          "candidateOverBase": 0.6857836110360717,
+          "speedup": 1.4581859115723326,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-single-late-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 149215958,
+          "candidateNanos": 103446083,
+          "deltaNanos": -45769875,
+          "candidateOverBase": 0.6932642083764258,
+          "speedup": 1.4424515039394967,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 136638250,
+          "candidateNanos": 105381667,
+          "deltaNanos": -31256583,
+          "candidateOverBase": 0.7712457309721107,
+          "speedup": 1.2966036113283348,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 136092208,
+          "candidateNanos": 105279166,
+          "deltaNanos": -30813042,
+          "candidateOverBase": 0.7735870227044888,
+          "speedup": 1.2926793891965291,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 16528167,
+          "candidateNanos": 10956250,
+          "deltaNanos": -5571917,
+          "candidateOverBase": 0.6628835490348083,
+          "speedup": 1.5085605932686823,
+          "baseWorkUnits": 1158755,
+          "candidateWorkUnits": 1158755,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 13404875,
+          "candidateNanos": 12236750,
+          "deltaNanos": -1168125,
+          "candidateOverBase": 0.9128581952461324,
+          "speedup": 1.0954603959384641,
+          "baseWorkUnits": 1158755,
+          "candidateWorkUnits": 1158755,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 14808375,
+          "candidateNanos": 11439792,
+          "deltaNanos": -3368583,
+          "candidateOverBase": 0.7725217655549647,
+          "speedup": 1.2944619097969614,
+          "baseWorkUnits": 1158755,
+          "candidateWorkUnits": 1158755,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 145657666,
+          "candidateNanos": 104550459,
+          "deltaNanos": -41107207,
+          "candidateOverBase": 0.7177820561809634,
+          "speedup": 1.393180550264251,
+          "baseWorkUnits": 57724950,
+          "candidateWorkUnits": 57724950,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 140600375,
+          "candidateNanos": 98155833,
+          "deltaNanos": -42444542,
+          "candidateOverBase": 0.6981192831100201,
+          "speedup": 1.43241996632029,
+          "baseWorkUnits": 57724950,
+          "candidateWorkUnits": 57724950,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 148594667,
+          "candidateNanos": 104337750,
+          "deltaNanos": -44256917,
+          "candidateOverBase": 0.7021634901607875,
+          "speedup": 1.4241697468078427,
+          "baseWorkUnits": 57724950,
+          "candidateWorkUnits": 57724950,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 14629750,
+          "candidateNanos": 10772708,
+          "deltaNanos": -3857042,
+          "candidateOverBase": 0.7363562603598831,
+          "speedup": 1.3580382945495226,
+          "baseWorkUnits": 1158758,
+          "candidateWorkUnits": 1158758,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 10841375,
+          "candidateNanos": 11218416,
+          "deltaNanos": 377041,
+          "candidateOverBase": 1.0347779686617242,
+          "speedup": 0.9663908879827597,
+          "baseWorkUnits": 1158758,
+          "candidateWorkUnits": 1158758,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 14398292,
+          "candidateNanos": 12207709,
+          "deltaNanos": -2190583,
+          "candidateOverBase": 0.8478581348398824,
+          "speedup": 1.1794425964773572,
+          "baseWorkUnits": 1158758,
+          "candidateWorkUnits": 1158758,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 1,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 147634792,
+          "candidateNanos": 103480833,
+          "deltaNanos": -44153959,
+          "candidateOverBase": 0.7009244338556727,
+          "speedup": 1.4266873170609287,
+          "baseWorkUnits": 57724583,
+          "candidateWorkUnits": 57724583,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 133703417,
+          "candidateNanos": 103412417,
+          "deltaNanos": -30291000,
+          "candidateOverBase": 0.7734463286005623,
+          "speedup": 1.2929145346249862,
+          "baseWorkUnits": 57724583,
+          "candidateWorkUnits": 57724583,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 148129333,
+          "candidateNanos": 103921125,
+          "deltaNanos": -44208208,
+          "candidateOverBase": 0.7015566930285172,
+          "speedup": 1.4254015533415367,
+          "baseWorkUnits": 57724583,
+          "candidateWorkUnits": 57724583,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 5245959,
+          "candidateNanos": 4878292,
+          "deltaNanos": -367667,
+          "candidateOverBase": 0.9299142444689331,
+          "speedup": 1.0753679771526592,
+          "baseWorkUnits": 503,
+          "candidateWorkUnits": 503,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 4570417,
+          "candidateNanos": 5663708,
+          "deltaNanos": 1093291,
+          "candidateOverBase": 1.2392103390128297,
+          "speedup": 0.8069655074025709,
+          "baseWorkUnits": 503,
+          "candidateWorkUnits": 503,
+          "above15PercentAnd1ms": true
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 5154916,
+          "candidateNanos": 5495000,
+          "deltaNanos": 340084,
+          "candidateOverBase": 1.0659727529992729,
+          "speedup": 0.9381102820746133,
+          "baseWorkUnits": 503,
+          "candidateWorkUnits": 503,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 2,
+      "aboveScalePairCount": 1
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 184821500,
+          "candidateNanos": 144305042,
+          "deltaNanos": -40516458,
+          "candidateOverBase": 0.780780601823922,
+          "speedup": 1.2807695243247288,
+          "baseWorkUnits": 58038455,
+          "candidateWorkUnits": 58038455,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 175366959,
+          "candidateNanos": 141939625,
+          "deltaNanos": -33427334,
+          "candidateOverBase": 0.8093863622280181,
+          "speedup": 1.235503891179084,
+          "baseWorkUnits": 58038455,
+          "candidateWorkUnits": 58038455,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 190062125,
+          "candidateNanos": 142145417,
+          "deltaNanos": -47916708,
+          "candidateOverBase": 0.7478892335861235,
+          "speedup": 1.3370963975574395,
+          "baseWorkUnits": 58038455,
+          "candidateWorkUnits": 58038455,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-broad-all-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 20214292,
+          "candidateNanos": 15826542,
+          "deltaNanos": -4387750,
+          "candidateOverBase": 0.7829382300404091,
+          "speedup": 1.277239968149707,
+          "baseWorkUnits": 1138149,
+          "candidateWorkUnits": 1138149,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 18086125,
+          "candidateNanos": 17150000,
+          "deltaNanos": -936125,
+          "candidateOverBase": 0.9482407093835744,
+          "speedup": 1.0545845481049563,
+          "baseWorkUnits": 1138149,
+          "candidateWorkUnits": 1138149,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 19306000,
+          "candidateNanos": 16146042,
+          "deltaNanos": -3159958,
+          "candidateOverBase": 0.8363224904174867,
+          "speedup": 1.1957109983982452,
+          "baseWorkUnits": 1138149,
+          "candidateWorkUnits": 1138149,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 990739833,
+          "candidateNanos": 1005690625,
+          "deltaNanos": 14950792,
+          "candidateOverBase": 1.0150905328543502,
+          "speedup": 0.9851338059355977,
+          "baseWorkUnits": 59629362,
+          "candidateWorkUnits": 59629362,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 975796417,
+          "candidateNanos": 995122792,
+          "deltaNanos": 19326375,
+          "candidateOverBase": 1.0198057449928104,
+          "speedup": 0.9805789042765689,
+          "baseWorkUnits": 59629362,
+          "candidateWorkUnits": 59629362,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 975570167,
+          "candidateNanos": 987786625,
+          "deltaNanos": 12216458,
+          "candidateOverBase": 1.012522377593369,
+          "speedup": 0.9876324929991839,
+          "baseWorkUnits": 59629362,
+          "candidateWorkUnits": 59629362,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 3,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 559513333,
+          "candidateNanos": 287695041,
+          "deltaNanos": -271818292,
+          "candidateOverBase": 0.5141879988050257,
+          "speedup": 1.9448139636164254,
+          "baseWorkUnits": 227190,
+          "candidateWorkUnits": 100227,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 754853875,
+          "candidateNanos": 302262625,
+          "deltaNanos": -452591250,
+          "candidateOverBase": 0.4004253472236597,
+          "speedup": 2.49734440372838,
+          "baseWorkUnits": 304905,
+          "candidateWorkUnits": 105233,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 753124083,
+          "candidateNanos": 618124167,
+          "deltaNanos": -134999916,
+          "candidateOverBase": 0.8207467812445456,
+          "speedup": 1.218402585123322,
+          "baseWorkUnits": 304631,
+          "candidateWorkUnits": 276591,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 38794365542,
+          "candidateNanos": 39131338958,
+          "deltaNanos": 336973416,
+          "candidateOverBase": 1.0086861432399297,
+          "speedup": 0.9913886561264444,
+          "baseWorkUnits": 19431891,
+          "candidateWorkUnits": 19431891,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 39057821000,
+          "candidateNanos": 38807373916,
+          "deltaNanos": -250447084,
+          "candidateOverBase": 0.9935877865792871,
+          "speedup": 1.0064535952507918,
+          "baseWorkUnits": 19431891,
+          "candidateWorkUnits": 19431891,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 38000350417,
+          "candidateNanos": 39289910333,
+          "deltaNanos": 1289559916,
+          "candidateOverBase": 1.0339354743271814,
+          "speedup": 0.9671783441328731,
+          "baseWorkUnits": 19431891,
+          "candidateWorkUnits": 19431891,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 2,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 145838625,
+          "candidateNanos": 101879000,
+          "deltaNanos": -43959625,
+          "candidateOverBase": 0.6985735089041055,
+          "speedup": 1.4314885795895131,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 143149125,
+          "candidateNanos": 104538917,
+          "deltaNanos": -38610208,
+          "candidateOverBase": 0.7302798183362978,
+          "speedup": 1.3693381288807498,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 145576125,
+          "candidateNanos": 102934750,
+          "deltaNanos": -42641375,
+          "candidateOverBase": 0.7070853823042755,
+          "speedup": 1.4142563614328494,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "pureFourOr": false,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 147455833,
+          "candidateNanos": 102233292,
+          "deltaNanos": -45222541,
+          "candidateOverBase": 0.6933146686709911,
+          "speedup": 1.4423465205444035,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 145620375,
+          "candidateNanos": 104980000,
+          "deltaNanos": -40640375,
+          "candidateOverBase": 0.720915599894589,
+          "speedup": 1.3871249285578204,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 147350167,
+          "candidateNanos": 92235000,
+          "deltaNanos": -55115167,
+          "candidateOverBase": 0.6259578925349979,
+          "speedup": 1.5975515476771291,
+          "baseWorkUnits": 57645014,
+          "candidateWorkUnits": 57645014,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-broad-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 36211833,
+          "candidateNanos": 31664250,
+          "deltaNanos": -4547583,
+          "candidateOverBase": 0.874417210528945,
+          "speedup": 1.143618844596035,
+          "baseWorkUnits": 1152827,
+          "candidateWorkUnits": 1152827,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 35188750,
+          "candidateNanos": 32375458,
+          "deltaNanos": -2813292,
+          "candidateOverBase": 0.9200513800575468,
+          "speedup": 1.0868958209023638,
+          "baseWorkUnits": 1152827,
+          "candidateWorkUnits": 1152827,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 33895541,
+          "candidateNanos": 33606834,
+          "deltaNanos": -288707,
+          "candidateOverBase": 0.9914824489746307,
+          "speedup": 1.0085907229464102,
+          "baseWorkUnits": 1152827,
+          "candidateWorkUnits": 1152827,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 150348959,
+          "candidateNanos": 110617500,
+          "deltaNanos": -39731459,
+          "candidateOverBase": 0.735738383130408,
+          "speedup": 1.3591787827423327,
+          "baseWorkUnits": 57697051,
+          "candidateWorkUnits": 57697051,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 150440625,
+          "candidateNanos": 108686250,
+          "deltaNanos": -41754375,
+          "candidateOverBase": 0.7224527949149374,
+          "speedup": 1.384173481006107,
+          "baseWorkUnits": 57697051,
+          "candidateWorkUnits": 57697051,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 148464666,
+          "candidateNanos": 108552125,
+          "deltaNanos": -39912541,
+          "candidateOverBase": 0.7311647136295716,
+          "speedup": 1.3676808814198709,
+          "baseWorkUnits": 57697051,
+          "candidateWorkUnits": 57697051,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 16635291,
+          "candidateNanos": 13157500,
+          "deltaNanos": -3477791,
+          "candidateOverBase": 0.790938974256597,
+          "speedup": 1.2643200456013681,
+          "baseWorkUnits": 1159025,
+          "candidateWorkUnits": 1159025,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 15193625,
+          "candidateNanos": 12260959,
+          "deltaNanos": -2932666,
+          "candidateOverBase": 0.8069804934635415,
+          "speedup": 1.2391873262115958,
+          "baseWorkUnits": 1159025,
+          "candidateWorkUnits": 1159025,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 13770250,
+          "candidateNanos": 10842041,
+          "deltaNanos": -2928209,
+          "candidateOverBase": 0.787352517201939,
+          "speedup": 1.2700791299350371,
+          "baseWorkUnits": 1159025,
+          "candidateWorkUnits": 1159025,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 150636167,
+          "candidateNanos": 107259000,
+          "deltaNanos": -43377167,
+          "candidateOverBase": 0.7120401569962943,
+          "speedup": 1.404415172619547,
+          "baseWorkUnits": 57731891,
+          "candidateWorkUnits": 57731891,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 147706500,
+          "candidateNanos": 105220958,
+          "deltaNanos": -42485542,
+          "candidateOverBase": 0.7123651159563053,
+          "speedup": 1.403774521802016,
+          "baseWorkUnits": 57731891,
+          "candidateWorkUnits": 57731891,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 151335709,
+          "candidateNanos": 108240208,
+          "deltaNanos": -43095501,
+          "candidateOverBase": 0.7152324373092936,
+          "speedup": 1.3981468790229967,
+          "baseWorkUnits": 57731891,
+          "candidateWorkUnits": 57731891,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 92030708,
+          "candidateNanos": 67710541,
+          "deltaNanos": -24320167,
+          "candidateOverBase": 0.7357385645669486,
+          "speedup": 1.3591784475625441,
+          "baseWorkUnits": 31185346,
+          "candidateWorkUnits": 31185346,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 91278875,
+          "candidateNanos": 64618291,
+          "deltaNanos": -26660584,
+          "candidateOverBase": 0.7079216412340752,
+          "speedup": 1.412585718183107,
+          "baseWorkUnits": 31185346,
+          "candidateWorkUnits": 31185346,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 93942167,
+          "candidateNanos": 64911625,
+          "deltaNanos": -29030542,
+          "candidateOverBase": 0.6909743204028921,
+          "speedup": 1.4472317862940576,
+          "baseWorkUnits": 31119327,
+          "candidateWorkUnits": 31185346,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 142849917,
+          "candidateNanos": 100693875,
+          "deltaNanos": -42156042,
+          "candidateOverBase": 0.7048927791816638,
+          "speedup": 1.41865547432751,
+          "baseWorkUnits": 57710259,
+          "candidateWorkUnits": 57710259,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 145811375,
+          "candidateNanos": 105054708,
+          "deltaNanos": -40756667,
+          "candidateOverBase": 0.7204836248200801,
+          "speedup": 1.387956596861894,
+          "baseWorkUnits": 57710259,
+          "candidateWorkUnits": 57710259,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 146085292,
+          "candidateNanos": 105841500,
+          "deltaNanos": -40243792,
+          "candidateOverBase": 0.7245185230556954,
+          "speedup": 1.380226962013955,
+          "baseWorkUnits": 57710259,
+          "candidateWorkUnits": 57710259,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 149902000,
+          "candidateNanos": 104911792,
+          "deltaNanos": -44990208,
+          "candidateOverBase": 0.6998691945404331,
+          "speedup": 1.4288384283818163,
+          "baseWorkUnits": 57698955,
+          "candidateWorkUnits": 57698955,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 149991708,
+          "candidateNanos": 105368083,
+          "deltaNanos": -44623625,
+          "candidateOverBase": 0.7024927204642539,
+          "speedup": 1.423502295282339,
+          "baseWorkUnits": 57698955,
+          "candidateWorkUnits": 57698955,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 147816792,
+          "candidateNanos": 103949041,
+          "deltaNanos": -43867751,
+          "candidateOverBase": 0.7032289064966313,
+          "speedup": 1.4220120799382843,
+          "baseWorkUnits": 57698955,
+          "candidateWorkUnits": 57698955,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 146021333,
+          "candidateNanos": 107122208,
+          "deltaNanos": -38899125,
+          "candidateOverBase": 0.7336065614467442,
+          "speedup": 1.363128484058133,
+          "baseWorkUnits": 57703697,
+          "candidateWorkUnits": 57703697,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 146671333,
+          "candidateNanos": 105041458,
+          "deltaNanos": -41629875,
+          "candidateOverBase": 0.7161689735239537,
+          "speedup": 1.3963185183511067,
+          "baseWorkUnits": 57703697,
+          "candidateWorkUnits": 57703697,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 147453667,
+          "candidateNanos": 105215416,
+          "deltaNanos": -42238251,
+          "candidateOverBase": 0.7135489956991032,
+          "speedup": 1.401445459285168,
+          "baseWorkUnits": 57703697,
+          "candidateWorkUnits": 57703697,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 14628500,
+          "candidateNanos": 11866667,
+          "deltaNanos": -2761833,
+          "candidateOverBase": 0.8112019003999043,
+          "speedup": 1.2327387294174514,
+          "baseWorkUnits": 1158850,
+          "candidateWorkUnits": 1158850,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 16868167,
+          "candidateNanos": 11518875,
+          "deltaNanos": -5349292,
+          "candidateOverBase": 0.6828765093444948,
+          "speedup": 1.464393614827837,
+          "baseWorkUnits": 1158850,
+          "candidateWorkUnits": 1158850,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 13774834,
+          "candidateNanos": 10161875,
+          "deltaNanos": -3612959,
+          "candidateOverBase": 0.7377130642735876,
+          "speedup": 1.3555405867519528,
+          "baseWorkUnits": 1158850,
+          "candidateWorkUnits": 1158850,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 149107208,
+          "candidateNanos": 105174791,
+          "deltaNanos": -43932417,
+          "candidateOverBase": 0.7053635596208065,
+          "speedup": 1.4177086218312522,
+          "baseWorkUnits": 57729887,
+          "candidateWorkUnits": 57729887,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 147826750,
+          "candidateNanos": 104959834,
+          "deltaNanos": -42866916,
+          "candidateOverBase": 0.7100192218255492,
+          "speedup": 1.4084125742805575,
+          "baseWorkUnits": 57729887,
+          "candidateWorkUnits": 57729887,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 148020916,
+          "candidateNanos": 104259792,
+          "deltaNanos": -43761124,
+          "candidateOverBase": 0.704358511063396,
+          "speedup": 1.4197315490520066,
+          "baseWorkUnits": 57729887,
+          "candidateWorkUnits": 57729887,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-all-rows",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 14694958,
+          "candidateNanos": 11140417,
+          "deltaNanos": -3554541,
+          "candidateOverBase": 0.7581115236940452,
+          "speedup": 1.3190671408440098,
+          "baseWorkUnits": 1123138,
+          "candidateWorkUnits": 1123138,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 15879042,
+          "candidateNanos": 12649416,
+          "deltaNanos": -3229626,
+          "candidateOverBase": 0.7966107779046117,
+          "speedup": 1.2553181901836417,
+          "baseWorkUnits": 1123138,
+          "candidateWorkUnits": 1123138,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 11771583,
+          "candidateNanos": 12676041,
+          "deltaNanos": 904458,
+          "candidateOverBase": 1.0768340162916066,
+          "speedup": 0.928648226997688,
+          "baseWorkUnits": 1123138,
+          "candidateWorkUnits": 1123138,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 1,
+      "aboveScalePairCount": 0
+    },
+    {
+      "id": "or-four-all-distinct",
+      "pureFourOr": true,
+      "pairedObservations": [
+        {
+          "pair": 1,
+          "order": "candidate-base",
+          "baseNanos": 181821084,
+          "candidateNanos": 135619667,
+          "deltaNanos": -46201417,
+          "candidateOverBase": 0.7458962625038579,
+          "speedup": 1.3406690048870271,
+          "baseWorkUnits": 58084676,
+          "candidateWorkUnits": 58084676,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 2,
+          "order": "base-candidate",
+          "baseNanos": 183114583,
+          "candidateNanos": 135706958,
+          "deltaNanos": -47407625,
+          "candidateOverBase": 0.7411040441273866,
+          "speedup": 1.3493382041619413,
+          "baseWorkUnits": 58084676,
+          "candidateWorkUnits": 58084676,
+          "above15PercentAnd1ms": false
+        },
+        {
+          "pair": 3,
+          "order": "candidate-base",
+          "baseNanos": 175411958,
+          "candidateNanos": 133763666,
+          "deltaNanos": -41648292,
+          "candidateOverBase": 0.7625686841714634,
+          "speedup": 1.311357285916491,
+          "baseWorkUnits": 58084676,
+          "candidateWorkUnits": 58084676,
+          "above15PercentAnd1ms": false
+        }
+      ],
+      "slowerPairCount": 0,
+      "aboveScalePairCount": 0
+    }
+  ],
+  "allSlowerObservations": [
+    {
+      "id": "or-few-early-middle-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseNanos": 10841375,
+      "candidateNanos": 11218416,
+      "deltaNanos": 377041,
+      "candidateOverBase": 1.0347779686617242,
+      "speedup": 0.9663908879827597,
+      "baseWorkUnits": 1158758,
+      "candidateWorkUnits": 1158758,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseNanos": 4570417,
+      "candidateNanos": 5663708,
+      "deltaNanos": 1093291,
+      "candidateOverBase": 1.2392103390128297,
+      "speedup": 0.8069655074025709,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "above15PercentAnd1ms": true
+    },
+    {
+      "id": "or-broad-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 5154916,
+      "candidateNanos": 5495000,
+      "deltaNanos": 340084,
+      "candidateOverBase": 1.0659727529992729,
+      "speedup": 0.9381102820746133,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseNanos": 990739833,
+      "candidateNanos": 1005690625,
+      "deltaNanos": 14950792,
+      "candidateOverBase": 1.0150905328543502,
+      "speedup": 0.9851338059355977,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseNanos": 975796417,
+      "candidateNanos": 995122792,
+      "deltaNanos": 19326375,
+      "candidateOverBase": 1.0198057449928104,
+      "speedup": 0.9805789042765689,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 975570167,
+      "candidateNanos": 987786625,
+      "deltaNanos": 12216458,
+      "candidateOverBase": 1.012522377593369,
+      "speedup": 0.9876324929991839,
+      "baseWorkUnits": 59629362,
+      "candidateWorkUnits": 59629362,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseNanos": 38794365542,
+      "candidateNanos": 39131338958,
+      "deltaNanos": 336973416,
+      "candidateOverBase": 1.0086861432399297,
+      "speedup": 0.9913886561264444,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 38000350417,
+      "candidateNanos": 39289910333,
+      "deltaNanos": 1289559916,
+      "candidateOverBase": 1.0339354743271814,
+      "speedup": 0.9671783441328731,
+      "baseWorkUnits": 19431891,
+      "candidateWorkUnits": 19431891,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "or-four-all-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 11771583,
+      "candidateNanos": 12676041,
+      "deltaNanos": 904458,
+      "candidateOverBase": 1.0768340162916066,
+      "speedup": 0.928648226997688,
+      "baseWorkUnits": 1123138,
+      "candidateWorkUnits": 1123138,
+      "above15PercentAnd1ms": false
+    }
+  ],
+  "aboveExistingOld34ComparisonScaleObservations": [
+    {
+      "id": "or-broad-all-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseNanos": 4570417,
+      "candidateNanos": 5663708,
+      "deltaNanos": 1093291,
+      "candidateOverBase": 1.2392103390128297,
+      "speedup": 0.8069655074025709,
+      "baseWorkUnits": 503,
+      "candidateWorkUnits": 503,
+      "above15PercentAnd1ms": true
+    }
+  ],
+  "repeatedAboveScaleQueries": [],
+  "scale": "Reference lens >15% AND >1ms, repeated in >=2 pairs; descriptive use of existing old34 scale only, not a new v3 acceptance gate. Raw slower observations retained independently of this scale.",
+  "queryWorkChanges": [
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 1,
+      "order": "candidate-base",
+      "baseNanos": 559513333,
+      "candidateNanos": 287695041,
+      "deltaNanos": -271818292,
+      "candidateOverBase": 0.5141879988050257,
+      "speedup": 1.9448139636164254,
+      "baseWorkUnits": 227190,
+      "candidateWorkUnits": 100227,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 2,
+      "order": "base-candidate",
+      "baseNanos": 754853875,
+      "candidateNanos": 302262625,
+      "deltaNanos": -452591250,
+      "candidateOverBase": 0.4004253472236597,
+      "speedup": 2.49734440372838,
+      "baseWorkUnits": 304905,
+      "candidateWorkUnits": 105233,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 753124083,
+      "candidateNanos": 618124167,
+      "deltaNanos": -134999916,
+      "candidateOverBase": 0.8207467812445456,
+      "speedup": 1.218402585123322,
+      "baseWorkUnits": 304631,
+      "candidateWorkUnits": 276591,
+      "above15PercentAnd1ms": false
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "pair": 3,
+      "order": "candidate-base",
+      "baseNanos": 93942167,
+      "candidateNanos": 64911625,
+      "deltaNanos": -29030542,
+      "candidateOverBase": 0.6909743204028921,
+      "speedup": 1.4472317862940576,
+      "baseWorkUnits": 31119327,
+      "candidateWorkUnits": 31185346,
+      "above15PercentAnd1ms": false
+    }
+  ],
+  "otherCorrectnessAndExecutionCountersEqual": true,
+  "compiledAdapterHashesAllEqual": {
+    "MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f"
+  },
+  "limitations": [
+    "Six graph-content before/after inventories are byte-identical and match run hashes, relying on runner recorded underlying file hashes; no rehash of persisted graph/JAR contents by auditor.",
+    "Full actual values/order/provenance equal independent catalog expectations; complete hit census is catalog evidence, returned LIMIT200 graph IDs are not the full hit set.",
+    "SAM bytecode/source mechanism is independently reviewed elsewhere; work differences can include scheduling-dependent speculative work and do not identify a new optimization or explain all latency deltas.",
+    "and-broad-all-distinct is slower in all three observations but by less than 2%; mixed-four-few-distinct is slower in two, with >1s absolute pair3 change but <15% relative. Retained, not dismissed.",
+    "Final10x and CI gates remain separate; no three-observation P95 or stable gain claimed."
+  ],
+  "inputSha256": {
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pairs-receipt.json": "bb7b9aba374d855f4759630c2c89d86dfd4dfb7fe872776ce608cad3aab2c6fe",
+    "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/run.json": "f93cbc12250691b10ce5d051b8b9691eaa4506e781b79674f74c7528b266e3ef",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+    "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/MultiKeywordProfileRunner.java": "05bf55718595c9327609705dc35dc23fb9baa42168b02b081f93d2e010936c6c",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/run.py": "cbe0ab440c1151948b0798fe00dafe87a4d06bfa3f7cce64e5f991a7f7dd6542",
+    "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/verify_run.py": "e4f644b5bda6b3f3227cc3d5f2c53b71411534c43de4863c12bdf1ef8a545533",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/fork-001.tsv": "78da46a6f6b670dba6d896093eb4c8ee253cc8fe7a73fbbd853320eb05a97a6a",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base/fork-001-command.json": "367e2aa93f9be60d3a9e3b866be6f31da987f888da17f116220b770b25022395",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-base-command.json": "c8519ffcf009f7a5d72e69c1e3d917552a4a0dc89dba6ccc7537f611e683fd68",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/run.json": "0ca9ae517637135210ee113e1a791d4dffc3c0edaec1f370a68343b8b3ae0a6d",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/fork-001.tsv": "4f5041c3f0c539ca8be24b4c519f9aba99f27effa866ae540909f0efd480a9d7",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate/fork-001-command.json": "60b57d31051975c1376b186c9b27b55e1bff273b43dd106f2fdd7ed9afe00ba8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-1-candidate-command.json": "b8a26c2ba914625b1afa2f0fd2d323d7145c5bb5cbc9f8823cd806dff6afdb52",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/run.json": "ef0a636442eea271639ad891fdf29dfb5abea664a39c1bed4dd9aea2476ae928",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/fork-001.tsv": "d0d10ee7901eb6c33380a5d8da9351a5a87ae87b42cb1a65874bdb7a5d2078fe",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base/fork-001-command.json": "42dedec37ce9be680ca8321e3740e5b60efcbc71355c8913981539992500070e",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-base-command.json": "b8198abe09df619e8149a1705b2fe9626efbf2617b5baf166f58771a89320b09",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/run.json": "24c922b45608e415d2d44145863b399714727d36d10e963927f1fea87b7941dd",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/fork-001.tsv": "268b9030e128d6c4c7b2fae30c8901b0eaced3641f5004e36f298094e7d0fe1f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate/fork-001-command.json": "ba9de427c8e7c15eee62de833b1e5cc3834165f27ebfb69f12f2017694b972e0",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-2-candidate-command.json": "783df74907d9c510900a5c6307f17fa1ec3c9a39cfb855a3f73d5bd055e65af7",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/run.json": "7820eb738e0a8d17ed37c285cafd9cfde6c91feecd80ae51b53958b0b0e9ed43",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/fork-001.tsv": "88f69355c7d39ca3eaebd58f554cdb5e1e3c883d944afd7d0573f2c973932778",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base/fork-001-command.json": "27028f00d029d483918687c333539ee4738955df09e096459c47b862aa4f1092",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-base-command.json": "1fb7770924fac8a87b4a4715871cd5eb69fd6fc0b797777274fb8fa731d462df",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/run.json": "e489f5b3ed30d20543c6a59baeef7b671253575c556e94dccc4a04a33a667818",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/fork-001-reference-check.json": "e669c7662796be07f4b1663e1de644bb759a45e6520edb071b9e11568c1683c1",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/graph-content-before.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/graph-content-after.json": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/fork-001.tsv": "1e7275ff74a3312a5cd8c17faa5c03175d9cbd1c55c69bd9d08056b5771e036c",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/fork-001-rows.jsonl": "3ebd880c9da2a7014e56c2a119212df9d19baef865c61472bed90ffdd3eb09d8",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate/fork-001-command.json": "509b14a6446409a518554c62435ae4bb9fd01730e61c8bfa3d9cec3ca2a6b043",
+    "/private/tmp/graphite-attempt137.dcywsuq7/v3-pair-3-candidate-command.json": "2ceebe60872242f0d6fd77affe0bea857ce658a4d6dd9ba3ca496c268d04bf75"
+  }
+}
